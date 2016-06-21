@@ -49,7 +49,7 @@ class DcarArchiveSearchDescription extends AbstractSearchDescription {
         .withName("dynamic_sort_title")
         .withDefaultValue("")
         .withProperty(localProperty()
-          .withName("titleEng")
+          .withName("dcararchive_titleEng")
           .withParser(propertyParserFactory.getParser(String.class))
         )
         .build(),
