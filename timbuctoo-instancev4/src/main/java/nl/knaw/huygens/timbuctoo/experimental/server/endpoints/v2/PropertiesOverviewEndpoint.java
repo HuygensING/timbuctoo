@@ -75,7 +75,7 @@ public class PropertiesOverviewEndpoint {
     if (parts.length > 1 && parts[0].equals("tim") && parts[1].equals("id")) {
       return false;
     }
-    if (parts.length == 1) {
+    if (parts.length == 1 && !parts[0].equals("names")) {
       return false;
     }
     if (parts[parts.length - 1].equals("sort")) {
