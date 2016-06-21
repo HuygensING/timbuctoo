@@ -31,6 +31,7 @@ public class DatabaseFixerTest {
                                      .withVertex("v2", v -> v.withTimId("id2")
                                                              .withOutgoingRelation("relatedTo", "v1",
                                                                r -> r.withTim_id(rel1Id).withRev(2)
+                                                                     .withIsLatest(true)
                                                                      .withModified(changeWithTimestamp(10000L))
                                                                      .withCreated(changeWithTimestamp(1500L))
                                                              )
@@ -38,6 +39,7 @@ public class DatabaseFixerTest {
                                      .withVertex("v3", v -> v.withTimId("id3")
                                                              .withOutgoingRelation("relatedTo", "v2",
                                                                r -> r.withTim_id(rel2Id).withRev(4)
+                                                                     .withIsLatest(true)
                                                                      .withModified(changeWithTimestamp(10000L))
                                                                      .withCreated(changeWithTimestamp(1000L))
                                                              )
@@ -66,6 +68,7 @@ public class DatabaseFixerTest {
                                      .withVertex("v2", v -> v.withTimId("id2")
                                                              .withOutgoingRelation("relatedTo", "v1",
                                                                r -> r.withTim_id(rel1Id).withRev(2)
+                                                                     .withIsLatest(true)
                                                                      .withModified(changeWithTimestamp(10000L))
                                                                      .withCreated(changeWithTimestamp(1500L))
                                                                      .withAccepted("vrerel", false)
@@ -90,11 +93,13 @@ public class DatabaseFixerTest {
                                                                   .withProperty("rev", 2)
                                                                   .withProperty("modified",
                                                                     changeStringWithTimestamp(10000L))
-                                                                  .withProperty("created", vertex1CreatedProp))
+                                                                  .withProperty("created", vertex1CreatedProp)
+                                                                  .withProperty("isLatest", true))
                                           .withVertex("v2", v -> v.withTimId("id2").withProperty("rev", 3)
                                                                   .withProperty("modified",
                                                                     changeStringWithTimestamp(10000L))
-                                                                  .withProperty("created", vertex2CreatedProp))
+                                                                  .withProperty("created", vertex2CreatedProp)
+                                                                  .withProperty("isLatest", true))
                                           .wrap();
     DatabaseFixer instance = new DatabaseFixer(graphWrapper);
 
@@ -118,7 +123,8 @@ public class DatabaseFixerTest {
                                                                   .withProperty("rev", 2)
                                                                   .withProperty("modified",
                                                                     changeStringWithTimestamp(10000L))
-                                                                  .withProperty("created", vertex1CreatedProp))
+                                                                  .withProperty("created", vertex1CreatedProp)
+                                                                  .withProperty("isLatest", true))
                                           .wrap();
     DatabaseFixer instance = new DatabaseFixer(graphWrapper);
 

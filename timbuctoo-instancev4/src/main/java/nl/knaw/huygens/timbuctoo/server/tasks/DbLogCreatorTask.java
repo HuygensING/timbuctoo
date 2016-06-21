@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.tasks;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
@@ -15,14 +14,12 @@ import java.io.PrintWriter;
 public class DbLogCreatorTask extends Task {
   public static final Logger LOG = LoggerFactory.getLogger(DbLogCreatorTask.class);
   private final TinkerpopGraphManager graphManager;
-  private final ObjectMapper objectMapper;
   private final DatabaseLog logGenerator;
   private final DatabaseFixer databaseFixer;
 
   public DbLogCreatorTask(TinkerpopGraphManager graphManager) {
     super("createlog");
     this.graphManager = graphManager;
-    objectMapper = new ObjectMapper();
     logGenerator = new DatabaseLog(graphManager);
     databaseFixer = new DatabaseFixer(graphManager);
   }

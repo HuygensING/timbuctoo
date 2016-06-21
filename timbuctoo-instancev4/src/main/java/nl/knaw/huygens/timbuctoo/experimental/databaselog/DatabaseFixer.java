@@ -1,11 +1,7 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
-import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -15,21 +11,20 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 
-
+/**
+ * This class is part of the use case to move all the history to a log file and keep only the latest version of the
+ * data as the usable data set.
+ */
 public class DatabaseFixer {
-  public static final Logger LOG = LoggerFactory.getLogger(DatabaseLog.class);
+  public static final Logger LOG = LoggerFactory.getLogger(DatabaseFixer.class);
   private final GraphWrapper graphWrapper;
-  private final ObjectMapper objectMapper;
 
   public DatabaseFixer(GraphWrapper graphWrapper) {
     this.graphWrapper = graphWrapper;
-    objectMapper = new ObjectMapper();
   }
 
   public void fix() {
@@ -40,25 +35,9 @@ public class DatabaseFixer {
   }
 
   private void fixVertices(Graph graph) {
-    GraphTraversal<Vertex, Vertex> results = graph.traversal()
-                                                  .V().has("modified")
-                                                  .dedup().by(__.valueMap("rev", "tim_id")) // add each version once
-                                                  .order()
-                                                  .by("modified", (Comparator<String>) (o1, o2) -> {
-                                                    try {
-                                                      long timeStamp1 = getTimestampFromChangeString(o1);
-                                                      long timeStamp2 = getTimestampFromChangeString(o2);
-                                                      return Long.compare(timeStamp1, timeStamp2);
-                                                    } catch (IOException e) {
-                                                      LOG.error("Cannot convert change", e);
-                                                      LOG.error("Change 1 '{}'", o1);
-                                                      LOG.error("Change 2 '{}'", o2);
-                                                      return 0;
-                                                    }
-                                                  });
-    for (; results.hasNext(); ) {
-      addMissingVertexVersions(results.next());
-    }
+    graph.traversal()
+         .V().has("isLatest", true).forEachRemaining(this::addMissingVertexVersions);
+
   }
 
   private void addMissingVertexVersions(Vertex vertex) {
@@ -89,23 +68,9 @@ public class DatabaseFixer {
 
   private void fixEdges(Graph graph) {
     graph.traversal()
-         .E().has("modified")
-         .dedup().by(__.valueMap("rev", "tim_id")) // add each version once
-         .order()
-         .by("modified", (Comparator<String>) (o1, o2) -> {
-           try {
-             long timeStamp1 = getTimestampFromChangeString(o1);
-             long timeStamp2 = getTimestampFromChangeString(o2);
-             return Long.compare(timeStamp1, timeStamp2);
-           } catch (IOException e) {
-             LOG.error("Cannot convert change", e);
-             LOG.error("Change 1 '{}'", o1);
-             LOG.error("Change 2 '{}'", o2);
-             return 0;
-           }
-         }).forEachRemaining(this::addMissingEdgeVersions);
+         .E().has("isLatest", true)
+         .forEachRemaining(this::addMissingEdgeVersions);
   }
-
 
   private void addMissingEdgeVersions(Edge edge) {
     int rev = edge.value("rev");
@@ -134,13 +99,11 @@ public class DatabaseFixer {
   }
 
   public Optional<Edge> getPreviousVersion(Edge edge) {
-    Integer rev = edge.<Integer>value("rev");
-    String id = edge.value("tim_id");
-
+    int rev = edge.value("rev");
     Optional<Edge> prev = Optional.empty();
     for (Iterator<Edge> edges = edge.outVertex().edges(Direction.OUT, edge.label()); edges.hasNext(); ) {
       Edge next = edges.next();
-      if (next.<Integer>value("rev") == (rev - 1)) {
+      if (next.<Integer>value("rev") == (rev - 1) && Objects.equals(next.inVertex().id(), edge.inVertex().id())) {
         prev = Optional.of(next);
       }
     }
@@ -148,21 +111,4 @@ public class DatabaseFixer {
     return prev;
   }
 
-  private boolean hasPreviousEdgeVersion(Edge edge) {
-    Optional<Edge> prev = Optional.empty();
-    int rev = edge.value("rev");
-    for (Iterator<Edge> edges = edge.outVertex().edges(Direction.OUT, edge.label()); edges.hasNext(); ) {
-      Edge next = edges.next();
-      if (next.<Integer>value("rev") == (rev - 1)) {
-        prev = Optional.of(next);
-      }
-    }
-
-    return prev.isPresent();
-  }
-
-
-  private long getTimestampFromChangeString(String changeString) throws IOException {
-    return objectMapper.readValue(changeString, Change.class).getTimeStamp();
-  }
 }

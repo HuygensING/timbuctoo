@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -71,7 +70,7 @@ public class DatabaseLog {
   }
 
   public void generate() {
-    long curTimestamp = 0L;
+    long prevTimestamp = 0L;
 
     @SuppressWarnings("unchecked") // union warns about unchecked.
       GraphTraversal<Vertex, ? extends Element> results = graphWrapper
@@ -80,20 +79,12 @@ public class DatabaseLog {
       .V().has("modified")
       .not(__.has(T.label, LabelP.of("searchresult"))) // ignore search results
       .union(__.identity(), __.outE().has("modified"))
-      .dedup().by(__.valueMap("rev", "tim_id")) // add each version once
+      /* add each version once, , usually the last version consists of 2 Edges / Vertices, one with isLatest on true and
+       * a copy.
+       */
+      .dedup().by(__.valueMap("rev", "tim_id"))
       .order()
-      .by("modified", (Comparator<String>) (o1, o2) -> {
-        try {
-          long timeStamp1 = getTimestampFromChangeString(o1);
-          long timeStamp2 = getTimestampFromChangeString(o2);
-          return Long.compare(timeStamp1, timeStamp2);
-        } catch (IOException e) {
-          LOG.error("Cannot convert change", e);
-          LOG.error("Change 1 '{}'", o1);
-          LOG.error("Change 2 '{}'", o2);
-          return 0;
-        }
-      });
+      .by("modified", new ChangeStringComparator());
 
     List<Edge> edges = Lists.newArrayList();
     List<Vertex> vertices = Lists.newArrayList();
@@ -101,13 +92,16 @@ public class DatabaseLog {
       Element element = results.next();
       String modifiedString = element.value("modified");
       try {
-        long modifiedTimestamp = getTimestampFromChangeString(modifiedString);
-        if (curTimestamp != modifiedTimestamp) {
+        long curTimestamp = getTimestampFromChangeString(modifiedString);
+        /* To make sure the EdgeLogEntries are added right behind the VertexLogEntries with the same timestamp, add
+         * the LogEntries to the database before the timestamp changes.
+         */
+        if (prevTimestamp != curTimestamp) {
           vertices.forEach(vertex -> logEntryFactory.createForVertex(vertex).appendToLog(logOutput));
           vertices.clear();
           edges.forEach(edge -> logEntryFactory.createForEdge(edge).appendToLog(logOutput));
           edges.clear();
-          curTimestamp = modifiedTimestamp;
+          prevTimestamp = curTimestamp;
         }
 
         if (element instanceof Vertex) {
@@ -131,17 +125,5 @@ public class DatabaseLog {
 
   private long getTimestampFromChangeString(String changeString) throws IOException {
     return objectMapper.readValue(changeString, Change.class).getTimeStamp();
-  }
-
-  private static class IdRevComparator implements Comparator<Element> {
-    @Override
-    public int compare(Element o1, Element o2) {
-      String id1 = o1.<String>property("tim_id").orElse("");
-      Integer rev1 = o1.<Integer>property("rev").orElse(0);
-      String id2 = o2.<String>property("tim_id").orElse("");
-      Integer rev2 = o2.<Integer>property("rev").orElse(0);
-
-      return id1.equals(id2) ? rev1.compareTo(rev2) : id1.compareTo(id2);
-    }
   }
 }
