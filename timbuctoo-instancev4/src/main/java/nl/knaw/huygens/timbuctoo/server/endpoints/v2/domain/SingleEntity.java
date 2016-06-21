@@ -20,6 +20,7 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -65,9 +66,10 @@ public class SingleEntity {
   }
 
   @GET
-  public Response get(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id) {
+  public Response get(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id,
+                      @QueryParam("rev") Integer rev) {
     try {
-      JsonNode result = crudService.get(collectionName, id.get());
+      JsonNode result = crudService.get(collectionName, id.get(), rev);
       return Response.ok(result).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();

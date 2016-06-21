@@ -10287,19 +10287,17 @@ var submitQuery = function submitQuery() {
 		var q = _parsersGremlin.parsers.parseGremlin(queries.queries[queries.currentQuery]);
 		_server2["default"].fastXhr({
 			method: "POST",
-			headers: { "Accept": "application/json" },
+			headers: { "Accept": "application/json", "Content-type": "application/json" },
 			url: _config2["default"].apiUrl.v4 + "/gremlin",
-			body: q[0]
+			body: JSON.stringify({ or: queries.queries[queries.currentQuery]["or"] })
 		}, function (err, resp) {
 			return dispatch({ type: "SET_QUERY_RESULTS", results: JSON.parse(resp.body) });
 		});
-		_server2["default"].fastXhr({
-			method: "POST",
-			url: _config2["default"].apiUrl.v4 + "/gremlin",
-			body: q[1]
-		}, function (err, resp) {
-			return dispatch({ type: "SET_QUERY_RESULT_COUNT", count: resp.body });
-		});
+		/*	server.fastXhr({
+  		method: "POST",
+  		url: `${config.apiUrl.v4}/gremlin`,
+  		body: q[1]
+  	}, (err, resp) => dispatch({type: "SET_QUERY_RESULT_COUNT", count: resp.body}));*/
 	};
 };
 
@@ -10361,7 +10359,7 @@ var _v21SaveRelations = require("./v2.1/save-relations");
 var _v21SaveRelations2 = _interopRequireDefault(_v21SaveRelations);
 
 exports["default"] = {
-	v4: _saveRelations2["default"],
+	v4: _v21SaveRelations2["default"],
 	"v2.1": _v21SaveRelations2["default"]
 };
 module.exports = exports["default"];
@@ -10388,14 +10386,14 @@ var saveRelations = function saveRelations(data, relationData, fieldDefs, token,
 		var fieldDef = fieldDefs.find(function (def) {
 			return def.name === key;
 		});
-		return [fieldDef.relation.type + "s", // domain
+		return [fieldDef.relation.relationCollection, // domain
 		{
-			"@type": fieldDef.relation.type,
-			"^sourceId": fieldDef.relation.isInverseName ? relation.id : data._id,
-			"^sourceType": fieldDef.relation.sourceType,
-			"^targetId": fieldDef.relation.isInverseName ? data._id : relation.id,
-			"^targetType": fieldDef.relation.targetType,
-			"^typeId": fieldDef.relation.typeId,
+			"@type": fieldDef.relation.relationCollection.replace(/s$/, ""),
+			"^sourceId": fieldDef.relation.direction === "IN" ? relation.id : data._id,
+			"^sourceType": data["@type"],
+			"^targetId": fieldDef.relation.direction === "IN" ? data._id : relation.id,
+			"^targetType": fieldDef.relation.targetCollection.replace(/s$/, ""),
+			"^typeId": fieldDef.relation.relationTypeId,
 			accepted: true
 		}];
 	};
@@ -10440,7 +10438,7 @@ var saveRelations = function saveRelations(data, relationData, fieldDefs, token,
 		.map(function (relation) {
 			return [fieldDefs.find(function (def) {
 				return def.name === key;
-			}).relation.type + "s", relation.relationId];
+			}).relation.relationCollection, relation.relationId];
 		});
 	}
 	// Flatten nested arrays
@@ -10672,7 +10670,7 @@ var listVres = function listVres() {
 			headers: {
 				"Accept": "application/json"
 			},
-			url: _config2["default"].apiUrl["v2.1"] + "/system/vres"
+			url: _config2["default"].apiUrl.v4 + "/system/vres"
 		}, function (err, resp) {
 			dispatch({ type: "LIST_VRES", list: JSON.parse(resp.body) });
 		}, null, "List VREs");
@@ -10819,7 +10817,9 @@ var App = (function (_React$Component) {
 				return;
 			}
 			var data = (0, _utilGetIn2["default"])(currentQ.pathToQuerySelection, currentQ);
-
+			if (data.type === "relation") {
+				return;
+			}
 			var val = data.type === "entity" ? {
 				type: "property",
 				name: "tim_id",
@@ -10871,16 +10871,17 @@ var App = (function (_React$Component) {
 				}), placeholder: "Load query..." });
 
 			var resultPath = currentQ ? (0, _utilCloneDeep2["default"])(currentQ.pathToQuerySelection) : null;
+
 			if (currentQ && resultPath && resultPath.length > 1) {
 				while ((0, _utilGetIn2["default"])(resultPath, currentQ).type !== "entity" && resultPath.length > 1) {
-					if (this.props.queries.results && this.props.queries.results.results[resultPath.join("|")]) {
+					if (this.props.queries.results && (0, _utilGetIn2["default"])(resultPath, this.props.queries.results)) {
 						break;
 					}
 					resultPath = resultPath.slice(0, resultPath.length - 1);
 				}
 			}
 
-			var results = currentQ && this.props.queries.results && this.props.queries.results.results[resultPath.join("|")] ? this.props.queries.results.results[resultPath.join("|")].map(function (r, i) {
+			var results = currentQ && this.props.queries.results && (0, _utilGetIn2["default"])(resultPath, this.props.queries.results) && (0, _utilGetIn2["default"])(resultPath, this.props.queries.results).results ? (0, _utilGetIn2["default"])(resultPath, this.props.queries.results).results.map(function (r, i) {
 				return _react2["default"].createElement(
 					"li",
 					{ key: i, onClick: function () {
@@ -10889,8 +10890,23 @@ var App = (function (_React$Component) {
 					r.displayName
 				);
 			}) : null;
+			if (currentQ && this.props.queries.results && resultPath.length === 1) {
+				results = (0, _utilGetIn2["default"])(["root"], this.props.queries.results).map(function (r, i) {
+					return _react2["default"].createElement(
+						"li",
+						{ key: i, onClick: function () {
+								return _this.onResultClick(r);
+							} },
+						r.displayName
+					);
+				});
+			}
 
-			var resultCount = currentQ && this.props.queries.results && this.props.queries.results.counts[resultPath.join("|")] ? "(" + this.props.queries.results.counts[resultPath.join("|")] + ")" : this.props.queries.resultsPending ? "(...)" : null;
+			var resultCount = currentQ && this.props.queries.results && (0, _utilGetIn2["default"])(resultPath, this.props.queries.results) && (0, _utilGetIn2["default"])(resultPath, this.props.queries.results).resultCount ? "(" + (0, _utilGetIn2["default"])(resultPath, this.props.queries.results).resultCount + ")" : this.props.queries.resultsPending ? "(...)" : null;
+
+			if (currentQ && this.props.queries.results && resultPath.length === 1) {
+				resultCount = "(" + this.props.queries.resultCount + ")";
+			}
 
 			return _react2["default"].createElement(
 				"div",
@@ -13446,7 +13462,7 @@ exports["default"] = function (state, action) {
 			return _extends({}, state, { results: null, resultCount: null, resultsPending: true, resultCountPending: true });
 
 		case "SET_QUERY_RESULTS":
-			return _extends({}, state, { results: action.results, resultsPending: false });
+			return _extends({}, state, { results: { or: action.results.or, root: action.results.results }, resultCount: action.results.resultCount, resultCountPending: false });
 
 		case "SET_QUERY_RESULT_COUNT":
 			return _extends({}, state, { resultCount: action.count, resultCountPending: false });
@@ -13607,13 +13623,17 @@ var _getIn = function _getIn(_x, _x2) {
 		    data = _x2;
 		_again = false;
 
-		if (path.length === 0) {
-			return data;
+		if (data) {
+			if (path.length === 0) {
+				return data;
+			} else {
+				_x = path;
+				_x2 = data[path.shift()];
+				_again = true;
+				continue _function;
+			}
 		} else {
-			_x = path;
-			_x2 = data[path.shift()];
-			_again = true;
-			continue _function;
+			return null;
 		}
 	}
 };

@@ -64,6 +64,12 @@
       <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
     </developer>
     <developer>
+      <id>MK</id>
+      <name>Meindert Kroese</name>
+      <organization>Huygens ING</organization>
+      <organizationUrl>http://www.huygens.knaw.nl</organizationUrl>
+    </developer>
+    <developer>
       <id>MM</id>
       <name>Martijn Maas</name>
       <organization>Huygens ING</organization>
@@ -112,7 +118,7 @@
     <javaslang.version>2.0.0-RC4</javaslang.version>
     <metrics.version>3.1.2</metrics.version>
     <guava.version>19.0</guava.version>
-    <huygens.persistence.version>2.1.0</huygens.persistence.version>
+    <huygens.persistence.version>2.2.0</huygens.persistence.version>
     <junit.version>4.12</junit.version>
     <timbuctoo-test-services.version>3.1.0-SNAPSHOT</timbuctoo-test-services.version>
     <mockito.version>1.9.0</mockito.version>

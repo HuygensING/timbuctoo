@@ -20,6 +20,7 @@ import java.util.UUID;
 
 public class Neo4jLuceneEntityFetcher extends GremlinEntityFetcher {
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(Neo4jLuceneEntityFetcher.class);
+  public static final int MAX_VERSION_OF_DEPTH = 100;
 
   private final GraphDatabaseService graphDatabase;
   private final IndexManager indexManager;
@@ -54,7 +55,9 @@ public class Neo4jLuceneEntityFetcher extends GremlinEntityFetcher {
 
     // Open transaction to be able to access lucene indices
     Transaction transaction = graph.tx();
+
     if (!transaction.isOpen()) {
+      // Will throw: org.neo4j.graphdb.NotInTransactionException: null if transaction is not explicitly opened
       transaction.open();
     }
 
@@ -89,9 +92,14 @@ public class Neo4jLuceneEntityFetcher extends GremlinEntityFetcher {
 
       // Get the latest version of the found Vertex
       Vertex foundVertex = vertexT.next();
+      int infinityGuard = 0;
       while (foundVertex.vertices(Direction.OUT, "VERSION_OF").hasNext()) {
         // The neo4j index Node is one version_of behind the actual node
         foundVertex = foundVertex.vertices(Direction.OUT, "VERSION_OF").next();
+        if (++infinityGuard >= MAX_VERSION_OF_DEPTH) {
+          LOG.error(Logmarkers.databaseInvariant, "Vertices with tim_id {} might have circular VERSION_OF", id);
+          return Optional.empty();
+        }
       }
 
       // Only if this latest version is truly registered as latest return this as a successful hit

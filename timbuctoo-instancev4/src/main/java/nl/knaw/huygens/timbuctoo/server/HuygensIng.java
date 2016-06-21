@@ -153,8 +153,8 @@ public class HuygensIng {
         .withProperty("name", localProperty("wwlanguage_name"))
       )
       .withCollection("wwlocations", c -> c
-        .withDisplayName(localProperty("names", defaultLocationNameConverter))
-        .withProperty("^names", localProperty("names"))
+        .withDisplayName(localProperty("wwlocation_name"))
+        .withProperty("name", localProperty("wwlocation_name"))
       )
       .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
     )
@@ -234,8 +234,8 @@ public class HuygensIng {
         .withDisplayName(localProperty("cwrslanguage_name"))
         .withProperty("name", localProperty("cwrslanguage_name")))
       .withCollection("cwrslocations", c -> c
-        .withDisplayName(localProperty("cwrslocation_names", defaultLocationNameConverter))
-        .withProperty("locationName", localProperty("cwrslocation_names")))
+        .withDisplayName(localProperty("cwrslocation_name"))
+        .withProperty("name", localProperty("cwrslocation_name")))
       .withCollection("cwrsrelations", CollectionBuilder::isRelationCollection))
     .withVre("DutchCaribbean", "dcar", vre -> vre
     .withCollection("dcarpersons",
@@ -247,7 +247,7 @@ public class HuygensIng {
     .withCollection("dcarkeywords",
       c -> c
         .withDisplayName(localProperty("dcarkeyword_label"))
-        .withProperty("type", localProperty("dcarkeyword_type", stringArrayToEncodedArrayOf(
+        .withProperty("type", localProperty("dcarkeyword_type", stringToUnencodedStringOf(
           "subject",
           "geography")))
         .withProperty("value", localProperty("dcarkeyword_value")))
@@ -313,11 +313,13 @@ public class HuygensIng {
               "ARCHETYPE",
               "AUTHOR",
               "PSEUDONYM",
-              "READER"
+              "READER",
+              ""
       )))
       .withProperty("gender", localProperty("person_gender", gender))
       .withProperty("birthDate", localProperty("person_birthDate", datable))
       .withProperty("deathDate", localProperty("person_deathDate", datable))
+      .withProperty("floruit", localProperty("person_floruit"))
       .withProperty("links", localProperty("person_links", hyperlinks)))
     .withCollection("documents", c -> c
       .withDisplayName(localProperty("document_title"))
@@ -342,16 +344,24 @@ public class HuygensIng {
       .withProperty("links", localProperty("collective_links", hyperlinks)))
     .withCollection("keywords", c -> c
       .withDisplayName(localProperty("keyword_value"))
+      .withProperty("type", localProperty("keyword_type"))
       .withProperty("value", localProperty("keyword_value")))
     .withCollection("languages", c -> c
       .withDisplayName(localProperty("language_name"))
       .withProperty("name", localProperty("language_name")))
     .withCollection("locations", c -> c
-      .withDisplayName(localProperty("names", defaultLocationNameConverter))
-      .withProperty("^names", localProperty("names")))
-    .withCollection("archives")
-    .withCollection("archivers")
-    .withCollection("legislations")
+      .withDisplayName(localProperty("location_name"))
+      .withProperty("name", localProperty("location_name"))
+    )
+    .withCollection("archives", c -> c
+      .withDisplayName(localProperty("tim_id"))
+    )
+    .withCollection("archivers", c -> c
+      .withDisplayName(localProperty("tim_id"))
+    )
+    .withCollection("legislations", c -> c
+      .withDisplayName(localProperty("tim_id"))
+    )
     .withCollection("relations", CollectionBuilder::isRelationCollection))
     .withVre("ckcc", "ckcc", vre -> vre
     .withCollection("ckccpersons", c -> c
@@ -374,12 +384,12 @@ public class HuygensIng {
         "UNKNOWN"
       ))))
     .withCollection("ckcclocations", c -> c
-      .withDisplayName(localProperty("ckcclocation_names", defaultLocationNameConverter))
-      .withProperty("locationName", localProperty("ckcclocation_names")))
+      .withDisplayName(localProperty("ckcclocation_name"))
+      .withProperty("name", localProperty("ckcclocation_name")))
     .withCollection("ckccrelations", CollectionBuilder::isRelationCollection))
-    .withVre("Base", "base", c -> c
-      .withCollection("baselocations")
-      .withCollection("baselanguages"))
+    .withVre("Base", "base", v -> v
+      .withCollection("baselocations", c -> c.withDisplayName(localProperty("tim_id")))
+      .withCollection("baselanguages", c -> c.withDisplayName(localProperty("tim_id"))))
     .withVre("cnw", "", vre -> vre
     .withCollection("cnwpersons", c -> c
       .withDisplayName(localProperty("cnwperson_names", defaultFullPersonNameConverter))

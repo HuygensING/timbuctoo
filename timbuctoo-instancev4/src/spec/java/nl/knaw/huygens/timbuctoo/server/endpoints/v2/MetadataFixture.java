@@ -69,7 +69,7 @@ public class MetadataFixture extends AbstractV2_1EndpointFixture {
             }
           })
       .withCustomHandler("RELATIVE_URL", n -> assertThat(n.asText().startsWith("/"), "a url without a hostname", n))
-      .withCustomHandler("IN_OR_OUT", n -> assertThat(n.asText().equals("IN") || n.asText().equals("OUT"), "\"IN\" or \"OUT\"", n))
+      .withCustomHandler("IN_OR_OUT_OR_BOTH", n -> assertThat(n.asText().equals("IN") || n.asText().equals("OUT") || n.asText().equals("BOTH"), "\"IN\" or \"OUT\" or \"BOTH\"", n))
       .withCustomHandler("NAME_COMPONENT", n -> assertThat(isNameComponent(n), "One of " + String.join(",", validNameComponents), n))
       .withCustomHandler(
         "STRING_STARTING_WITH_WW_ENDING_WITH_S",

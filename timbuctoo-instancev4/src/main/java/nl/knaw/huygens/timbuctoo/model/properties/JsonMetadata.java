@@ -69,7 +69,12 @@ public class JsonMetadata {
     String relationCollectionName = vre
       .getImplementerOf("relation")
       .map(Collection::getCollectionName)
-      .orElseThrow(() -> new RuntimeException("No collections available"));//FIXME: log don't throw
+      .orElse(null);
+
+    if (relationCollectionName == null) {
+      LOG.warn(Logmarkers.databaseInvariant, "Collection {} seems to have no relationCollections",
+        collection.getCollectionName());
+    }
 
     relations.stream()
       .filter(v -> getProp(v, "relationtype_sourceTypeName", String.class).orElse("").equals(abstractType))

@@ -1,10 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -21,9 +19,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-
 import java.io.IOException;
-
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -77,13 +73,18 @@ public class Index {
 
   @GET
   public Response list(@PathParam("collection") String collectionName,
-                       @QueryParam("rows") @DefaultValue("200") int rows) {
+                       @QueryParam("rows") @DefaultValue("200") int rows,
+                       @QueryParam("start") @DefaultValue("0") int start) {
 
     try {
-      List<ObjectNode> jsonNodes = crudService.fetchCollection(collectionName, rows);
+      List<ObjectNode> jsonNodes = crudService.fetchCollection(collectionName, rows, start);
       return Response.ok(jsonNodes).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
+    } catch (IllegalArgumentException e) {
+      String message =
+        String.format("Could not process parameters rows=%d start=%d", rows, start);
+      return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(message))).build();
     }
   }
 }

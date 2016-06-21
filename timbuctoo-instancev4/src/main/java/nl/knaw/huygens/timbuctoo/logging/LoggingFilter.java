@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.logging;
 import com.google.common.base.Stopwatch;
 import com.google.common.io.CountingOutputStream;
 import org.glassfish.jersey.message.MessageUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 
 import javax.annotation.Priority;
@@ -26,21 +28,35 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 
 @PreMatching
 @Priority(Integer.MIN_VALUE)
 public final class LoggingFilter implements ContainerRequestFilter, ContainerResponseFilter, WriterInterceptor {
 
-  private static final Logger LOGGER = Logger.getLogger(LoggingFilter.class.getName());
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(LoggingFilter.class);
   private static final String WRAPPED_STREAM_PROPERTY = LoggingFilter.class.getName() + "wrappedStream";
   private static final String LOG_TEXT_PROPERTY = LoggingFilter.class.getName() + "logText";
   private static final String STOPWATCH_PROPERTY = LoggingFilter.class.getName() + "stopwatch";
 
-  private static final String MDC_ID = "requestId";
-
   private static final Comparator<Map.Entry<String, List<String>>> COMPARATOR =
     (o1, o2) -> o1.getKey().compareToIgnoreCase(o2.getKey());
+
+  private static final String MDC_ID = "request_id";
+  private static final String MDC_OUTPUT_BYTECOUNT = "output_bytecount";
+  private static final String MDC_DURATION_MILLISECONDS = "duration_milliseconds";
+  private static final String MDC_PRE_LOG = "request_log";
+  private static final String MDC_POST_LOG = "response_log";
+  private static final String MDC_HTTP_METHOD = "http_method";
+  private static final String MDC_HTTP_URI = "http_uri";
+  private static final String MDC_HTTP_PATH = "http_path";
+  private static final String MDC_HTTP_AUTHORITY = "http_authority";
+  private static final String MDC_HTTP_QUERY = "http_query";
+  private static final String MDC_REQUEST_HEADERS = "http_request_headers";
+  private static final String MDC_REQUEST_ENTITY = "http_request_content";
+  private static final String MDC_HTTP_STATUS = "http_status";
+  private static final String MDC_RESPONSE_HEADERS = "http_response_headers";
+  private static final String MDC_RELEASE_HASH = "git_hash";
 
   private final int entityLogSize;
   private final String releaseHash;
@@ -92,7 +108,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     if (entitySize > entityLogSize) {
       builder.append(" (capped at ").append(entityLogSize).append(" bytes)");
     }
-    MDC.put("REQUEST_ENTITY", builder.toString());
+    MDC.put(MDC_REQUEST_ENTITY, builder.toString());
     stream.reset();
     return stream;
   }
@@ -101,16 +117,14 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
   public void filter(final ContainerRequestContext context) throws IOException {
     final UUID id = UUID.randomUUID();
     MDC.put(MDC_ID, id.toString());
-    MDC.put("PRE_LOG", "yes");
-    MDC.put("RELEASE_HASH", releaseHash);
+    MDC.put(MDC_PRE_LOG, "true");
+    MDC.put(MDC_RELEASE_HASH, releaseHash);
 
     //Log a very minimal message. Mostly to make sure that we notice requests that never log in the response filter
     LOGGER.info(">     " + context.getMethod() + " " + context.getUriInfo().getRequestUri().toASCIIString());
+    MDC.remove(MDC_PRE_LOG);
     final Stopwatch stopwatch = Stopwatch.createUnstarted();
     context.setProperty(STOPWATCH_PROPERTY, stopwatch);
-    //FIXME check if thread name is added to MDC (Thread.currentThread().getName())
-
-    MDC.put("REQUEST_HEADERS", formatHeaders(context.getHeaders()));
 
     if (context.hasEntity()) {
       context.setEntityStream(
@@ -123,8 +137,16 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
   @Override
   public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext)
     throws IOException {
-    MDC.remove("PRE_LOG");
-    MDC.put("RESPONSE_HEADERS", formatHeaders(responseContext.getStringHeaders()));
+    MDC.put(MDC_POST_LOG, "true");
+    MDC.put(MDC_HTTP_METHOD, requestContext.getMethod());
+    MDC.put(MDC_HTTP_URI, requestContext.getUriInfo().getRequestUri().toASCIIString());
+    MDC.put(MDC_HTTP_PATH, requestContext.getUriInfo().getRequestUri().getPath());
+    MDC.put(MDC_HTTP_AUTHORITY, requestContext.getUriInfo().getRequestUri().getAuthority());
+    MDC.put(MDC_HTTP_QUERY, requestContext.getUriInfo().getRequestUri().getQuery());
+    MDC.put(MDC_REQUEST_HEADERS, formatHeaders(requestContext.getHeaders()));
+
+    MDC.put(MDC_HTTP_STATUS, Integer.toString(responseContext.getStatus()));
+    MDC.put(MDC_RESPONSE_HEADERS, formatHeaders(responseContext.getStringHeaders()));
 
     //Actual log is done when the response stream has finished in aroundWriteTo
     String log = "< " +
@@ -142,13 +164,31 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
       requestContext.setProperty(WRAPPED_STREAM_PROPERTY, stream);
     } else {
       //log now, because the writeTo wrapper will not be called
-      MDC.put("OUTPUT_BYTECOUNT", "0");
+      MDC.put(MDC_OUTPUT_BYTECOUNT, "0");
       String size = " (0 bytes)";
 
       String durationLog = getDuration((Stopwatch) requestContext.getProperty(STOPWATCH_PROPERTY));
-
       LOGGER.info(log + size + durationLog);
+      clearMdc();
     }
+  }
+
+  private void clearMdc() {
+    MDC.remove(MDC_ID);
+    MDC.remove(MDC_OUTPUT_BYTECOUNT);
+    MDC.remove(MDC_DURATION_MILLISECONDS);
+    MDC.remove(MDC_PRE_LOG);
+    MDC.remove(MDC_POST_LOG);
+    MDC.remove(MDC_HTTP_METHOD);
+    MDC.remove(MDC_HTTP_URI);
+    MDC.remove(MDC_HTTP_PATH);
+    MDC.remove(MDC_HTTP_AUTHORITY);
+    MDC.remove(MDC_HTTP_QUERY);
+    MDC.remove(MDC_REQUEST_HEADERS);
+    MDC.remove(MDC_HTTP_STATUS);
+    MDC.remove(MDC_RESPONSE_HEADERS);
+    MDC.remove(MDC_RELEASE_HASH);
+    MDC.remove(MDC_REQUEST_ENTITY);
   }
 
   private String getDuration(Stopwatch stopWatch) {
@@ -157,7 +197,7 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
       long duration;
       stopWatch.stop();
       duration = stopWatch.elapsed(TimeUnit.MILLISECONDS);
-      MDC.put("DURATION_MILLISECONDS", duration + "");
+      MDC.put(MDC_DURATION_MILLISECONDS, duration + "");
       durationLog = " (" + duration + " ms)";
     } else {
       durationLog = " (duration unknown)";
@@ -176,12 +216,13 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
     String size;
     if (stream != null) {
-      MDC.put("OUTPUT_BYTECOUNT", stream.getCount() + "");
+      MDC.put(MDC_OUTPUT_BYTECOUNT, stream.getCount() + "");
       size = " (" + stream.getCount() + " bytes)";
     } else {
       size = " (outputSize unknown)";
     }
 
     LOGGER.info(context.getProperty(LOG_TEXT_PROPERTY) + size + durationLog);
+    clearMdc();
   }
 }

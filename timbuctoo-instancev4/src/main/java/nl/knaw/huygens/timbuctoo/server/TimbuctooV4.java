@@ -16,13 +16,14 @@ import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
+import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
-import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
+import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
 import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload;
 import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.PropertiesOverviewEndpoint;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -40,6 +41,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneInde
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
@@ -148,7 +150,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new WwPersonSortIndexesDatabaseMigration(),
       new WwDocumentSortIndexesDatabaseMigration(),
       new InvariantsFix(vres),
-      new AutocompleteLuceneIndexDatabaseMigration()
+      new AutocompleteLuceneIndexDatabaseMigration(),
+      new LocationNamesToLocationNameDatabaseMigration()
     );
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
@@ -175,9 +178,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
     final AutocompleteService autocompleteService = new AutocompleteService(
       graphManager,
-      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath())
+      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
+      vres
     );
-
+    final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
 
 
     environment.lifecycle().manage(graphManager);
@@ -194,17 +198,17 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RootEndpoint());
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
-    register(environment, new Search(configuration, graphManager));
+    register(environment, new Search(configuration, graphManager, excelExportService));
     register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new Gremlin(graphManager));
     register(environment, new Graph(graphManager));
-    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
+    register(environment, new BulkUpload(new BulkUploadService(graphManager)));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
-    register(environment, new VresEndpoint(jsonMetadata));
     register(environment, new PropertiesOverviewEndpoint(vres, graphManager));
+    register(environment, new VresEndpoint(jsonMetadata, excelExportService));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));

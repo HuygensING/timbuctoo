@@ -53,6 +53,17 @@ public class Vre {
     }
   }
 
+  public Optional<Collection> getRelationCollection() {
+    Iterator<Collection> collectionIt = getCollections()
+      .entrySet()
+      .stream()
+      .filter(entry -> entry.getValue().isRelationCollection())
+      .map(Map.Entry::getValue)
+      .iterator();
+
+    return collectionIt.hasNext() ? Optional.of(collectionIt.next()) : Optional.empty();
+  }
+
   public void addCollection(Collection collection) {
     collections.put(collection.getEntityTypeName(), collection);
   }

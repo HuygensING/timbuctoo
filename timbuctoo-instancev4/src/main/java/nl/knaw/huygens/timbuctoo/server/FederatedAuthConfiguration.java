@@ -16,10 +16,10 @@ import javax.validation.constraints.NotNull;
 public class FederatedAuthConfiguration {
 
   @JsonProperty
-  private String authorizationServerUrl;
+  private String authenticationServerUrl;
 
   @JsonProperty
-  private String authoriationCredentials;
+  private String authenticationCredentials;
 
   @JsonProperty
   @NotNull
@@ -39,8 +39,8 @@ public class FederatedAuthConfiguration {
 
       return new HuygensAuthenticationHandler(
         new HttpCaller(httpClient),
-        authorizationServerUrl,
-        authoriationCredentials
+        authenticationServerUrl,
+        authenticationCredentials
       );
     } else {
       return sessionId -> {

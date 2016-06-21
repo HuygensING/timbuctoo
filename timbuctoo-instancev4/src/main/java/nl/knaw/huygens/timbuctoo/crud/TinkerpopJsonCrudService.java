@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
@@ -50,6 +49,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
@@ -414,8 +414,7 @@ public class TinkerpopJsonCrudService {
 
     result.set("^deleted", nodeFactory.booleanNode(getProp(entity, "deleted", Boolean.class).orElse(false)));
 
-    getProp(entity, "pid", String.class)
-      .ifPresent(pid -> result.set("^pid", nodeFactory.textNode(pid)));
+    result.set("^pid",nodeFactory.textNode(getProp(entity, "pid", String.class).orElse(null)));
 
     return result;
   }
@@ -800,6 +799,7 @@ public class TinkerpopJsonCrudService {
     }
 
     setModified(entity, userId);
+    entity.property("pid").remove();
 
     callUpdateListener(entity);
 
@@ -878,6 +878,7 @@ public class TinkerpopJsonCrudService {
     });
 
     setModified(entity, userId);
+    entity.property("pid").remove();
     callUpdateListener(entity);
     duplicateVertex(graph, entity);
 
@@ -900,18 +901,19 @@ public class TinkerpopJsonCrudService {
     listener.onUpdate(old, entity);
   }
 
-  public List<ObjectNode> fetchCollection(String collectionName, int rows) throws InvalidCollectionException {
+  public List<ObjectNode> fetchCollection(String collectionName, int rows, int start)
+    throws InvalidCollectionException {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
 
     GraphTraversal<Vertex, Vertex> entities =
-      graphwrapper.getCurrentEntitiesFor(collection.getEntityTypeName()).limit(rows);
+      graphwrapper.getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
 
 
     return entities.asAdmin().clone().map(entityT -> {
       final ObjectNode result = JsonNodeFactory.instance.objectNode();
-      final GraphTraversal[] propertyGetters = mapping
+      final List<GraphTraversal> propertyGetters = mapping
         .entrySet().stream()
         .map(prop -> prop.getValue().traversal().sideEffect(x -> {
           x.get()
@@ -928,11 +930,19 @@ public class TinkerpopJsonCrudService {
               }
             });
         }))
-        .toArray(GraphTraversal[]::new);
+        .collect(Collectors.toList());
 
-      graphwrapper.getGraph().traversal().V(entityT.get().id()).union(propertyGetters).forEachRemaining(x -> {
-        // side effects
-      });
+      propertyGetters.add(collection.getDisplayName().traversal().sideEffect( x -> {
+        x.get()
+          .onSuccess(node -> result.set("@displayName", node))
+          .onFailure(e -> LOG.error(databaseInvariant, "Failed to make displayname for {}", collectionName, e));
+      }));
+
+      graphwrapper.getGraph().traversal().V(entityT.get().id())
+        .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
+          // side effects
+        });
+
       Vertex entity = entityT.asAdmin().clone().get();
       result.set(
         "^rev", nodeFactory.numberNode(
