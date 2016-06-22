@@ -1,5 +1,0 @@
-#!/bin/bash
-
-mvn clean install
-cd timbuctoo-instance 
-mvn tomcat6:redeploy

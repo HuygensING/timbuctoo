@@ -1,6 +1,0 @@
-#!/bin/bash
-chmod +x ./timbuctoo-tools-instance/target/appassembler/bin/*
-echo "Start importing"
-./timbuctoo-tools-instance/target/appassembler/bin/baseImport ../timbuctoo-testdata/src/main/resources/import/base/
-./timbuctoo-tools-instance/target/appassembler/bin/ckccImport ../timbuctoo-testdata/src/main/resources/ckcc/
-./timbuctoo-tools-instance/target/appassembler/bin/newwImport ../timbuctoo-testdata/src/main/resources/neww-20140821/

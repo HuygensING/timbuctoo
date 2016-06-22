@@ -1,5 +1,0 @@
-# root path of handle server library 
-HSJ_DIR=/handle/home/hsj-7.3
-
-# directory of server instance
-SERVER_DIR=/hs/svr_1
