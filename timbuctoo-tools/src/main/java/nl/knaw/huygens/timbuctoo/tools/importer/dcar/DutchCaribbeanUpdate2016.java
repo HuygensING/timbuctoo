@@ -84,7 +84,7 @@ public class DutchCaribbeanUpdate2016 {
       });
       updateItem(DCARArchiver.class, repository, indexManager, Organisaties_Notarisambt_Demerary_en_Essquebo, archiver -> {
         archiver.setNameEng("Notarial office in Demerara and Essequibo");
-        archiver.setHistory("<p>There was no public notary in Essequibo or Demerara. Therefore, the secretaries of these settlements exercised the work of a notary and took the instruments.</p><p>&#160;</p>");
+        archiver.setHistory("<p>There was no public notary in Essequibo or Demerara. Therefore, the secretaries of these settlements exercised the work of a notary and took the instruments.</p>");
       });
       updateItem(DCARArchiver.class, repository, indexManager, Organisaties_Notarisambt_St_Maarten, archiver -> {
         archiver.setNameNld("Notarisambt op St. Maarten");
@@ -99,7 +99,7 @@ public class DutchCaribbeanUpdate2016 {
         archiver.setNameEng("Portuguese-Israelite congregation of Amsterdam");
       });
       updateItem(DCARArchiver.class, repository, indexManager, Organisaties_Portugees_Israelitische_gemeente_Curacao, archiver -> {
-        archiver.setNameNld("Portugees-Isra&#235;litische gemeente van Cura&#231;ao");
+        archiver.setNameNld("Portugees-Israëlitische gemeente van Curaçao");
       });
       updateItem(DCARArchiver.class, repository, indexManager, Organisaties_Portugees_Israelitische_gemeente_Suriname, archiver -> {
         archiver.setNameNld("Portugees-Israëlitische gemeente van Suriname");
@@ -115,9 +115,9 @@ public class DutchCaribbeanUpdate2016 {
         archiver.setNameNld("Wees- en onbeheerde Boedelkamer van Berbice");
       });
       updateItem(DCARArchiver.class, repository, indexManager, Organisaties_Weeskamer_Curacao, archiver -> {
-        archiver.setNameNld("Wees- en onbeheerde Boedelkamer van Cura&#231;ao");
-        archiver.setNameEng("Orphans and Ownerless Estates Chamber of Cura&#231;ao");
-        archiver.setHistory("<p>The Orphans Chamber of Cura&#231;ao was probably established in 1696. During the 18th century there were usually two orphan masters, sometimes assisted by a clerk and/or a bookkeeper. The orphan masters were entrusted with the supervision of minors and the direction of their estates, and the administration of left or abandoned estates, when it was not clear if there were any heirs. The Orphans Chamber also lent money on mortgage. The introduction of a new body of laws made many of the tasks of the Orphans Chamber regarding orphans and left estates redundant, except its function regarding mortgages. This was taken over by the Cura&#231;aose Hypotheek-, Spaar- en Beleenbank (Cura&#231;ao Mortgage Bank). In 1875 the Orphans Chamber was officially dissolved.</p>");
+        archiver.setNameNld("Wees- en onbeheerde Boedelkamer van Curaçao");
+        archiver.setNameEng("Orphans and Ownerless Estates Chamber of Curaçao");
+        archiver.setHistory("<p>The Orphans Chamber of Curaçao was probably established in 1696. During the 18th century there were usually two orphan masters, sometimes assisted by a clerk and/or a bookkeeper. The orphan masters were entrusted with the supervision of minors and the direction of their estates, and the administration of left or abandoned estates, when it was not clear if there were any heirs. The Orphans Chamber also lent money on mortgage. The introduction of a new body of laws made many of the tasks of the Orphans Chamber regarding orphans and left estates redundant, except its function regarding mortgages. This was taken over by the Curaçaose Hypotheek-, Spaar- en Beleenbank (Curaçao Mortgage Bank). In 1875 the Orphans Chamber was officially dissolved.</p>");
       });
       updateItem(DCARArchiver.class, repository, indexManager, Organisaties_Weeskamer_St_Eustatius, archiver -> {
         archiver.setNameNld("Wees- en Onbeheerde Boedelkamer van St. Eustatius");
@@ -125,7 +125,7 @@ public class DutchCaribbeanUpdate2016 {
       });
       updateItem(DCARArchiver.class, repository, indexManager, Organisaties_Weeskamer_Suriname, archiver -> {
         archiver.setNameNld("Wees- en Onbeheerde Boedelkamer van Suriname");
-        archiver.setHistory("<p>The Orphans and Ownerless Estates Chamber regulated the administration of insolvent and other estates. Orphan masters were entrusted with the supervision of minors. They were obliged to keep a regular administration. In the 18th and 19th centuries there were some changes in the organization and/or powers. Individual denominations had their own Orphans Chambers until the 19th century.</p><p>From 1835 to 1876 the \"<em>Pupillaire Raad</em>\" had the supervision over all minors.</p><p>&#160;</p>");
+        archiver.setHistory("<p>The Orphans and Ownerless Estates Chamber regulated the administration of insolvent and other estates. Orphan masters were entrusted with the supervision of minors. They were obliged to keep a regular administration. In the 18th and 19th centuries there were some changes in the organization and/or powers. Individual denominations had their own Orphans Chambers until the 19th century.</p><p>From 1835 to 1876 the \"<em>Pupillaire Raad</em>\" had the supervision over all minors.</p>");
       });
       updateItem(DCARArchive.class, repository, indexManager, Archief_Franciscanessen_van_Mariadal_Roosendaal_Franciscanessen_van_Mariadal_Roosendaal, archiver -> {
         archiver.setNotes("<p>The photo archive is in the Erfgoedcentrum Nederlands Kloosterleven - St Agatha.</p>");
@@ -137,7 +137,7 @@ public class DutchCaribbeanUpdate2016 {
         archiver.setNotes("<p>The whole series up to 1858 consists of 127 volumes. Last approximately 30 volumes, from about 1814 onwards, mostly written in English.</p><p>Berbice 1762-1858.</p>");
       });
       updateItem(DCARArchive.class, repository, indexManager, SAL_Mongui_Maduro_Bibliotheek_Curacao_Gemeente_Mikve_Israel_Gemeente_Mikve_Israel, archiver -> {
-        archiver.setTitleNld("Archief van de Nederlands Portugees-Isra&#235;litische Gemeente Mikv&#233; Isra&#235;l te Cura&#231;ao, (1652) 1711 - 1963");
+        archiver.setTitleNld("Archief van de Nederlands Portugees-Israëlitische Gemeente Mikvé Israël te Curaçao, (1652) 1711 - 1963");
       });
       updateItem(DCARArchive.class, repository, indexManager, SAL_Mongui_Maduro_Bibliotheek_Curacao_Gemeente_Mikve_Israel_Mikve_Israel_99_101_113_114_143_155, archiver -> {
         archiver.setTitleNld("Financiën");
