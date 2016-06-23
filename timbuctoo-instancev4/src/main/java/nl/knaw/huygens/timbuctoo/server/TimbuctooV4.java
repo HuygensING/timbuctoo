@@ -67,6 +67,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesD
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
+import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -215,6 +216,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       getDatabaseValidator(vres, graphManager),
       graphManager
     ));
+    environment.admin().addTask(new DbLogCreatorTask(graphManager));
 
     // register health checks
     register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
