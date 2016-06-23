@@ -59,7 +59,7 @@ public class DatabaseLog {
   }
 
   DatabaseLog(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory) {
-    this(graphWrapper, logEntryFactory, new LogOutput());
+    this(graphWrapper, logEntryFactory, new GraphLogOutput(graphWrapper));
   }
 
   DatabaseLog(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory, LogOutput logOutput) {
@@ -88,6 +88,7 @@ public class DatabaseLog {
 
     List<Edge> edges = Lists.newArrayList();
     List<Vertex> vertices = Lists.newArrayList();
+    logOutput.prepareToWrite();
     for (; results.hasNext(); ) {
       Element element = results.next();
       String modifiedString = element.value("modified");
@@ -121,6 +122,7 @@ public class DatabaseLog {
     vertices.clear();
     edges.forEach(edge -> logEntryFactory.createForEdge(edge).appendToLog(logOutput));
     edges.clear();
+    logOutput.finishWriting();
   }
 
   private long getTimestampFromChangeString(String changeString) throws IOException {
