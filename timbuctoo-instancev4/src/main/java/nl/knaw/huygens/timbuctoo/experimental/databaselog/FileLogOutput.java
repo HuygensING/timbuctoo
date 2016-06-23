@@ -30,6 +30,11 @@ public class FileLogOutput implements LogOutput {
   }
 
   @Override
+  public void prepareToWrite() {
+    // nothing to do
+  }
+
+  @Override
   public void newVertex(Vertex vertex) {
     String modifiedString = vertex.value("modified");
 
@@ -114,6 +119,11 @@ public class FileLogOutput implements LogOutput {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void finishWriting() {
+    // nothing to do
   }
 
   private void writeAndFlush(String format) throws IOException {

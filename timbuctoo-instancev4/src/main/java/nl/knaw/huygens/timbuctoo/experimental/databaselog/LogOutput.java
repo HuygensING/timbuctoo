@@ -5,6 +5,8 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public interface LogOutput {
+  void prepareToWrite();
+
   void newVertex(Vertex vertex);
 
   void updateVertex(Vertex vertex);
@@ -18,4 +20,6 @@ public interface LogOutput {
   void updateProperty(Property property);
 
   void deleteProperty(String propertyName);
+
+  void finishWriting();
 }
