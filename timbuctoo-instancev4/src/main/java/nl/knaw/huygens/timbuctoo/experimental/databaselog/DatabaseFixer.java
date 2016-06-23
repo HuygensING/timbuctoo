@@ -17,7 +17,8 @@ import java.util.Optional;
 
 /**
  * This class is part of the use case to move all the history to a log file and keep only the latest version of the
- * data as the usable data set.
+ * data as the usable data set. Because the database is missing some revisions of Vertices and Edges, the log will
+ * not be usable for restoring a former state. This class will add a placeholder for the missing Vertices and  Edges.
  */
 public class DatabaseFixer {
   public static final Logger LOG = LoggerFactory.getLogger(DatabaseFixer.class);
