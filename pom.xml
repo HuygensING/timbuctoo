@@ -4,7 +4,7 @@
 
   <groupId>nl.knaw.huygens</groupId>
   <artifactId>timbuctoo</artifactId>
-  <version>4.0.0-SNAPSHOT</version>
+  <version>42</version> <!-- Version is bogus, because each module has its own version. -->
   <packaging>pom</packaging>
   <name>Timbuctoo</name>
   <description>Aggregate project for timbuctoo and related projects. This allows us to work in 1 git repo on multiple seperate projects and do a rebuild of all of them at the same time. The project you're looking for is in the timbuctoo folder</description>
