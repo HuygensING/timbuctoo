@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Set;
@@ -65,7 +64,6 @@ public class GraphLogValidatorTest {
     ));
   }
 
-  @Ignore
   @Test
   public void validateCollectsTheEdgesThatAreMissingALogEntry() {
     GraphWrapper wrapper = newGraph().withVertex("v1", v -> v.withTimId(VERTEX_ID_1)
