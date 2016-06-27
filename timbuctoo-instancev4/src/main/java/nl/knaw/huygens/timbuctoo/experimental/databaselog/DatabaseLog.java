@@ -76,8 +76,9 @@ public class DatabaseLog {
       GraphTraversal<Vertex, ? extends Element> results = graphWrapper
       .getGraph()
       .traversal()
-      .V().has("modified")
+      .V().has("modified").has("rev").has("tim_id")
       .not(__.has(T.label, LabelP.of("searchresult"))) // ignore search results
+      .not(__.bothE("NEXT_ITEM")) // ignore database log items
       .union(__.identity(), __.outE().has("modified"))
       /* add each version once, , usually the last version consists of 2 Edges / Vertices, one with isLatest on true and
        * a copy.
@@ -92,6 +93,7 @@ public class DatabaseLog {
     for (; results.hasNext(); ) {
       Element element = results.next();
       String modifiedString = element.value("modified");
+
       try {
         long curTimestamp = getTimestampFromChangeString(modifiedString);
         /* To make sure the EdgeLogEntries are added right behind the VertexLogEntries with the same timestamp, add

@@ -33,37 +33,45 @@ class GraphLogOutput implements LogOutput {
 
   @Override
   public void newVertex(Vertex vertex) {
+    LOG.debug("New vertex {}", vertex.id());
     Vertex previousVertex = currentVertex;
     currentVertex = graphWrapper.getGraph().addVertex("createVertexEntry");
     previousVertex.addEdge("NEXT_ITEM", currentVertex);
+    currentVertex.property("tim_id", vertex.value("tim_id"));
     commit();
   }
 
   @Override
   public void updateVertex(Vertex vertex) {
+    LOG.debug("Update vertex {}", vertex.id());
     Vertex previousVertex = currentVertex;
     currentVertex = graphWrapper.getGraph().addVertex("updateVertexEntry");
     previousVertex.addEdge("NEXT_ITEM", currentVertex);
+    currentVertex.property("tim_id", vertex.value("tim_id"));
     commit();
   }
 
   @Override
   public void newEdge(Edge edge) {
+    LOG.debug("New edge {}", edge.id());
     Vertex previousVertex = currentVertex;
     currentVertex = graphWrapper.getGraph().addVertex("createEdgeEntry");
     previousVertex.addEdge("NEXT_ITEM", currentVertex);
     currentVertex.property("inVertex", edge.inVertex().value("tim_id"));
     currentVertex.property("outVertex", edge.outVertex().value("tim_id"));
+    currentVertex.property("tim_id", edge.value("tim_id"));
     commit();
   }
 
   @Override
   public void updateEdge(Edge edge) {
+    LOG.debug("Update edge {}", edge.id());
     Vertex previousVertex = currentVertex;
     currentVertex = graphWrapper.getGraph().addVertex("updateEdgeEntry");
     previousVertex.addEdge("NEXT_ITEM", currentVertex);
     currentVertex.property("inVertex", edge.inVertex().value("tim_id"));
     currentVertex.property("outVertex", edge.outVertex().value("tim_id"));
+    currentVertex.property("tim_id", edge.value("tim_id"));
     commit();
   }
 
@@ -71,22 +79,26 @@ class GraphLogOutput implements LogOutput {
     if (++numberOfEntriesWithoutCommit >= 5000) {
       numberOfEntriesWithoutCommit = 0;
       tx.commit();
+      tx.close();
       tx.open();
     }
   }
 
   @Override
   public void newProperty(Property property) {
+    LOG.debug("New property {} {}", property.key(), property.value());
     currentVertex.property(property.key(), property.value());
   }
 
   @Override
   public void updateProperty(Property property) {
+    LOG.debug("Update property {} {}", property.key(), property.value());
     currentVertex.property(property.key(), property.value());
   }
 
   @Override
   public void deleteProperty(String propertyName) {
+    LOG.debug("Delete property {} ", propertyName);
   }
 
   @Override
