@@ -1,5 +1,9 @@
 package nl.knaw.huygens.timbuctoo.util;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+
 public class Tuple<T, U> {
   public final T left;
   private final U right;
@@ -19,5 +23,20 @@ public class Tuple<T, U> {
 
   public U getRight() {
     return right;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    return EqualsBuilder.reflectionEquals(this, obj);
+  }
+
+  @Override
+  public int hashCode() {
+    return HashCodeBuilder.reflectionHashCode(this);
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
   }
 }
