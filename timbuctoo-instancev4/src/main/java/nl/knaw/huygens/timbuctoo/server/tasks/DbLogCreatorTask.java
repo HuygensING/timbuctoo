@@ -5,23 +5,28 @@ import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseFixer;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
+import nl.knaw.huygens.timbuctoo.experimental.databaselog.GraphLogValidator;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
+import java.util.Set;
 
 public class DbLogCreatorTask extends Task {
   public static final Logger LOG = LoggerFactory.getLogger(DbLogCreatorTask.class);
   private final TinkerpopGraphManager graphManager;
   private final DatabaseLog logGenerator;
   private final DatabaseFixer databaseFixer;
+  private final GraphLogValidator graphLogValidator;
 
   public DbLogCreatorTask(TinkerpopGraphManager graphManager) {
     super("createlog");
     this.graphManager = graphManager;
     logGenerator = new DatabaseLog(graphManager);
     databaseFixer = new DatabaseFixer(graphManager);
+    graphLogValidator = new GraphLogValidator(graphManager);
   }
 
   @Override
@@ -31,8 +36,16 @@ public class DbLogCreatorTask extends Task {
     databaseFixer.fix();
     LOG.info("Fixing the database took {}", fixStopwatch.stop());
 
-    Stopwatch stopwatch = Stopwatch.createStarted();
+    Stopwatch generateStopwatch = Stopwatch.createStarted();
     logGenerator.generate();
-    LOG.info("Log creation took {}", stopwatch.stop());
+    LOG.info("Log creation took {}", generateStopwatch.stop());
+
+    Stopwatch validateStopWatch = Stopwatch.createStarted();
+    Set<Element> validationResult = graphLogValidator.validate();
+    LOG.info("Log validation took {}", validateStopWatch.stop());
+    validationResult.forEach(e -> {
+      output.write(String.format("%s %s has no log entry %n", e.getClass().getSimpleName(), e.id()));
+    });
+    output.flush();
   }
 }
