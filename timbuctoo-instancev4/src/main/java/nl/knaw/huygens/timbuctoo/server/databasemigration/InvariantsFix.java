@@ -8,7 +8,6 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -27,7 +26,7 @@ import java.util.Set;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 
-public class InvariantsFix implements VertexMigration {
+public class InvariantsFix extends AbstractVertexMigration {
   public static final Logger LOG = LoggerFactory.getLogger(InvariantsFix.class);
   private final Vres vres;
   private final Set<String> processedTypes;
@@ -37,16 +36,6 @@ public class InvariantsFix implements VertexMigration {
     this.vres = vres;
     processedTypes = Sets.newHashSet();
     objectMapper = new ObjectMapper();
-  }
-
-  @Override
-  public String getName() {
-    return this.getClass().getName();
-  }
-
-  @Override
-  public void beforeMigration(TinkerpopGraphManager graphManager) {
-    // before hook not needed
   }
 
   @Override

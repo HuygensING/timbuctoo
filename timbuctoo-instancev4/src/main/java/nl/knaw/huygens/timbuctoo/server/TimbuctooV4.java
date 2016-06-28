@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.server;
 import com.codahale.metrics.JmxAttributeGauge;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.google.common.collect.Lists;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -36,13 +35,13 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneIndexVertexMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.VertexMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneIndexDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelVertexMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameVertexMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesVertexMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesVertexMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
@@ -77,7 +76,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -145,16 +144,18 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Vres vres = HuygensIng.mappings;
     // Database migrations
-    final List<VertexMigration> vertexMigrations = Lists.newArrayList(
-      new LabelVertexMigration(),
-      new WwPersonSortIndexesVertexMigration(),
-      new WwDocumentSortIndexesVertexMigration(),
-      new InvariantsFix(vres),
-      new AutocompleteLuceneIndexVertexMigration(),
-      new LocationNamesToLocationNameVertexMigration()
-    );
+    LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
+    migrations.put(LabelDatabaseMigration.class.getName(), new LabelDatabaseMigration());
+    migrations.put(WwPersonSortIndexesDatabaseMigration.class.getName(), new WwPersonSortIndexesDatabaseMigration());
+    migrations
+      .put(WwDocumentSortIndexesDatabaseMigration.class.getName(), new WwDocumentSortIndexesDatabaseMigration());
+    migrations.put(InvariantsFix.class.getName(), new InvariantsFix(vres));
+    migrations
+      .put(AutocompleteLuceneIndexDatabaseMigration.class.getName(), new AutocompleteLuceneIndexDatabaseMigration());
+    migrations.put(LocationNamesToLocationNameDatabaseMigration.class.getName(),
+      new LocationNamesToLocationNameDatabaseMigration());
 
-    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, vertexMigrations);
+    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
