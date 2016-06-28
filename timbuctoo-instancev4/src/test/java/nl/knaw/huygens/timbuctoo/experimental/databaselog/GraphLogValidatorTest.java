@@ -1,18 +1,21 @@
 package nl.knaw.huygens.timbuctoo.experimental.databaselog;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
-import java.util.Set;
+import java.io.Writer;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.util.ElementMatcher.likeElement;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.text.StringContainsInOrder.stringContainsInOrder;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class GraphLogValidatorTest {
 
@@ -22,7 +25,7 @@ public class GraphLogValidatorTest {
   public static final UUID REL_2_ID = UUID.fromString("a628b090-ec7f-4608-9356-61728355ad5a");
 
   @Test
-  public void validateCollectsTheVerticesThatAreMissingALogEntry() {
+  public void writeReportWritesALineForEachInvalidVertex() throws Exception {
     GraphWrapper wrapper = newGraph().withVertex(v -> v.withTimId(VERTEX_ID_1)
                                                        .withProperty("rev", 1)
                                                        .withLabel("document"))
@@ -55,17 +58,21 @@ public class GraphLogValidatorTest {
                                                              .withProperty("rev", 2))
                                      .wrap();
     GraphLogValidator graphLogValidator = new GraphLogValidator(wrapper);
+    Writer writer = mock(Writer.class);
 
-    Set<? extends Element> result = graphLogValidator.validate();
+    graphLogValidator.writeReport(writer);
 
-    assertThat(result, containsInAnyOrder(
-      likeElement().ofType(Vertex.class).withTimId(VERTEX_ID_2).withProperty("rev", 1),
-      likeElement().ofType(Vertex.class).withTimId(VERTEX_ID_2).withProperty("rev", 2)
+    ArgumentCaptor<String> stringArgumentCaptor = ArgumentCaptor.forClass(String.class);
+    verify(writer, times(2)).write(stringArgumentCaptor.capture());
+    assertThat(stringArgumentCaptor.getAllValues(), containsInAnyOrder(
+      stringContainsInOrder(Lists.newArrayList("Vertex", VERTEX_ID_2, "2")),
+      stringContainsInOrder(Lists.newArrayList("Vertex", VERTEX_ID_2, "1"))
     ));
+    verifyNoMoreInteractions(writer);
   }
 
   @Test
-  public void validateCollectsTheEdgesThatAreMissingALogEntry() {
+  public void writeReportWritesALineForEachInvalidEdge() throws Exception {
     GraphWrapper wrapper = newGraph().withVertex("v1", v -> v.withTimId(VERTEX_ID_1)
                                                              .withProperty("rev", 1)
                                                              .withLabel("document"))
@@ -109,12 +116,17 @@ public class GraphLogValidatorTest {
                                      )
                                      .wrap();
     GraphLogValidator graphLogValidator = new GraphLogValidator(wrapper);
+    Writer writer = mock(Writer.class);
 
-    Set<Element> result = graphLogValidator.validate();
+    graphLogValidator.writeReport(writer);
 
-    assertThat(result, containsInAnyOrder(
-      likeElement().ofType(Edge.class).withTimId(REL_1_ID.toString()).withProperty("rev", 1),
-      likeElement().ofType(Edge.class).withTimId(REL_1_ID.toString()).withProperty("rev", 2)
-    ));
+    ArgumentCaptor<String> stringArgumentCaptor = ArgumentCaptor.forClass(String.class);
+    verify(writer, times(2)).write(stringArgumentCaptor.capture());
+    assertThat(stringArgumentCaptor.getAllValues(), containsInAnyOrder(
+      stringContainsInOrder(Lists.newArrayList("Edge", REL_1_ID.toString(), "1")),
+      stringContainsInOrder(Lists.newArrayList("Edge", REL_1_ID.toString(), "2"))));
+
+    verifyNoMoreInteractions(writer);
   }
+
 }

@@ -7,12 +7,10 @@ import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseFixer;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.DatabaseLog;
 import nl.knaw.huygens.timbuctoo.experimental.databaselog.GraphLogValidator;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
-import java.util.Set;
 
 public class DbLogCreatorTask extends Task {
   public static final Logger LOG = LoggerFactory.getLogger(DbLogCreatorTask.class);
@@ -41,11 +39,8 @@ public class DbLogCreatorTask extends Task {
     LOG.info("Log creation took {}", generateStopwatch.stop());
 
     Stopwatch validateStopWatch = Stopwatch.createStarted();
-    Set<Element> validationResult = graphLogValidator.validate();
+    graphLogValidator.writeReport(output);
     LOG.info("Log validation took {}", validateStopWatch.stop());
-    validationResult.forEach(e -> {
-      output.write(String.format("%s %s has no log entry %n", e.getClass().getSimpleName(), e.id()));
-    });
     output.flush();
   }
 }
