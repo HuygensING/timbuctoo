@@ -19,6 +19,9 @@ import java.util.Set;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
+/**
+ * This class validates if the DatabaseLog has created a log entry for each domain Vertex and Edge.
+ */
 public class GraphLogValidator {
   public static final Logger LOG = LoggerFactory.getLogger(GraphLogValidator.class);
   private final GraphWrapper graphWrapper;
@@ -31,20 +34,6 @@ public class GraphLogValidator {
   public void writeReport(Writer writer) {
     LOG.info("Start Vertex validation");
     Graph graph = graphWrapper.getGraph();
-
-    // Map<Object, Object> next = graph.traversal().V()
-    //                                 .has("tim_id")
-    //                                 .has("rev")
-    //                                 .not(has(T.label, LabelP.of("searchresult"))) // ignore search results
-    //                                 // ignore the edge entries, because they give false positives
-    //                                 .not(has(T.label, LabelP.of("createEdgeEntry")))
-    //                                 .not(has(T.label, LabelP.of("updateEdgeEntry")))
-    //                                 .group().<Map<Object, List<Vertex>>>by(__.valueMap("tim_id", "rev")).next();
-    // next.entrySet().stream().filter(entry -> ((List<Vertex>) entry.getValue()).size() < 2)
-    //     .forEach(entry -> {
-    //       Vertex vertex = ((List<Vertex>) entry.getValue()).get(0);
-    //       writeLogString(writer, "Vertex", vertex.id(), vertex.value("tim_id"), vertex.value("rev"));
-    //     });
 
     Set<ValidationElement> vertexIdsAndVersions = graph.traversal().V()
                                                        // ignore non domain vertices
