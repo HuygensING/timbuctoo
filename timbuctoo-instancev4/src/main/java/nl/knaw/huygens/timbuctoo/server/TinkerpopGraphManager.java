@@ -38,7 +38,6 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   private final List<VertexMigration> vertexMigrations;
   private final List<Consumer<Graph>> graphWaitList;
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
-  private Vertex vreRootNode;
 
   public TinkerpopGraphManager(TimbuctooConfiguration configuration, List<VertexMigration> vertexMigrations) {
     this.configuration = configuration;
