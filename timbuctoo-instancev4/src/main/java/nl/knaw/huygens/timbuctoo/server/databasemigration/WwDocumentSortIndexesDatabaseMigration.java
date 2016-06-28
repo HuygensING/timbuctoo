@@ -29,25 +29,8 @@ public class WwDocumentSortIndexesDatabaseMigration implements DatabaseMigration
 
 
   @Override
-  public void generateIndexes(Neo4jGraph neo4jGraph, Transaction transaction) {
-    // FIXME: at this time indexing seems to add no speed benefit to querying
-    executeCypher(neo4jGraph, "wwdocument", "modified_sort", transaction);
-    executeCypher(neo4jGraph, "wwdocument", "wwdocument_title", transaction);
-    executeCypher(neo4jGraph, "wwdocument", "wwdocument_creator_sort", transaction);
-  }
-
-  @Override
   public void beforeMigration(TinkerpopGraphManager graphManager) {
     // before hook not needed
-  }
-
-  private void executeCypher(Neo4jGraph neo4jGraph, String label, String propertyName,Transaction transaction) {
-    String cypherQuery = String.format("CREATE INDEX ON :%s(%s)", label, propertyName);
-    LOG.info(cypherQuery);
-    transaction.open();
-    neo4jGraph.cypher(cypherQuery);
-    transaction.commit();
-    transaction.close();
   }
 
   @Override

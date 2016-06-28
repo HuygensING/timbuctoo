@@ -3,8 +3,6 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -21,11 +19,6 @@ public class AutocompleteLuceneIndexDatabaseMigration implements DatabaseMigrati
   @Override
   public String getName() {
     return this.getClass().getName();
-  }
-
-  @Override
-  public void generateIndexes(Neo4jGraph neo4jGraph, Transaction transaction) {
-    // Index is already present at this stage
   }
 
   @Override

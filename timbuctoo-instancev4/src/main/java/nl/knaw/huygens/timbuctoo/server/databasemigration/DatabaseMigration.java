@@ -12,8 +12,6 @@ public interface DatabaseMigration {
 
   String getName();
 
-  void generateIndexes(Neo4jGraph neo4jGraph, Transaction transaction);
-
   void beforeMigration(TinkerpopGraphManager graphManager);
 
   void applyToVertex(Vertex vertex) throws IOException;

@@ -2,9 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,11 +18,6 @@ public class LabelDatabaseMigration implements DatabaseMigration {
   @Override
   public String getName() {
     return this.getClass().getName();
-  }
-
-  @Override
-  public void generateIndexes(Neo4jGraph graph, Transaction transaction) {
-    LOG.info("This task does not create new indexes");
   }
 
   @Override
