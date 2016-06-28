@@ -4,7 +4,7 @@ import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.MigrateDatabase;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -32,17 +33,16 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
           SubgraphStrategy.build().edgeCriterion(has("isLatest", true)).vertexCriterion(has("isLatest", true)).create();
 
   final TimbuctooConfiguration configuration;
+  private final LinkedHashMap<String, DatabaseMigration> migrations;
   private Neo4jGraph graph;
   private File databasePath;
   private GraphDatabaseService graphDatabase;
-  private final List<DatabaseMigration> databaseMigrations;
   private final List<Consumer<Graph>> graphWaitList;
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
-  private Vertex vreRootNode;
 
-  public TinkerpopGraphManager(TimbuctooConfiguration configuration, List<DatabaseMigration> databaseMigrations) {
+  public TinkerpopGraphManager(TimbuctooConfiguration configuration,
+                               LinkedHashMap<String, DatabaseMigration> migrations) {
     this.configuration = configuration;
-    this.databaseMigrations = databaseMigrations;
     graphWaitList = Lists.newArrayList();
 
     databasePath = new File(configuration.getDatabasePath());
@@ -50,13 +50,15 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
             .newEmbeddedDatabaseBuilder(databasePath)
             .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
             .newGraphDatabase();
+    this.migrations = migrations;
   }
 
   @Override
   public void start() throws Exception {
     synchronized (graphWaitList) {
       this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
-      new MigrateDatabase(this, databaseMigrations).run();
+      new DatabaseMigrator(this, migrations).execute();
+
       graphWaitList.forEach(consumer -> {
         try {
           consumer.accept(graph);

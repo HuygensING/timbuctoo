@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.server;
 import com.codahale.metrics.JmxAttributeGauge;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.google.common.collect.Lists;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
@@ -77,7 +76,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Clock;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Properties;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -145,16 +144,18 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Vres vres = HuygensIng.mappings;
     // Database migrations
-    final List<DatabaseMigration> databaseMigrations = Lists.newArrayList(
-      new LabelDatabaseMigration(),
-      new WwPersonSortIndexesDatabaseMigration(),
-      new WwDocumentSortIndexesDatabaseMigration(),
-      new InvariantsFix(vres),
-      new AutocompleteLuceneIndexDatabaseMigration(),
-      new LocationNamesToLocationNameDatabaseMigration()
-    );
+    LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
+    migrations.put(LabelDatabaseMigration.class.getName(), new LabelDatabaseMigration());
+    migrations.put(WwPersonSortIndexesDatabaseMigration.class.getName(), new WwPersonSortIndexesDatabaseMigration());
+    migrations
+      .put(WwDocumentSortIndexesDatabaseMigration.class.getName(), new WwDocumentSortIndexesDatabaseMigration());
+    migrations.put(InvariantsFix.class.getName(), new InvariantsFix(vres));
+    migrations
+      .put(AutocompleteLuceneIndexDatabaseMigration.class.getName(), new AutocompleteLuceneIndexDatabaseMigration());
+    migrations.put(LocationNamesToLocationNameDatabaseMigration.class.getName(),
+      new LocationNamesToLocationNameDatabaseMigration());
 
-    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
+    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
