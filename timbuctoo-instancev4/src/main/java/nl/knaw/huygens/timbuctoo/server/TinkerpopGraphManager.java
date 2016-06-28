@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server;
 import com.codahale.metrics.health.HealthCheck;
 import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.VertexMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MigrateDatabase;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
@@ -35,14 +35,14 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   private Neo4jGraph graph;
   private File databasePath;
   private GraphDatabaseService graphDatabase;
-  private final List<DatabaseMigration> databaseMigrations;
+  private final List<VertexMigration> vertexMigrations;
   private final List<Consumer<Graph>> graphWaitList;
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
   private Vertex vreRootNode;
 
-  public TinkerpopGraphManager(TimbuctooConfiguration configuration, List<DatabaseMigration> databaseMigrations) {
+  public TinkerpopGraphManager(TimbuctooConfiguration configuration, List<VertexMigration> vertexMigrations) {
     this.configuration = configuration;
-    this.databaseMigrations = databaseMigrations;
+    this.vertexMigrations = vertexMigrations;
     graphWaitList = Lists.newArrayList();
 
     databasePath = new File(configuration.getDatabasePath());
@@ -56,7 +56,7 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   public void start() throws Exception {
     synchronized (graphWaitList) {
       this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
-      new MigrateDatabase(this, databaseMigrations).run();
+      new MigrateDatabase(this, vertexMigrations).execute();
       graphWaitList.forEach(consumer -> {
         try {
           consumer.accept(graph);

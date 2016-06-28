@@ -11,8 +11,8 @@ import java.io.IOException;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 
-public class LabelDatabaseMigration implements DatabaseMigration {
-  public static final Logger LOG = LoggerFactory.getLogger(LabelDatabaseMigration.class);
+public class LabelVertexMigration implements VertexMigration {
+  public static final Logger LOG = LoggerFactory.getLogger(LabelVertexMigration.class);
 
 
   @Override

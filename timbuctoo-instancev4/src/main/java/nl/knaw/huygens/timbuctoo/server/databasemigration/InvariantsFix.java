@@ -27,7 +27,7 @@ import java.util.Set;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 
-public class InvariantsFix implements DatabaseMigration {
+public class InvariantsFix implements VertexMigration {
   public static final Logger LOG = LoggerFactory.getLogger(InvariantsFix.class);
   private final Vres vres;
   private final Set<String> processedTypes;

@@ -12,7 +12,7 @@ import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 
-public class AutocompleteLuceneIndexDatabaseMigration implements DatabaseMigration {
+public class AutocompleteLuceneIndexVertexMigration implements VertexMigration {
 
   private GraphDatabaseService graphDatabase;
 

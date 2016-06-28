@@ -13,29 +13,30 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-public class MigrateDatabase implements Runnable {
+public class MigrateDatabase implements DatabaseMigration {
   public static final Logger LOG = LoggerFactory.getLogger(MigrateDatabase.class);
   public static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
-  private final List<DatabaseMigration> migrations;
+  private final List<VertexMigration> migrations;
   private final GraphWrapper graphWrapper;
 
-  public MigrateDatabase(GraphWrapper graphWrapper, List<DatabaseMigration> migrations) {
+  public MigrateDatabase(GraphWrapper graphWrapper, List<VertexMigration> migrations) {
     this.graphWrapper = graphWrapper;
     this.migrations = migrations;
   }
 
   @Override
-  public void run() {
+  public void execute() {
     Graph graph = graphWrapper.getGraph();
 
     try (Transaction transaction = graph.tx()) {
       List<String> executedMigrations = graph.traversal().V()
-              .has("type", EXECUTED_MIGRATIONS_TYPE)
-              .map(vertexTraverser -> (String) vertexTraverser.get().property("name").value())
-              .toList();
+                                             .has("type", EXECUTED_MIGRATIONS_TYPE)
+                                             .map(vertexTraverser -> (String) vertexTraverser.get().property("name")
+                                                                                             .value())
+                                             .toList();
 
 
-      for (DatabaseMigration migration : migrations) {
+      for (VertexMigration migration : migrations) {
         final String name = migration.getName();
         if (!executedMigrations.contains(name)) {
           LOG.info("Executing \"{}\"", name);
@@ -53,7 +54,7 @@ public class MigrateDatabase implements Runnable {
     }
   }
 
-  public void saveExecution(Graph graph, Transaction transaction, String name) {
+  private void saveExecution(Graph graph, Transaction transaction, String name) {
     if (!transaction.isOpen()) {
       transaction.open();
     }
@@ -64,7 +65,8 @@ public class MigrateDatabase implements Runnable {
     transaction.commit();
   }
 
-  public void executeMigration(DatabaseMigration migration, Transaction transaction, Graph graph) throws IOException {
+  private void executeMigration(VertexMigration migration, Transaction transaction, Graph graph)
+    throws IOException {
     if (!transaction.isOpen()) {
       transaction.open();
     }
@@ -87,4 +89,6 @@ public class MigrateDatabase implements Runnable {
 
     transaction.close();
   }
+
+
 }

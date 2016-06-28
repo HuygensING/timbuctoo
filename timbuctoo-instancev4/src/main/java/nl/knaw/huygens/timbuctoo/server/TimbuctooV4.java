@@ -36,13 +36,13 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneIndexDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneIndexVertexMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.VertexMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelVertexMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameVertexMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesVertexMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesVertexMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
@@ -145,16 +145,16 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Vres vres = HuygensIng.mappings;
     // Database migrations
-    final List<DatabaseMigration> databaseMigrations = Lists.newArrayList(
-      new LabelDatabaseMigration(),
-      new WwPersonSortIndexesDatabaseMigration(),
-      new WwDocumentSortIndexesDatabaseMigration(),
+    final List<VertexMigration> vertexMigrations = Lists.newArrayList(
+      new LabelVertexMigration(),
+      new WwPersonSortIndexesVertexMigration(),
+      new WwDocumentSortIndexesVertexMigration(),
       new InvariantsFix(vres),
-      new AutocompleteLuceneIndexDatabaseMigration(),
-      new LocationNamesToLocationNameDatabaseMigration()
+      new AutocompleteLuceneIndexVertexMigration(),
+      new LocationNamesToLocationNameVertexMigration()
     );
 
-    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, databaseMigrations);
+    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, vertexMigrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(

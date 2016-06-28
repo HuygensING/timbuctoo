@@ -11,7 +11,7 @@ import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 
-public class LocationNamesToLocationNameDatabaseMigration implements DatabaseMigration {
+public class LocationNamesToLocationNameVertexMigration implements VertexMigration {
   @Override
   public String getName() {
     return this.getClass().getName();

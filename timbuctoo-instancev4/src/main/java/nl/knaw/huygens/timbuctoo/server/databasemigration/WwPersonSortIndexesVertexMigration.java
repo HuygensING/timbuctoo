@@ -18,8 +18,8 @@ import java.util.Set;
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 
-public class WwPersonSortIndexesDatabaseMigration implements DatabaseMigration {
-  public static final Logger LOG = LoggerFactory.getLogger(WwPersonSortIndexesDatabaseMigration.class);
+public class WwPersonSortIndexesVertexMigration implements VertexMigration {
+  public static final Logger LOG = LoggerFactory.getLogger(WwPersonSortIndexesVertexMigration.class);
 
   Set<String> propertyFieldNames = Sets.newHashSet();
 

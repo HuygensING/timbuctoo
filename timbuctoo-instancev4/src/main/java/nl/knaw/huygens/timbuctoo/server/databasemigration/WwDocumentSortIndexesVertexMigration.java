@@ -5,8 +5,6 @@ import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexerSortFieldDescription;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +16,8 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 
-public class WwDocumentSortIndexesDatabaseMigration implements DatabaseMigration {
-  public static final Logger LOG = LoggerFactory.getLogger(WwPersonSortIndexesDatabaseMigration.class);
+public class WwDocumentSortIndexesVertexMigration implements VertexMigration {
+  public static final Logger LOG = LoggerFactory.getLogger(WwPersonSortIndexesVertexMigration.class);
 
 
   @Override
