@@ -80,6 +80,10 @@ install_new_version(){
   # Download new latest successful rpm
   cd "$LAST_SUCCESSFUL_BUILD_DIR"
   curl "$TIMBUCTOO_BIN_URL" > rpm.zip
+  if [ 0 -eq $? ]; then
+    echo "CI server is unavailable."
+    exit 1
+  fi
   unzip rpm.zip
   cd -
 
@@ -136,6 +140,10 @@ rollback(){
 
 # Retrieve the number of the latest successful build
 LAST_SUCCESSFUL_BUILD=$(curl "$TIMBUCTOO_BUILD_NO_URL")
+if [ 0 -eq $? ]; then
+  echo "CI server is unavailable."
+  exit 1
+fi
 LAST_SUCCESSFUL_BUILD_DIR="$TIMBUCTOO_INSTALLER_DIR/$LAST_SUCCESSFUL_BUILD"
 
 if [ -d "$LAST_SUCCESSFUL_BUILD_DIR" ]; then
