@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneIndexDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.HuygensIngConfigToDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameDatabaseMigration;
@@ -154,6 +155,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       .put(AutocompleteLuceneIndexDatabaseMigration.class.getName(), new AutocompleteLuceneIndexDatabaseMigration());
     migrations.put(LocationNamesToLocationNameDatabaseMigration.class.getName(),
       new LocationNamesToLocationNameDatabaseMigration());
+
+    // Persist HuygensIng mappings in database
+    migrations.put("config-to-database-migration",
+      new HuygensIngConfigToDatabaseMigration(vres, HuygensIng.keywordTypes));
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
