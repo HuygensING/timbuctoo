@@ -48,6 +48,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private Path authorizationsPath;
 
   @JsonProperty
+  private boolean allowGremlinEndpoint = true;
+
+  @JsonProperty
   private int executeDatabaseInvariantCheckAt = 24;
 
   public HandleManagerFactory getPersistenceManagerFactory() {
@@ -130,6 +133,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return executeDatabaseInvariantCheckAt;
   }
 
+  public boolean isAllowGremlinEndpoint() {
+    return allowGremlinEndpoint;
+  }
+
   // A class to configure timeouts without compromising the Timeout class.
   private class TimeoutFactory {
     private long duration;
@@ -150,4 +157,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
       return new Timeout(duration, timeUnit);
     }
   }
+
+
 }

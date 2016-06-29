@@ -43,6 +43,9 @@ persistenceManager:
 federatedAuthentication:
   enabled: false
 
+#Note! disable this for production builds
+allowGremlinEndpoint: true
+
 server:
   applicationConnectors:
     - type: http #Note! if you change this you might or might not also want to change the baseUri

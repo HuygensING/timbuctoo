@@ -901,7 +901,7 @@ public class TinkerpopJsonCrudService {
     listener.onUpdate(old, entity);
   }
 
-  public List<ObjectNode> fetchCollection(String collectionName, int rows, int start)
+  public List<ObjectNode> fetchCollection(String collectionName, int rows, int start, boolean withRelations)
     throws InvalidCollectionException {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
@@ -909,6 +909,7 @@ public class TinkerpopJsonCrudService {
 
     GraphTraversal<Vertex, Vertex> entities =
       graphwrapper.getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
+    final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
 
 
     return entities.asAdmin().clone().map(entityT -> {
@@ -938,12 +939,18 @@ public class TinkerpopJsonCrudService {
           .onFailure(e -> LOG.error(databaseInvariant, "Failed to make displayname for {}", collectionName, e));
       }));
 
-      graphwrapper.getGraph().traversal().V(entityT.get().id())
+      traversalSource.V(entityT.get().id())
         .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
           // side effects
         });
 
-      Vertex entity = entityT.asAdmin().clone().get();
+      Vertex entity = entityT.get();
+      if (withRelations) {
+        Tuple<ObjectNode, Long> relations = getRelations(entity, traversalSource, collection);
+        result.set("@relationCount", nodeFactory.numberNode(relations.getRight()));
+        result.set("@relations", relations.getLeft());
+      }
+
       result.set(
         "^rev", nodeFactory.numberNode(
           getProp(entity, "rev", Integer.class)
