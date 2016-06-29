@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +29,18 @@ public class HuygensIngConfigToDatabaseMigration implements DatabaseMigration {
 
   @Override
   public void execute(GraphWrapper graphWrapper) throws IOException {
+    Transaction transaction = graphWrapper.getGraph().tx();
+
+    if (!transaction.isOpen()) {
+      transaction.open();
+    }
+
     mappings.getVres().forEach((name, vre) -> {
       vre.persistToDatabase(graphWrapper, Optional.ofNullable(keywordTypes.get(name)));
     });
+
+    // Save
+    transaction.commit();
+    transaction.close();
   }
 }

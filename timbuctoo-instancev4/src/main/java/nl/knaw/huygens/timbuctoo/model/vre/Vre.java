@@ -86,11 +86,6 @@ public class Vre {
   public void persistToDatabase(GraphWrapper graphWrapper, Optional<Map<String, String>> keywordTypes) {
     LOG.info("Persisting vre '{}' to database", vreName);
     Graph graph = graphWrapper.getGraph();
-    Transaction transaction = graph.tx();
-
-    if (!transaction.isOpen()) {
-      transaction.open();
-    }
 
     // Look for existing VRE vertex
     GraphTraversal<Vertex, Vertex> existing = graph.traversal().V().hasLabel("VRE").has("name", vreName);
@@ -116,9 +111,5 @@ public class Vre {
     }
 
     // Add relations and child collections
-
-    // Save
-    transaction.commit();
-    transaction.close();
   }
 }
