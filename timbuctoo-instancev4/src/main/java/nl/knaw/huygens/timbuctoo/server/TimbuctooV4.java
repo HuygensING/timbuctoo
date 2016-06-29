@@ -203,7 +203,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
-    register(environment, new Gremlin(graphManager));
+    if (configuration.isAllowGremlinEndpoint()) {
+      register(environment, new Gremlin(graphManager));
+    }
     register(environment, new Graph(graphManager));
     register(environment, new BulkUpload(new BulkUploadService(graphManager)));
     register(environment, new RelationTypes(graphManager));
