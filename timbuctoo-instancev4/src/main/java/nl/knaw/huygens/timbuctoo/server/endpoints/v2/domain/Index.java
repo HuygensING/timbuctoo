@@ -74,10 +74,11 @@ public class Index {
   @GET
   public Response list(@PathParam("collection") String collectionName,
                        @QueryParam("rows") @DefaultValue("200") int rows,
-                       @QueryParam("start") @DefaultValue("0") int start) {
+                       @QueryParam("start") @DefaultValue("0") int start,
+                       @QueryParam("withRelations") @DefaultValue("false") boolean withRelations) {
 
     try {
-      List<ObjectNode> jsonNodes = crudService.fetchCollection(collectionName, rows, start);
+      List<ObjectNode> jsonNodes = crudService.fetchCollection(collectionName, rows, start, withRelations);
       return Response.ok(jsonNodes).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
