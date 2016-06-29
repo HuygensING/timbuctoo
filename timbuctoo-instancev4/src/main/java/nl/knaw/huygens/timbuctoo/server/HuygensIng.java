@@ -240,11 +240,13 @@ public class HuygensIng {
     .withVre("DutchCaribbean", "dcar", vre -> vre
     .withCollection("dcarpersons",
       c -> c
+        .withDisplayName(localProperty("dcarperson_label"))
         .withProperty("gender", localProperty("dcarperson_gender", gender))
         .withProperty("names", localProperty("dcarperson_names", personNames))
         .withProperty("links", localProperty("dcarperson_links", hyperlinks)))
     .withCollection("dcarkeywords",
       c -> c
+        .withDisplayName(localProperty("dcarkeyword_label"))
         .withProperty("type", localProperty("dcarkeyword_type", stringToUnencodedStringOf(
           "subject",
           "geography")))
