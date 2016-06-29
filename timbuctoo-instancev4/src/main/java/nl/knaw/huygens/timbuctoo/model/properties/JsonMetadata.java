@@ -47,7 +47,7 @@ public class JsonMetadata {
     collection.getWriteableProperties().forEach((name, prop) -> {
       ObjectNode desc = jsnO(
         "name", jsn(name),
-        "type", jsn(prop.getGuiTypeId())
+        "type", jsn(prop.getTypeId())
       );
 
       prop.getOptions().ifPresent(options ->

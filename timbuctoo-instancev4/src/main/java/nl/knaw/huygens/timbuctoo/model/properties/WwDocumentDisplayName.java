@@ -28,4 +28,9 @@ public class WwDocumentDisplayName extends ReadableProperty {
       })
     );
   }
+
+  @Override
+  public String getTypeId() {
+    return "wwdocument-display-name";
+  }
 }

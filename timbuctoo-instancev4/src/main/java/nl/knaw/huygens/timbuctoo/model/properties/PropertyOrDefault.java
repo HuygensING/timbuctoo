@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.model.properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-
-
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class PropertyOrDefault extends ReadableProperty {
 
@@ -24,5 +24,10 @@ public class PropertyOrDefault extends ReadableProperty {
         orElse.traversal()
       )
     );
+  }
+
+  @Override
+  public String getTypeId() {
+    return "property-or-default";
   }
 }

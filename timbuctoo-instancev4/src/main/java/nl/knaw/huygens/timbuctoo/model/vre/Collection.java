@@ -107,8 +107,6 @@ public class Collection {
 
     savePropertyConfigurations(graphWrapper, collectionVertex);
 
-    // add hasDisplayName
-    
     // add collectionEntities Vertex
 
 
@@ -116,20 +114,26 @@ public class Collection {
   }
 
   private void savePropertyConfigurations(GraphWrapper graphWrapper, Vertex collectionVertex) {
-    // Drop any existing property configurations
-    collectionVertex.vertices(Direction.OUT, "hasProperty", "hasDisplayName", "hasInitialProperty")
-                    .forEachRemaining(Element::remove);
 
+    dropExistingPropertyConfigurations(collectionVertex);
 
     // Add property configurations
     List<Vertex> propertyVertices = new ArrayList<>();
     writeableProperties.forEach((clientPropertyName, property) -> {
       LOG.info("Adding property {} to collection {}", clientPropertyName, collectionName);
-      final Vertex propertyVertex = property.persistToDatabase(graphWrapper, clientPropertyName);
+      final Vertex propertyVertex = property.save(graphWrapper, clientPropertyName);
       collectionVertex.addEdge("hasProperty", propertyVertex);
       propertyVertices.add(propertyVertex);
     });
 
+    savePropertyConfigurationSortorder(collectionVertex, propertyVertices);
+
+    if (displayName != null) {
+      collectionVertex.addEdge("hasDisplayName", displayName.save(graphWrapper, "@displayName"));
+    }
+  }
+
+  private void savePropertyConfigurationSortorder(Vertex collectionVertex, List<Vertex> propertyVertices) {
     // add hasInitialProperty for sortorder
     if (propertyVertices.size() > 0) {
       collectionVertex.addEdge("hasInitialProperty", propertyVertices.get(0));
@@ -147,8 +151,12 @@ public class Collection {
     }
   }
 
+  private void dropExistingPropertyConfigurations(Vertex collectionVertex) {
+    collectionVertex.vertices(Direction.OUT, "hasProperty", "hasDisplayName", "hasInitialProperty")
+                    .forEachRemaining(Element::remove);
+  }
+
   private void saveArchetypeRelation(Graph graph, Vertex collectionVertex) {
-    // Set the hasArchetype edge for non-Admin collections
     if (!abstractType.equals(entityTypeName)) {
       GraphTraversal<Vertex, Vertex> archetype = graph.traversal().V().hasLabel("collection")
                                                       .has("entityTypeName", abstractType);
@@ -179,5 +187,4 @@ public class Collection {
     }
     return collectionVertex;
   }
-  //derivedRelations
 }

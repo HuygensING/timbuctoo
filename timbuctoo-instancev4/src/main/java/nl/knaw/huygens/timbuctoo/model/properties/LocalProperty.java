@@ -32,9 +32,7 @@ public class LocalProperty extends ReadableProperty {
     this.converter = converter;
   }
 
-  public String getGuiTypeId() {
-    return converter.getTypeIdentifier();
-  }
+
 
   public Optional<Collection<String>> getOptions() {
     if (converter instanceof HasOptions) {
@@ -63,16 +61,27 @@ public class LocalProperty extends ReadableProperty {
   public GraphTraversal<?, Try<ExcelDescription>> getExcelDescription() {
     Supplier<GraphTraversal<?, Try<ExcelDescription>>> supplier =
       () -> __.<Object, String>values(propName).map(prop -> Try.of(() ->
-        converter.tinkerPopToExcel(prop.get(), getGuiTypeId())));
+        converter.tinkerPopToExcel(prop.get(), getTypeId())));
     return supplier.get();
   }
 
-  public Vertex persistToDatabase(GraphWrapper graphWrapper, String clientPropertyName) {
+  @Override
+  public String getTypeId() {
+    return converter.getTypeIdentifier();
+  }
+
+  @Override
+  public Vertex save(GraphWrapper graphWrapper, String clientPropertyName) {
     Graph graph = graphWrapper.getGraph();
     Vertex propertyVertex = graph.addVertex("property");
     propertyVertex.property("clientName", clientPropertyName);
     propertyVertex.property("dbName", propName);
-    propertyVertex.property("propertyType", getGuiTypeId());
+    final String typeId = getTypeId();
+    
+    if (typeId != null) {
+      propertyVertex.property("propertyType", typeId);
+    }
+
     if (converter instanceof HasOptions) {
       try {
         propertyVertex.property("options",

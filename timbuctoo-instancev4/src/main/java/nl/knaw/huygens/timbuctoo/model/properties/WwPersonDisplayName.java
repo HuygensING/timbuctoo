@@ -41,4 +41,9 @@ public class WwPersonDisplayName extends ReadableProperty {
       })
     );
   }
+
+  @Override
+  public String getTypeId() {
+    return "wwperson-display-name";
+  }
 }
