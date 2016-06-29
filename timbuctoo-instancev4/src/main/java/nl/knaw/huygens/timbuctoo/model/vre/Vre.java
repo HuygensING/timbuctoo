@@ -7,7 +7,6 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +82,7 @@ public class Vre {
     return collections;
   }
 
-  public void persistToDatabase(GraphWrapper graphWrapper, Optional<Map<String, String>> keywordTypes) {
+  public Vertex persistToDatabase(GraphWrapper graphWrapper, Optional<Map<String, String>> keywordTypes) {
     LOG.info("Persisting vre '{}' to database", vreName);
     Graph graph = graphWrapper.getGraph();
 
@@ -111,5 +110,11 @@ public class Vre {
     }
 
     // Add relations and child collections
+    getCollections().forEach((name, collection) -> {
+      LOG.info("Adding collection {} to VRE {}", name, vreName);
+      vreVertex.addEdge("hasCollection", collection.persistToDatabase(graphWrapper));
+    });
+
+    return vreVertex;
   }
 }

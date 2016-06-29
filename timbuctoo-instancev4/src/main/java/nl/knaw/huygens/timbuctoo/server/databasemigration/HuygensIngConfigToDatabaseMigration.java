@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -35,12 +36,20 @@ public class HuygensIngConfigToDatabaseMigration implements DatabaseMigration {
       transaction.open();
     }
 
-    mappings.getVres().forEach((name, vre) -> {
-      vre.persistToDatabase(graphWrapper, Optional.ofNullable(keywordTypes.get(name)));
-    });
+    mappings
+      .getVres()
+      .keySet()
+      .stream()
+      // Admin needs to come first, so all collection vertices can point to an existing
+      // admin variant with the hasArchetype edge
+      .sorted((nameA, nameB) -> nameA.equals("Admin") ? -1 : 1)
+      .forEach((name) -> {
+        final Vre vre = mappings.getVre(name);
+        vre.persistToDatabase(graphWrapper, Optional.ofNullable(keywordTypes.get(name)));
+        transaction.commit();
+      });
 
     // Save
-    transaction.commit();
     transaction.close();
   }
 }
