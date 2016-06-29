@@ -4,6 +4,8 @@ import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -118,12 +120,28 @@ public class Collection {
         collectionVertex.addEdge("hasArchetype", archetype.next());
       }
     } else {
-      LOG.info("Assuming collection {} is archetype because entityTypeName is equal to abstractType", collectionName);
+      LOG.warn("Assuming collection {} is archetype because entityTypeName is equal to abstractType", collectionName);
     }
-
 
     collectionVertex.property("collectionName", collectionName);
     collectionVertex.property("entityTypeName", entityTypeName);
+
+    // Drop any existing property configurations
+    collectionVertex.vertices(Direction.OUT, "hasProperty", "hasDisplayName", "hasInitialProperty")
+                    .forEachRemaining(Element::remove);
+
+
+    // Add property configurations
+    writeableProperties.forEach((clientPropertyName, property) -> {
+      LOG.info("Adding property {} to collection {}", clientPropertyName, collectionName);
+      collectionVertex.addEdge("hasProperty", property.persistToDatabase(graphWrapper, clientPropertyName));
+    });
+
+    // add hasInitialProperty edge for sortorder
+
+    // set hasNextProperty edges to property vertices
+
+
     return collectionVertex;
   }
   //derivedRelations
