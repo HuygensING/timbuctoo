@@ -45,7 +45,7 @@ public class HuygensIngConfigToDatabaseMigration implements DatabaseMigration {
       .sorted((nameA, nameB) -> nameA.equals("Admin") ? -1 : 1)
       .forEach((name) -> {
         final Vre vre = mappings.getVre(name);
-        vre.persistToDatabase(graphWrapper, Optional.ofNullable(keywordTypes.get(name)));
+        vre.save(graphWrapper, Optional.ofNullable(keywordTypes.get(name)));
         transaction.commit();
       });
 

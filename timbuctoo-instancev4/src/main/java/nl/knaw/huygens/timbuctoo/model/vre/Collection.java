@@ -12,7 +12,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -91,23 +94,60 @@ public class Collection {
     return isRelationCollection;
   }
 
-  public Vertex persistToDatabase(GraphWrapper graphWrapper) {
-    // Look for existing VRE vertex
+  public Vertex save(GraphWrapper graphWrapper) {
+
     Graph graph = graphWrapper.getGraph();
-    GraphTraversal<Vertex, Vertex> existing = graph.traversal().V().hasLabel("collection")
-                                                   .has("collectionName", collectionName);
+
+    Vertex collectionVertex = findOrCreateCollectionVertex(graph);
+
+    collectionVertex.property("collectionName", collectionName);
+    collectionVertex.property("entityTypeName", entityTypeName);
+
+    saveArchetypeRelation(graph, collectionVertex);
+
+    savePropertyConfigurations(graphWrapper, collectionVertex);
+
+    // add hasDisplayName
+    
+    // add collectionEntities Vertex
 
 
-    Vertex collectionVertex;
-    // Create new if does not exist
-    if (existing.hasNext()) {
-      collectionVertex = existing.next();
-      LOG.info("Replacing existing vertex {}.", collectionVertex);
-    } else {
-      collectionVertex = graph.addVertex("collection");
-      LOG.info("Creating new vertex");
+    return collectionVertex;
+  }
+
+  private void savePropertyConfigurations(GraphWrapper graphWrapper, Vertex collectionVertex) {
+    // Drop any existing property configurations
+    collectionVertex.vertices(Direction.OUT, "hasProperty", "hasDisplayName", "hasInitialProperty")
+                    .forEachRemaining(Element::remove);
+
+
+    // Add property configurations
+    List<Vertex> propertyVertices = new ArrayList<>();
+    writeableProperties.forEach((clientPropertyName, property) -> {
+      LOG.info("Adding property {} to collection {}", clientPropertyName, collectionName);
+      final Vertex propertyVertex = property.persistToDatabase(graphWrapper, clientPropertyName);
+      collectionVertex.addEdge("hasProperty", propertyVertex);
+      propertyVertices.add(propertyVertex);
+    });
+
+    // add hasInitialProperty for sortorder
+    if (propertyVertices.size() > 0) {
+      collectionVertex.addEdge("hasInitialProperty", propertyVertices.get(0));
+
+      // hasNextProperty for sortorder
+      Iterator<Vertex> propertyIterator = propertyVertices.iterator();
+      Vertex previous = propertyIterator.next();
+      Vertex next = propertyIterator.hasNext() ? propertyIterator.next() : null;
+
+      while (next != null) {
+        previous.addEdge("hasNextProperty", next);
+        previous = next;
+        next = propertyIterator.hasNext() ? propertyIterator.next() : null;
+      }
     }
+  }
 
+  private void saveArchetypeRelation(Graph graph, Vertex collectionVertex) {
     // Set the hasArchetype edge for non-Admin collections
     if (!abstractType.equals(entityTypeName)) {
       GraphTraversal<Vertex, Vertex> archetype = graph.traversal().V().hasLabel("collection")
@@ -122,26 +162,21 @@ public class Collection {
     } else {
       LOG.warn("Assuming collection {} is archetype because entityTypeName is equal to abstractType", collectionName);
     }
+  }
 
-    collectionVertex.property("collectionName", collectionName);
-    collectionVertex.property("entityTypeName", entityTypeName);
+  private Vertex findOrCreateCollectionVertex(Graph graph) {
+    Vertex collectionVertex;
+    GraphTraversal<Vertex, Vertex> existing = graph.traversal().V().hasLabel("collection")
+                                                   .has("collectionName", collectionName);
 
-    // Drop any existing property configurations
-    collectionVertex.vertices(Direction.OUT, "hasProperty", "hasDisplayName", "hasInitialProperty")
-                    .forEachRemaining(Element::remove);
-
-
-    // Add property configurations
-    writeableProperties.forEach((clientPropertyName, property) -> {
-      LOG.info("Adding property {} to collection {}", clientPropertyName, collectionName);
-      collectionVertex.addEdge("hasProperty", property.persistToDatabase(graphWrapper, clientPropertyName));
-    });
-
-    // add hasInitialProperty edge for sortorder
-
-    // set hasNextProperty edges to property vertices
-
-
+    // Create new if does not exist
+    if (existing.hasNext()) {
+      collectionVertex = existing.next();
+      LOG.info("Replacing existing vertex {}.", collectionVertex);
+    } else {
+      collectionVertex = graph.addVertex("collection");
+      LOG.info("Creating new vertex");
+    }
     return collectionVertex;
   }
   //derivedRelations

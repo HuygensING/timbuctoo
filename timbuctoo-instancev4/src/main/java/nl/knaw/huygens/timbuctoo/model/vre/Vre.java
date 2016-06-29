@@ -82,24 +82,27 @@ public class Vre {
     return collections;
   }
 
-  public Vertex persistToDatabase(GraphWrapper graphWrapper, Optional<Map<String, String>> keywordTypes) {
+  public Vertex save(GraphWrapper graphWrapper, Optional<Map<String, String>> keywordTypes) {
     LOG.info("Persisting vre '{}' to database", vreName);
     Graph graph = graphWrapper.getGraph();
 
-    // Look for existing VRE vertex
-    GraphTraversal<Vertex, Vertex> existing = graph.traversal().V().hasLabel("VRE").has("name", vreName);
+    Vertex vreVertex = findOrCreateVreVertex(graph);
 
-    Vertex vreVertex;
-    // Create new if does not exist
-    if (existing.hasNext()) {
-      vreVertex = existing.next();
-      LOG.info("Replacing existing vertex {}.", vreVertex);
-    } else {
-      vreVertex = graph.addVertex("VRE");
-      LOG.info("Creating new vertex");
-    }
+    saveProperties(keywordTypes, vreVertex);
 
-    // Add properties
+    saveCollections(graphWrapper, vreVertex);
+
+    return vreVertex;
+  }
+
+  private void saveCollections(GraphWrapper graphWrapper, Vertex vreVertex) {
+    getCollections().forEach((name, collection) -> {
+      LOG.info("Adding collection {} to VRE {}", name, vreName);
+      vreVertex.addEdge("hasCollection", collection.save(graphWrapper));
+    });
+  }
+
+  private void saveProperties(Optional<Map<String, String>> keywordTypes, Vertex vreVertex) {
     vreVertex.property("name", vreName);
     if (keywordTypes.isPresent()) {
       try {
@@ -108,13 +111,20 @@ public class Vre {
         LOG.error("Failed to serialize keyword types to JSON {}", keywordTypes.get());
       }
     }
+  }
 
-    // Add relations and child collections
-    getCollections().forEach((name, collection) -> {
-      LOG.info("Adding collection {} to VRE {}", name, vreName);
-      vreVertex.addEdge("hasCollection", collection.persistToDatabase(graphWrapper));
-    });
-
+  private Vertex findOrCreateVreVertex(Graph graph) {
+    // Look for existing VRE vertex
+    Vertex vreVertex;
+    GraphTraversal<Vertex, Vertex> existing = graph.traversal().V().hasLabel("VRE").has("name", vreName);
+    // Create new if does not exist
+    if (existing.hasNext()) {
+      vreVertex = existing.next();
+      LOG.info("Replacing existing vertex {}.", vreVertex);
+    } else {
+      vreVertex = graph.addVertex("VRE");
+      LOG.info("Creating new vertex");
+    }
     return vreVertex;
   }
 }
