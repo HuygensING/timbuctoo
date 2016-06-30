@@ -22,6 +22,8 @@ import java.util.function.Supplier;
 
 public class LocalProperty extends ReadableProperty {
   private static final Logger LOG = LoggerFactory.getLogger(ReadableProperty.class);
+  public static final String DATABASE_PROPERTY_NAME = "dbName";
+  public static final String OPTIONS_PROPERTY_NAME = "options";
 
   private final String propName;
   private final Converter converter;
@@ -72,19 +74,13 @@ public class LocalProperty extends ReadableProperty {
 
   @Override
   public Vertex save(GraphWrapper graphWrapper, String clientPropertyName) {
-    Graph graph = graphWrapper.getGraph();
-    Vertex propertyVertex = graph.addVertex("property");
-    propertyVertex.property("clientName", clientPropertyName);
-    propertyVertex.property("dbName", propName);
-    final String typeId = getTypeId();
-    
-    if (typeId != null) {
-      propertyVertex.property("propertyType", typeId);
-    }
+    Vertex propertyVertex = super.save(graphWrapper, clientPropertyName);
+
+    propertyVertex.property(DATABASE_PROPERTY_NAME, propName);
 
     if (converter instanceof HasOptions) {
       try {
-        propertyVertex.property("options",
+        propertyVertex.property(OPTIONS_PROPERTY_NAME,
           new ObjectMapper().writeValueAsString(((HasOptions) converter).getOptions()));
       } catch (JsonProcessingException e) {
         LOG.error("Failed to write options to database for property {}", propName);

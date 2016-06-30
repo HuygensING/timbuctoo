@@ -20,6 +20,10 @@ import java.util.Set;
 
 public class Vre {
   private static final Logger LOG = LoggerFactory.getLogger(Vre.class);
+  public static final String HAS_COLLECTION_RELATION_NAME = "hasCollection";
+  public static final String VRE_NAME_PROPERTY_NAME = "name";
+  public static final String KEYWORD_TYPES_PROPERTY_NAME = "keywordTypes";
+  public static final String DATABASE_LABEL = "VRE";
 
   private final String vreName;
   private final LinkedHashMap<String, Collection> collections = Maps.newLinkedHashMap();
@@ -98,15 +102,15 @@ public class Vre {
   private void saveCollections(GraphWrapper graphWrapper, Vertex vreVertex) {
     getCollections().forEach((name, collection) -> {
       LOG.info("Adding collection {} to VRE {}", name, vreName);
-      vreVertex.addEdge("hasCollection", collection.save(graphWrapper));
+      vreVertex.addEdge(HAS_COLLECTION_RELATION_NAME, collection.save(graphWrapper));
     });
   }
 
   private void saveProperties(Optional<Map<String, String>> keywordTypes, Vertex vreVertex) {
-    vreVertex.property("name", vreName);
+    vreVertex.property(VRE_NAME_PROPERTY_NAME, vreName);
     if (keywordTypes.isPresent()) {
       try {
-        vreVertex.property("keywordTypes", new ObjectMapper().writeValueAsString(keywordTypes.get()));
+        vreVertex.property(KEYWORD_TYPES_PROPERTY_NAME, new ObjectMapper().writeValueAsString(keywordTypes.get()));
       } catch (JsonProcessingException e) {
         LOG.error("Failed to serialize keyword types to JSON {}", keywordTypes.get());
       }
@@ -116,13 +120,14 @@ public class Vre {
   private Vertex findOrCreateVreVertex(Graph graph) {
     // Look for existing VRE vertex
     Vertex vreVertex;
-    GraphTraversal<Vertex, Vertex> existing = graph.traversal().V().hasLabel("VRE").has("name", vreName);
+    GraphTraversal<Vertex, Vertex> existing = graph.traversal().V().hasLabel(DATABASE_LABEL)
+                                                   .has(VRE_NAME_PROPERTY_NAME, vreName);
     // Create new if does not exist
     if (existing.hasNext()) {
       vreVertex = existing.next();
       LOG.info("Replacing existing vertex {}.", vreVertex);
     } else {
-      vreVertex = graph.addVertex("VRE");
+      vreVertex = graph.addVertex(DATABASE_LABEL);
       LOG.info("Creating new vertex");
     }
     return vreVertex;
