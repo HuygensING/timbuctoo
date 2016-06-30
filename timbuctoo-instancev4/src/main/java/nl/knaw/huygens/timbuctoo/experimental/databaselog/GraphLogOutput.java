@@ -98,7 +98,8 @@ class GraphLogOutput implements LogOutput {
 
   @Override
   public void deleteProperty(String propertyName) {
-    LOG.debug("Delete property {} ", propertyName);
+    LOG.debug("Delete property {} of vertex with id {}", propertyName, currentVertex.id());
+    currentVertex.property(propertyName, "!DELETED!");
   }
 
   @Override
