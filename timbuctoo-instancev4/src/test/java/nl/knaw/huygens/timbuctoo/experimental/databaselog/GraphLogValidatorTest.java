@@ -47,15 +47,7 @@ public class GraphLogValidatorTest {
                                      )
                                      .withVertex("v2", v -> v.withTimId(VERTEX_ID_1)
                                                              .withProperty("rev", 2)
-                                                             .withLabel("updateVertexEntry")
-                                                             .withOutgoingRelation("NEXT_ITEM", "v3"))
-                                     .withVertex("v3", v -> v.withLabel("createEdgeEntry")
-                                                             .withTimId("relId1")
-                                                             .withProperty("rev", 1)
-                                                             .withOutgoingRelation("NEXT_ITEM", "v4"))
-                                     .withVertex("v4", v -> v.withLabel("updateEdgeEntry")
-                                                             .withTimId("relId1")
-                                                             .withProperty("rev", 2))
+                                                             .withLabel("updateVertexEntry"))
                                      .wrap();
     GraphLogValidator graphLogValidator = new GraphLogValidator(wrapper);
     Writer writer = mock(Writer.class);
