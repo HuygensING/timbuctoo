@@ -34,6 +34,7 @@ public class Collection {
   public static final String HAS_ENTITY_NODE_RELATION_NAME = "hasEntityNode";
   public static final String HAS_PROPERTY_RELATION_NAME = "hasProperty";
   public static final String HAS_DISPLAY_NAME_RELATION_NAME = "hasDisplayName";
+  public static final String HAS_ENTITY_RELATION_NAME = "hasEntity";
   public static final String HAS_INITIAL_PROPERTY_RELATION_NAME = "hasInitialProperty";
 
   private final String entityTypeName;
