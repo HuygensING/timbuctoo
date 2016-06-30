@@ -1,7 +1,7 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
+package nl.knaw.huygens.timbuctoo.databaselog.entry;
 
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogOutput;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
+import nl.knaw.huygens.timbuctoo.databaselog.LogOutput;
+import nl.knaw.huygens.timbuctoo.databaselog.LogEntry;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 

@@ -1,9 +1,9 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
+import nl.knaw.huygens.timbuctoo.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;

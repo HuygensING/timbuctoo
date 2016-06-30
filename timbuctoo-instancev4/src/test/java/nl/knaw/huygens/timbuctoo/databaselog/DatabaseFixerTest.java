@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

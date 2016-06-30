@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.Change;

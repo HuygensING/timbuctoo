@@ -1,6 +1,6 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
+package nl.knaw.huygens.timbuctoo.databaselog.entry;
 
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogEntry;
+import nl.knaw.huygens.timbuctoo.databaselog.LogEntry;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;

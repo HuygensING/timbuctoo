@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Edge;

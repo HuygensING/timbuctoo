@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

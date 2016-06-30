@@ -1,6 +1,6 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
+import nl.knaw.huygens.timbuctoo.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.shaded.jackson.core.JsonProcessingException;

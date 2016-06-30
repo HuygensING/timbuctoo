@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
