@@ -97,17 +97,6 @@ public class GraphLogValidator {
     missingLogEntries.forEach(el -> el.writeLogString(writer));
   }
 
-  private void writeLogString(Writer writer, String type, Object id, Object timId, Object rev) {
-    String logString = String
-      .format("%s with id '%s' and tim_id '%s' and rev '%s' has no log entry.%n", type, id, timId, rev);
-    try {
-      LOG.info("write \"{}\"", logString);
-      writer.write(logString);
-    } catch (IOException e) {
-      LOG.error("Cannot write log string \"{}\"", logString);
-    }
-  }
-
   private static class ValidationElement {
     public static final ArrayList<String> EXCLUDE_FIELDS = Lists.newArrayList("id", "type");
     private final String type;
@@ -126,7 +115,7 @@ public class GraphLogValidator {
       String logString = String
         .format("%s with id '%s' and tim_id '%s' and rev '%s' has no log entry.%n", type, id, timId, rev);
       try {
-        LOG.info("write \"{}\"", logString);
+        LOG.debug("write \"{}\"", logString);
         writer.write(logString);
       } catch (IOException e) {
         LOG.error("Cannot write log string \"{}\"", logString);
