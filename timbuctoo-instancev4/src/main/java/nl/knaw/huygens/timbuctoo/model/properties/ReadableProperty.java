@@ -16,7 +16,7 @@ public abstract class ReadableProperty {
   private final Supplier<GraphTraversal<?, Try<JsonNode>>> getter;
 
   public static final String DATABASE_LABEL = "property";
-  public static final String DISPLAY_NAME_PROPERY_NAME = "@displayName";
+  public static final String DISPLAY_NAME_PROPERTY_NAME = "@displayName";
   public static final String CLIENT_PROPERTY_NAME = "clientName";
   public static final String PROPERTY_TYPE_NAME = "propertyType";
   public static final String HAS_NEXT_PROPERTY_RELATION_NAME = "hasNextProperty";

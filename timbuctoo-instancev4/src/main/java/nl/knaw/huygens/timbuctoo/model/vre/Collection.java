@@ -147,7 +147,7 @@ public class Collection {
     savePropertyConfigurationSortorder(collectionVertex, propertyVertices);
 
     if (displayName != null) {
-      Vertex displayNameVertex = displayName.save(graphWrapper, ReadableProperty.DISPLAY_NAME_PROPERY_NAME);
+      Vertex displayNameVertex = displayName.save(graphWrapper, ReadableProperty.DISPLAY_NAME_PROPERTY_NAME);
       collectionVertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayNameVertex);
     }
   }
