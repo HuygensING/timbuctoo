@@ -36,6 +36,7 @@ public class Collection {
   public static final String HAS_DISPLAY_NAME_RELATION_NAME = "hasDisplayName";
   public static final String HAS_ENTITY_RELATION_NAME = "hasEntity";
   public static final String HAS_INITIAL_PROPERTY_RELATION_NAME = "hasInitialProperty";
+  public static final String HAS_ARCHETYPE_RELATION_NAME = "hasArchetype";
 
   private final String entityTypeName;
   private final String collectionName;
@@ -185,7 +186,7 @@ public class Collection {
         LOG.error(databaseInvariant, "No archetype collection with entityTypeName {} present in the graph",
           abstractType);
       } else {
-        collectionVertex.addEdge("hasArchetype", archetype.next());
+        collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetype.next());
       }
     } else {
       LOG.warn("Assuming collection {} is archetype because entityTypeName is equal to abstractType", collectionName);

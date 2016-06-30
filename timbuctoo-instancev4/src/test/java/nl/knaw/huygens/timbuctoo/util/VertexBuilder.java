@@ -261,4 +261,8 @@ public class VertexBuilder {
 
     return this;
   }
+
+  public List<String> getLabels() {
+    return labels;
+  }
 }

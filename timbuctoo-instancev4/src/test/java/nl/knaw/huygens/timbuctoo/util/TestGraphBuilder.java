@@ -58,7 +58,16 @@ public class TestGraphBuilder {
     //finally add all the non-identifiable vertices
     vertexBuilders.forEach(
       (builder) -> {
-        Vertex vertex = neo4jGraph.addVertex();
+
+        Vertex vertex;
+        if (builder.getLabels().size() == 1) {
+          // If there is exactly one label, it is still a valid tinkerpop vertex and needs to be passed to the
+          // addVertex method
+          vertex = neo4jGraph.addVertex(builder.getLabels().get(0));
+        } else {
+          vertex = neo4jGraph.addVertex();
+        }
+
         builder.build(vertex);
         builder.setRelations(vertex, identifiableVertices);
       }
