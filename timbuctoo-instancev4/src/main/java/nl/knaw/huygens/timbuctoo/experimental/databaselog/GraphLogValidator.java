@@ -59,7 +59,7 @@ public class GraphLogValidator {
                                                                .map(v -> new ValidationElement(
                                                                  "Vertex",
                                                                  v.get().id(),
-                                                                 v.get().value("tim_id"),
+                                                                 v.get().value("TIM_tim_id"),
                                                                  v.get().value("rev")))
                                                                .toSet();
 
@@ -89,7 +89,7 @@ public class GraphLogValidator {
                                                              .map(e -> new ValidationElement(
                                                                "Edge",
                                                                e.get().id(),
-                                                               e.get().value("tim_id"),
+                                                               e.get().value("TIM_tim_id"),
                                                                e.get().value("rev")))
                                                              .toSet();
 

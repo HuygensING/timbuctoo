@@ -37,7 +37,7 @@ class GraphLogOutput implements LogOutput {
     Vertex previousVertex = currentVertex;
     currentVertex = graphWrapper.getGraph().addVertex("createVertexEntry");
     previousVertex.addEdge("NEXT_ITEM", currentVertex);
-    currentVertex.property("tim_id", vertex.value("tim_id"));
+    currentVertex.property("TIM_tim_id", vertex.value("tim_id"));
     commit();
   }
 
@@ -47,7 +47,7 @@ class GraphLogOutput implements LogOutput {
     Vertex previousVertex = currentVertex;
     currentVertex = graphWrapper.getGraph().addVertex("updateVertexEntry");
     previousVertex.addEdge("NEXT_ITEM", currentVertex);
-    currentVertex.property("tim_id", vertex.value("tim_id"));
+    currentVertex.property("TIM_tim_id", vertex.value("tim_id"));
     commit();
   }
 
@@ -57,9 +57,9 @@ class GraphLogOutput implements LogOutput {
     Vertex previousVertex = currentVertex;
     currentVertex = graphWrapper.getGraph().addVertex("createEdgeEntry");
     previousVertex.addEdge("NEXT_ITEM", currentVertex);
-    currentVertex.property("inVertex", edge.inVertex().value("tim_id"));
-    currentVertex.property("outVertex", edge.outVertex().value("tim_id"));
-    currentVertex.property("tim_id", edge.value("tim_id"));
+    currentVertex.property("TIM_inVertex", edge.inVertex().value("tim_id"));
+    currentVertex.property("TIM_outVertex", edge.outVertex().value("tim_id"));
+    currentVertex.property("TIM_tim_id", edge.value("tim_id"));
     commit();
   }
 
@@ -69,9 +69,9 @@ class GraphLogOutput implements LogOutput {
     Vertex previousVertex = currentVertex;
     currentVertex = graphWrapper.getGraph().addVertex("updateEdgeEntry");
     previousVertex.addEdge("NEXT_ITEM", currentVertex);
-    currentVertex.property("inVertex", edge.inVertex().value("tim_id"));
-    currentVertex.property("outVertex", edge.outVertex().value("tim_id"));
-    currentVertex.property("tim_id", edge.value("tim_id"));
+    currentVertex.property("TIM_inVertex", edge.inVertex().value("tim_id"));
+    currentVertex.property("TIM_outVertex", edge.outVertex().value("tim_id"));
+    currentVertex.property("TIM_tim_id", edge.value("tim_id"));
     commit();
   }
 
