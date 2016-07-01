@@ -1,7 +1,7 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog.entry;
+package nl.knaw.huygens.timbuctoo.databaselog.entry;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.LogOutput;
+import nl.knaw.huygens.timbuctoo.databaselog.LogOutput;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.junit.Test;
 
