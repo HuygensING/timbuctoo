@@ -28,7 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class HuygensIngConfigToDatabaseMigrationTest {
+public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
   private GraphWrapper graphWrapper;
 
   @Before
