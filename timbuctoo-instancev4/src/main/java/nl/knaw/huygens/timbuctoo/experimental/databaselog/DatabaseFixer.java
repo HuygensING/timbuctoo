@@ -8,8 +8,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
 import java.util.Objects;
@@ -21,7 +19,6 @@ import java.util.Optional;
  * not be usable for restoring a former state. This class will add a placeholder for the missing Vertices and  Edges.
  */
 public class DatabaseFixer {
-  public static final Logger LOG = LoggerFactory.getLogger(DatabaseFixer.class);
   private final GraphWrapper graphWrapper;
 
   public DatabaseFixer(GraphWrapper graphWrapper) {
