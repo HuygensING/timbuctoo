@@ -1,22 +1,29 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.HasOptions;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
-
 public class LocalProperty extends ReadableProperty {
+  private static final Logger LOG = LoggerFactory.getLogger(ReadableProperty.class);
+  public static final String DATABASE_PROPERTY_NAME = "dbName";
+  public static final String OPTIONS_PROPERTY_NAME = "options";
+
   private final String propName;
   private final Converter converter;
 
@@ -26,9 +33,7 @@ public class LocalProperty extends ReadableProperty {
     this.converter = converter;
   }
 
-  public String getGuiTypeId() {
-    return converter.getTypeIdentifier();
-  }
+
 
   public Optional<Collection<String>> getOptions() {
     if (converter instanceof HasOptions) {
@@ -57,7 +62,29 @@ public class LocalProperty extends ReadableProperty {
   public GraphTraversal<?, Try<ExcelDescription>> getExcelDescription() {
     Supplier<GraphTraversal<?, Try<ExcelDescription>>> supplier =
       () -> __.<Object, String>values(propName).map(prop -> Try.of(() ->
-        converter.tinkerPopToExcel(prop.get(), getGuiTypeId())));
+        converter.tinkerPopToExcel(prop.get(), getTypeId())));
     return supplier.get();
+  }
+
+  @Override
+  public String getTypeId() {
+    return converter.getTypeIdentifier();
+  }
+
+  @Override
+  public Vertex save(Graph graph, String clientPropertyName) {
+    Vertex propertyVertex = super.save(graph, clientPropertyName);
+
+    propertyVertex.property(DATABASE_PROPERTY_NAME, propName);
+
+    if (converter instanceof HasOptions) {
+      try {
+        propertyVertex.property(OPTIONS_PROPERTY_NAME,
+          new ObjectMapper().writeValueAsString(((HasOptions) converter).getOptions()));
+      } catch (JsonProcessingException e) {
+        LOG.error("Failed to write options to database for property {}", propName);
+      }
+    }
+    return propertyVertex;
   }
 }

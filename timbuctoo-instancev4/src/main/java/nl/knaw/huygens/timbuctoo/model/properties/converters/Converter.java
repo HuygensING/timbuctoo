@@ -10,9 +10,7 @@ public interface Converter {
 
   JsonNode tinkerpopToJson(Object value) throws IOException;
 
-  default String getTypeIdentifier() {
-    return null; //null indicates that the type is not available for inclusion in the metadata
-  }
+  String getTypeIdentifier();
 
   ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException;
 }

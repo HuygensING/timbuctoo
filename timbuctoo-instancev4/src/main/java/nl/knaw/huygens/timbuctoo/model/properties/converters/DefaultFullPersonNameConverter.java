@@ -27,6 +27,11 @@ public class DefaultFullPersonNameConverter implements Converter {
   }
 
   @Override
+  public String getTypeIdentifier() {
+    return "default-person-display-name";
+  }
+
+  @Override
   public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
     return new PersonNamesExcelDescription(converter.tinkerpopToJava(value), typeId);
   }

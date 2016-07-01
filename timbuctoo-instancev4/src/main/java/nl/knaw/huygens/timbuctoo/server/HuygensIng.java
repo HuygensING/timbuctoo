@@ -12,15 +12,14 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwPersonNameOrTempName;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwdocumentDisplayNameProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.altNames;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultFullPersonNameConverter;
-import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultLocationNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.gender;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.hyperlinks;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringArrayToEncodedArrayOf;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringOfYesNoUnknown;
-import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToEncodedStringOf;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToUnencodedStringOf;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -390,7 +389,7 @@ public class HuygensIng {
     .withVre("Base", "base", v -> v
       .withCollection("baselocations", c -> c.withDisplayName(localProperty("tim_id")))
       .withCollection("baselanguages", c -> c.withDisplayName(localProperty("tim_id"))))
-    .withVre("cnw", "", vre -> vre
+    .withVre("cnw", "cnw", vre -> vre
     .withCollection("cnwpersons", c -> c
       .withDisplayName(localProperty("cnwperson_names", defaultFullPersonNameConverter))
       .withProperty("names", localProperty("cnwperson_names", personNames))
