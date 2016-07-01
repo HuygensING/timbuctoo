@@ -20,12 +20,39 @@ module Person
 	    "notes_t",
 	    "children_s"
 	]
+
+    Relation_types = [
+	"hasResidenceLocation",
+	"hasBirthPlace",
+	"hasDeathPlace",
+	"hasMaritalStatus",
+	"hasSocialClass",
+	"hasEducation",
+	"hasReligion",
+	"hasProfession",
+	"hasFinancialSituation",
+	"isMemberOf"
+    ]
+
+    Wanted_relations = [
+	"relatedLocations_ss",
+	"birthPlace_ss",
+	"deathPlace_ss",
+	"maritalStatus_ss",
+	"socialClass_ss",
+	"education_ss",
+	"religion_ss",
+	"profession_ss",
+	"financialSituation_ss",
+	"memberships_ss",
+    ]
+
     
     def Person.build_person obj
 	new_person = Hash.new
 	new_person['type_s'] = "person"
 	Wanted_properties.each do |property|
-	    if property.eql?("birthDate") || property.eql?("deathDate")
+	    if (property.eql?("birthDate") || property.eql?("deathDate")) && !obj[property].nil?
 		new_person[New_prop_names[Wanted_properties.index(property)]] = obj[property].to_i
 	    else
 		new_person[New_prop_names[Wanted_properties.index(property)]] = obj[property]
@@ -35,6 +62,9 @@ module Person
 	if !obj['names'].nil?
 	    new_person['name_t'] = Person.build_name obj['names']
 	end
+
+	new_person = Person.build_relations(obj, new_person)
+
 	return new_person
     end
     
@@ -63,6 +93,37 @@ module Person
 	end
     
 	return new_names.join(" ")
+    end
+
+    def Person.build_relations old_person, new_person
+	Wanted_relations.each_with_index do |rel,ind|
+	    new_person[rel] = Array.new
+	    if ind==0
+		if !old_person['@relations'].nil?
+		    (0..2).each do |ind_2|
+			if !old_person['@relations'][Relation_types[ind_2]].nil?
+			    old_person['@relations'][Relation_types[ind_2]].each do |rt|
+				if rt['accepted']
+				    new_person[rel] << rt['displayName']
+				end
+			    end
+			end
+		    end
+		end
+	    else
+		if !old_person['@relations'].nil?
+		    if !old_person['@relations'][Relation_types[ind]].nil?
+			old_person['@relations'][Relation_types[ind]].each do |rt|
+			    if rt['accepted']
+				new_person[rel] << rt['displayName']
+			    end
+			end
+		    end
+		end
+	    end
+	    new_person[rel].uniq!
+	end
+	return new_person
     end
 
 end
