@@ -30,24 +30,6 @@ public class ReadablePropertyTest {
     ReadableProperty readableProperty = new ReadableProperty(null) {
       @Override
       public String getTypeId() {
-        return null;
-      }
-    };
-
-    Vertex result = readableProperty.save(graphWrapper, "client-prop-name");
-
-    assertThat(result, likeVertex()
-      .withoutProperty(PROPERTY_TYPE_NAME)
-      .withProperty(CLIENT_PROPERTY_NAME, "client-prop-name")
-      .withLabel(DATABASE_LABEL)
-    );
-  }
-
-  @Test
-  public void saveSetsThePropertyTypeWhenAvailable() {
-    ReadableProperty readableProperty = new ReadableProperty(null) {
-      @Override
-      public String getTypeId() {
         return "type-id";
       }
     };
@@ -55,7 +37,9 @@ public class ReadablePropertyTest {
     Vertex result = readableProperty.save(graphWrapper, "client-prop-name");
 
     assertThat(result, likeVertex()
+      .withProperty(CLIENT_PROPERTY_NAME, "client-prop-name")
       .withProperty(PROPERTY_TYPE_NAME, "type-id")
+      .withLabel(DATABASE_LABEL)
     );
   }
 }

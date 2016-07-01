@@ -35,10 +35,7 @@ public abstract class ReadableProperty {
     Graph graph = graphWrapper.getGraph();
     Vertex propertyVertex = graph.addVertex(DATABASE_LABEL);
     propertyVertex.property(CLIENT_PROPERTY_NAME, clientPropertyName);
-    final String typeId = getTypeId();
-    if (typeId != null) {
-      propertyVertex.property(PROPERTY_TYPE_NAME, typeId);
-    }
+    propertyVertex.property(PROPERTY_TYPE_NAME, getTypeId());
     return propertyVertex;
   }
 }
