@@ -143,14 +143,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       authHandler
     );
 
-    final Vres vres = HuygensIng.mappings;
+
     // Database migrations
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
     migrations.put(LabelDatabaseMigration.class.getName(), new LabelDatabaseMigration());
     migrations.put(WwPersonSortIndexesDatabaseMigration.class.getName(), new WwPersonSortIndexesDatabaseMigration());
     migrations
       .put(WwDocumentSortIndexesDatabaseMigration.class.getName(), new WwDocumentSortIndexesDatabaseMigration());
-    migrations.put(InvariantsFix.class.getName(), new InvariantsFix(vres));
+    migrations.put(InvariantsFix.class.getName(), new InvariantsFix(HuygensIng.mappings));
     migrations
       .put(AutocompleteLuceneIndexDatabaseMigration.class.getName(), new AutocompleteLuceneIndexDatabaseMigration());
     migrations.put(LocationNamesToLocationNameDatabaseMigration.class.getName(),
@@ -158,9 +158,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Persist HuygensIng mappings in database
     migrations.put("config-to-database-migration",
-      new HuygensIngConfigToDatabaseMigration(vres, HuygensIng.keywordTypes));
+      new HuygensIngConfigToDatabaseMigration(HuygensIng.mappings, HuygensIng.keywordTypes));
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
+    final Vres vres = HuygensIng.mappings; // FIXME use database
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
