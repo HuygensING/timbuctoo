@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import com.google.common.collect.Iterators;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
@@ -139,7 +139,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void throwsOnUnknownProperties() throws Exception {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("WomenWriters", "ww", vre -> vre
         .withCollection("wwpersons", c -> c
           .withProperty("name", localProperty("wwname"))
@@ -156,7 +156,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void setsJsonPropertyMapForKnownProperties() throws Exception {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("WomenWriters", "ww", vre -> vre
         .withCollection("wwpersons", c -> c
           .withProperty("name", localProperty("wwname"))
@@ -182,7 +182,7 @@ public class TinkerpopJsonCrudServiceCreateTest {
     doThrow(new IOException("PARSE ERROR")).when(throwingMap).setJson(any(), any());
 
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("WomenWriters", "ww", vre -> vre
         .withCollection("wwpersons", c -> c
           .withProperty("name", throwingMap)

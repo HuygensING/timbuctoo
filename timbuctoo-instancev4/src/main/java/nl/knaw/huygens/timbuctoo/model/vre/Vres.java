@@ -1,16 +1,12 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Consumer;
 
-import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
-import static nl.knaw.huygens.timbuctoo.model.vre.VreBuilder.vre;
 
 public class Vres {
   private final Map<String, Collection> collections = new HashMap<>();
@@ -42,25 +38,5 @@ public class Vres {
 
   public Map<String, Vre> getVres() {
     return vres;
-  }
-
-  public static class Builder {
-    private final List<VreBuilder> vres = new ArrayList<>();
-
-    public Builder withVre(String name, String prefix, Consumer<VreBuilder> config) {
-      VreBuilder vre = vre(name, prefix);
-      vres.add(vre);
-      config.accept(vre);
-      return this;
-    }
-
-    public Builder withVre(String name, String prefix) {
-      vres.add(vre(name, prefix));
-      return this;
-    }
-
-    public Vres build() {
-      return new Vres(vres.stream().map(VreBuilder::build).collect(toList()));
-    }
   }
 }
