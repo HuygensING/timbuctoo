@@ -99,7 +99,7 @@ public class Vre {
 
   private void saveCollections(Graph graphWrapper, Vertex vreVertex) {
     getCollections().forEach((name, collection) -> {
-      LOG.info("Adding collection {} to VRE {}", name, vreName);
+      LOG.debug("Adding collection {} to VRE {}", name, vreName);
       vreVertex.addEdge(HAS_COLLECTION_RELATION_NAME, collection.save(graphWrapper));
     });
   }
@@ -123,10 +123,10 @@ public class Vre {
     // Create new if does not exist
     if (existing.hasNext()) {
       vreVertex = existing.next();
-      LOG.info("Replacing existing vertex {}.", vreVertex);
+      LOG.debug("Replacing existing vertex {}.", vreVertex);
     } else {
       vreVertex = graph.addVertex(DATABASE_LABEL);
-      LOG.info("Creating new vertex");
+      LOG.debug("Creating new vertex");
     }
     return vreVertex;
   }

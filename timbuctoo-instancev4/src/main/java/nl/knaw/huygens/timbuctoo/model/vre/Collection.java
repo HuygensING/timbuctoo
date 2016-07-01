@@ -131,7 +131,7 @@ public class Collection {
     // Add property configurations
     List<Vertex> propertyVertices = new ArrayList<>();
     writeableProperties.forEach((clientPropertyName, property) -> {
-      LOG.info("Adding property {} to collection {}", clientPropertyName, collectionName);
+      LOG.debug("Adding property {} to collection {}", clientPropertyName, collectionName);
       final Vertex propertyVertex = property.save(graph, clientPropertyName);
       collectionVertex.addEdge(HAS_PROPERTY_RELATION_NAME, propertyVertex);
       propertyVertices.add(propertyVertex);
@@ -194,10 +194,10 @@ public class Collection {
     // Create new if does not exist
     if (existing.hasNext()) {
       collectionVertex = existing.next();
-      LOG.info("Replacing existing vertex {}.", collectionVertex);
+      LOG.debug("Replacing existing vertex {}.", collectionVertex);
     } else {
       collectionVertex = graph.addVertex(DATABASE_LABEL);
-      LOG.info("Creating new vertex");
+      LOG.debug("Creating new vertex");
     }
     return collectionVertex;
   }
