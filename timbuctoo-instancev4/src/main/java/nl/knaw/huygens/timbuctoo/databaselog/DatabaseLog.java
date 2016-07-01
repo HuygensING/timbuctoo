@@ -1,9 +1,9 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.experimental.databaselog.entry.LogEntryFactory;
+import nl.knaw.huygens.timbuctoo.databaselog.entry.LogEntryFactory;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -59,7 +59,7 @@ public class DatabaseLog {
   }
 
   DatabaseLog(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory) {
-    this(graphWrapper, logEntryFactory, new LogOutput());
+    this(graphWrapper, logEntryFactory, new GraphLogOutput(graphWrapper));
   }
 
   DatabaseLog(GraphWrapper graphWrapper, LogEntryFactory logEntryFactory, LogOutput logOutput) {
@@ -76,8 +76,9 @@ public class DatabaseLog {
       GraphTraversal<Vertex, ? extends Element> results = graphWrapper
       .getGraph()
       .traversal()
-      .V().has("modified")
+      .V().has("modified").has("rev").has("tim_id")
       .not(__.has(T.label, LabelP.of("searchresult"))) // ignore search results
+      .not(__.bothE("NEXT_ITEM")) // ignore database log items
       .union(__.identity(), __.outE().has("modified"))
       /* add each version once, , usually the last version consists of 2 Edges / Vertices, one with isLatest on true and
        * a copy.
@@ -88,9 +89,11 @@ public class DatabaseLog {
 
     List<Edge> edges = Lists.newArrayList();
     List<Vertex> vertices = Lists.newArrayList();
+    logOutput.prepareToWrite();
     for (; results.hasNext(); ) {
       Element element = results.next();
       String modifiedString = element.value("modified");
+
       try {
         long curTimestamp = getTimestampFromChangeString(modifiedString);
         /* To make sure the EdgeLogEntries are added right behind the VertexLogEntries with the same timestamp, add
@@ -121,6 +124,7 @@ public class DatabaseLog {
     vertices.clear();
     edges.forEach(edge -> logEntryFactory.createForEdge(edge).appendToLog(logOutput));
     edges.clear();
+    logOutput.finishWriting();
   }
 
   private long getTimestampFromChangeString(String changeString) throws IOException {

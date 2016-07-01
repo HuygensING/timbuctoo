@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.experimental.databaselog;
+package nl.knaw.huygens.timbuctoo.databaselog;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -14,13 +14,13 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-public class LogOutput {
+public class FileLogOutput implements LogOutput {
 
-  public static final Logger LOG = LoggerFactory.getLogger(LogOutput.class);
+  public static final Logger LOG = LoggerFactory.getLogger(FileLogOutput.class);
   private final ObjectMapper objectMapper;
   private final BufferedWriter writer;
 
-  public LogOutput() {
+  public FileLogOutput() {
     objectMapper = new ObjectMapper();
     try {
       writer = Files.newBufferedWriter(Paths.get("dblog"), Charset.forName("UTF-8"));
@@ -29,6 +29,12 @@ public class LogOutput {
     }
   }
 
+  @Override
+  public void prepareToWrite() {
+    // nothing to do
+  }
+
+  @Override
   public void newVertex(Vertex vertex) {
     String modifiedString = vertex.value("modified");
 
@@ -41,6 +47,7 @@ public class LogOutput {
     }
   }
 
+  @Override
   public void updateVertex(Vertex vertex) {
     String modifiedString = vertex.value("modified");
 
@@ -53,6 +60,7 @@ public class LogOutput {
     }
   }
 
+  @Override
   public void newEdge(Edge edge) {
     String modifiedString = edge.value("modified");
     try {
@@ -69,6 +77,7 @@ public class LogOutput {
     }
   }
 
+  @Override
   public void updateEdge(Edge edge) {
     String modifiedString = edge.value("modified");
     try {
@@ -84,6 +93,7 @@ public class LogOutput {
     }
   }
 
+  @Override
   public void newProperty(Property property) {
     try {
       writeAndFlush(String.format("Property '%s' set to '%s'.%n", property.key(), property.value()));
@@ -92,6 +102,7 @@ public class LogOutput {
     }
   }
 
+  @Override
   public void updateProperty(Property property) {
     try {
       writeAndFlush(String.format("Property '%s' set to '%s'.%n", property.key(), property.value()));
@@ -100,6 +111,7 @@ public class LogOutput {
     }
   }
 
+  @Override
   public void deleteProperty(String propertyName) {
 
     try {
@@ -107,6 +119,11 @@ public class LogOutput {
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  @Override
+  public void finishWriting() {
+    // nothing to do
   }
 
   private void writeAndFlush(String format) throws IOException {
