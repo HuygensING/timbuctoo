@@ -41,36 +41,38 @@ public class HuygensIngConfigToDatabaseMigration implements DatabaseMigration {
       transaction.open();
     }
 
+    // Admin needs to come first, so all collection vertices can point to an existing
+    // admin variant with the hasArchetype edge
+    saveVre(graphWrapper, transaction, "Admin");
+
     mappings
       .getVres()
       .keySet()
       .stream()
-      // Admin needs to come first, so all collection vertices can point to an existing
-      // admin variant with the hasArchetype edge
-      .sorted((nameA, nameB) -> nameA.equals("Admin") ? -1 : 1)
-      .forEach((name) -> {
-        final Vre vre = mappings.getVre(name);
-        Vertex vreVertex = vre.save(graph, Optional.ofNullable(keywordTypes.get(name)));
-        transaction.commit();
-
-        // Add entities from each collection to the holder vertex using hasCollectionVertex relation
-        vreVertex.vertices(Direction.OUT, Vre.HAS_COLLECTION_RELATION_NAME).forEachRemaining(collectionV -> {
-          Vertex entityHolderVertex = collectionV
-            .vertices(Direction.OUT, Collection.HAS_ENTITY_NODE_RELATION_NAME).next();
-
-          int verticesAddedToCollection = graphWrapper
-            .getCurrentEntitiesFor((String) collectionV.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME).value())
-            .sideEffect((entityT) -> {
-              entityHolderVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, entityT.get());
-            }).toList().size();
-
-          LOG.info("Added {} entities to collection {}.", verticesAddedToCollection,
-            collectionV.property(Collection.COLLECTION_NAME_PROPERTY_NAME).value());
-        });
-
-        transaction.commit();
-      });
+      .filter((name) -> !name.equals("Admin"))
+      .forEach((name) -> saveVre(graphWrapper, transaction, name));
 
     transaction.close();
+  }
+
+  private void saveVre(GraphWrapper graphWrapper, Transaction transaction, String vreName) {
+    Graph graph = graphWrapper.getGraph();
+    Vertex adminVreVertex = mappings.getVre(vreName).save(graph, Optional.ofNullable(keywordTypes.get(vreName)));
+    transaction.commit();
+
+    // Add entities from each collection to the holder vertex using hasCollectionVertex relation
+    adminVreVertex.vertices(Direction.OUT, Vre.HAS_COLLECTION_RELATION_NAME).forEachRemaining(collectionV -> {
+      Vertex entityHolderVertex = collectionV
+        .vertices(Direction.OUT, Collection.HAS_ENTITY_NODE_RELATION_NAME).next();
+
+      int verticesAddedToCollection = graphWrapper
+        .getCurrentEntitiesFor((String) collectionV.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME).value())
+        .sideEffect((entityT) -> {
+          entityHolderVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, entityT.get());
+        }).toList().size();
+
+      LOG.info("Added {} entities to collection {}.", verticesAddedToCollection,
+        collectionV.property(Collection.COLLECTION_NAME_PROPERTY_NAME).value());
+    });
   }
 }
