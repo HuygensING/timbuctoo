@@ -157,7 +157,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new LocationNamesToLocationNameDatabaseMigration());
 
     // Persist HuygensIng mappings in database
-    migrations.put("config-to-database-migration-1",
+    migrations.put("config-to-database-migration",
       new HuygensIngConfigToDatabaseMigration(vres, HuygensIng.keywordTypes));
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);

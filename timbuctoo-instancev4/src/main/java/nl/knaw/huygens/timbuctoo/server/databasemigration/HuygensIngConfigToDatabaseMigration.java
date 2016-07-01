@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -33,7 +34,8 @@ public class HuygensIngConfigToDatabaseMigration implements DatabaseMigration {
 
   @Override
   public void execute(GraphWrapper graphWrapper) throws IOException {
-    Transaction transaction = graphWrapper.getGraph().tx();
+    Graph graph = graphWrapper.getGraph();
+    Transaction transaction = graph.tx();
 
     if (!transaction.isOpen()) {
       transaction.open();
@@ -48,7 +50,7 @@ public class HuygensIngConfigToDatabaseMigration implements DatabaseMigration {
       .sorted((nameA, nameB) -> nameA.equals("Admin") ? -1 : 1)
       .forEach((name) -> {
         final Vre vre = mappings.getVre(name);
-        Vertex vreVertex = vre.save(graphWrapper, Optional.ofNullable(keywordTypes.get(name)));
+        Vertex vreVertex = vre.save(graph, Optional.ofNullable(keywordTypes.get(name)));
         transaction.commit();
 
         // Add entities from each collection to the holder vertex using hasCollectionVertex relation

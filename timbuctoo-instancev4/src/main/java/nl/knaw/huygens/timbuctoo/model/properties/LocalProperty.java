@@ -7,7 +7,6 @@ import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.HasOptions;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -73,8 +72,8 @@ public class LocalProperty extends ReadableProperty {
   }
 
   @Override
-  public Vertex save(GraphWrapper graphWrapper, String clientPropertyName) {
-    Vertex propertyVertex = super.save(graphWrapper, clientPropertyName);
+  public Vertex save(Graph graph, String clientPropertyName) {
+    Vertex propertyVertex = super.save(graph, clientPropertyName);
 
     propertyVertex.property(DATABASE_PROPERTY_NAME, propName);
 

@@ -1,11 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import javaslang.control.Try;
-import nl.knaw.huygens.timbuctoo.model.properties.converters.HasOptions;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -31,8 +27,7 @@ public abstract class ReadableProperty {
 
   public abstract String getTypeId();
 
-  public Vertex save(GraphWrapper graphWrapper, String clientPropertyName) {
-    Graph graph = graphWrapper.getGraph();
+  public Vertex save(Graph graph, String clientPropertyName) {
     Vertex propertyVertex = graph.addVertex(DATABASE_LABEL);
     propertyVertex.property(CLIENT_PROPERTY_NAME, clientPropertyName);
     propertyVertex.property(PROPERTY_TYPE_NAME, getTypeId());

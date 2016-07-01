@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -86,20 +85,19 @@ public class Vre {
     return collections;
   }
 
-  public Vertex save(GraphWrapper graphWrapper, Optional<Map<String, String>> keywordTypes) {
+  public Vertex save(Graph graph, Optional<Map<String, String>> keywordTypes) {
     LOG.info("Persisting vre '{}' to database", vreName);
-    Graph graph = graphWrapper.getGraph();
 
     Vertex vreVertex = findOrCreateVreVertex(graph);
 
     saveProperties(keywordTypes, vreVertex);
 
-    saveCollections(graphWrapper, vreVertex);
+    saveCollections(graph, vreVertex);
 
     return vreVertex;
   }
 
-  private void saveCollections(GraphWrapper graphWrapper, Vertex vreVertex) {
+  private void saveCollections(Graph graphWrapper, Vertex vreVertex) {
     getCollections().forEach((name, collection) -> {
       LOG.info("Adding collection {} to VRE {}", name, vreName);
       vreVertex.addEdge(HAS_COLLECTION_RELATION_NAME, collection.save(graphWrapper));

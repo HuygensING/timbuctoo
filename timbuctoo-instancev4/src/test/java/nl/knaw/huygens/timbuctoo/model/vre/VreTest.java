@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -25,17 +24,13 @@ import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 public class VreTest {
-  private GraphWrapper graphWrapper;
+  private Graph graph;
 
   @Before
   public void setUp() {
-    Graph graph = newGraph().build();
-    this.graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
+    graph = newGraph().build();
   }
 
 
@@ -43,7 +38,7 @@ public class VreTest {
   public void saveCreatesAVertexForTheVre() {
     final Vre vre = new Vre("VreName");
 
-    final Vertex result = vre.save(graphWrapper, Optional.empty());
+    final Vertex result = vre.save(graph, Optional.empty());
 
     assertThat(result, likeVertex()
       .withLabel(DATABASE_LABEL)
@@ -53,11 +48,11 @@ public class VreTest {
 
   @Test
   public void saveReplacesAnExistingVertexForTheVre() {
-    final Vertex existingVertex = graphWrapper.getGraph().addVertex(DATABASE_LABEL);
+    final Vertex existingVertex = graph.addVertex(DATABASE_LABEL);
     existingVertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
     final Vre vre = new Vre("VreName");
 
-    final Vertex result = vre.save(graphWrapper, Optional.empty());
+    final Vertex result = vre.save(graph, Optional.empty());
 
     assertThat(result, equalTo(existingVertex));
   }
@@ -69,7 +64,7 @@ public class VreTest {
     keyWordTypes.put("typeA", "valueA");
     keyWordTypes.put("typeB", "valueB");
 
-    final Vertex result = vre.save(graphWrapper, Optional.of(keyWordTypes));
+    final Vertex result = vre.save(graph, Optional.of(keyWordTypes));
 
     assertThat(result.property(KEYWORD_TYPES_PROPERTY_NAME).value(),
       equalTo(new ObjectMapper().writeValueAsString(keyWordTypes))
@@ -83,7 +78,7 @@ public class VreTest {
       .withCollection("prefixdocuments")
       .build();
 
-    final Vertex savedVertex = vre.save(graphWrapper, Optional.empty());
+    final Vertex savedVertex = vre.save(graph, Optional.empty());
     final List<Vertex> result = Lists.newArrayList(savedVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME));
 
     assertThat(result, containsInAnyOrder(

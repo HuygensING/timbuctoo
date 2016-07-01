@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.model.vre;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -25,17 +24,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 public class CollectionTest {
-  private GraphWrapper graphWrapper;
+  private Graph graph;
 
   @Before
   public void setUp() {
-    Graph graph = newGraph().build();
-    this.graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
+    graph = newGraph().build();
   }
 
 
@@ -44,7 +39,7 @@ public class CollectionTest {
     final Vre vre = new Vre("VreName");
     timbuctooCollection("persons", "").build(vre);
 
-    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graphWrapper);
+    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graph);
 
     assertThat(result, likeVertex()
       .withLabel(DATABASE_LABEL)
@@ -58,12 +53,12 @@ public class CollectionTest {
 
   @Test
   public void saveReplacesAnExistingVertexForTheCollection() {
-    final Vertex existingVertex = graphWrapper.getGraph().addVertex(DATABASE_LABEL);
+    final Vertex existingVertex = graph.addVertex(DATABASE_LABEL);
     existingVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, "persons");
     final Vre vre = new Vre("VreName");
     timbuctooCollection("persons", "").build(vre);
 
-    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graphWrapper);
+    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graph);
 
     assertThat(result, equalTo(existingVertex));
   }
@@ -73,7 +68,7 @@ public class CollectionTest {
     final Vre vre = new Vre("VreName");
     timbuctooCollection("persons", "").build(vre);
 
-    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graphWrapper);
+    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graph);
 
     assertThat(result.vertices(Direction.OUT, Collection.HAS_ENTITY_NODE_RELATION_NAME).next(), likeVertex()
       .withLabel(Collection.COLLECTION_ENTITIES_LABEL)
@@ -83,7 +78,6 @@ public class CollectionTest {
   @Test
   public void saveDoesNotCreateARelationToAnEntityHolderVertexIfItAlreadyExists() {
     final Vre vre = new Vre("VreName");
-    final Graph graph = graphWrapper.getGraph();
     final Vertex existingVertex = graph.addVertex(DATABASE_LABEL);
     final Vertex existingEntityHolderVertex = graph.addVertex(Collection.COLLECTION_ENTITIES_LABEL);
     existingVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, "persons");
@@ -91,7 +85,7 @@ public class CollectionTest {
       existingEntityHolderVertex);
     timbuctooCollection("persons", "").build(vre);
 
-    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graphWrapper);
+    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graph);
 
     assertThat(result.vertices(Direction.OUT, Collection.HAS_ENTITY_NODE_RELATION_NAME).next(),
       equalTo(existingEntityHolderVertex));
@@ -107,11 +101,9 @@ public class CollectionTest {
         v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "person");
       })
       .build();
-    final GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
     timbuctooCollection("prefixedpersons", "prefixed").build(vre);
 
-    final Vertex result = vre.getCollectionForCollectionName("prefixedpersons").get().save(graphWrapper);
+    final Vertex result = vre.getCollectionForCollectionName("prefixedpersons").get().save(graph);
 
     assertThat(result.vertices(Direction.OUT, Collection.HAS_ARCHETYPE_RELATION_NAME).hasNext(), equalTo(true));
   }
@@ -126,7 +118,7 @@ public class CollectionTest {
       .withDisplayName(localProperty("person_prop1"))
       .build(vre);
 
-    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graphWrapper);
+    final Vertex result = vre.getCollectionForCollectionName("persons").get().save(graph);
     final List<Vertex> propertyVertices =
       Lists.newArrayList(result.vertices(Direction.OUT, Collection.HAS_PROPERTY_RELATION_NAME));
 
@@ -172,7 +164,7 @@ public class CollectionTest {
       .withDisplayName(localProperty("person_prop1"))
       .build(vre);
 
-    Vertex current = vre.getCollectionForCollectionName("persons").get().save(graphWrapper)
+    Vertex current = vre.getCollectionForCollectionName("persons").get().save(graph)
                         .vertices(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME).next();
     List<Vertex> result = Lists.newArrayList();
     result.add(current);
@@ -203,7 +195,6 @@ public class CollectionTest {
   @Test
   public void saveDropsRelatedExistingPropertyVertices() {
     final Vre vre = new Vre("VreName");
-    final Graph graph = graphWrapper.getGraph();
     final Vertex existingVertex = graph.addVertex(DATABASE_LABEL);
     final Vertex existingPropertyVertex = graph.addVertex(ReadableProperty.DATABASE_LABEL);
     final Vertex existingPropertyVertex2 = graph.addVertex(ReadableProperty.DATABASE_LABEL);
@@ -214,7 +205,7 @@ public class CollectionTest {
     existingVertex.addEdge(HAS_INITIAL_PROPERTY_RELATION_NAME, existingPropertyVertex3);
     timbuctooCollection("persons", "").build(vre);
 
-    vre.getCollectionForCollectionName("persons").get().save(graphWrapper);
+    vre.getCollectionForCollectionName("persons").get().save(graph);
 
     assertThat(graph.traversal().V().hasLabel(ReadableProperty.DATABASE_LABEL).hasNext(), equalTo(false));
   }
@@ -222,13 +213,12 @@ public class CollectionTest {
   @Test
   public void saveDoesNotDropUnRelatedExistingPropertyVertices() {
     final Vre vre = new Vre("VreName");
-    final Graph graph = graphWrapper.getGraph();
     final Vertex existingVertex = graph.addVertex(DATABASE_LABEL);
     graph.addVertex(ReadableProperty.DATABASE_LABEL);
     existingVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, "persons");
     timbuctooCollection("persons", "").build(vre);
 
-    vre.getCollectionForCollectionName("persons").get().save(graphWrapper);
+    vre.getCollectionForCollectionName("persons").get().save(graph);
 
     assertThat(graph.traversal().V().hasLabel(ReadableProperty.DATABASE_LABEL).hasNext(), equalTo(true));
   }

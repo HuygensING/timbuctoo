@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.model.vre;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -23,21 +22,17 @@ import static java.util.stream.Collectors.toMap;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 
 public class Collection {
-  private static final Logger LOG = LoggerFactory.getLogger(Collection.class);
-
   public static final String DATABASE_LABEL = "collection";
   public static final String COLLECTION_ENTITIES_LABEL = "collectionEntities";
-
   public static final String COLLECTION_NAME_PROPERTY_NAME = "collectionName";
   public static final String ENTITY_TYPE_NAME_PROPERTY_NAME = "entityTypeName";
-
   public static final String HAS_ENTITY_NODE_RELATION_NAME = "hasEntityNode";
   public static final String HAS_PROPERTY_RELATION_NAME = "hasProperty";
   public static final String HAS_DISPLAY_NAME_RELATION_NAME = "hasDisplayName";
   public static final String HAS_ENTITY_RELATION_NAME = "hasEntity";
   public static final String HAS_INITIAL_PROPERTY_RELATION_NAME = "hasInitialProperty";
   public static final String HAS_ARCHETYPE_RELATION_NAME = "hasArchetype";
-
+  private static final Logger LOG = LoggerFactory.getLogger(Collection.class);
   private final String entityTypeName;
   private final String collectionName;
   private final Vre vre;
@@ -62,13 +57,15 @@ public class Collection {
     this.derivedRelations = derivedRelations;
     this.isRelationCollection = isRelationCollection;
     writeableProperties = properties.entrySet().stream()
-      .filter(e -> e.getValue() instanceof LocalProperty)
-      .collect(toMap(
-        Map.Entry::getKey,
-        e -> (LocalProperty) e.getValue(),
-        (v1, v2) -> { throw new IllegalStateException("Duplicate key"); },
-        LinkedHashMap::new
-      ));
+                                    .filter(e -> e.getValue() instanceof LocalProperty)
+                                    .collect(toMap(
+                                      Map.Entry::getKey,
+                                      e -> (LocalProperty) e.getValue(),
+                                      (v1, v2) -> {
+                                        throw new IllegalStateException("Duplicate key");
+                                      },
+                                      LinkedHashMap::new
+                                    ));
   }
 
   public String getEntityTypeName() {
@@ -107,10 +104,7 @@ public class Collection {
     return isRelationCollection;
   }
 
-  public Vertex save(GraphWrapper graphWrapper) {
-
-    Graph graph = graphWrapper.getGraph();
-
+  public Vertex save(Graph graph) {
     Vertex collectionVertex = findOrCreateCollectionVertex(graph);
 
     collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
@@ -118,7 +112,7 @@ public class Collection {
 
     saveArchetypeRelation(graph, collectionVertex);
 
-    savePropertyConfigurations(graphWrapper, collectionVertex);
+    savePropertyConfigurations(graph, collectionVertex);
 
     // Create a container node to hold the entities in this collection.
     Iterator<Vertex> entityNodeIt = collectionVertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME);
@@ -130,8 +124,7 @@ public class Collection {
   }
 
 
-
-  private void savePropertyConfigurations(GraphWrapper graphWrapper, Vertex collectionVertex) {
+  private void savePropertyConfigurations(Graph graph, Vertex collectionVertex) {
 
     dropExistingPropertyConfigurations(collectionVertex);
 
@@ -139,7 +132,7 @@ public class Collection {
     List<Vertex> propertyVertices = new ArrayList<>();
     writeableProperties.forEach((clientPropertyName, property) -> {
       LOG.info("Adding property {} to collection {}", clientPropertyName, collectionName);
-      final Vertex propertyVertex = property.save(graphWrapper, clientPropertyName);
+      final Vertex propertyVertex = property.save(graph, clientPropertyName);
       collectionVertex.addEdge(HAS_PROPERTY_RELATION_NAME, propertyVertex);
       propertyVertices.add(propertyVertex);
     });
@@ -147,7 +140,7 @@ public class Collection {
     savePropertyConfigurationSortorder(collectionVertex, propertyVertices);
 
     if (displayName != null) {
-      Vertex displayNameVertex = displayName.save(graphWrapper, ReadableProperty.DISPLAY_NAME_PROPERTY_NAME);
+      Vertex displayNameVertex = displayName.save(graph, ReadableProperty.DISPLAY_NAME_PROPERTY_NAME);
       collectionVertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayNameVertex);
     }
   }

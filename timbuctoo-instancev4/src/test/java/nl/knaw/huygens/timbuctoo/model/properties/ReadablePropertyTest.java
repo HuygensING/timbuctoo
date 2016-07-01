@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
@@ -12,17 +11,13 @@ import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.PROPER
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 public class ReadablePropertyTest {
-  private GraphWrapper graphWrapper;
+  private Graph graph;
 
   @Before
   public void setUp() {
-    Graph graph = newGraph().build();
-    this.graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
+    graph = newGraph().build();
   }
 
   @Test
@@ -34,7 +29,7 @@ public class ReadablePropertyTest {
       }
     };
 
-    Vertex result = readableProperty.save(graphWrapper, "client-prop-name");
+    Vertex result = readableProperty.save(graph, "client-prop-name");
 
     assertThat(result, likeVertex()
       .withProperty(CLIENT_PROPERTY_NAME, "client-prop-name")

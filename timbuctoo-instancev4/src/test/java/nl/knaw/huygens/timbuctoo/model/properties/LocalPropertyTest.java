@@ -6,7 +6,6 @@ import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringArrayToEncodedArrayOfLimitedValues;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -31,13 +30,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
 public class LocalPropertyTest {
-  private GraphWrapper graphWrapper;
+  private Graph graph;
 
   @Before
   public void setUp() {
-    Graph graph = newGraph().build();
-    this.graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
+    graph = newGraph().build();
   }
 
 
@@ -77,7 +74,7 @@ public class LocalPropertyTest {
 
     LocalProperty property = new LocalProperty(propertyName, converter);
 
-    Vertex result = property.save(graphWrapper, clientPropName);
+    Vertex result = property.save(graph, clientPropName);
 
     assertThat(result, likeVertex()
       .withLabel(DATABASE_LABEL)
@@ -100,7 +97,7 @@ public class LocalPropertyTest {
 
     LocalProperty property = new LocalProperty(propertyName, converter);
 
-    Vertex result = property.save(graphWrapper, clientPropName);
+    Vertex result = property.save(graph, clientPropName);
 
     assertThat(result, likeVertex()
       .withProperty(OPTIONS_PROPERTY_NAME, new ObjectMapper().writeValueAsString(options))
