@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.vre.vres;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 
@@ -26,6 +27,6 @@ public class VresBuilder {
   }
 
   public Vres build() {
-    return new Vres(vres.stream().map(VreBuilder::build).collect(toList()));
+    return new CodeConfiguredVres(vres.stream().map(VreBuilder::build).collect(toList()));
   }
 }

@@ -1,42 +1,15 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toMap;
+public interface Vres {
 
-public class Vres {
-  private final Map<String, Collection> collections = new HashMap<>();
-  private final Map<String, Vre> vres;
+  Optional<Collection> getCollection(String collection);
 
-  public Vres(List<Vre> vres) {
-    this.vres = vres.stream().collect(toMap(Vre::getVreName, vre1 -> vre1));
-    vres.stream()
-      .flatMap(vre -> vre.getCollections().values().stream())
-      .forEach(collection -> {
-        if (collections.containsKey(collection.getCollectionName())) {
-          throw new RuntimeException("Collection was defined multiple times: " + collection.getCollectionName());
-        }
-        collections.put(collection.getCollectionName(), collection);
-      });
-  }
+  Optional<Collection> getCollectionForType(String type);
 
-  public Optional<Collection> getCollection(String collection) {
-    return Optional.ofNullable(collections.get(collection));
-  }
+  Vre getVre(String vre);
 
-  public Optional<Collection> getCollectionForType(String type) {
-    return collections.values().stream().filter(coll -> Objects.equals(coll.getEntityTypeName(), type)).findAny();
-  }
-
-  public Vre getVre(String vre) {
-    return vres.get(vre);
-  }
-
-  public Map<String, Vre> getVres() {
-    return vres;
-  }
+  Map<String, Vre> getVres();
 }
