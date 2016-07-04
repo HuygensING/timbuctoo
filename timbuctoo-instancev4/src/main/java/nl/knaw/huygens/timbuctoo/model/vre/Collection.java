@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.model.vre;
 
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -51,6 +50,7 @@ public class Collection {
   Collection(@NotNull String entityTypeName, @NotNull String abstractType,
              @NotNull ReadableProperty displayName, @NotNull LinkedHashMap<String, ReadableProperty> properties,
              @NotNull String collectionName, @NotNull Vre vre,
+             // FIXME: not functionally used (see TIM-955)
              @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
              boolean isRelationCollection) {
     this.entityTypeName = entityTypeName;
@@ -117,12 +117,9 @@ public class Collection {
 
     final String entityTypeName = collectionVertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
     final String abstractType = archetype == null ? entityTypeName : archetype.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
-    final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
-
     final ReadableProperty displayName = loadDisplayName(collectionVertex);
     final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex);
-
-    // FIXME: not functionally used (see TIM-955)
+    final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
     final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
     boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
 
@@ -137,11 +134,11 @@ public class Collection {
     }
 
     try {
-      return PropertyTypes.load(initialV.next());
+      return ReadableProperty.load(initialV.next());
     } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |
       IllegalAccessException e) {
 
-      LOG.error(databaseInvariant, "Failed to load display name for collection {} ",
+      LOG.error(databaseInvariant, "Failed to load configuration for  display name for collection {} ",
         collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME), e);
     }
     return null;
@@ -156,16 +153,16 @@ public class Collection {
 
     Vertex current = initialV.next();
     try {
-      properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), PropertyTypes.load(current));
+      properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), ReadableProperty.load(current));
       while (current.vertices(Direction.OUT, ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME).hasNext()) {
         current = current.vertices(Direction.OUT, ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME).next();
-        properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), PropertyTypes.load(current));
+        properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), ReadableProperty.load(current));
       }
 
     } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |
         IllegalAccessException e) {
 
-      LOG.error(databaseInvariant, "Failed to load property {} for collection {} ",
+      LOG.error(databaseInvariant, "Failed to load configuration for property {} for collection {} ",
         current.property(ReadableProperty.CLIENT_PROPERTY_NAME).isPresent() ?
           current.value(ReadableProperty.CLIENT_PROPERTY_NAME) : "",
         collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME), e);

@@ -106,6 +106,7 @@ public class Vre {
       Collection collection = Collection.load(collectionV, vre);
       vre.addCollection(collection);
     });
+
     return vre;
   }
 
@@ -118,6 +119,7 @@ public class Vre {
         LOG.warn(databaseInvariant, "Cannot deserialize keyword types property {} ", keywordTypesJson);
       }
     }
+
     return Maps.newHashMap();
   }
 

@@ -1,11 +1,16 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.Converters;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;
 
 public abstract class ReadableProperty {
@@ -35,5 +40,30 @@ public abstract class ReadableProperty {
     propertyVertex.property(PROPERTY_TYPE_NAME, getUniqueTypeId());
 
     return propertyVertex;
+  }
+
+  public static ReadableProperty load(Vertex propertyVertex)
+    throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException,
+    InvocationTargetException {
+    final String type = propertyVertex.value(PROPERTY_TYPE_NAME);
+
+    if (type.equals(WwDocumentDisplayName.TYPE)) {
+      return new WwDocumentDisplayName();
+    } else if (type.equals(WwPersonDisplayName.TYPE)) {
+      return new WwPersonDisplayName();
+    }
+
+    String[] options = null;
+    if (propertyVertex.property(LocalProperty.OPTIONS_PROPERTY_NAME).isPresent()) {
+      final String optionsJson = propertyVertex.value(LocalProperty.OPTIONS_PROPERTY_NAME);
+      options = new ObjectMapper().readValue(optionsJson, new TypeReference<String[]>() { });
+    }
+
+    if (propertyVertex.property(LocalProperty.DATABASE_PROPERTY_NAME).isPresent()) {
+      final String dbName = propertyVertex.value(LocalProperty.DATABASE_PROPERTY_NAME);
+      return new LocalProperty(dbName, Converters.forType(type, options));
+    }
+
+    throw new IOException("Unknown property configuration");
   }
 }

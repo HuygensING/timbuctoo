@@ -51,7 +51,7 @@ public class DatabaseConfiguredVres implements Vres {
     final List<Vre> vreList = new ArrayList<>();
     final Map<String, Map<String, String>> keywordTypes = new HashMap<>();
 
-    graphWrapper.getGraph().traversal().V().hasLabel("VRE").forEachRemaining(vreVertex -> {
+    graphWrapper.getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL).forEachRemaining(vreVertex -> {
       final Vre vre = Vre.load(vreVertex);
       vreList.add(vre);
       keywordTypes.put(vre.getVreName(), vre.getKeywordTypes());
