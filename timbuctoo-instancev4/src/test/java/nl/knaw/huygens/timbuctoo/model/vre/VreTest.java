@@ -109,12 +109,15 @@ public class VreTest {
   }
 
   @Test
-  public void loadLoadsTheCollections() {
-    final Vertex vertex = graph.addVertex("VRE");
+  public void loadLoadsTheCollections() throws JsonProcessingException {
     final String entityTypeName = "person";
     final String collectionName = "persons";
+    final HashMap<String, String> keywordTypes = new HashMap<>();
+    keywordTypes.put("keyword", "type");
+    final Vertex vertex = graph.addVertex("VRE");
     final Vertex collectionVertex = graph.addVertex(entityTypeName);
     vertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
+    vertex.property(KEYWORD_TYPES_PROPERTY_NAME, new ObjectMapper().writeValueAsString(keywordTypes));
     collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionName);
     collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
     collectionVertex.property(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, false);
@@ -123,6 +126,7 @@ public class VreTest {
     final Vre instance = Vre.load(vertex);
     final Collection collectionByName = instance.getCollectionForCollectionName(collectionName).get();
 
+    assertThat(instance.getKeywordTypes().get("keyword"), equalTo("type"));
     assertThat(collectionByName, instanceOf(Collection.class));
     assertThat(instance.getCollectionForTypeName(entityTypeName), instanceOf(Collection.class));
     assertThat(instance.getCollections().get(entityTypeName), instanceOf(Collection.class));
