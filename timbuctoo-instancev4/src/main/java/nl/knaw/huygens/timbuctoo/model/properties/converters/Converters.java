@@ -1,6 +1,26 @@
 package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
+
 public class Converters {
+  private static final Map<String, Class<? extends Converter>> CONVERTER_TYPES = new HashMap<>();
+
+  static {
+    CONVERTER_TYPES.put("person-names", PersonNamesConverter.class);
+    CONVERTER_TYPES.put("encoded-array-of-limited-values", StringArrayToEncodedArrayOfLimitedValues.class);
+    CONVERTER_TYPES.put("encoded-string-of-limited-values", StringToEncodedStringOfLimitedValuesConverter.class);
+    CONVERTER_TYPES.put("datable", DatableConverter.class);
+    CONVERTER_TYPES.put("string", StringToStringConverter.class);
+    CONVERTER_TYPES.put("hyperlinks", HyperlinksConverter.class);
+    CONVERTER_TYPES.put("default-person-display-name", DefaultFullPersonNameConverter.class);
+    CONVERTER_TYPES.put("unencoded-string-of-limited-values", StringToUnencodedStringOfLimitedValuesConverter.class);
+    CONVERTER_TYPES.put("encoded-array", ArrayToEncodedArrayConverter.class);
+    CONVERTER_TYPES.put("altnames", AltNamesConverter.class);
+  }
+
   public static final StringToStringConverter stringToString = new StringToStringConverter();
   public static final ArrayToEncodedArrayConverter arrayToEncodedArray = new ArrayToEncodedArrayConverter();
 
@@ -39,4 +59,16 @@ public class Converters {
     return new StringToUnencodedStringOfLimitedValuesConverter(values);
   }
 
+  public static Converter forType(String type, String[] options)
+    throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+    final Class<? extends Converter> converterClass = CONVERTER_TYPES.get(type);
+
+    if (converterClass.isAssignableFrom(HasOptions.class)) {
+      final Constructor<? extends Converter> hasOptionsConstuctor =
+        converterClass.getDeclaredConstructor(String[].class);
+      return hasOptionsConstuctor.newInstance((Object[]) options);
+    } else {
+      return converterClass.newInstance();
+    }
+  }
 }
