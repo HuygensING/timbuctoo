@@ -27,10 +27,12 @@ public abstract class ReadableProperty {
 
   public abstract String getTypeId();
 
+  public abstract String getUniqueTypeId();
+
   public Vertex save(Graph graph, String clientPropertyName) {
     Vertex propertyVertex = graph.addVertex(DATABASE_LABEL);
     propertyVertex.property(CLIENT_PROPERTY_NAME, clientPropertyName);
-    propertyVertex.property(PROPERTY_TYPE_NAME, getTypeId());
+    propertyVertex.property(PROPERTY_TYPE_NAME, getUniqueTypeId());
 
     return propertyVertex;
   }

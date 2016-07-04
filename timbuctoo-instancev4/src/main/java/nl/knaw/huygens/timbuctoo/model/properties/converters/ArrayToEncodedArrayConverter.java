@@ -9,6 +9,9 @@ import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ListOfSt
 import java.io.IOException;
 
 public class ArrayToEncodedArrayConverter implements Converter {
+
+  static final String TYPE = "encoded-array";
+
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     if (json.isArray()) {
@@ -46,6 +49,11 @@ public class ArrayToEncodedArrayConverter implements Converter {
   @Override
   public String getGuiTypeId() {
     return "list-of-strings";
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

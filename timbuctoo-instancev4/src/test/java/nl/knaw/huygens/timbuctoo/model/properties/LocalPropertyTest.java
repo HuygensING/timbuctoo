@@ -70,7 +70,7 @@ public class LocalPropertyTest {
     final String clientPropName = "clientPropName";
 
     Converter converter = mock(Converter.class);
-    given(converter.getGuiTypeId()).willReturn(propertyType);
+    given(converter.getUniqueTypeIdentifier()).willReturn(propertyType);
 
     LocalProperty property = new LocalProperty(propertyName, converter);
 
@@ -101,7 +101,7 @@ public class LocalPropertyTest {
 
     assertThat(result, likeVertex()
       .withProperty(OPTIONS_PROPERTY_NAME, new ObjectMapper().writeValueAsString(options))
-      .withProperty(PROPERTY_TYPE_NAME, converter.getGuiTypeId())
+      .withProperty(PROPERTY_TYPE_NAME, converter.getUniqueTypeIdentifier())
     );
   }
 }

@@ -13,6 +13,8 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class DefaultLocationNameConverter implements Converter {
 
+  static final String TYPE = "default-location-display-name";
+
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     throw new IOException("can only be converted to json, not from json.");
@@ -29,7 +31,12 @@ public class DefaultLocationNameConverter implements Converter {
 
   @Override
   public String getGuiTypeId() {
-    return "default-location-display-name";
+    return TYPE;
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

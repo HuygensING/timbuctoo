@@ -25,6 +25,11 @@ public class ReadablePropertyTest {
     ReadableProperty readableProperty = new ReadableProperty(null) {
       @Override
       public String getTypeId() {
+        return null;
+      }
+
+      @Override
+      public String getUniqueTypeId() {
         return "type-id";
       }
     };

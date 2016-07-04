@@ -72,6 +72,11 @@ public class LocalProperty extends ReadableProperty {
   }
 
   @Override
+  public String getUniqueTypeId() {
+    return converter.getUniqueTypeIdentifier();
+  }
+
+  @Override
   public Vertex save(Graph graph, String clientPropertyName) {
     Vertex propertyVertex = super.save(graph, clientPropertyName);
 

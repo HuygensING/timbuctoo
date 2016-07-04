@@ -10,6 +10,9 @@ import java.io.IOException;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class DefaultFullPersonNameConverter implements Converter {
+
+  static final String TYPE = "default-person-display-name";
+
   private final PersonNamesConverter converter;
 
   public DefaultFullPersonNameConverter() {
@@ -28,7 +31,12 @@ public class DefaultFullPersonNameConverter implements Converter {
 
   @Override
   public String getGuiTypeId() {
-    return "default-person-display-name";
+    return TYPE;
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

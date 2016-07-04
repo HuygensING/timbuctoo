@@ -12,5 +12,7 @@ public interface Converter {
 
   String getGuiTypeId();
 
+  String getUniqueTypeIdentifier();
+
   ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException;
 }

@@ -33,4 +33,9 @@ public class WwDocumentDisplayName extends ReadableProperty {
   public String getTypeId() {
     return "wwdocument-display-name";
   }
+
+  @Override
+  public String getUniqueTypeId() {
+    return "wwdocument-display-name";
+  }
 }
