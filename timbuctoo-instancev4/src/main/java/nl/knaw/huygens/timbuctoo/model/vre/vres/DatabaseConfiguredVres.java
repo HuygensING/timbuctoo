@@ -17,59 +17,39 @@ import static java.util.stream.Collectors.toMap;
 public class DatabaseConfiguredVres implements Vres {
 
   private final GraphWrapper graphWrapper;
-
-  private Map<String, Map<String, String>> keywordTypes = new HashMap<>();
-  private Map<String, Collection> collections = new HashMap<>();
-  private Map<String, Vre> vres = new HashMap<>();
-
-  private boolean loaded = false;
+  private ConfiguredVres loadedInstance;
 
   public DatabaseConfiguredVres(GraphWrapper wrapper) {
     this.graphWrapper = wrapper;
   }
 
   public Optional<Collection> getCollection(String collection) {
-    if (!loaded) {
-      this.load();
-    }
-    return Optional.ofNullable(collections.get(collection));
+    return getLoadedInstance().getCollection(collection);
   }
 
   public Optional<Collection> getCollectionForType(String type) {
-    if (!loaded) {
-      this.load();
-    }
-    return collections.values().stream().filter(coll -> Objects.equals(coll.getEntityTypeName(), type)).findAny();
+    return getLoadedInstance().getCollectionForType(type);
   }
 
   public Vre getVre(String vre) {
-    if (!loaded) {
-      this.load();
-    }
-    return vres.get(vre);
+    return getLoadedInstance().getVre(vre);
   }
 
   public Map<String, Vre> getVres() {
-    if (!loaded) {
-      this.load();
-    }
-    return vres;
+    return getLoadedInstance().getVres();
   }
 
   @Override
   public Map<String, Map<String, String>> getKeywordTypes() {
-    if (!loaded) {
-      this.load();
-    }
-    return keywordTypes;
+    return getLoadedInstance().getKeywordTypes();
   }
 
-  public void load() {
-    List<Vre> vreList = new ArrayList<>();
-
-    keywordTypes.clear();
-    collections.clear();
-    vres.clear();
+  private Vres getLoadedInstance() {
+    if (loadedInstance != null) {
+      return loadedInstance;
+    }
+    final List<Vre> vreList = new ArrayList<>();
+    final Map<String, Map<String, String>> keywordTypes = new HashMap<>();
 
     graphWrapper.getGraph().traversal().V().hasLabel("VRE").forEachRemaining(vreVertex -> {
       final Vre vre = Vre.load(vreVertex);
@@ -77,19 +57,7 @@ public class DatabaseConfiguredVres implements Vres {
       keywordTypes.put(vre.getVreName(), vre.getKeywordTypes());
     });
 
-    loadFromVreList(vreList);
-    loaded = true;
-  }
-
-  private void loadFromVreList(List<Vre> vres) {
-    this.vres = vres.stream().collect(toMap(Vre::getVreName, vre1 -> vre1));
-    vres.stream()
-        .flatMap(vre -> vre.getCollections().values().stream())
-        .forEach(collection -> {
-          if (collections.containsKey(collection.getCollectionName())) {
-            throw new RuntimeException("Collection was defined multiple times: " + collection.getCollectionName());
-          }
-          collections.put(collection.getCollectionName(), collection);
-        });
+    loadedInstance = new ConfiguredVres(vreList, keywordTypes);
+    return loadedInstance;
   }
 }
