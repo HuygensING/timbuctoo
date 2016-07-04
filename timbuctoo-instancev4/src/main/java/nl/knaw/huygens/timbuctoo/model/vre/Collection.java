@@ -98,6 +98,7 @@ public class Collection {
     return vre;
   }
 
+  // FIXME: not functionally used (see TIM-955)
   public Map<String, Supplier<GraphTraversal<Object, Vertex>>> getDerivedRelations() {
     return derivedRelations;
   }
@@ -118,7 +119,8 @@ public class Collection {
     final ReadableProperty displayName = null; // TODO
     final LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap(); //  TODO
     final Vre vre = null; // TODO
-    final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = null; // FIXME: not functionally used
+    // FIXME: not functionally used (see TIM-955)
+    final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
     boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
 
     // String entityTypeName
