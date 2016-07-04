@@ -85,7 +85,7 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
         vre
           .withCollection("prefixbpersons");
       })
-      .build();
+      .build(Maps.newHashMap());
     final Map<String, Map<String, String>> keywordTypeMappings = new HashMap<>();
     final Map<String, String> keywordTypes = new HashMap<>();
     keywordTypes.put("keywordA", "valueA");
@@ -178,7 +178,7 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
         vre
           .withCollection("prefixbpersons");
       })
-      .build();
+      .build(Maps.newHashMap());
 
     new HuygensIngConfigToDatabaseMigration(mappings, Maps.newHashMap()).execute(graphWrapper);
 

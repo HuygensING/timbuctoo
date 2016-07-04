@@ -14,9 +14,15 @@ import static java.util.stream.Collectors.toMap;
 
 class CodeConfiguredVres implements Vres {
   private final Map<String, Collection> collections = new HashMap<>();
-  private final Map<String, Vre> vres;
+  private final Map<String, Map<String, String>> keywordTypes;
+  private Map<String, Vre> vres;
 
-  CodeConfiguredVres(List<Vre> vres) {
+  CodeConfiguredVres(List<Vre> vres, Map<String, Map<String, String>> keywordTypes) {
+    this.keywordTypes = keywordTypes;
+    loadFromVreList(vres);
+  }
+
+  private void loadFromVreList(List<Vre> vres) {
     this.vres = vres.stream().collect(toMap(Vre::getVreName, vre1 -> vre1));
     vres.stream()
         .flatMap(vre -> vre.getCollections().values().stream())
@@ -42,5 +48,10 @@ class CodeConfiguredVres implements Vres {
 
   public Map<String, Vre> getVres() {
     return vres;
+  }
+
+  @Override
+  public Map<String, Map<String, String>> getKeywordTypes() {
+    return keywordTypes;
   }
 }

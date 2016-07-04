@@ -45,6 +45,7 @@ public class CollectionTest {
       .withLabel(DATABASE_LABEL)
       .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "person")
       .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "persons")
+      .withProperty(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, false)
     );
 
     // Unprefixed collection is considered an archetype

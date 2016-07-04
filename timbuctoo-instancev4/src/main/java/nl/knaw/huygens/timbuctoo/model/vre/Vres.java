@@ -12,4 +12,6 @@ public interface Vres {
   Vre getVre(String vre);
 
   Map<String, Vre> getVres();
+
+  Map<String, Map<String, String>> getKeywordTypes();
 }

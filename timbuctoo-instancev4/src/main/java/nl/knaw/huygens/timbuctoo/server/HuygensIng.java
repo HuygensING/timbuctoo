@@ -497,6 +497,6 @@ public class HuygensIng {
           )
           .withCollection("charterrelations", CollectionBuilder::isRelationCollection)
       )
-    .build();
+    .build(keywordTypes);
 
 }

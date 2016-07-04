@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -33,6 +34,7 @@ public class Collection {
   public static final String HAS_INITIAL_PROPERTY_RELATION_NAME = "hasInitialProperty";
   public static final String HAS_ARCHETYPE_RELATION_NAME = "hasArchetype";
   private static final Logger LOG = LoggerFactory.getLogger(Collection.class);
+  public static final String IS_RELATION_COLLECTION_PROPERTY_NAME = "isRelationCollection";
   private final String entityTypeName;
   private final String collectionName;
   private final Vre vre;
@@ -104,11 +106,40 @@ public class Collection {
     return isRelationCollection;
   }
 
+  public static Collection load(Vertex collectionVertex) {
+    final Vertex archetype = collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext() ?
+      collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next() :
+      null;
+
+    final String entityTypeName = collectionVertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+    final String abstractType = archetype == null ? entityTypeName : archetype.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+    final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
+
+    final ReadableProperty displayName = null; // TODO
+    final LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap(); //  TODO
+    final Vre vre = null; // TODO
+    final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = null; // FIXME: not functionally used
+    boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
+
+    // String entityTypeName
+    // String abstractType,
+    // ReadableProperty displayName,
+    // LinkedHashMap<String, ReadableProperty> properties,
+    // String collectionName,
+    // Vre vre,
+    // Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
+    // boolean isRelationCollection
+
+    return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre, derivedRelations,
+      isRelationCollection);
+  }
+
   public Vertex save(Graph graph) {
     Vertex collectionVertex = findOrCreateCollectionVertex(graph);
 
     collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, isRelationCollection);
 
     saveArchetypeRelation(graph, collectionVertex);
 

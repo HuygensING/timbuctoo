@@ -10,6 +10,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -22,8 +23,10 @@ import static nl.knaw.huygens.timbuctoo.model.vre.VreBuilder.vre;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 
 public class VreTest {
   private Graph graph;
@@ -89,6 +92,85 @@ public class VreTest {
         .withLabel(Collection.DATABASE_LABEL)
         .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "prefixdocuments")
     ));
+  }
 
+  @Test
+  public void loadLoadsAVreFromAVertex() throws JsonProcessingException {
+    final Vertex vertex = graph.addVertex("VRE");
+    final Map<String, String> keyWordTypes = new HashMap<>();
+
+    keyWordTypes.put("keyword", "type");
+    vertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
+    vertex.property(KEYWORD_TYPES_PROPERTY_NAME, new ObjectMapper().writeValueAsString(keyWordTypes));
+    final Vre instance = Vre.load(vertex);
+
+    assertThat(instance.getVreName(), equalTo("VreName"));
+    assertThat(instance.getKeywordTypes().get("keyword"), equalTo("type"));
+  }
+
+  @Test
+  public void loadLoadsTheCollections() {
+    final Vertex vertex = graph.addVertex("VRE");
+    final String entityTypeName = "person";
+    final String collectionName = "persons";
+    final Vertex collectionVertex = graph.addVertex(entityTypeName);
+    vertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
+    collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionName);
+    collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, false);
+    vertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
+
+    final Vre instance = Vre.load(vertex);
+    final Collection collectionByName = instance.getCollectionForCollectionName(collectionName).get();
+
+    assertThat(collectionByName, instanceOf(Collection.class));
+    assertThat(instance.getCollectionForTypeName(entityTypeName), instanceOf(Collection.class));
+    assertThat(instance.getCollections().get(entityTypeName), instanceOf(Collection.class));
+    assertThat(instance.getEntityTypes(), contains(
+      entityTypeName
+    ));
+    assertThat(instance.getImplementerOf("person").get(), equalTo(collectionByName));
+    assertThat(instance.getOwnType("notmytype", "person"), equalTo(entityTypeName));
+  }
+
+  @Test
+  public void loadLoadsInheritingCollections() {
+    final Vertex vertex = graph.addVertex("VRE");
+    final String entityTypeName = "wwperson";
+    final String collectionName = "wwpersons";
+    final String archetypeName = "person";
+    final String archetypeCollectionName = "persons";
+    final Vertex archetypeVertex = graph.addVertex("collection");
+    final Vertex collectionVertex = graph.addVertex("collection");
+    vertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
+    collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionName);
+    collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, false);
+    archetypeVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, archetypeCollectionName);
+    archetypeVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, archetypeName);
+    vertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
+    collectionVertex.addEdge(Collection.HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
+
+    final Vre instance = Vre.load(vertex);
+
+    assertThat(instance.getImplementerOf("person").get().getEntityTypeName(), equalTo(entityTypeName));
+  }
+
+  @Test
+  public void loadLoadsRelationCollections() {
+    final Vertex vertex = graph.addVertex("VRE");
+    final String entityTypeName = "relation";
+    final String collectionName = "relations";
+    final Vertex collectionVertex = graph.addVertex(entityTypeName);
+    vertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
+    collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionName);
+    collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true);
+    vertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
+
+    final Vre instance = Vre.load(vertex);
+    final Collection collectionByName = instance.getCollectionForCollectionName(collectionName).get();
+
+    assertThat(instance.getRelationCollection().get(), equalTo(collectionByName));
   }
 }

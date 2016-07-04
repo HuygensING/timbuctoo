@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -208,7 +209,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
           .withProperty("age", localProperty("wwperson_age"))
         )
       )
-      .build()).forGraph(graph);
+      .build(Maps.newHashMap())).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "name", jsn("newName"),
@@ -251,7 +252,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
           .withProperty("age", localProperty("wwperson_age"))
         )
       )
-      .build()).forGraph(graph);
+      .build(Maps.newHashMap())).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "age", jsn("42"),
@@ -342,7 +343,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withCollection("wwpersons", c -> c
           .withProperty("name", throwingMap)
         )
-      ).build()).forGraph(graph);
+      ).build(Maps.newHashMap())).forGraph(graph);
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
     expectedException.expectMessage(new RegexMatcher(Pattern.compile(".*name.*")));

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
@@ -78,7 +79,7 @@ public class JsonCrudServiceBuilder {
           .withDisplayName(PropertyTypes.localProperty("displayName"))
         )
       )
-      .build();
+      .build(Maps.newHashMap());
 
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/");
     clock = Clock.systemDefaultZone();

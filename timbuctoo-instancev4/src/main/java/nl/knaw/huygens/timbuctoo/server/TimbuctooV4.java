@@ -28,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
@@ -161,7 +162,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new HuygensIngConfigToDatabaseMigration(HuygensIng.mappings, HuygensIng.keywordTypes));
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
-    final Vres vres = HuygensIng.mappings; // FIXME use database
+    final Vres vres = new DatabaseConfiguredVres(graphManager);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
@@ -182,7 +183,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       changeListeners,
       authorizer,
       new Neo4jLuceneEntityFetcher(graphManager));
-    final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, HuygensIng.keywordTypes);
+    final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, vres.getKeywordTypes());
     final AutocompleteService autocompleteService = new AutocompleteService(
       graphManager,
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
