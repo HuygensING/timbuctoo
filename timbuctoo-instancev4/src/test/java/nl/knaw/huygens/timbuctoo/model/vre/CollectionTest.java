@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.model.vre;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.WwDocumentDisplayName;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -10,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
@@ -236,7 +239,7 @@ public class CollectionTest {
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
     collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
 
-    final Collection instance = Collection.load(collectionVertex);
+    final Collection instance = Collection.load(collectionVertex, new Vre("dummy"));
 
     assertThat(instance.getEntityTypeName(), equalTo(entityTypeName));
     assertThat(instance.getCollectionName(), equalTo(collectionName));
@@ -259,11 +262,48 @@ public class CollectionTest {
     abstractCollectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, abstractEntityTypeName);
     collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, abstractCollectionVertex);
 
-    final Collection instance = Collection.load(collectionVertex);
+    final Collection instance = Collection.load(collectionVertex, new Vre("dummy"));
 
     assertThat(instance.getAbstractType(), equalTo(abstractEntityTypeName));
   }
-/*
+
+  @Test
+  public void loadLoadsTheProperties() {
+    final Vertex collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
+    final Vertex prop1Vertex = graph.addVertex(ReadableProperty.DATABASE_LABEL);
+    final Vertex prop2Vertex = graph.addVertex(ReadableProperty.DATABASE_LABEL);
+    final Vertex prop3Vertex = graph.addVertex(ReadableProperty.DATABASE_LABEL);
+    final String collectionName = "persons";
+    final String entityTypeName = "person";
+    final String propertyType = new StringToStringConverter().getUniqueTypeIdentifier();
+    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
+    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
+    prop1Vertex.property(LocalProperty.CLIENT_PROPERTY_NAME, "prop1");
+    prop1Vertex.property(LocalProperty.DATABASE_PROPERTY_NAME, "person_prop1");
+
+    prop1Vertex.property(LocalProperty.PROPERTY_TYPE_NAME, propertyType);
+    prop2Vertex.property(LocalProperty.CLIENT_PROPERTY_NAME, "prop2");
+    prop2Vertex.property(LocalProperty.DATABASE_PROPERTY_NAME, "person_prop2");
+    prop2Vertex.property(LocalProperty.PROPERTY_TYPE_NAME, propertyType);
+    prop3Vertex.property(LocalProperty.CLIENT_PROPERTY_NAME, "prop3");
+    prop3Vertex.property(LocalProperty.DATABASE_PROPERTY_NAME, "person_prop3");
+    prop3Vertex.property(LocalProperty.PROPERTY_TYPE_NAME, "encoded-string-of-limited-values");
+    prop3Vertex.property(LocalProperty.OPTIONS_PROPERTY_NAME, "[\"a\", \"b\"]");
+    collectionVertex.addEdge(HAS_INITIAL_PROPERTY_RELATION_NAME, prop1Vertex);
+    prop1Vertex.addEdge(LocalProperty.HAS_NEXT_PROPERTY_RELATION_NAME, prop2Vertex);
+    prop2Vertex.addEdge(LocalProperty.HAS_NEXT_PROPERTY_RELATION_NAME, prop3Vertex);
+
+    final Collection instance = Collection.load(collectionVertex, new Vre("dummy"));
+
+
+    assertThat(instance.getWriteableProperties().keySet(), contains(
+      "prop1", "prop2", "prop3"
+    ));
+  }
+
+
+  /*
     final Vertex archetype = collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext() ?
       collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next() :
       null;

@@ -34,12 +34,10 @@ public class JsonMetadata {
 
   private final Vres metadata;
   private final GraphWrapper graph;
-  private final Map<String, Map<String, String>> keywordTypes;
 
-  public JsonMetadata(Vres metadata, GraphWrapper graph, Map<String, Map<String, String>> keywordTypes) {
+  public JsonMetadata(Vres metadata, GraphWrapper graph) {
     this.metadata = metadata;
     this.graph = graph;
-    this.keywordTypes = keywordTypes;
   }
 
   public ArrayNode getForCollection(Collection collection, List<Vertex> relations) {
@@ -62,8 +60,9 @@ public class JsonMetadata {
     //FIXME add check to vres that certifies that the defined derived relations exist in the database
     String abstractType = collection.getAbstractType();
     Vre vre = collection.getVre();
+
     Map<String, String> keywordTypes = Optional
-      .ofNullable(this.keywordTypes.get(vre.getVreName()))
+      .ofNullable(metadata.getKeywordTypes().get(vre.getVreName()))
       .orElse(new HashMap<>());
 
     String relationCollectionName = vre

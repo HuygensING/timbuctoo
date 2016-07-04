@@ -103,7 +103,7 @@ public class Vre {
     final Vre vre = new Vre(vreVertex.value(VRE_NAME_PROPERTY_NAME), loadKeywordTypes(vreVertex));
 
     vreVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME).forEachRemaining(collectionV -> {
-      Collection collection = Collection.load(collectionV);
+      Collection collection = Collection.load(collectionV, vre);
       vre.addCollection(collection);
     });
     return vre;

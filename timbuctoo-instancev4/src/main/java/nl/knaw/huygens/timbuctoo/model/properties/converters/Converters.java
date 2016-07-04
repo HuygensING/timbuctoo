@@ -59,14 +59,16 @@ public class Converters {
     return new StringToUnencodedStringOfLimitedValuesConverter(values);
   }
 
-  public static Converter forType(String type, String[] options)
+  public static Converter forType(String type, String... options)
     throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
     final Class<? extends Converter> converterClass = CONVERTER_TYPES.get(type);
 
-    if (converterClass.isAssignableFrom(HasOptions.class)) {
-      final Constructor<? extends Converter> hasOptionsConstuctor =
+    if (HasOptions.class.isAssignableFrom(converterClass)) {
+      final Constructor<? extends Converter> hasOptionsConstructor =
         converterClass.getDeclaredConstructor(String[].class);
-      return hasOptionsConstuctor.newInstance((Object[]) options);
+
+      // Force varargs variant of constructor to be call by casting options to a single Object type
+      return hasOptionsConstructor.newInstance((Object) options);
     } else {
       return converterClass.newInstance();
     }

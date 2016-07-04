@@ -183,7 +183,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       changeListeners,
       authorizer,
       new Neo4jLuceneEntityFetcher(graphManager));
-    final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager, vres.getKeywordTypes());
+    final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(
       graphManager,
       (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),

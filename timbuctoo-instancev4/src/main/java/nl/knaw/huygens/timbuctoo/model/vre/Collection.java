@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.model.vre;
 
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -12,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -107,7 +110,7 @@ public class Collection {
     return isRelationCollection;
   }
 
-  public static Collection load(Vertex collectionVertex) {
+  public static Collection load(Vertex collectionVertex, Vre vre) {
     final Vertex archetype = collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext() ?
       collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next() :
       null;
@@ -117,8 +120,8 @@ public class Collection {
     final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
 
     final ReadableProperty displayName = null; // TODO
-    final LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap(); //  TODO
-    final Vre vre = null; // TODO
+    final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex);
+
     // FIXME: not functionally used (see TIM-955)
     final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
     boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
@@ -134,6 +137,33 @@ public class Collection {
 
     return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre, derivedRelations,
       isRelationCollection);
+  }
+
+  private static LinkedHashMap<String, ReadableProperty> loadProperties(Vertex collectionVertex) {
+    final Iterator<Vertex> initialV = collectionVertex.vertices(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME);
+    final LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap();
+    if (!initialV.hasNext()) {
+      return properties;
+    }
+
+    Vertex current = initialV.next();
+    try {
+      properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), PropertyTypes.load(current));
+      while (current.vertices(Direction.OUT, ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME).hasNext()) {
+        current = current.vertices(Direction.OUT, ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME).next();
+        properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), PropertyTypes.load(current));
+      }
+
+    } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |
+        IllegalAccessException e) {
+
+      LOG.error(databaseInvariant, "Failed to load property {} for collection {} ",
+        current.property(ReadableProperty.CLIENT_PROPERTY_NAME).isPresent() ?
+          current.value(ReadableProperty.CLIENT_PROPERTY_NAME) : "",
+        collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME), e);
+    }
+
+    return properties;
   }
 
   public Vertex save(Graph graph) {

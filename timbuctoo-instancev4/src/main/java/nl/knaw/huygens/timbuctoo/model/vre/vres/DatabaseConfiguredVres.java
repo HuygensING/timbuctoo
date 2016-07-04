@@ -58,6 +58,9 @@ public class DatabaseConfiguredVres implements Vres {
 
   @Override
   public Map<String, Map<String, String>> getKeywordTypes() {
+    if (!loaded) {
+      this.load();
+    }
     return keywordTypes;
   }
 

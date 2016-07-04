@@ -1,8 +1,12 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converters;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +49,9 @@ public class PropertyTypes {
     throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
 
     Class<? extends ReadableProperty> propertyClass = PROPERTY_TYPES.get(type);
+    if (propertyClass == null) {
+      throw new IllegalArgumentException("Property type does not exist: " + type);
+    }
     if (propertyClass.isAssignableFrom(WwDocumentDisplayName.class)) {
       return new WwDocumentDisplayName();
     } else if (propertyClass.isAssignableFrom(WwPersonDisplayName.class)) {
@@ -52,5 +59,20 @@ public class PropertyTypes {
     }
 
     return new LocalProperty(clientName, Converters.forType(type, options));
+  }
+
+  public static ReadableProperty load(Vertex propertyVertex)
+    throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException,
+    InvocationTargetException {
+    final String type = propertyVertex.value(ReadableProperty.PROPERTY_TYPE_NAME);
+    final String clientName = propertyVertex.value(ReadableProperty.CLIENT_PROPERTY_NAME);
+
+    String[] options = null;
+    if (propertyVertex.property(LocalProperty.OPTIONS_PROPERTY_NAME).isPresent()) {
+      final String optionsJson = propertyVertex.value(LocalProperty.OPTIONS_PROPERTY_NAME);
+      options = new ObjectMapper().readValue(optionsJson, new TypeReference<String[]>() { });
+    }
+
+    return getForType(clientName, type, options);
   }
 }
