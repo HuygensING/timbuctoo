@@ -119,7 +119,7 @@ public class HuygensIng {
         .withProperty("tempPsChildren", localProperty("wwperson_tempPsChildren"))
         .withProperty("tempPseudonyms", localProperty("wwperson_tempPseudonyms"))
         .withProperty("tempSpouse", localProperty("wwperson_tempSpouse"))
-
+        // FIXME: not functioning and not used. (see TIM-955)
         .withDerivedRelation("hasPersonLanguage", () -> {
           P<String> isWw = new P<>((types, extra) -> types.contains("\"wwrelation\""), "");
           return __
