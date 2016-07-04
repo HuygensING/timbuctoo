@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.model.properties;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converters;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -19,7 +20,7 @@ public class PropertyTypes {
     PROPERTY_TYPES.put("unencoded-string-of-limited-values", LocalProperty.class);
     PROPERTY_TYPES.put("encoded-array", LocalProperty.class);
     PROPERTY_TYPES.put("altnames", LocalProperty.class);
-    PROPERTY_TYPES.put("default-person-display-name", ReadableProperty.class);
+    PROPERTY_TYPES.put("default-person-display-name", LocalProperty.class);
     PROPERTY_TYPES.put("wwperson-display-name", WwPersonDisplayName.class);
     PROPERTY_TYPES.put("wwdocument-display-name", WwDocumentDisplayName.class);
   }
@@ -38,5 +39,18 @@ public class PropertyTypes {
 
   public static ReadableProperty wwdocumentDisplayNameProperty() {
     return new WwDocumentDisplayName();
+  }
+
+  public static ReadableProperty getForType(String clientName, String type, String[] options)
+    throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException {
+
+    Class<? extends ReadableProperty> propertyClass = PROPERTY_TYPES.get(type);
+    if (propertyClass.isAssignableFrom(WwDocumentDisplayName.class)) {
+      return new WwDocumentDisplayName();
+    } else if (propertyClass.isAssignableFrom(WwPersonDisplayName.class)) {
+      return new WwPersonDisplayName();
+    }
+
+    return new LocalProperty(clientName, Converters.forType(type, options));
   }
 }
