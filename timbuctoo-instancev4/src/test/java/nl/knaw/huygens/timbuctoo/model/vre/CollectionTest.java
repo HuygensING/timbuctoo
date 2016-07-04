@@ -15,6 +15,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
@@ -241,6 +242,26 @@ public class CollectionTest {
     assertThat(instance.getCollectionName(), equalTo(collectionName));
     assertThat(instance.getAbstractType(), equalTo(entityTypeName));
     assertThat(instance.isRelationCollection(), equalTo(false));
+  }
+
+  @Test
+  public void loadLoadsAnInheritingCollectionFromAVertexWithHasArchetypeRelation() {
+    final Vertex collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
+    final Vertex abstractCollectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
+    final String collectionName = "wwpersons";
+    final String entityTypeName = "wwperson";
+    final String abstractCollectionName = "persons";
+    final String abstractEntityTypeName = "person";
+    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
+    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
+    abstractCollectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, abstractCollectionName);
+    abstractCollectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, abstractEntityTypeName);
+    collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, abstractCollectionVertex);
+
+    final Collection instance = Collection.load(collectionVertex);
+
+    assertThat(instance.getAbstractType(), equalTo(abstractEntityTypeName));
   }
 /*
     final Vertex archetype = collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext() ?
