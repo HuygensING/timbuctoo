@@ -12,11 +12,13 @@ import org.junit.Test;
 import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder.timbuctooCollection;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
@@ -223,4 +225,48 @@ public class CollectionTest {
 
     assertThat(graph.traversal().V().hasLabel(ReadableProperty.DATABASE_LABEL).hasNext(), equalTo(true));
   }
+
+  @Test
+  public void loadLoadsACollectionFromAVertex() {
+    final Vertex collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
+    final String collectionName = "persons";
+    final String entityTypeName = "person";
+    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
+    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
+
+    final Collection instance = Collection.load(collectionVertex);
+
+    assertThat(instance.getEntityTypeName(), equalTo(entityTypeName));
+    assertThat(instance.getCollectionName(), equalTo(collectionName));
+    assertThat(instance.getAbstractType(), equalTo(entityTypeName));
+    assertThat(instance.isRelationCollection(), equalTo(false));
+  }
+/*
+    final Vertex archetype = collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext() ?
+      collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next() :
+      null;
+
+    final String entityTypeName = collectionVertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+    final String abstractType = archetype == null ? entityTypeName : archetype.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+    final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
+
+    final ReadableProperty displayName = null; // TODO
+    final LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap(); //  TODO
+    final Vre vre = null; // TODO
+    final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = null; // FIXME: not functionally used
+    boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
+
+    // String entityTypeName
+    // String abstractType,
+    // ReadableProperty displayName,
+    // LinkedHashMap<String, ReadableProperty> properties,
+    // String collectionName,
+    // Vre vre,
+    // Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
+    // boolean isRelationCollection
+
+    return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre, derivedRelations,
+      isRelationCollection);
+ */
 }
