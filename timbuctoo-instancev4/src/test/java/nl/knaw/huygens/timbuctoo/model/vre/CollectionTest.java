@@ -30,6 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 
 public class CollectionTest {
   private Graph graph;
@@ -300,8 +301,34 @@ public class CollectionTest {
     assertThat(instance.getWriteableProperties().keySet(), contains(
       "prop1", "prop2", "prop3"
     ));
+
+    assertThat(instance.getWriteableProperties().values(), contains(
+      instanceOf(ReadableProperty.class),
+      instanceOf(ReadableProperty.class),
+      instanceOf(ReadableProperty.class)
+    ));
   }
 
+  @Test
+  public void loadLoadsTheDisplayName() {
+    final Vertex collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
+    final Vertex displayNameVertex = graph.addVertex(ReadableProperty.DATABASE_LABEL);
+    final String collectionName = "persons";
+    final String entityTypeName = "person";
+    final String propertyType = new StringToStringConverter().getUniqueTypeIdentifier();
+    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
+    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
+    displayNameVertex.property(LocalProperty.CLIENT_PROPERTY_NAME, "@displayName");
+    displayNameVertex.property(LocalProperty.DATABASE_PROPERTY_NAME, "person_prop1");
+    displayNameVertex.property(LocalProperty.PROPERTY_TYPE_NAME, propertyType);
+
+    collectionVertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayNameVertex);
+
+    final Collection instance = Collection.load(collectionVertex, new Vre("dummy"));
+
+    assertThat(instance.getDisplayName(), instanceOf(ReadableProperty.class));
+  }
 
   /*
     final Vertex archetype = collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext() ?

@@ -119,24 +119,32 @@ public class Collection {
     final String abstractType = archetype == null ? entityTypeName : archetype.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
     final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
 
-    final ReadableProperty displayName = null; // TODO
+    final ReadableProperty displayName = loadDisplayName(collectionVertex);
     final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex);
 
     // FIXME: not functionally used (see TIM-955)
     final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
     boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
 
-    // String entityTypeName
-    // String abstractType,
-    // ReadableProperty displayName,
-    // LinkedHashMap<String, ReadableProperty> properties,
-    // String collectionName,
-    // Vre vre,
-    // Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
-    // boolean isRelationCollection
-
     return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre, derivedRelations,
       isRelationCollection);
+  }
+
+  private static ReadableProperty loadDisplayName(Vertex collectionVertex) {
+    final Iterator<Vertex> initialV = collectionVertex.vertices(Direction.OUT, HAS_DISPLAY_NAME_RELATION_NAME);
+    if (!initialV.hasNext()) {
+      return null;
+    }
+
+    try {
+      return PropertyTypes.load(initialV.next());
+    } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |
+      IllegalAccessException e) {
+
+      LOG.error(databaseInvariant, "Failed to load display name for collection {} ",
+        collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME), e);
+    }
+    return null;
   }
 
   private static LinkedHashMap<String, ReadableProperty> loadProperties(Vertex collectionVertex) {
