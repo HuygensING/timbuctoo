@@ -27,7 +27,7 @@ public class StringToStringConverter implements Converter {
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "text";
   }
 

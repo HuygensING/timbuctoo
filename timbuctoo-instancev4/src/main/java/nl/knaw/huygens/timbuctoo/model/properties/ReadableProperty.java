@@ -31,6 +31,7 @@ public abstract class ReadableProperty {
     Vertex propertyVertex = graph.addVertex(DATABASE_LABEL);
     propertyVertex.property(CLIENT_PROPERTY_NAME, clientPropertyName);
     propertyVertex.property(PROPERTY_TYPE_NAME, getTypeId());
+
     return propertyVertex;
   }
 }

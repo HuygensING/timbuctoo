@@ -48,7 +48,7 @@ public class HyperlinksConverter implements Converter {
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "links";
   }
 

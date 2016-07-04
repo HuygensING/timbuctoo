@@ -27,7 +27,7 @@ public class DefaultFullPersonNameConverter implements Converter {
   }
 
   @Override
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "default-person-display-name";
   }
 

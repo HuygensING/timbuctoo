@@ -46,7 +46,7 @@ public class PersonNamesConverter implements Converter, HasParts {
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "names";
   }
 

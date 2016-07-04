@@ -37,7 +37,7 @@ class AltNamesConverter implements Converter {
   }
 
   @Override
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "altnames";
   }
 

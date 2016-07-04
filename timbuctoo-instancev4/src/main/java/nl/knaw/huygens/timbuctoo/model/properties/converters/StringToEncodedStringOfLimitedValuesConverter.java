@@ -49,7 +49,7 @@ public class StringToEncodedStringOfLimitedValuesConverter implements Converter,
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "select";
   }
 

@@ -30,7 +30,7 @@ public class DatableConverter implements Converter {
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "datable";
   }
 

@@ -44,7 +44,7 @@ public class ArrayToEncodedArrayConverter implements Converter {
   }
 
   @Override
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "list-of-strings";
   }
 

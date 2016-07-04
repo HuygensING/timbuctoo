@@ -47,7 +47,7 @@ public class LocalPropertyTest {
     LocalProperty instance = new LocalProperty(propertyName, converter);
     GraphTraversal<?, Try<ExcelDescription>> traversal = instance.getExcelDescription();
 
-    given(converter.getTypeIdentifier()).willReturn(propertyType);
+    given(converter.getGuiTypeId()).willReturn(propertyType);
     ExcelDescription shouldBeReached = mock(ExcelDescription.class);
     given(converter.tinkerPopToExcel(propertyValue, propertyType)).willReturn(shouldBeReached);
 
@@ -57,7 +57,7 @@ public class LocalPropertyTest {
 
     Try<ExcelDescription> result = graph.traversal().V().union(traversal).next();
 
-    verify(converter, atLeastOnce()).getTypeIdentifier();
+    verify(converter, atLeastOnce()).getGuiTypeId();
     verify(converter, atLeastOnce()).tinkerPopToExcel(propertyValue, propertyType);
 
     assertThat(result.get(), equalTo(shouldBeReached));
@@ -70,7 +70,7 @@ public class LocalPropertyTest {
     final String clientPropName = "clientPropName";
 
     Converter converter = mock(Converter.class);
-    given(converter.getTypeIdentifier()).willReturn(propertyType);
+    given(converter.getGuiTypeId()).willReturn(propertyType);
 
     LocalProperty property = new LocalProperty(propertyName, converter);
 
@@ -101,7 +101,7 @@ public class LocalPropertyTest {
 
     assertThat(result, likeVertex()
       .withProperty(OPTIONS_PROPERTY_NAME, new ObjectMapper().writeValueAsString(options))
-      .withProperty(PROPERTY_TYPE_NAME, converter.getTypeIdentifier())
+      .withProperty(PROPERTY_TYPE_NAME, converter.getGuiTypeId())
     );
   }
 }

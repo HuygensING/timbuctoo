@@ -53,7 +53,7 @@ public class StringArrayToEncodedArrayOfLimitedValues implements Converter, HasO
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "multiselect";
   }
 

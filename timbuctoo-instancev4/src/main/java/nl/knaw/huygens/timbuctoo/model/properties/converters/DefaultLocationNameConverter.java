@@ -28,7 +28,7 @@ public class DefaultLocationNameConverter implements Converter {
   }
 
   @Override
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "default-location-display-name";
   }
 

@@ -36,7 +36,7 @@ public class StringToUnencodedStringOfLimitedValuesConverter implements Converte
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "select";
   }
 
