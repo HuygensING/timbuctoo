@@ -98,32 +98,28 @@ module Person
     def Person.build_relations old_person, new_person
 	Wanted_relations.each_with_index do |rel,ind|
 	    new_person[rel] = Array.new
-	    if ind==0
-		if !old_person['@relations'].nil?
+	    if !old_person['@relations'].nil?
+		if ind==0
 		    (0..2).each do |ind_2|
 			if !old_person['@relations'][Relation_types[ind_2]].nil?
-			    old_person['@relations'][Relation_types[ind_2]].each do |rt|
-				if rt['accepted']
-				    new_person[rel] << rt['displayName']
-				end
-			    end
+			    Person.add_relation old_person,new_person,rel,ind
 			end
 		    end
-		end
-	    else
-		if !old_person['@relations'].nil?
-		    if !old_person['@relations'][Relation_types[ind]].nil?
-			old_person['@relations'][Relation_types[ind]].each do |rt|
-			    if rt['accepted']
-				new_person[rel] << rt['displayName']
-			    end
-			end
-		    end
+		else
+		    Person.add_relation old_person,new_person,rel,ind
 		end
 	    end
 	    new_person[rel].uniq!
 	end
 	return new_person
+    end
+
+    def Person.add_relation old_person,new_person,rel,ind
+	if !old_person['@relations'][Relation_types[ind]].nil?
+	    old_person['@relations'][Relation_types[ind]].each do |rt|
+		new_person[rel] << rt['displayName']  if rt['accepted']
+	    end
+	end
     end
 
 end
