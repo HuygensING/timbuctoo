@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.model.properties.converters.HasOptions;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToUnencodedStringOfLimitedValuesConverter;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -71,5 +71,39 @@ public class ReadablePropertyTest {
     assertThat(result, instanceOf(LocalProperty.class));
     assertThat(result.getUniqueTypeId(), equalTo(typeIdentifier));
     assertThat(((LocalProperty) result).getOptions().get(), contains("a", "b"));
+  }
+
+  @Test
+  public void loadLoadsTheCustomDisplayNameProperties()
+    throws InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException,
+    IOException {
+    final Vertex documentDisplayNameVertex = graph.addVertex(DATABASE_LABEL);
+    final Vertex personDisplayNameVertex = graph.addVertex(DATABASE_LABEL);
+    final String documentDisplayNameTypeId = new WwDocumentDisplayName().getUniqueTypeId();
+    final String personDisplayNameTypeId = new WwPersonDisplayName().getUniqueTypeId();
+    documentDisplayNameVertex.property(CLIENT_PROPERTY_NAME, "clientName");
+    documentDisplayNameVertex.property(PROPERTY_TYPE_NAME, documentDisplayNameTypeId);
+    personDisplayNameVertex.property(CLIENT_PROPERTY_NAME, "clientName2");
+    personDisplayNameVertex.property(PROPERTY_TYPE_NAME, personDisplayNameTypeId);
+
+    ReadableProperty documentResult = ReadableProperty.load(documentDisplayNameVertex);
+    ReadableProperty personResult = ReadableProperty.load(personDisplayNameVertex);
+
+    assertThat(documentResult, instanceOf(WwDocumentDisplayName.class));
+    assertThat(personResult, instanceOf(WwPersonDisplayName.class));
+  }
+
+  @Test(expected = IOException.class)
+  public void loadThrowsWhenTypeIsNotSupported()
+    throws IOException, InvocationTargetException, NoSuchMethodException, InstantiationException,
+    IllegalAccessException {
+
+    final Vertex vertex = graph.addVertex(DATABASE_LABEL);
+    final String typeIdentifier = new StringToUnencodedStringOfLimitedValuesConverter(new String[]{})
+      .getUniqueTypeIdentifier();
+    vertex.property(CLIENT_PROPERTY_NAME, "clientName");
+    vertex.property(PROPERTY_TYPE_NAME, typeIdentifier);
+
+    ReadableProperty.load(vertex);
   }
 }
