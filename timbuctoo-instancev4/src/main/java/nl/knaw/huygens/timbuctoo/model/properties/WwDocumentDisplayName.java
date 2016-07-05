@@ -24,7 +24,7 @@ public class WwDocumentDisplayName extends ReadableProperty {
       .map(x -> {
         Try<JsonNode> date = (Try<JsonNode>) x.get().get("date");
         Try<JsonNode> title = (Try<JsonNode>) x.get().get("title");
-        return Try.success(jsn(
+        return Try.success((JsonNode) jsn(
           title.getOrElse(jsn("")).asText() +
             " (" + date.getOrElse(jsn("<date>")).asText() + ")"
         ));
