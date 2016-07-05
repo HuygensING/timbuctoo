@@ -48,6 +48,11 @@ public class DatabaseConfiguredVres implements Vres {
     if (loadedInstance != null) {
       return loadedInstance;
     }
+    reload();
+    return loadedInstance;
+  }
+
+  public void reload() {
     final List<Vre> vreList = new ArrayList<>();
     final Map<String, Map<String, String>> keywordTypes = new HashMap<>();
 
@@ -58,6 +63,5 @@ public class DatabaseConfiguredVres implements Vres {
     });
 
     loadedInstance = new ConfiguredVres(vreList, keywordTypes);
-    return loadedInstance;
   }
 }
