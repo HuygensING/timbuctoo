@@ -77,11 +77,6 @@ module Person
 	    new_person['language_ss'] = languages
 	end
 
-	if debug
-	    STDERR.puts obj
-	    STDERR.puts new_person
-	    exit(1)
-	end
 	return new_person
     end
     
