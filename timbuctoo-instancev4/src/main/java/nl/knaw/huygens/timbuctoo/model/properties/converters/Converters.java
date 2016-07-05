@@ -9,16 +9,18 @@ public class Converters {
   private static final Map<String, Class<? extends Converter>> CONVERTER_TYPES = new HashMap<>();
 
   static {
-    CONVERTER_TYPES.put("person-names", PersonNamesConverter.class);
-    CONVERTER_TYPES.put("encoded-array-of-limited-values", StringArrayToEncodedArrayOfLimitedValues.class);
-    CONVERTER_TYPES.put("encoded-string-of-limited-values", StringToEncodedStringOfLimitedValuesConverter.class);
-    CONVERTER_TYPES.put("datable", DatableConverter.class);
-    CONVERTER_TYPES.put("string", StringToStringConverter.class);
-    CONVERTER_TYPES.put("hyperlinks", HyperlinksConverter.class);
-    CONVERTER_TYPES.put("default-person-display-name", DefaultFullPersonNameConverter.class);
-    CONVERTER_TYPES.put("unencoded-string-of-limited-values", StringToUnencodedStringOfLimitedValuesConverter.class);
-    CONVERTER_TYPES.put("encoded-array", ArrayToEncodedArrayConverter.class);
-    CONVERTER_TYPES.put("altnames", AltNamesConverter.class);
+    CONVERTER_TYPES.put(PersonNamesConverter.TYPE, PersonNamesConverter.class);
+    CONVERTER_TYPES.put(StringArrayToEncodedArrayOfLimitedValues.TYPE, StringArrayToEncodedArrayOfLimitedValues.class);
+    CONVERTER_TYPES.put(StringToEncodedStringOfLimitedValuesConverter.TYPE,
+      StringToEncodedStringOfLimitedValuesConverter.class);
+    CONVERTER_TYPES.put(DatableConverter.TYPE, DatableConverter.class);
+    CONVERTER_TYPES.put(StringToStringConverter.TYPE, StringToStringConverter.class);
+    CONVERTER_TYPES.put(HyperlinksConverter.TYPE, HyperlinksConverter.class);
+    CONVERTER_TYPES.put(DefaultFullPersonNameConverter.TYPE, DefaultFullPersonNameConverter.class);
+    CONVERTER_TYPES.put(StringToUnencodedStringOfLimitedValuesConverter.TYPE,
+      StringToUnencodedStringOfLimitedValuesConverter.class);
+    CONVERTER_TYPES.put(ArrayToEncodedArrayConverter.TYPE, ArrayToEncodedArrayConverter.class);
+    CONVERTER_TYPES.put(AltNamesConverter.TYPE, AltNamesConverter.class);
   }
 
   public static final StringToStringConverter stringToString = new StringToStringConverter();

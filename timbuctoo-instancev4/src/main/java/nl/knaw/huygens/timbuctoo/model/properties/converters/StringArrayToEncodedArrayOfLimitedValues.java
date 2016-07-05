@@ -14,7 +14,7 @@ import java.util.List;
 import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
 
 public class StringArrayToEncodedArrayOfLimitedValues implements Converter, HasOptions {
-  static final String ENCODED_ARRAY_OF_LIMITED_VALUES = "encoded-array-of-limited-values";
+  static final String TYPE = "encoded-array-of-limited-values";
   private final List<String> allowedValues;
   private final ObjectMapper objectMapper;
 
@@ -60,7 +60,7 @@ public class StringArrayToEncodedArrayOfLimitedValues implements Converter, HasO
 
   @Override
   public String getUniqueTypeIdentifier() {
-    return ENCODED_ARRAY_OF_LIMITED_VALUES;
+    return TYPE;
   }
 
   @Override
