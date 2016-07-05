@@ -160,7 +160,7 @@ public class Collection {
       }
 
     } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |
-        IllegalAccessException e) {
+      IllegalAccessException e) {
 
       LOG.error(databaseInvariant, "Failed to load configuration for property {} for collection {} ",
         current.property(ReadableProperty.CLIENT_PROPERTY_NAME).isPresent() ?
@@ -171,8 +171,15 @@ public class Collection {
     return properties;
   }
 
-  public Vertex save(Graph graph) {
+  public Vertex save(Graph graph, String vreName) {
     Vertex collectionVertex = findOrCreateCollectionVertex(graph);
+
+    if (!collectionNameIsUniqueToThisVre(collectionVertex, vreName)) {
+      final String message =
+        String.format("Collection '%s' already exists for another VRE than '%s'", collectionName, vreName);
+      LOG.error(message);
+      throw new IllegalArgumentException(message);
+    }
 
     collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
@@ -189,6 +196,15 @@ public class Collection {
     }
 
     return collectionVertex;
+  }
+
+  private boolean collectionNameIsUniqueToThisVre(Vertex collectionVertex, String vreName) {
+    final Iterator<Vertex> vreV = collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME);
+    if (vreV.hasNext() && !vreV.next().value(Vre.VRE_NAME_PROPERTY_NAME).equals(vreName)) {
+      return false;
+    }
+
+    return true;
   }
 
 

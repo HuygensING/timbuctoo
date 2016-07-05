@@ -138,7 +138,7 @@ public class Vre {
   private void saveCollections(Graph graphWrapper, Vertex vreVertex) {
     getCollections().forEach((name, collection) -> {
       LOG.debug("Adding collection {} to VRE {}", name, vreName);
-      vreVertex.addEdge(HAS_COLLECTION_RELATION_NAME, collection.save(graphWrapper));
+      vreVertex.addEdge(HAS_COLLECTION_RELATION_NAME, collection.save(graphWrapper, vreName));
     });
   }
 
