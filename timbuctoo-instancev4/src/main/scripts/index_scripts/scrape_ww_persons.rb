@@ -33,12 +33,10 @@ def do_solr_post batch
     http = Net::HTTP.new(uri.hostname, uri.port)
     req.body = batch.to_json
     result = http.request(req)
-    puts "result (add json): #{result}"
     uri = URI.parse("#{@solr}update?commit=true")
     req = Net::HTTP::Post.new(uri)
     http = Net::HTTP.new(uri.hostname, uri.port)
     result = http.request(req)
-    puts "result (update): #{result}"
 end
 
 
@@ -48,12 +46,12 @@ if __FILE__ == $0
     debug = false
     output_dir = ""
     multiple_archives = ""
-    @location = "http://test.repository.huygens.knaw.nl/"
+    @location = "http://acc.repository.huygens.knaw.nl/"
     @collection = "gettingstarted/"
     @solr = "http://192.168.99.100:8983/solr/#{@collection}"
 
-begin
-    (0..(ARGV.size-1)).each do |i|
+    begin
+	(0..(ARGV.size-1)).each do |i|
 	case ARGV[i]
 	    when '--debug'
 		debug = true
@@ -71,6 +69,8 @@ begin
     rescue => detail
 	STDERR.puts "#{detail}"
     end
+    
+    Person.location = "#{@location}v2.1/"
 
     continu = true
     start_value = 0

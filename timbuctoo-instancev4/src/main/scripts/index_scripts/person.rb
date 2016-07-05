@@ -1,5 +1,7 @@
 module Person
 
+    @@location
+
     Wanted_properties = [
 	    "_id",
 	    "@displayName",
@@ -44,8 +46,12 @@ module Person
 	"religion_ss",
 	"profession_ss",
 	"financialSituation_ss",
-	"memberships_ss",
+	"memberships_ss"
     ]
+
+    def Person.location= location
+	@@location = location
+    end
 
     
     def Person.build_person obj
@@ -63,8 +69,19 @@ module Person
 	    new_person['name_t'] = Person.build_name obj['names']
 	end
 
-	new_person = Person.build_relations(obj, new_person)
+	new_person = Person.build_relations obj, new_person
 
+	creator_of = obj['@relations']['isCreatorOf']  if !obj['@relations'].nil?
+	if !creator_of.nil? && !creator_of.empty?
+	    languages = Person.find_languages_in_works new_person,creator_of
+	    new_person['language_ss'] = languages
+	end
+
+	if debug
+	    STDERR.puts obj
+	    STDERR.puts new_person
+	    exit(1)
+	end
 	return new_person
     end
     
@@ -102,7 +119,7 @@ module Person
 		if ind==0
 		    (0..2).each do |ind_2|
 			if !old_person['@relations'][Relation_types[ind_2]].nil?
-			    Person.add_relation old_person,new_person,rel,ind
+			    Person.add_relation old_person,new_person,rel,ind_2
 			end
 		    end
 		else
@@ -120,6 +137,23 @@ module Person
 		new_person[rel] << rt['displayName']  if rt['accepted']
 	    end
 	end
+    end
+
+    def Person.find_languages_in_works person,creator_of
+	languages = Array.new
+	creator_of.each do |work|
+	    f = open("#{@@location}#{work['path']}")
+	    line = f.gets
+	    array = JSON.parse(line)
+	    if !array['@relations'].nil? && !array['@relations']['hasWorkLanguage'].nil?
+		hasWorkLanguage = array['@relations']['hasWorkLanguage']
+		hasWorkLanguage.each do |language|
+		    languages << language['displayName']  if language['accepted']
+		end
+	    end
+	end
+	languages.uniq!
+	return languages
     end
 
 end
