@@ -54,7 +54,7 @@ module Person
     end
 
     
-    def Person.build_person obj
+    def Person.build_person obj,all_documents
 	new_person = Hash.new
 	new_person['type_s'] = "person"
 	Wanted_properties.each do |property|
@@ -73,7 +73,7 @@ module Person
 
 	creator_of = obj['@relations']['isCreatorOf']  if !obj['@relations'].nil?
 	if !creator_of.nil? && !creator_of.empty?
-	    languages = Person.find_languages_in_works new_person,creator_of
+	    languages = Person.find_languages_in_works new_person,creator_of,all_documents
 	    new_person['language_ss'] = languages
 	end
 
@@ -134,18 +134,16 @@ module Person
 	end
     end
 
-    def Person.find_languages_in_works person,creator_of
+    def Person.find_languages_in_works person,creator_of,all_documents
 	languages = Array.new
 	creator_of.each do |work|
-	    f = open("#{@@location}#{work['path']}", {:read_timeout=>600})
-	    line = f.gets
-	    array = JSON.parse(line)
-	    if !array['@relations'].nil? && !array['@relations']['hasWorkLanguage'].nil?
-		hasWorkLanguage = array['@relations']['hasWorkLanguage']
-		hasWorkLanguage.each do |language|
-		    languages << language['displayName']  if language['accepted']
-		end
+	    if all_documents[work['path']].nil?
+		f = open("#{@@location}#{work['path']}", {:read_timeout=>600})
+		line = f.gets
+		array = JSON.parse(line)
+		all_documents[work['path']] = Document.new(array)
 	    end
+	    languages += all_documents[work['path']].languages
 	end
 	languages.uniq!
 	return languages
