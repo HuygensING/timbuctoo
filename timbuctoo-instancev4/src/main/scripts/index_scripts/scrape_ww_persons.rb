@@ -4,10 +4,9 @@ require './timer.rb'
 require './person.rb'
 require './document.rb'
 require 'json'
-#require 'net/http'
 
 
-def scrape_file all_documents, start_value, num_of_lines=100
+def scrape_file start_value, num_of_lines=100
     result = Array.new
     STDERR.puts "start=#{start_value}"
 
@@ -16,11 +15,12 @@ def scrape_file all_documents, start_value, num_of_lines=100
     line = f.gets
     array = JSON.parse(line)
     array.each do |obj|
-	result << Person.build_person(obj,all_documents)
+	result << Person.new(obj)
 	start_value += 1
     end
     STDERR.puts "#{start_value}"  if array.size < 100 && array.size > 0
-    STDERR.puts "all_documents.size: #{all_documents.size}"
+    STDERR.puts "all_documents.size: #{Person.all_documents_size}"
+    STDERR.puts "num_found_in_table: #{Person.num_found_in_table}"
     if !line.eql?("[]")
 	do_solr_post result
     end
@@ -76,11 +76,10 @@ if __FILE__ == $0
 
     continu = true
     start_value = 0
-    num_of_lines = debug ? 10 : 100
+    num_of_lines = debug ? 100 : 100
     all_ww_persons = Array.new
-    all_documents = Hash.new
     while(continu)
-	continu = scrape_file all_documents,start_value,num_of_lines
+	continu = scrape_file start_value,num_of_lines
 	continu = false if debug && start_value==900
 	start_value += 100 if continu
     end

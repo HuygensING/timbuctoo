@@ -1,8 +1,12 @@
-module Person
+class Person
 
-    @@location
+    @@location = ""
 
-    Wanted_properties = [
+    @@documents = Hash.new
+
+    @@num_found_in_table = 0
+
+    @@wanted_properties = [
 	    "_id",
 	    "@displayName",
 	    "types",
@@ -12,7 +16,7 @@ module Person
 	    "notes",
 	    "children"
 	]
-    New_prop_names = [
+    @@new_prop_names = [
 	    "id",
 	    "displayName_s",
 	    "types_ss",
@@ -23,7 +27,7 @@ module Person
 	    "children_s"
 	]
 
-    Relation_types = [
+    @@relation_types = [
 	"hasResidenceLocation",
 	"hasBirthPlace",
 	"hasDeathPlace",
@@ -36,7 +40,7 @@ module Person
 	"isMemberOf"
     ]
 
-    Wanted_relations = [
+    @@wanted_relations = [
 	"relatedLocations_ss",
 	"birthPlace_ss",
 	"deathPlace_ss",
@@ -49,38 +53,45 @@ module Person
 	"memberships_ss"
     ]
 
+    attr_reader :person
+
     def Person.location= location
 	@@location = location
     end
 
+    def Person.all_documents_size
+	@@documents.size
+    end
+
+    def Person.num_found_in_table
+	@@num_found_in_table
+    end
     
-    def Person.build_person obj,all_documents
-	new_person = Hash.new
-	new_person['type_s'] = "person"
-	Wanted_properties.each do |property|
+    def initialize obj
+	@person = Hash.new
+	@person['type_s'] = "person"
+	@@wanted_properties.each do |property|
 	    if (property.eql?("birthDate") || property.eql?("deathDate")) && !obj[property].nil?
-		new_person[New_prop_names[Wanted_properties.index(property)]] = obj[property].to_i
+		@person[@@new_prop_names[@@wanted_properties.index(property)]] = obj[property].to_i
 	    else
-		new_person[New_prop_names[Wanted_properties.index(property)]] = obj[property]
+		@person[@@new_prop_names[@@wanted_properties.index(property)]] = obj[property]
 	    end
 	end
-	new_person['modified_l'] = obj['^modified']['timeStamp']
+	@person['modified_l'] = obj['^modified']['timeStamp']
 	if !obj['names'].nil?
-	    new_person['name_t'] = Person.build_name obj['names']
+	    @person['name_t'] = build_name obj['names']
 	end
 
-	new_person = Person.build_relations obj, new_person
+	build_relations obj
 
 	creator_of = obj['@relations']['isCreatorOf']  if !obj['@relations'].nil?
 	if !creator_of.nil? && !creator_of.empty?
-	    languages = Person.find_languages_in_works new_person,creator_of,all_documents
-	    new_person['language_ss'] = languages
+	    languages = find_languages_in_works creator_of
+	    @person['language_ss'] = languages
 	end
-
-	return new_person
     end
     
-    def Person.build_name names
+    def build_name names
 	new_names = Array.new
 	names.each do |name|
 	    build_name = Hash.new
@@ -107,43 +118,44 @@ module Person
 	return new_names.join(" ")
     end
 
-    def Person.build_relations old_person, new_person
-	Wanted_relations.each_with_index do |rel,ind|
-	    new_person[rel] = Array.new
+    def build_relations old_person
+	@@wanted_relations.each_with_index do |rel,ind|
+	    @person[rel] = Array.new
 	    if !old_person['@relations'].nil?
 		if ind==0
 		    (0..2).each do |ind_2|
-			if !old_person['@relations'][Relation_types[ind_2]].nil?
-			    Person.add_relation old_person,new_person,rel,ind_2
+			if !old_person['@relations'][@@relation_types[ind_2]].nil?
+			    add_relation old_person,rel,ind_2
 			end
 		    end
 		else
-		    Person.add_relation old_person,new_person,rel,ind
+		    add_relation old_person,rel,ind
 		end
 	    end
-	    new_person[rel].uniq!
+	    @person[rel].uniq!
 	end
-	return new_person
     end
 
-    def Person.add_relation old_person,new_person,rel,ind
-	if !old_person['@relations'][Relation_types[ind]].nil?
-	    old_person['@relations'][Relation_types[ind]].each do |rt|
-		new_person[rel] << rt['displayName']  if rt['accepted']
+    def add_relation old_person,rel,ind
+	if !old_person['@relations'][@@relation_types[ind]].nil?
+	    old_person['@relations'][@@relation_types[ind]].each do |rt|
+		@person[rel] << rt['displayName']  if rt['accepted']
 	    end
 	end
     end
 
-    def Person.find_languages_in_works person,creator_of,all_documents
+    def find_languages_in_works creator_of
 	languages = Array.new
 	creator_of.each do |work|
-	    if all_documents[work['path']].nil?
+	    if @@documents[work['path']].nil?
 		f = open("#{@@location}#{work['path']}", {:read_timeout=>600})
 		line = f.gets
 		array = JSON.parse(line)
-		all_documents[work['path']] = Document.new(array)
+		@@documents[work['path']] = Document.new(array)
+	    else
+		@@num_found_in_table += 1
 	    end
-	    languages += all_documents[work['path']].languages
+	    languages += @@documents[work['path']].languages
 	end
 	languages.uniq!
 	return languages
