@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
@@ -166,7 +167,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
       new AddLabelChangeListener(),
-      new FulltextIndexChangeListener(graphManager.getGraphDatabase(), new IndexDescriptionFactory())
+      new FulltextIndexChangeListener(graphManager.getGraphDatabase(), new IndexDescriptionFactory()),
+      new CollectionHasEntityRelationChangeListener(graphManager)
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(

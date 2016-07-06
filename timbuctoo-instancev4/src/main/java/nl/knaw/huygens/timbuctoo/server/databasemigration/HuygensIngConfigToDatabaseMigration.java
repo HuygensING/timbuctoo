@@ -52,6 +52,7 @@ public class HuygensIngConfigToDatabaseMigration implements DatabaseMigration {
       .filter((name) -> !name.equals("Admin"))
       .forEach((name) -> saveVre(graphWrapper, transaction, name));
 
+    transaction.commit();
     transaction.close();
   }
 
