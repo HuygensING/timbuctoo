@@ -1,8 +1,9 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
@@ -139,12 +140,12 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void throwsOnUnknownProperties() throws Exception {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("WomenWriters", "ww", vre -> vre
         .withCollection("wwpersons", c -> c
           .withProperty("name", localProperty("wwname"))
         )
-      ).build()).forGraph(graph);
+      ).build(Maps.newHashMap())).forGraph(graph);
 
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
@@ -156,13 +157,13 @@ public class TinkerpopJsonCrudServiceCreateTest {
   @Test
   public void setsJsonPropertyMapForKnownProperties() throws Exception {
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("WomenWriters", "ww", vre -> vre
         .withCollection("wwpersons", c -> c
           .withProperty("name", localProperty("wwname"))
           .withProperty("age", localProperty("wwage"))
         )
-      ).build()).forGraph(graph);
+      ).build(Maps.newHashMap())).forGraph(graph);
 
     instance.create(
       "wwpersons",
@@ -182,12 +183,12 @@ public class TinkerpopJsonCrudServiceCreateTest {
     doThrow(new IOException("PARSE ERROR")).when(throwingMap).setJson(any(), any());
 
     Graph graph = newGraph().build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("WomenWriters", "ww", vre -> vre
         .withCollection("wwpersons", c -> c
           .withProperty("name", throwingMap)
         )
-      ).build()).forGraph(graph);
+      ).build(Maps.newHashMap())).forGraph(graph);
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
     expectedException.expectMessage(new RegexMatcher(Pattern.compile(".*name.*")));

@@ -15,6 +15,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class WwPersonDisplayName extends ReadableProperty {
   private static final Logger LOG = LoggerFactory.getLogger(WwPersonDisplayName.class);
+  public static final String TYPE = "wwperson-display-name";
 
   public WwPersonDisplayName() {
     super(() ->
@@ -44,6 +45,11 @@ public class WwPersonDisplayName extends ReadableProperty {
 
   @Override
   public String getTypeId() {
-    return "wwperson-display-name";
+    return TYPE;
+  }
+
+  @Override
+  public String getUniqueTypeId() {
+    return TYPE;
   }
 }

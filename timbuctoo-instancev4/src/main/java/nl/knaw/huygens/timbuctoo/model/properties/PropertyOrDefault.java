@@ -30,4 +30,9 @@ public class PropertyOrDefault extends ReadableProperty {
   public String getTypeId() {
     return "property-or-default";
   }
+
+  @Override
+  public String getUniqueTypeId() {
+    return  "property-or-default";
+  }
 }

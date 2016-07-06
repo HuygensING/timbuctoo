@@ -12,6 +12,9 @@ import java.io.IOException;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 class AltNamesConverter implements Converter {
+
+  static final String TYPE = "altnames";
+
   @Override
   public String jsonToTinkerpop(JsonNode json) throws IOException {
     //convert to personNames as verification
@@ -37,8 +40,13 @@ class AltNamesConverter implements Converter {
   }
 
   @Override
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "altnames";
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

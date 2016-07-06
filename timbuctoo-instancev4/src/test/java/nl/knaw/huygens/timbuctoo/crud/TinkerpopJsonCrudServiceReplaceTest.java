@@ -1,13 +1,13 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.util.AuthorizerHelper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
-import nl.knaw.huygens.timbuctoo.util.VertexMatcher;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -24,7 +24,6 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -203,14 +202,14 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("womenwriters", "ww", vre1 -> vre1
         .withCollection("wwpersons", c -> c
           .withProperty("name", localProperty("wwperson_name"))
           .withProperty("age", localProperty("wwperson_age"))
         )
       )
-      .build()).forGraph(graph);
+      .build(Maps.newHashMap())).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "name", jsn("newName"),
@@ -246,14 +245,14 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("womenwriters", "ww", vre1 -> vre1
         .withCollection("wwpersons", c -> c
           .withProperty("name", localProperty("wwperson_name"))
           .withProperty("age", localProperty("wwperson_age"))
         )
       )
-      .build()).forGraph(graph);
+      .build(Maps.newHashMap())).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "age", jsn("42"),
@@ -339,12 +338,12 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withProperty("rev", 1)
       )
       .build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new Vres.Builder()
+    TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
       .withVre("WomenWriters", "ww", vre1 -> vre1
         .withCollection("wwpersons", c -> c
           .withProperty("name", throwingMap)
         )
-      ).build()).forGraph(graph);
+      ).build(Maps.newHashMap())).forGraph(graph);
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
     expectedException.expectMessage(new RegexMatcher(Pattern.compile(".*name.*")));

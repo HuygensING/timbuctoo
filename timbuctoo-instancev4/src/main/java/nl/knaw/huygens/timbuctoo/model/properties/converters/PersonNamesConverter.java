@@ -15,6 +15,9 @@ import java.util.Collection;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class PersonNamesConverter implements Converter, HasParts {
+
+  static final String TYPE = "person-names";
+
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     //convert to personNames as verification
@@ -46,8 +49,13 @@ public class PersonNamesConverter implements Converter, HasParts {
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "names";
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

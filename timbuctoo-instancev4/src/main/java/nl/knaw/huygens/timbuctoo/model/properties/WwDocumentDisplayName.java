@@ -9,6 +9,9 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.d
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class WwDocumentDisplayName extends ReadableProperty {
+
+  public static final String TYPE = "wwdocument-display-name";
+
   public WwDocumentDisplayName() {
     super(() ->
       __.as("doc").union(
@@ -21,7 +24,7 @@ public class WwDocumentDisplayName extends ReadableProperty {
       .map(x -> {
         Try<JsonNode> date = (Try<JsonNode>) x.get().get("date");
         Try<JsonNode> title = (Try<JsonNode>) x.get().get("title");
-        return Try.success(jsn(
+        return Try.success((JsonNode) jsn(
           title.getOrElse(jsn("")).asText() +
             " (" + date.getOrElse(jsn("<date>")).asText() + ")"
         ));
@@ -31,6 +34,11 @@ public class WwDocumentDisplayName extends ReadableProperty {
 
   @Override
   public String getTypeId() {
-    return "wwdocument-display-name";
+    return TYPE;
+  }
+
+  @Override
+  public String getUniqueTypeId() {
+    return TYPE;
   }
 }

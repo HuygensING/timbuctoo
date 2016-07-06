@@ -10,7 +10,9 @@ public interface Converter {
 
   JsonNode tinkerpopToJson(Object value) throws IOException;
 
-  String getTypeIdentifier();
+  String getGuiTypeId();
+
+  String getUniqueTypeIdentifier();
 
   ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException;
 }

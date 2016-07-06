@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -69,7 +70,7 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
 
   @Test
   public void executeSavesTheVreMappingsToAGraph() throws IOException {
-    final Vres mappings = new Vres.Builder()
+    final Vres mappings = new VresBuilder()
       .withVre("Admin", "", vre -> {
         vre
           .withCollection("persons")
@@ -84,7 +85,7 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
         vre
           .withCollection("prefixbpersons");
       })
-      .build();
+      .build(Maps.newHashMap());
     final Map<String, Map<String, String>> keywordTypeMappings = new HashMap<>();
     final Map<String, String> keywordTypes = new HashMap<>();
     keywordTypes.put("keywordA", "valueA");
@@ -162,7 +163,7 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
 
   @Test
   public void executeAddsTypesLabeledEntitiesToTheCollectionHolders() throws IOException {
-    final Vres mappings = new Vres.Builder()
+    final Vres mappings = new VresBuilder()
       .withVre("Admin", "", vre -> {
         vre
           .withCollection("persons")
@@ -177,7 +178,7 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
         vre
           .withCollection("prefixbpersons");
       })
-      .build();
+      .build(Maps.newHashMap());
 
     new HuygensIngConfigToDatabaseMigration(mappings, Maps.newHashMap()).execute(graphWrapper);
 

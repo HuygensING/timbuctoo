@@ -9,6 +9,8 @@ import java.io.IOException;
 
 public class StringToStringConverter implements Converter {
 
+  static final String TYPE = "string";
+
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     if (json.isTextual()) {
@@ -27,8 +29,13 @@ public class StringToStringConverter implements Converter {
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "text";
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

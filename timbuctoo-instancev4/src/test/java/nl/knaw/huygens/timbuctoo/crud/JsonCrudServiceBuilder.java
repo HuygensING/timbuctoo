@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -12,9 +14,6 @@ import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.index.IndexManager;
 
 import java.net.URI;
 import java.time.Clock;
@@ -23,8 +22,6 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -45,7 +42,7 @@ public class JsonCrudServiceBuilder {
   private EntityFetcher entityFetcher;
 
   private JsonCrudServiceBuilder() {
-    vres = new Vres.Builder()
+    vres = new VresBuilder()
       .withVre("WomenWriters", "ww", vre -> vre
         .withCollection("wwdocuments", c -> c
           .withProperty("title", localProperty("wwdocument_title"))
@@ -82,7 +79,7 @@ public class JsonCrudServiceBuilder {
           .withDisplayName(PropertyTypes.localProperty("displayName"))
         )
       )
-      .build();
+      .build(Maps.newHashMap());
 
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/");
     clock = Clock.systemDefaultZone();

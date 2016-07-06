@@ -12,6 +12,8 @@ import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer
 
 public class HyperlinksConverter implements Converter {
 
+  static final String TYPE = "hyperlinks";
+
   private void throwIfInvalid(JsonNode json) throws IOException {
     if (json instanceof ArrayNode) {
       json.forEach(rethrowConsumer(val -> {
@@ -48,8 +50,13 @@ public class HyperlinksConverter implements Converter {
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "links";
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

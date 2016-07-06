@@ -13,6 +13,7 @@ import java.util.List;
 
 public class StringToEncodedStringOfLimitedValuesConverter implements Converter, HasOptions {
 
+  static final String TYPE = "encoded-string-of-limited-values";
   private final List<String> allowedValues;
   private final ObjectMapper objectMapper;
 
@@ -49,8 +50,13 @@ public class StringToEncodedStringOfLimitedValuesConverter implements Converter,
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "select";
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

@@ -68,7 +68,12 @@ public class LocalProperty extends ReadableProperty {
 
   @Override
   public String getTypeId() {
-    return converter.getTypeIdentifier();
+    return converter.getGuiTypeId();
+  }
+
+  @Override
+  public String getUniqueTypeId() {
+    return converter.getUniqueTypeIdentifier();
   }
 
   @Override

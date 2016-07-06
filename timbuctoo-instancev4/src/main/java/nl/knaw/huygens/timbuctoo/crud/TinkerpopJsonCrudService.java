@@ -436,6 +436,7 @@ public class TinkerpopJsonCrudService {
     return new Tuple<>(mapper.valueToTree(relations), relationCount[0]);
   }
 
+  // FIXME: remove, not functioning and unused (see TIM-955)
   private GraphTraversal<Vertex, ObjectNode> getDerivedRelations(Vertex entity, GraphTraversalSource traversalSource,
                                                                  Collection collection) {
     return traversalSource.withSack("").V(entity.id())

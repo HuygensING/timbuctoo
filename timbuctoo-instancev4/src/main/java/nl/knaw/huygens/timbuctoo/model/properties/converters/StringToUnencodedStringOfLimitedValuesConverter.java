@@ -13,6 +13,7 @@ import java.util.Collection;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class StringToUnencodedStringOfLimitedValuesConverter implements Converter, HasOptions {
+  static final String TYPE = "unencoded-string-of-limited-values";
   private final ArrayList<String> allowedValues;
 
   public StringToUnencodedStringOfLimitedValuesConverter(String[] values) {
@@ -36,8 +37,13 @@ public class StringToUnencodedStringOfLimitedValuesConverter implements Converte
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "select";
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override

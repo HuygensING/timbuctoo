@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
@@ -58,7 +59,7 @@ public class HuygensIng {
     "THEATERSCRIPT",
     "WORK"
   };
-  public static Vres mappings = new Vres.Builder()
+  public static Vres mappings = new VresBuilder()
     .withVre("WomenWriters", "ww", vre -> vre
       .withCollection("wwcollectives", c -> c
         .withDisplayName(localProperty("wwcollective_name"))
@@ -118,7 +119,7 @@ public class HuygensIng {
         .withProperty("tempPsChildren", localProperty("wwperson_tempPsChildren"))
         .withProperty("tempPseudonyms", localProperty("wwperson_tempPseudonyms"))
         .withProperty("tempSpouse", localProperty("wwperson_tempSpouse"))
-
+        // FIXME: not functioning and not used. (see TIM-955)
         .withDerivedRelation("hasPersonLanguage", () -> {
           P<String> isWw = new P<>((types, extra) -> types.contains("\"wwrelation\""), "");
           return __
@@ -496,6 +497,6 @@ public class HuygensIng {
           )
           .withCollection("charterrelations", CollectionBuilder::isRelationCollection)
       )
-    .build();
+    .build(keywordTypes);
 
 }

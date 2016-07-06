@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -11,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -33,6 +36,7 @@ public class Collection {
   public static final String HAS_INITIAL_PROPERTY_RELATION_NAME = "hasInitialProperty";
   public static final String HAS_ARCHETYPE_RELATION_NAME = "hasArchetype";
   private static final Logger LOG = LoggerFactory.getLogger(Collection.class);
+  public static final String IS_RELATION_COLLECTION_PROPERTY_NAME = "isRelationCollection";
   private final String entityTypeName;
   private final String collectionName;
   private final Vre vre;
@@ -46,6 +50,7 @@ public class Collection {
   Collection(@NotNull String entityTypeName, @NotNull String abstractType,
              @NotNull ReadableProperty displayName, @NotNull LinkedHashMap<String, ReadableProperty> properties,
              @NotNull String collectionName, @NotNull Vre vre,
+             // FIXME: not functionally used (see TIM-955)
              @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
              boolean isRelationCollection) {
     this.entityTypeName = entityTypeName;
@@ -96,6 +101,7 @@ public class Collection {
     return vre;
   }
 
+  // FIXME: not functionally used (see TIM-955)
   public Map<String, Supplier<GraphTraversal<Object, Vertex>>> getDerivedRelations() {
     return derivedRelations;
   }
@@ -104,11 +110,80 @@ public class Collection {
     return isRelationCollection;
   }
 
-  public Vertex save(Graph graph) {
+  public static Collection load(Vertex collectionVertex, Vre vre) {
+    final Vertex archetype = collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext() ?
+      collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next() :
+      null;
+
+    final String entityTypeName = collectionVertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+    final String abstractType = archetype == null ? entityTypeName : archetype.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+    final ReadableProperty displayName = loadDisplayName(collectionVertex);
+    final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex);
+    final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
+    final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
+    boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
+
+    return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre, derivedRelations,
+      isRelationCollection);
+  }
+
+  private static ReadableProperty loadDisplayName(Vertex collectionVertex) {
+    final Iterator<Vertex> initialV = collectionVertex.vertices(Direction.OUT, HAS_DISPLAY_NAME_RELATION_NAME);
+    if (!initialV.hasNext()) {
+      return null;
+    }
+
+    try {
+      return ReadableProperty.load(initialV.next());
+    } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |
+      IllegalAccessException e) {
+
+      LOG.error(databaseInvariant, "Failed to load configuration for  display name for collection {} ",
+        collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME), e);
+    }
+    return null;
+  }
+
+  private static LinkedHashMap<String, ReadableProperty> loadProperties(Vertex collectionVertex) {
+    final Iterator<Vertex> initialV = collectionVertex.vertices(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME);
+    final LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap();
+    if (!initialV.hasNext()) {
+      return properties;
+    }
+
+    Vertex current = initialV.next();
+    try {
+      properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), ReadableProperty.load(current));
+      while (current.vertices(Direction.OUT, ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME).hasNext()) {
+        current = current.vertices(Direction.OUT, ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME).next();
+        properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), ReadableProperty.load(current));
+      }
+
+    } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |
+      IllegalAccessException e) {
+
+      LOG.error(databaseInvariant, "Failed to load configuration for property {} for collection {} ",
+        current.property(ReadableProperty.CLIENT_PROPERTY_NAME).isPresent() ?
+          current.value(ReadableProperty.CLIENT_PROPERTY_NAME) : "",
+        collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME), e);
+    }
+
+    return properties;
+  }
+
+  public Vertex save(Graph graph, String vreName) {
     Vertex collectionVertex = findOrCreateCollectionVertex(graph);
+
+    if (!collectionNameIsUniqueToThisVre(collectionVertex, vreName)) {
+      final String message =
+        String.format("Collection '%s' already exists for another VRE than '%s'", collectionName, vreName);
+      LOG.error(message);
+      throw new IllegalArgumentException(message);
+    }
 
     collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+    collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, isRelationCollection);
 
     saveArchetypeRelation(graph, collectionVertex);
 
@@ -121,6 +196,15 @@ public class Collection {
     }
 
     return collectionVertex;
+  }
+
+  private boolean collectionNameIsUniqueToThisVre(Vertex collectionVertex, String vreName) {
+    final Iterator<Vertex> vreV = collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME);
+    if (vreV.hasNext() && !vreV.next().value(Vre.VRE_NAME_PROPERTY_NAME).equals(vreName)) {
+      return false;
+    }
+
+    return true;
   }
 
 

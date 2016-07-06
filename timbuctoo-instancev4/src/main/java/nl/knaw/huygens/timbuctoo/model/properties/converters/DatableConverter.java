@@ -8,6 +8,9 @@ import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.StringEx
 import java.io.IOException;
 
 public class DatableConverter implements Converter {
+
+  static final String TYPE = "datable";
+
   @Override
   public Object jsonToTinkerpop(JsonNode json) throws IOException {
     if (!json.isTextual()) {
@@ -30,8 +33,13 @@ public class DatableConverter implements Converter {
     }
   }
 
-  public String getTypeIdentifier() {
+  public String getGuiTypeId() {
     return "datable";
+  }
+
+  @Override
+  public String getUniqueTypeIdentifier() {
+    return TYPE;
   }
 
   @Override
