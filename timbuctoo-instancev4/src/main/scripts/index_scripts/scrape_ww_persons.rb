@@ -3,7 +3,7 @@ require 'pp'
 require './timer.rb'
 require './person.rb'
 require 'json'
-require 'net/http'
+#require 'net/http'
 
 
 def scrape_file start_value, num_of_lines=100
@@ -11,7 +11,7 @@ def scrape_file start_value, num_of_lines=100
     STDERR.puts "start=#{start_value}"
 
     location = "#{@location}v2.1/domain/wwpersons?rows=#{num_of_lines}&start=#{start_value}&withRelations=true"
-    f = open(location)
+    f = open(location, {:read_timeout=>600})
     line = f.gets
     array = JSON.parse(line)
     array.each do |obj|

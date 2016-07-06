@@ -137,7 +137,7 @@ module Person
     def Person.find_languages_in_works person,creator_of
 	languages = Array.new
 	creator_of.each do |work|
-	    f = open("#{@@location}#{work['path']}")
+	    f = open("#{@@location}#{work['path']}", {:read_timeout=>600})
 	    line = f.gets
 	    array = JSON.parse(line)
 	    if !array['@relations'].nil? && !array['@relations']['hasWorkLanguage'].nil?
