@@ -54,16 +54,13 @@ public class ImporterTest {
     Importer instance = new Importer(graphWrapper);
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(ABADAN_POINT_TRIPLE);
 
-
     instance.importTriple(tripleExtendedIterator.next());
 
-    assertThat(graphWrapper.getGraph().traversal().V().next(),
-      likeVertex().withProperty(RDF_URI_PROP, ABADAN_URI)
-    );
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).hasNext(), is(true));
   }
 
   @Test
-  public void importTripleShouldReuseTheExistingNodeWithURIFromSubject() {
+  public void importTripleShouldReuseTheExistingNodeWithUriFromSubject() {
     final GraphWrapper graphWrapper = newGraph().wrap();
     Importer instance = new Importer(graphWrapper);
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
@@ -175,8 +172,8 @@ public class ImporterTest {
     instance.importTriple(abadan);
 
     assertThat(graphWrapper
-      .getGraph().traversal().V()
-      .hasLabel(Collection.DATABASE_LABEL).has(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns").count().next(),
+        .getGraph().traversal().V()
+        .hasLabel(Collection.DATABASE_LABEL).has(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns").count().next(),
       equalTo(1L));
   }
 
@@ -197,18 +194,18 @@ public class ImporterTest {
   }
 
 
-  // given a triple describing an rdf:type relation
-  // - the subject vertex must become part of the collection name from triple.getObject()
+// given a triple describing an rdf:type relation
+// - the subject vertex must become part of the collection name from triple.getObject()
 
-  // given a triple
-  //
+// given a triple
+//
 
-  // import should connect the subject of a triple to a collection
-  //
-  // import should create a collection from the subject if it does describe a colleciton.
+// import should connect the subject of a triple to a collection
+//
+// import should create a collection from the subject if it does describe a colleciton.
 
-  // Container node should be reused.
-  // relation to container node should only be created if there is not one already
+// Container node should be reused.
+// relation to container node should only be created if there is not one already
 
 
 /*  @Test
