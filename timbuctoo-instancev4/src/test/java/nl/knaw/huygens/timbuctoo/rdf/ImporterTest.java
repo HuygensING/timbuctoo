@@ -1,11 +1,14 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -23,7 +26,7 @@ import static org.hamcrest.Matchers.is;
 public class ImporterTest {
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
-  private static final String RELATION_URI = "http://tl.dbpedia.org/ontology/isPartOf";
+  private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
 
   private static final String ABADAN_POINT_TRIPLE =
     "<" + ABADAN_URI + "> " +
@@ -40,9 +43,9 @@ public class ImporterTest {
       "<http://www.georss.org/georss/point> " +
       "\"30.339166666666667 48.30416666666667\"@tl .";
 
-  private static final String RELATED_TRIPLE =
+  private static final String ABADAN_IS_PART_OF_IRAN_TRIPLE =
     "<" + ABADAN_URI + "> " +
-      "<" + RELATION_URI + "> " +
+      "<" + IS_PART_OF_URI + "> " +
       "<" + IRAN_URI + ">";
 
   @Test
@@ -96,12 +99,12 @@ public class ImporterTest {
   public void importTripleSHouldMapToARelationBetweenTheSubjectAndANewObjectVertex() {
     final GraphWrapper graphWrapper = newGraph().wrap();
     Importer instance = new Importer(graphWrapper);
-    final String tripleString = RELATED_TRIPLE;
+    final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
     instance.importTriple(tripleExtendedIterator.next());
 
-    assertThat(graphWrapper.getGraph().traversal().V().both(RELATION_URI).toList(), containsInAnyOrder(
+    assertThat(graphWrapper.getGraph().traversal().V().both(IS_PART_OF_URI).toList(), containsInAnyOrder(
       likeVertex().withProperty("rdfUri", ABADAN_URI),
       likeVertex().withProperty("rdfUri", IRAN_URI)
     ));
@@ -113,7 +116,7 @@ public class ImporterTest {
     Importer instance = new Importer(graphWrapper);
     final Triple abadan = createTripleIterator(ABADAN_POINT_TRIPLE).next();
     final Triple iran = createTripleIterator(IRAN_POINT_TRIPLE).next();
-    final Triple relation = createTripleIterator(RELATED_TRIPLE).next();
+    final Triple relation = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
 
     instance.importTriple(abadan);
     instance.importTriple(iran);
@@ -122,6 +125,68 @@ public class ImporterTest {
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, P.within(ABADAN_URI, IRAN_URI)).count().next(),
       is(2L));
   }
+
+  @Test
+  public void importTripleShouldConnectResultingSubjectEntityToTheUnknownCollection() {
+    final GraphWrapper graphWrapper = newGraph().wrap();
+    Importer instance = new Importer(graphWrapper);
+    final Triple abadan = createTripleIterator(ABADAN_POINT_TRIPLE).next();
+
+    instance.importTriple(abadan);
+
+    final GraphTraversal<Vertex, Vertex> entityInCollection = graphWrapper
+      .getGraph().traversal().V()
+      .hasLabel(Collection.DATABASE_LABEL)
+      .has(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns")
+      .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown")
+      .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .out(Collection.HAS_ENTITY_RELATION_NAME);
+    assertThat(entityInCollection.hasNext(), is(true));
+    assertThat(entityInCollection.next(), is(likeVertex().withProperty(RDF_URI_PROP, ABADAN_URI)));
+  }
+
+  @Test
+  public void importTripleShouldConnectResultingObjectEntityToACollection() {
+    final GraphWrapper graphWrapper = newGraph().wrap();
+    Importer instance = new Importer(graphWrapper);
+    final Triple abadan = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
+
+    instance.importTriple(abadan);
+
+    final GraphTraversal<Vertex, Vertex> entityInCollection = graphWrapper
+      .getGraph().traversal().V()
+      .hasLabel(Collection.DATABASE_LABEL)
+      .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .out(Collection.HAS_ENTITY_RELATION_NAME);
+    assertThat(entityInCollection.toList(), containsInAnyOrder(
+      likeVertex().withProperty(RDF_URI_PROP, ABADAN_URI),
+      likeVertex().withProperty(RDF_URI_PROP, IRAN_URI)
+    ));
+  }
+
+  @Test
+  public void importTripleShouldNotCreateACollectionOfTheSameNameMoreThanOnce() {
+    final GraphWrapper graphWrapper = newGraph().wrap();
+    Importer instance = new Importer(graphWrapper);
+    final Triple abadan = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
+    final Triple iran = createTripleIterator(IRAN_POINT_TRIPLE).next();
+
+    instance.importTriple(iran);
+    instance.importTriple(abadan);
+
+    assertThat(graphWrapper
+      .getGraph().traversal().V()
+      .hasLabel(Collection.DATABASE_LABEL).has(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns").count().next(),
+      equalTo(1L));
+  }
+
+  // given a new entity resulting from the subject or object of a triple
+  // - its vertex must be part of a collection
+  // - if the triple predicate is rdf:type:
+  //   - it must become part of the collection named by triple.getObject().getUri()
+  //   - it must not be part of the "unknown" collection anymore
+  // - else:
+  //   - it must be(come) part of the "unknown" collection,
 
 
   private ExtendedIterator<Triple> createTripleIterator(String tripleString) {
@@ -132,8 +197,13 @@ public class ImporterTest {
   }
 
 
+  // given a triple describing an rdf:type relation
+  // - the subject vertex must become part of the collection name from triple.getObject()
 
-  // import should connect the subject of a triple to a collection if it does not describe a collection
+  // given a triple
+  //
+
+  // import should connect the subject of a triple to a collection
   //
   // import should create a collection from the subject if it does describe a colleciton.
 

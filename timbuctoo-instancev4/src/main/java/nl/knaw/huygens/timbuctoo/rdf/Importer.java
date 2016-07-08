@@ -1,32 +1,41 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class Importer {
 
   static final String RDF_URI_PROP = "rdfUri";
+  private final CollectionMapper collectionMapper;
   private GraphWrapper graphWrapper;
 
   public Importer(GraphWrapper graphWrapper) {
-
     this.graphWrapper = graphWrapper;
+    collectionMapper = new CollectionMapper(graphWrapper);
   }
 
   public void importTriple(Triple triple) {
     final Graph graph = graphWrapper.getGraph();
     Node node = triple.getSubject();
-    final Vertex subjectVertex;
-    subjectVertex = findOrCreateVertex(graph, node);
+    final Vertex subjectVertex = findOrCreateVertex(graph, node);
+    if (!subjectVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME).hasNext()) {
+      collectionMapper.addToCollection(subjectVertex, "unknown");
+    }
 
     if (triple.getObject().isLiteral()) {
       subjectVertex.property(triple.getPredicate().getURI(), triple.getObject().getLiteralLexicalForm());
     } else {
       final Vertex objectVertex = findOrCreateVertex(graph, triple.getObject());
+      if (!objectVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME).hasNext()) {
+        collectionMapper.addToCollection(objectVertex, "unknown");
+      }
+
       subjectVertex.addEdge(triple.getPredicate().getURI(), objectVertex);
     }
   }
