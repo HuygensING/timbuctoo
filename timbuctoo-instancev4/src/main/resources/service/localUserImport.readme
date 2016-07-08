@@ -9,4 +9,5 @@ pid;user;password;givenName;surname;email;organization;WomenWriters;USER
 All the lines starting with -- are ignored.
 
 Server Url
-Is the admin interface of Timbuctoo by default it will be: http://localhost:8081
+Because this script is run from the same host as Timbuctoo the url will be 'http://localhost'. The port information
+you can find in the 'config.yaml' in the 'conf' directory of Timbuctoo. Look for the 'adminConnectors' property 'port'.
