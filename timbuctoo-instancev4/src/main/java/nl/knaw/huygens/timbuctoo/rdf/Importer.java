@@ -1,11 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -28,20 +26,31 @@ public class Importer {
     final Graph graph = graphWrapper.getGraph();
     Node node = triple.getSubject();
     final Vertex subjectVertex = findOrCreateVertex(graph, node);
-    if (!subjectVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME).hasNext()) {
+
+    if (describesType(triple)) {
+      // TODO Find a way to add the LocalName of as the entityTypeName
+      collectionMapper.addToCollection(subjectVertex, triple.getObject().getURI());
+    } else if (describesProperty(triple)) {
       collectionMapper.addToCollection(subjectVertex, "unknown");
-    }
-
-    if (triple.getObject().isLiteral()) {
       subjectVertex.property(triple.getPredicate().getURI(), triple.getObject().getLiteralLexicalForm());
-    } else {
+    } else if (describesRelation(triple)) {
       final Vertex objectVertex = findOrCreateVertex(graph, triple.getObject());
-      if (!objectVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME).hasNext()) {
-        collectionMapper.addToCollection(objectVertex, "unknown");
-      }
-
+      collectionMapper.addToCollection(subjectVertex, "unknown");
+      collectionMapper.addToCollection(objectVertex, "unknown");
       subjectVertex.addEdge(triple.getPredicate().getURI(), objectVertex);
     }
+  }
+
+  private boolean describesRelation(Triple triple) {
+    return triple.getObject().isURI();
+  }
+
+  private boolean describesProperty(Triple triple) {
+    return triple.getObject().isLiteral();
+  }
+
+  private boolean describesType(Triple triple) {
+    return triple.getPredicate().getURI().equals("http://www.w3.org/1999/02/22-rdf-syntax-ns#type");
   }
 
   private Vertex findOrCreateVertex(Graph graph, Node node) {

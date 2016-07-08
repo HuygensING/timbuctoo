@@ -22,11 +22,18 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class ImporterTest {
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
   private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
+  private static final String TYPE_URI = "http://www.opengis.net/gml/_Feature";
+
+  private static final String ABADAN_HAS_TYPE_FEATURE_TRIPLE =
+    "<" + ABADAN_URI + "> " +
+      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
+      "<" + TYPE_URI + "> .";
 
   private static final String ABADAN_POINT_TRIPLE =
     "<" + ABADAN_URI + "> " +
@@ -151,14 +158,20 @@ public class ImporterTest {
       argThat(is("unknown")));
   }
 
-  // given a new entity resulting from the subject or object of a triple
-  // - its vertex must be part of a collection
-  // - if the triple predicate is rdf:type:
-  //   - it must become part of the collection named by triple.getObject().getUri()
-  //   - it must not be part of the "unknown" collection anymore
-  // - else:
-  //   - it must be(come) part of the "unknown" collection,
+  @Test
+  public void importTripleShouldConnectTheSubjectEntityToTheCollectionOfTheObject() {
+    final GraphWrapper graphWrapper = newGraph().wrap();
+    CollectionMapper collectionMapper = mock(CollectionMapper.class);
+    Importer instance = new Importer(graphWrapper, collectionMapper);
+    final Triple abadan = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
 
+    instance.importTriple(abadan);
+
+    verify(collectionMapper).addToCollection(
+      argThat(likeVertex().withProperty(RDF_URI_PROP, ABADAN_URI)),
+      argThat(is(TYPE_URI)));
+    verifyNoMoreInteractions(collectionMapper);
+  }
 
   private ExtendedIterator<Triple> createTripleIterator(String tripleString) {
     Model model1 = ModelFactory.createDefaultModel();
@@ -249,9 +262,9 @@ vertices and entity nodes
 
 - import should treat the triple as:
  - a setArchetype instruction when triple.getPredicate() returns the URI rdfs:SubClassOf
- - a setCollection instruction when the triple.getPredicate() returns the URI rfd:type
- - a setRelation instruction when triple.getObject() returns a URI
- - a setProperty instruction when triple.getObject() does not return a URI (but a literal)
+ + a setCollection instruction when the triple.getPredicate() returns the URI rfd:type
+ + a setRelation instruction when triple.getObject() returns a URI
+ + a setProperty instruction when triple.getObject() does not return a URI (but a literal)
 
 - setArchetype(triple) should
  - findOrCreate a vertex for the collection identified by triple.getSubject() (collectionVertex)
