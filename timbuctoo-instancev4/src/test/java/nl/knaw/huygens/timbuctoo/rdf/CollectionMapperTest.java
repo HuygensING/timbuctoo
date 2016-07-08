@@ -68,4 +68,68 @@ public class CollectionMapperTest {
       is(2L));
   }
 
+  @Test
+  public void addToCollectionDoesNotConnectAVertexMoreThanOnce() {
+    final GraphWrapper graphWrapper = newGraph().wrap();
+    CollectionMapper instance = new CollectionMapper(graphWrapper);
+    Graph graph = graphWrapper.getGraph();
+
+    Vertex vertex = graph.addVertex();
+    instance.addToCollection(vertex, "test");
+    instance.addToCollection(vertex, "test");
+
+    assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL).out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
+      is(1L));
+  }
+
+  @Test
+  public void addToCollectionChangesTheCollectionIfThePreviousCollectionWasUnknown() {
+    final GraphWrapper graphWrapper = newGraph().wrap();
+    CollectionMapper instance = new CollectionMapper(graphWrapper);
+    Graph graph = graphWrapper.getGraph();
+
+    Vertex vertex = graph.addVertex();
+    instance.addToCollection(vertex, "unknown");
+    assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown")
+                    .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
+      is(1L));
+    instance.addToCollection(vertex, "test");
+
+    assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "test")
+                    .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
+      is(1L));
+    assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown")
+                    .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
+      is(0L));
+  }
+
+  @Test
+  public void addToCollectionDoesNotAddToUnknownIfVertexIsPartOfAKnownCollection() {
+    final GraphWrapper graphWrapper = newGraph().wrap();
+    CollectionMapper instance = new CollectionMapper(graphWrapper);
+    Graph graph = graphWrapper.getGraph();
+
+    Vertex vertex = graph.addVertex();
+    instance.addToCollection(vertex, "test");
+    instance.addToCollection(vertex, "unknown");
+
+    assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "test")
+                    .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
+      is(1L));
+    assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown")
+                    .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
+      is(0L));
+  }
+
 }
