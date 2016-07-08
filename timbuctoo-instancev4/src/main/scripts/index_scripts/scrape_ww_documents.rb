@@ -10,17 +10,16 @@ def scrape_file start_value, num_of_lines=100
     result = Array.new
     STDERR.puts "start=#{start_value}"
 
-    location = "#{@location}v2.1/domain/wwpersons?rows=#{num_of_lines}&start=#{start_value}&withRelations=true"
+    location = "#{@location}v2.1/domain/wwdocuments?rows=#{num_of_lines}&start=#{start_value}&withRelations=true"
     f = open(location, {:read_timeout=>600})
     line = f.gets
     array = JSON.parse(line)
     array.each do |obj|
-	result << Person.new(obj)
+	result << Document.new(obj).document
+	puts result.last.to_json if @debug
 	start_value += 1
     end
     STDERR.puts "#{start_value}"  if array.size < 100 && array.size > 0
-    STDERR.puts "all_documents.size: #{Person.all_documents_size}"
-    STDERR.puts "num_found_in_table: #{Person.num_found_in_table}"
     if !line.eql?("[]")
 	do_solr_post result
     end
@@ -43,22 +42,22 @@ end
 
 
 if __FILE__ == $0
-    STDERR.puts "Dit script werkt niet meer en is (voorlopig) uitgeschakeld"
-    exit(1)
     Timer.start
 
-    debug = false
+    @debug = false
     output_dir = ""
     multiple_archives = ""
-    @location = "http://acc.repository.huygens.knaw.nl/"
+    @location = "http://test.repository.huygens.knaw.nl/"
     @collection = "gettingstarted/"
+#    @collection = "wwdocuments/"
     @solr = "http://192.168.99.100:8983/solr/#{@collection}"
+#    @solr = "http://10.152.32.34:8983/solr/#{@collection}"
 
     begin
 	(0..(ARGV.size-1)).each do |i|
 	case ARGV[i]
 	    when '--debug'
-		debug = true
+		@debug = true
 	    when '-coll'
 		@collection = ARGV[i+1]
 	    when '-loc'
@@ -66,7 +65,7 @@ if __FILE__ == $0
 	    when '-solr'
 		@solr = "#{ARGV[i+1]}#{@collection}"
 	    when '-h'
-		STDERR.puts "use: ruby scrape_ww_persons.rb -coll collection -loc location -solr solr-site [--debug]"
+		STDERR.puts "use: ruby scrape_ww_documents.rb -coll collection -loc location -solr solr-site [--debug]"
 		exit(1)
 	end
     end
@@ -74,15 +73,14 @@ if __FILE__ == $0
 	STDERR.puts "#{detail}"
     end
     
-    Person.location = "#{@location}v2.1/"
+    Document.location = "#{@location}v2.1/"
 
     continu = true
     start_value = 0
-    num_of_lines = debug ? 10 : 100
-    all_ww_persons = Array.new
+    num_of_lines = @debug ? 10 : 100
     while(continu)
 	continu = scrape_file start_value,num_of_lines
-	continu = false if debug && start_value==900
+	continu = false if @debug && start_value==900
 	start_value += 100 if continu
     end
 
