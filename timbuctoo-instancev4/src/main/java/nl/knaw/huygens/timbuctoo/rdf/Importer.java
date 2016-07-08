@@ -13,11 +13,15 @@ public class Importer {
 
   static final String RDF_URI_PROP = "rdfUri";
   private final CollectionMapper collectionMapper;
-  private GraphWrapper graphWrapper;
+  private final GraphWrapper graphWrapper;
 
   public Importer(GraphWrapper graphWrapper) {
+    this(graphWrapper, new CollectionMapper(graphWrapper));
+  }
+
+  Importer(GraphWrapper graphWrapper, CollectionMapper collectionMapper) {
     this.graphWrapper = graphWrapper;
-    collectionMapper = new CollectionMapper(graphWrapper);
+    this.collectionMapper = collectionMapper;
   }
 
   public void importTriple(Triple triple) {

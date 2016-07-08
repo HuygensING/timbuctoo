@@ -1,14 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -22,6 +19,9 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class ImporterTest {
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
@@ -85,7 +85,7 @@ public class ImporterTest {
     instance.importTriple(tripleExtendedIterator.next());
 
 
-    assertThat(graphWrapper.getGraph().traversal().V().next(), likeVertex()
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
       .withProperty("http://www.georss.org/georss/point", "30.35 48.28333333333333")
       .withProperty("http://www.w3.org/2003/01/geo/wgs84_pos#lat", "30.35")
     );
@@ -93,7 +93,7 @@ public class ImporterTest {
 
 
   @Test
-  public void importTripleSHouldMapToARelationBetweenTheSubjectAndANewObjectVertex() {
+  public void importTripleShouldMapToARelationBetweenTheSubjectAndANewObjectVertex() {
     final GraphWrapper graphWrapper = newGraph().wrap();
     Importer instance = new Importer(graphWrapper);
     final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
@@ -126,55 +126,29 @@ public class ImporterTest {
   @Test
   public void importTripleShouldConnectResultingSubjectEntityToTheUnknownCollection() {
     final GraphWrapper graphWrapper = newGraph().wrap();
-    Importer instance = new Importer(graphWrapper);
+    CollectionMapper collectionMapper = mock(CollectionMapper.class);
+    Importer instance = new Importer(graphWrapper, collectionMapper);
     final Triple abadan = createTripleIterator(ABADAN_POINT_TRIPLE).next();
 
     instance.importTriple(abadan);
 
-    final GraphTraversal<Vertex, Vertex> entityInCollection = graphWrapper
-      .getGraph().traversal().V()
-      .hasLabel(Collection.DATABASE_LABEL)
-      .has(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns")
-      .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown")
-      .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-      .out(Collection.HAS_ENTITY_RELATION_NAME);
-    assertThat(entityInCollection.hasNext(), is(true));
-    assertThat(entityInCollection.next(), is(likeVertex().withProperty(RDF_URI_PROP, ABADAN_URI)));
+    verify(collectionMapper).addToCollection(
+      argThat(likeVertex().withProperty(RDF_URI_PROP, ABADAN_URI)),
+      argThat(is("unknown")));
   }
 
   @Test
   public void importTripleShouldConnectResultingObjectEntityToACollection() {
     final GraphWrapper graphWrapper = newGraph().wrap();
-    Importer instance = new Importer(graphWrapper);
+    CollectionMapper collectionMapper = mock(CollectionMapper.class);
+    Importer instance = new Importer(graphWrapper, collectionMapper);
     final Triple abadan = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
 
     instance.importTriple(abadan);
 
-    final GraphTraversal<Vertex, Vertex> entityInCollection = graphWrapper
-      .getGraph().traversal().V()
-      .hasLabel(Collection.DATABASE_LABEL)
-      .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-      .out(Collection.HAS_ENTITY_RELATION_NAME);
-    assertThat(entityInCollection.toList(), containsInAnyOrder(
-      likeVertex().withProperty(RDF_URI_PROP, ABADAN_URI),
-      likeVertex().withProperty(RDF_URI_PROP, IRAN_URI)
-    ));
-  }
-
-  @Test
-  public void importTripleShouldNotCreateACollectionOfTheSameNameMoreThanOnce() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
-    Importer instance = new Importer(graphWrapper);
-    final Triple abadan = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
-    final Triple iran = createTripleIterator(IRAN_POINT_TRIPLE).next();
-
-    instance.importTriple(iran);
-    instance.importTriple(abadan);
-
-    assertThat(graphWrapper
-        .getGraph().traversal().V()
-        .hasLabel(Collection.DATABASE_LABEL).has(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns").count().next(),
-      equalTo(1L));
+    verify(collectionMapper).addToCollection(
+      argThat(likeVertex().withProperty(RDF_URI_PROP, IRAN_URI)),
+      argThat(is("unknown")));
   }
 
   // given a new entity resulting from the subject or object of a triple
