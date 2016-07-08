@@ -4,7 +4,7 @@ URL="${2}/tasks/addusers"
 FILE=$1
 while read LINE;
 do
-  if [[ $LINE != --* ]];
+  if [[ $LINE != --* ]] && [[ $LINE != "" ]];
   then
     VALUES=($(echo $LINE | tr ";" "\n"))
 
@@ -14,6 +14,5 @@ do
     RESPONSE=$(curl -X POST --data "$REQUEST" -H "Content-Type:application/x-www-form-urlencoded" ${URL})
 
     echo -e ${RESPONSE}
-
   fi
 done < ${FILE}
