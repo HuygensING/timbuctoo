@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rdf;
+package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
