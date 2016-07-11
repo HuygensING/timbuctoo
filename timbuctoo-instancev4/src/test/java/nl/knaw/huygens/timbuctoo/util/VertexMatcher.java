@@ -10,6 +10,7 @@ import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 
 public class VertexMatcher extends CompositeMatcher<Vertex> {
   private VertexMatcher() {
@@ -30,6 +31,10 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
     return this;
   }
 
+  public VertexMatcher withTimId() {
+    return this.withProperty("tim_id");
+  }
+
   public VertexMatcher withTimId(String timId) {
     this.addMatcher(new PropertyEqualityMatcher<Vertex, String>("timId", timId) {
       @Override
@@ -44,6 +49,16 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   public VertexMatcher withoutProperty(String propName) {
     this.addMatcher(new WithoutPropertyMatcher(propName));
 
+    return this;
+  }
+
+  public VertexMatcher withProperty(String propertyName) {
+    this.addMatcher(new PropertyMatcher<Vertex, Object>(propertyName, notNullValue()) {
+      @Override
+      protected Object getItemValue(Vertex item) {
+        return item.property(propertyName).orElse(null);
+      }
+    });
     return this;
   }
 
@@ -71,6 +86,7 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
     });
     return this;
   }
+
 
   private static class WithoutPropertyMatcher extends TypeSafeMatcher<Vertex> {
     private final String propertyName;
