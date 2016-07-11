@@ -28,7 +28,9 @@ public class ImporterTest {
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
   private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
+  private static final String IS_PART_OF_NAME = "isPartOf";
   private static final String TYPE_URI = "http://www.opengis.net/gml/_Feature";
+  private static final String TYPE_NAME = "_Feature";
 
   private static final String ABADAN_HAS_TYPE_FEATURE_TRIPLE =
     "<" + ABADAN_URI + "> " +
@@ -76,7 +78,6 @@ public class ImporterTest {
     instance.importTriple(tripleExtendedIterator.next());
     instance.importTriple(tripleExtendedIterator.next());
 
-
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).count().next(),
       equalTo(1L));
   }
@@ -91,10 +92,9 @@ public class ImporterTest {
     instance.importTriple(tripleExtendedIterator.next());
     instance.importTriple(tripleExtendedIterator.next());
 
-
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
-      .withProperty("http://www.georss.org/georss/point", "30.35 48.28333333333333")
-      .withProperty("http://www.w3.org/2003/01/geo/wgs84_pos#lat", "30.35")
+      .withProperty("point", "30.35 48.28333333333333")
+      .withProperty("lat", "30.35")
     );
   }
 
@@ -108,7 +108,7 @@ public class ImporterTest {
 
     instance.importTriple(tripleExtendedIterator.next());
 
-    assertThat(graphWrapper.getGraph().traversal().V().both(IS_PART_OF_URI).toList(), containsInAnyOrder(
+    assertThat(graphWrapper.getGraph().traversal().V().both(IS_PART_OF_NAME).toList(), containsInAnyOrder(
       likeVertex().withProperty("rdfUri", ABADAN_URI),
       likeVertex().withProperty("rdfUri", IRAN_URI)
     ));
@@ -169,7 +169,7 @@ public class ImporterTest {
 
     verify(collectionMapper).addToCollection(
       argThat(likeVertex().withProperty(RDF_URI_PROP, ABADAN_URI)),
-      argThat(is(TYPE_URI)));
+      argThat(is(TYPE_NAME)));
     verifyNoMoreInteractions(collectionMapper);
   }
 
@@ -179,136 +179,4 @@ public class ImporterTest {
     model1.read(in, null, "N3");
     return model1.getGraph().find(Triple.ANY);
   }
-
-
-// given a triple describing an rdf:type relation
-// - the subject vertex must become part of the collection name from triple.getObject()
-
-// given a triple
-//
-
-// import should connect the subject of a triple to a collection
-//
-// import should create a collection from the subject if it does describe a colleciton.
-
-// Container node should be reused.
-// relation to container node should only be created if there is not one already
-
-
-/*  @Test
-  public void importTripleShouldConnectTheSubjectToAContainerNode() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
-    Importer instance = new Importer(graphWrapper);
-    Model model = ModelFactory.createDefaultModel();
-    final String tripleString = "<http://tl.dbpedia.org/resource/Abadan,_Iran> " +
-      "<http://www.georss.org/georss/point> " +
-      "\"30.35 48.28333333333333\"@tl .";
-    InputStream in = new ByteArrayInputStream(tripleString.getBytes(StandardCharsets.UTF_8));
-    model.read(in, null, "N3");
-    final ExtendedIterator<Triple> tripleExtendedIterator = model.getGraph().find(Triple.ANY);
-
-    instance.importTriple(tripleExtendedIterator.next());
-    final GraphTraversal<Vertex, Vertex> actualEntityNode = graphWrapper.getGraph().traversal().V()
-                                                                        .in(Collection.HAS_ENTITY_RELATION_NAME);
-
-
-    assertThat(actualEntityNode.hasNext(), equalTo(true));
-    assertThat(actualEntityNode.next(),
-      likeVertex().withLabel(Collection.COLLECTION_ENTITIES_LABEL));
-  }*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-- constructor should create a new VRE vertex based on the datasetIdentifier
-- constructor should clear an existing VRE vertex for the datasetIdentifier of any configuration data / collection
-vertices and entity nodes
-- constructor should add the "unknown" collection with hasArchetype -> "things" and hasEntityNode -> (entityNode)
-
-- import should treat the triple as:
- - a setArchetype instruction when triple.getPredicate() returns the URI rdfs:SubClassOf
- + a setCollection instruction when the triple.getPredicate() returns the URI rfd:type
- + a setRelation instruction when triple.getObject() returns a URI
- + a setProperty instruction when triple.getObject() does not return a URI (but a literal)
-
-- setArchetype(triple) should
- - findOrCreate a vertex for the collection identified by triple.getSubject() (collectionVertex)
- **findOrCreateCollection**
- - find the vertex of the archetype by the URI from triple.getObject()  (archetypeVertex)
- - if archetype found:
-   - replace hasArchetype relation of collectionVertex with hasArchetype pointing to the archetypeVertex
-
-- setCollection(triple) should
- - findOrCreate a(n) (entity) vertex for the URI from triple.getSubject() (entityVertex)
- - findOrCreate a (collection) vertex  for the URI from triple.getObject() (collectionVertex) **findOrCreateCollection**
-
- - if entityVertex has relation to entityNode of "unknown" collection:
-   - remove edge "hasEntity" (inverse) from entityVertex
- - create inverse "hasEntity edge to the entityNode of the collection
-
-- setRelation(triple) should
- - findOrCreate a(n) (entity) vertex for the URI from triple.getSubject() (sourceVertex)
- - findOrCreate a(n) (entity) vertex for the URI from triple.getObject() (targetVertex)
- - get uri from triple.getPredicate() (relationURI)
- - findOrCreateRelationType(relationURI, sourceVertex, targetVertex) (relationDesc)
- - if relationDesc = inverse:
-  - create edge labeled relationDesc.edgeLabel from sourceVertex to targetVertex
- - else:
-  - create edge labeled relationDesc.edgeLabel from targetVertex to sourceVertex
-
-
-- findOrCreate(uri) should
- - detect vertex by uri (entityVertex)
- - if not detected: create
- - if entityVertex does not have inverse hasEntity relation: create to "unknown" collection
- - if entityVertex does not have rdfUri prop: set prop
-
-- findOrCreateCollection(uri) should
- - detect vertex for by uri (collectionVertex)
- - if not detected: create
- - if collectionVertex does not have relation to VRE: create
- - if collectionVertex does not have relation to archetype: create for "things"
- - if collectionVertex does not have an entityNode: create
- - if collectionVertex does not have rdfUri prop: set prop
-
-- findOrCreateRelationType(relationURI, sourceVertex, targetVertex)
- - find relationType entry by rdfUri prop == relationUri
- - if exists return relationDescription
- - else ....
- */
 }

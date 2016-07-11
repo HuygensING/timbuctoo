@@ -28,16 +28,15 @@ public class Importer {
     final Vertex subjectVertex = findOrCreateVertex(graph, node);
 
     if (describesType(triple)) {
-      // TODO Find a way to add the LocalName of as the entityTypeName
-      collectionMapper.addToCollection(subjectVertex, triple.getObject().getURI());
+      collectionMapper.addToCollection(subjectVertex, triple.getObject().getLocalName());
     } else if (describesProperty(triple)) {
       collectionMapper.addToCollection(subjectVertex, "unknown");
-      subjectVertex.property(triple.getPredicate().getURI(), triple.getObject().getLiteralLexicalForm());
+      subjectVertex.property(triple.getPredicate().getLocalName(), triple.getObject().getLiteralLexicalForm());
     } else if (describesRelation(triple)) {
       final Vertex objectVertex = findOrCreateVertex(graph, triple.getObject());
       collectionMapper.addToCollection(subjectVertex, "unknown");
       collectionMapper.addToCollection(objectVertex, "unknown");
-      subjectVertex.addEdge(triple.getPredicate().getURI(), objectVertex);
+      subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
     }
   }
 
