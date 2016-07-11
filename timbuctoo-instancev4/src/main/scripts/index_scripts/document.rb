@@ -32,7 +32,7 @@ class Document
 	"source_ss"
     ]
 
-    attr_reader :document, :languages, :data
+    attr_reader :document, :id
 
     def initialize data
 	@document = Hash.new
@@ -52,6 +52,9 @@ class Document
 	@document['modified_l'] = data['^modified']['timeStamp']
 
 	build_relations data
+
+	@document['_childDocuments_'] = Array.new
+	add_creators data
     end
 
     def build_relations data
@@ -71,26 +74,31 @@ class Document
 	end
     end
 
+    def add_creators data
+	if !data['@relations'].nil?
+	    is_created_by = data['@relations']['isCreatedBy']
+	end
+	return if is_created_by.nil?
+	is_created_by.each do |creator|
+	    person = Person.find creator['path']
+	    if !person.nil?
+		person['id'] = "#{id}/#{person['id']}"
+		@document['_childDocuments_'] << person.person
+	    end
+	end
+    end
+
+    def [] parameter
+	@document[parameter]
+    end
+
+    def id
+	@document['id']
+    end
 
     def Document.location= location
 	@@location = location
     end
 
 end
-
-#  "publishLocation_ss": [
-#    "Netherlands" // uit @relations["hasPublishLocation"][0]["displayName"]
-#  ],
-#  "language_ss": [
-#    "Dutch" // uit @relations["hasWorkLanguage"][0]["displayName"]
-#  ],
-#  "genre_ss": [
-#    "Periodical press: contribution" // uit @relations["hasGenre"][0]["displayName"]
-#  ],
-#  "source_ss": [
-#    "Lelie- en Rozeknoppen ()" // uit @relations["hasDocumentSource"][0]["displayName"]
-#  ],
-
-
-
 

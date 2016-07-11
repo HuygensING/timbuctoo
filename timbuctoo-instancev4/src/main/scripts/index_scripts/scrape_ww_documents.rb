@@ -16,7 +16,7 @@ def scrape_file start_value, num_of_lines=100
     array = JSON.parse(line)
     array.each do |obj|
 	result << Document.new(obj).document
-	puts result.last.to_json if @debug
+#	puts result.last.to_json if @debug
 	start_value += 1
     end
     STDERR.puts "#{start_value}"  if array.size < 100 && array.size > 0
@@ -28,16 +28,24 @@ end
 
 
 def do_solr_post batch
+    puts batch.to_json
+    batch.each do |b|
+	puts b.to_json if @debug
+    end
     uri = URI.parse("#{@solr}update/")
     req = Net::HTTP::Post.new(uri)
     req.content_type = "application/json"
     http = Net::HTTP.new(uri.hostname, uri.port)
     req.body = batch.to_json
+#    req.body = b.to_json
     result = http.request(req)
+    STDERR.puts "result 1: #{result}" if @debug
     uri = URI.parse("#{@solr}update?commit=true")
     req = Net::HTTP::Post.new(uri)
     http = Net::HTTP.new(uri.hostname, uri.port)
     result = http.request(req)
+    STDERR.puts "result 2: #{result}" if @debug
+#    end
 end
 
 
@@ -74,13 +82,14 @@ if __FILE__ == $0
     end
     
     Document.location = "#{@location}v2.1/"
+    Person.location = "#{@location}v2.1/"
 
     continu = true
-    start_value = 0
+    start_value = 100
     num_of_lines = @debug ? 10 : 100
     while(continu)
 	continu = scrape_file start_value,num_of_lines
-	continu = false if @debug && start_value==900
+	continu = false if @debug && start_value==100
 	start_value += 100 if continu
     end
 
