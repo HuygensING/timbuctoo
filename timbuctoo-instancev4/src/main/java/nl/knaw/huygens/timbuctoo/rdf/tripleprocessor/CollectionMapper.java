@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -45,6 +46,14 @@ class CollectionMapper {
     collectionVertex.addEdge(Collection.HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
   }
+
+  public CollectionDescription getCollectionDescription(Vertex vertex) {
+    return new CollectionDescription(vertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME).next()
+          .vertices(Direction.IN, Collection.HAS_ENTITY_NODE_RELATION_NAME).next()
+          .value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME));
+  }
+
+
 
   private void removeFromCollection(Vertex vertex, String entityTypeName) {
     graphWrapper.getGraph().traversal().V(vertex.id()).inE(Collection.HAS_ENTITY_RELATION_NAME)
