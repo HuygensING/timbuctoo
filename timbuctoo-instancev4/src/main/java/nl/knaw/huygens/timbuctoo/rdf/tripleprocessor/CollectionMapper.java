@@ -1,16 +1,20 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
+import com.fasterxml.jackson.databind.node.TextNode;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
+
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
 class CollectionMapper {
 
@@ -56,6 +60,13 @@ class CollectionMapper {
     Vertex containerVertex = graph.addVertex(Collection.COLLECTION_ENTITIES_LABEL);
     collectionVertex.addEdge(Collection.HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
+
+    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
+
+    final Stream<TextNode> textNodeStream = getCollectionDescriptions(vertex, collectionDescription.getVreName())
+      .stream().map(CollectionDescription::getEntityTypeName).map(JsonBuilder::jsn);
+
+    vertex.property("types", jsnA(textNodeStream).toString());
   }
 
   public List<CollectionDescription> getCollectionDescriptions(Vertex vertex, String vreName) {

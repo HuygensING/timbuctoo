@@ -11,9 +11,11 @@ import org.junit.Test;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
@@ -180,5 +182,17 @@ public class CollectionMapperTest {
       .collect(Collectors.toList());
 
     assertThat(result, containsInAnyOrder("test", "other"));
+  }
+
+  @Test
+  public void addToCollectionSetsTheTypesArray() {
+    CollectionMapper instance = new CollectionMapper(graphWrapper);
+    Graph graph = graphWrapper.getGraph();
+    Vertex vertex = graph.addVertex();
+
+    instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
+    instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
+
+    assertThat(getEntityTypesOrDefault(vertex), arrayContainingInAnyOrder("test", "other"));
   }
 }

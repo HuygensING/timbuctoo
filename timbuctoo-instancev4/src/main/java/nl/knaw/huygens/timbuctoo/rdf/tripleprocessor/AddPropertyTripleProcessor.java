@@ -20,7 +20,7 @@ class AddPropertyTripleProcessor implements TripleProcessor {
   public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
     final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
-
+    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
     final List<CollectionDescription> collections = collectionMapper.getCollectionDescriptions(subjectVertex, vreName);
     collections.forEach(collectionDescription -> subjectVertex.property(
       collectionDescription.createPropertyName(triple.getPredicate().getLocalName()),
