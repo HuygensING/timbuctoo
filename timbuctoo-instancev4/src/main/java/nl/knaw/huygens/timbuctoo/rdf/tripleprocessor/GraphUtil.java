@@ -12,6 +12,7 @@ public class GraphUtil {
   public static final String RDF_URI_PROP = "rdfUri";
   private final GraphWrapper graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
+  private final CollectionMapper collectionMapper;
 
   public GraphUtil(GraphWrapper graphWrapper) {
     this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()));
@@ -20,14 +21,21 @@ public class GraphUtil {
   GraphUtil(GraphWrapper graphWrapper, SystemPropertyModifier systemPropertyModifier) {
     this.graphWrapper = graphWrapper;
     this.systemPropertyModifier = systemPropertyModifier;
+    this.collectionMapper = new CollectionMapper(graphWrapper);
   }
 
   public Vertex findOrCreateEntityVertex(Node node) {
+    return this.findOrCreateEntityVertex(node, CollectionDescription.getDefault());
+  }
+
+  public Vertex findOrCreateEntityVertex(Node node, CollectionDescription collectionDescription) {
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> existingT = graph.traversal().V()
-                                                                 .has(RDF_URI_PROP, node.getURI());
+                                                          .has(RDF_URI_PROP, node.getURI());
     if (existingT.hasNext()) {
-      return existingT.next();
+      final Vertex foundVertex = existingT.next();
+      collectionMapper.addToCollection(foundVertex, collectionDescription);
+      return foundVertex;
     } else {
       Vertex vertex = graph.addVertex();
       vertex.property(RDF_URI_PROP, node.getURI());
@@ -37,7 +45,7 @@ public class GraphUtil {
       systemPropertyModifier.setTimId(vertex);
       systemPropertyModifier.setRev(vertex, 1);
       systemPropertyModifier.setIsLatest(vertex, true);
-
+      collectionMapper.addToCollection(vertex, collectionDescription);
       return vertex;
     }
   }

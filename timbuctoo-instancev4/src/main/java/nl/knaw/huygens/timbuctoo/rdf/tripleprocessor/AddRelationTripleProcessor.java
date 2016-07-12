@@ -19,8 +19,7 @@ class AddRelationTripleProcessor implements TripleProcessor {
     Node node = triple.getSubject();
     final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node);
     final Vertex objectVertex = graphUtil.findOrCreateEntityVertex(triple.getObject());
-    collectionMapper.addToCollection(subjectVertex, new CollectionDescription("unknown"));
-    collectionMapper.addToCollection(objectVertex, new CollectionDescription("unknown"));
+
     subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
   }
 }

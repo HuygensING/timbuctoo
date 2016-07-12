@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Before;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.GraphUtil.RDF_URI_PROP;
@@ -16,14 +18,22 @@ import static org.mockito.Mockito.when;
 public class GraphUtilTest {
 
   public static final String USER_ID = "rdf-importer";
+  private GraphWrapper graphWrapper;
+  private Node node;
+  private SystemPropertyModifier modifier;
+
+
+  @Before
+  public void setUp() throws Exception {
+    graphWrapper = newGraph().wrap();
+    node = mock(Node.class);
+    when(node.getURI()).thenReturn("http://www.example.com/node");
+    modifier = mock(SystemPropertyModifier.class);
+  }
 
   @Test
   public void findOrCreateEntityVertexCreateANewVertexWithTimbuctoosSystemProperties() {
-    GraphWrapper graphWrapper = newGraph().wrap();
-    Node node = mock(Node.class);
-    when(node.getURI()).thenReturn("http://www.example.com/node");
 
-    SystemPropertyModifier modifier = mock(SystemPropertyModifier.class);
     Vertex vertex = new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP).next(), is(vertex));
@@ -32,5 +42,60 @@ public class GraphUtilTest {
     verify(modifier).setTimId(vertex);
     verify(modifier).setRev(vertex, 1);
     verify(modifier).setIsLatest(vertex, true);
+  }
+
+  @Test
+  public void findOrCreateEntityVertexAddsANewlyCreatedEntityToTheDefaultCollection() {
+
+    Vertex vertex = new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node);
+
+    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
+                .in(Collection.HAS_ENTITY_RELATION_NAME)
+                .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown").hasNext(),
+      is(true)
+    );
+  }
+
+  @Test
+  public void findOrCreateEntityVertexAddsANewlyCreatedEntityToTheRequestedCollection() {
+    final CollectionDescription requestedCollection = new CollectionDescription("requested");
+
+    Vertex vertex = new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, requestedCollection);
+
+    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
+                           .in(Collection.HAS_ENTITY_RELATION_NAME)
+                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "requested").hasNext(),
+      is(true)
+    );
+    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
+                           .in(Collection.HAS_ENTITY_RELATION_NAME)
+                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown").hasNext(),
+      is(false)
+    );
+  }
+
+  @Test
+  public void findOrCreateEntityVertexReplacesTheDefaultCollectionWithTheRequestedCollection() {
+    final CollectionDescription requestedCollection = new CollectionDescription("requested");
+    final GraphUtil instance = new GraphUtil(graphWrapper, modifier);
+    Vertex vertex = instance.findOrCreateEntityVertex(node);
+
+    instance.findOrCreateEntityVertex(node, requestedCollection);
+
+    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
+                           .in(Collection.HAS_ENTITY_RELATION_NAME)
+                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "requested").hasNext(),
+      is(true)
+    );
+    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
+                           .in(Collection.HAS_ENTITY_RELATION_NAME)
+                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown").hasNext(),
+      is(false)
+    );
   }
 }

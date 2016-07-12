@@ -14,5 +14,9 @@ public class CollectionDescription {
   public String getCollectionName() {
     return entityTypeName + "s";
   }
+
+  public static CollectionDescription getDefault() {
+    return new CollectionDescription("unknown");
+  }
 }
 
