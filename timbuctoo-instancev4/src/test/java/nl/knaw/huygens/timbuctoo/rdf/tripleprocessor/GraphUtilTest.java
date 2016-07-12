@@ -18,6 +18,7 @@ import static org.mockito.Mockito.when;
 public class GraphUtilTest {
 
   public static final String USER_ID = "rdf-importer";
+  public static final String TEST_URI = "http://www.example.com/node";
   private GraphWrapper graphWrapper;
   private Node node;
   private SystemPropertyModifier modifier;
@@ -27,16 +28,17 @@ public class GraphUtilTest {
   public void setUp() throws Exception {
     graphWrapper = newGraph().wrap();
     node = mock(Node.class);
-    when(node.getURI()).thenReturn("http://www.example.com/node");
+    when(node.getURI()).thenReturn(TEST_URI);
     modifier = mock(SystemPropertyModifier.class);
   }
 
   @Test
   public void findOrCreateEntityVertexCreateANewVertexWithTimbuctoosSystemProperties() {
-
     final CollectionDescription collectionDescription = CollectionDescription.getDefault(null);
-    Vertex vertex =
-      new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, collectionDescription);
+    final CollectionMapper collectionMapper = mock(CollectionMapper.class);
+    final GraphUtil instance = new GraphUtil(graphWrapper, modifier, collectionMapper);
+
+    Vertex vertex = instance.findOrCreateEntityVertex(node, collectionDescription);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP).next(), is(vertex));
     verify(modifier).setCreated(vertex, USER_ID);
@@ -49,57 +51,39 @@ public class GraphUtilTest {
 
   @Test
   public void findOrCreateEntityVertexAddsANewlyCreatedEntityToTheDefaultCollection() {
+    final CollectionMapper collectionMapper = mock(CollectionMapper.class);
+    final GraphUtil instance = new GraphUtil(graphWrapper, modifier, collectionMapper);
+    final CollectionDescription collectionDescription = CollectionDescription.getDefault(null);
 
-    Vertex vertex =
-      new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, CollectionDescription.getDefault(null));
+    Vertex vertex = instance.findOrCreateEntityVertex(node, collectionDescription);
 
-    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
-                .in(Collection.HAS_ENTITY_RELATION_NAME)
-                .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown").hasNext(),
-      is(true)
-    );
+    verify(collectionMapper).addToCollection(vertex, collectionDescription);
   }
 
   @Test
   public void findOrCreateEntityVertexAddsANewlyCreatedEntityToTheRequestedCollection() {
     final CollectionDescription requestedCollection = new CollectionDescription("requested", null);
+    final CollectionMapper collectionMapper = mock(CollectionMapper.class);
+    final GraphUtil instance = new GraphUtil(graphWrapper, modifier, collectionMapper);
 
-    Vertex vertex = new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, requestedCollection);
+    Vertex vertex = instance.findOrCreateEntityVertex(node, requestedCollection);
 
-    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
-                           .in(Collection.HAS_ENTITY_RELATION_NAME)
-                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "requested").hasNext(),
-      is(true)
-    );
-    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
-                           .in(Collection.HAS_ENTITY_RELATION_NAME)
-                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown").hasNext(),
-      is(false)
-    );
+    verify(collectionMapper).addToCollection(vertex, requestedCollection);
   }
 
   @Test
-  public void findOrCreateEntityVertexReplacesTheDefaultCollectionWithTheRequestedCollection() {
+  public void findOrCreateEntityVertexSetsTheCollectionForAnExistingVertex() {
+    final GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v.withProperty(RDF_URI_PROP, TEST_URI)).wrap();
+
     final CollectionDescription requestedCollection = new CollectionDescription("requested", null);
-    final GraphUtil instance = new GraphUtil(graphWrapper, modifier);
-    Vertex vertex = instance.findOrCreateEntityVertex(node, CollectionDescription.getDefault(null));
+    final CollectionMapper collectionMapper = mock(CollectionMapper.class);
+    final GraphUtil instance = new GraphUtil(graphWrapper, modifier, collectionMapper);
+
+    Vertex vertex = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, TEST_URI).next();
 
     instance.findOrCreateEntityVertex(node, requestedCollection);
+    verify(collectionMapper).addToCollection(vertex, requestedCollection);
 
-    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
-                           .in(Collection.HAS_ENTITY_RELATION_NAME)
-                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "requested").hasNext(),
-      is(true)
-    );
-    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
-                           .in(Collection.HAS_ENTITY_RELATION_NAME)
-                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown").hasNext(),
-      is(false)
-    );
   }
 }

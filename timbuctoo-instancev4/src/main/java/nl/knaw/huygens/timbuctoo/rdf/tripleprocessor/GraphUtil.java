@@ -15,13 +15,14 @@ public class GraphUtil {
   private final CollectionMapper collectionMapper;
 
   public GraphUtil(GraphWrapper graphWrapper) {
-    this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()));
+    this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()), new CollectionMapper(graphWrapper));
   }
 
-  GraphUtil(GraphWrapper graphWrapper, SystemPropertyModifier systemPropertyModifier) {
+  GraphUtil(GraphWrapper graphWrapper, SystemPropertyModifier systemPropertyModifier,
+            CollectionMapper collectionMapper) {
     this.graphWrapper = graphWrapper;
     this.systemPropertyModifier = systemPropertyModifier;
-    this.collectionMapper = new CollectionMapper(graphWrapper);
+    this.collectionMapper = collectionMapper;
   }
 
   public Vertex findOrCreateEntityVertex(Node node, CollectionDescription collectionDescription) {

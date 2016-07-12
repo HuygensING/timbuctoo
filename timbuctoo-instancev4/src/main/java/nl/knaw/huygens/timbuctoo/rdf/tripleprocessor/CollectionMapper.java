@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -38,11 +39,16 @@ class CollectionMapper {
     } else {
       collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
     }
-    Vertex containerVertex = graph.addVertex(Collection.COLLECTION_ENTITIES_LABEL);
 
+    Vertex vreVertex = graph.traversal().V()
+                            .hasLabel(Vre.DATABASE_LABEL)
+                            .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+                            .next();
     collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
     collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
+    vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
 
+    Vertex containerVertex = graph.addVertex(Collection.COLLECTION_ENTITIES_LABEL);
     collectionVertex.addEdge(Collection.HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
   }

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
@@ -9,6 +10,7 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
@@ -53,11 +55,21 @@ public class TripleImporterTest {
     "<" + ABADAN_URI + "> " +
       "<" + IS_PART_OF_URI + "> " +
       "<" + IRAN_URI + ">";
+  private GraphWrapper graphWrapper;
 
+
+  @Before
+  public void setUp() throws Exception {
+    graphWrapper = newGraph()
+      .withVertex(v -> {
+        v.withLabel(Vre.DATABASE_LABEL)
+          .withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME);
+      })
+      .wrap();
+  }
 
   @Test
   public void importTripleShouldCreateAVertexFromATriple() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(ABADAN_POINT_TRIPLE);
 
@@ -68,7 +80,6 @@ public class TripleImporterTest {
 
   @Test
   public void importTripleShouldReuseTheExistingNodeWithUriFromSubject() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
@@ -82,7 +93,6 @@ public class TripleImporterTest {
 
   @Test
   public void importTripleShouldMapATripleDescribingAPropertyToAVertexProperty() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
@@ -98,7 +108,6 @@ public class TripleImporterTest {
 
   @Test
   public void importTripleShouldSetThePrefixBasedOnTheActualCollectionOfTheSubjectVertex() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanHasTypeFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanPointTriple = createTripleIterator(ABADAN_POINT_TRIPLE).next();
@@ -117,7 +126,6 @@ public class TripleImporterTest {
 
   @Test
   public void importTripleShouldMapToARelationBetweenTheSubjectAndANewObjectVertex() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
@@ -133,7 +141,6 @@ public class TripleImporterTest {
 
   @Test
   public void importTripleShouldMapToARelationBetweenTheSubjectAndAnExistingObjectVertex() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_POINT_TRIPLE).next();
     final Triple iran = createTripleIterator(IRAN_POINT_TRIPLE).next();
@@ -150,7 +157,6 @@ public class TripleImporterTest {
 
   @Test
   public void importTripleShouldConnectResultingSubjectEntityToTheUnknownCollection() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_POINT_TRIPLE).next();
 
@@ -168,7 +174,6 @@ public class TripleImporterTest {
 
   @Test
   public void importTripleShouldConnectResultingObjectEntityToACollection() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
 
@@ -186,7 +191,6 @@ public class TripleImporterTest {
 
   @Test
   public void importTripleShouldConnectTheSubjectEntityToTheCollectionNamedByTheObject() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
 

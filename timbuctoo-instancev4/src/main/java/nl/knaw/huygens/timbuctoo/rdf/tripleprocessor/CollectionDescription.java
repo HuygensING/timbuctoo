@@ -24,5 +24,9 @@ public class CollectionDescription {
   public String createPropertyName(String propertyName) {
     return vreName + getEntityTypeName() + "_" + propertyName;
   }
+
+  public String getVreName() {
+    return vreName;
+  }
 }
 
