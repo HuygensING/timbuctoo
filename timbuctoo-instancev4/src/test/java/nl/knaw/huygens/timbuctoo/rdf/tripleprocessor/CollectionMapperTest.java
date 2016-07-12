@@ -3,7 +3,10 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -194,5 +197,23 @@ public class CollectionMapperTest {
     instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
 
     assertThat(getEntityTypesOrDefault(vertex), arrayContainingInAnyOrder("test", "other"));
+  }
+
+  @Test
+  public void addToCollectionSetsTheEntityTypeLabels() {
+    CollectionMapper instance = new CollectionMapper(graphWrapper);
+    Graph graph = graphWrapper.getGraph();
+    Vertex vertex = graph.addVertex();
+
+    instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
+    instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
+
+    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
+                           .and(
+                             __.has(T.label, LabelP.of("test")),
+                             __.has(T.label, LabelP.of("other"))
+                           ).hasNext(),
+      is(true)
+    );
   }
 }

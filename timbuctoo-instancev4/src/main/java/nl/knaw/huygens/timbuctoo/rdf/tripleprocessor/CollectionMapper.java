@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import com.fasterxml.jackson.databind.node.TextNode;
+import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -12,6 +13,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -62,11 +64,11 @@ class CollectionMapper {
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
 
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-
     final Stream<TextNode> textNodeStream = getCollectionDescriptions(vertex, collectionDescription.getVreName())
       .stream().map(CollectionDescription::getEntityTypeName).map(JsonBuilder::jsn);
-
     vertex.property("types", jsnA(textNodeStream).toString());
+    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
+    new AddLabelChangeListener().onUpdate(Optional.empty(), vertex);
   }
 
   public List<CollectionDescription> getCollectionDescriptions(Vertex vertex, String vreName) {
