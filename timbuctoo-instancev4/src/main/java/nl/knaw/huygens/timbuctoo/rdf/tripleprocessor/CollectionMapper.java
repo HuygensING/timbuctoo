@@ -77,7 +77,8 @@ class CollectionMapper {
     vertex.property("types", jsnA(textNodeStream).toString());
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
     new AddLabelChangeListener().onUpdate(Optional.empty(), vertex);
-    // propertyHelper.setCollectionProperties(vertex, collectionDescription, collectionDescriptions);
+
+    propertyHelper.setCollectionProperties(vertex, collectionDescription, collectionDescriptions);
   }
 
   public List<CollectionDescription> getCollectionDescriptions(Vertex vertex, String vreName) {

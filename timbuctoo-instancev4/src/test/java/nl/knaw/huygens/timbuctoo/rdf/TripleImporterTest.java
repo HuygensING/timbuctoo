@@ -249,6 +249,29 @@ public class TripleImporterTest {
     );
   }
 
+  @Test
+  public void importTripleShouldAddAllExistingPropertiesToANewCollection() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+    final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
+    final Triple abadanHasLat = createTripleIterator(ABADAN_LAT_TRIPLE).next();
+
+    instance.importTriple(abadanHasPoint);
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(abadanHasLat);
+    instance.importTriple(abadanIsAFictionalFeature);
+
+    final Vertex abadanVertex = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next();
+    assertThat(abadanVertex, likeVertex()
+      .withProperty(VRE_NAME + TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(VRE_NAME + FICTIONAL_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(VRE_NAME + TYPE_NAME + "_" + "lat", "30.35")
+      .withProperty(VRE_NAME + FICTIONAL_TYPE_NAME + "_" + "lat", "30.35")
+    );
+  }
+
+
   private ExtendedIterator<Triple> createTripleIterator(String tripleString) {
     Model model = createModel(tripleString);
     return model.getGraph().find(Triple.ANY);

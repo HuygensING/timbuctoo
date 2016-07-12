@@ -198,7 +198,6 @@ public class CollectionMapperTest {
     );
   }
 
-  @Ignore
   @Test
   public void addCollectionsDuplicatesThePropertiesForANewCollectionType() {
     Vertex vertex = graph.addVertex();

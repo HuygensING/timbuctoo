@@ -28,5 +28,9 @@ public class CollectionDescription {
   public String getVreName() {
     return vreName;
   }
+
+  public String getPrefix() {
+    return vreName + getEntityTypeName();
+  }
 }
 
