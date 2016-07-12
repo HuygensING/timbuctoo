@@ -23,12 +23,16 @@ class CollectionMapper {
     final Graph graph = graphWrapper.getGraph();
 
     if ((Objects.equals(collectionDescription.getEntityTypeName(), "unknown") && isInACollection(vertex)) ||
-      isInCollection(vertex, collectionDescription.getEntityTypeName())) {
+      isInCollection(vertex, collectionDescription)) {
       return;
     }
 
-    if (!Objects.equals(collectionDescription.getEntityTypeName(), "unknown") && isInCollection(vertex, "unknown")) {
-      removeFromCollection(vertex, "unknown");
+    final CollectionDescription defaultCollectionDescription =
+      CollectionDescription.getDefault(collectionDescription.getVreName());
+
+    if (!Objects.equals(collectionDescription.getEntityTypeName(), "unknown") &&
+      isInCollection(vertex, defaultCollectionDescription)) {
+      removeFromCollection(vertex, defaultCollectionDescription);
     }
 
     final GraphTraversal<Vertex, Vertex> colTraversal =
@@ -61,18 +65,23 @@ class CollectionMapper {
 
 
 
-  private void removeFromCollection(Vertex vertex, String entityTypeName) {
+  private void removeFromCollection(Vertex vertex, CollectionDescription collectionDescription) {
     graphWrapper.getGraph().traversal().V(vertex.id()).inE(Collection.HAS_ENTITY_RELATION_NAME)
-                .where(__.outV().in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                         .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName)).next()
-                .remove();
+                .where(
+                  __.outV().in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName())
+                    .in(Vre.HAS_COLLECTION_RELATION_NAME)
+                    .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+                )
+                .next().remove();
   }
 
-  private boolean isInCollection(Vertex vertex, String entityTypeName) {
+  private boolean isInCollection(Vertex vertex, CollectionDescription collectionDescription) {
     return graphWrapper.getGraph().traversal().V(vertex.id())
                        .in(Collection.HAS_ENTITY_RELATION_NAME)
                        .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                       .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName).hasNext();
+                       .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName())
+                       .hasNext();
   }
 
   private boolean isInACollection(Vertex vertex) {
