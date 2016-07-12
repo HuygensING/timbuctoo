@@ -46,4 +46,8 @@ public class SystemPropertyModifier {
   public void setIsLatest(Element element, boolean isLatest) {
     element.property("isLatest", isLatest);
   }
+
+  public void setIsDeleted(Element element, boolean isDeleted, CollectionDescription collectionDescription) {
+    element.property(collectionDescription.createPropertyName("deleted"), isDeleted);
+  }
 }

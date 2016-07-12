@@ -34,8 +34,9 @@ public class GraphUtilTest {
   @Test
   public void findOrCreateEntityVertexCreateANewVertexWithTimbuctoosSystemProperties() {
 
+    final CollectionDescription collectionDescription = CollectionDescription.getDefault(null);
     Vertex vertex =
-      new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, CollectionDescription.getDefault(null));
+      new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, collectionDescription);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP).next(), is(vertex));
     verify(modifier).setCreated(vertex, USER_ID);
@@ -43,6 +44,7 @@ public class GraphUtilTest {
     verify(modifier).setTimId(vertex);
     verify(modifier).setRev(vertex, 1);
     verify(modifier).setIsLatest(vertex, true);
+    verify(modifier).setIsDeleted(vertex, false, collectionDescription);
   }
 
   @Test
