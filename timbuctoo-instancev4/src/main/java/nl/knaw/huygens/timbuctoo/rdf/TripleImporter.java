@@ -19,6 +19,6 @@ class TripleImporter {
 
   public void importTriple(Triple triple) {
     TripleProcessor processor = tripleProcessorFactory.getTripleProcessor(triple);
-    processor.process(triple);
+    processor.process(triple, vreName);
   }
 }

@@ -17,20 +17,20 @@ class CollectionMapper {
     this.graphWrapper = graphWrapper;
   }
 
-  public void addToCollection(Vertex vertex, String entityTypeName) {
+  public void addToCollection(Vertex vertex, CollectionDescription collectionDescription) {
     final Graph graph = graphWrapper.getGraph();
 
-    if ((Objects.equals(entityTypeName, "unknown") && isInACollection(vertex)) ||
-      isInCollection(vertex, entityTypeName)) {
+    if ((Objects.equals(collectionDescription.getEntityTypeName(), "unknown") && isInACollection(vertex)) ||
+      isInCollection(vertex, collectionDescription.getEntityTypeName())) {
       return;
     }
 
-    if (!Objects.equals(entityTypeName, "unknown") && isInCollection(vertex, "unknown")) {
+    if (!Objects.equals(collectionDescription.getEntityTypeName(), "unknown") && isInCollection(vertex, "unknown")) {
       removeFromCollection(vertex, "unknown");
     }
 
     final GraphTraversal<Vertex, Vertex> colTraversal =
-      graph.traversal().V().has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+      graph.traversal().V().has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
     Vertex collectionVertex;
     if (colTraversal.hasNext()) {
       collectionVertex = colTraversal.next();
@@ -38,8 +38,9 @@ class CollectionMapper {
       collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
     }
     Vertex containerVertex = graph.addVertex(Collection.COLLECTION_ENTITIES_LABEL);
-    collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, entityTypeName + "s");
-    collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
+
+    collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
+    collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
 
     collectionVertex.addEdge(Collection.HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);

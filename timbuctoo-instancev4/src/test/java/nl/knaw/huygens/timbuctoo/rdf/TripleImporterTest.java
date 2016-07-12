@@ -51,6 +51,7 @@ public class TripleImporterTest {
     "<" + ABADAN_URI + "> " +
       "<" + IS_PART_OF_URI + "> " +
       "<" + IRAN_URI + ">";
+  public static final String DEFAULT_COLLECTION_NAME = "unknown";
 
   @Test
   public void importTripleShouldCreateAVertexFromATriple() {
@@ -88,8 +89,8 @@ public class TripleImporterTest {
     instance.importTriple(tripleExtendedIterator.next());
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
-      .withProperty("point", "30.35 48.28333333333333")
-      .withProperty("lat", "30.35")
+      .withProperty(VRE_NAME + DEFAULT_COLLECTION_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(VRE_NAME + DEFAULT_COLLECTION_NAME + "_" + "lat", "30.35")
     );
   }
 
@@ -141,7 +142,7 @@ public class TripleImporterTest {
     assertThat(collectionVertex.hasNext(), is(true));
     assertThat(collectionVertex.next(), likeVertex()
       .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns")
-      .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown"));
+      .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_COLLECTION_NAME));
   }
 
   @Test
@@ -159,7 +160,7 @@ public class TripleImporterTest {
     assertThat(collectionVertex.hasNext(), is(true));
     assertThat(collectionVertex.next(), likeVertex()
       .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns")
-      .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown"));
+      .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_COLLECTION_NAME));
   }
 
   @Test

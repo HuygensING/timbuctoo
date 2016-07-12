@@ -15,9 +15,9 @@ class AddToCollectionTripleProcessor implements TripleProcessor {
   }
 
   @Override
-  public void process(Triple triple) {
+  public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
     final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node);
-    collectionMapper.addToCollection(subjectVertex, triple.getObject().getLocalName());
+    collectionMapper.addToCollection(subjectVertex, new CollectionDescription(triple.getObject().getLocalName()));
   }
 }

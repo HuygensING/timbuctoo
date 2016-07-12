@@ -15,12 +15,12 @@ class AddRelationTripleProcessor implements TripleProcessor {
   }
 
   @Override
-  public void process(Triple triple) {
+  public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
     final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node);
     final Vertex objectVertex = graphUtil.findOrCreateEntityVertex(triple.getObject());
-    collectionMapper.addToCollection(subjectVertex, "unknown");
-    collectionMapper.addToCollection(objectVertex, "unknown");
+    collectionMapper.addToCollection(subjectVertex, new CollectionDescription("unknown"));
+    collectionMapper.addToCollection(objectVertex, new CollectionDescription("unknown"));
     subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
   }
 }

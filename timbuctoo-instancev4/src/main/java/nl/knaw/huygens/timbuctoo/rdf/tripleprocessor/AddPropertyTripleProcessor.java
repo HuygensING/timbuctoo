@@ -15,10 +15,16 @@ class AddPropertyTripleProcessor implements TripleProcessor {
   }
 
   @Override
-  public void process(Triple triple) {
+  public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
     final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node);
-    collectionMapper.addToCollection(subjectVertex, "unknown");
-    subjectVertex.property(triple.getPredicate().getLocalName(), triple.getObject().getLiteralLexicalForm());
+    final CollectionDescription collectionDescription = new CollectionDescription("unknown");
+    collectionMapper.addToCollection(subjectVertex, collectionDescription);
+    subjectVertex.property(createPropertyName(triple, vreName, collectionDescription),
+      triple.getObject().getLiteralLexicalForm());
+  }
+
+  private String createPropertyName(Triple triple, String vreName, CollectionDescription collectionDescription) {
+    return vreName + collectionDescription.getEntityTypeName() + "_" + triple.getPredicate().getLocalName();
   }
 }
