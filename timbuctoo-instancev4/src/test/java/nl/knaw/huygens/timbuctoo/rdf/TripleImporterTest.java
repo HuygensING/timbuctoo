@@ -33,12 +33,19 @@ public class TripleImporterTest {
   private static final String IS_PART_OF_NAME = "isPartOf";
   private static final String TYPE_URI = "http://www.opengis.net/gml/_Feature";
   private static final String TYPE_NAME = "_Feature";
+  private static final String FICTIONAL_TYPE_URI = "http://www.opengis.net/gml/_FictionalFeature";
+  private static final String FICTIONAL_TYPE_NAME = "_FictionalFeature";
+
   private static final String DEFAULT_ENTITY_TYPE_NAME = "unknown";
 
   private static final String ABADAN_HAS_TYPE_FEATURE_TRIPLE =
     "<" + ABADAN_URI + "> " +
       "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
       "<" + TYPE_URI + "> .";
+  private static final String ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE =
+    "<" + ABADAN_URI + "> " +
+      "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
+      "<" + FICTIONAL_TYPE_URI + "> .";
   private static final String ABADAN_POINT_TRIPLE =
     "<" + ABADAN_URI + "> " +
       "<http://www.georss.org/georss/point> " +
@@ -205,6 +212,23 @@ public class TripleImporterTest {
     assertThat(collectionVertex.next(), likeVertex()
       .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, TYPE_NAME + "s")
       .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, TYPE_NAME));
+  }
+
+  @Test
+  public void importTripleShouldConnectTheSubjectToMultipleCollectionsNamedByTheObject() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(abadanIsAFictionalFeature);
+
+    GraphTraversal<Vertex, Vertex> collectionVertices = graphWrapper.getGraph().traversal().V()
+                                                                  .has(RDF_URI_PROP, ABADAN_URI)
+                                                                  .in(Collection.HAS_ENTITY_RELATION_NAME)
+                                                                  .in(Collection.HAS_ENTITY_NODE_RELATION_NAME);
+    assertThat(collectionVertices.count().next(), is(2L));
+
   }
 
   private ExtendedIterator<Triple> createTripleIterator(String tripleString) {
