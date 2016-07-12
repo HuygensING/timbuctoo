@@ -58,9 +58,16 @@ class CollectionMapper {
   }
 
   public CollectionDescription getCollectionDescription(Vertex vertex, String vreName) {
-    return new CollectionDescription(vertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME).next()
-          .vertices(Direction.IN, Collection.HAS_ENTITY_NODE_RELATION_NAME).next()
-          .value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME), vreName); // FIXME: find Vre in Graph
+    final String entityTypeName = graphWrapper.getGraph().traversal()
+                                              .V(vertex.id())
+                                              .in(Collection.HAS_ENTITY_RELATION_NAME)
+                                              .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                                              .where(
+                                                __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+                                                  .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+                                              ).next().value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME);
+
+    return new CollectionDescription(entityTypeName, vreName); // FIXME: return list of all collections
   }
 
 
