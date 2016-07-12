@@ -27,7 +27,10 @@ public class RdfImporter {
     Vre vre = createVre();
     vre.save(graphWrapper.getGraph(), Optional.empty());
 
-    model.getGraph().find(Triple.ANY).forEachRemaining(tripleImporter::importTriple);
+    model.getGraph().find(Triple.ANY).forEachRemaining(
+      // TODO: each new triple should be committed
+      tripleImporter::importTriple
+    );
   }
 
   Vre createVre() {
