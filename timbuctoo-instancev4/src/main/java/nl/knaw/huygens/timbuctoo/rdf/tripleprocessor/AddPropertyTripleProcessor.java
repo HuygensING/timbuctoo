@@ -20,7 +20,10 @@ class AddPropertyTripleProcessor implements TripleProcessor {
     final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node);
     final CollectionDescription collectionDescription = new CollectionDescription("unknown");
     collectionMapper.addToCollection(subjectVertex, collectionDescription);
-    subjectVertex.property(createPropertyName(triple, vreName, collectionDescription),
+
+    final CollectionDescription collectionDesc = collectionMapper.getCollectionDescription(subjectVertex);
+    subjectVertex.property(
+      createPropertyName(triple, vreName, collectionDesc),
       triple.getObject().getLiteralLexicalForm());
   }
 
