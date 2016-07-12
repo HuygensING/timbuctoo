@@ -47,10 +47,10 @@ class CollectionMapper {
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
   }
 
-  public CollectionDescription getCollectionDescription(Vertex vertex) {
+  public CollectionDescription getCollectionDescription(Vertex vertex, String vreName) {
     return new CollectionDescription(vertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME).next()
           .vertices(Direction.IN, Collection.HAS_ENTITY_NODE_RELATION_NAME).next()
-          .value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME));
+          .value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME), vreName); // FIXME: find Vre in Graph
   }
 
 

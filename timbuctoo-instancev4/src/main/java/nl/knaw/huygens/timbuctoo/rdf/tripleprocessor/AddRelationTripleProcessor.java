@@ -17,8 +17,9 @@ class AddRelationTripleProcessor implements TripleProcessor {
   @Override
   public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
-    final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node);
-    final Vertex objectVertex = graphUtil.findOrCreateEntityVertex(triple.getObject());
+    final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
+    final Vertex objectVertex =
+      graphUtil.findOrCreateEntityVertex(triple.getObject(), CollectionDescription.getDefault(vreName));
 
     subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
   }

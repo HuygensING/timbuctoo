@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 class AddToCollectionTripleProcessor implements TripleProcessor {
   private final CollectionMapper collectionMapper;
@@ -17,6 +16,6 @@ class AddToCollectionTripleProcessor implements TripleProcessor {
   @Override
   public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
-    graphUtil.findOrCreateEntityVertex(node, new CollectionDescription(triple.getObject().getLocalName()));
+    graphUtil.findOrCreateEntityVertex(node, new CollectionDescription(triple.getObject().getLocalName(), vreName));
   }
 }

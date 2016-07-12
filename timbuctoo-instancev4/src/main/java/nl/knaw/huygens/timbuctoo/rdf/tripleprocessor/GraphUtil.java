@@ -24,10 +24,6 @@ public class GraphUtil {
     this.collectionMapper = new CollectionMapper(graphWrapper);
   }
 
-  public Vertex findOrCreateEntityVertex(Node node) {
-    return this.findOrCreateEntityVertex(node, CollectionDescription.getDefault());
-  }
-
   public Vertex findOrCreateEntityVertex(Node node, CollectionDescription collectionDescription) {
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> existingT = graph.traversal().V()

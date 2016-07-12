@@ -18,7 +18,7 @@ public class CollectionMapperTest {
     CollectionMapper instance = new CollectionMapper(graphWrapper);
     Graph graph = graphWrapper.getGraph();
 
-    instance.addToCollection(graph.addVertex(), new CollectionDescription("test"));
+    instance.addToCollection(graph.addVertex(), new CollectionDescription("test", null));
 
     assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL).next(),
       is(likeVertex().withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "test")
@@ -32,7 +32,7 @@ public class CollectionMapperTest {
     CollectionMapper instance = new CollectionMapper(graphWrapper);
     Graph graph = graphWrapper.getGraph();
 
-    instance.addToCollection(graph.addVertex(), new CollectionDescription("test"));
+    instance.addToCollection(graph.addVertex(), new CollectionDescription("test", null));
 
     assertThat(graph.traversal().V()
                     .hasLabel(Collection.DATABASE_LABEL).out(Collection.HAS_ENTITY_NODE_RELATION_NAME).count().next(),
@@ -46,7 +46,7 @@ public class CollectionMapperTest {
     Graph graph = graphWrapper.getGraph();
     Vertex vertexToAdd = graph.addVertex();
 
-    instance.addToCollection(vertexToAdd, new CollectionDescription("test"));
+    instance.addToCollection(vertexToAdd, new CollectionDescription("test", null));
 
     assertThat(graph.traversal().V()
                     .hasLabel(Collection.DATABASE_LABEL)
@@ -61,8 +61,8 @@ public class CollectionMapperTest {
     CollectionMapper instance = new CollectionMapper(graphWrapper);
     Graph graph = graphWrapper.getGraph();
 
-    instance.addToCollection(graph.addVertex(), new CollectionDescription("test"));
-    instance.addToCollection(graph.addVertex(), new CollectionDescription("test"));
+    instance.addToCollection(graph.addVertex(), new CollectionDescription("test", null));
+    instance.addToCollection(graph.addVertex(), new CollectionDescription("test", null));
 
     assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL).out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
                     .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
@@ -76,8 +76,8 @@ public class CollectionMapperTest {
     Graph graph = graphWrapper.getGraph();
 
     Vertex vertex = graph.addVertex();
-    instance.addToCollection(vertex, new CollectionDescription("test"));
-    instance.addToCollection(vertex, new CollectionDescription("test"));
+    instance.addToCollection(vertex, new CollectionDescription("test", null));
+    instance.addToCollection(vertex, new CollectionDescription("test", null));
 
     assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL).out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
                     .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
@@ -91,7 +91,7 @@ public class CollectionMapperTest {
     Graph graph = graphWrapper.getGraph();
 
     Vertex vertex = graph.addVertex();
-    instance.addToCollection(vertex, new CollectionDescription("unknown"));
+    instance.addToCollection(vertex, new CollectionDescription("unknown", null));
 
 
     assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL)
@@ -99,7 +99,7 @@ public class CollectionMapperTest {
                     .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
                     .out(Collection.HAS_ENTITY_RELATION_NAME).count().next(),
       is(1L));
-    instance.addToCollection(vertex, new CollectionDescription("test"));
+    instance.addToCollection(vertex, new CollectionDescription("test", null));
 
     assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL)
                     .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "test")
@@ -120,8 +120,8 @@ public class CollectionMapperTest {
     Graph graph = graphWrapper.getGraph();
 
     Vertex vertex = graph.addVertex();
-    instance.addToCollection(vertex, new CollectionDescription("test"));
-    instance.addToCollection(vertex, new CollectionDescription("unknown"));
+    instance.addToCollection(vertex, new CollectionDescription("test", null));
+    instance.addToCollection(vertex, new CollectionDescription("unknown", null));
 
     assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL)
                     .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "test")
@@ -141,10 +141,10 @@ public class CollectionMapperTest {
     CollectionMapper instance = new CollectionMapper(graphWrapper);
     Graph graph = graphWrapper.getGraph();
     Vertex vertex = graph.addVertex();
-    instance.addToCollection(vertex, new CollectionDescription("test"));
-    instance.addToCollection(vertex, new CollectionDescription("unknown"));
+    instance.addToCollection(vertex, new CollectionDescription("test", null));
+    instance.addToCollection(vertex, new CollectionDescription("unknown", null));
 
-    final CollectionDescription result = instance.getCollectionDescription(vertex);
+    final CollectionDescription result = instance.getCollectionDescription(vertex, null);
 
     assertThat(result.getCollectionName(), is("tests"));
     assertThat(result.getEntityTypeName(), is("test"));

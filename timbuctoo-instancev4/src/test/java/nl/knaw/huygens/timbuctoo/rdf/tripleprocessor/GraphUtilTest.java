@@ -34,7 +34,8 @@ public class GraphUtilTest {
   @Test
   public void findOrCreateEntityVertexCreateANewVertexWithTimbuctoosSystemProperties() {
 
-    Vertex vertex = new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node);
+    Vertex vertex =
+      new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, CollectionDescription.getDefault(null));
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP).next(), is(vertex));
     verify(modifier).setCreated(vertex, USER_ID);
@@ -47,7 +48,8 @@ public class GraphUtilTest {
   @Test
   public void findOrCreateEntityVertexAddsANewlyCreatedEntityToTheDefaultCollection() {
 
-    Vertex vertex = new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node);
+    Vertex vertex =
+      new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, CollectionDescription.getDefault(null));
 
     assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
                 .in(Collection.HAS_ENTITY_RELATION_NAME)
@@ -59,7 +61,7 @@ public class GraphUtilTest {
 
   @Test
   public void findOrCreateEntityVertexAddsANewlyCreatedEntityToTheRequestedCollection() {
-    final CollectionDescription requestedCollection = new CollectionDescription("requested");
+    final CollectionDescription requestedCollection = new CollectionDescription("requested", null);
 
     Vertex vertex = new GraphUtil(graphWrapper, modifier).findOrCreateEntityVertex(node, requestedCollection);
 
@@ -79,9 +81,9 @@ public class GraphUtilTest {
 
   @Test
   public void findOrCreateEntityVertexReplacesTheDefaultCollectionWithTheRequestedCollection() {
-    final CollectionDescription requestedCollection = new CollectionDescription("requested");
+    final CollectionDescription requestedCollection = new CollectionDescription("requested", null);
     final GraphUtil instance = new GraphUtil(graphWrapper, modifier);
-    Vertex vertex = instance.findOrCreateEntityVertex(node);
+    Vertex vertex = instance.findOrCreateEntityVertex(node, CollectionDescription.getDefault(null));
 
     instance.findOrCreateEntityVertex(node, requestedCollection);
 

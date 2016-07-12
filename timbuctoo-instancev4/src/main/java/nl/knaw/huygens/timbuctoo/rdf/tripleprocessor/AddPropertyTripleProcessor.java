@@ -17,15 +17,12 @@ class AddPropertyTripleProcessor implements TripleProcessor {
   @Override
   public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
-    final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node);
+    final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
 
-    final CollectionDescription collectionDesc = collectionMapper.getCollectionDescription(subjectVertex);
+    final CollectionDescription collectionDesc = collectionMapper.getCollectionDescription(subjectVertex, vreName);
     subjectVertex.property(
-      createPropertyName(triple, vreName, collectionDesc),
+      collectionDesc.createPropertyName(triple.getPredicate().getLocalName()),
       triple.getObject().getLiteralLexicalForm());
   }
 
-  private String createPropertyName(Triple triple, String vreName, CollectionDescription collectionDescription) {
-    return vreName + collectionDescription.getEntityTypeName() + "_" + triple.getPredicate().getLocalName();
-  }
 }

@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 public class TripleImporterTest {
-  private static final String VRE_NAME = "vre name";
+  private static final String VRE_NAME = "vreName";
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
   private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
