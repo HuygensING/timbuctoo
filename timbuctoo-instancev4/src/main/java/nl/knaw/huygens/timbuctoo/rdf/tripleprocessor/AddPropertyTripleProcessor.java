@@ -5,6 +5,8 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.List;
+
 class AddPropertyTripleProcessor implements TripleProcessor {
   private final CollectionMapper collectionMapper;
   private final GraphUtil graphUtil;
@@ -19,10 +21,11 @@ class AddPropertyTripleProcessor implements TripleProcessor {
     Node node = triple.getSubject();
     final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
 
-    final CollectionDescription collectionDesc = collectionMapper.getCollectionDescription(subjectVertex, vreName);
-    subjectVertex.property(
-      collectionDesc.createPropertyName(triple.getPredicate().getLocalName()),
-      triple.getObject().getLiteralLexicalForm());
+    final List<CollectionDescription> collections = collectionMapper.getCollectionDescriptions(subjectVertex, vreName);
+    collections.forEach(collectionDescription -> subjectVertex.property(
+      collectionDescription.createPropertyName(triple.getPredicate().getLocalName()),
+      triple.getObject().getLiteralLexicalForm()
+    ));
   }
 
 }

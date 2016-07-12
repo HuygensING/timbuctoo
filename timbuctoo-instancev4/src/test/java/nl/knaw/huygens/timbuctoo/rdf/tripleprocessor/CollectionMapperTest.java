@@ -8,9 +8,13 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 public class CollectionMapperTest {
@@ -162,16 +166,19 @@ public class CollectionMapperTest {
   }
 
   @Test
-  public void getCollectionDescriptionReturnsTheCollectionDescriptionOfTheVertex() {
+  public void getCollectionDescriptionsReturnsTheCollectionDescriptionsOfTheVertex() {
     CollectionMapper instance = new CollectionMapper(graphWrapper);
     Graph graph = graphWrapper.getGraph();
     Vertex vertex = graph.addVertex();
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
     instance.addToCollection(vertex, new CollectionDescription("unknown", VRE_NAME));
+    instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
 
-    final CollectionDescription result = instance.getCollectionDescription(vertex, VRE_NAME);
+    final List<String> result = instance
+      .getCollectionDescriptions(vertex, VRE_NAME).stream()
+      .map(CollectionDescription::getEntityTypeName)
+      .collect(Collectors.toList());
 
-    assertThat(result.getCollectionName(), is("tests"));
-    assertThat(result.getEntityTypeName(), is("test"));
+    assertThat(result, containsInAnyOrder("test", "other"));
   }
 }

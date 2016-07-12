@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.List;
 import java.util.Objects;
 
 class CollectionMapper {
@@ -57,19 +58,19 @@ class CollectionMapper {
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
   }
 
-  public CollectionDescription getCollectionDescription(Vertex vertex, String vreName) {
-    final String entityTypeName = graphWrapper.getGraph().traversal()
-                                              .V(vertex.id())
-                                              .in(Collection.HAS_ENTITY_RELATION_NAME)
-                                              .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                                              .where(
-                                                __.in(Vre.HAS_COLLECTION_RELATION_NAME)
-                                                  .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-                                              ).next().value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME);
-
-    return new CollectionDescription(entityTypeName, vreName); // FIXME: return list of all collections
+  public List<CollectionDescription> getCollectionDescriptions(Vertex vertex, String vreName) {
+    return graphWrapper
+      .getGraph().traversal()
+      .V(vertex.id())
+      .in(Collection.HAS_ENTITY_RELATION_NAME)
+      .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .where(
+        __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+      ).map(collectionT -> {
+        return new CollectionDescription(collectionT.get().value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
+      }).toList();
   }
-
 
 
   private void removeFromCollection(Vertex vertex, CollectionDescription collectionDescription) {
