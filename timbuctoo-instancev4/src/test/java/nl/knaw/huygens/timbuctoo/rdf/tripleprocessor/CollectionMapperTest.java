@@ -26,6 +26,8 @@ public class CollectionMapperTest {
 
   public static final String VRE_NAME = "vreName";
   private GraphWrapper graphWrapper;
+  private CollectionMapper instance;
+  private Graph graph;
 
   @Before
   public void setUp() throws Exception {
@@ -35,13 +37,12 @@ public class CollectionMapperTest {
         v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME);
       })
       .wrap();
+    instance = new CollectionMapper(graphWrapper);
+    graph = graphWrapper.getGraph();
   }
 
   @Test
   public void addToCollectionCreatesACollectionVertexWithAnEntityTypeNameAndCollectionName() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
-
     instance.addToCollection(graph.addVertex(), new CollectionDescription("test", VRE_NAME));
 
     assertThat(graph.traversal().V().hasLabel(Collection.DATABASE_LABEL).next(),
@@ -52,9 +53,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionAddsOneEntityNodeToTheCollection() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
-
     instance.addToCollection(graph.addVertex(), new CollectionDescription("test", VRE_NAME));
 
     assertThat(graph.traversal().V()
@@ -64,9 +62,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionAddsTheCollectionToTheRequestedVre() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
-
     instance.addToCollection(graph.addVertex(), new CollectionDescription("test", VRE_NAME));
 
     assertThat(graph.traversal().V().has(Vre.VRE_NAME_PROPERTY_NAME).out(Vre.HAS_COLLECTION_RELATION_NAME).hasNext(),
@@ -81,8 +76,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionAddsTheVertexToTheEntityNode() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
     Vertex vertexToAdd = graph.addVertex();
 
     instance.addToCollection(vertexToAdd, new CollectionDescription("test", VRE_NAME));
@@ -96,9 +89,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionReusesAnExistingCollectionWithTheSameEntityTypeName() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
-
     instance.addToCollection(graph.addVertex(), new CollectionDescription("test", VRE_NAME));
     instance.addToCollection(graph.addVertex(), new CollectionDescription("test", VRE_NAME));
 
@@ -109,9 +99,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionDoesNotConnectAVertexMoreThanOnce() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
-
     Vertex vertex = graph.addVertex();
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
@@ -123,9 +110,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionChangesTheCollectionIfThePreviousCollectionWasUnknown() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
-
     Vertex vertex = graph.addVertex();
     instance.addToCollection(vertex, new CollectionDescription("unknown", VRE_NAME));
 
@@ -151,9 +135,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionDoesNotAddToUnknownIfVertexIsPartOfAKnownCollection() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
-
     Vertex vertex = graph.addVertex();
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
     instance.addToCollection(vertex, new CollectionDescription("unknown", VRE_NAME));
@@ -172,8 +153,6 @@ public class CollectionMapperTest {
 
   @Test
   public void getCollectionDescriptionsReturnsTheCollectionDescriptionsOfTheVertex() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
     Vertex vertex = graph.addVertex();
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
     instance.addToCollection(vertex, new CollectionDescription("unknown", VRE_NAME));
@@ -189,7 +168,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionSetsTheTypesArray() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
     Graph graph = graphWrapper.getGraph();
     Vertex vertex = graph.addVertex();
 
@@ -201,8 +179,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionSetsTheEntityTypeLabels() {
-    CollectionMapper instance = new CollectionMapper(graphWrapper);
-    Graph graph = graphWrapper.getGraph();
     Vertex vertex = graph.addVertex();
 
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
@@ -216,4 +192,5 @@ public class CollectionMapperTest {
       is(true)
     );
   }
+  
 }
