@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -21,23 +22,28 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class CollectionMapperTest {
 
   public static final String VRE_NAME = "vreName";
-  private GraphWrapper graphWrapper;
   private CollectionMapper instance;
   private Graph graph;
+  private PropertyHelper propertyHelper;
 
   @Before
   public void setUp() throws Exception {
-    graphWrapper = newGraph()
+    GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> {
         v.withLabel(Vre.DATABASE_LABEL);
         v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME);
       })
       .wrap();
-    instance = new CollectionMapper(graphWrapper);
+    propertyHelper = mock(PropertyHelper.class);
+    instance = new CollectionMapper(graphWrapper, propertyHelper);
     graph = graphWrapper.getGraph();
   }
 
@@ -168,7 +174,6 @@ public class CollectionMapperTest {
 
   @Test
   public void addToCollectionSetsTheTypesArray() {
-    Graph graph = graphWrapper.getGraph();
     Vertex vertex = graph.addVertex();
 
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
@@ -184,7 +189,7 @@ public class CollectionMapperTest {
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
     instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
 
-    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
+    assertThat(graph.traversal().V(vertex.id())
                            .and(
                              __.has(T.label, LabelP.of("test")),
                              __.has(T.label, LabelP.of("other"))
@@ -192,5 +197,15 @@ public class CollectionMapperTest {
       is(true)
     );
   }
-  
+
+  @Ignore
+  @Test
+  public void addCollectionsDuplicatesThePropertiesForANewCollectionType() {
+    Vertex vertex = graph.addVertex();
+
+    CollectionDescription collectionDescription = new CollectionDescription("test", VRE_NAME);
+    instance.addToCollection(vertex, collectionDescription);
+
+    verify(propertyHelper).setCollectionProperties(argThat(is(vertex)), argThat(is(collectionDescription)), any());
+  }
 }

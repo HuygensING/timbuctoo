@@ -20,10 +20,16 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
 class CollectionMapper {
 
-  private GraphWrapper graphWrapper;
+  private final GraphWrapper graphWrapper;
+  private final PropertyHelper propertyHelper;
 
   public CollectionMapper(GraphWrapper graphWrapper) {
+    this(graphWrapper, new PropertyHelper());
+  }
+
+  CollectionMapper(GraphWrapper graphWrapper, PropertyHelper propertyHelper) {
     this.graphWrapper = graphWrapper;
+    this.propertyHelper = propertyHelper;
   }
 
   public void addToCollection(Vertex vertex, CollectionDescription collectionDescription) {
@@ -64,11 +70,14 @@ class CollectionMapper {
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
 
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    final Stream<TextNode> textNodeStream = getCollectionDescriptions(vertex, collectionDescription.getVreName())
+    List<CollectionDescription> collectionDescriptions =
+      getCollectionDescriptions(vertex, collectionDescription.getVreName());
+    final Stream<TextNode> textNodeStream = collectionDescriptions
       .stream().map(CollectionDescription::getEntityTypeName).map(JsonBuilder::jsn);
     vertex.property("types", jsnA(textNodeStream).toString());
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
     new AddLabelChangeListener().onUpdate(Optional.empty(), vertex);
+    // propertyHelper.setCollectionProperties(vertex, collectionDescription, collectionDescriptions);
   }
 
   public List<CollectionDescription> getCollectionDescriptions(Vertex vertex, String vreName) {
