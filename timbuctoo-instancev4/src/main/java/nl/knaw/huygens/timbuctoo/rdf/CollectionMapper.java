@@ -53,8 +53,9 @@ class CollectionMapper {
     }
 
     final Vertex collectionVertex = findOrCreateCollectionVertex(collectionDescription, graph);
-
-    addCollectionToVre(collectionDescription, graph, collectionVertex);
+    if (!collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME).hasNext()) {
+      addCollectionToVre(collectionDescription, graph, collectionVertex);
+    }
 
     final Vertex archetypeVertex = addCollectionToArchetype(graph, collectionVertex);
 
@@ -83,13 +84,15 @@ class CollectionMapper {
   }
 
   private Vertex addCollectionToArchetype(Graph graph, Vertex collectionVertex) {
-    final Vertex archetypeVertex = graph.traversal().V().hasLabel(Vre.DATABASE_LABEL)
-                             .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
-                             .out(Vre.HAS_COLLECTION_RELATION_NAME)
-                             .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
-                             .next();
 
-    collectionVertex.addEdge(Collection.HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
+    final Vertex archetypeVertex = graph.traversal().V().hasLabel(Vre.DATABASE_LABEL)
+                                        .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                                        .out(Vre.HAS_COLLECTION_RELATION_NAME)
+                                        .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                                        .next();
+    if (!collectionVertex.vertices(Direction.OUT, Collection.HAS_ARCHETYPE_RELATION_NAME).hasNext()) {
+      collectionVertex.addEdge(Collection.HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
+    }
     return archetypeVertex;
   }
 
@@ -112,7 +115,7 @@ class CollectionMapper {
 
     List<String> entityTypeNames =
       getCollectionDescriptions(vertex, collectionDescription.getVreName())
-      .stream().map(CollectionDescription::getEntityTypeName).collect(Collectors.toList());
+        .stream().map(CollectionDescription::getEntityTypeName).collect(Collectors.toList());
 
     entityTypeNames.add(archetypeVertex.value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME));
 

@@ -187,10 +187,10 @@ public class TripleImporterTest {
     instance.importTriple(tripleExtendedIterator.next());
 
     assertThat(graphWrapper
-      .getGraph().traversal().V()
-      .has(RDF_URI_PROP, ABADAN_URI)
-      .outE()
-      .has(RDF_URI_PROP, IS_PART_OF_URI).hasNext(),
+        .getGraph().traversal().V()
+        .has(RDF_URI_PROP, ABADAN_URI)
+        .outE()
+        .has(RDF_URI_PROP, IS_PART_OF_URI).hasNext(),
       is(true)
     );
   }
@@ -276,6 +276,38 @@ public class TripleImporterTest {
   }
 
   @Test
+  public void importTripleShouldConnectResultingCollectionToVreOnlyOnce() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsPartOfIran = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
+
+    instance.importTriple(abadanIsPartOfIran);
+
+    Long numberOfVreCollectionRelations = graphWrapper
+      .getGraph().traversal().V()
+      .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_ENTITY_TYPE_NAME)
+      .in(Vre.HAS_COLLECTION_RELATION_NAME)
+      .count().next();
+
+    assertThat(numberOfVreCollectionRelations, is(1L));
+  }
+
+  @Test
+  public void importTripleShouldConnectResultingCollectionToItsArchetypeOnlyOnce() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsPartOfIran = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
+
+    instance.importTriple(abadanIsPartOfIran);
+
+    Long numberOfVreCollectionRelations = graphWrapper
+      .getGraph()
+      .traversal().V()
+      .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_ENTITY_TYPE_NAME)
+      .out(Collection.HAS_ARCHETYPE_RELATION_NAME).count().next();
+
+    assertThat(numberOfVreCollectionRelations, is(1L));
+  }
+
+  @Test
   public void importTripleShouldConnectTheSubjectEntityToTheCollectionNamedByTheObject() {
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
@@ -328,7 +360,7 @@ public class TripleImporterTest {
     instance.importTriple(abadanIsAFictionalFeature);
 
     assertThat(graphWrapper
-      .getGraph().traversal().V()
+        .getGraph().traversal().V()
         .has(RDF_URI_PROP, ABADAN_URI)
         .in(Collection.HAS_ENTITY_RELATION_NAME)
         .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
