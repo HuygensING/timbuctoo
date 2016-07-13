@@ -42,7 +42,7 @@ public class GraphUtil {
       systemPropertyModifier.setTimId(vertex);
       systemPropertyModifier.setRev(vertex, 1);
       systemPropertyModifier.setIsLatest(vertex, true);
-      systemPropertyModifier.setIsDeleted(vertex, false, collectionDescription);
+      systemPropertyModifier.setIsDeleted(vertex, false);
 
       collectionMapper.addToCollection(vertex, collectionDescription);
       return vertex;

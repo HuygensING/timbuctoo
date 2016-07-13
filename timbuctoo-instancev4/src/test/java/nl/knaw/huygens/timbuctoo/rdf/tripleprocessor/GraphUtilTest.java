@@ -46,7 +46,7 @@ public class GraphUtilTest {
     verify(modifier).setTimId(vertex);
     verify(modifier).setRev(vertex, 1);
     verify(modifier).setIsLatest(vertex, true);
-    verify(modifier).setIsDeleted(vertex, false, collectionDescription);
+    verify(modifier).setIsDeleted(vertex, false);
   }
 
   @Test
