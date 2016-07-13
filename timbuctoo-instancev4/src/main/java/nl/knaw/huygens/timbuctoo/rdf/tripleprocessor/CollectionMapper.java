@@ -48,36 +48,13 @@ class CollectionMapper {
       removeFromCollection(vertex, defaultCollectionDescription);
     }
 
-    final GraphTraversal<Vertex, Vertex> colTraversal =
-      graph.traversal().V().has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
-    Vertex collectionVertex;
-    if (colTraversal.hasNext()) {
-      collectionVertex = colTraversal.next();
-    } else {
-      collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
-    }
-
-    Vertex vreVertex = graph.traversal().V()
-                            .hasLabel(Vre.DATABASE_LABEL)
-                            .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
-                            .next();
-    collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
-    collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
-    vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
-
-    Vertex containerVertex = graph.addVertex(Collection.COLLECTION_ENTITIES_LABEL);
-    collectionVertex.addEdge(Collection.HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
-    containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
-
+    final Vertex collectionVertex = findOrCreateCollectionVertex(collectionDescription, graph);
+    addCollectionToVre(collectionDescription, graph, collectionVertex);
+    addEntityVertexToCollection(vertex, graph, collectionVertex);
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    List<CollectionDescription> collectionDescriptions =
-      getCollectionDescriptions(vertex, collectionDescription.getVreName());
-    final Stream<TextNode> textNodeStream = collectionDescriptions
-      .stream().map(CollectionDescription::getEntityTypeName).map(JsonBuilder::jsn);
-    vertex.property("types", jsnA(textNodeStream).toString());
+    List<CollectionDescription> collectionDescriptions = addTypesPropertyToEntityVertex(vertex, collectionDescription);
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
     new AddLabelChangeListener().onUpdate(Optional.empty(), vertex);
-
     propertyHelper.setCollectionProperties(vertex, collectionDescription, collectionDescriptions);
   }
 
@@ -95,6 +72,48 @@ class CollectionMapper {
       }).toList();
   }
 
+  private List<CollectionDescription> addTypesPropertyToEntityVertex(Vertex vertex,
+                                                                     CollectionDescription collectionDescription) {
+    List<CollectionDescription> collectionDescriptions =
+      getCollectionDescriptions(vertex, collectionDescription.getVreName());
+    final Stream<TextNode> textNodeStream = collectionDescriptions
+      .stream().map(CollectionDescription::getEntityTypeName).map(JsonBuilder::jsn);
+    vertex.property("types", jsnA(textNodeStream).toString());
+    return collectionDescriptions;
+  }
+
+
+  private void addEntityVertexToCollection(Vertex vertex, Graph graph, Vertex collectionVertex) {
+    Vertex containerVertex = graph.addVertex(Collection.COLLECTION_ENTITIES_LABEL);
+    collectionVertex.addEdge(Collection.HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
+    containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
+  }
+
+
+  private void addCollectionToVre(CollectionDescription collectionDescription, Graph graph, Vertex collectionVertex) {
+    Vertex vreVertex = graph.traversal().V()
+                            .hasLabel(Vre.DATABASE_LABEL)
+                            .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+                            .next();
+    vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
+  }
+
+
+  private Vertex findOrCreateCollectionVertex(CollectionDescription collectionDescription, Graph graph) {
+    Vertex collectionVertex;
+    final GraphTraversal<Vertex, Vertex> colTraversal =
+      graph.traversal().V().has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
+
+    if (colTraversal.hasNext()) {
+      collectionVertex = colTraversal.next();
+    } else {
+      collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
+    }
+
+    collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
+    collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
+    return collectionVertex;
+  }
 
   private void removeFromCollection(Vertex vertex, CollectionDescription collectionDescription) {
     graphWrapper.getGraph().traversal().V(vertex.id()).inE(Collection.HAS_ENTITY_RELATION_NAME)
