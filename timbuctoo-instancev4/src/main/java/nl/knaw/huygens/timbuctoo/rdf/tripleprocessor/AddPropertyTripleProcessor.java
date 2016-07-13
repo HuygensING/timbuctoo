@@ -1,31 +1,24 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-
-import java.util.List;
 
 class AddPropertyTripleProcessor implements TripleProcessor {
-  private final CollectionMapper collectionMapper;
-  private final GraphUtil graphUtil;
+  private final Database database;
 
-  public AddPropertyTripleProcessor(GraphWrapper graphWrapper) {
-    this.collectionMapper = new CollectionMapper(graphWrapper);
-    graphUtil = new GraphUtil(graphWrapper);
+  public AddPropertyTripleProcessor(Database database) {
+    this.database = database;
   }
 
   @Override
   public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
-    final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
-    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    final List<CollectionDescription> collections = collectionMapper.getCollectionDescriptions(subjectVertex, vreName);
-    collections.forEach(collectionDescription -> subjectVertex.property(
-      collectionDescription.createPropertyName(triple.getPredicate().getLocalName()),
-      triple.getObject().getLiteralLexicalForm()
-    ));
+    Entity entity = database.findOrCreateEntity(vreName, node);
+
+    String propertyName = triple.getPredicate().getLocalName();
+    String value = triple.getObject().getLiteralLexicalForm();
+    entity.addProperty(propertyName, value);
   }
 
 }

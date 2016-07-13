@@ -1,21 +1,20 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.jena.graph.Node;
+import nl.knaw.huygens.timbuctoo.rdf.Collection;
+import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import org.apache.jena.graph.Triple;
 
 class AddToCollectionTripleProcessor implements TripleProcessor {
-  private final CollectionMapper collectionMapper;
-  private final GraphUtil graphUtil;
+  private final Database database;
 
-  public AddToCollectionTripleProcessor(GraphWrapper graphWrapper) {
-    this.collectionMapper = new CollectionMapper(graphWrapper);
-    graphUtil = new GraphUtil(graphWrapper);
+  public AddToCollectionTripleProcessor(Database database) {
+    this.database = database;
   }
 
   @Override
   public void process(Triple triple, String vreName) {
-    Node node = triple.getSubject();
-    graphUtil.findOrCreateEntityVertex(node, new CollectionDescription(triple.getObject().getLocalName(), vreName));
+    Entity entity = database.findOrCreateEntity(vreName, triple.getSubject());
+    Collection collection = database.findOrCreateCollection(vreName, triple.getObject());
+    entity.addToCollection(collection);
   }
 }

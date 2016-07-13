@@ -1,36 +1,40 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.time.Clock;
 
 class AddRelationTripleProcessor implements TripleProcessor {
-  private final GraphUtil graphUtil;
+  private final Database database;
   private final SystemPropertyModifier systemPropertyModifier;
 
-  public AddRelationTripleProcessor(GraphWrapper graphWrapper) {
-    graphUtil = new GraphUtil(graphWrapper);
+  public AddRelationTripleProcessor(Database database) {
+    this.database = database;
     systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
   }
 
   @Override
   public void process(Triple triple, String vreName) {
     Node node = triple.getSubject();
-    final Vertex subjectVertex = graphUtil.findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
-    final Vertex objectVertex =
-      graphUtil.findOrCreateEntityVertex(triple.getObject(), CollectionDescription.getDefault(vreName));
+    Entity subject = database.findOrCreateEntity(vreName, node);
+    Entity object = database.findOrCreateEntity(vreName, triple.getObject());
 
-    final Edge relationEdge = subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
-    relationEdge.property(GraphUtil.RDF_URI_PROP, triple.getPredicate().getURI());
-    systemPropertyModifier.setCreated(relationEdge, "rdf-importer");
-    systemPropertyModifier.setModified(relationEdge, "rdf-importer");
-    systemPropertyModifier.setRev(relationEdge, 1);
-    systemPropertyModifier.setIsDeleted(relationEdge, false);
-    systemPropertyModifier.setIsLatest(relationEdge, true);
-    systemPropertyModifier.setTimId(relationEdge);
+    nl.knaw.huygens.timbuctoo.rdf.Relation relation = subject.addRelation(triple.getPredicate(), object);
+
+    // Node node = triple.getSubject();
+    // final Vertex subjectVertex = database.findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
+    // final Vertex objectVertex =
+    //   database.findOrCreateEntityVertex(triple.getObject(), CollectionDescription.getDefault(vreName));
+    //
+    // final Edge relationEdge = subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
+    // relationEdge.property(Database.RDF_URI_PROP, triple.getPredicate().getURI());
+    // systemPropertyModifier.setCreated(relationEdge, "rdf-importer");
+    // systemPropertyModifier.setModified(relationEdge, "rdf-importer");
+    // systemPropertyModifier.setRev(relationEdge, 1);
+    // systemPropertyModifier.setIsDeleted(relationEdge, false);
+    // systemPropertyModifier.setIsLatest(relationEdge, true);
+    // systemPropertyModifier.setTimId(relationEdge);
   }
 }

@@ -12,11 +12,11 @@ public class TripleProcessorFactory {
 
   public TripleProcessor getTripleProcessor(Triple triple) {
     if (describesType(triple)) {
-      return new AddToCollectionTripleProcessor(graphWrapper);
+      return new AddToCollectionTripleProcessor(new Database(graphWrapper));
     } else if (describesProperty(triple)) {
-      return new AddPropertyTripleProcessor(graphWrapper);
+      return new AddPropertyTripleProcessor(new Database(graphWrapper));
     } else if (describesRelation(triple)) {
-      return new AddRelationTripleProcessor(graphWrapper);
+      return new AddRelationTripleProcessor(new Database(graphWrapper));
     } else {
       return new UnsupportedTripleProcessor();
     }

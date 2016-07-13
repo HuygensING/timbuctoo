@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
-class CollectionMapper {
+public class CollectionMapper {
 
   private final GraphWrapper graphWrapper;
   private final PropertyHelper propertyHelper;
