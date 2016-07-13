@@ -74,8 +74,8 @@ public class TripleImporterTest {
   public void setUp() throws Exception {
     graphWrapper = newGraph()
       .withVertex(v -> {
-        v.withLabel(Vre.DATABASE_LABEL)
-          .withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME);
+        v.withLabel(Vre.DATABASE_LABEL);
+        v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME);
       })
       .withVertex(v -> {
         v.withLabel(Vre.DATABASE_LABEL);
@@ -86,9 +86,8 @@ public class TripleImporterTest {
         v.withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
         v.withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "concepts");
       })
-      .withVertex("archetypeHolder", v -> {
-        v.withIncomingRelation(Collection.HAS_ENTITY_NODE_RELATION_NAME, "defaultArchetype");
-      })
+      .withVertex("archetypeHolder", v ->
+        v.withIncomingRelation(Collection.HAS_ENTITY_NODE_RELATION_NAME, "defaultArchetype"))
       .wrap();
   }
 
