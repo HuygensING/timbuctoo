@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
+import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 

@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.SystemPropertyModifier;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.time.Clock;
 
-import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 
 public class Relation {
   private final Edge edge;

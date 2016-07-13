@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.CollectionDescription;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;

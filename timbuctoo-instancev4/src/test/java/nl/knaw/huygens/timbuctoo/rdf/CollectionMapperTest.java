@@ -1,7 +1,10 @@
-package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
+package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.rdf.CollectionDescription;
+import nl.knaw.huygens.timbuctoo.rdf.CollectionMapper;
+import nl.knaw.huygens.timbuctoo.rdf.PropertyHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;

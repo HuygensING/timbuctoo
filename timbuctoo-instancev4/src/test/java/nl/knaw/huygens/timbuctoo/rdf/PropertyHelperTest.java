@@ -1,6 +1,8 @@
-package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
+package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.rdf.CollectionDescription;
+import nl.knaw.huygens.timbuctoo.rdf.PropertyHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 

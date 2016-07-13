@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
+package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
-public class CollectionMapper {
+class CollectionMapper {
 
   private final GraphWrapper graphWrapper;
   private final PropertyHelper propertyHelper;

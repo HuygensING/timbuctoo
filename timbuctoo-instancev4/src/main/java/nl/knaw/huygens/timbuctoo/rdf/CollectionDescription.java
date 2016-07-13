@@ -1,6 +1,6 @@
-package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
+package nl.knaw.huygens.timbuctoo.rdf;
 
-public class CollectionDescription {
+class CollectionDescription {
   private final String entityTypeName;
   private final String vreName;
 

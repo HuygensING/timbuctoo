@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
+package nl.knaw.huygens.timbuctoo.rdf;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 

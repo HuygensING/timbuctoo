@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.CollectionDescription;
-import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.CollectionMapper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
