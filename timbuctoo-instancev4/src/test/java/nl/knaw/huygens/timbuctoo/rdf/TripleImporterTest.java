@@ -7,8 +7,11 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,11 +20,13 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.GraphUtil.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
@@ -71,6 +76,18 @@ public class TripleImporterTest {
       .withVertex(v -> {
         v.withLabel(Vre.DATABASE_LABEL)
           .withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME);
+      })
+      .withVertex(v -> {
+        v.withLabel(Vre.DATABASE_LABEL);
+        v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
+        v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "defaultArchetype");
+      })
+      .withVertex("defaultArchetype", v -> {
+        v.withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
+        v.withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "concepts");
+      })
+      .withVertex("archetypeHolder", v -> {
+        v.withIncomingRelation(Collection.HAS_ENTITY_NODE_RELATION_NAME, "defaultArchetype");
       })
       .wrap();
   }
@@ -169,10 +186,16 @@ public class TripleImporterTest {
 
     instance.importTriple(abadan);
 
-    GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper.getGraph().traversal().V()
-                                                                  .has(RDF_URI_PROP, ABADAN_URI)
-                                                                  .in(Collection.HAS_ENTITY_RELATION_NAME)
-                                                                  .in(Collection.HAS_ENTITY_NODE_RELATION_NAME);
+    GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper
+      .getGraph().traversal().V()
+      .has(RDF_URI_PROP, ABADAN_URI)
+      .in(Collection.HAS_ENTITY_RELATION_NAME)
+      .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .where(
+        __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME)
+      );
+
     assertThat(collectionVertex.hasNext(), is(true));
     assertThat(collectionVertex.next(), likeVertex()
       .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns")
@@ -186,10 +209,16 @@ public class TripleImporterTest {
 
     instance.importTriple(abadan);
 
-    GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper.getGraph().traversal().V()
-                                                                  .has(RDF_URI_PROP, IRAN_URI)
-                                                                  .in(Collection.HAS_ENTITY_RELATION_NAME)
-                                                                  .in(Collection.HAS_ENTITY_NODE_RELATION_NAME);
+    GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper
+      .getGraph().traversal().V()
+      .has(RDF_URI_PROP, IRAN_URI)
+      .in(Collection.HAS_ENTITY_RELATION_NAME)
+      .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .where(
+        __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME)
+      );
+
     assertThat(collectionVertex.hasNext(), is(true));
     assertThat(collectionVertex.next(), likeVertex()
       .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns")
@@ -203,11 +232,15 @@ public class TripleImporterTest {
 
     instance.importTriple(abadan);
 
-    GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper.getGraph().traversal().V()
-                                                                  .has(RDF_URI_PROP, ABADAN_URI)
-                                                                  .in(Collection.HAS_ENTITY_RELATION_NAME)
-                                                                  .in(Collection.HAS_ENTITY_NODE_RELATION_NAME);
-
+    GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper
+      .getGraph().traversal().V()
+      .has(RDF_URI_PROP, ABADAN_URI)
+      .in(Collection.HAS_ENTITY_RELATION_NAME)
+      .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .where(
+        __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME)
+      );
     assertThat(collectionVertex.hasNext(), is(true));
     assertThat(collectionVertex.next(), likeVertex()
       .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, TYPE_NAME + "s")
@@ -223,12 +256,108 @@ public class TripleImporterTest {
     instance.importTriple(abadanIsAFeature);
     instance.importTriple(abadanIsAFictionalFeature);
 
-    GraphTraversal<Vertex, Vertex> collectionVertices = graphWrapper.getGraph().traversal().V()
-                                                                  .has(RDF_URI_PROP, ABADAN_URI)
-                                                                  .in(Collection.HAS_ENTITY_RELATION_NAME)
-                                                                  .in(Collection.HAS_ENTITY_NODE_RELATION_NAME);
+    GraphTraversal<Vertex, Vertex> collectionVertices = graphWrapper
+      .getGraph().traversal().V()
+      .has(RDF_URI_PROP, ABADAN_URI)
+      .in(Collection.HAS_ENTITY_RELATION_NAME)
+      .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .where(
+        __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME)
+      );
     assertThat(collectionVertices.count().next(), is(2L));
+  }
 
+  @Test
+  public void importTripleConnectsTheSubjectToTheConceptsArchetype() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(abadanIsAFictionalFeature);
+
+    assertThat(graphWrapper
+      .getGraph().traversal().V()
+        .has(RDF_URI_PROP, ABADAN_URI)
+        .in(Collection.HAS_ENTITY_RELATION_NAME)
+        .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+        .where(
+          __.and(
+            __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+              .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin"),
+            __.has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+          )
+        ).hasNext(),
+      is(true)
+    );
+  }
+
+  @Test
+  public void importTripleConnectsNewCollectionsToTheConceptsArchetype() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(abadanIsAFictionalFeature);
+
+    assertThat(graphWrapper
+        .getGraph().traversal().V()
+        .has(RDF_URI_PROP, ABADAN_URI)
+        .in(Collection.HAS_ENTITY_RELATION_NAME)
+        .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+        .where(
+          __.and(
+            __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+              .has(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME),
+            __.out(Collection.HAS_ARCHETYPE_RELATION_NAME)
+              .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+              .in(Vre.HAS_COLLECTION_RELATION_NAME)
+              .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+          )
+        ).toList(),
+      containsInAnyOrder(
+        likeVertex().withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, TYPE_NAME),
+        likeVertex().withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, FICTIONAL_TYPE_NAME)
+      )
+    );
+  }
+
+  @Test
+  public void importTripleAddsTheCollectionsAndTheArchetypeToTheTypesPropOfTheSubject() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(abadanIsAFictionalFeature);
+
+    assertThat(getEntityTypesOrDefault(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next()),
+      arrayContainingInAnyOrder(TYPE_NAME, FICTIONAL_TYPE_NAME, "concept")
+    );
+  }
+
+  @Test
+  public void importTripleAddsTheCollectionsAndTheArchetypeToLabelsOfTheSubject() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(abadanIsAFictionalFeature);
+
+
+    assertThat(graphWrapper
+        .getGraph().traversal().V()
+        .has(RDF_URI_PROP, ABADAN_URI)
+        .where(
+          __.has(T.label, LabelP.of(TYPE_NAME))
+            .has(T.label, LabelP.of(FICTIONAL_TYPE_NAME))
+            .has(T.label, LabelP.of("concept"))
+        ).hasNext(),
+      is(true)
+    );
   }
 
   @Test
@@ -273,7 +402,6 @@ public class TripleImporterTest {
       .withoutProperty(VRE_NAME + "unknown_" + "point")
       .withoutProperty(VRE_NAME + "unknown_" + "lat")
     );
-
   }
 
 

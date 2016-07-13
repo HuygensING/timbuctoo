@@ -9,7 +9,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -40,6 +39,18 @@ public class CollectionMapperTest {
       .withVertex(v -> {
         v.withLabel(Vre.DATABASE_LABEL);
         v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME);
+      })
+      .withVertex(v -> {
+        v.withLabel(Vre.DATABASE_LABEL);
+        v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
+        v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "defaultArchetype");
+      })
+      .withVertex("defaultArchetype", v -> {
+        v.withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
+        v.withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "concepts");
+      })
+      .withVertex("archetypeHolder", v -> {
+        v.withIncomingRelation(Collection.HAS_ENTITY_NODE_RELATION_NAME, "defaultArchetype");
       })
       .wrap();
     propertyHelper = mock(PropertyHelper.class);
@@ -158,6 +169,113 @@ public class CollectionMapperTest {
   }
 
   @Test
+  public void addToCollectionSetsTheTypesArray() {
+    Vertex vertex = graph.addVertex();
+
+    instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
+    instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
+
+    assertThat(getEntityTypesOrDefault(vertex), arrayContainingInAnyOrder(
+      "test", "other", "concept"
+    ));
+  }
+
+  @Test
+  public void addToCollectionSetsTheEntityTypeLabels() {
+    Vertex vertex = graph.addVertex();
+
+    instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
+    instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
+
+    assertThat(graph.traversal().V(vertex.id())
+                           .where(
+                             __.has(T.label, LabelP.of("test"))
+                               .has(T.label, LabelP.of("other"))
+                               .has(T.label, LabelP.of("concept"))
+                           ).hasNext(),
+      is(true)
+    );
+  }
+
+  @Test
+  public void addToCollectionAddsTheCollectionToTheConceptsArchetype() {
+    Vertex vertex = graph.addVertex();
+
+    instance.addToCollection(vertex, CollectionDescription.getDefault(VRE_NAME));
+
+    assertThat(graph.traversal().V(vertex.id())
+          .in(Collection.HAS_ENTITY_RELATION_NAME)
+          .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+          .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "unknown")
+          .out(Collection.HAS_ARCHETYPE_RELATION_NAME)
+          .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+          .hasNext(),
+      is(true));
+  }
+
+  @Test
+  public void addToCollectionAddsTheCollectionToTheConceptsArchetypeOnlyOnce() {
+    Vertex vertex = graph.addVertex();
+    final CollectionDescription collectionDescription = new CollectionDescription("test", VRE_NAME);
+
+    instance.addToCollection(vertex, collectionDescription);
+    instance.addToCollection(vertex, collectionDescription);
+    instance.addToCollection(vertex, collectionDescription);
+
+    assertThat(graph.traversal().V(vertex.id())
+                    .in(Collection.HAS_ENTITY_RELATION_NAME)
+                    .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "test")
+                    .out(Collection.HAS_ARCHETYPE_RELATION_NAME)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                    .count().next(),
+      is(1L));
+  }
+
+  @Test
+  public void addToCollectionAddsTheEntityVertexToTheConceptsArchetype() {
+    Vertex vertex = graph.addVertex();
+
+    instance.addToCollection(vertex, CollectionDescription.getDefault(VRE_NAME));
+
+    assertThat(graph.traversal().V(vertex.id())
+          .in(Collection.HAS_ENTITY_RELATION_NAME)
+          .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+          .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+          .hasNext(),
+      is(true)
+    );
+  }
+
+  @Test
+  public void addToCollectionAddsTheEntityVertexToTheConceptsArchetypeOnlyOnce() {
+    Vertex vertex = graph.addVertex();
+
+    instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
+    instance.addToCollection(vertex, new CollectionDescription("unknown", VRE_NAME));
+    instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
+
+    assertThat(graph.traversal().V(vertex.id())
+                    .in(Collection.HAS_ENTITY_RELATION_NAME)
+                    .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                    .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                    .count().next(),
+      is(1L)
+    );
+  }
+
+
+  @Test
+  public void addToCollectionDuplicatesThePropertiesForANewCollectionType() {
+    Vertex vertex = graph.addVertex();
+
+    CollectionDescription collectionDescription = new CollectionDescription("test", VRE_NAME);
+    instance.addToCollection(vertex, collectionDescription);
+
+    verify(propertyHelper).setCollectionProperties(argThat(is(vertex)), argThat(is(collectionDescription)), any());
+  }
+
+  @Test
   public void getCollectionDescriptionsReturnsTheCollectionDescriptionsOfTheVertex() {
     Vertex vertex = graph.addVertex();
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
@@ -173,38 +291,19 @@ public class CollectionMapperTest {
   }
 
   @Test
-  public void addToCollectionSetsTheTypesArray() {
+  public void getCollectionDescriptionsDoesNotReturnTheArchetypeOfTheVertex() {
     Vertex vertex = graph.addVertex();
-
     instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
+    instance.addToCollection(vertex, new CollectionDescription("unknown", VRE_NAME));
     instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
 
-    assertThat(getEntityTypesOrDefault(vertex), arrayContainingInAnyOrder("test", "other"));
+    final List<String> result = instance
+      .getCollectionDescriptions(vertex, VRE_NAME).stream()
+      .map(CollectionDescription::getEntityTypeName)
+      .filter(entityTypeName -> entityTypeName.equals("concept"))
+      .collect(Collectors.toList());
+
+    assertThat(result.size(), is(0));
   }
 
-  @Test
-  public void addToCollectionSetsTheEntityTypeLabels() {
-    Vertex vertex = graph.addVertex();
-
-    instance.addToCollection(vertex, new CollectionDescription("test", VRE_NAME));
-    instance.addToCollection(vertex, new CollectionDescription("other", VRE_NAME));
-
-    assertThat(graph.traversal().V(vertex.id())
-                           .and(
-                             __.has(T.label, LabelP.of("test")),
-                             __.has(T.label, LabelP.of("other"))
-                           ).hasNext(),
-      is(true)
-    );
-  }
-
-  @Test
-  public void addCollectionsDuplicatesThePropertiesForANewCollectionType() {
-    Vertex vertex = graph.addVertex();
-
-    CollectionDescription collectionDescription = new CollectionDescription("test", VRE_NAME);
-    instance.addToCollection(vertex, collectionDescription);
-
-    verify(propertyHelper).setCollectionProperties(argThat(is(vertex)), argThat(is(collectionDescription)), any());
-  }
 }

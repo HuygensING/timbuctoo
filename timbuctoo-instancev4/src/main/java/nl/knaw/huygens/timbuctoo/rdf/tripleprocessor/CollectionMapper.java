@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
-import com.fasterxml.jackson.databind.node.TextNode;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -8,13 +7,14 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
@@ -32,30 +32,65 @@ class CollectionMapper {
     this.propertyHelper = propertyHelper;
   }
 
-  public void addToCollection(Vertex vertex, CollectionDescription collectionDescription) {
+  public void addToCollection(Vertex entityVertex, CollectionDescription collectionDescription) {
     final Graph graph = graphWrapper.getGraph();
 
-    if ((Objects.equals(collectionDescription.getEntityTypeName(), "unknown") && isInACollection(vertex)) ||
-      isInCollection(vertex, collectionDescription)) {
+    // If the requested collection is the default collection and the entity is already in a collection: return
+    // If the entity is already in the requested collection: return
+    if ((Objects.equals(collectionDescription.getEntityTypeName(), "unknown") && isInACollection(entityVertex)) ||
+      isInCollection(entityVertex, collectionDescription)) {
       return;
     }
 
     final CollectionDescription defaultCollectionDescription =
       CollectionDescription.getDefault(collectionDescription.getVreName());
 
+    // If the requested collection is NOT the default collection, but the entity is still in the default collection:
+    // remove the entity from the default collection
     if (!Objects.equals(collectionDescription.getEntityTypeName(), "unknown") &&
-      isInCollection(vertex, defaultCollectionDescription)) {
-      removeFromCollection(vertex, defaultCollectionDescription);
+      isInCollection(entityVertex, defaultCollectionDescription)) {
+      removeFromCollection(entityVertex, defaultCollectionDescription);
     }
 
     final Vertex collectionVertex = findOrCreateCollectionVertex(collectionDescription, graph);
+
     addCollectionToVre(collectionDescription, graph, collectionVertex);
-    addEntityVertexToCollection(vertex, graph, collectionVertex);
+
+    final Vertex archetypeVertex = addCollectionToArchetype(graph, collectionVertex);
+
+    if (!isInCollection(entityVertex, new CollectionDescription("concept", "Admin"))) {
+      addEntityVertexToArchetype(entityVertex, archetypeVertex);
+    }
+
+    addEntityVertexToCollection(entityVertex, graph, collectionVertex);
+
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    List<CollectionDescription> collectionDescriptions = addTypesPropertyToEntityVertex(vertex, collectionDescription);
+
+    addTypesPropertyToEntity(entityVertex, collectionDescription, archetypeVertex);
+
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    new AddLabelChangeListener().onUpdate(Optional.empty(), vertex);
-    propertyHelper.setCollectionProperties(vertex, collectionDescription, collectionDescriptions);
+
+    new AddLabelChangeListener().onUpdate(Optional.empty(), entityVertex);
+
+    propertyHelper.setCollectionProperties(entityVertex, collectionDescription,
+      getCollectionDescriptions(entityVertex, collectionDescription.getVreName()));
+  }
+
+  private void addEntityVertexToArchetype(Vertex entityVertex, Vertex archetypeVertex) {
+    archetypeVertex.vertices(Direction.OUT, Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                   .next().addEdge(Collection.HAS_ENTITY_RELATION_NAME, entityVertex);
+
+  }
+
+  private Vertex addCollectionToArchetype(Graph graph, Vertex collectionVertex) {
+    final Vertex archetypeVertex = graph.traversal().V().hasLabel(Vre.DATABASE_LABEL)
+                             .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                             .out(Vre.HAS_COLLECTION_RELATION_NAME)
+                             .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                             .next();
+
+    collectionVertex.addEdge(Collection.HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
+    return archetypeVertex;
   }
 
   public List<CollectionDescription> getCollectionDescriptions(Vertex vertex, String vreName) {
@@ -72,14 +107,16 @@ class CollectionMapper {
       }).toList();
   }
 
-  private List<CollectionDescription> addTypesPropertyToEntityVertex(Vertex vertex,
-                                                                     CollectionDescription collectionDescription) {
-    List<CollectionDescription> collectionDescriptions =
-      getCollectionDescriptions(vertex, collectionDescription.getVreName());
-    final Stream<TextNode> textNodeStream = collectionDescriptions
-      .stream().map(CollectionDescription::getEntityTypeName).map(JsonBuilder::jsn);
-    vertex.property("types", jsnA(textNodeStream).toString());
-    return collectionDescriptions;
+  private void addTypesPropertyToEntity(Vertex vertex, CollectionDescription collectionDescription,
+                                        Vertex archetypeVertex) {
+
+    List<String> entityTypeNames =
+      getCollectionDescriptions(vertex, collectionDescription.getVreName())
+      .stream().map(CollectionDescription::getEntityTypeName).collect(Collectors.toList());
+
+    entityTypeNames.add(archetypeVertex.value(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME));
+
+    vertex.property("types", jsnA(entityTypeNames.stream().map(JsonBuilder::jsn)).toString());
   }
 
 
