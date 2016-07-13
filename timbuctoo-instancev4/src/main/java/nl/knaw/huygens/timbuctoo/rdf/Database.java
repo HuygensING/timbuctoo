@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -10,6 +11,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.time.Clock;
 import java.util.List;
+
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 
 public class Database {
   public static final String RDF_URI_PROP = "rdfUri";
@@ -64,19 +69,22 @@ public class Database {
     Graph graph = graphWrapper.getGraph();
 
     GraphTraversal<Vertex, Vertex> collectionT = graph.traversal().V()
-                                                      .has(T.label, LabelP.of("VRE")).has("name", vreName)
-                                                      .out("hasCollection").has(RDF_URI_PROP, node.getURI());
+                                                      .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+                                                      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+                                                      .out(Vre.HAS_COLLECTION_RELATION_NAME)
+                                                      .has(RDF_URI_PROP, node.getURI());
     Vertex collectionVertex;
     if (collectionT.hasNext()) {
       collectionVertex = collectionT.next();
     } else {
-      collectionVertex = graph.addVertex("collection");
+      collectionVertex = graph.addVertex(DATABASE_LABEL);
       collectionVertex.property(RDF_URI_PROP, node.getURI());
-      collectionVertex.property("entityTypeName", node.getLocalName());
-      collectionVertex.property("collectionName", node.getLocalName() + "s");
+      collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, node.getLocalName());
+      collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, node.getLocalName() + "s");
       Vertex vreVertex = graph.traversal().V()
-                              .has(T.label, LabelP.of("VRE")).has("name", vreName).next();
-      vreVertex.addEdge("hasCollection", collectionVertex);
+                              .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+                              .has(Vre.VRE_NAME_PROPERTY_NAME, vreName).next();
+      vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
     }
 
     return new Collection(vreName, collectionVertex, collectionMapper);
