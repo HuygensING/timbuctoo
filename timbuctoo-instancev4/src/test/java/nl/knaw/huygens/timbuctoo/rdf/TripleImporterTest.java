@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.GraphUtil.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -191,6 +192,40 @@ public class TripleImporterTest {
       .outE()
       .has(RDF_URI_PROP, IS_PART_OF_URI).hasNext(),
       is(true)
+    );
+  }
+
+  @Test
+  public void importTripleShouldAddTheSystemPropertiesToANewRelation() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
+    final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
+
+    instance.importTriple(tripleExtendedIterator.next());
+    assertThat(graphWrapper.getGraph().traversal().E().has(RDF_URI_PROP, IS_PART_OF_URI).next(), likeEdge()
+      .withProperty("rev", 1)
+      .withProperty("isLatest", true)
+      .withProperty("deleted", false)
+      .withProperty("tim_id")
+      .withProperty("created")
+      .withProperty("modified")
+    );
+  }
+
+  @Test
+  public void importTripleShouldAddTheSystemPropertiesToANewEntity() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
+    final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
+
+    instance.importTriple(tripleExtendedIterator.next());
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
+      .withProperty("rev", 1)
+      .withProperty("isLatest", true)
+      .withProperty("deleted", false)
+      .withProperty("tim_id")
+      .withProperty("created")
+      .withProperty("modified")
     );
   }
 
