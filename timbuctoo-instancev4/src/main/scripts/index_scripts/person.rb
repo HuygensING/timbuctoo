@@ -1,10 +1,6 @@
-class Person
+class Person < Hash
 
     @@location = ""
-
-    @@documents = Hash.new
-
-    @@num_found_in_table = 0
 
     @@wanted_properties = [
 	    "_id",
@@ -39,6 +35,9 @@ class Person
 	"hasFinancialSituation",
 	"isMemberOf"
     ]
+    # Don't add "isCreatorOf"; the documents found will in turn search for
+    # "isCreatedBy", and the scripts will only finish with a stack
+    # overflow.
 
     @@new_rel_names = [
 	"relatedLocations_ss",
@@ -53,30 +52,25 @@ class Person
 	"memberships_ss"
     ]
 
-    attr_reader :person
-
-    def initialize obj
-	@person = Hash.new
-	@person['type_s'] = "person"
-	@@wanted_properties.each do |property|
-	    if (property.eql?("birthDate") || property.eql?("deathDate")) && !obj[property].nil?
-		@person[@@new_prop_names[@@wanted_properties.index(property)]] = obj[property].to_i
-	    elsif !obj[property].nil?
-		@person[@@new_prop_names[@@wanted_properties.index(property)]] = obj[property]
+    def initialize data
+	super
+	self["type_s"] = "person"
+	@@wanted_properties.each_with_index do |property,ind|
+	    if !data[property].nil?
+		if (ind==4 || ind==5)
+		    self[@@new_prop_names[ind]] = data[property].to_i
+		else
+		    self[@@new_prop_names[ind]] = data[property]
+		end
 	    end
 	end
-	@person['modified_l'] = obj['^modified']['timeStamp']
-	if !obj['names'].nil?
-	    @person['name_t'] = build_name obj['names']
+	self['modified_l'] = data['^modified']['timeStamp']
+	if !data['names'].nil?
+	    self['name_t'] = build_name(data['names'])
 	end
 
-	build_relations obj
+	build_relations data
 
-#	creator_of = obj['@relations']['isCreatorOf']  if !obj['@relations'].nil?
-#	if !creator_of.nil? && !creator_of.empty?
-#	    languages = find_languages_in_works creator_of
-#	    @person['language_ss'] = languages
-#	end
     end
     
     def build_name names
@@ -108,7 +102,7 @@ class Person
 
     def build_relations data
 	@@new_rel_names.each_with_index do |rel,ind|
-	    @person[rel] = Array.new
+	    self[rel] = Array.new
 	    if !data['@relations'].nil?
 		if ind==0
 		    (0..2).each do |ind_2|
@@ -120,63 +114,25 @@ class Person
 		    add_relation data,rel,ind
 		end
 	    end
-	    @person[rel].uniq!
+	    self[rel].uniq!
 	end
     end
 
     def add_relation data,rel,ind
 	if !data['@relations'][@@wanted_relations[ind]].nil?
 	    data['@relations'][@@wanted_relations[ind]].each do |rt|
-		@person[rel] << rt['displayName']  if rt['accepted']
+		self[rel] << rt['displayName']  if rt['accepted']
 	    end
 	end
     end
 
-    # do not use this function when call to Person.new is from
-    # Document.new !
-    def find_languages_in_works creator_of
-	languages = Array.new
-	creator_of.each do |work|
-	    if @@documents[work['path']].nil?
-		f = open("#{@@location}#{work['path']}", {:read_timeout=>600})
-		line = f.gets
-		result = JSON.parse(line)
-		@@documents[work['path']] = Document.new(result)
-	    else
-		@@num_found_in_table += 1
-	    end
-	    languages += @@documents[work['path']].languages
-	end
-	languages.uniq!
-	return languages
+    def id
+	self['id']
     end
-
-    def [] parameter
-	@person[parameter]
-    end
-
-    def []= parameter, value
-	@person[parameter] = value
-    end
-
 
     def Person.location= location
 	@@location = location
     end
 
-    def Person.all_documents_size
-	@@documents.size
-    end
-
-    def Person.num_found_in_table
-	@@num_found_in_table
-    end
-    
-    def Person.find path
-	f = open("#{@@location}#{path}", {:read_timeout=>600})
-	line = f.gets
-	result = JSON.parse(line)
-	return Person.new(result)
-    end
 end
 
