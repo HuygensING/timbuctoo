@@ -9,17 +9,24 @@ class PropertyHelper {
   public void setCollectionProperties(Vertex vertex, CollectionDescription newCollectionDescription,
                                       List<CollectionDescription> existingCollectionDescriptions) {
     final List<CollectionDescription> allPossibleCollectionDescriptions = new ArrayList<>();
+    final CollectionDescription defaultDesc = CollectionDescription.getDefault(newCollectionDescription.getVreName());
+
     allPossibleCollectionDescriptions.addAll(existingCollectionDescriptions);
-    allPossibleCollectionDescriptions.add(CollectionDescription.getDefault(newCollectionDescription.getVreName()));
+    allPossibleCollectionDescriptions.add(defaultDesc);
 
     vertex.properties().forEachRemaining(prop -> {
       final String unprefixedPropertyName = getUnprefixedPropertyName(prop.key(), allPossibleCollectionDescriptions);
       if (unprefixedPropertyName != null) {
         vertex.property(newCollectionDescription.createPropertyName(unprefixedPropertyName), prop.value());
       }
+      if (hasCollectionPrefix(prop.key(), defaultDesc)) {
+        prop.remove();
+      }
     });
+  }
 
-    // TODO remove any existing properties from unknown.
+  private boolean hasCollectionPrefix(String propertyName, CollectionDescription defaultDesc) {
+    return propertyName.startsWith(defaultDesc.getPrefix() + "_");
   }
 
   private String getUnprefixedPropertyName(String propertyName,

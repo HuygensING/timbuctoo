@@ -269,6 +269,11 @@ public class TripleImporterTest {
       .withProperty(VRE_NAME + TYPE_NAME + "_" + "lat", "30.35")
       .withProperty(VRE_NAME + FICTIONAL_TYPE_NAME + "_" + "lat", "30.35")
     );
+    assertThat(abadanVertex, likeVertex()
+      .withoutProperty(VRE_NAME + "unknown_" + "point")
+      .withoutProperty(VRE_NAME + "unknown_" + "lat")
+    );
+
   }
 
 

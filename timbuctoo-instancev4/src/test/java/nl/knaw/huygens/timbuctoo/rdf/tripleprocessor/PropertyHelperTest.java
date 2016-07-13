@@ -31,4 +31,21 @@ public class PropertyHelperTest {
       .withProperty(newCollectionDescription.createPropertyName("unknownExisting"), "value2"));
   }
 
+  @Test
+  public void setCollectionPropertiesRemovesTheUnknownCollectionProperties() {
+    final String vreName = "vreName";
+    final String entityTypeName = "newCollection";
+    final CollectionDescription newCollectionDescription = new CollectionDescription(entityTypeName, vreName);
+    final List<CollectionDescription> existingCollections = Lists.newArrayList();
+    final Vertex vertex = newGraph().build().addVertex();
+    final String unknownExisting = CollectionDescription.getDefault(vreName).createPropertyName("unknownExisting");
+
+    vertex.property(unknownExisting, "value2");
+
+    new PropertyHelper().setCollectionProperties(vertex, newCollectionDescription, existingCollections);
+
+    assertThat(vertex, likeVertex()
+      .withoutProperty(unknownExisting));
+  }
+
 }
