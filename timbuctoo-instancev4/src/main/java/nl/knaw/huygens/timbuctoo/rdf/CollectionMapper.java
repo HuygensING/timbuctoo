@@ -49,32 +49,43 @@ class CollectionMapper {
     // remove the entity from the default collection
     if (!Objects.equals(collectionDescription.getEntityTypeName(), "unknown") &&
       isInCollection(entityVertex, defaultCollectionDescription)) {
+      // FIXME remove from default collection should be part of Entity's addToCollection
       removeFromCollection(entityVertex, defaultCollectionDescription);
     }
 
+    // BEGIN CREATE COLLECTION
     final Vertex collectionVertex = findOrCreateCollectionVertex(collectionDescription, graph);
     if (!collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME).hasNext()) {
       addCollectionToVre(collectionDescription, graph, collectionVertex);
     }
 
     final Vertex archetypeVertex = addCollectionToArchetype(graph, collectionVertex);
-
+    // END CREATE COLLECTION
+    // BEGIN ADD ENTITY TO ARCHETYPE
     if (!isInCollection(entityVertex, new CollectionDescription("concept", "Admin"))) {
       addEntityVertexToArchetype(entityVertex, archetypeVertex);
     }
-
+    // END ADD ENTITY TO ARCHETYPE
+    // BEGIN ADD ENTITY TO COLLECTION
+    // FIXME use Collection
     addEntityVertexToCollection(entityVertex, graph, collectionVertex);
-
+    // END ADD ENTITY TO COLLECTION
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
 
+    // BEGIN UPDATE ENTITY VERTEX TYPE INFORMATION
+    // FIXME should be part of Entity
     addTypesPropertyToEntity(entityVertex, collectionDescription, archetypeVertex);
 
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
 
+    // FIXME should be part of Entity
     new AddLabelChangeListener().onUpdate(Optional.empty(), entityVertex);
-
+    // END UPDATE ENTITY VERTEX TYPE INFORMATION
+    // Add the properties of the VRE to the newly added collection
     propertyHelper.setCollectionProperties(entityVertex, collectionDescription,
       getCollectionDescriptions(entityVertex, collectionDescription.getVreName()));
+
+    // TODO remove unknown properties?
   }
 
   private void addEntityVertexToArchetype(Vertex entityVertex, Vertex archetypeVertex) {

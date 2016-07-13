@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class PropertyHelper {
+  // Adds the properties of the current Vre to the new Collection
   public void setCollectionProperties(Vertex vertex, CollectionDescription newCollectionDescription,
                                       List<CollectionDescription> existingCollectionDescriptions) {
     final List<CollectionDescription> allPossibleCollectionDescriptions = new ArrayList<>();
