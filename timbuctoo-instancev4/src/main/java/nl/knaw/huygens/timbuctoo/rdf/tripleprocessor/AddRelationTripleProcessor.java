@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 class AddRelationTripleProcessor implements TripleProcessor {
@@ -21,6 +22,7 @@ class AddRelationTripleProcessor implements TripleProcessor {
     final Vertex objectVertex =
       graphUtil.findOrCreateEntityVertex(triple.getObject(), CollectionDescription.getDefault(vreName));
 
-    subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
+    final Edge relationEdge = subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
+    relationEdge.property(GraphUtil.RDF_URI_PROP, triple.getPredicate().getURI());
   }
 }

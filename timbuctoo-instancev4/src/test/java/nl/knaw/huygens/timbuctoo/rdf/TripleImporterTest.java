@@ -161,7 +161,6 @@ public class TripleImporterTest {
     ));
   }
 
-
   @Test
   public void importTripleShouldMapToARelationBetweenTheSubjectAndAnExistingObjectVertex() {
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
@@ -176,6 +175,23 @@ public class TripleImporterTest {
     assertThat(graphWrapper.getGraph().traversal().V().has(
       RDF_URI_PROP, P.within(ABADAN_URI, IRAN_URI)).count().next(),
       is(2L));
+  }
+
+  @Test
+  public void importTripleShouldAddTheRdfUriPropToANewlyCreatedRelation() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
+    final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
+
+    instance.importTriple(tripleExtendedIterator.next());
+
+    assertThat(graphWrapper
+      .getGraph().traversal().V()
+      .has(RDF_URI_PROP, ABADAN_URI)
+      .outE()
+      .has(RDF_URI_PROP, IS_PART_OF_URI).hasNext(),
+      is(true)
+    );
   }
 
   @Test
@@ -402,7 +418,6 @@ public class TripleImporterTest {
       .withoutProperty(VRE_NAME + "unknown_" + "lat")
     );
   }
-
 
   private ExtendedIterator<Triple> createTripleIterator(String tripleString) {
     Model model = createModel(tripleString);
