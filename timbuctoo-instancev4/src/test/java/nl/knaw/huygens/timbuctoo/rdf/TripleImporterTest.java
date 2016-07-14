@@ -38,6 +38,7 @@ public class TripleImporterTest {
   private static final String VRE_NAME = "vreName";
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
+  private static final String ASIA_URI = "http://tl.dbpedia.org/resource/Asia";
   private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
   private static final String IS_PART_OF_NAME = "isPartOf";
   private static final String TYPE_URI = "http://www.opengis.net/gml/_Feature";
@@ -71,6 +72,11 @@ public class TripleImporterTest {
     "<" + ABADAN_URI + "> " +
       "<" + IS_PART_OF_URI + "> " +
       "<" + IRAN_URI + ">";
+  private static final String IRAN_IS_PART_OF_ASIA_TRIPLE =
+    "<" + IRAN_URI + ">" +
+      "<" + IS_PART_OF_URI + "> " +
+      "<" + ASIA_URI + ">";
+
   private GraphWrapper graphWrapper;
 
 
@@ -197,6 +203,25 @@ public class TripleImporterTest {
       is(true)
     );
   }
+
+  @Test
+  public void importTripleShouldAddANewRelationTypeForANewlyCreatedRelation() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final ExtendedIterator<Triple> abadanInIran = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE);
+    final ExtendedIterator<Triple> iranInAsia = createTripleIterator(IRAN_IS_PART_OF_ASIA_TRIPLE);
+
+    instance.importTriple(abadanInIran.next());
+    instance.importTriple(iranInAsia.next());
+
+    assertThat(graphWrapper
+        .getGraph().traversal().V()
+        .hasLabel("relationtype")
+        .has(RDF_URI_PROP, IS_PART_OF_URI)
+        .count().next(),
+      is(1L)
+    );
+  }
+
 
   @Test
   public void importTripleShouldAddTheSystemPropertiesToANewRelation() {
