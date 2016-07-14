@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PR
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
 public class Collection {
@@ -169,7 +171,35 @@ public class Collection {
   }
 
   public void addProperty(Vertex entityVertex, String propName, String value) {
-    entityVertex.property(getDescription().createPropertyName(propName), value);
+    String collectionPropertyName = getDescription().createPropertyName(propName);
+    entityVertex.property(collectionPropertyName, value);
+
+    Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
+
+    addNewPropertyConfig(propName, collectionPropertyName, vertices);
+
+  }
+
+  private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices) {
+
+    if (!isKnownProperty(collectionPropertyName, vertices)) {
+      Vertex propertyConfig = graphWrapper.getGraph().addVertex("property");
+      propertyConfig.property("clientName", propName);
+      propertyConfig.property("dbName", collectionPropertyName);
+      propertyConfig.property("type", "text");
+
+      vertex.addEdge(HAS_PROPERTY_RELATION_NAME, propertyConfig);
+    }
+  }
+
+  private boolean isKnownProperty(String collectionPropertyName, Iterator<Vertex> vertices) {
+    for (; vertices.hasNext(); ) {
+      Vertex relatedProperty = vertices.next();
+      if (Objects.equals(relatedProperty.value("dbName"), collectionPropertyName)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   public String createPropertyName(String propertyName) {
