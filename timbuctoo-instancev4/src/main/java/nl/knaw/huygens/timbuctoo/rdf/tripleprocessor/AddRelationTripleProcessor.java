@@ -23,20 +23,7 @@ class AddRelationTripleProcessor implements TripleProcessor {
     Entity subject = database.findOrCreateEntity(vreName, node);
     Entity object = database.findOrCreateEntity(vreName, triple.getObject());
 
-    nl.knaw.huygens.timbuctoo.rdf.Relation relation = subject.addRelation(triple.getPredicate(), object);
+    subject.addRelation(triple.getPredicate(), object);
 
-    // Node node = triple.getSubject();
-    // final Vertex subjectVertex = database.findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
-    // final Vertex objectVertex =
-    //   database.findOrCreateEntityVertex(triple.getObject(), CollectionDescription.getDefault(vreName));
-    //
-    // final Edge relationEdge = subjectVertex.addEdge(triple.getPredicate().getLocalName(), objectVertex);
-    // relationEdge.property(Database.RDF_URI_PROP, triple.getPredicate().getURI());
-    // systemPropertyModifier.setCreated(relationEdge, "rdf-importer");
-    // systemPropertyModifier.setModified(relationEdge, "rdf-importer");
-    // systemPropertyModifier.setRev(relationEdge, 1);
-    // systemPropertyModifier.setIsDeleted(relationEdge, false);
-    // systemPropertyModifier.setIsLatest(relationEdge, true);
-    // systemPropertyModifier.setTimId(relationEdge);
   }
 }
