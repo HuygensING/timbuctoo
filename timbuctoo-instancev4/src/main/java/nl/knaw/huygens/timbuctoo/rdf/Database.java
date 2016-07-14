@@ -32,7 +32,7 @@ public class Database {
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> existingT = graph.traversal().V()
                                                           .has(RDF_URI_PROP, node.getURI());
-    Collection collection = findOrCreateCollection(collectionDescription.getVreName(), collectionDescription);
+    Collection collection = findOrCreateCollection(collectionDescription);
 
     if (existingT.hasNext()) {
       final Vertex foundVertex = existingT.next();
@@ -64,14 +64,18 @@ public class Database {
 
   public Collection findOrCreateCollection(String vreName, Node node) {
     CollectionDescription collectionDescription = new CollectionDescription(node.getLocalName(), vreName);
-    return findOrCreateCollection(vreName, collectionDescription);
+    return findOrCreateCollection(collectionDescription);
   }
 
-  private Collection findOrCreateCollection(String vreName, CollectionDescription collectionDescription) {
+  private Collection findOrCreateCollection(CollectionDescription collectionDescription) {
     // FIXME search for collection in current VRE
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> colTraversal =
-      graph.traversal().V().has(ENTITY_TYPE_NAME_PROPERTY_NAME,
+      graph.traversal().V()
+           .hasLabel(Vre.DATABASE_LABEL)
+           .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+           .out(Vre.HAS_COLLECTION_RELATION_NAME)
+           .has(ENTITY_TYPE_NAME_PROPERTY_NAME,
         collectionDescription.getEntityTypeName());
 
     Vertex collectionVertex;
@@ -87,16 +91,16 @@ public class Database {
       collectionDescription.getEntityTypeName());
 
     if (!collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME).hasNext()) {
-      addCollectionToVre(collectionDescription, graph, collectionVertex);
+      addCollectionToVre(collectionDescription, collectionVertex);
     }
-    addCollectionToArchetype(graph, collectionVertex);
+    addCollectionToArchetype(collectionVertex);
 
-    return new Collection(vreName, collectionVertex, graphWrapper);
+    return new Collection(collectionDescription.getVreName(), collectionVertex, graphWrapper);
   }
 
-  private Vertex addCollectionToArchetype(Graph graph, Vertex collectionVertex) {
+  private Vertex addCollectionToArchetype(Vertex collectionVertex) {
 
-    final Vertex archetypeVertex = graph.traversal().V().hasLabel(Vre.DATABASE_LABEL)
+    final Vertex archetypeVertex = graphWrapper.getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL)
                                         .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
                                         .out(Vre.HAS_COLLECTION_RELATION_NAME)
                                         .has(
@@ -111,8 +115,8 @@ public class Database {
     return archetypeVertex;
   }
 
-  public void addCollectionToVre(CollectionDescription collectionDescription, Graph graph, Vertex collectionVertex) {
-    Vertex vreVertex = graph.traversal().V()
+  public void addCollectionToVre(CollectionDescription collectionDescription, Vertex collectionVertex) {
+    Vertex vreVertex = graphWrapper.getGraph().traversal().V()
                             .hasLabel(Vre.DATABASE_LABEL)
                             .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
                             .next();
