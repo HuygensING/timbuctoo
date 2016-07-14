@@ -1092,7 +1092,7 @@
       <element ref="svg:animateTransform"/>
       <element ref="svg:color-profile"/>
       <element ref="svg:font-face"/>
-      <!-- should this be done with named child element collectionDescriptions? Especially for modularisation. -->
+      <!-- should this be done with named child element collections? Especially for modularisation. -->
     </choice>
     <attributeGroup ref="svg:stdAttrs"/>
     <attributeGroup ref="svg:testAttrs"/>

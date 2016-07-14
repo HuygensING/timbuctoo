@@ -45,7 +45,7 @@ public class Database {
 
     if (existingT.hasNext()) {
       final Vertex foundVertex = existingT.next();
-      collection.add(foundVertex, getCollectionDescriptions(foundVertex, collectionDescription.getVreName()));
+      collection.add(foundVertex, getCollections(foundVertex, collectionDescription.getVreName()));
       return foundVertex;
     } else {
       Vertex vertex = graph.addVertex();
@@ -58,16 +58,30 @@ public class Database {
       systemPropertyModifier.setIsLatest(vertex, true);
       systemPropertyModifier.setIsDeleted(vertex, false);
 
-      collection.add(vertex, getCollectionDescriptions(vertex, collectionDescription.getVreName()));
+      collection.add(vertex, getCollections(vertex, collectionDescription.getVreName()));
       return vertex;
     }
   }
 
   public Entity findOrCreateEntity(String vreName, Node node) {
-    final Vertex subjectVertex = findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
+    final Vertex vertex = findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    final List<CollectionDescription> collections = getCollectionDescriptions(subjectVertex, vreName);
-    return new Entity(subjectVertex, collections);
+    final List<Collection> collections = getCollections(vertex, vreName);
+    return new Entity(vertex, collections);
+  }
+
+  private List<Collection> getCollections(Vertex vertex, String vreName) {
+    return graphWrapper
+      .getGraph().traversal()
+      .V(vertex.id())
+      .in(nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME)
+      .in(nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .where(
+        __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+      ).map(collectionT -> {
+        return new Collection(vreName, collectionT.get(), graphWrapper);
+      }).toList();
   }
 
   public Collection findOrCreateCollection(String vreName, Node node) {
@@ -160,19 +174,4 @@ public class Database {
                             .next();
     vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
   }
-
-  public List<CollectionDescription> getCollectionDescriptions(Vertex vertex, String vreName) {
-    return graphWrapper
-      .getGraph().traversal()
-      .V(vertex.id())
-      .in(nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME)
-      .in(nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME)
-      .where(
-        __.in(Vre.HAS_COLLECTION_RELATION_NAME)
-          .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-      ).map(collectionT -> {
-        return new CollectionDescription(collectionT.get().value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
-      }).toList();
-  }
-
 }

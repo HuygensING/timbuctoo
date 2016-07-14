@@ -7,21 +7,22 @@ import java.util.List;
 
 public class Entity {
   private final Vertex vertex;
-  private final List<CollectionDescription> collectionDescriptions;
+  private final List<Collection> collections;
 
-  public Entity(Vertex vertex, List<CollectionDescription> collectionDescriptions) {
+  public Entity(Vertex vertex, List<Collection> collections) {
     this.vertex = vertex;
-    this.collectionDescriptions = collectionDescriptions;
+    this.collections = collections;
   }
 
   public void addProperty(String propertyName, String value) {
-    collectionDescriptions.forEach(collectionDescription -> vertex.property(
-      collectionDescription.createPropertyName(propertyName), value));
+    collections.forEach(collection -> collection.addProperty(vertex, propertyName, value));
   }
 
   public void addToCollection(Collection collection) {
-    collectionDescriptions.add(collection.getDescription());
-    collection.add(vertex, collectionDescriptions);
+    collections.add(collection);
+    collection.add(vertex, collections);
+    // TODO remove unknown collection
+    // TODO remove unknown properties
   }
 
   public Relation addRelation(RelationType relationType, Entity other) {

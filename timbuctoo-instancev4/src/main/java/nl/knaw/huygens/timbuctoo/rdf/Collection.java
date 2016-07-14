@@ -25,19 +25,27 @@ public class Collection {
   private final Vertex vertex;
   private final GraphWrapper graphWrapper;
   private final PropertyHelper propertyHelper;
+  private final CollectionDescription collectionDescription;
 
   public Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper) {
+    this(vreName, vertex, graphWrapper,
+      new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName));
+  }
+
+  Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper, CollectionDescription collectionDescription) {
+
     this.vreName = vreName;
     this.vertex = vertex;
     this.graphWrapper = graphWrapper;
+    this.collectionDescription = collectionDescription;
     this.propertyHelper = new PropertyHelper();
   }
 
-  public void add(Vertex entityVertex, List<CollectionDescription> collectionDescriptions) {
+  public void add(Vertex entityVertex, List<Collection> collections) {
     addToCollection(
       entityVertex,
       new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName),
-      collectionDescriptions);
+      collections);
   }
 
   public String getVreName() {
@@ -45,7 +53,7 @@ public class Collection {
   }
 
   public CollectionDescription getDescription() {
-    return new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
+    return collectionDescription;
   }
 
   public Vertex getVertex() {
@@ -53,7 +61,7 @@ public class Collection {
   }
 
   private void addToCollection(Vertex entityVertex, CollectionDescription requestCollection,
-                              List<CollectionDescription> entityCollections) {
+                               List<Collection> entityCollections) {
     final Graph graph = graphWrapper.getGraph();
 
     // If the requested collection is the default collection and the entity is already in a collection: return
@@ -92,7 +100,9 @@ public class Collection {
 
     // BEGIN UPDATE ENTITY VERTEX TYPE INFORMATION
     // FIXME should be part of Entity
-    addTypesPropertyToEntity(entityVertex, archetypeVertex, entityCollections);
+    addTypesPropertyToEntity(entityVertex, archetypeVertex, entityCollections
+      .stream()
+      .map(Collection::getDescription).collect(Collectors.toList()));
 
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
 
@@ -100,7 +110,9 @@ public class Collection {
     new AddLabelChangeListener().onUpdate(Optional.empty(), entityVertex);
     // END UPDATE ENTITY VERTEX TYPE INFORMATION
     // Add the properties of the VRE to the newly added collection
-    propertyHelper.setCollectionProperties(entityVertex, requestCollection, entityCollections);
+    propertyHelper.setCollectionProperties(entityVertex, requestCollection, entityCollections
+      .stream()
+      .map(Collection::getDescription).collect(Collectors.toList()));
 
     // TODO remove unknown properties?
   }
@@ -154,5 +166,13 @@ public class Collection {
     return graphWrapper.getGraph().traversal().V(vertex.id())
                        .in(HAS_ENTITY_RELATION_NAME)
                        .in(HAS_ENTITY_NODE_RELATION_NAME).hasNext();
+  }
+
+  public void addProperty(Vertex entityVertex, String propName, String value) {
+    entityVertex.property(getDescription().createPropertyName(propName), value);
+  }
+
+  public String createPropertyName(String propertyName) {
+    return getDescription().createPropertyName(propertyName);
   }
 }

@@ -19472,14 +19472,14 @@ function toArray(obj) {
   ) : invariant(length === 0 ||
   (length - 1) in obj));
 
-  // Old IE doesn't give collectionDescriptions access to hasOwnProperty. Assume inputs
+  // Old IE doesn't give collections access to hasOwnProperty. Assume inputs
   // without method will throw during the slice call and skip straight to the
   // fallback.
   if (obj.hasOwnProperty) {
     try {
       return Array.prototype.slice.call(obj);
     } catch (e) {
-      // IE < 9 does not support Array#slice on collectionDescriptions objects
+      // IE < 9 does not support Array#slice on collections objects
     }
   }
 
@@ -20544,7 +20544,7 @@ module.exports = warning;
    * Note: overriding `valueOf` may have other implications if you use this object
    * where JavaScript expects a primitive, such as implicit string coercion.
    *
-   * For more complex types, especially collectionDescriptions, implementing `valueOf` may
+   * For more complex types, especially collections, implementing `valueOf` may
    * not be performant. An alternative is to implement `equals` and `hashCode`.
    *
    * `equals` takes another object, presumably of similar type, and returns true
@@ -20566,7 +20566,7 @@ module.exports = warning;
    *       assert( a.hashCode() === b.hashCode() );
    *     }
    *
-   * All Immutable collectionDescriptions implement `equals` and `hashCode`.
+   * All Immutable collections implement `equals` and `hashCode`.
    *
    */
   function is(valueA, valueB) {
