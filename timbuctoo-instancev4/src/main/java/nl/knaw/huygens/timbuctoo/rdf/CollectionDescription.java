@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 class CollectionDescription {
+  public static final String DEFAULT_COLLECTION_NAME = "unknown";
   private final String entityTypeName;
   private final String vreName;
 
@@ -9,16 +10,16 @@ class CollectionDescription {
     this.vreName = vreName;
   }
 
+  public static CollectionDescription getDefault(String vreName) {
+    return new CollectionDescription(DEFAULT_COLLECTION_NAME, vreName);
+  }
+
   public String getEntityTypeName() {
     return entityTypeName;
   }
 
   public String getCollectionName() {
     return entityTypeName + "s";
-  }
-
-  public static CollectionDescription getDefault(String vreName) {
-    return new CollectionDescription("unknown", vreName);
   }
 
   public String createPropertyName(String propertyName) {

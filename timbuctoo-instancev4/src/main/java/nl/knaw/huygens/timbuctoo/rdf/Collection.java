@@ -17,8 +17,8 @@ public class Collection {
 
   public void add(Vertex entityVertex) {
     collectionMapper.addToCollection(entityVertex,
-      new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName)
-    );
+      new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName),
+      vertex);
   }
 
   public String getVreName() {
@@ -27,5 +27,9 @@ public class Collection {
 
   public CollectionDescription getDescription() {
     return new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
+  }
+
+  public Vertex getVertex() {
+    return vertex;
   }
 }

@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -32,7 +31,8 @@ class CollectionMapper {
     this.propertyHelper = propertyHelper;
   }
 
-  public void addToCollection(Vertex entityVertex, CollectionDescription collectionDescription) {
+  public void addToCollection(Vertex entityVertex, CollectionDescription collectionDescription,
+                              Vertex collectionVertex) {
     final Graph graph = graphWrapper.getGraph();
 
     // If the requested collection is the default collection and the entity is already in a collection: return
@@ -54,12 +54,9 @@ class CollectionMapper {
     }
 
     // BEGIN CREATE COLLECTION
-    final Vertex collectionVertex = findOrCreateCollectionVertex(collectionDescription, graph);
-    if (!collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME).hasNext()) {
-      addCollectionToVre(collectionDescription, graph, collectionVertex);
-    }
-
-    final Vertex archetypeVertex = addCollectionToArchetype(graph, collectionVertex);
+    // final Vertex archetypeVertex = addCollectionToArchetype(graph, collectionVertex);
+    final Vertex archetypeVertex =
+      collectionVertex.vertices(Direction.OUT, Collection.HAS_ARCHETYPE_RELATION_NAME).next();
     // END CREATE COLLECTION
     // BEGIN ADD ENTITY TO ARCHETYPE
     if (!isInCollection(entityVertex, new CollectionDescription("concept", "Admin"))) {
@@ -94,18 +91,6 @@ class CollectionMapper {
 
   }
 
-  private Vertex addCollectionToArchetype(Graph graph, Vertex collectionVertex) {
-
-    final Vertex archetypeVertex = graph.traversal().V().hasLabel(Vre.DATABASE_LABEL)
-                                        .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
-                                        .out(Vre.HAS_COLLECTION_RELATION_NAME)
-                                        .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
-                                        .next();
-    if (!collectionVertex.vertices(Direction.OUT, Collection.HAS_ARCHETYPE_RELATION_NAME).hasNext()) {
-      collectionVertex.addEdge(Collection.HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
-    }
-    return archetypeVertex;
-  }
 
   public List<CollectionDescription> getCollectionDescriptions(Vertex vertex, String vreName) {
     return graphWrapper
@@ -140,31 +125,6 @@ class CollectionMapper {
     containerVertex.addEdge(Collection.HAS_ENTITY_RELATION_NAME, vertex);
   }
 
-
-  private void addCollectionToVre(CollectionDescription collectionDescription, Graph graph, Vertex collectionVertex) {
-    Vertex vreVertex = graph.traversal().V()
-                            .hasLabel(Vre.DATABASE_LABEL)
-                            .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
-                            .next();
-    vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
-  }
-
-
-  private Vertex findOrCreateCollectionVertex(CollectionDescription collectionDescription, Graph graph) {
-    Vertex collectionVertex;
-    final GraphTraversal<Vertex, Vertex> colTraversal =
-      graph.traversal().V().has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
-
-    if (colTraversal.hasNext()) {
-      collectionVertex = colTraversal.next();
-    } else {
-      collectionVertex = graph.addVertex(Collection.DATABASE_LABEL);
-    }
-
-    collectionVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
-    collectionVertex.property(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
-    return collectionVertex;
-  }
 
   private void removeFromCollection(Vertex vertex, CollectionDescription collectionDescription) {
     graphWrapper.getGraph().traversal().V(vertex.id()).inE(Collection.HAS_ENTITY_RELATION_NAME)
