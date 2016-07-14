@@ -19,4 +19,8 @@ public class RelationType {
   public String getRdfUri() {
     return relationTypeVertex.value(RDF_URI_PROP);
   }
+
+  public String getTimId() {
+    return relationTypeVertex.value("tim_id");
+  }
 }

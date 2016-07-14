@@ -15,6 +15,11 @@ public class Relation {
     this.edge = edge;
     setSystemProperties();
     setRdfUri(relationType.getRdfUri());
+    setTypeId(relationType.getTimId());
+  }
+
+  private void setTypeId(String timId) {
+    edge.property("typeId", timId);
   }
 
   private void setSystemProperties() {

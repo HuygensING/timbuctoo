@@ -213,13 +213,21 @@ public class TripleImporterTest {
     instance.importTriple(abadanInIran.next());
     instance.importTriple(iranInAsia.next());
 
+    final GraphTraversal<Vertex, Vertex> relationtypeT = graphWrapper
+      .getGraph().traversal().V()
+      .hasLabel("relationtype")
+      .has(RDF_URI_PROP, IS_PART_OF_URI);
+
+    assertThat(relationtypeT.asAdmin().clone().count().next(), is(1L));
+
     assertThat(graphWrapper
-        .getGraph().traversal().V()
-        .hasLabel("relationtype")
+        .getGraph().traversal().E()
         .has(RDF_URI_PROP, IS_PART_OF_URI)
+        .has("typeId", relationtypeT.next().<String>value("tim_id"))
         .count().next(),
-      is(1L)
+      is(2L)
     );
+
   }
 
 
