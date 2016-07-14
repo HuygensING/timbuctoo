@@ -23,6 +23,8 @@ import java.nio.charset.StandardCharsets;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -209,6 +211,31 @@ public class TripleImporterTest {
       .withProperty("tim_id")
       .withProperty("created")
       .withProperty("modified")
+    );
+  }
+
+  @Test
+  public void importTripleShouldAddTheCollectionPropertiesToANewRelation() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
+    final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
+
+    instance.importTriple(tripleExtendedIterator.next());
+    assertThat(graphWrapper.getGraph().traversal().E().has(RDF_URI_PROP, IS_PART_OF_URI).next(), likeEdge()
+      .withProperty(VRE_NAME + "relation_accepted", true)
+      .withProperty("relation_accepted", true)
+    );
+  }
+
+  @Test
+  public void importTripleShouldAddTheTypesPropertyToANewRelation() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
+    final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
+
+    instance.importTriple(tripleExtendedIterator.next());
+    assertThat(graphWrapper.getGraph().traversal().E().has(RDF_URI_PROP, IS_PART_OF_URI).next(), likeEdge()
+      .withProperty("types", jsnA(jsn("relation"), jsn(VRE_NAME + "relation")).toString())
     );
   }
 

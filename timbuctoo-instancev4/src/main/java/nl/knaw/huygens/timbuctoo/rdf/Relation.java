@@ -6,16 +6,19 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import java.time.Clock;
 
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
 public class Relation {
   private final Edge edge;
 
   public Relation(Edge edge, Node node) {
     this.edge = edge;
-    init(edge, node);
+    setSystemProperties();
+    setRdfUri(node.getURI());
   }
 
-  private void init(Edge edge, Node node) {
+  private void setSystemProperties() {
     SystemPropertyModifier systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
 
     systemPropertyModifier.setCreated(edge, "rdf-importer");
@@ -24,6 +27,16 @@ public class Relation {
     systemPropertyModifier.setIsDeleted(edge, false);
     systemPropertyModifier.setIsLatest(edge, true);
     systemPropertyModifier.setTimId(edge);
-    edge.property(RDF_URI_PROP, node.getURI());
+  }
+
+  private void setRdfUri(String uri) {
+    edge.property(RDF_URI_PROP, uri);
+  }
+
+  public void setCommonVreProperties(String vreName) {
+    final String prefixedName = vreName + "relation";
+    edge.property("relation_accepted", true);
+    edge.property(prefixedName + "_accepted", true);
+    edge.property("types", jsnA(jsn("relation"), jsn(prefixedName)).toString());
   }
 }
