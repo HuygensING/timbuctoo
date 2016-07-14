@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.time.Clock;
@@ -12,10 +11,10 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 public class Relation {
   private final Edge edge;
 
-  public Relation(Edge edge, Node node) {
+  public Relation(Edge edge, RelationType relationType) {
     this.edge = edge;
     setSystemProperties();
-    setRdfUri(node.getURI());
+    setRdfUri(relationType.getRdfUri());
   }
 
   private void setSystemProperties() {

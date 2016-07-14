@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -25,9 +24,9 @@ public class Entity {
     collection.add(vertex, collectionDescriptions);
   }
 
-  public Relation addRelation(Node node, Entity other) {
-    Edge edge = vertex.addEdge(node.getLocalName(), other.vertex);
+  public Relation addRelation(RelationType relationType, Entity other) {
+    Edge edge = vertex.addEdge(relationType.getRegularName(), other.vertex);
 
-    return new Relation(edge, node);
+    return new Relation(edge, relationType);
   }
 }

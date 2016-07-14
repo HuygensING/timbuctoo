@@ -22,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createTripleIterator;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -513,15 +514,5 @@ public class TripleImporterTest {
     );
   }
 
-  private ExtendedIterator<Triple> createTripleIterator(String tripleString) {
-    Model model = createModel(tripleString);
-    return model.getGraph().find(Triple.ANY);
-  }
 
-  private Model createModel(String tripleString) {
-    Model model = ModelFactory.createDefaultModel();
-    InputStream in = new ByteArrayInputStream(tripleString.getBytes(StandardCharsets.UTF_8));
-    model.read(in, null, "N3");
-    return model;
-  }
 }

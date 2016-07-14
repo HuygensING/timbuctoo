@@ -105,6 +105,37 @@ public class Database {
     return new Collection(collectionDescription.getVreName(), collectionVertex, graphWrapper);
   }
 
+
+  public RelationType findOrCreateRelationType(Node predicate) {
+    final GraphTraversal<Vertex, Vertex> relationtypeT =
+      graphWrapper.getGraph().traversal().V().hasLabel("relationtype").has(RDF_URI_PROP, predicate.getURI());
+
+    if (relationtypeT.hasNext()) {
+      return new RelationType(relationtypeT.next());
+    }
+
+    final String relationtypePrefix = "relationtype_";
+    final Vertex relationTypeVertex = graphWrapper.getGraph().addVertex("relationtype");
+
+    relationTypeVertex.property(RDF_URI_PROP, predicate.getURI());
+    relationTypeVertex.property("types", "[\"relationtype\"]");
+    relationTypeVertex.property(relationtypePrefix + "targetTypeName", "concept");
+    relationTypeVertex.property(relationtypePrefix + "sourceTypeName", "concept");
+    relationTypeVertex.property(relationtypePrefix + "symmetric", false);
+    relationTypeVertex.property(relationtypePrefix + "reflexive", false);
+    relationTypeVertex.property(relationtypePrefix + "derived", false);
+    relationTypeVertex.property(relationtypePrefix + "regularName", predicate.getLocalName());
+    relationTypeVertex.property(relationtypePrefix + "inverseName", "inverse:" + predicate.getLocalName());
+
+    systemPropertyModifier.setTimId(relationTypeVertex);
+    systemPropertyModifier.setCreated(relationTypeVertex, "rdf-importer");
+    systemPropertyModifier.setModified(relationTypeVertex, "rdf-importer");
+    systemPropertyModifier.setIsLatest(relationTypeVertex, true);
+    systemPropertyModifier.setRev(relationTypeVertex, 1);
+
+    return new RelationType(relationTypeVertex);
+  }
+
   private Vertex addCollectionToArchetype(Vertex collectionVertex) {
 
     final Vertex archetypeVertex = graphWrapper.getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL)
@@ -143,4 +174,5 @@ public class Database {
         return new CollectionDescription(collectionT.get().value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
       }).toList();
   }
+
 }

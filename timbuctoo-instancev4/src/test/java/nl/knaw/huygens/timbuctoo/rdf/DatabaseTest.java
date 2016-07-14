@@ -18,9 +18,13 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION
 import static nl.knaw.huygens.timbuctoo.rdf.CollectionDescription.DEFAULT_COLLECTION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
+import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -31,6 +35,7 @@ public class DatabaseTest {
   public static final String USER_ID = "rdf-importer";
   public static final String TEST_URI = "http://www.example.com/node";
   public static final String VRE_NAME = "vreName";
+  public static final String RELATION_NAME = "relationName";
   private Node node;
   private SystemPropertyModifier modifier;
 
@@ -201,5 +206,68 @@ public class DatabaseTest {
                            .out(HAS_ARCHETYPE_RELATION_NAME)
                            .hasNext(),
       is(true));
+  }
+
+  @Test
+  public void findOrCreateRelationTypeCreatesANewRelationType() {
+    final GraphWrapper graphWrapper = newGraph().wrap();
+    final Database instance = new Database(graphWrapper);
+    final String relationtypePrefix = "relationtype_";
+    final Node mockNode = mock(Node.class);
+    when(mockNode.getURI()).thenReturn(TEST_URI);
+    when(mockNode.getLocalName()).thenReturn(RELATION_NAME);
+
+    final RelationType relationType = instance.findOrCreateRelationType(mockNode);
+
+    assertThat(graphWrapper
+      .getGraph().traversal().V().next(), likeVertex()
+      .withLabel("relationtype")
+      .withProperty("rdfUri", TEST_URI)
+      .withProperty("types", "[\"relationtype\"]")
+      .withProperty(relationtypePrefix + "targetTypeName", "concept")
+      .withProperty(relationtypePrefix + "sourceTypeName", "concept")
+      .withProperty(relationtypePrefix + "symmetric", false)
+      .withProperty(relationtypePrefix + "reflexive", false)
+      .withProperty(relationtypePrefix + "derived", false)
+      .withProperty(relationtypePrefix + "regularName", RELATION_NAME)
+      .withProperty(relationtypePrefix + "inverseName", "inverse:" + RELATION_NAME)
+      .withProperty("rev", 1)
+      .withProperty("isLatest", true)
+      .withProperty("created")
+      .withProperty("modified")
+      .withProperty("tim_id")
+    );
+    assertThat(relationType, allOf(
+      hasProperty("rdfUri", is(TEST_URI)),
+      hasProperty("regularName", is(RELATION_NAME))
+    ));
+  }
+
+  @Test
+  public void findOrCreateRelationTypeReturnsAnExistingRelationType() {
+    final String relationtypePrefix = "relationtype_";
+
+    final GraphWrapper graphWrapper = newGraph().withVertex(v -> v
+      .withLabel("relationtype")
+      .withProperty("rdfUri", TEST_URI)
+      .withProperty("types", "[\"relationtype\"]")
+      .withProperty(relationtypePrefix + "targetTypeName", "concept")
+      .withProperty(relationtypePrefix + "sourceTypeName", "concept")
+      .withProperty(relationtypePrefix + "symmetric", false)
+      .withProperty(relationtypePrefix + "reflexive", false)
+      .withProperty(relationtypePrefix + "derived", false)
+      .withProperty(relationtypePrefix + "regularName", RELATION_NAME)
+      .withProperty(relationtypePrefix + "inverseName", "inverse:" + RELATION_NAME)
+      .withProperty("rev", 1)
+      .withProperty("isLatest", true)
+    ).wrap();
+    final Database instance = new Database(graphWrapper);
+    final Node mockNode = mock(Node.class);
+    when(mockNode.getURI()).thenReturn(TEST_URI);
+    when(mockNode.getLocalName()).thenReturn(RELATION_NAME);
+
+    instance.findOrCreateRelationType(mockNode);
+
+    assertThat(graphWrapper.getGraph().traversal().V().hasLabel("relationtype").count().next(), is(1L));
   }
 }
