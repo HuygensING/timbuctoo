@@ -31,14 +31,12 @@ public class DatabaseTest {
   public static final String USER_ID = "rdf-importer";
   public static final String TEST_URI = "http://www.example.com/node";
   public static final String VRE_NAME = "vreName";
-  private GraphWrapper graphWrapper;
   private Node node;
   private SystemPropertyModifier modifier;
 
 
   @Before
   public void setUp() throws Exception {
-    graphWrapper = newGraph().wrap();
     node = mock(Node.class);
     when(node.getURI()).thenReturn(TEST_URI);
     modifier = mock(SystemPropertyModifier.class);
@@ -63,8 +61,7 @@ public class DatabaseTest {
                                           })
                                           .wrap();
     final CollectionDescription collectionDescription = CollectionDescription.getDefault(VRE_NAME);
-    final CollectionMapper collectionMapper = new CollectionMapper(graphWrapper);
-    final Database instance = new Database(graphWrapper, modifier, collectionMapper);
+    final Database instance = new Database(graphWrapper, modifier);
 
     Vertex vertex = instance.findOrCreateEntityVertex(node, collectionDescription);
 
@@ -95,8 +92,7 @@ public class DatabaseTest {
                                           .withVertex("entityCollection", v -> {
                                           })
                                           .wrap();
-    final CollectionMapper collectionMapper = new CollectionMapper(graphWrapper);
-    final Database instance = new Database(graphWrapper, modifier, collectionMapper);
+    final Database instance = new Database(graphWrapper, modifier);
     final CollectionDescription collectionDescription = CollectionDescription.getDefault(VRE_NAME);
 
     Vertex vertex = instance.findOrCreateEntityVertex(node, collectionDescription);

@@ -8,21 +8,21 @@ import java.util.List;
 
 public class Entity {
   private final Vertex vertex;
-  private final List<CollectionDescription> collections;
+  private final List<CollectionDescription> collectionDescriptions;
 
-  public Entity(Vertex vertex, List<CollectionDescription> collections) {
+  public Entity(Vertex vertex, List<CollectionDescription> collectionDescriptions) {
     this.vertex = vertex;
-    this.collections = collections;
+    this.collectionDescriptions = collectionDescriptions;
   }
 
   public void addProperty(String propertyName, String value) {
-    collections.forEach(collectionDescription -> vertex.property(
+    collectionDescriptions.forEach(collectionDescription -> vertex.property(
       collectionDescription.createPropertyName(propertyName), value));
   }
 
   public void addToCollection(Collection collection) {
-    collections.add(collection.getDescription());
-    collection.add(vertex);
+    collectionDescriptions.add(collection.getDescription());
+    collection.add(vertex, collectionDescriptions);
   }
 
   public Relation addRelation(Node node, Entity other) {
