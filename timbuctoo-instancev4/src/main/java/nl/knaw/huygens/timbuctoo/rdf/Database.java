@@ -13,6 +13,8 @@ import java.time.Clock;
 import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 
 public class Database {
   public static final String RDF_URI_PROP = "rdfUri";
@@ -30,8 +32,15 @@ public class Database {
 
   public Vertex findOrCreateEntityVertex(Node node, CollectionDescription collectionDescription) {
     Graph graph = graphWrapper.getGraph();
-    final GraphTraversal<Vertex, Vertex> existingT = graph.traversal().V()
-                                                          .has(RDF_URI_PROP, node.getURI());
+    final GraphTraversal<Vertex, Vertex> existingT = graph
+      .traversal().V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+      .out(Vre.HAS_COLLECTION_RELATION_NAME)
+      .out(HAS_ENTITY_NODE_RELATION_NAME)
+      .out(HAS_ENTITY_RELATION_NAME)
+      .has(RDF_URI_PROP, node.getURI());
+
     Collection collection = findOrCreateCollection(collectionDescription);
 
     if (existingT.hasNext()) {
@@ -57,8 +66,7 @@ public class Database {
   public Entity findOrCreateEntity(String vreName, Node node) {
     final Vertex subjectVertex = findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    final List<CollectionDescription>
-      collections = getCollectionDescriptions(subjectVertex, vreName);
+    final List<CollectionDescription> collections = getCollectionDescriptions(subjectVertex, vreName);
     return new Entity(subjectVertex, collections);
   }
 
@@ -68,7 +76,6 @@ public class Database {
   }
 
   private Collection findOrCreateCollection(CollectionDescription collectionDescription) {
-    // FIXME search for collection in current VRE
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> colTraversal =
       graph.traversal().V()
