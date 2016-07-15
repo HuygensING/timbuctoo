@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -11,9 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,7 +20,6 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_REL
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 
 
 public class Collection {
@@ -85,56 +80,13 @@ public class Collection {
       isInCollection(entityVertex, requestCollection)) {
       return;
     }
-
-    // BEGIN CREATE COLLECTION
-    final Vertex archetypeVertex =
-      vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next();
-    // END CREATE COLLECTION
-    // BEGIN ADD ENTITY TO ARCHETYPE
-    if (!isInCollection(entityVertex, new CollectionDescription("concept", "Admin"))) {
-      addEntityVertexToArchetype(entityVertex, archetypeVertex);
-    }
-    // END ADD ENTITY TO ARCHETYPE
-    // BEGIN ADD ENTITY TO COLLECTION
-    // FIXME use Collection
     addEntityVertexToCollection(entityVertex, graph, vertex);
-    // END ADD ENTITY TO COLLECTION
-    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
 
-    // BEGIN UPDATE ENTITY VERTEX TYPE INFORMATION
-    // FIXME should be part of Entity
-    addTypesPropertyToEntity(entityVertex, archetypeVertex, entityCollections
-      .stream()
-      .map(Collection::getDescription).collect(Collectors.toList()));
-
-    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-
-    // FIXME should be part of Entity
-    new AddLabelChangeListener().onUpdate(Optional.empty(), entityVertex);
-    // END UPDATE ENTITY VERTEX TYPE INFORMATION
     // Add the properties of the VRE to the newly added collection
+    // TODO should be part of addToCollection of Entity
     propertyHelper.setPropertiesForNewCollection(entityVertex, requestCollection, entityCollections
       .stream()
       .map(Collection::getDescription).collect(Collectors.toList()));
-  }
-
-  private void addTypesPropertyToEntity(Vertex vertex,
-                                        Vertex archetypeVertex,
-                                        List<CollectionDescription> collectionDescriptions) {
-
-    List<String> entityTypeNames = collectionDescriptions
-      .stream().map(CollectionDescription::getEntityTypeName).collect(Collectors.toList());
-
-    entityTypeNames
-      .add(archetypeVertex.value(nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME));
-
-    vertex.property("types", jsnA(entityTypeNames.stream().map(JsonBuilder::jsn)).toString());
-  }
-
-  private void addEntityVertexToArchetype(Vertex entityVertex, Vertex archetypeVertex) {
-    archetypeVertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
-                   .next().addEdge(HAS_ENTITY_RELATION_NAME, entityVertex);
-
   }
 
   private void addEntityVertexToCollection(Vertex vertex, Graph graph, Vertex collectionVertex) {
