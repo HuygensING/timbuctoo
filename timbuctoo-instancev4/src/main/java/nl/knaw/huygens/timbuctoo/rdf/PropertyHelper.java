@@ -7,18 +7,18 @@ import java.util.List;
 
 class PropertyHelper {
   // Adds the properties of the current Vre to the new Collection
-  public void setCollectionProperties(Vertex vertex, CollectionDescription newCollectionDescription,
-                                      List<CollectionDescription> existingCollectionDescriptions) {
+  public void setPropertiesForNewCollection(Vertex entityVertex, CollectionDescription newCollectionDescription,
+                                            List<CollectionDescription> existingCollectionDescriptions) {
     final List<CollectionDescription> allPossibleCollectionDescriptions = new ArrayList<>();
     final CollectionDescription defaultDesc = CollectionDescription.getDefault(newCollectionDescription.getVreName());
 
     allPossibleCollectionDescriptions.addAll(existingCollectionDescriptions);
     allPossibleCollectionDescriptions.add(defaultDesc);
 
-    vertex.properties().forEachRemaining(prop -> {
+    entityVertex.properties().forEachRemaining(prop -> {
       final String unprefixedPropertyName = getUnprefixedPropertyName(prop.key(), allPossibleCollectionDescriptions);
       if (unprefixedPropertyName != null) {
-        vertex.property(newCollectionDescription.createPropertyName(unprefixedPropertyName), prop.value());
+        entityVertex.property(newCollectionDescription.createPropertyName(unprefixedPropertyName), prop.value());
       }
 
     });

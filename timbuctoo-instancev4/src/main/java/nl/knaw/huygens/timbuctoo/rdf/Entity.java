@@ -27,7 +27,12 @@ public class Entity {
   public void addToCollection(Collection collection) {
     collections.add(collection);
     collection.add(vertex, collections);
-    // typesHelper.updateTypeInformation(vertex, collections);
+
+    Collection archetype = collection.getArchetype();
+    collections.add(archetype);
+    archetype.add(vertex, collections);
+
+    typesHelper.updateTypeInformation(vertex, collections);
   }
 
   public Relation addRelation(RelationType relationType, Entity other) {

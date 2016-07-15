@@ -33,6 +33,7 @@ public class Collection {
   private final GraphWrapper graphWrapper;
   private final PropertyHelper propertyHelper;
   private final CollectionDescription collectionDescription;
+  private Collection archetype;
 
   public Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper) {
     this(vreName, vertex, graphWrapper,
@@ -112,7 +113,7 @@ public class Collection {
     new AddLabelChangeListener().onUpdate(Optional.empty(), entityVertex);
     // END UPDATE ENTITY VERTEX TYPE INFORMATION
     // Add the properties of the VRE to the newly added collection
-    propertyHelper.setCollectionProperties(entityVertex, requestCollection, entityCollections
+    propertyHelper.setPropertiesForNewCollection(entityVertex, requestCollection, entityCollections
       .stream()
       .map(Collection::getDescription).collect(Collectors.toList()));
   }
@@ -224,5 +225,12 @@ public class Collection {
   @Override
   public int hashCode() {
     return collectionDescription.hashCode();
+  }
+
+  public Collection getArchetype() {
+    // TODO make field
+    Vertex archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next();
+    archetype = new Collection("Admin", archetypeVertex, graphWrapper);
+    return archetype;
   }
 }

@@ -33,7 +33,7 @@ public class PropertyHelperTest {
     vertex.property(existingCollectionDescription2.createPropertyName("existing_1"), "value1");
     vertex.property(existingCollectionDescription2.createPropertyName("existing_2"), "value2");
 
-    new PropertyHelper().setCollectionProperties(vertex, newCollectionDescription, existingCollections);
+    new PropertyHelper().setPropertiesForNewCollection(vertex, newCollectionDescription, existingCollections);
 
     assertThat(vertex, likeVertex()
       .withProperty(newCollectionDescription.createPropertyName("existing_1"), "value1")
@@ -51,7 +51,7 @@ public class PropertyHelperTest {
     vertex.property(CollectionDescription.getDefault(vreName).createPropertyName("prop1"), "value1");
     vertex.property(CollectionDescription.getDefault(vreName).createPropertyName("prop2"), "value2");
 
-    new PropertyHelper().setCollectionProperties(vertex, newCollectionDescription, existingCollections);
+    new PropertyHelper().setPropertiesForNewCollection(vertex, newCollectionDescription, existingCollections);
 
     assertThat(vertex, likeVertex()
       .withProperty(newCollectionDescription.createPropertyName("prop1"), "value1")

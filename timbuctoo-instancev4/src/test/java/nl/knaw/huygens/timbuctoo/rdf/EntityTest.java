@@ -17,6 +17,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 public class EntityTest {
@@ -35,12 +36,13 @@ public class EntityTest {
     verify(collection2).addProperty(vertex, propName, value);
   }
 
-  @Ignore
   @Test
   @SuppressWarnings("unchecked")
   public void addToCollectionAddsTheEntityToTheCollection() {
     Vertex vertex = mock(Vertex.class);
     Collection newCollection = mock(Collection.class);
+    Collection archetypeCollection = mock(Collection.class);
+    when(newCollection.getArchetype()).thenReturn(archetypeCollection);
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(otherCollection);
     TypesHelper typesHelper = mock(TypesHelper.class);
@@ -49,21 +51,17 @@ public class EntityTest {
     instance.addToCollection(newCollection);
 
     verify(newCollection).add(argThat(is(vertex)), any());
-    assertThat(collections, containsInAnyOrder(newCollection, otherCollection));
+    verify(archetypeCollection).add(argThat(is(vertex)), any());
+    assertThat(collections, containsInAnyOrder(newCollection, otherCollection, archetypeCollection));
     ArgumentCaptor<Set> collectionsCaptor = ArgumentCaptor.forClass(Set.class);
     verify(typesHelper).updateTypeInformation(argThat(is(vertex)), (Set<Collection>) collectionsCaptor.capture());
-    assertThat((Set<Collection>) collectionsCaptor.getValue(), containsInAnyOrder(otherCollection, newCollection));
+    assertThat((Set<Collection>) collectionsCaptor.getValue(),
+      containsInAnyOrder(otherCollection, newCollection, archetypeCollection));
   }
 
   @Ignore
   @Test
   public void addToCollectionAddsTheCurrentPropertiesOfTheEntityToTheNewCollection() {
-    fail("Yet to be implemented");
-  }
-
-  @Ignore
-  @Test
-  public void addToCollectionAddsTheEntityToTheArchetypeOfTheCollection() {
     fail("Yet to be implemented");
   }
 
