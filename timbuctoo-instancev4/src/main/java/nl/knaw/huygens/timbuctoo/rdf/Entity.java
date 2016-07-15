@@ -9,30 +9,33 @@ public class Entity {
   private final Vertex vertex;
   private final Set<Collection> collections;
   private final TypesHelper typesHelper;
+  private final PropertyHelper propertyHelper;
 
   public Entity(Vertex vertex, Set<Collection> collections) {
-    this(vertex, collections, new TypesHelper());
+    this(vertex, collections, new TypesHelper(), new PropertyHelper());
   }
 
-  Entity(Vertex vertex, Set<Collection> collections, TypesHelper typesHelper) {
+  Entity(Vertex vertex, Set<Collection> collections, TypesHelper typesHelper, PropertyHelper propertyHelper) {
     this.vertex = vertex;
     this.collections = collections;
     this.typesHelper = typesHelper;
+    this.propertyHelper = propertyHelper;
   }
 
   public void addProperty(String propertyName, String value) {
     collections.forEach(collection -> collection.addProperty(vertex, propertyName, value));
   }
 
-  public void addToCollection(Collection collection) {
-    collections.add(collection);
-    collection.add(vertex, collections);
+  public void addToCollection(Collection newCollection) {
+    collections.add(newCollection);
+    newCollection.add(vertex, collections);
 
-    Collection archetype = collection.getArchetype();
+    Collection archetype = newCollection.getArchetype();
     collections.add(archetype);
     archetype.add(vertex, collections);
 
     typesHelper.updateTypeInformation(vertex, collections);
+    propertyHelper.setPropertiesForNewCollection(vertex, newCollection, collections);
   }
 
   public Relation addRelation(RelationType relationType, Entity other) {

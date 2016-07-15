@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.collect.Sets;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -12,7 +11,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
@@ -46,7 +44,7 @@ public class EntityTest {
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(otherCollection);
     TypesHelper typesHelper = mock(TypesHelper.class);
-    Entity instance = new Entity(vertex, collections, typesHelper);
+    Entity instance = new Entity(vertex, collections, typesHelper, mock(PropertyHelper.class));
 
     instance.addToCollection(newCollection);
 
@@ -59,10 +57,21 @@ public class EntityTest {
       containsInAnyOrder(otherCollection, newCollection, archetypeCollection));
   }
 
-  @Ignore
   @Test
   public void addToCollectionAddsTheCurrentPropertiesOfTheEntityToTheNewCollection() {
-    fail("Yet to be implemented");
+    Vertex vertex = mock(Vertex.class);
+    Collection newCollection = mock(Collection.class);
+    Collection archetypeCollection = mock(Collection.class);
+    when(newCollection.getArchetype()).thenReturn(archetypeCollection);
+    Collection otherCollection = mock(Collection.class);
+    Set<Collection> collections = Sets.newHashSet(otherCollection);
+    PropertyHelper propertyHelper = mock(PropertyHelper.class);
+    TypesHelper typesHelper = mock(TypesHelper.class);
+    Entity instance = new Entity(vertex, collections, typesHelper, propertyHelper);
+
+    instance.addToCollection(newCollection);
+
+    verify(propertyHelper).setPropertiesForNewCollection(vertex, newCollection, collections);
   }
 
   @Test

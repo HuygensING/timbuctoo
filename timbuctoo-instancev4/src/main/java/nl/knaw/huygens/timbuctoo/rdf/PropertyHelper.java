@@ -4,25 +4,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 class PropertyHelper {
-  // Adds the properties of the current Vre to the new Collection
-  public void setPropertiesForNewCollection(Vertex entityVertex, CollectionDescription newCollectionDescription,
-                                            List<CollectionDescription> existingCollectionDescriptions) {
-    final List<CollectionDescription> allPossibleCollectionDescriptions = new ArrayList<>();
-    final CollectionDescription defaultDesc = CollectionDescription.getDefault(newCollectionDescription.getVreName());
-
-    allPossibleCollectionDescriptions.addAll(existingCollectionDescriptions);
-    allPossibleCollectionDescriptions.add(defaultDesc);
-
-    entityVertex.properties().forEachRemaining(prop -> {
-      final String unprefixedPropertyName = getUnprefixedPropertyName(prop.key(), allPossibleCollectionDescriptions);
-      if (unprefixedPropertyName != null) {
-        entityVertex.property(newCollectionDescription.createPropertyName(unprefixedPropertyName), prop.value());
-      }
-
-    });
-  }
 
   private boolean hasCollectionPrefix(String propertyName, CollectionDescription defaultDesc) {
     return propertyName.startsWith(defaultDesc.getPrefix() + "_");
@@ -44,6 +29,25 @@ class PropertyHelper {
       if (hasCollectionPrefix(prop.key(), collectionToRemove)) {
         prop.remove();
       }
+    });
+  }
+
+  public void setPropertiesForNewCollection(Vertex vertex, Collection newCollection, Set<Collection> collections) {
+    CollectionDescription newCollectionDescription = newCollection.getDescription();
+    final List<CollectionDescription> allPossibleCollectionDescriptions = new ArrayList<>();
+    final CollectionDescription defaultDesc = CollectionDescription.getDefault(newCollectionDescription.getVreName());
+
+    allPossibleCollectionDescriptions.addAll(
+      collections.stream().map(Collection::getDescription).collect(Collectors.toList()));
+
+    allPossibleCollectionDescriptions.add(defaultDesc);
+
+    vertex.properties().forEachRemaining(prop -> {
+      final String unprefixedPropertyName = getUnprefixedPropertyName(prop.key(), allPossibleCollectionDescriptions);
+      if (unprefixedPropertyName != null) {
+        vertex.property(newCollectionDescription.createPropertyName(unprefixedPropertyName), prop.value());
+      }
+
     });
   }
 }

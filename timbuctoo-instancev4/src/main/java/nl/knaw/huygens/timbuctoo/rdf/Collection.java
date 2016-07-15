@@ -11,7 +11,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
@@ -82,11 +81,6 @@ public class Collection {
     }
     addEntityVertexToCollection(entityVertex, graph, vertex);
 
-    // Add the properties of the VRE to the newly added collection
-    // TODO should be part of addToCollection of Entity
-    propertyHelper.setPropertiesForNewCollection(entityVertex, requestCollection, entityCollections
-      .stream()
-      .map(Collection::getDescription).collect(Collectors.toList()));
   }
 
   private void addEntityVertexToCollection(Vertex vertex, Graph graph, Vertex collectionVertex) {
