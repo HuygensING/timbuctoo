@@ -15,12 +15,15 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
+
 
 public class Collection {
   private final String vreName;
@@ -183,12 +186,18 @@ public class Collection {
   private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices) {
 
     if (!isKnownProperty(collectionPropertyName, vertices)) {
-      Vertex propertyConfig = graphWrapper.getGraph().addVertex("property");
-      propertyConfig.property("clientName", propName);
-      propertyConfig.property("dbName", collectionPropertyName);
-      propertyConfig.property("type", "text");
+      Vertex newPropertyConfig = graphWrapper.getGraph().addVertex("property");
+      newPropertyConfig.property("clientName", propName);
+      newPropertyConfig.property("dbName", collectionPropertyName);
+      newPropertyConfig.property("type", "text");
 
-      vertex.addEdge(HAS_PROPERTY_RELATION_NAME, propertyConfig);
+      vertex.addEdge(HAS_PROPERTY_RELATION_NAME, newPropertyConfig);
+      if (!vertex.edges(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME).hasNext()) {
+        vertex.addEdge(HAS_INITIAL_PROPERTY_RELATION_NAME, newPropertyConfig);
+      } else {
+        Vertex lastProperty = getLastProperty();
+        lastProperty.addEdge(HAS_NEXT_PROPERTY_RELATION_NAME, newPropertyConfig);
+      }
     }
   }
 
@@ -202,7 +211,11 @@ public class Collection {
     return false;
   }
 
-  public String createPropertyName(String propertyName) {
-    return getDescription().createPropertyName(propertyName);
+  private Vertex getLastProperty() {
+    return graphWrapper.getGraph().traversal().V(vertex.id())
+                       .out(HAS_INITIAL_PROPERTY_RELATION_NAME)
+                       .until(__.not(__.outE(HAS_NEXT_PROPERTY_RELATION_NAME)))
+                       .repeat(__.out(HAS_NEXT_PROPERTY_RELATION_NAME))
+                       .next();
   }
 }

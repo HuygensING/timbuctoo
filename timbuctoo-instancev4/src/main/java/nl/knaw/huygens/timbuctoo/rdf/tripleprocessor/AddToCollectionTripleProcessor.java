@@ -17,5 +17,7 @@ class AddToCollectionTripleProcessor implements TripleProcessor {
     Entity entity = database.findOrCreateEntity(vreName, triple.getSubject());
     Collection collection = database.findOrCreateCollection(vreName, triple.getObject());
     entity.addToCollection(collection);
+
+    // TODO remove default collection from vertex
   }
 }
