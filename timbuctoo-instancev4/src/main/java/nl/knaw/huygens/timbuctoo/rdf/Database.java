@@ -48,7 +48,7 @@ public class Database {
 
     if (existingT.hasNext()) {
       final Vertex foundVertex = existingT.next();
-      collection.add(foundVertex, getCollections(foundVertex, collectionDescription.getVreName()));
+      collection.add(foundVertex);
       return foundVertex;
     } else {
       Vertex vertex = graph.addVertex();
@@ -61,7 +61,7 @@ public class Database {
       systemPropertyModifier.setIsLatest(vertex, true);
       systemPropertyModifier.setIsDeleted(vertex, false);
 
-      collection.add(vertex, getCollections(vertex, collectionDescription.getVreName()));
+      collection.add(vertex);
       return vertex;
     }
   }
@@ -113,10 +113,8 @@ public class Database {
       collectionVertex = graph.addVertex(DATABASE_LABEL);
     }
 
-    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME,
-      collectionDescription.getCollectionName());
-    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME,
-      collectionDescription.getEntityTypeName());
+    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
+    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
 
     if (!collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME).hasNext()) {
       addCollectionToVre(collectionDescription, collectionVertex);
@@ -159,17 +157,15 @@ public class Database {
 
   private Vertex addCollectionToArchetype(Vertex collectionVertex) {
 
-    final Vertex archetypeVertex = graphWrapper.getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL)
-                                               .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
-                                               .out(Vre.HAS_COLLECTION_RELATION_NAME)
-                                               .has(
-                                                 ENTITY_TYPE_NAME_PROPERTY_NAME,
-                                                 "concept")
-                                               .next();
-    if (!collectionVertex
-      .vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext()) {
-      collectionVertex
-        .addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
+    final Vertex archetypeVertex = graphWrapper
+      .getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+      .out(Vre.HAS_COLLECTION_RELATION_NAME)
+      .has(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+      .next();
+
+    if (!collectionVertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext()) {
+      collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
     }
     return archetypeVertex;
   }

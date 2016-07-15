@@ -28,11 +28,11 @@ public class Entity {
 
   public void addToCollection(Collection newCollection) {
     collections.add(newCollection);
-    newCollection.add(vertex, collections);
+    newCollection.add(vertex);
 
     Collection archetype = newCollection.getArchetype();
     collections.add(archetype);
-    archetype.add(vertex, collections);
+    archetype.add(vertex);
 
     typesHelper.updateTypeInformation(vertex, collections);
     propertyHelper.setPropertiesForNewCollection(vertex, newCollection, collections);

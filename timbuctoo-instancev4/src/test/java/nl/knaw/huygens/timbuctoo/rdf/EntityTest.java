@@ -48,8 +48,8 @@ public class EntityTest {
 
     instance.addToCollection(newCollection);
 
-    verify(newCollection).add(argThat(is(vertex)), any());
-    verify(archetypeCollection).add(argThat(is(vertex)), any());
+    verify(newCollection).add(argThat(is(vertex)));
+    verify(archetypeCollection).add(argThat(is(vertex)));
     assertThat(collections, containsInAnyOrder(newCollection, otherCollection, archetypeCollection));
     ArgumentCaptor<Set> collectionsCaptor = ArgumentCaptor.forClass(Set.class);
     verify(typesHelper).updateTypeInformation(argThat(is(vertex)), (Set<Collection>) collectionsCaptor.capture());

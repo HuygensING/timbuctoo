@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -12,9 +11,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
 import java.util.Objects;
-import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_ENTITIES_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
@@ -44,6 +43,7 @@ public class Collection {
   // Use for testing only
   Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper,
              CollectionDescription collectionDescription, PropertyHelper propertyHelper) {
+
     this.vreName = vreName;
     this.vertex = vertex;
     this.graphWrapper = graphWrapper;
@@ -52,11 +52,46 @@ public class Collection {
 
   }
 
-  public void add(Vertex entityVertex, Set<Collection> collections) {
-    addToCollection(
-      entityVertex,
-      collectionDescription,
-      collections);
+  public void add(Vertex entityVertex) {
+    // If the requested collection is the default collection and the entity is already in a collection: return
+    // If the entity is already in the requested collection: return
+    if ((collectionDescription.equals(CollectionDescription.getDefault(vreName)) && isInACollection(entityVertex)) ||
+      isInCollection(entityVertex, collectionDescription)) {
+
+      return;
+    }
+
+    Vertex containerVertex = graphWrapper.getGraph().addVertex(COLLECTION_ENTITIES_LABEL);
+    vertex.addEdge(HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
+    containerVertex.addEdge(HAS_ENTITY_RELATION_NAME, entityVertex);
+  }
+
+  public void remove(Vertex entityVertex) {
+    GraphTraversal<Vertex, Edge> edgeToRemove =
+      graphWrapper.getGraph().traversal().V(vertex.id()).out(HAS_ENTITY_NODE_RELATION_NAME)
+                  .outE(HAS_ENTITY_RELATION_NAME).where(__.inV().hasId(entityVertex.id()));
+    if (edgeToRemove.hasNext()) {
+      edgeToRemove.next().remove();
+      propertyHelper.removeProperties(entityVertex, collectionDescription);
+    }
+  }
+
+
+  public void addProperty(Vertex entityVertex, String propName, String value) {
+    String collectionPropertyName = getDescription().createPropertyName(propName);
+    entityVertex.property(collectionPropertyName, value);
+
+    Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
+
+    addNewPropertyConfig(propName, collectionPropertyName, vertices);
+
+  }
+
+  public Collection getArchetype() {
+    // TODO make field
+    Vertex archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next();
+    archetype = new Collection("Admin", archetypeVertex, graphWrapper);
+    return archetype;
   }
 
   public String getVreName() {
@@ -71,25 +106,6 @@ public class Collection {
     return vertex;
   }
 
-  private void addToCollection(Vertex entityVertex, CollectionDescription requestCollection,
-                               Set<Collection> entityCollections) {
-    final Graph graph = graphWrapper.getGraph();
-
-    // If the requested collection is the default collection and the entity is already in a collection: return
-    // If the entity is already in the requested collection: return
-    if ((Objects.equals(requestCollection.getEntityTypeName(), "unknown") && isInACollection(entityVertex)) ||
-      isInCollection(entityVertex, requestCollection)) {
-      return;
-    }
-    addEntityVertexToCollection(entityVertex, graph, vertex);
-
-  }
-
-  private void addEntityVertexToCollection(Vertex vertex, Graph graph, Vertex collectionVertex) {
-    Vertex containerVertex = graph.addVertex(nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_ENTITIES_LABEL);
-    collectionVertex.addEdge(HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
-    containerVertex.addEdge(HAS_ENTITY_RELATION_NAME, vertex);
-  }
 
   private boolean isInCollection(Vertex vertex, CollectionDescription collectionDescription) {
     return graphWrapper.getGraph().traversal().V(vertex.id())
@@ -103,16 +119,6 @@ public class Collection {
     return graphWrapper.getGraph().traversal().V(vertex.id())
                        .in(HAS_ENTITY_RELATION_NAME)
                        .in(HAS_ENTITY_NODE_RELATION_NAME).hasNext();
-  }
-
-  public void addProperty(Vertex entityVertex, String propName, String value) {
-    String collectionPropertyName = getDescription().createPropertyName(propName);
-    entityVertex.property(collectionPropertyName, value);
-
-    Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
-
-    addNewPropertyConfig(propName, collectionPropertyName, vertices);
-
   }
 
   private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices) {
@@ -151,16 +157,6 @@ public class Collection {
                        .next();
   }
 
-  public void remove(Vertex entityVertex) {
-    GraphTraversal<Vertex, Edge> edgeToRemove =
-      graphWrapper.getGraph().traversal().V(vertex.id()).out(HAS_ENTITY_NODE_RELATION_NAME)
-                  .outE(HAS_ENTITY_RELATION_NAME).where(__.inV().hasId(entityVertex.id()));
-    if (edgeToRemove.hasNext()) {
-      edgeToRemove.next().remove();
-      propertyHelper.removeProperties(entityVertex, collectionDescription);
-    }
-  }
-
   @Override
   public boolean equals(Object obj) {
     if (obj instanceof Collection) {
@@ -173,12 +169,5 @@ public class Collection {
   @Override
   public int hashCode() {
     return collectionDescription.hashCode();
-  }
-
-  public Collection getArchetype() {
-    // TODO make field
-    Vertex archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next();
-    archetype = new Collection("Admin", archetypeVertex, graphWrapper);
-    return archetype;
   }
 }
