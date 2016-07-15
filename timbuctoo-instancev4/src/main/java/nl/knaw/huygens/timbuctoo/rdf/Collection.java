@@ -57,7 +57,7 @@ public class Collection {
   public void add(Vertex entityVertex, List<Collection> collections) {
     addToCollection(
       entityVertex,
-      new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName),
+      collectionDescription,
       collections);
   }
 
@@ -85,7 +85,6 @@ public class Collection {
     }
 
     // BEGIN CREATE COLLECTION
-    // final Vertex archetypeVertex = addCollectionToArchetype(graph, collectionVertex);
     final Vertex archetypeVertex =
       vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next();
     // END CREATE COLLECTION
@@ -115,8 +114,6 @@ public class Collection {
     propertyHelper.setCollectionProperties(entityVertex, requestCollection, entityCollections
       .stream()
       .map(Collection::getDescription).collect(Collectors.toList()));
-
-    // TODO remove unknown properties?
   }
 
   private void addTypesPropertyToEntity(Vertex vertex,

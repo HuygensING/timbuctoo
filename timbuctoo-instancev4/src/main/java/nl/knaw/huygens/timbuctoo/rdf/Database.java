@@ -12,7 +12,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.time.Clock;
 import java.util.List;
 
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 
@@ -74,8 +77,8 @@ public class Database {
     return graphWrapper
       .getGraph().traversal()
       .V(vertex.id())
-      .in(nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME)
-      .in(nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME)
+      .in(HAS_ENTITY_RELATION_NAME)
+      .in(HAS_ENTITY_NODE_RELATION_NAME)
       .where(
         __.in(Vre.HAS_COLLECTION_RELATION_NAME)
           .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
@@ -101,16 +104,16 @@ public class Database {
            .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
            .out(Vre.HAS_COLLECTION_RELATION_NAME)
            .has(ENTITY_TYPE_NAME_PROPERTY_NAME,
-        collectionDescription.getEntityTypeName());
+             collectionDescription.getEntityTypeName());
 
     Vertex collectionVertex;
     if (colTraversal.hasNext()) {
       collectionVertex = colTraversal.next();
     } else {
-      collectionVertex = graph.addVertex(nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL);
+      collectionVertex = graph.addVertex(DATABASE_LABEL);
     }
 
-    collectionVertex.property(nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME,
+    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME,
       collectionDescription.getCollectionName());
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME,
       collectionDescription.getEntityTypeName());
@@ -157,25 +160,25 @@ public class Database {
   private Vertex addCollectionToArchetype(Vertex collectionVertex) {
 
     final Vertex archetypeVertex = graphWrapper.getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL)
-                                        .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
-                                        .out(Vre.HAS_COLLECTION_RELATION_NAME)
-                                        .has(
-                                          ENTITY_TYPE_NAME_PROPERTY_NAME,
-                                          "concept")
-                                        .next();
+                                               .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                                               .out(Vre.HAS_COLLECTION_RELATION_NAME)
+                                               .has(
+                                                 ENTITY_TYPE_NAME_PROPERTY_NAME,
+                                                 "concept")
+                                               .next();
     if (!collectionVertex
-      .vertices(Direction.OUT, nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME).hasNext()) {
+      .vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).hasNext()) {
       collectionVertex
-        .addEdge(nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
+        .addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
     }
     return archetypeVertex;
   }
 
   public void addCollectionToVre(CollectionDescription collectionDescription, Vertex collectionVertex) {
     Vertex vreVertex = graphWrapper.getGraph().traversal().V()
-                            .hasLabel(Vre.DATABASE_LABEL)
-                            .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
-                            .next();
+                                   .hasLabel(Vre.DATABASE_LABEL)
+                                   .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+                                   .next();
     vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
   }
 
