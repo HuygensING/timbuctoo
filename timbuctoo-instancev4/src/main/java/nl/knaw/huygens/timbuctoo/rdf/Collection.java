@@ -40,11 +40,18 @@ public class Collection {
 
   // Use for testing only
   Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper, CollectionDescription collectionDescription) {
+    this(vreName, vertex, graphWrapper, collectionDescription, new PropertyHelper());
+  }
+
+  // Use for testing only
+  Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper,
+             CollectionDescription collectionDescription, PropertyHelper propertyHelper) {
     this.vreName = vreName;
     this.vertex = vertex;
     this.graphWrapper = graphWrapper;
     this.collectionDescription = collectionDescription;
-    this.propertyHelper = new PropertyHelper();
+    this.propertyHelper = propertyHelper;
+
   }
 
   public void add(Vertex entityVertex, List<Collection> collections) {
@@ -203,6 +210,7 @@ public class Collection {
                   .outE(HAS_ENTITY_RELATION_NAME).where(__.inV().hasId(entityVertex.id()));
     if (edgeToRemove.hasNext()) {
       edgeToRemove.next().remove();
+      propertyHelper.removeProperties(entityVertex, collectionDescription);
     }
   }
 

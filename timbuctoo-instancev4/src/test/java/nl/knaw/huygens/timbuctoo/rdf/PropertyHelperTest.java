@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.rdf.CollectionDescription;
-import nl.knaw.huygens.timbuctoo.rdf.PropertyHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -11,6 +9,7 @@ import java.util.List;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 public class PropertyHelperTest {
 
@@ -61,19 +60,21 @@ public class PropertyHelperTest {
   }
 
   @Test
-  public void setCollectionPropertiesRemovesTheUnknownCollectionProperties() {
+  public void removeRemovesAllThePropertiesStartingWithThePrefixOfTheCollectionDescription() {
     final String vreName = "vreName";
-    final String entityTypeName = "newCollection";
-    final CollectionDescription newCollectionDescription = new CollectionDescription(entityTypeName, vreName);
-    final List<CollectionDescription> existingCollections = Lists.newArrayList(newCollectionDescription);
+    final CollectionDescription descriptionToRemove = new CollectionDescription("collection", vreName);
+    final CollectionDescription otherDescription = new CollectionDescription("otherEntity", vreName);
     final Vertex vertex = newGraph().build().addVertex();
-    final String unknownExisting = CollectionDescription.getDefault(vreName).createPropertyName("unknownExisting");
-    vertex.property(unknownExisting, "value2");
+    vertex.property(descriptionToRemove.createPropertyName("prop1"), "value1");
+    vertex.property(descriptionToRemove.createPropertyName("prop2"), "value2");
+    String otherCollectionProp1 = otherDescription.createPropertyName("prop1");
+    vertex.property(otherCollectionProp1, "value2");
+    String otherCollectionProp2 = otherDescription.createPropertyName("prop2");
+    vertex.property(otherCollectionProp2, "value2");
+    PropertyHelper instance = new PropertyHelper();
 
-    new PropertyHelper().setCollectionProperties(vertex, newCollectionDescription, existingCollections);
+    instance.removeProperties(vertex, descriptionToRemove);
 
-    assertThat(vertex, likeVertex()
-      .withoutProperty(unknownExisting));
+    assertThat(vertex.keys(), containsInAnyOrder(otherCollectionProp1, otherCollectionProp2));
   }
-
 }

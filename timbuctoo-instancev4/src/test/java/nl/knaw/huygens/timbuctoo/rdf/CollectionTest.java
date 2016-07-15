@@ -162,12 +162,35 @@ public class CollectionTest {
                 .wrap();
     Vertex collectionVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of("collection")).next();
     Vertex entityVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of("entity")).next();
-    Collection instance = new Collection(VRE_NAME, collectionVertex, graphWrapper);
+    Collection instance = new Collection(VRE_NAME, collectionVertex, graphWrapper, mock(CollectionDescription.class),
+      mock(PropertyHelper.class));
 
     instance.remove(entityVertex);
 
     assertThat(graphWrapper.getGraph().traversal().V(collectionVertex.id()).out(HAS_ENTITY_NODE_RELATION_NAME)
                            .out(HAS_ENTITY_RELATION_NAME).hasId(entityVertex.id()).hasNext(), is(false));
+  }
+
+  @Test
+  public void removeRemovesTheCollectionPropertiesFromTheVertex() {
+    GraphWrapper graphWrapper =
+      newGraph().withVertex("collection", v -> v.withLabel(DATABASE_LABEL)
+                                                .withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "entityNode")
+                                                .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, ENTITY_NAME)
+                                                .withProperty(COLLECTION_NAME_PROPERTY_NAME, COLLECTION_NAME))
+                .withVertex("entityNode", v -> v.withOutgoingRelation(HAS_ENTITY_RELATION_NAME, "entity"))
+                .withVertex("entity", v -> v.withLabel("entity"))
+                .wrap();
+    Vertex collectionVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of("collection")).next();
+    Vertex entityVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of("entity")).next();
+    CollectionDescription description = new CollectionDescription(ENTITY_NAME, VRE_NAME);
+    PropertyHelper propertyHelper = mock(PropertyHelper.class);
+    Collection instance = new Collection(VRE_NAME, collectionVertex, graphWrapper, description, propertyHelper);
+
+    instance.remove(entityVertex);
+
+
+    verify(propertyHelper).removeProperties(entityVertex, description);
   }
 
   @Test
@@ -197,7 +220,7 @@ public class CollectionTest {
     CollectionDescription description = new CollectionDescription(ENTITY_NAME, VRE_NAME);
     Collection sameCollection1 = new Collection(null, null, null, description);
     Collection sameCollection2 = new Collection(null, null, null, description);
-    Collection otherCollection = new Collection(null, null, null,  new CollectionDescription("otherEntity", VRE_NAME));
+    Collection otherCollection = new Collection(null, null, null, new CollectionDescription("otherEntity", VRE_NAME));
 
     assertThat(sameCollection1, is(equalTo(sameCollection2)));
     assertThat(sameCollection1, not(is((equalTo(otherCollection)))));

@@ -20,9 +20,7 @@ class PropertyHelper {
       if (unprefixedPropertyName != null) {
         vertex.property(newCollectionDescription.createPropertyName(unprefixedPropertyName), prop.value());
       }
-      if (hasCollectionPrefix(prop.key(), defaultDesc)) {
-        prop.remove();
-      }
+
     });
   }
 
@@ -32,7 +30,7 @@ class PropertyHelper {
 
   private String getUnprefixedPropertyName(String propertyName,
                                            List<CollectionDescription> allPossibleCollectionDescriptions) {
-    for (CollectionDescription collectionDescription: allPossibleCollectionDescriptions) {
+    for (CollectionDescription collectionDescription : allPossibleCollectionDescriptions) {
       final String prefix = collectionDescription.getPrefix() + "_";
       if (propertyName.startsWith(prefix)) {
         return propertyName.replaceFirst("^" + prefix, "");
@@ -41,5 +39,11 @@ class PropertyHelper {
     return null;
   }
 
-
+  public void removeProperties(Vertex entityVertex, CollectionDescription collectionToRemove) {
+    entityVertex.properties().forEachRemaining(prop -> {
+      if (hasCollectionPrefix(prop.key(), collectionToRemove)) {
+        prop.remove();
+      }
+    });
+  }
 }
