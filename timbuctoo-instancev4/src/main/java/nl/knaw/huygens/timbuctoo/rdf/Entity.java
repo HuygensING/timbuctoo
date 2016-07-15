@@ -21,13 +21,16 @@ public class Entity {
   public void addToCollection(Collection collection) {
     collections.add(collection);
     collection.add(vertex, collections);
-    // TODO remove unknown collection
-    // TODO remove unknown properties
   }
 
   public Relation addRelation(RelationType relationType, Entity other) {
     Edge edge = vertex.addEdge(relationType.getRegularName(), other.vertex);
 
     return new Relation(edge, relationType);
+  }
+
+  public void removeFromCollection(Collection collection) {
+    collection.remove(vertex);
+    collections.remove(collection);
   }
 }

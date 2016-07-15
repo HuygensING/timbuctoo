@@ -15,9 +15,11 @@ class AddToCollectionTripleProcessor implements TripleProcessor {
   @Override
   public void process(Triple triple, String vreName) {
     Entity entity = database.findOrCreateEntity(vreName, triple.getSubject());
+
     Collection collection = database.findOrCreateCollection(vreName, triple.getObject());
     entity.addToCollection(collection);
 
-    // TODO remove default collection from vertex
+    Collection defaultCollection = database.getDefaultCollection(vreName);
+    entity.removeFromCollection(defaultCollection);
   }
 }

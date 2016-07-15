@@ -1,11 +1,12 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -37,8 +38,8 @@ public class Collection {
       new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName));
   }
 
+  // Use for testing only
   Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper, CollectionDescription collectionDescription) {
-
     this.vreName = vreName;
     this.vertex = vertex;
     this.graphWrapper = graphWrapper;
@@ -74,17 +75,6 @@ public class Collection {
     if ((Objects.equals(requestCollection.getEntityTypeName(), "unknown") && isInACollection(entityVertex)) ||
       isInCollection(entityVertex, requestCollection)) {
       return;
-    }
-
-    final CollectionDescription defaultCollectionDescription =
-      CollectionDescription.getDefault(requestCollection.getVreName());
-
-    // If the requested collection is NOT the default collection, but the entity is still in the default collection:
-    // remove the entity from the default collection
-    if (!Objects.equals(requestCollection.getEntityTypeName(), "unknown") &&
-      isInCollection(entityVertex, defaultCollectionDescription)) {
-      // FIXME remove from default collection should be part of Entity's addToCollection
-      removeFromCollection(entityVertex, defaultCollectionDescription);
     }
 
     // BEGIN CREATE COLLECTION
@@ -147,18 +137,6 @@ public class Collection {
     containerVertex.addEdge(HAS_ENTITY_RELATION_NAME, vertex);
   }
 
-
-  private void removeFromCollection(Vertex vertex, CollectionDescription collectionDescription) {
-    graphWrapper.getGraph().traversal().V(vertex.id()).inE(HAS_ENTITY_RELATION_NAME)
-                .where(
-                  __.outV().in(HAS_ENTITY_NODE_RELATION_NAME)
-                    .has(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName())
-                    .in(Vre.HAS_COLLECTION_RELATION_NAME)
-                    .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
-                )
-                .next().remove();
-  }
-
   private boolean isInCollection(Vertex vertex, CollectionDescription collectionDescription) {
     return graphWrapper.getGraph().traversal().V(vertex.id())
                        .in(HAS_ENTITY_RELATION_NAME)
@@ -217,5 +195,28 @@ public class Collection {
                        .until(__.not(__.outE(HAS_NEXT_PROPERTY_RELATION_NAME)))
                        .repeat(__.out(HAS_NEXT_PROPERTY_RELATION_NAME))
                        .next();
+  }
+
+  public void remove(Vertex entityVertex) {
+    GraphTraversal<Vertex, Edge> edgeToRemove =
+      graphWrapper.getGraph().traversal().V(vertex.id()).out(HAS_ENTITY_NODE_RELATION_NAME)
+                  .outE(HAS_ENTITY_RELATION_NAME).where(__.inV().hasId(entityVertex.id()));
+    if (edgeToRemove.hasNext()) {
+      edgeToRemove.next().remove();
+    }
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj instanceof Collection) {
+      Collection other = (Collection) obj;
+      return Objects.equals(collectionDescription, other.collectionDescription);
+    }
+    return false;
+  }
+
+  @Override
+  public int hashCode() {
+    return collectionDescription.hashCode();
   }
 }

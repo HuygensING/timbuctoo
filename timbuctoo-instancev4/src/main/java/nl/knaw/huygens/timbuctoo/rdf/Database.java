@@ -84,6 +84,10 @@ public class Database {
       }).toList();
   }
 
+  public Collection getDefaultCollection(String vreName) {
+    return findOrCreateCollection(CollectionDescription.getDefault(vreName));
+  }
+
   public Collection findOrCreateCollection(String vreName, Node node) {
     CollectionDescription collectionDescription = new CollectionDescription(node.getLocalName(), vreName);
     return findOrCreateCollection(collectionDescription);
@@ -174,4 +178,6 @@ public class Database {
                             .next();
     vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
   }
+
+
 }
