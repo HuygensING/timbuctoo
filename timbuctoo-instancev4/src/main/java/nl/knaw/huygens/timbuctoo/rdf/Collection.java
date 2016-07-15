@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
@@ -54,7 +55,7 @@ public class Collection {
 
   }
 
-  public void add(Vertex entityVertex, List<Collection> collections) {
+  public void add(Vertex entityVertex, Set<Collection> collections) {
     addToCollection(
       entityVertex,
       collectionDescription,
@@ -74,7 +75,7 @@ public class Collection {
   }
 
   private void addToCollection(Vertex entityVertex, CollectionDescription requestCollection,
-                               List<Collection> entityCollections) {
+                               Set<Collection> entityCollections) {
     final Graph graph = graphWrapper.getGraph();
 
     // If the requested collection is the default collection and the entity is already in a collection: return

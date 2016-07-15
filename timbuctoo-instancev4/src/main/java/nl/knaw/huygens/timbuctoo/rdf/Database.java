@@ -10,7 +10,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.time.Clock;
-import java.util.List;
+import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
@@ -66,17 +66,10 @@ public class Database {
     }
   }
 
-  public Entity findOrCreateEntity(String vreName, Node node) {
-    final Vertex vertex = findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
-    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    final List<Collection> collections = getCollections(vertex, vreName);
-    return new Entity(vertex, collections);
-  }
-
-  private List<Collection> getCollections(Vertex vertex, String vreName) {
-    return graphWrapper
+  private Set<Collection> getCollections(Vertex foundVertex, String vreName) {
+    Set<Collection> collections = graphWrapper
       .getGraph().traversal()
-      .V(vertex.id())
+      .V(foundVertex.id())
       .in(HAS_ENTITY_RELATION_NAME)
       .in(HAS_ENTITY_NODE_RELATION_NAME)
       .where(
@@ -84,7 +77,14 @@ public class Database {
           .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
       ).map(collectionT -> {
         return new Collection(vreName, collectionT.get(), graphWrapper);
-      }).toList();
+      }).toSet();
+    return collections;
+  }
+
+  public Entity findOrCreateEntity(String vreName, Node node) {
+    final Vertex vertex = findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
+    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
+    return new Entity(vertex, getCollections(vertex, CollectionDescription.getDefault(vreName).getVreName()));
   }
 
   public Collection getDefaultCollection(String vreName) {
