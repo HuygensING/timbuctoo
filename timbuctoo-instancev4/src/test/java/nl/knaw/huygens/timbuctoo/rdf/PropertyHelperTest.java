@@ -10,7 +10,9 @@ import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class PropertyHelperTest {
@@ -41,10 +43,8 @@ public class PropertyHelperTest {
 
     new PropertyHelper().setPropertiesForNewCollection(vertex, newCollection, existingCollections);
 
-    assertThat(vertex, likeVertex()
-      .withProperty(newCollectionDescription.createPropertyName("existing_1"), "value1")
-      .withProperty(newCollectionDescription.createPropertyName("existing_2"), "value2")
-    );
+    verify(newCollection, atLeastOnce()).addProperty(vertex, "existing_1", "value1");
+    verify(newCollection, atLeastOnce()).addProperty(vertex, "existing_2", "value2");
   }
 
   @Test
@@ -62,11 +62,11 @@ public class PropertyHelperTest {
 
     propertyHelper.setPropertiesForNewCollection(vertex, newCollection, existingCollections);
 
-    assertThat(vertex, likeVertex()
-      .withProperty(newCollectionDescription.createPropertyName("prop1"), "value1")
-      .withProperty(newCollectionDescription.createPropertyName("prop2"), "value2")
-    );
+    verify(newCollection).addProperty(vertex, "prop1", "value1");
+    verify(newCollection).addProperty(vertex, "prop2", "value2");
   }
+
+
 
   @Test
   public void removeRemovesAllThePropertiesStartingWithThePrefixOfTheCollectionDescription() {

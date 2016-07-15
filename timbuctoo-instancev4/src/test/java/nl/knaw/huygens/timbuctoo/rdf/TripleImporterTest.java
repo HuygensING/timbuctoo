@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -31,6 +32,7 @@ import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
@@ -519,6 +521,36 @@ public class TripleImporterTest {
       .withProperty(VRE_NAME + TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
       .withProperty(VRE_NAME + FICTIONAL_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
     );
+  }
+
+  @Test
+  public void importTripleShouldAddPropertyConfigurationsForAllCollections() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+    final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(abadanIsAFictionalFeature);
+    instance.importTriple(abadanHasPoint);
+
+    final GraphTraversal<Vertex, Vertex> propT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI)
+                                                           .in(Collection.HAS_ENTITY_RELATION_NAME)
+                                                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                                                           .out(Collection.HAS_PROPERTY_RELATION_NAME);
+
+    assertThat(propT.asAdmin().clone().count().next(), is(2L));
+
+    assertThat(propT.toList(), containsInAnyOrder(
+      likeVertex()
+        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, VRE_NAME + TYPE_NAME + "_point")
+        .withProperty(LocalProperty.CLIENT_PROPERTY_NAME, "point")
+        .withProperty(LocalProperty.PROPERTY_TYPE_NAME, "text"),
+      likeVertex()
+        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, VRE_NAME + FICTIONAL_TYPE_NAME + "_point")
+        .withProperty(LocalProperty.CLIENT_PROPERTY_NAME, "point")
+        .withProperty(LocalProperty.PROPERTY_TYPE_NAME, "text")
+    ));
   }
 
   @Test

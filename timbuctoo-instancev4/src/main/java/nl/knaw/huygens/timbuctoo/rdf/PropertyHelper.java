@@ -9,6 +9,33 @@ import java.util.stream.Collectors;
 
 class PropertyHelper {
 
+  public void removeProperties(Vertex entityVertex, CollectionDescription collectionToRemove) {
+    entityVertex.properties().forEachRemaining(prop -> {
+      if (hasCollectionPrefix(prop.key(), collectionToRemove)) {
+        prop.remove();
+      }
+    });
+  }
+
+  public void setPropertiesForNewCollection(Vertex entityVertex, Collection newCollection,
+                                            Set<Collection> collections) {
+    CollectionDescription newCollectionDescription = newCollection.getDescription();
+    final List<CollectionDescription> allPossibleCollectionDescriptions = new ArrayList<>();
+    final CollectionDescription defaultDesc = CollectionDescription.getDefault(newCollectionDescription.getVreName());
+
+    allPossibleCollectionDescriptions.addAll(
+      collections.stream().map(Collection::getDescription).collect(Collectors.toList()));
+
+    allPossibleCollectionDescriptions.add(defaultDesc);
+
+    entityVertex.properties().forEachRemaining(prop -> {
+      final String unprefixedPropertyName = getUnprefixedPropertyName(prop.key(), allPossibleCollectionDescriptions);
+      if (unprefixedPropertyName != null) {
+        newCollection.addProperty(entityVertex, unprefixedPropertyName, (String) prop.value());
+      }
+    });
+  }
+
   private boolean hasCollectionPrefix(String propertyName, CollectionDescription defaultDesc) {
     return propertyName.startsWith(defaultDesc.getPrefix() + "_");
   }
@@ -22,32 +49,5 @@ class PropertyHelper {
       }
     }
     return null;
-  }
-
-  public void removeProperties(Vertex entityVertex, CollectionDescription collectionToRemove) {
-    entityVertex.properties().forEachRemaining(prop -> {
-      if (hasCollectionPrefix(prop.key(), collectionToRemove)) {
-        prop.remove();
-      }
-    });
-  }
-
-  public void setPropertiesForNewCollection(Vertex vertex, Collection newCollection, Set<Collection> collections) {
-    CollectionDescription newCollectionDescription = newCollection.getDescription();
-    final List<CollectionDescription> allPossibleCollectionDescriptions = new ArrayList<>();
-    final CollectionDescription defaultDesc = CollectionDescription.getDefault(newCollectionDescription.getVreName());
-
-    allPossibleCollectionDescriptions.addAll(
-      collections.stream().map(Collection::getDescription).collect(Collectors.toList()));
-
-    allPossibleCollectionDescriptions.add(defaultDesc);
-
-    vertex.properties().forEachRemaining(prop -> {
-      final String unprefixedPropertyName = getUnprefixedPropertyName(prop.key(), allPossibleCollectionDescriptions);
-      if (unprefixedPropertyName != null) {
-        vertex.property(newCollectionDescription.createPropertyName(unprefixedPropertyName), prop.value());
-      }
-
-    });
   }
 }
