@@ -29,6 +29,7 @@ public class RdfImporter {
       // TODO: each new triple should be committed
       tripleImporter::importTriple
     );
+    graphWrapper.getGraph().tx().commit();
   }
 
 }

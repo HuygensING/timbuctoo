@@ -172,6 +172,12 @@ public class DatabaseTest {
                            .out(Vre.HAS_COLLECTION_RELATION_NAME).has(RDF_URI_PROP, rdfUri)
                            .hasNext(),
       is(true));
+    assertThat(graphWrapper.getGraph().traversal().V()
+                           .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+                           .out(Vre.HAS_COLLECTION_RELATION_NAME).has(RDF_URI_PROP, rdfUri)
+                           .out(HAS_ENTITY_NODE_RELATION_NAME)
+                           .hasNext(),
+      is(true));
   }
 
   @Test

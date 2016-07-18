@@ -12,6 +12,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.time.Clock;
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_ENTITIES_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
@@ -111,16 +112,19 @@ public class Database {
       collectionVertex = colTraversal.next();
     } else {
       collectionVertex = graph.addVertex(DATABASE_LABEL);
+      collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
+      collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
+      collectionVertex.property(RDF_URI_PROP, collectionDescription.getRdfUri());
+
+      Vertex containerVertex = graphWrapper.getGraph().addVertex(COLLECTION_ENTITIES_LABEL);
+      collectionVertex.addEdge(HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
+
+      if (!collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME).hasNext()) {
+        addCollectionToVre(collectionDescription, collectionVertex);
+      }
+      addCollectionToArchetype(collectionVertex);
     }
 
-    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
-    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
-    collectionVertex.property(RDF_URI_PROP, collectionDescription.getRdfUri());
-
-    if (!collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME).hasNext()) {
-      addCollectionToVre(collectionDescription, collectionVertex);
-    }
-    addCollectionToArchetype(collectionVertex);
 
     return new Collection(collectionDescription.getVreName(), collectionVertex, graphWrapper);
   }
