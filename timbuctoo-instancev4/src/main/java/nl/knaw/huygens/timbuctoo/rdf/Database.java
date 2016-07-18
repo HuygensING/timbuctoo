@@ -66,6 +66,12 @@ public class Database {
     }
   }
 
+  public Entity findOrCreateEntity(String vreName, Node node) {
+    final Vertex vertex = findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
+    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
+    return new Entity(vertex, getCollections(vertex, CollectionDescription.getDefault(vreName).getVreName()));
+  }
+
   private Set<Collection> getCollections(Vertex foundVertex, String vreName) {
     Set<Collection> collections = graphWrapper
       .getGraph().traversal()
@@ -81,18 +87,13 @@ public class Database {
     return collections;
   }
 
-  public Entity findOrCreateEntity(String vreName, Node node) {
-    final Vertex vertex = findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
-    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    return new Entity(vertex, getCollections(vertex, CollectionDescription.getDefault(vreName).getVreName()));
-  }
-
   public Collection getDefaultCollection(String vreName) {
     return findOrCreateCollection(CollectionDescription.getDefault(vreName));
   }
 
   public Collection findOrCreateCollection(String vreName, Node node) {
-    CollectionDescription collectionDescription = new CollectionDescription(node.getLocalName(), vreName);
+    CollectionDescription collectionDescription =
+      new CollectionDescription(node.getLocalName(), vreName, node.getURI());
     return findOrCreateCollection(collectionDescription);
   }
 
@@ -103,8 +104,7 @@ public class Database {
            .hasLabel(Vre.DATABASE_LABEL)
            .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
            .out(Vre.HAS_COLLECTION_RELATION_NAME)
-           .has(ENTITY_TYPE_NAME_PROPERTY_NAME,
-             collectionDescription.getEntityTypeName());
+           .has(RDF_URI_PROP, collectionDescription.getRdfUri());
 
     Vertex collectionVertex;
     if (colTraversal.hasNext()) {
@@ -115,6 +115,7 @@ public class Database {
 
     collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
+    collectionVertex.property(RDF_URI_PROP, collectionDescription.getRdfUri());
 
     if (!collectionVertex.vertices(Direction.IN, Vre.HAS_COLLECTION_RELATION_NAME).hasNext()) {
       addCollectionToVre(collectionDescription, collectionVertex);
