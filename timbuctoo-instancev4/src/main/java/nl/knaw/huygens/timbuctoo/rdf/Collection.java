@@ -102,7 +102,7 @@ public class Collection {
   public Collection getArchetype() {
     // TODO make field
     Vertex archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next();
-    archetype = new Collection("Admin", archetypeVertex, graphWrapper);
+    archetype = new Collection("Admin", archetypeVertex, graphWrapper, CollectionDescription.getAdmin(archetypeVertex));
     return archetype;
   }
 

@@ -9,37 +9,57 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PR
 
 
 class CollectionDescription {
-  public static final String DEFAULT_COLLECTION_NAME = "unknown";
   public static final String RDF_URI_PREFIX = "https://repository.huygens.knaw.nl";
+  private static final String DEFAULT_COLLECTION_NAME = "unknown";
   private final String entityTypeName;
   private final String vreName;
   private final String rdfUri;
 
-  public CollectionDescription(String entityTypeName, String vreName) {
-    this(entityTypeName, vreName, createRdfUri(entityTypeName));
-  }
-
-  private static String createRdfUri(String entityTypeName) {
-    return String.format("%s/%s", RDF_URI_PREFIX, entityTypeName);
-  }
-
-  public CollectionDescription(String entityTypeName, String vreName, String rdfUri) {
+  private CollectionDescription(String entityTypeName, String vreName, String rdfUri) {
     this.entityTypeName = entityTypeName;
     this.vreName = vreName;
     this.rdfUri = rdfUri;
   }
 
   public static CollectionDescription getDefault(String vreName) {
-    return new CollectionDescription(DEFAULT_COLLECTION_NAME, vreName);
+    return createCollectionDescription(DEFAULT_COLLECTION_NAME, vreName);
   }
 
   public static CollectionDescription fromVertex(String vreName, Vertex vertex) {
     VertexProperty<String> rdfUri = vertex.property(Database.RDF_URI_PROP);
-    if(rdfUri.isPresent()){
-      return new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName, rdfUri.value());
+    if (rdfUri.isPresent()) {
+      return createCollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName, rdfUri.value());
     }
-    return new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
+    return createCollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
   }
+
+
+  public static CollectionDescription createCollectionDescription(String entityTypeName, String vreName) {
+    String prefixedEntityTypeName = createEntityTypeName(entityTypeName, vreName);
+    return createCollectionDescription(
+      prefixedEntityTypeName,
+      vreName,
+      createRdfUri(prefixedEntityTypeName));
+  }
+
+  public static CollectionDescription createCollectionDescription(String entityTypeName, String vreName,
+                                                                  String rdfUri) {
+    return new CollectionDescription(createEntityTypeName(entityTypeName, vreName), vreName, rdfUri);
+  }
+
+  public static CollectionDescription getAdmin(Vertex archetypeVertex) {
+    String entityTypeName = archetypeVertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+    return new CollectionDescription(entityTypeName, "Admin", createRdfUri(entityTypeName));
+  }
+
+  private static String createEntityTypeName(String entityTypeName, String vreName) {
+    return entityTypeName.startsWith(vreName) ? entityTypeName : vreName + entityTypeName;
+  }
+
+  private static String createRdfUri(String entityTypeName) {
+    return String.format("%s/%s", RDF_URI_PREFIX, entityTypeName);
+  }
+
 
   public String getEntityTypeName() {
     return entityTypeName;
@@ -58,7 +78,7 @@ class CollectionDescription {
   }
 
   public String getPrefix() {
-    return vreName + getEntityTypeName();
+    return getEntityTypeName();
   }
 
   @Override
@@ -72,7 +92,9 @@ class CollectionDescription {
   }
 
   public String getRdfUri() {
-    return rdfUri ;
+    return rdfUri;
   }
+
+
 }
 

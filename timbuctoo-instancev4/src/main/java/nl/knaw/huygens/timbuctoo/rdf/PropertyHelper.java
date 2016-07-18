@@ -36,8 +36,8 @@ class PropertyHelper {
     });
   }
 
-  private boolean hasCollectionPrefix(String propertyName, CollectionDescription defaultDesc) {
-    return propertyName.startsWith(defaultDesc.getPrefix() + "_");
+  private boolean hasCollectionPrefix(String propertyName, CollectionDescription collectionDescription) {
+    return propertyName.startsWith(collectionDescription.getPrefix() + "_");
   }
 
   private String getUnprefixedPropertyName(String propertyName,

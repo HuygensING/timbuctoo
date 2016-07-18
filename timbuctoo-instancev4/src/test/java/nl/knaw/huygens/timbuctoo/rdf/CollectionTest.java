@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -195,7 +193,7 @@ public class CollectionTest {
                 .wrap();
     Vertex collectionVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of("collection")).next();
     Vertex entityVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of("entity")).next();
-    CollectionDescription description = new CollectionDescription(ENTITY_NAME, VRE_NAME);
+    CollectionDescription description = CollectionDescription.createCollectionDescription(ENTITY_NAME, VRE_NAME);
     PropertyHelper propertyHelper = mock(PropertyHelper.class);
     Collection instance = new Collection(VRE_NAME, collectionVertex, graphWrapper, description, propertyHelper);
 
@@ -229,7 +227,7 @@ public class CollectionTest {
 
   @Test
   public void constructorCreatesADisplayNameConfigurationIfNotPresent() {
-    CollectionDescription description = new CollectionDescription(ENTITY_NAME, VRE_NAME);
+    CollectionDescription description = CollectionDescription.createCollectionDescription(ENTITY_NAME, VRE_NAME);
 
     final Vertex vertex = mock(Vertex.class);
     final Iterator vertices = mock(Iterator.class);
@@ -248,7 +246,7 @@ public class CollectionTest {
 
   @Test
   public void constructorDoesNotCreateADisplayNameConfigurationIfPresent() {
-    CollectionDescription description = new CollectionDescription(ENTITY_NAME, VRE_NAME);
+    CollectionDescription description = CollectionDescription.createCollectionDescription(ENTITY_NAME, VRE_NAME);
 
     final Vertex vertex = mock(Vertex.class);
     final Iterator vertices = mock(Iterator.class);
@@ -264,7 +262,7 @@ public class CollectionTest {
 
   @Test
   public void equalsReturnsTrueIfTheCollectionDescriptionsAreEqual() {
-    CollectionDescription description = new CollectionDescription(ENTITY_NAME, VRE_NAME);
+    CollectionDescription description = CollectionDescription.createCollectionDescription(ENTITY_NAME, VRE_NAME);
 
     final Vertex vertex = mock(Vertex.class);
     final Iterator vertices = mock(Iterator.class);
@@ -273,7 +271,7 @@ public class CollectionTest {
     Collection sameCollection1 = new Collection(null, vertex, newGraph().wrap(), description);
     Collection sameCollection2 = new Collection(null, vertex, newGraph().wrap(), description);
     Collection otherCollection = new Collection(null,
-      vertex, newGraph().wrap(), new CollectionDescription("otherEntity", VRE_NAME));
+      vertex, newGraph().wrap(), CollectionDescription.createCollectionDescription("otherEntity", VRE_NAME));
 
     assertThat(sameCollection1, is(equalTo(sameCollection2)));
     assertThat(sameCollection1, not(is((equalTo(otherCollection)))));

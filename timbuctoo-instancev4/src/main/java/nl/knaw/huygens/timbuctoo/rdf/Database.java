@@ -93,7 +93,7 @@ public class Database {
 
   public Collection findOrCreateCollection(String vreName, Node node) {
     CollectionDescription collectionDescription =
-      new CollectionDescription(node.getLocalName(), vreName, node.getURI());
+      CollectionDescription.createCollectionDescription(node.getLocalName(), vreName, node.getURI());
     return findOrCreateCollection(collectionDescription);
   }
 

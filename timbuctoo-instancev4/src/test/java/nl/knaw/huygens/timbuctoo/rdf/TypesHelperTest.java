@@ -36,9 +36,11 @@ public class TypesHelperTest {
   public void updateTypeInformationGeneratesANewTypesPropertyFromTheCollections() throws Exception {
     Vertex vertex = mock(Vertex.class);
     Collection collection1 = mock(Collection.class);
-    when(collection1.getDescription()).thenReturn(new CollectionDescription("entityTypeName", "vreName"));
+    CollectionDescription desc1 = CollectionDescription.createCollectionDescription("entityTypeName", "vreName");
+    when(collection1.getDescription()).thenReturn(desc1);
     Collection collection2 = mock(Collection.class);
-    when(collection2.getDescription()).thenReturn(new CollectionDescription("otherEntityType", "vreName"));
+    CollectionDescription desc2 = CollectionDescription.createCollectionDescription("otherEntityType", "vreName");
+    when(collection2.getDescription()).thenReturn(desc2);
 
     instance.updateTypeInformation(vertex, Sets.newHashSet(collection1, collection2));
 
@@ -46,16 +48,17 @@ public class TypesHelperTest {
     verify(vertex).property(argThat(is("types")), typesCaptor.capture());
     List<String> typesList = new ObjectMapper().readValue(typesCaptor.getValue(), new TypeReference<List<String>>() {
     });
-    // TODO Check if archetype is added
-    assertThat(typesList, containsInAnyOrder("entityTypeName", "otherEntityType"));
+    assertThat(typesList, containsInAnyOrder(desc1.getEntityTypeName(), desc2.getEntityTypeName()));
   }
 
   @Test
   public void updateTypeInformationUpdatesTheLabels() {
     Collection collection1 = mock(Collection.class);
-    when(collection1.getDescription()).thenReturn(new CollectionDescription("entityTypeName", "vreName"));
+    when(collection1.getDescription()).thenReturn(
+      CollectionDescription.createCollectionDescription("entityTypeName", "vreName"));
     Collection collection2 = mock(Collection.class);
-    when(collection2.getDescription()).thenReturn(new CollectionDescription("otherEntityType", "vreName"));
+    when(collection2.getDescription()).thenReturn(
+      CollectionDescription.createCollectionDescription("otherEntityType", "vreName"));
 
     Vertex vertex = mock(Vertex.class);
 
@@ -63,6 +66,4 @@ public class TypesHelperTest {
 
     verify(labelChangeListener).onUpdate(Optional.empty(), vertex);
   }
-
-
 }

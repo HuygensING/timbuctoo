@@ -11,7 +11,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -80,11 +79,31 @@ public class EntityTest {
     Collection collectionToRemoveFrom = mock(Collection.class);
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(collectionToRemoveFrom, otherCollection);
-    Entity entity = new Entity(vertex, collections);
+    TypesHelper typesHelper = mock(TypesHelper.class);
+    PropertyHelper propertyHelper = mock(PropertyHelper.class);
+    Entity entity = new Entity(vertex, collections, typesHelper, propertyHelper);
 
     entity.removeFromCollection(collectionToRemoveFrom);
 
     verify(collectionToRemoveFrom).remove(vertex);
     assertThat(collections, contains(otherCollection));
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void removeFromCollectionRemovesUpdatesTheTypesInformation() {
+    Vertex vertex = mock(Vertex.class);
+    Collection collectionToRemoveFrom = mock(Collection.class);
+    Collection otherCollection = mock(Collection.class);
+    Set<Collection> collections = Sets.newHashSet(collectionToRemoveFrom, otherCollection);
+    TypesHelper typesHelper = mock(TypesHelper.class);
+    PropertyHelper propertyHelper = mock(PropertyHelper.class);
+    Entity entity = new Entity(vertex, collections, typesHelper, propertyHelper);
+
+    entity.removeFromCollection(collectionToRemoveFrom);
+
+    ArgumentCaptor<Set> collectionCaptor = ArgumentCaptor.forClass(Set.class);
+    verify(typesHelper).updateTypeInformation(argThat(is(vertex)), collectionCaptor.capture());
+    assertThat((Set<Collection>) collectionCaptor.getValue(), contains(otherCollection));
   }
 }

@@ -31,18 +31,17 @@ import static org.hamcrest.Matchers.is;
 
 public class TripleImporterTest {
   private static final String VRE_NAME = "vreName";
+  public static final String DEFAULT_COLLECTION_NAME = VRE_NAME + "unknowns";
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
   private static final String ASIA_URI = "http://tl.dbpedia.org/resource/Asia";
   private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
   private static final String IS_PART_OF_NAME = "isPartOf";
   private static final String TYPE_URI = "http://www.opengis.net/gml/_Feature";
-  private static final String TYPE_NAME = "_Feature";
+  private static final String TYPE_NAME = VRE_NAME + "_Feature";
   private static final String FICTIONAL_TYPE_URI = "http://www.opengis.net/gml/_FictionalFeature";
-  private static final String FICTIONAL_TYPE_NAME = "_FictionalFeature";
-
-  private static final String DEFAULT_ENTITY_TYPE_NAME = "unknown";
-
+  private static final String FICTIONAL_TYPE_NAME = VRE_NAME + "_FictionalFeature";
+  private static final String DEFAULT_ENTITY_TYPE_NAME = VRE_NAME + "unknown";
   private static final String ABADAN_HAS_TYPE_FEATURE_TRIPLE =
     "<" + ABADAN_URI + "> " +
       "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
@@ -71,6 +70,7 @@ public class TripleImporterTest {
     "<" + IRAN_URI + ">" +
       "<" + IS_PART_OF_URI + "> " +
       "<" + ASIA_URI + ">";
+
 
   private GraphWrapper graphWrapper;
 
@@ -129,8 +129,8 @@ public class TripleImporterTest {
     instance.importTriple(tripleExtendedIterator.next());
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
-      .withProperty(VRE_NAME + DEFAULT_ENTITY_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
-      .withProperty(VRE_NAME + DEFAULT_ENTITY_TYPE_NAME + "_" + "lat", "30.35")
+      .withProperty(DEFAULT_ENTITY_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(DEFAULT_ENTITY_TYPE_NAME + "_" + "lat", "30.35")
     );
   }
 
@@ -144,11 +144,11 @@ public class TripleImporterTest {
     instance.importTriple(abadanPointTriple);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
-      .withoutProperty(VRE_NAME + DEFAULT_ENTITY_TYPE_NAME + "_" + "point")
+      .withoutProperty(DEFAULT_ENTITY_TYPE_NAME + "_" + "point")
     );
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
-      .withProperty(VRE_NAME + TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
     );
   }
 
@@ -304,7 +304,7 @@ public class TripleImporterTest {
 
     assertThat(collectionVertex.hasNext(), is(true));
     assertThat(collectionVertex.next(), likeVertex()
-      .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns")
+      .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, DEFAULT_COLLECTION_NAME)
       .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_ENTITY_TYPE_NAME));
   }
 
@@ -327,7 +327,7 @@ public class TripleImporterTest {
 
     assertThat(collectionVertex.hasNext(), is(true));
     assertThat(collectionVertex.next(), likeVertex()
-      .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "unknowns")
+      .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, DEFAULT_COLLECTION_NAME)
       .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_ENTITY_TYPE_NAME));
   }
 
@@ -471,7 +471,9 @@ public class TripleImporterTest {
     instance.importTriple(abadanIsAFeature);
     instance.importTriple(abadanIsAFictionalFeature);
 
-    assertThat(getEntityTypesOrDefault(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next()),
+    String[] entityTypesOrDefault =
+      getEntityTypesOrDefault(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next());
+    assertThat(entityTypesOrDefault,
       arrayContainingInAnyOrder(TYPE_NAME, FICTIONAL_TYPE_NAME, "concept")
     );
   }
@@ -511,8 +513,8 @@ public class TripleImporterTest {
 
     final Vertex abadanVertex = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next();
     assertThat(abadanVertex, likeVertex()
-      .withProperty(VRE_NAME + TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
-      .withProperty(VRE_NAME + FICTIONAL_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(FICTIONAL_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
     );
   }
 
@@ -528,19 +530,19 @@ public class TripleImporterTest {
     instance.importTriple(abadanHasPoint);
 
     final GraphTraversal<Vertex, Vertex> propT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI)
-                                                           .in(Collection.HAS_ENTITY_RELATION_NAME)
-                                                           .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
-                                                           .out(Collection.HAS_PROPERTY_RELATION_NAME);
+                                                             .in(Collection.HAS_ENTITY_RELATION_NAME)
+                                                             .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                                                             .out(Collection.HAS_PROPERTY_RELATION_NAME);
 
     assertThat(propT.asAdmin().clone().count().next(), is(2L));
 
     assertThat(propT.toList(), containsInAnyOrder(
       likeVertex()
-        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, VRE_NAME + TYPE_NAME + "_point")
+        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, TYPE_NAME + "_point")
         .withProperty(LocalProperty.CLIENT_PROPERTY_NAME, "point")
         .withProperty(LocalProperty.PROPERTY_TYPE_NAME, "text"),
       likeVertex()
-        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, VRE_NAME + FICTIONAL_TYPE_NAME + "_point")
+        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, FICTIONAL_TYPE_NAME + "_point")
         .withProperty(LocalProperty.CLIENT_PROPERTY_NAME, "point")
         .withProperty(LocalProperty.PROPERTY_TYPE_NAME, "text")
     ));
@@ -596,10 +598,10 @@ public class TripleImporterTest {
 
     final Vertex abadanVertex = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next();
     assertThat(abadanVertex, likeVertex()
-      .withProperty(VRE_NAME + TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
-      .withProperty(VRE_NAME + FICTIONAL_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
-      .withProperty(VRE_NAME + TYPE_NAME + "_" + "lat", "30.35")
-      .withProperty(VRE_NAME + FICTIONAL_TYPE_NAME + "_" + "lat", "30.35")
+      .withProperty(TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(FICTIONAL_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
+      .withProperty(TYPE_NAME + "_" + "lat", "30.35")
+      .withProperty(FICTIONAL_TYPE_NAME + "_" + "lat", "30.35")
     );
     assertThat(abadanVertex, likeVertex()
       .withoutProperty(DEFAULT_ENTITY_TYPE_NAME + "_" + "point")

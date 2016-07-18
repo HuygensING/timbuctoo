@@ -15,7 +15,6 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PR
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.CollectionDescription.DEFAULT_COLLECTION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
@@ -33,6 +32,7 @@ public class DatabaseTest {
   private static final String USER_ID = "rdf-importer";
   private static final String ENTITY_RDF_URI = "http://www.example.com/entityNode";
   private static final String VRE_NAME = "vreName";
+  public static final String DEFAULT_COLLECTION = VRE_NAME + "unknown";
   private static final String RELATION_NAME = "relationName";
   private Node entityNode;
   private SystemPropertyModifier modifier;
@@ -102,7 +102,7 @@ public class DatabaseTest {
 
     assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
                            .in(HAS_ENTITY_RELATION_NAME).in(HAS_ENTITY_NODE_RELATION_NAME)
-                           .has(ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_COLLECTION_NAME).hasNext(),
+                           .has(ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_COLLECTION).hasNext(),
       is(true));
   }
 

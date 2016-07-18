@@ -14,12 +14,19 @@ import static org.hamcrest.Matchers.startsWith;
 
 public class CollectionDescriptionTest {
 
+  public static final String ENTITY_TYPE_NAME = "entityTypeName";
+  public static final String VRE_NAME = "vreName";
+
   @Test
   public void equalsReturnsTrueIfThePropertiesAreEqual() {
-    CollectionDescription sameDescription1 = new CollectionDescription("entityTypeName", "vreName");
-    CollectionDescription sameDescription2 = new CollectionDescription("entityTypeName", "vreName");
-    CollectionDescription otherTypeNameDescription = new CollectionDescription("otherTypeName", "vreName");
-    CollectionDescription otherVreNameDescription = new CollectionDescription("entityTypeName", "otherVreName");
+    CollectionDescription sameDescription1 =
+      CollectionDescription.createCollectionDescription(ENTITY_TYPE_NAME, VRE_NAME);
+    CollectionDescription sameDescription2 =
+      CollectionDescription.createCollectionDescription(ENTITY_TYPE_NAME, VRE_NAME);
+    CollectionDescription otherTypeNameDescription =
+      CollectionDescription.createCollectionDescription("otherTypeName", VRE_NAME);
+    CollectionDescription otherVreNameDescription =
+      CollectionDescription.createCollectionDescription(ENTITY_TYPE_NAME, "otherVreName");
 
     assertThat(sameDescription1, is(equalTo(sameDescription2)));
     assertThat(sameDescription1, not(is(equalTo(otherTypeNameDescription))));
@@ -28,7 +35,8 @@ public class CollectionDescriptionTest {
 
   @Test
   public void getRdfUriPrefixesTheEntityTypeNameWhenTheRdfUriIsNotSetExplicitly() {
-    CollectionDescription collectionDescription = new CollectionDescription("entityTypeName", "vreName");
+    CollectionDescription collectionDescription =
+      CollectionDescription.createCollectionDescription(ENTITY_TYPE_NAME, VRE_NAME);
 
     assertThat(collectionDescription.getRdfUri(), allOf(
       startsWith(RDF_URI_PREFIX),
@@ -38,9 +46,19 @@ public class CollectionDescriptionTest {
   @Test
   public void getRdfUriReturnsTheSetRdfUri() {
     String rdfUri = "rdfUri";
-    CollectionDescription collectionDescription = new CollectionDescription("entityTypeName", "vreName", rdfUri);
+    CollectionDescription collectionDescription =
+      CollectionDescription.createCollectionDescription(ENTITY_TYPE_NAME, VRE_NAME, rdfUri);
 
     assertThat(collectionDescription.getRdfUri(), is(rdfUri));
+  }
+
+  @Test
+  public void getEntityTypeNameGetsPrefixedWhenItDoesNotStartWithTheVreName() {
+    assertThat(CollectionDescription.createCollectionDescription(ENTITY_TYPE_NAME, VRE_NAME).getEntityTypeName(),
+      startsWith(VRE_NAME));
+    assertThat(
+      CollectionDescription.createCollectionDescription(VRE_NAME + ENTITY_TYPE_NAME, VRE_NAME).getEntityTypeName(),
+      is(VRE_NAME + ENTITY_TYPE_NAME));
   }
 
 }

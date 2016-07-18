@@ -47,5 +47,6 @@ public class Entity {
   public void removeFromCollection(Collection collection) {
     collection.remove(vertex);
     collections.remove(collection);
+    typesHelper.updateTypeInformation(vertex, collections);
   }
 }

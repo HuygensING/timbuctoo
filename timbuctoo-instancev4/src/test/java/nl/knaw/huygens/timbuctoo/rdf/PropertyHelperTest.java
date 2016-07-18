@@ -7,7 +7,6 @@ import org.junit.Test;
 import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
-import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.atLeastOnce;
@@ -22,15 +21,16 @@ public class PropertyHelperTest {
     final String vreName = "vreName";
     final String entityTypeName = "newCollection";
     final Collection newCollection = mock(Collection.class);
-    final CollectionDescription newCollectionDescription = new CollectionDescription(entityTypeName, vreName);
+    final CollectionDescription newCollectionDescription =
+      CollectionDescription.createCollectionDescription(entityTypeName, vreName);
     when(newCollection.getDescription()).thenReturn(newCollectionDescription);
 
     final CollectionDescription existingCollectionDescription1 =
-      new CollectionDescription("existingCollection1", vreName);
+      CollectionDescription.createCollectionDescription("existingCollection1", vreName);
     final Collection existingCollection1 = mock(Collection.class);
     when(existingCollection1.getDescription()).thenReturn(existingCollectionDescription1);
     final CollectionDescription existingCollectionDescription2 =
-      new CollectionDescription("existingCollection2", vreName);
+      CollectionDescription.createCollectionDescription("existingCollection2", vreName);
     final Collection existingCollection2 = mock(Collection.class);
     when(existingCollection2.getDescription()).thenReturn(existingCollectionDescription2);
     final Set<Collection> existingCollections =
@@ -52,7 +52,8 @@ public class PropertyHelperTest {
     final String vreName = "vreName";
     final String entityTypeName = "newCollection";
     final Collection newCollection = mock(Collection.class);
-    final CollectionDescription newCollectionDescription = new CollectionDescription(entityTypeName, vreName);
+    final CollectionDescription newCollectionDescription =
+      CollectionDescription.createCollectionDescription(entityTypeName, vreName);
     when(newCollection.getDescription()).thenReturn(newCollectionDescription);
     final Set<Collection> existingCollections = Sets.newHashSet(newCollection);
     final Vertex vertex = newGraph().build().addVertex();
@@ -71,8 +72,10 @@ public class PropertyHelperTest {
   @Test
   public void removeRemovesAllThePropertiesStartingWithThePrefixOfTheCollectionDescription() {
     final String vreName = "vreName";
-    final CollectionDescription descriptionToRemove = new CollectionDescription("collection", vreName);
-    final CollectionDescription otherDescription = new CollectionDescription("otherEntity", vreName);
+    final CollectionDescription descriptionToRemove =
+      CollectionDescription.createCollectionDescription("collection", vreName);
+    final CollectionDescription otherDescription =
+      CollectionDescription.createCollectionDescription("otherEntity", vreName);
     final Vertex vertex = newGraph().build().addVertex();
     vertex.property(descriptionToRemove.createPropertyName("prop1"), "value1");
     vertex.property(descriptionToRemove.createPropertyName("prop2"), "value2");
