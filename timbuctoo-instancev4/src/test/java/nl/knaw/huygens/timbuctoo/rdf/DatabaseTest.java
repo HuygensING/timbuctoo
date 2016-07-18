@@ -22,9 +22,7 @@ import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -32,18 +30,18 @@ import static org.mockito.Mockito.when;
 
 public class DatabaseTest {
 
-  public static final String USER_ID = "rdf-importer";
-  public static final String TEST_URI = "http://www.example.com/node";
-  public static final String VRE_NAME = "vreName";
-  public static final String RELATION_NAME = "relationName";
-  private Node node;
+  private static final String USER_ID = "rdf-importer";
+  private static final String ENTITY_RDF_URI = "http://www.example.com/entityNode";
+  private static final String VRE_NAME = "vreName";
+  private static final String RELATION_NAME = "relationName";
+  private Node entityNode;
   private SystemPropertyModifier modifier;
 
 
   @Before
   public void setUp() throws Exception {
-    node = mock(Node.class);
-    when(node.getURI()).thenReturn(TEST_URI);
+    entityNode = mock(Node.class);
+    when(entityNode.getURI()).thenReturn(ENTITY_RDF_URI);
     modifier = mock(SystemPropertyModifier.class);
   }
 
@@ -68,9 +66,9 @@ public class DatabaseTest {
     final CollectionDescription collectionDescription = CollectionDescription.getDefault(VRE_NAME);
     final Database instance = new Database(graphWrapper, modifier);
 
-    Vertex vertex = instance.findOrCreateEntityVertex(node, collectionDescription);
+    Vertex vertex = instance.findOrCreateEntityVertex(entityNode, collectionDescription);
 
-    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP).next(), is(vertex));
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI).next(), is(vertex));
     verify(modifier).setCreated(vertex, USER_ID);
     verify(modifier).setModified(vertex, USER_ID);
     verify(modifier).setTimId(vertex);
@@ -100,7 +98,7 @@ public class DatabaseTest {
     final Database instance = new Database(graphWrapper, modifier);
     final CollectionDescription collectionDescription = CollectionDescription.getDefault(VRE_NAME);
 
-    Vertex vertex = instance.findOrCreateEntityVertex(node, collectionDescription);
+    Vertex vertex = instance.findOrCreateEntityVertex(entityNode, collectionDescription);
 
     assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
                            .in(HAS_ENTITY_RELATION_NAME).in(HAS_ENTITY_NODE_RELATION_NAME)
@@ -108,8 +106,8 @@ public class DatabaseTest {
       is(true));
   }
 
-  @Test // FIXME use rdf uri again
-  public void findOrCreateCollectionReturnsTheCollectionWithARdfUriForARequestedVre() {
+  @Test
+  public void findOrCreateCollectionReturnsTheCollectionForARequestedVre() {
     String vreName = "vreName";
     String rdfUri = "http://www.example.com/entity";
     String localName = "entity";
@@ -143,8 +141,8 @@ public class DatabaseTest {
     assertThat(collection, hasProperty("vreName", equalTo(vreName)));
   }
 
-  @Test // FIXME use rdf uri again
-  public void findOrCreateCollectionReturnsTheNewlyAddedCollectionWhenItDidNotExist() {
+  @Test
+  public void findOrCreateCollectionReturnsTheNewlyAddedCollectionWithRdfUri() {
     String vreName = "vreName";
     String rdfUri = "http://www.example.com/entity";
     String localName = "entity";
@@ -171,12 +169,12 @@ public class DatabaseTest {
     assertThat(collection, hasProperty("vreName", equalTo(vreName)));
     assertThat(graphWrapper.getGraph().traversal().V()
                            .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
-                           .out(Vre.HAS_COLLECTION_RELATION_NAME).has(ENTITY_TYPE_NAME_PROPERTY_NAME, localName)
+                           .out(Vre.HAS_COLLECTION_RELATION_NAME).has(RDF_URI_PROP, rdfUri)
                            .hasNext(),
       is(true));
   }
 
-  @Test // FIXME use rdf uri again
+  @Test
   public void findOrCreateCollectionAddsTheCollectionToItsArchetype() {
     String rdfUri = "http://www.example.com/entity";
     String localName = "entity";
@@ -202,7 +200,7 @@ public class DatabaseTest {
 
     assertThat(collection, hasProperty("vreName", equalTo(VRE_NAME)));
     assertThat(graphWrapper.getGraph().traversal().V()
-                           .hasLabel(DATABASE_LABEL).has(ENTITY_TYPE_NAME_PROPERTY_NAME, localName)
+                           .hasLabel(DATABASE_LABEL).has(RDF_URI_PROP, rdfUri)
                            .out(HAS_ARCHETYPE_RELATION_NAME)
                            .hasNext(),
       is(true));
@@ -214,7 +212,8 @@ public class DatabaseTest {
     final Database instance = new Database(graphWrapper);
     final String relationtypePrefix = "relationtype_";
     final Node mockNode = mock(Node.class);
-    when(mockNode.getURI()).thenReturn(TEST_URI);
+    String rdfUriVal = "rdfUriVal";
+    when(mockNode.getURI()).thenReturn(rdfUriVal);
     when(mockNode.getLocalName()).thenReturn(RELATION_NAME);
 
     final RelationType relationType = instance.findOrCreateRelationType(mockNode);
@@ -222,7 +221,7 @@ public class DatabaseTest {
     assertThat(graphWrapper
       .getGraph().traversal().V().next(), likeVertex()
       .withLabel("relationtype")
-      .withProperty("rdfUri", TEST_URI)
+      .withProperty("rdfUri", rdfUriVal)
       .withProperty("types", "[\"relationtype\"]")
       .withProperty(relationtypePrefix + "targetTypeName", "concept")
       .withProperty(relationtypePrefix + "sourceTypeName", "concept")
@@ -238,7 +237,7 @@ public class DatabaseTest {
       .withProperty("tim_id")
     );
     assertThat(relationType, allOf(
-      hasProperty("rdfUri", is(TEST_URI)),
+      hasProperty("rdfUri", is(rdfUriVal)),
       hasProperty("regularName", is(RELATION_NAME))
     ));
   }
@@ -246,10 +245,11 @@ public class DatabaseTest {
   @Test
   public void findOrCreateRelationTypeReturnsAnExistingRelationType() {
     final String relationtypePrefix = "relationtype_";
+    String rdfUriVal = "rdfUriVal";
 
     final GraphWrapper graphWrapper = newGraph().withVertex(v -> v
       .withLabel("relationtype")
-      .withProperty("rdfUri", TEST_URI)
+      .withProperty("rdfUri", rdfUriVal)
       .withProperty("types", "[\"relationtype\"]")
       .withProperty(relationtypePrefix + "targetTypeName", "concept")
       .withProperty(relationtypePrefix + "sourceTypeName", "concept")
@@ -263,7 +263,7 @@ public class DatabaseTest {
     ).wrap();
     final Database instance = new Database(graphWrapper);
     final Node mockNode = mock(Node.class);
-    when(mockNode.getURI()).thenReturn(TEST_URI);
+    when(mockNode.getURI()).thenReturn(rdfUriVal);
     when(mockNode.getLocalName()).thenReturn(RELATION_NAME);
 
     instance.findOrCreateRelationType(mockNode);
