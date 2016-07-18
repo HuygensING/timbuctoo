@@ -51,6 +51,8 @@ public abstract class ReadableProperty {
       return new WwDocumentDisplayName();
     } else if (type.equals(WwPersonDisplayName.TYPE)) {
       return new WwPersonDisplayName();
+    } else if (type.equals(RdfImportedDefaultDisplayname.TYPE)) {
+      return new RdfImportedDefaultDisplayname();
     }
 
     String[] options = null;

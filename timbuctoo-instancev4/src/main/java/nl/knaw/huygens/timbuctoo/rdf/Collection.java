@@ -1,13 +1,13 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
@@ -60,7 +60,7 @@ public class Collection {
       final Vertex displayName = graphWrapper.getGraph().addVertex(ReadableProperty.DATABASE_LABEL);
       displayName.property(ReadableProperty.CLIENT_PROPERTY_NAME, "@displayName");
       displayName.property(LocalProperty.DATABASE_PROPERTY_NAME, "rdfUri");
-      displayName.property(ReadableProperty.PROPERTY_TYPE_NAME, "default-rdf-imported-displayname");
+      displayName.property(ReadableProperty.PROPERTY_TYPE_NAME, RdfImportedDefaultDisplayname.TYPE);
       vertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayName);
     }
   }
