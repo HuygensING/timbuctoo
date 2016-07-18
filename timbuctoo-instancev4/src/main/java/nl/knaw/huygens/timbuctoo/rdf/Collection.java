@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -137,7 +138,8 @@ public class Collection {
       Vertex newPropertyConfig = graphWrapper.getGraph().addVertex("property");
       newPropertyConfig.property(LocalProperty.CLIENT_PROPERTY_NAME, propName);
       newPropertyConfig.property(LocalProperty.DATABASE_PROPERTY_NAME, collectionPropertyName);
-      newPropertyConfig.property(LocalProperty.PROPERTY_TYPE_NAME, "text");
+      newPropertyConfig
+        .property(LocalProperty.PROPERTY_TYPE_NAME, new StringToStringConverter().getUniqueTypeIdentifier());
 
       vertex.addEdge(HAS_PROPERTY_RELATION_NAME, newPropertyConfig);
       if (!vertex.edges(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME).hasNext()) {

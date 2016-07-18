@@ -1,10 +1,14 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.base.Stopwatch;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class RdfImporter {
+  public static final Logger LOG = LoggerFactory.getLogger(RdfImporter.class);
   private final GraphWrapper graphWrapper;
   private final String vreName;
   private final TripleImporter tripleImporter;
@@ -22,6 +26,7 @@ public class RdfImporter {
   }
 
   public void importRdf(Model model) {
+    final Stopwatch stopwatch = Stopwatch.createStarted();
     importPreparer.setupVre(vreName);
     importPreparer.setUpAdminVre();
 
@@ -30,6 +35,8 @@ public class RdfImporter {
       tripleImporter::importTriple
     );
     graphWrapper.getGraph().tx().commit();
+
+    LOG.info("Import took {}", stopwatch.stop());
   }
 
 }

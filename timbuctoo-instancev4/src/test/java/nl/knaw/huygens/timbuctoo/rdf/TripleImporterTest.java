@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -540,11 +541,11 @@ public class TripleImporterTest {
       likeVertex()
         .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, TYPE_NAME + "_point")
         .withProperty(LocalProperty.CLIENT_PROPERTY_NAME, "point")
-        .withProperty(LocalProperty.PROPERTY_TYPE_NAME, "text"),
+        .withProperty(LocalProperty.PROPERTY_TYPE_NAME, new StringToStringConverter().getUniqueTypeIdentifier()),
       likeVertex()
         .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, FICTIONAL_TYPE_NAME + "_point")
         .withProperty(LocalProperty.CLIENT_PROPERTY_NAME, "point")
-        .withProperty(LocalProperty.PROPERTY_TYPE_NAME, "text")
+        .withProperty(LocalProperty.PROPERTY_TYPE_NAME, new StringToStringConverter().getUniqueTypeIdentifier())
     ));
   }
 

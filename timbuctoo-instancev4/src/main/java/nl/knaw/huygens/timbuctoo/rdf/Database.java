@@ -19,6 +19,7 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PR
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
 
 public class Database {
   public static final String RDF_URI_PROP = "rdfUri";
@@ -115,7 +116,7 @@ public class Database {
       collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionDescription.getCollectionName());
       collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
       collectionVertex.property(RDF_URI_PROP, collectionDescription.getRdfUri());
-
+      collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
       Vertex containerVertex = graphWrapper.getGraph().addVertex(COLLECTION_ENTITIES_LABEL);
       collectionVertex.addEdge(HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
 
