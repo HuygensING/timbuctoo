@@ -34,7 +34,7 @@ class CollectionDescription {
   }
 
   public String createPropertyName(String propertyName) {
-    return vreName + getEntityTypeName() + "_" + propertyName;
+    return getPrefix() + "_" + propertyName;
   }
 
   public String getVreName() {
