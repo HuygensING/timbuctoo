@@ -27,12 +27,12 @@ public class CollectionDescriptionTest {
   }
 
   @Test
-  public void getRdfUriPrefixesTheCollectionNameWhenTheRdfUriIsNotSetExplicitly() {
+  public void getRdfUriPrefixesTheEntityTypeNameWhenTheRdfUriIsNotSetExplicitly() {
     CollectionDescription collectionDescription = new CollectionDescription("entityTypeName", "vreName");
 
     assertThat(collectionDescription.getRdfUri(), allOf(
       startsWith(RDF_URI_PREFIX),
-      endsWith(collectionDescription.getCollectionName())));
+      endsWith(collectionDescription.getEntityTypeName())));
   }
 
   @Test

@@ -16,7 +16,11 @@ class CollectionDescription {
   private final String rdfUri;
 
   public CollectionDescription(String entityTypeName, String vreName) {
-    this(entityTypeName, vreName, null);
+    this(entityTypeName, vreName, createRdfUri(entityTypeName));
+  }
+
+  private static String createRdfUri(String entityTypeName) {
+    return String.format("%s/%s", RDF_URI_PREFIX, entityTypeName);
   }
 
   public CollectionDescription(String entityTypeName, String vreName, String rdfUri) {
@@ -68,7 +72,7 @@ class CollectionDescription {
   }
 
   public String getRdfUri() {
-    return rdfUri == null ? String.format("%s/%s", RDF_URI_PREFIX, getCollectionName()) : rdfUri;
+    return rdfUri ;
   }
 }
 
