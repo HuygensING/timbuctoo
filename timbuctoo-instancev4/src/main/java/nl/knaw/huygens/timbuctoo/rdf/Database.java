@@ -26,6 +26,7 @@ public class Database {
   private final GraphWrapper graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
 
+
   public Database(GraphWrapper graphWrapper) {
     this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()));
   }
@@ -35,18 +36,18 @@ public class Database {
     this.systemPropertyModifier = systemPropertyModifier;
   }
 
-  public Vertex findOrCreateEntityVertex(Node node, CollectionDescription collectionDescription) {
+  public Vertex findOrCreateEntityVertex(Node node, String vreName) {
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> existingT = graph
       .traversal().V()
       .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
       .out(Vre.HAS_COLLECTION_RELATION_NAME)
       .out(HAS_ENTITY_NODE_RELATION_NAME)
       .out(HAS_ENTITY_RELATION_NAME)
       .has(RDF_URI_PROP, node.getURI());
 
-    Collection collection = findOrCreateCollection(collectionDescription);
+    Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
 
     if (existingT.hasNext()) {
       final Vertex foundVertex = existingT.next();
@@ -69,9 +70,9 @@ public class Database {
   }
 
   public Entity findOrCreateEntity(String vreName, Node node) {
-    final Vertex vertex = findOrCreateEntityVertex(node, CollectionDescription.getDefault(vreName));
+    final Vertex vertex = findOrCreateEntityVertex(node, vreName);
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    return new Entity(vertex, getCollections(vertex, CollectionDescription.getDefault(vreName).getVreName()));
+    return new Entity(vertex, getCollections(vertex, vreName));
   }
 
   private Set<Collection> getCollections(Vertex foundVertex, String vreName) {

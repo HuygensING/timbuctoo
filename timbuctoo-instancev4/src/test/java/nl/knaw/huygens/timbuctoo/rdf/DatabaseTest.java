@@ -63,10 +63,9 @@ public class DatabaseTest {
                                           .withVertex("entityCollection", v -> {
                                           })
                                           .wrap();
-    final CollectionDescription collectionDescription = CollectionDescription.getDefault(VRE_NAME);
     final Database instance = new Database(graphWrapper, modifier);
 
-    Vertex vertex = instance.findOrCreateEntityVertex(entityNode, collectionDescription);
+    Vertex vertex = instance.findOrCreateEntityVertex(entityNode, VRE_NAME);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI).next(), is(vertex));
     verify(modifier).setCreated(vertex, USER_ID);
@@ -96,9 +95,8 @@ public class DatabaseTest {
                                           })
                                           .wrap();
     final Database instance = new Database(graphWrapper, modifier);
-    final CollectionDescription collectionDescription = CollectionDescription.getDefault(VRE_NAME);
 
-    Vertex vertex = instance.findOrCreateEntityVertex(entityNode, collectionDescription);
+    Vertex vertex = instance.findOrCreateEntityVertex(entityNode, VRE_NAME);
 
     assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
                            .in(HAS_ENTITY_RELATION_NAME).in(HAS_ENTITY_NODE_RELATION_NAME)
