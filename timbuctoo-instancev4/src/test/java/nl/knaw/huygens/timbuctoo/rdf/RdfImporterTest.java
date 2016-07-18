@@ -19,7 +19,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
 public class RdfImporterTest {
-  public static final String VRE = "vre";
+  public static final String VRE_NAME = "vre";
   private static final String EXAMPLE_TRIPLE_STRING =
     "<http://tl.dbpedia.org/resource/Abadan,_Iran> " +
       "<http://www.w3.org/2003/01/geo/wgs84_pos#lat> " +
@@ -28,14 +28,14 @@ public class RdfImporterTest {
   @Test
   public void importRdfCreatesAVreVertex() {
     final GraphWrapper graphWrapper = newGraph().wrap();
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME);
 
     instance.importRdf(createModel(""));
 
     assertThat(
       graphWrapper.getGraph().traversal().V()
                   .hasLabel(Vre.DATABASE_LABEL)
-                  .has(Vre.VRE_NAME_PROPERTY_NAME, VRE)
+                  .has(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME)
                   .hasNext(),
       is(true)
     );
@@ -44,20 +44,30 @@ public class RdfImporterTest {
   @Test
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
     GraphWrapper graphWrapper = newGraph().wrap();
-    Vre vre = mock(Vre.class);
     TripleImporter tripleImporter = mock(TripleImporter.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE, tripleImporter) {
-      @Override
-      Vre createVre() {
-        return vre;
-      }
-    };
+    ImportPreparer importPreparer = mock(ImportPreparer.class);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, tripleImporter, importPreparer);
     Model model = createModel(EXAMPLE_TRIPLE_STRING);
 
     instance.importRdf(model);
 
-    InOrder inOrder = inOrder(vre, tripleImporter);
-    inOrder.verify(vre).save(any(), any());
+    InOrder inOrder = inOrder(importPreparer, tripleImporter);
+    inOrder.verify(importPreparer).setupVre(VRE_NAME);
+    inOrder.verify(tripleImporter).importTriple(any());
+  }
+
+  @Test
+  public void importRdfCreatesAnAdminVreAndConceptCollectionBeforeImportingTriples() {
+    ImportPreparer importPreparer = mock(ImportPreparer.class);
+    GraphWrapper graphWrapper = newGraph().wrap();
+    TripleImporter tripleImporter = mock(TripleImporter.class);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, tripleImporter, importPreparer);
+    Model model = createModel(EXAMPLE_TRIPLE_STRING);
+
+    instance.importRdf(model);
+
+    InOrder inOrder = inOrder(importPreparer, tripleImporter);
+    inOrder.verify(importPreparer).setUpAdminVre();
     inOrder.verify(tripleImporter).importTriple(any());
   }
 
