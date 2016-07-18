@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -19,7 +20,9 @@ public class ImportPreparer {
   }
 
   public void setupVre(String vreName) {
-    Vre vre = VreBuilder.vre(vreName, vreName).build();
+    Vre vre = VreBuilder.vre(vreName, vreName)
+                        .withCollection(vreName + "relations", CollectionBuilder::isRelationCollection)
+                        .build();
     vre.save(graphWrapper.getGraph(), Optional.empty());
   }
 }
