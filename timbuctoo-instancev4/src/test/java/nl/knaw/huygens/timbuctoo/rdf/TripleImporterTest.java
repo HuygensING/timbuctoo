@@ -554,6 +554,41 @@ public class TripleImporterTest {
   }
 
   @Test
+  public void importTripleShouldCreateOneDisplayNameConfigurationForAllCollections() {
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+    final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(abadanIsAFictionalFeature);
+    instance.importTriple(abadanHasPoint);
+
+    final GraphTraversal<Vertex, Vertex> propT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI)
+                                                             .in(Collection.HAS_ENTITY_RELATION_NAME)
+                                                             .in(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+                                                             .where(
+                                                               __.in(Vre.HAS_COLLECTION_RELATION_NAME)
+                                                                 .has(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME)
+                                                             )
+                                                             .out(Collection.HAS_DISPLAY_NAME_RELATION_NAME);
+
+
+    assertThat(propT.asAdmin().clone().count().next(), is(2L));
+
+    assertThat(propT.toList(), containsInAnyOrder(
+      likeVertex()
+        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, "rdfUri")
+        .withProperty(LocalProperty.CLIENT_PROPERTY_NAME, "@displayName")
+        .withProperty(LocalProperty.PROPERTY_TYPE_NAME, "default-rdf-imported-displayname"),
+      likeVertex()
+        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, "rdfUri")
+        .withProperty(LocalProperty.CLIENT_PROPERTY_NAME, "@displayName")
+        .withProperty(LocalProperty.PROPERTY_TYPE_NAME, "default-rdf-imported-displayname")
+    ));
+  }
+
+  @Test
   public void importTripleShouldAddAllExistingPropertiesToANewCollection() {
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();

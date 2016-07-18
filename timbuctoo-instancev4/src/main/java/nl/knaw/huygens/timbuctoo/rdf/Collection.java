@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -16,6 +17,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NE
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_ENTITIES_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
@@ -50,6 +52,17 @@ public class Collection {
     this.collectionDescription = collectionDescription;
     this.propertyHelper = propertyHelper;
 
+    findOrCreateDisplayName();
+  }
+
+  private void findOrCreateDisplayName() {
+    if (!vertex.vertices(Direction.OUT, HAS_DISPLAY_NAME_RELATION_NAME).hasNext()) {
+      final Vertex displayName = graphWrapper.getGraph().addVertex(ReadableProperty.DATABASE_LABEL);
+      displayName.property(ReadableProperty.CLIENT_PROPERTY_NAME, "@displayName");
+      displayName.property(LocalProperty.DATABASE_PROPERTY_NAME, "rdfUri");
+      displayName.property(ReadableProperty.PROPERTY_TYPE_NAME, "default-rdf-imported-displayname");
+      vertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayName);
+    }
   }
 
   public void add(Vertex entityVertex) {
