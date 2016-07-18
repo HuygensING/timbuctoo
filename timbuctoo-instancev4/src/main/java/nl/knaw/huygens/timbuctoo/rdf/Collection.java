@@ -33,8 +33,7 @@ public class Collection {
   private Collection archetype;
 
   public Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper) {
-    this(vreName, vertex, graphWrapper,
-      new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName));
+    this(vreName, vertex, graphWrapper, CollectionDescription.fromVertex(vreName, vertex));
   }
 
   // Use for testing only

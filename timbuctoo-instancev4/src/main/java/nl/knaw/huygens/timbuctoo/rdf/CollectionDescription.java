@@ -2,6 +2,10 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 
 
 class CollectionDescription {
@@ -23,6 +27,14 @@ class CollectionDescription {
 
   public static CollectionDescription getDefault(String vreName) {
     return new CollectionDescription(DEFAULT_COLLECTION_NAME, vreName);
+  }
+
+  public static CollectionDescription fromVertex(String vreName, Vertex vertex) {
+    VertexProperty<String> rdfUri = vertex.property(Database.RDF_URI_PROP);
+    if(rdfUri.isPresent()){
+      return new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName, rdfUri.value());
+    }
+    return new CollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
   }
 
   public String getEntityTypeName() {
