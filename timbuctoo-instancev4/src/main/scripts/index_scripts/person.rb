@@ -1,8 +1,8 @@
-module Person
+class Person < Hash
 
-    @@location
+    @@location = ""
 
-    Wanted_properties = [
+    @@wanted_properties = [
 	    "_id",
 	    "@displayName",
 	    "types",
@@ -12,7 +12,7 @@ module Person
 	    "notes",
 	    "children"
 	]
-    New_prop_names = [
+    @@new_prop_names = [
 	    "id",
 	    "displayName_s",
 	    "types_ss",
@@ -23,7 +23,7 @@ module Person
 	    "children_s"
 	]
 
-    Relation_types = [
+    @@wanted_relations = [
 	"hasResidenceLocation",
 	"hasBirthPlace",
 	"hasDeathPlace",
@@ -35,8 +35,11 @@ module Person
 	"hasFinancialSituation",
 	"isMemberOf"
     ]
+    # Don't add "isCreatorOf"; the documents found will in turn search for
+    # "isCreatedBy", and the scripts will only finish with a stack
+    # overflow.
 
-    Wanted_relations = [
+    @@new_rel_names = [
 	"relatedLocations_ss",
 	"birthPlace_ss",
 	"deathPlace_ss",
@@ -49,38 +52,28 @@ module Person
 	"memberships_ss"
     ]
 
-    def Person.location= location
-	@@location = location
-    end
-
-    
-    def Person.build_person obj
-	new_person = Hash.new
-	new_person['type_s'] = "person"
-	Wanted_properties.each do |property|
-	    if (property.eql?("birthDate") || property.eql?("deathDate")) && !obj[property].nil?
-		new_person[New_prop_names[Wanted_properties.index(property)]] = obj[property].to_i
-	    else
-		new_person[New_prop_names[Wanted_properties.index(property)]] = obj[property]
+    def initialize data
+	super
+	self["type_s"] = "person"
+	@@wanted_properties.each_with_index do |property,ind|
+	    if !data[property].nil?
+		if (ind==4 || ind==5)
+		    self[@@new_prop_names[ind]] = data[property].to_i
+		else
+		    self[@@new_prop_names[ind]] = data[property]
+		end
 	    end
 	end
-	new_person['modified_l'] = obj['^modified']['timeStamp']
-	if !obj['names'].nil?
-	    new_person['name_t'] = Person.build_name obj['names']
+	self['modified_l'] = data['^modified']['timeStamp']
+	if !data['names'].nil?
+	    self['name_t'] = build_name(data['names'])
 	end
 
-	new_person = Person.build_relations obj, new_person
+	build_relations data
 
-	creator_of = obj['@relations']['isCreatorOf']  if !obj['@relations'].nil?
-	if !creator_of.nil? && !creator_of.empty?
-	    languages = Person.find_languages_in_works new_person,creator_of
-	    new_person['language_ss'] = languages
-	end
-
-	return new_person
     end
     
-    def Person.build_name names
+    def build_name names
 	new_names = Array.new
 	names.each do |name|
 	    build_name = Hash.new
@@ -107,48 +100,38 @@ module Person
 	return new_names.join(" ")
     end
 
-    def Person.build_relations old_person, new_person
-	Wanted_relations.each_with_index do |rel,ind|
-	    new_person[rel] = Array.new
-	    if !old_person['@relations'].nil?
+    def build_relations data
+	@@new_rel_names.each_with_index do |rel,ind|
+	    self[rel] = Array.new
+	    if !data['@relations'].nil?
 		if ind==0
 		    (0..2).each do |ind_2|
-			if !old_person['@relations'][Relation_types[ind_2]].nil?
-			    Person.add_relation old_person,new_person,rel,ind_2
+			if !data['@relations'][@@wanted_relations[ind_2]].nil?
+			    add_relation data,rel,ind_2
 			end
 		    end
 		else
-		    Person.add_relation old_person,new_person,rel,ind
+		    add_relation data,rel,ind
 		end
 	    end
-	    new_person[rel].uniq!
-	end
-	return new_person
-    end
-
-    def Person.add_relation old_person,new_person,rel,ind
-	if !old_person['@relations'][Relation_types[ind]].nil?
-	    old_person['@relations'][Relation_types[ind]].each do |rt|
-		new_person[rel] << rt['displayName']  if rt['accepted']
-	    end
+	    self[rel].uniq!
 	end
     end
 
-    def Person.find_languages_in_works person,creator_of
-	languages = Array.new
-	creator_of.each do |work|
-	    f = open("#{@@location}#{work['path']}", {:read_timeout=>600})
-	    line = f.gets
-	    array = JSON.parse(line)
-	    if !array['@relations'].nil? && !array['@relations']['hasWorkLanguage'].nil?
-		hasWorkLanguage = array['@relations']['hasWorkLanguage']
-		hasWorkLanguage.each do |language|
-		    languages << language['displayName']  if language['accepted']
-		end
+    def add_relation data,rel,ind
+	if !data['@relations'][@@wanted_relations[ind]].nil?
+	    data['@relations'][@@wanted_relations[ind]].each do |rt|
+		self[rel] << rt['displayName']  if rt['accepted']
 	    end
 	end
-	languages.uniq!
-	return languages
+    end
+
+    def id
+	self['id']
+    end
+
+    def Person.location= location
+	@@location = location
     end
 
 end
