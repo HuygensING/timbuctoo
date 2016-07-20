@@ -97,12 +97,13 @@ public class Database {
     systemPropertyModifier.setIsLatest(vertex, true);
     systemPropertyModifier.setIsDeleted(vertex, false);
 
-    Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
-    collection.add(vertex);
-
     entityCache.put(nodeUri, (Long) vertex.id());
 
-    return new Entity(vertex, getCollections(vertex, vreName));
+    Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
+    Entity entity = new Entity(vertex, getCollections(vertex, vreName));
+    entity.addToCollection(collection);
+
+    return entity;
   }
 
   private Set<Collection> getCollections(Vertex foundVertex, String vreName) {

@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.util;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.LabelEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -25,7 +24,8 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
     this.addMatcher(new PropertyMatcher<Vertex, String>("types", containsString(type)) {
       @Override
       protected String getItemValue(Vertex item) {
-        return item.value("types");
+        VertexProperty<String> types = item.property("types");
+        return types.isPresent() ? types.value() : null;
       }
     });
     return this;
@@ -77,13 +77,13 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withLabel(String expectedLabel) {
-    this.addMatcher(new LabelEqualityMatcher<Vertex, String>(expectedLabel) {
-
+    this.addMatcher(new PropertyMatcher<Vertex, String>("label", containsString(expectedLabel)) {
       @Override
       protected String getItemValue(Vertex item) {
         return item.label();
       }
     });
+
     return this;
   }
 

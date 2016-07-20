@@ -80,7 +80,6 @@ public class DatabaseTest {
     verify(modifier).setIsDeleted(entityVertex, false);
   }
 
-
   @Test
   public void findOrCreateEntityAddsANewlyCreatedEntityToTheDefaultCollection() {
     GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
@@ -108,6 +107,8 @@ public class DatabaseTest {
                            .in(HAS_ENTITY_RELATION_NAME).in(HAS_ENTITY_NODE_RELATION_NAME)
                            .has(ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_COLLECTION).hasNext(),
       is(true));
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI).next(),
+      is(likeVertex().withLabel(DEFAULT_COLLECTION).withType(DEFAULT_COLLECTION)));
   }
 
   @Test
