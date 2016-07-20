@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.atlas.web.TypedInputStream;
@@ -61,6 +63,8 @@ public class RdfImporter {
 
   private final class TripleStreamReader implements StreamRDF {
     private final List<Triple> batch = Lists.newArrayList();
+    private long count = 0;
+    private Stopwatch stopwatch = Stopwatch.createStarted() ;
 
     @Override
     public void start() {
@@ -83,6 +87,19 @@ public class RdfImporter {
       if (size < 0 || batch.size() >= size) {
         batch.forEach(tripleImporter::importTriple);
         graphWrapper.getGraph().tx().commit();
+        count += batch.size();
+        LOG.debug("Currently loaded {} triples", count);
+        LOG.debug("Which produced {} entities", graphWrapper
+          .getGraph().traversal().V()
+          .hasLabel(Vre.DATABASE_LABEL)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+          .out(Vre.HAS_COLLECTION_RELATION_NAME)
+          .out(Collection.HAS_ENTITY_NODE_RELATION_NAME)
+          .outE(Collection.HAS_ENTITY_RELATION_NAME)
+          .count()
+          .next());
+        LOG.debug("And this batch took {}", stopwatch.stop());
+        stopwatch.reset().start();
         batch.clear();
       }
     }
