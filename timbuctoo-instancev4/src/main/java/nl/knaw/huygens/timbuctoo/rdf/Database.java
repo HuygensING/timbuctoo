@@ -46,7 +46,7 @@ public class Database {
     this.systemPropertyModifier = systemPropertyModifier;
   }
 
-  public Vertex findOrCreateEntityVertex(Node node, String vreName) {
+  private Vertex findOrCreateEntityVertex(Node node, String vreName) {
     Graph graph = graphWrapper.getGraph();
     Long vertexId = entityCache.getIfPresent(node.getURI());
 
