@@ -63,6 +63,7 @@ public class RdfImporter {
 
   private final class TripleStreamReader implements StreamRDF {
     private final List<Triple> batch = Lists.newArrayList();
+
     private long count = 0;
     private Stopwatch stopwatch = Stopwatch.createStarted() ;
 
