@@ -52,6 +52,7 @@ public class DatabaseConfiguredVres implements Vres {
     return loadedInstance;
   }
 
+  @Override
   public void reload() {
     final List<Vre> vreList = new ArrayList<>();
     final Map<String, Map<String, String>> keywordTypes = new HashMap<>();

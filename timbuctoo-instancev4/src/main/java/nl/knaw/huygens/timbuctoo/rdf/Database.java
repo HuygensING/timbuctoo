@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
@@ -8,6 +10,8 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
 import java.util.Set;
@@ -23,9 +27,14 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.IS_RELATION_COLLECT
 
 public class Database {
   public static final String RDF_URI_PROP = "rdfUri";
+  public static final Logger LOG = LoggerFactory.getLogger(Database.class);
+
   private final GraphWrapper graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
 
+  private static final int ENTITY_CACHE_SIZE = 1024;
+
+  private Cache<String, Long> entityCache = CacheBuilder.newBuilder().maximumSize(ENTITY_CACHE_SIZE).build();
 
   public Database(GraphWrapper graphWrapper) {
     this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()));
@@ -38,35 +47,42 @@ public class Database {
 
   public Vertex findOrCreateEntityVertex(Node node, String vreName) {
     Graph graph = graphWrapper.getGraph();
-    final GraphTraversal<Vertex, Vertex> existingT = graph
-      .traversal().V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-      .out(Vre.HAS_COLLECTION_RELATION_NAME)
-      .out(HAS_ENTITY_NODE_RELATION_NAME)
-      .out(HAS_ENTITY_RELATION_NAME)
-      .has(RDF_URI_PROP, node.getURI());
+    Long value = entityCache.getIfPresent(node.getURI());
 
-    Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
+    if (value == null) {
+      final GraphTraversal<Vertex, Vertex> existingT = graph
+        .traversal().V()
+        .hasLabel(Vre.DATABASE_LABEL)
+        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+        .out(Vre.HAS_COLLECTION_RELATION_NAME)
+        .out(HAS_ENTITY_NODE_RELATION_NAME)
+        .out(HAS_ENTITY_RELATION_NAME)
+        .has(RDF_URI_PROP, node.getURI());
 
-    if (existingT.hasNext()) {
-      final Vertex foundVertex = existingT.next();
-      collection.add(foundVertex);
-      return foundVertex;
-    } else {
-      Vertex vertex = graph.addVertex();
-      vertex.property(RDF_URI_PROP, node.getURI());
+      Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
+      Vertex vertex;
+      if (existingT.hasNext()) {
+        vertex = existingT.next();
+        collection.add(vertex);
+      } else {
+        vertex = graph.addVertex();
+        vertex.property(RDF_URI_PROP, node.getURI());
 
-      systemPropertyModifier.setCreated(vertex, "rdf-importer");
-      systemPropertyModifier.setModified(vertex, "rdf-importer");
-      systemPropertyModifier.setTimId(vertex);
-      systemPropertyModifier.setRev(vertex, 1);
-      systemPropertyModifier.setIsLatest(vertex, true);
-      systemPropertyModifier.setIsDeleted(vertex, false);
+        systemPropertyModifier.setCreated(vertex, "rdf-importer");
+        systemPropertyModifier.setModified(vertex, "rdf-importer");
+        systemPropertyModifier.setTimId(vertex);
+        systemPropertyModifier.setRev(vertex, 1);
+        systemPropertyModifier.setIsLatest(vertex, true);
+        systemPropertyModifier.setIsDeleted(vertex, false);
 
-      collection.add(vertex);
-      return vertex;
+        collection.add(vertex);
+
+      }
+      value = (Long)vertex.id();
+      entityCache.put(node.getURI(), value);
     }
+
+    return graph.traversal().V(value).next();
   }
 
   public Entity findOrCreateEntity(String vreName, Node node) {

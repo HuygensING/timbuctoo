@@ -28,7 +28,7 @@ public class RdfImporterTest {
   @Test
   public void importRdfCreatesAVreVertex() {
     final GraphWrapper graphWrapper = newGraph().wrap();
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, null);
 
     instance.importRdf(createModel(""));
 

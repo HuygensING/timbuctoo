@@ -6,18 +6,22 @@ import org.apache.jena.graph.Triple;
 
 public class TripleProcessorFactory {
   private GraphWrapper graphWrapper;
+  private Database database;
 
   public TripleProcessorFactory(GraphWrapper graphWrapper) {
+
     this.graphWrapper = graphWrapper;
+    this.database = new Database(graphWrapper);
   }
 
   public TripleProcessor getTripleProcessor(Triple triple) {
     if (describesType(triple)) {
-      return new AddToCollectionTripleProcessor(new Database(graphWrapper));
+      database = new Database(graphWrapper);
+      return new AddToCollectionTripleProcessor(database);
     } else if (describesProperty(triple)) {
-      return new AddPropertyTripleProcessor(new Database(graphWrapper));
+      return new AddPropertyTripleProcessor(database);
     } else if (describesRelation(triple)) {
-      return new AddRelationTripleProcessor(new Database(graphWrapper));
+      return new AddRelationTripleProcessor(database);
     } else {
       return new UnsupportedTripleProcessor();
     }

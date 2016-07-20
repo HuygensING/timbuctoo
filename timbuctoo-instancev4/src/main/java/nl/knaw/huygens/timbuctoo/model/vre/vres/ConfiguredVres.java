@@ -55,4 +55,9 @@ class ConfiguredVres implements Vres {
     return keywordTypes;
   }
 
+  @Override
+  public void reload() {
+
+  }
+
 }

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.base.Stopwatch;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
@@ -13,9 +14,11 @@ public class RdfImporter {
   private final String vreName;
   private final TripleImporter tripleImporter;
   private final ImportPreparer importPreparer;
+  private Vres vres;
 
-  public RdfImporter(GraphWrapper graphWrapper, String vreName) {
+  public RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres) {
     this(graphWrapper, vreName, new TripleImporter(graphWrapper, vreName), new ImportPreparer(graphWrapper));
+    this.vres = vres;
   }
 
   RdfImporter(GraphWrapper graphWrapper, String vreName, TripleImporter tripleImporter, ImportPreparer importPreparer) {
@@ -29,13 +32,13 @@ public class RdfImporter {
     final Stopwatch stopwatch = Stopwatch.createStarted();
     importPreparer.setupVre(vreName);
     importPreparer.setUpAdminVre();
+    LOG.info("Starting import...");
 
-    model.getGraph().find(Triple.ANY).forEachRemaining(
-      // TODO: each new triple should be committed
-      tripleImporter::importTriple
-    );
+    model.getGraph().find(Triple.ANY).forEachRemaining(tripleImporter::importTriple);
     graphWrapper.getGraph().tx().commit();
-
+    if (vres != null) {
+      vres.reload();
+    }
     LOG.info("Import took {}", stopwatch.stop());
   }
 

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.rdf.model.Model;
@@ -17,16 +18,18 @@ import java.nio.charset.StandardCharsets;
 public class ImportRdf {
 
   private final GraphWrapper graphWrapper;
+  private Vres vres;
 
-  public ImportRdf(GraphWrapper graphWrapper) {
+  public ImportRdf(GraphWrapper graphWrapper, Vres vres) {
     this.graphWrapper = graphWrapper;
+    this.vres = vres;
   }
 
   @Consumes("application/n-triples")
   @POST
   public void post(String tripleString, @HeaderParam("VRE_ID") String vreName) {
     Model model = createModel(tripleString);
-    new RdfImporter(graphWrapper, vreName).importRdf(model);
+    new RdfImporter(graphWrapper, vreName, vres).importRdf(model);
   }
 
   private Model createModel(String tripleString) {
