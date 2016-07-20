@@ -5,18 +5,14 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 
 public class TripleProcessorFactory {
-  private GraphWrapper graphWrapper;
   private Database database;
 
   public TripleProcessorFactory(GraphWrapper graphWrapper) {
-
-    this.graphWrapper = graphWrapper;
     this.database = new Database(graphWrapper);
   }
 
   public TripleProcessor getTripleProcessor(Triple triple) {
     if (describesType(triple)) {
-      database = new Database(graphWrapper);
       return new AddToCollectionTripleProcessor(database);
     } else if (describesProperty(triple)) {
       return new AddPropertyTripleProcessor(database);

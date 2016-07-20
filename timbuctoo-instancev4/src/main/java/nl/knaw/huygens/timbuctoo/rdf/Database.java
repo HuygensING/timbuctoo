@@ -32,8 +32,9 @@ public class Database {
   private final GraphWrapper graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
 
-  private static final int ENTITY_CACHE_SIZE = 1024;
+  private static final int ENTITY_CACHE_SIZE = 1024 * 1024;
 
+  // TODO add cache loader
   private Cache<String, Long> entityCache = CacheBuilder.newBuilder().maximumSize(ENTITY_CACHE_SIZE).build();
 
   public Database(GraphWrapper graphWrapper) {
@@ -47,9 +48,9 @@ public class Database {
 
   public Vertex findOrCreateEntityVertex(Node node, String vreName) {
     Graph graph = graphWrapper.getGraph();
-    Long value = entityCache.getIfPresent(node.getURI());
+    Long vertexId = entityCache.getIfPresent(node.getURI());
 
-    if (value == null) {
+    if (vertexId == null) {
       final GraphTraversal<Vertex, Vertex> existingT = graph
         .traversal().V()
         .hasLabel(Vre.DATABASE_LABEL)
@@ -62,6 +63,7 @@ public class Database {
       Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
       Vertex vertex;
       if (existingT.hasNext()) {
+        // System.out.println("Existing vertex with uri: " +  node.getURI());
         vertex = existingT.next();
         collection.add(vertex);
       } else {
@@ -76,13 +78,13 @@ public class Database {
         systemPropertyModifier.setIsDeleted(vertex, false);
 
         collection.add(vertex);
-
+        graphWrapper.getGraph().tx().commit();
       }
-      value = (Long)vertex.id();
-      entityCache.put(node.getURI(), value);
+      vertexId = (Long)vertex.id();
+      entityCache.put(node.getURI(), vertexId);
     }
 
-    return graph.traversal().V(value).next();
+    return graph.traversal().V(vertexId).next();
   }
 
   public Entity findOrCreateEntity(String vreName, Node node) {
