@@ -43,9 +43,10 @@ public class ImportRdf {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @POST
   public void upload(@FormDataParam("file") final InputStream triples,
-                     @HeaderParam("VRE_ID") String vreName) {
-    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres);
+                     @FormDataParam("VRE_ID") String vreNameInput) {
 
+    final String vreName = vreNameInput != null && vreNameInput.length() > 0 ? vreNameInput : "RdfImport";
+    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres);
     rdfImporter.importRdf(triples, Lang.NQUADS);
   }
 
