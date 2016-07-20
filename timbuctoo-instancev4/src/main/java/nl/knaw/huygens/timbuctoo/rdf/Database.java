@@ -28,12 +28,9 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.IS_RELATION_COLLECT
 public class Database {
   public static final String RDF_URI_PROP = "rdfUri";
   public static final Logger LOG = LoggerFactory.getLogger(Database.class);
-
+  private static final int ENTITY_CACHE_SIZE = 1024 * 1024;
   private final GraphWrapper graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
-
-  private static final int ENTITY_CACHE_SIZE = 1024 * 1024;
-
   // TODO add cache loader
   private Cache<String, Long> entityCache = CacheBuilder.newBuilder().maximumSize(ENTITY_CACHE_SIZE).build();
 
@@ -46,51 +43,67 @@ public class Database {
     this.systemPropertyModifier = systemPropertyModifier;
   }
 
-  public Vertex findOrCreateEntityVertex(Node node, String vreName) {
-    Graph graph = graphWrapper.getGraph();
-    Long vertexId = entityCache.getIfPresent(node.getURI());
-
-    if (vertexId == null) {
-      final GraphTraversal<Vertex, Vertex> existingT = graph
-        .traversal().V()
-        .hasLabel(Vre.DATABASE_LABEL)
-        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-        .out(Vre.HAS_COLLECTION_RELATION_NAME)
-        .out(HAS_ENTITY_NODE_RELATION_NAME)
-        .out(HAS_ENTITY_RELATION_NAME)
-        .has(RDF_URI_PROP, node.getURI());
-
-      Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
-      Vertex vertex;
-      if (existingT.hasNext()) {
-        // System.out.println("Existing vertex with uri: " +  node.getURI());
-        vertex = existingT.next();
-        collection.add(vertex);
-      } else {
-        vertex = graph.addVertex();
-        vertex.property(RDF_URI_PROP, node.getURI());
-
-        systemPropertyModifier.setCreated(vertex, "rdf-importer");
-        systemPropertyModifier.setModified(vertex, "rdf-importer");
-        systemPropertyModifier.setTimId(vertex);
-        systemPropertyModifier.setRev(vertex, 1);
-        systemPropertyModifier.setIsLatest(vertex, true);
-        systemPropertyModifier.setIsDeleted(vertex, false);
-
-        collection.add(vertex);
-        graphWrapper.getGraph().tx().commit();
-      }
-      vertexId = (Long)vertex.id();
-      entityCache.put(node.getURI(), vertexId);
+  private String getNodeUri(Node node, String vreName) {
+    if (!node.isBlank()) {
+      return node.getURI();
     }
-
-    return graph.traversal().V(vertexId).next();
+    return String.format("%s:%s", vreName, node.getBlankNodeId());
   }
 
   public Entity findOrCreateEntity(String vreName, Node node) {
-    final Vertex vertex = findOrCreateEntityVertex(node, vreName);
-    // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
-    return new Entity(vertex, getCollections(vertex, vreName));
+    String nodeUri = getNodeUri(node, vreName);
+
+    Entity entity = findEntity(vreName, nodeUri);
+    if (entity == null) {
+      entity = createEntity(vreName, nodeUri);
+    }
+    return entity;
+  }
+
+  private Entity findEntity(String vreName, String nodeUri) {
+    Graph graph = graphWrapper.getGraph();
+    Long vertexId = entityCache.getIfPresent(nodeUri);
+    if (vertexId != null) {
+      final Vertex vertex = graph.traversal().V(vertexId).next();
+      return new Entity(vertex, getCollections(vertex, vreName));
+    } else {
+      final GraphTraversal<Vertex, Vertex> existingT = graph.traversal().V()
+                                                            .hasLabel(Vre.DATABASE_LABEL)
+                                                            .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+                                                            .out(Vre.HAS_COLLECTION_RELATION_NAME)
+                                                            .out(HAS_ENTITY_NODE_RELATION_NAME)
+                                                            .out(HAS_ENTITY_RELATION_NAME)
+                                                            .has(RDF_URI_PROP, nodeUri);
+
+      if (existingT.hasNext()) {
+        Vertex vertex = existingT.next();
+        vertexId = (Long) vertex.id();
+        entityCache.put(nodeUri, vertexId);
+
+        return new Entity(vertex, getCollections(vertex, vreName));
+      }
+    }
+    return null;
+  }
+
+  private Entity createEntity(String vreName, String nodeUri) {
+    Vertex vertex = graphWrapper.getGraph().addVertex();
+    vertex.property(RDF_URI_PROP, nodeUri);
+
+    systemPropertyModifier.setCreated(vertex, "rdf-importer");
+    systemPropertyModifier.setModified(vertex, "rdf-importer");
+    systemPropertyModifier.setTimId(vertex);
+    systemPropertyModifier.setRev(vertex, 1);
+    systemPropertyModifier.setIsLatest(vertex, true);
+    systemPropertyModifier.setIsDeleted(vertex, false);
+
+    entityCache.put(nodeUri, (Long) vertex.id());
+
+    Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
+    Entity entity = new Entity(vertex, getCollections(vertex, vreName));
+    entity.addToCollection(collection);
+
+    return entity;
   }
 
   private Set<Collection> getCollections(Vertex foundVertex, String vreName) {

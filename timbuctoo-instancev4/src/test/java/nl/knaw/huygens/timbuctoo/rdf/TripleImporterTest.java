@@ -98,13 +98,15 @@ public class TripleImporterTest {
   }
 
   @Test
-  public void importTripleShouldCreateAVertexFromATriple() {
+  public void importTripleShouldCreateAVertexFromATripleAddedToTheUnknownCollection() {
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(ABADAN_POINT_TRIPLE);
 
     instance.importTriple(tripleExtendedIterator.next());
 
-    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).hasNext(), is(true));
+    GraphTraversal<Vertex, Vertex> entityT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI);
+    assertThat(entityT.hasNext(), is(true));
+    assertThat(entityT.next(), is(likeVertex().withType(DEFAULT_ENTITY_TYPE_NAME).withLabel(DEFAULT_ENTITY_TYPE_NAME)));
   }
 
   @Test

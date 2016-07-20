@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
@@ -22,6 +23,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -46,7 +48,7 @@ public class DatabaseTest {
   }
 
   @Test
-  public void findOrCreateEntityVertexCreateANewVertexWithTimbuctoosSystemProperties() {
+  public void findOrCreateEntityCreateANewVertexWithTimbuctoosSystemProperties() {
     GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty("name", VRE_NAME))
                                           .withVertex(v -> {
@@ -65,19 +67,21 @@ public class DatabaseTest {
                                           .wrap();
     final Database instance = new Database(graphWrapper, modifier);
 
-    Vertex vertex = instance.findOrCreateEntityVertex(entityNode, VRE_NAME);
+    instance.findOrCreateEntity(VRE_NAME, entityNode);
 
-    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI).next(), is(vertex));
-    verify(modifier).setCreated(vertex, USER_ID);
-    verify(modifier).setModified(vertex, USER_ID);
-    verify(modifier).setTimId(vertex);
-    verify(modifier).setRev(vertex, 1);
-    verify(modifier).setIsLatest(vertex, true);
-    verify(modifier).setIsDeleted(vertex, false);
+    GraphTraversal<Vertex, Vertex> entityT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI);
+    assertThat(entityT.hasNext(), is(true));
+    Vertex entityVertex = entityT.next();
+    verify(modifier).setCreated(entityVertex, USER_ID);
+    verify(modifier).setModified(entityVertex, USER_ID);
+    verify(modifier).setTimId(entityVertex);
+    verify(modifier).setRev(entityVertex, 1);
+    verify(modifier).setIsLatest(entityVertex, true);
+    verify(modifier).setIsDeleted(entityVertex, false);
   }
 
   @Test
-  public void findOrCreateEntityVertexAddsANewlyCreatedEntityToTheDefaultCollection() {
+  public void findOrCreateEntityAddsANewlyCreatedEntityToTheDefaultCollection() {
     GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty("name", VRE_NAME))
                                           .withVertex(v -> {
@@ -96,12 +100,43 @@ public class DatabaseTest {
                                           .wrap();
     final Database instance = new Database(graphWrapper, modifier);
 
-    Vertex vertex = instance.findOrCreateEntityVertex(entityNode, VRE_NAME);
+    Entity entity = instance.findOrCreateEntity(VRE_NAME, entityNode);
 
-    assertThat(graphWrapper.getGraph().traversal().V(vertex.id())
+    assertThat(entity, is(notNullValue()));
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI)
                            .in(HAS_ENTITY_RELATION_NAME).in(HAS_ENTITY_NODE_RELATION_NAME)
                            .has(ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_COLLECTION).hasNext(),
       is(true));
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI).next(),
+      is(likeVertex().withLabel(DEFAULT_COLLECTION).withType(DEFAULT_COLLECTION)));
+  }
+
+  @Test
+  public void findOrCreateEntityGivesABlankNodeADefaultUri() {
+    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+                                                            .withProperty("name", VRE_NAME))
+                                          .withVertex(v -> {
+                                            v.withLabel(Vre.DATABASE_LABEL);
+                                            v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
+                                            v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
+                                              "defaultArchetype");
+                                          })
+                                          .withVertex("defaultArchetype", v -> {
+                                            v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
+                                            v.withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts");
+                                            v.withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "entityCollection");
+                                          })
+                                          .withVertex("entityCollection", v -> {
+                                          })
+                                          .wrap();
+    final Database instance = new Database(graphWrapper, modifier);
+    Node blankNode = TripleHelper.createBlankNode();
+    String expectedUri = VRE_NAME + ":" + blankNode.getBlankNodeLabel();
+
+    Entity entity = instance.findOrCreateEntity(VRE_NAME, blankNode);
+
+    assertThat(entity, is(notNullValue()));
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, expectedUri).hasNext(), is(true));
   }
 
   @Test
