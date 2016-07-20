@@ -82,6 +82,7 @@ import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -221,7 +222,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata, excelExportService));
-    register(environment, new ImportRdf(graphManager, vres));
+
+    final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
+    register(environment, new ImportRdf(graphManager, vres, rfdExecutorService));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));

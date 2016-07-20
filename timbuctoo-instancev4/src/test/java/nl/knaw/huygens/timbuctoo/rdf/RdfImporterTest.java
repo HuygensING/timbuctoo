@@ -3,8 +3,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
 import org.junit.Test;
 import org.mockito.InOrder;
 
@@ -31,7 +30,7 @@ public class RdfImporterTest {
     final GraphWrapper graphWrapper = newGraph().wrap();
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class));
 
-    instance.importRdf(createModel(""));
+    instance.importRdf(getTripleStream(""), Lang.NQUADS);
 
     assertThat(
       graphWrapper.getGraph().traversal().V()
@@ -48,9 +47,8 @@ public class RdfImporterTest {
     TripleImporter tripleImporter = mock(TripleImporter.class);
     ImportPreparer importPreparer = mock(ImportPreparer.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), tripleImporter, importPreparer);
-    Model model = createModel(EXAMPLE_TRIPLE_STRING);
 
-    instance.importRdf(model);
+    instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
     InOrder inOrder = inOrder(importPreparer, tripleImporter);
     inOrder.verify(importPreparer).setupVre(VRE_NAME);
@@ -63,9 +61,8 @@ public class RdfImporterTest {
     GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter tripleImporter = mock(TripleImporter.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), tripleImporter, importPreparer);
-    Model model = createModel(EXAMPLE_TRIPLE_STRING);
 
-    instance.importRdf(model);
+    instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
     InOrder inOrder = inOrder(importPreparer, tripleImporter);
     inOrder.verify(importPreparer).setUpAdminVre();
@@ -79,19 +76,16 @@ public class RdfImporterTest {
     TripleImporter tripleImporter = mock(TripleImporter.class);
     final Vres vres = mock(Vres.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, tripleImporter, importPreparer);
-    Model model = createModel(EXAMPLE_TRIPLE_STRING);
 
-    instance.importRdf(model);
+    instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
     InOrder inOrder = inOrder(tripleImporter, vres);
     inOrder.verify(tripleImporter).importTriple(any());
     inOrder.verify(vres).reload();
   }
 
-  private Model createModel(String tripleString) {
-    Model model = ModelFactory.createDefaultModel();
-    InputStream in = new ByteArrayInputStream(tripleString.getBytes(StandardCharsets.UTF_8));
-    model.read(in, null, "N3");
-    return model;
+
+  private InputStream getTripleStream(String tripleString) {
+    return new ByteArrayInputStream(tripleString.getBytes(StandardCharsets.UTF_8));
   }
 }

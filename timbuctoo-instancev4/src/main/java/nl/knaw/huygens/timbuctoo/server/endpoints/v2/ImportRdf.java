@@ -3,8 +3,6 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.riot.Lang;
 
 import javax.ws.rs.Consumes;
@@ -14,29 +12,45 @@ import javax.ws.rs.Path;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
 
 @Path("/v2.1/rdf/import")
 public class ImportRdf {
 
   private final GraphWrapper graphWrapper;
   private Vres vres;
+  private ExecutorService rfdExecutorService;
 
-  public ImportRdf(GraphWrapper graphWrapper, Vres vres) {
+  public ImportRdf(GraphWrapper graphWrapper, Vres vres, ExecutorService rfdExecutorService) {
     this.graphWrapper = graphWrapper;
     this.vres = vres;
+    this.rfdExecutorService = rfdExecutorService;
   }
 
   @Consumes("application/n-quads")
   @POST
   public void post(String tripleString, @HeaderParam("VRE_ID") String vreName) {
-    Model model = createModel(tripleString);
-    new RdfImporter(graphWrapper, vreName, vres).importRdf(model);
+    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres);
+    final ByteArrayInputStream triples = new ByteArrayInputStream(tripleString.getBytes(StandardCharsets.UTF_8));
+    final ImportRunner importRunner = new ImportRunner(rdfImporter, triples);
+
+    rfdExecutorService.submit(importRunner);
   }
 
-  private Model createModel(String tripleString) {
-    Model model = ModelFactory.createDefaultModel();
-    InputStream in = new ByteArrayInputStream(tripleString.getBytes(StandardCharsets.UTF_8));
-    model.read(in, null, Lang.NQUADS.getName());
-    return model;
+  private static final class ImportRunner implements Runnable {
+
+    private RdfImporter rdfImporter;
+    private InputStream triples;
+
+    public ImportRunner(RdfImporter rdfImporter, InputStream triples) {
+
+      this.rdfImporter = rdfImporter;
+      this.triples = triples;
+    }
+
+    @Override
+    public void run() {
+      rdfImporter.importRdf(triples, Lang.NQUADS);
+    }
   }
 }
