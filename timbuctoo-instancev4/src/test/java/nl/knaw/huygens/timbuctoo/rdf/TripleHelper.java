@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -22,4 +23,8 @@ public class TripleHelper {
     return model.getGraph().find(Triple.ANY);
   }
 
+  static Node createBlankNode() {
+    Model model = ModelFactory.createDefaultModel();
+    return model.createResource().asNode();
+  }
 }

@@ -80,6 +80,7 @@ public class DatabaseTest {
     verify(modifier).setIsDeleted(entityVertex, false);
   }
 
+
   @Test
   public void findOrCreateEntityAddsANewlyCreatedEntityToTheDefaultCollection() {
     GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
@@ -107,6 +108,34 @@ public class DatabaseTest {
                            .in(HAS_ENTITY_RELATION_NAME).in(HAS_ENTITY_NODE_RELATION_NAME)
                            .has(ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_COLLECTION).hasNext(),
       is(true));
+  }
+
+  @Test
+  public void findOrCreateEntityGivesABlankNodeADefaultUri() {
+    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+                                                            .withProperty("name", VRE_NAME))
+                                          .withVertex(v -> {
+                                            v.withLabel(Vre.DATABASE_LABEL);
+                                            v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
+                                            v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
+                                              "defaultArchetype");
+                                          })
+                                          .withVertex("defaultArchetype", v -> {
+                                            v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
+                                            v.withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts");
+                                            v.withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "entityCollection");
+                                          })
+                                          .withVertex("entityCollection", v -> {
+                                          })
+                                          .wrap();
+    final Database instance = new Database(graphWrapper, modifier);
+    Node blankNode = TripleHelper.createBlankNode();
+    String expectedUri = VRE_NAME + ":" + blankNode.getBlankNodeLabel();
+
+    Entity entity = instance.findOrCreateEntity(VRE_NAME, blankNode);
+
+    assertThat(entity, is(notNullValue()));
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, expectedUri).hasNext(), is(true));
   }
 
   @Test

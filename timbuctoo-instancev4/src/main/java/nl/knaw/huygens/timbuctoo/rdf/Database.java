@@ -28,12 +28,9 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.IS_RELATION_COLLECT
 public class Database {
   public static final String RDF_URI_PROP = "rdfUri";
   public static final Logger LOG = LoggerFactory.getLogger(Database.class);
-
+  private static final int ENTITY_CACHE_SIZE = 1024 * 1024;
   private final GraphWrapper graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
-
-  private static final int ENTITY_CACHE_SIZE = 1024 * 1024;
-
   // TODO add cache loader
   private Cache<String, Long> entityCache = CacheBuilder.newBuilder().maximumSize(ENTITY_CACHE_SIZE).build();
 
@@ -46,9 +43,10 @@ public class Database {
     this.systemPropertyModifier = systemPropertyModifier;
   }
 
-  private Vertex findOrCreateEntityVertex(Node node, String vreName) {
+  private Vertex findOrCreateEntityVertex(String vreName, Node node) {
     Graph graph = graphWrapper.getGraph();
-    Long vertexId = entityCache.getIfPresent(node.getURI());
+    String nodeUri = getNodeUri(node, vreName);
+    Long vertexId = entityCache.getIfPresent(nodeUri);
 
     if (vertexId == null) {
       final GraphTraversal<Vertex, Vertex> existingT = graph
@@ -58,17 +56,16 @@ public class Database {
         .out(Vre.HAS_COLLECTION_RELATION_NAME)
         .out(HAS_ENTITY_NODE_RELATION_NAME)
         .out(HAS_ENTITY_RELATION_NAME)
-        .has(RDF_URI_PROP, node.getURI());
+        .has(RDF_URI_PROP, nodeUri);
 
       Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
       Vertex vertex;
       if (existingT.hasNext()) {
-        // System.out.println("Existing vertex with uri: " +  node.getURI());
         vertex = existingT.next();
         collection.add(vertex);
       } else {
         vertex = graph.addVertex();
-        vertex.property(RDF_URI_PROP, node.getURI());
+        vertex.property(RDF_URI_PROP, nodeUri);
 
         systemPropertyModifier.setCreated(vertex, "rdf-importer");
         systemPropertyModifier.setModified(vertex, "rdf-importer");
@@ -80,15 +77,22 @@ public class Database {
         collection.add(vertex);
         graphWrapper.getGraph().tx().commit();
       }
-      vertexId = (Long)vertex.id();
-      entityCache.put(node.getURI(), vertexId);
+      vertexId = (Long) vertex.id();
+      entityCache.put(nodeUri, vertexId);
     }
 
     return graph.traversal().V(vertexId).next();
   }
 
+  private String getNodeUri(Node node, String vreName) {
+    if (!node.isBlank()) {
+      return node.getURI();
+    }
+    return String.format("%s:%s", vreName, node.getBlankNodeId());
+  }
+
   public Entity findOrCreateEntity(String vreName, Node node) {
-    final Vertex vertex = findOrCreateEntityVertex(node, vreName);
+    final Vertex vertex = findOrCreateEntityVertex(vreName, node);
     // TODO *HERE SHOULD BE A COMMIT* (autocommit?)
     return new Entity(vertex, getCollections(vertex, vreName));
   }
