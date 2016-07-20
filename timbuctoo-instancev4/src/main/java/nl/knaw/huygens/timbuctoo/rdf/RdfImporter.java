@@ -17,15 +17,16 @@ public class RdfImporter {
   private Vres vres;
 
   public RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres) {
-    this(graphWrapper, vreName, new TripleImporter(graphWrapper, vreName), new ImportPreparer(graphWrapper));
-    this.vres = vres;
+    this(graphWrapper, vreName, vres, new TripleImporter(graphWrapper, vreName), new ImportPreparer(graphWrapper));
   }
 
-  RdfImporter(GraphWrapper graphWrapper, String vreName, TripleImporter tripleImporter, ImportPreparer importPreparer) {
+  RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres, TripleImporter tripleImporter,
+              ImportPreparer importPreparer) {
     this.graphWrapper = graphWrapper;
     this.vreName = vreName;
     this.tripleImporter = tripleImporter;
     this.importPreparer = importPreparer;
+    this.vres = vres;
   }
 
   public void importRdf(Model model) {
@@ -36,9 +37,7 @@ public class RdfImporter {
 
     model.getGraph().find(Triple.ANY).forEachRemaining(tripleImporter::importTriple);
     graphWrapper.getGraph().tx().commit();
-    if (vres != null) {
-      vres.reload();
-    }
+    vres.reload();
     LOG.info("Import took {}", stopwatch.stop());
   }
 
