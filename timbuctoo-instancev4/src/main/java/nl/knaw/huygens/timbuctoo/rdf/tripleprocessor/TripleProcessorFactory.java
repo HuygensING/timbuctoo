@@ -1,14 +1,13 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.rdf.Database;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 
 public class TripleProcessorFactory {
   private Database database;
 
-  public TripleProcessorFactory(GraphWrapper graphWrapper) {
-    this.database = new Database(graphWrapper);
+  public TripleProcessorFactory(Database database) {
+    this.database = database;
   }
 
   public TripleProcessor getTripleProcessor(Triple triple) {

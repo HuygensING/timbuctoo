@@ -8,12 +8,10 @@ import org.apache.jena.graph.Triple;
 class TripleImporter {
 
   private final TripleProcessorFactory tripleProcessorFactory;
-  private final GraphWrapper graphWrapper;
   private final String vreName;
 
   public TripleImporter(GraphWrapper graphWrapper, String vreName) {
-    this.tripleProcessorFactory = new TripleProcessorFactory(graphWrapper);
-    this.graphWrapper = graphWrapper;
+    this.tripleProcessorFactory = new TripleProcessorFactory(new Database(graphWrapper));
     this.vreName = vreName;
   }
 
