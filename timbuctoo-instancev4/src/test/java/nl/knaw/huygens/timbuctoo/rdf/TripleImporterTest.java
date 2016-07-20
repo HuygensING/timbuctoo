@@ -66,11 +66,11 @@ public class TripleImporterTest {
   private static final String ABADAN_IS_PART_OF_IRAN_TRIPLE =
     "<" + ABADAN_URI + "> " +
       "<" + IS_PART_OF_URI + "> " +
-      "<" + IRAN_URI + ">";
+      "<" + IRAN_URI + "> .";
   private static final String IRAN_IS_PART_OF_ASIA_TRIPLE =
     "<" + IRAN_URI + ">" +
       "<" + IS_PART_OF_URI + "> " +
-      "<" + ASIA_URI + ">";
+      "<" + ASIA_URI + "> .";
 
 
   private GraphWrapper graphWrapper;

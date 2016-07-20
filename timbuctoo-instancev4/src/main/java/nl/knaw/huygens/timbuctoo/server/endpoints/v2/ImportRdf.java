@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
@@ -25,7 +26,7 @@ public class ImportRdf {
     this.vres = vres;
   }
 
-  @Consumes("application/n-triples")
+  @Consumes("application/n-quads")
   @POST
   public void post(String tripleString, @HeaderParam("VRE_ID") String vreName) {
     Model model = createModel(tripleString);
@@ -35,7 +36,7 @@ public class ImportRdf {
   private Model createModel(String tripleString) {
     Model model = ModelFactory.createDefaultModel();
     InputStream in = new ByteArrayInputStream(tripleString.getBytes(StandardCharsets.UTF_8));
-    model.read(in, null, "N3");
+    model.read(in, null, Lang.NQUADS.getName());
     return model;
   }
 }

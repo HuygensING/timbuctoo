@@ -20,7 +20,7 @@ public class AddToCollectionTripleProcessorTest {
   private static final String ABADAN_IS_PART_OF_IRAN_TRIPLE =
     "<" + ABADAN_URI + "> " +
       "<" + IS_PART_OF_URI + "> " +
-      "<" + IRAN_URI + ">";
+      "<" + IRAN_URI + "> .";
 
   @Test
   public void processAddsTheEntityToTheRequestedCollectionAndRemovesItFromTheDefaultCollection() {
