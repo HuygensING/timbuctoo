@@ -39,11 +39,11 @@ public class RdfImporter {
     this.vres = vres;
   }
 
-  public void importRdf(InputStream triples, Lang lang) {
+  public void importRdf(InputStream rdf, Lang lang) {
     final Stopwatch stopwatch = Stopwatch.createStarted();
-    final StreamRDF tripleStreamReader = new TripleStreamReader();
+    final StreamRDF rdfStreamReader = new RdfStreamReader();
 
-    RDFDataMgr.parse(tripleStreamReader, new TypedInputStream(triples), lang);
+    RDFDataMgr.parse(rdfStreamReader, new TypedInputStream(rdf), lang);
 
     LOG.info("Import took {}", stopwatch.stop());
 
@@ -61,7 +61,7 @@ public class RdfImporter {
   }
 
 
-  private final class TripleStreamReader implements StreamRDF {
+  private final class RdfStreamReader implements StreamRDF {
     private final List<Triple> batch = Lists.newArrayList();
 
     private long count = 0;

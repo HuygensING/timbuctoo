@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.riot.Lang;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
@@ -32,38 +31,38 @@ public class ImportRdf {
 
   @Consumes("application/n-quads")
   @POST
-  public void post(String tripleString, @HeaderParam("VRE_ID") String vreName) {
+  public void post(String rdfString, @HeaderParam("VRE_ID") String vreName) {
     final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres);
-    final ByteArrayInputStream triples = new ByteArrayInputStream(tripleString.getBytes(StandardCharsets.UTF_8));
-    final ImportRunner importRunner = new ImportRunner(rdfImporter, triples);
+    final ByteArrayInputStream rdfInputStream = new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8));
+    final ImportRunner importRunner = new ImportRunner(rdfImporter, rdfInputStream);
 
     rfdExecutorService.submit(importRunner);
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @POST
-  public void upload(@FormDataParam("file") final InputStream triples,
+  public void upload(@FormDataParam("file") final InputStream rdfInputStream,
                      @FormDataParam("VRE_ID") String vreNameInput) {
 
     final String vreName = vreNameInput != null && vreNameInput.length() > 0 ? vreNameInput : "RdfImport";
     final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres);
-    rdfImporter.importRdf(triples, Lang.NQUADS);
+    rdfImporter.importRdf(rdfInputStream, Lang.NQUADS);
   }
 
   private static final class ImportRunner implements Runnable {
 
     private RdfImporter rdfImporter;
-    private InputStream triples;
+    private InputStream rdfStream;
 
-    public ImportRunner(RdfImporter rdfImporter, InputStream triples) {
+    public ImportRunner(RdfImporter rdfImporter, InputStream rdfStream) {
 
       this.rdfImporter = rdfImporter;
-      this.triples = triples;
+      this.rdfStream = rdfStream;
     }
 
     @Override
     public void run() {
-      rdfImporter.importRdf(triples, Lang.NQUADS);
+      rdfImporter.importRdf(rdfStream, Lang.NQUADS);
     }
   }
 }
