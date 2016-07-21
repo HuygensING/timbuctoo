@@ -105,6 +105,10 @@ public class Collection {
     return archetype;
   }
 
+  public void setArchetype(Collection archetypeCollection) {
+    vertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.vertex);
+  }
+
   public String getVreName() {
     return vreName;
   }
@@ -116,7 +120,6 @@ public class Collection {
   public Vertex getVertex() {
     return vertex;
   }
-
 
   private boolean isInCollection(Vertex vertex, CollectionDescription collectionDescription) {
     return graphWrapper.getGraph().traversal().V(vertex.id())

@@ -309,4 +309,26 @@ public class DatabaseTest {
 
     assertThat(graphWrapper.getGraph().traversal().V().hasLabel("relationtype").count().next(), is(1L));
   }
+
+  @Test
+  public void isKnowArchetypeChecksIfTheCollectionWithTheNameIsAKnowArchetype() {
+    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+                                                            .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                                                            .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
+                                                              "defaultArchetype")
+                                                            .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
+                                                              "knownArchetype"))
+
+                                          .withVertex("defaultArchetype", v ->
+                                            v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                                             .withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts"))
+                                          .withVertex("knownArchetype", v->
+                                            v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "knownArchetype")
+                                             .withProperty(COLLECTION_NAME_PROPERTY_NAME, "knownArchetypes"))
+                                          .wrap();
+    Database instance = new Database(graphWrapper);
+
+    assertThat(instance.isKnownArchetype("knownArchetype"), is(true));
+    assertThat(instance.isKnownArchetype("unknownArchetype"), is(false));
+  }
 }

@@ -217,4 +217,14 @@ public class Database {
   }
 
 
+  public boolean isKnownArchetype(String archetype) {
+    boolean hasArchetype = graphWrapper.getGraph().traversal().V()
+                                       // Admin VRE contains the archetypes.
+                                       .hasLabel(Vre.DATABASE_LABEL)
+                                       .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                                       .out(Vre.HAS_COLLECTION_RELATION_NAME)
+                                       .has(ENTITY_TYPE_NAME_PROPERTY_NAME, archetype)
+                                       .hasNext();
+    return hasArchetype;
+  }
 }
