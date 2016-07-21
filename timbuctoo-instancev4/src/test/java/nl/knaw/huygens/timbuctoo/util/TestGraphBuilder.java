@@ -27,6 +27,7 @@ public class TestGraphBuilder {
     neo4jDb.beginTx();
   }
 
+  // FIXME do use the label to map the relations
   private TestGraphBuilder() {
   }
 

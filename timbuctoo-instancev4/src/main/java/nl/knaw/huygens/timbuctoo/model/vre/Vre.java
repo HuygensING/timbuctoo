@@ -123,6 +123,7 @@ public class Vre {
     return Maps.newHashMap();
   }
 
+  // FIXME remove parameter keywordTypes
   public Vertex save(Graph graph, Optional<Map<String, String>> keywordTypes) {
     LOG.info("Persisting vre '{}' to database", vreName);
 

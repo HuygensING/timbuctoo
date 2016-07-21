@@ -79,18 +79,24 @@ public class ReadablePropertyTest {
     IOException {
     final Vertex documentDisplayNameVertex = graph.addVertex(DATABASE_LABEL);
     final Vertex personDisplayNameVertex = graph.addVertex(DATABASE_LABEL);
+    final Vertex rdfDisplayNameVertex = graph.addVertex(DATABASE_LABEL);
     final String documentDisplayNameTypeId = new WwDocumentDisplayName().getUniqueTypeId();
     final String personDisplayNameTypeId = new WwPersonDisplayName().getUniqueTypeId();
+    final String rdfDisplayNameTypeId = new RdfImportedDefaultDisplayname().getUniqueTypeId();
     documentDisplayNameVertex.property(CLIENT_PROPERTY_NAME, "clientName");
     documentDisplayNameVertex.property(PROPERTY_TYPE_NAME, documentDisplayNameTypeId);
     personDisplayNameVertex.property(CLIENT_PROPERTY_NAME, "clientName2");
     personDisplayNameVertex.property(PROPERTY_TYPE_NAME, personDisplayNameTypeId);
+    rdfDisplayNameVertex.property(CLIENT_PROPERTY_NAME, "@displayName");
+    rdfDisplayNameVertex.property(PROPERTY_TYPE_NAME, rdfDisplayNameTypeId);
 
     ReadableProperty documentResult = ReadableProperty.load(documentDisplayNameVertex);
     ReadableProperty personResult = ReadableProperty.load(personDisplayNameVertex);
+    ReadableProperty rdfResult = ReadableProperty.load(rdfDisplayNameVertex);
 
     assertThat(documentResult, instanceOf(WwDocumentDisplayName.class));
     assertThat(personResult, instanceOf(WwPersonDisplayName.class));
+    assertThat(rdfResult, instanceOf(RdfImportedDefaultDisplayname.class));
   }
 
   @Test(expected = IOException.class)

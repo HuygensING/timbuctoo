@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.util;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
-import nl.knaw.huygens.hamcrest.LabelEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -10,6 +9,7 @@ import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.notNullValue;
 
 public class VertexMatcher extends CompositeMatcher<Vertex> {
   private VertexMatcher() {
@@ -24,10 +24,15 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
     this.addMatcher(new PropertyMatcher<Vertex, String>("types", containsString(type)) {
       @Override
       protected String getItemValue(Vertex item) {
-        return item.value("types");
+        VertexProperty<String> types = item.property("types");
+        return types.isPresent() ? types.value() : null;
       }
     });
     return this;
+  }
+
+  public VertexMatcher withTimId() {
+    return this.withProperty("tim_id");
   }
 
   public VertexMatcher withTimId(String timId) {
@@ -47,6 +52,16 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
     return this;
   }
 
+  public VertexMatcher withProperty(String propertyName) {
+    this.addMatcher(new PropertyMatcher<Vertex, Object>(propertyName, notNullValue()) {
+      @Override
+      protected Object getItemValue(Vertex item) {
+        return item.property(propertyName).orElse(null);
+      }
+    });
+    return this;
+  }
+
   public VertexMatcher withProperty(String propertyName, Object value) {
     this.addMatcher(new PropertyEqualityMatcher<Vertex, Object>(propertyName, value) {
       @Override
@@ -62,15 +77,16 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
   }
 
   public VertexMatcher withLabel(String expectedLabel) {
-    this.addMatcher(new LabelEqualityMatcher<Vertex, String>(expectedLabel) {
-
+    this.addMatcher(new PropertyMatcher<Vertex, String>("label", containsString(expectedLabel)) {
       @Override
       protected String getItemValue(Vertex item) {
         return item.label();
       }
     });
+
     return this;
   }
+
 
   private static class WithoutPropertyMatcher extends TypeSafeMatcher<Vertex> {
     private final String propertyName;

@@ -26,6 +26,23 @@
       </div>
     </form>
   </div>
+  <hr />
+  <div class="row">
+      <h1>Rdf Import</h1>
+      <form action="/v2.1/rdf/import" method="post" enctype="multipart/form-data">
+        <p>
+          <input type="text" placeholder="Enter vre name" name="VRE_ID" />
+        </p>
+        <p>
+          <label class="btn btn-default btn-file">
+            Upload n-triples or n-quads <input type="file" name="file" />
+          </label>
+        </p>
+        <p>
+          <button type="submit" class="btn btn-default" href="/static/gremlin/">Upload!</button>
+        </p>
+      </form>
+    </div>
 </div>
 <div class="well well-sm">
   <iframe name="results" frameborder="0" style="width:100%" onload="this.height = this.contentWindow.document.body.scrollHeight"></iframe>

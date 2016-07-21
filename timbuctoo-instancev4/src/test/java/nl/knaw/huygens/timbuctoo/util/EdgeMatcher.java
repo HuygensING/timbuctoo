@@ -3,10 +3,13 @@ package nl.knaw.huygens.timbuctoo.util;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
+import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.io.IOException;
+
+import static org.hamcrest.Matchers.notNullValue;
 
 public class EdgeMatcher extends CompositeMatcher<Edge> {
 
@@ -56,6 +59,16 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
     return this;
   }
 
+  public EdgeMatcher withProperty(String propertyName) {
+    this.addMatcher(new PropertyMatcher<Edge, Object>(propertyName, notNullValue()) {
+      @Override
+      protected Object getItemValue(Edge item) {
+        return item.property(propertyName).orElse(null);
+      }
+    });
+    return this;
+  }
+
   public EdgeMatcher withProperty(final String name, final Object value) {
     this.addMatcher(new PropertyEqualityMatcher<Edge, Object>(name, value) {
       @Override
@@ -65,4 +78,6 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
     });
     return this;
   }
+
+
 }

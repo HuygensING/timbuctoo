@@ -11900,7 +11900,10 @@ var RelationField = (function (_React$Component) {
 		value: function render() {
 			var _this = this;
 
-			var values = this.props.entity.data["@relations"][this.props.name] || [];
+			var values = this.props.entity.data["@relations"][this.props.name] ||
+			// TODO: this is a temporary hack to enable showing RDF imported data that could not be mapped to a known archetype, i.e.:
+			// concept --> (inverse:regularName) --> concept
+			this.props.entity.data["@relations"]["inverse:" + this.props.name] || [];
 
 			return _react2["default"].createElement(
 				"div",
