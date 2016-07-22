@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.rdf;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.Optional;
 import java.util.Set;
 
 public class Entity {
@@ -30,14 +29,6 @@ public class Entity {
   public void addToCollection(Collection newCollection) {
     collections.add(newCollection);
     newCollection.add(vertex);
-
-    // TODO move to the caller of this method
-    Optional<Collection> archetypeOptional = newCollection.getArchetype();
-    if (archetypeOptional.isPresent()) {
-      Collection archetype = archetypeOptional.get();
-      collections.add(archetype);
-      archetype.add(vertex);
-    }
 
     typesHelper.updateTypeInformation(vertex, collections);
     propertyHelper.setPropertiesForNewCollection(vertex, newCollection, collections);

@@ -13,7 +13,7 @@ class AddPropertyTripleProcessor implements TripleProcessor {
   }
 
   @Override
-  public void process(Triple triple, String vreName) {
+  public void process(String vreName, Triple triple) {
     Node node = triple.getSubject();
     Entity entity = database.findOrCreateEntity(vreName, node);
 

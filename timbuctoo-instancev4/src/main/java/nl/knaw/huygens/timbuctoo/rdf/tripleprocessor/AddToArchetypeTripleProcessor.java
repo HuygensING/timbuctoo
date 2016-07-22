@@ -17,7 +17,7 @@ class AddToArchetypeTripleProcessor implements TripleProcessor {
   }
 
   @Override
-  public void process(Triple triple, String vreName) { // TODO flip parameters
+  public void process(String vreName, Triple triple) { 
     Collection collection = database.findOrCreateCollection(vreName, triple.getSubject());
     Collection previousArchetype = collection.getArchetype().get(); // collection must have an archetype
     Node tripleObject = triple.getObject();

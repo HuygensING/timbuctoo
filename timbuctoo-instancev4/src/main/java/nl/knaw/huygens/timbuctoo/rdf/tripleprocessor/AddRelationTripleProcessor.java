@@ -14,7 +14,7 @@ class AddRelationTripleProcessor implements TripleProcessor {
   }
 
   @Override
-  public void process(Triple triple, String vreName) {
+  public void process(String vreName, Triple triple) {
     final Entity subject = database.findOrCreateEntity(vreName, triple.getSubject());
     final Entity object = database.findOrCreateEntity(vreName, triple.getObject());
     final RelationType relationType = database.findOrCreateRelationType(triple.getPredicate());

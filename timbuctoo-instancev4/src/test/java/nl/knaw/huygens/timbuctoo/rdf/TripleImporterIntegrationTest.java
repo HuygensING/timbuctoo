@@ -36,7 +36,7 @@ import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
-public class TripleImporterTest {
+public class TripleImporterIntegrationTest {
   public static final String LOCATION_ARCH = "location";
 
   private static final String VRE_NAME = "vreName";

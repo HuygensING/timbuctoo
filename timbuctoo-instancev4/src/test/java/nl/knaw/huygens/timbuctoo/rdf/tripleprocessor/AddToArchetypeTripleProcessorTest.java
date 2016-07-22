@@ -52,14 +52,14 @@ public class AddToArchetypeTripleProcessorTest {
 
   @Test
   public void processSetsTheCollectionArchetype() {
-    instance.process(triple, VRE_NAME);
+    instance.process(VRE_NAME, triple);
 
     verify(collection).setArchetype(archetypeCollection, OBJECT_URI);
   }
 
   @Test
   public void processAddsTheEntitiesOfTheCollectionToTheNewArchetype() {
-    instance.process(triple, VRE_NAME);
+    instance.process(VRE_NAME, triple);
 
     verify(entity1).addToCollection(archetypeCollection);
     verify(entity2).addToCollection(archetypeCollection);
@@ -67,7 +67,7 @@ public class AddToArchetypeTripleProcessorTest {
 
   @Test
   public void processRemovesThePreviousArchetypeOfTheCollectionFromTheEntities() {
-    instance.process(triple, VRE_NAME);
+    instance.process(VRE_NAME, triple);
 
     verify(entity1).removeFromCollection(previousArchetype);
     verify(entity2).removeFromCollection(previousArchetype);

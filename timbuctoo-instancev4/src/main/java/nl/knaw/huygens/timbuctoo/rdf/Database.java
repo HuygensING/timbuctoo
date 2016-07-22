@@ -102,6 +102,10 @@ public class Database {
     Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
     Entity entity = new Entity(vertex, getCollections(vertex, vreName));
     entity.addToCollection(collection);
+    Optional<Collection> archetype = collection.getArchetype();
+    if (archetype.isPresent()) {
+      entity.addToCollection(archetype.get());
+    }
 
     return entity;
   }
