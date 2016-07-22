@@ -5,14 +5,17 @@ import com.google.common.cache.CacheBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.time.Clock;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_ENTITIES_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
@@ -219,5 +222,17 @@ public class Database {
                        .out(Vre.HAS_COLLECTION_RELATION_NAME)
                        .has(ENTITY_TYPE_NAME_PROPERTY_NAME, archetype)
                        .hasNext();
+  }
+
+  public Set<Entity> findEntitiesByCollection(Collection collection) {
+    CollectionDescription description = collection.getDescription();
+    String typeName = description.getEntityTypeName();
+    String vreName = description.getVreName();
+    return graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of(DATABASE_LABEL))
+                       .has(ENTITY_TYPE_NAME_PROPERTY_NAME, typeName)
+                       .out(HAS_ENTITY_NODE_RELATION_NAME).out(HAS_ENTITY_RELATION_NAME)
+                       .toSet().stream().map(v -> new Entity(v, getCollections(v, vreName)))
+                       .collect(Collectors.toSet());
+
   }
 }

@@ -10,6 +10,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Set;
+
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
@@ -22,6 +24,7 @@ import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -322,7 +325,7 @@ public class DatabaseTest {
                                           .withVertex("defaultArchetype", v ->
                                             v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
                                              .withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts"))
-                                          .withVertex("knownArchetype", v->
+                                          .withVertex("knownArchetype", v ->
                                             v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "knownArchetype")
                                              .withProperty(COLLECTION_NAME_PROPERTY_NAME, "knownArchetypes"))
                                           .wrap();
@@ -330,5 +333,32 @@ public class DatabaseTest {
 
     assertThat(instance.isKnownArchetype("knownArchetype"), is(true));
     assertThat(instance.isKnownArchetype("unknownArchetype"), is(false));
+  }
+
+  @Test
+  public void findEntitiesByCollectionReturnsAllTheEntitiesOfTheCollection() {
+    CollectionDescription desc = CollectionDescription.createCollectionDescription("collection", VRE_NAME);
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("collection", v -> v.withLabel(DATABASE_LABEL)
+                                      .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, desc.getEntityTypeName())
+                                      .withProperty(COLLECTION_NAME_PROPERTY_NAME, desc.getCollectionName())
+                                      .withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "entityVertex"))
+      .withVertex("entityVertex", v -> v.withOutgoingRelation(HAS_ENTITY_RELATION_NAME, "entity1")
+                                        .withOutgoingRelation(HAS_ENTITY_RELATION_NAME, "entity2"))
+      .withVertex("entity1", v -> {
+      })
+      .withVertex("entity2", v -> {
+      })
+      .withVertex("entityOfOtherCollection", v -> {
+      })
+      .wrap();
+    Database instance = new Database(graphWrapper);
+    Collection collection = mock(Collection.class);
+    when(collection.getDescription())
+      .thenReturn(desc);
+
+    Set<Entity> entitiesByCollection = instance.findEntitiesByCollection(collection);
+
+    assertThat(entitiesByCollection, hasSize(2));
   }
 }

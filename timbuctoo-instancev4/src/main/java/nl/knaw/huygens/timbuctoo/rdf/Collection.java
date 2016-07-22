@@ -117,10 +117,6 @@ public class Collection {
     return collectionDescription;
   }
 
-  public Vertex getVertex() {
-    return vertex;
-  }
-
   private boolean isInCollection(Vertex vertex, CollectionDescription collectionDescription) {
     return graphWrapper.getGraph().traversal().V(vertex.id())
                        .in(HAS_ENTITY_RELATION_NAME)
