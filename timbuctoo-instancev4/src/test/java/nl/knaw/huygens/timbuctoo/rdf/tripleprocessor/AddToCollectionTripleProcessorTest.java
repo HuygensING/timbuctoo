@@ -7,6 +7,8 @@ import org.apache.jena.graph.Triple;
 import org.junit.Test;
 import org.mockito.InOrder;
 
+import java.util.Optional;
+
 import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createSingleTriple;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -27,6 +29,8 @@ public class AddToCollectionTripleProcessorTest {
     Database database = mock(Database.class);
     Triple triple = createSingleTriple(ABADAN_IS_PART_OF_IRAN_TRIPLE);
     Collection collectionFromTriple = mock(Collection.class);
+    Collection archetypeCollection = mock(Collection.class);
+    when(collectionFromTriple.getArchetype()).thenReturn(Optional.of(archetypeCollection));
     when(database.findOrCreateCollection("vreName", triple.getObject())).thenReturn(collectionFromTriple);
     Collection defaultCollection = mock(Collection.class);
     when(database.getDefaultCollection("vreName")).thenReturn(defaultCollection);
@@ -34,10 +38,11 @@ public class AddToCollectionTripleProcessorTest {
     when(database.findOrCreateEntity("vreName", triple.getSubject())).thenReturn(entity);
     AddToCollectionTripleProcessor instance = new AddToCollectionTripleProcessor(database);
 
-    instance.process(triple, "vreName");
+    instance.process("vreName", triple);
 
     InOrder inOrder = inOrder(entity);
     inOrder.verify(entity).addToCollection(collectionFromTriple);
+    inOrder.verify(entity).addToCollection(archetypeCollection);
     inOrder.verify(entity).removeFromCollection(defaultCollection);
   }
 

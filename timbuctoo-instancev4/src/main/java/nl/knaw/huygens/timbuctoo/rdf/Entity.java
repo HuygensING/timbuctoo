@@ -30,10 +30,6 @@ public class Entity {
     collections.add(newCollection);
     newCollection.add(vertex);
 
-    Collection archetype = newCollection.getArchetype();
-    collections.add(archetype);
-    archetype.add(vertex);
-
     typesHelper.updateTypeInformation(vertex, collections);
     propertyHelper.setPropertiesForNewCollection(vertex, newCollection, collections);
   }

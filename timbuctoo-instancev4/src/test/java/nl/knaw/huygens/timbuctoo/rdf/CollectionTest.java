@@ -16,15 +16,19 @@ import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.PROPER
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.fail;
@@ -241,7 +245,7 @@ public class CollectionTest {
         .withProperty(CLIENT_PROPERTY_NAME, "@displayName")
         .withProperty(DATABASE_PROPERTY_NAME, "rdfUri")
         .withProperty(PROPERTY_TYPE_NAME, "default-rdf-imported-displayname")
-    ));
+      ));
   }
 
   @Test
@@ -259,7 +263,6 @@ public class CollectionTest {
     verifyNoMoreInteractions(vertex);
   }
 
-
   @Test
   public void equalsReturnsTrueIfTheCollectionDescriptionsAreEqual() {
     CollectionDescription description = CollectionDescription.createCollectionDescription(ENTITY_NAME, VRE_NAME);
@@ -275,6 +278,55 @@ public class CollectionTest {
 
     assertThat(sameCollection1, is(equalTo(sameCollection2)));
     assertThat(sameCollection1, not(is((equalTo(otherCollection)))));
+  }
+
+  @Test
+  public void setArchetypeConnectsTheCollectionToTheNewArchetype() {
+    String newArchetypeEntity = "newArchetype";
+    GraphWrapper graphWrapper =
+      newGraph().withVertex(v -> v.withLabel(DATABASE_LABEL)
+                                  .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, ENTITY_NAME)
+                                  .withProperty(COLLECTION_NAME_PROPERTY_NAME, COLLECTION_NAME))
+
+                .withVertex(v -> v.withLabel(DATABASE_LABEL)
+                                  .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, newArchetypeEntity))
+                .wrap();
+    Vertex collectionVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of(DATABASE_LABEL))
+                                          .has(ENTITY_TYPE_NAME_PROPERTY_NAME, ENTITY_NAME).next();
+    Collection instance = new Collection(VRE_NAME, collectionVertex, graphWrapper);
+    Vertex archetypeVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of(DATABASE_LABEL))
+                                         .has(ENTITY_TYPE_NAME_PROPERTY_NAME, newArchetypeEntity).next();
+    Collection archetype = new Collection("", archetypeVertex, graphWrapper);
+
+    instance.setArchetype(archetype, "");
+
+    assertThat(graphWrapper.getGraph().traversal().V(collectionVertex.id()).out(HAS_ARCHETYPE_RELATION_NAME).toList(),
+      hasItem(likeVertex().withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, newArchetypeEntity)));
+  }
+
+  @Test
+  public void setArchetypeSetsTheUriOfTheOriginalArchetypeToEdgeToTheArchetype() {
+    String newArchetypeEntity = "newArchetype";
+    GraphWrapper graphWrapper =
+      newGraph().withVertex(v -> v.withLabel(DATABASE_LABEL)
+                                  .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, ENTITY_NAME)
+                                  .withProperty(COLLECTION_NAME_PROPERTY_NAME, COLLECTION_NAME))
+
+                .withVertex(v -> v.withLabel(DATABASE_LABEL)
+                                  .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, newArchetypeEntity))
+                .wrap();
+    Vertex collectionVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of(DATABASE_LABEL))
+                                          .has(ENTITY_TYPE_NAME_PROPERTY_NAME, ENTITY_NAME).next();
+    Collection instance = new Collection(VRE_NAME, collectionVertex, graphWrapper);
+    Vertex archetypeVertex = graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of(DATABASE_LABEL))
+                                         .has(ENTITY_TYPE_NAME_PROPERTY_NAME, newArchetypeEntity).next();
+    Collection archetype = new Collection("", archetypeVertex, graphWrapper);
+    String originalArchetypeUri = "http://example.com/originalArchetype";
+
+    instance.setArchetype(archetype, originalArchetypeUri);
+
+    assertThat(graphWrapper.getGraph().traversal().V(collectionVertex.id()).outE(HAS_ARCHETYPE_RELATION_NAME).toList(),
+      hasItem(likeEdge().withProperty(RDF_URI_PROP, originalArchetypeUri)));
   }
 
 }

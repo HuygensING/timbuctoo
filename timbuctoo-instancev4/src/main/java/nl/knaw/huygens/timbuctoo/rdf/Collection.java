@@ -13,6 +13,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
 import java.util.Objects;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
@@ -22,6 +23,7 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_REL
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 
 
 public class Collection {
@@ -30,7 +32,6 @@ public class Collection {
   private final GraphWrapper graphWrapper;
   private final PropertyHelper propertyHelper;
   private final CollectionDescription collectionDescription;
-  private Collection archetype;
 
   public Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper) {
     this(vreName, vertex, graphWrapper, CollectionDescription.fromVertex(vreName, vertex));
@@ -98,11 +99,19 @@ public class Collection {
 
   }
 
-  public Collection getArchetype() {
-    // TODO make field
-    Vertex archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next();
-    archetype = new Collection("Admin", archetypeVertex, graphWrapper, CollectionDescription.getAdmin(archetypeVertex));
-    return archetype;
+  public Optional<Collection> getArchetype() {
+    Iterator<Vertex> archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME);
+    if (archetypeVertex.hasNext()) {
+      Vertex next = archetypeVertex.next();
+      return Optional.of(new Collection("Admin", next, graphWrapper, CollectionDescription.getAdmin(next)));
+    }
+    return Optional.empty();
+  }
+
+  public void setArchetype(Collection archetypeCollection, String originalArchetypeUri) {
+    vertex.edges(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).forEachRemaining(edge -> edge.remove());
+    Edge edge = vertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.vertex);
+    edge.property(RDF_URI_PROP, originalArchetypeUri);
   }
 
   public String getVreName() {
@@ -112,11 +121,6 @@ public class Collection {
   public CollectionDescription getDescription() {
     return collectionDescription;
   }
-
-  public Vertex getVertex() {
-    return vertex;
-  }
-
 
   private boolean isInCollection(Vertex vertex, CollectionDescription collectionDescription) {
     return graphWrapper.getGraph().traversal().V(vertex.id())

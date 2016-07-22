@@ -5,16 +5,18 @@ import com.google.common.cache.CacheBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Node;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
+import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_ENTITIES_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
@@ -26,12 +28,10 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
 
 public class Database {
-  public static final String RDF_URI_PROP = "rdfUri";
-  public static final Logger LOG = LoggerFactory.getLogger(Database.class);
+  static final String RDF_URI_PROP = "rdfUri";
   private static final int ENTITY_CACHE_SIZE = 1024 * 1024;
   private final GraphWrapper graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
-  // TODO add cache loader
   private Cache<String, Long> entityCache = CacheBuilder.newBuilder().maximumSize(ENTITY_CACHE_SIZE).build();
 
   public Database(GraphWrapper graphWrapper) {
@@ -102,12 +102,16 @@ public class Database {
     Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
     Entity entity = new Entity(vertex, getCollections(vertex, vreName));
     entity.addToCollection(collection);
+    Optional<Collection> archetype = collection.getArchetype();
+    if (archetype.isPresent()) {
+      entity.addToCollection(archetype.get());
+    }
 
     return entity;
   }
 
   private Set<Collection> getCollections(Vertex foundVertex, String vreName) {
-    Set<Collection> collections = graphWrapper
+    return graphWrapper
       .getGraph().traversal()
       .V(foundVertex.id())
       .in(HAS_ENTITY_RELATION_NAME)
@@ -118,7 +122,6 @@ public class Database {
       ).map(collectionT -> {
         return new Collection(vreName, collectionT.get(), graphWrapper);
       }).toSet();
-    return collections;
   }
 
   public Collection getDefaultCollection(String vreName) {
@@ -131,7 +134,8 @@ public class Database {
     return findOrCreateCollection(collectionDescription);
   }
 
-  private Collection findOrCreateCollection(CollectionDescription collectionDescription) {
+
+  public Collection findOrCreateCollection(CollectionDescription collectionDescription) {
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> colTraversal =
       graph.traversal().V()
@@ -158,31 +162,49 @@ public class Database {
       addCollectionToArchetype(collectionVertex);
     }
 
-
     return new Collection(collectionDescription.getVreName(), collectionVertex, graphWrapper);
   }
 
+  public Optional<Collection> findArchetypeCollection(Node node) {
+    CollectionDescription collectionDescription = CollectionDescription.createForAdmin(node.getLocalName());
+    Graph graph = graphWrapper.getGraph();
+    final GraphTraversal<Vertex, Vertex> colTraversal =
+      graph.traversal().V()
+           .hasLabel(Vre.DATABASE_LABEL)
+           .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+           .out(Vre.HAS_COLLECTION_RELATION_NAME)
+           .has(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
+
+    Vertex collectionVertex;
+    if (colTraversal.hasNext()) {
+      collectionVertex = colTraversal.next();
+
+      return Optional.of(new Collection(collectionDescription.getVreName(), collectionVertex, graphWrapper));
+    } else {
+      return Optional.empty();
+    }
+  }
 
   public RelationType findOrCreateRelationType(Node predicate) {
-    final GraphTraversal<Vertex, Vertex> relationtypeT =
+    final GraphTraversal<Vertex, Vertex> relationTypeT =
       graphWrapper.getGraph().traversal().V().hasLabel("relationtype").has(RDF_URI_PROP, predicate.getURI());
 
-    if (relationtypeT.hasNext()) {
-      return new RelationType(relationtypeT.next());
+    if (relationTypeT.hasNext()) {
+      return new RelationType(relationTypeT.next());
     }
 
-    final String relationtypePrefix = "relationtype_";
+    final String relationTypePrefix = "relationtype_";
     final Vertex relationTypeVertex = graphWrapper.getGraph().addVertex("relationtype");
 
     relationTypeVertex.property(RDF_URI_PROP, predicate.getURI());
     relationTypeVertex.property("types", "[\"relationtype\"]");
-    relationTypeVertex.property(relationtypePrefix + "targetTypeName", "concept");
-    relationTypeVertex.property(relationtypePrefix + "sourceTypeName", "concept");
-    relationTypeVertex.property(relationtypePrefix + "symmetric", false);
-    relationTypeVertex.property(relationtypePrefix + "reflexive", false);
-    relationTypeVertex.property(relationtypePrefix + "derived", false);
-    relationTypeVertex.property(relationtypePrefix + "regularName", predicate.getLocalName());
-    relationTypeVertex.property(relationtypePrefix + "inverseName", "inverse:" + predicate.getLocalName());
+    relationTypeVertex.property(relationTypePrefix + "targetTypeName", "concept");
+    relationTypeVertex.property(relationTypePrefix + "sourceTypeName", "concept");
+    relationTypeVertex.property(relationTypePrefix + "symmetric", false);
+    relationTypeVertex.property(relationTypePrefix + "reflexive", false);
+    relationTypeVertex.property(relationTypePrefix + "derived", false);
+    relationTypeVertex.property(relationTypePrefix + "regularName", predicate.getLocalName());
+    relationTypeVertex.property(relationTypePrefix + "inverseName", "inverse:" + predicate.getLocalName());
 
     systemPropertyModifier.setTimId(relationTypeVertex);
     systemPropertyModifier.setCreated(relationTypeVertex, "rdf-importer");
@@ -208,12 +230,35 @@ public class Database {
     return archetypeVertex;
   }
 
-  public void addCollectionToVre(CollectionDescription collectionDescription, Vertex collectionVertex) {
+  private void addCollectionToVre(CollectionDescription collectionDescription, Vertex collectionVertex) {
     Vertex vreVertex = graphWrapper.getGraph().traversal().V()
                                    .hasLabel(Vre.DATABASE_LABEL)
                                    .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
                                    .next();
     vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
+  }
+
+
+  public boolean isKnownArchetype(String archetype) {
+    return graphWrapper.getGraph().traversal().V()
+                       // Admin VRE contains the archetypes.
+                       .hasLabel(Vre.DATABASE_LABEL)
+                       .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                       .out(Vre.HAS_COLLECTION_RELATION_NAME)
+                       .has(ENTITY_TYPE_NAME_PROPERTY_NAME, archetype)
+                       .hasNext();
+  }
+
+  public Set<Entity> findEntitiesByCollection(Collection collection) {
+    CollectionDescription description = collection.getDescription();
+    String typeName = description.getEntityTypeName();
+    String vreName = description.getVreName();
+    return graphWrapper.getGraph().traversal().V().has(T.label, LabelP.of(DATABASE_LABEL))
+                       .has(ENTITY_TYPE_NAME_PROPERTY_NAME, typeName)
+                       .out(HAS_ENTITY_NODE_RELATION_NAME).out(HAS_ENTITY_RELATION_NAME)
+                       .toSet().stream().map(v -> new Entity(v, getCollections(v, vreName)))
+                       .collect(Collectors.toSet());
+
   }
 
 

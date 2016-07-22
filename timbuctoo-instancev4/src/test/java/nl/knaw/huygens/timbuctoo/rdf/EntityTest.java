@@ -5,6 +5,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -38,8 +39,6 @@ public class EntityTest {
   public void addToCollectionAddsTheEntityToTheCollection() {
     Vertex vertex = mock(Vertex.class);
     Collection newCollection = mock(Collection.class);
-    Collection archetypeCollection = mock(Collection.class);
-    when(newCollection.getArchetype()).thenReturn(archetypeCollection);
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(otherCollection);
     TypesHelper typesHelper = mock(TypesHelper.class);
@@ -48,12 +47,11 @@ public class EntityTest {
     instance.addToCollection(newCollection);
 
     verify(newCollection).add(argThat(is(vertex)));
-    verify(archetypeCollection).add(argThat(is(vertex)));
-    assertThat(collections, containsInAnyOrder(newCollection, otherCollection, archetypeCollection));
+    assertThat(collections, containsInAnyOrder(newCollection, otherCollection));
     ArgumentCaptor<Set> collectionsCaptor = ArgumentCaptor.forClass(Set.class);
     verify(typesHelper).updateTypeInformation(argThat(is(vertex)), (Set<Collection>) collectionsCaptor.capture());
     assertThat((Set<Collection>) collectionsCaptor.getValue(),
-      containsInAnyOrder(otherCollection, newCollection, archetypeCollection));
+      containsInAnyOrder(otherCollection, newCollection));
   }
 
   @Test
@@ -61,7 +59,7 @@ public class EntityTest {
     Vertex vertex = mock(Vertex.class);
     Collection newCollection = mock(Collection.class);
     Collection archetypeCollection = mock(Collection.class);
-    when(newCollection.getArchetype()).thenReturn(archetypeCollection);
+    when(newCollection.getArchetype()).thenReturn(Optional.of(archetypeCollection));
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(otherCollection);
     PropertyHelper propertyHelper = mock(PropertyHelper.class);
