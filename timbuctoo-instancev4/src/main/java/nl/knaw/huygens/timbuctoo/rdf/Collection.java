@@ -30,7 +30,6 @@ public class Collection {
   private final GraphWrapper graphWrapper;
   private final PropertyHelper propertyHelper;
   private final CollectionDescription collectionDescription;
-  private Collection archetype;
 
   public Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper) {
     this(vreName, vertex, graphWrapper, CollectionDescription.fromVertex(vreName, vertex));
@@ -101,8 +100,7 @@ public class Collection {
   public Collection getArchetype() {
     // TODO make field
     Vertex archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).next();
-    archetype = new Collection("Admin", archetypeVertex, graphWrapper, CollectionDescription.getAdmin(archetypeVertex));
-    return archetype;
+    return new Collection("Admin", archetypeVertex, graphWrapper, CollectionDescription.getAdmin(archetypeVertex));
   }
 
   public void setArchetype(Collection archetypeCollection) {
