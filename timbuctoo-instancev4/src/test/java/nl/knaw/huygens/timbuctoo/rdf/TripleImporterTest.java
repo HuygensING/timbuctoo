@@ -17,7 +17,13 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createSingleTriple;
 import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createTripleIterator;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -31,6 +37,8 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 public class TripleImporterTest {
+  public static final String LOCATION_ARCH = "location";
+
   private static final String VRE_NAME = "vreName";
   public static final String DEFAULT_COLLECTION_NAME = VRE_NAME + "unknowns";
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
@@ -72,9 +80,12 @@ public class TripleImporterTest {
       "<" + IS_PART_OF_URI + "> " +
       "<" + ASIA_URI + "> .";
 
+  private static final String FEATURE_SUBCLASS_OF_LOCATION_TRIPLE =
+    "<" + TYPE_URI + "> " +
+      "<http://www.w3.org/2000/01/rdf-schema#subClassOf> " +
+      "<http://www.example.com/location> .";
 
   private GraphWrapper graphWrapper;
-
 
   @Before
   public void setUp() throws Exception {
@@ -87,6 +98,7 @@ public class TripleImporterTest {
         v.withLabel(Vre.DATABASE_LABEL);
         v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
         v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "defaultArchetype");
+        v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "locationArchetype");
       })
       .withVertex("defaultArchetype", v -> {
         v.withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
@@ -94,6 +106,11 @@ public class TripleImporterTest {
       })
       .withVertex("archetypeHolder", v ->
         v.withIncomingRelation(Collection.HAS_ENTITY_NODE_RELATION_NAME, "defaultArchetype"))
+      .withVertex("locationArchetype", v -> v.withLabel(DATABASE_LABEL)
+                                             .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, LOCATION_ARCH)
+                                             .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "locations")
+                                             .withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "locationHolder"))
+      .withVertex("locationHolder", v -> v.withLabel(DATABASE_LABEL))
       .wrap();
   }
 
@@ -463,6 +480,42 @@ public class TripleImporterTest {
         likeVertex().withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, FICTIONAL_TYPE_NAME)
       )
     );
+  }
+
+  @Test
+  public void importTripleAddsTheSubjectAndItsEntitiesToAKnownArchetype() {
+    Triple abadanIsAFeature = createSingleTriple(ABADAN_HAS_TYPE_FEATURE_TRIPLE);
+    Triple featureIsLocation = createSingleTriple(FEATURE_SUBCLASS_OF_LOCATION_TRIPLE);
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(featureIsLocation);
+
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, TYPE_URI)
+                           .out(HAS_ARCHETYPE_RELATION_NAME).has(ENTITY_TYPE_NAME_PROPERTY_NAME, "location").hasNext(),
+      is(true));
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI)
+                           .in(HAS_ENTITY_RELATION_NAME)
+                           .in(HAS_ENTITY_NODE_RELATION_NAME).has(ENTITY_TYPE_NAME_PROPERTY_NAME, "location").hasNext(),
+      is(true));
+  }
+
+  @Test
+  public void importTripleRemovesTheSubjectAndItsEntitiesFromTheDefaultArchetype() {
+    Triple abadanIsAFeature = createSingleTriple(ABADAN_HAS_TYPE_FEATURE_TRIPLE);
+    Triple featureIsLocation = createSingleTriple(FEATURE_SUBCLASS_OF_LOCATION_TRIPLE);
+    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+
+    instance.importTriple(abadanIsAFeature);
+    instance.importTriple(featureIsLocation);
+
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, TYPE_URI)
+                           .out(HAS_ARCHETYPE_RELATION_NAME).has(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept").hasNext(),
+      is(false));
+    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI)
+                           .in(HAS_ENTITY_RELATION_NAME)
+                           .in(HAS_ENTITY_NODE_RELATION_NAME).has(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept").hasNext(),
+      is(false));
   }
 
   @Test

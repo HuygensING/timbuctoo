@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
+import java.util.Optional;
 import java.util.Set;
 
 class AddToArchetypeTripleProcessor implements TripleProcessor {
@@ -18,12 +19,21 @@ class AddToArchetypeTripleProcessor implements TripleProcessor {
   @Override
   public void process(Triple triple, String vreName) { // TODO flip parameters
     Collection collection = database.findOrCreateCollection(vreName, triple.getSubject());
+    Collection previousArchetype = collection.getArchetype().get(); // collection must have an archetype
     Node tripleObject = triple.getObject();
-    Collection archetypeCollection = database.findOrCreateCollection(vreName, tripleObject);
+    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(tripleObject);
 
+    if (!archetypeCollectionOptional.isPresent()) {
+      return;
+    }
+
+    Collection archetypeCollection = archetypeCollectionOptional.get();
     collection.setArchetype(archetypeCollection, tripleObject.getURI());
 
     Set<Entity> entities = database.findEntitiesByCollection(collection);
-    entities.forEach(entity -> entity.addToCollection(archetypeCollection));
+    entities.forEach(entity -> {
+      entity.addToCollection(archetypeCollection);
+      entity.removeFromCollection(previousArchetype);
+    });
   }
 }

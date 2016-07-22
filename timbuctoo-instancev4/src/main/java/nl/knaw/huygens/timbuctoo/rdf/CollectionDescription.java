@@ -52,6 +52,10 @@ class CollectionDescription {
     return new CollectionDescription(entityTypeName, "Admin", createRdfUri(entityTypeName));
   }
 
+  public static CollectionDescription createForAdmin(String entityTypeName) {
+    return new CollectionDescription(entityTypeName, "Admin", createRdfUri(entityTypeName));
+  }
+
   private static String createEntityTypeName(String entityTypeName, String vreName) {
     return entityTypeName.startsWith(vreName) ? entityTypeName : vreName + entityTypeName;
   }

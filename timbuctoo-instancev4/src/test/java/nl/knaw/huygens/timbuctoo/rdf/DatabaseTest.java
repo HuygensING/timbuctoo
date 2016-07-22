@@ -10,6 +10,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
@@ -19,6 +20,7 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELAT
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.Matchers.allOf;
@@ -26,6 +28,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -360,5 +363,41 @@ public class DatabaseTest {
     Set<Entity> entitiesByCollection = instance.findEntitiesByCollection(collection);
 
     assertThat(entitiesByCollection, hasSize(2));
+  }
+
+  @Test
+  public void findArchetypeCollectionReturnsAnEmptyOptionalIfTheArchetypeCannotBeFound() {
+    Database instance = new Database(newGraph().wrap());
+
+    Node node = mock(Node.class);
+
+    Optional<Collection> archetypeCollection = instance.findArchetypeCollection(node);
+
+    assertThat(archetypeCollection, is(not(present())));
+  }
+
+  @Test
+  public void findArchetypeCollectionReturnsTheArchetypeCollectionWrappedInAnOptional() {
+    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+                                                            .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                                                            .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
+                                                              "defaultArchetype")
+                                                            .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
+                                                              "knownArchetype"))
+
+                                          .withVertex("defaultArchetype", v ->
+                                            v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                                             .withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts"))
+                                          .withVertex("knownArchetype", v ->
+                                            v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "knownArchetype")
+                                             .withProperty(COLLECTION_NAME_PROPERTY_NAME, "knownArchetypes"))
+                                          .wrap();
+    Node node = mock(Node.class);
+    when(node.getLocalName()).thenReturn("knownArchetype");
+    Database instance = new Database(graphWrapper);
+
+    Optional<Collection> archetypeCollection = instance.findArchetypeCollection(node);
+
+    assertThat(archetypeCollection, is(present()));
   }
 }

@@ -5,6 +5,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,7 +40,7 @@ public class EntityTest {
     Vertex vertex = mock(Vertex.class);
     Collection newCollection = mock(Collection.class);
     Collection archetypeCollection = mock(Collection.class);
-    when(newCollection.getArchetype()).thenReturn(archetypeCollection);
+    when(newCollection.getArchetype()).thenReturn(Optional.of(archetypeCollection));
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(otherCollection);
     TypesHelper typesHelper = mock(TypesHelper.class);
@@ -61,7 +62,7 @@ public class EntityTest {
     Vertex vertex = mock(Vertex.class);
     Collection newCollection = mock(Collection.class);
     Collection archetypeCollection = mock(Collection.class);
-    when(newCollection.getArchetype()).thenReturn(archetypeCollection);
+    when(newCollection.getArchetype()).thenReturn(Optional.of(archetypeCollection));
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(otherCollection);
     PropertyHelper propertyHelper = mock(PropertyHelper.class);

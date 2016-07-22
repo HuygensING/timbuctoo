@@ -14,6 +14,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.time.Clock;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -129,7 +130,8 @@ public class Database {
     return findOrCreateCollection(collectionDescription);
   }
 
-  private Collection findOrCreateCollection(CollectionDescription collectionDescription) {
+
+  public Collection findOrCreateCollection(CollectionDescription collectionDescription) {
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> colTraversal =
       graph.traversal().V()
@@ -159,6 +161,25 @@ public class Database {
     return new Collection(collectionDescription.getVreName(), collectionVertex, graphWrapper);
   }
 
+  public Optional<Collection> findArchetypeCollection(Node node) {
+    CollectionDescription collectionDescription = CollectionDescription.createForAdmin(node.getLocalName());
+    Graph graph = graphWrapper.getGraph();
+    final GraphTraversal<Vertex, Vertex> colTraversal =
+      graph.traversal().V()
+           .hasLabel(Vre.DATABASE_LABEL)
+           .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
+           .out(Vre.HAS_COLLECTION_RELATION_NAME)
+           .has(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
+
+    Vertex collectionVertex;
+    if (colTraversal.hasNext()) {
+      collectionVertex = colTraversal.next();
+
+      return Optional.of(new Collection(collectionDescription.getVreName(), collectionVertex, graphWrapper));
+    } else {
+      return Optional.empty();
+    }
+  }
 
   public RelationType findOrCreateRelationType(Node predicate) {
     final GraphTraversal<Vertex, Vertex> relationTypeT =
@@ -235,4 +256,6 @@ public class Database {
                        .collect(Collectors.toSet());
 
   }
+
+
 }
