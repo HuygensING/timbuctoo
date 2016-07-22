@@ -22,6 +22,7 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_REL
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 
 
 public class Collection {
@@ -103,8 +104,9 @@ public class Collection {
     return new Collection("Admin", archetypeVertex, graphWrapper, CollectionDescription.getAdmin(archetypeVertex));
   }
 
-  public void setArchetype(Collection archetypeCollection) {
-    vertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.vertex);
+  public void setArchetype(Collection archetypeCollection, String originalArchetypeUri) {
+    Edge edge = vertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.vertex);
+    edge.property(RDF_URI_PROP, originalArchetypeUri);
   }
 
   public String getVreName() {

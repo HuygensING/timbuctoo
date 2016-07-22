@@ -73,7 +73,7 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
     this.addMatcher(new PropertyEqualityMatcher<Edge, Object>(name, value) {
       @Override
       protected Object getItemValue(Edge item) {
-        return item.value(name);
+        return item.property(name).orElse(null);
       }
     });
     return this;

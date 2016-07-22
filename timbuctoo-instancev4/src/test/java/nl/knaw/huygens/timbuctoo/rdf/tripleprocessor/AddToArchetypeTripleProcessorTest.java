@@ -20,7 +20,8 @@ public class AddToArchetypeTripleProcessorTest {
     Collection archetypeCollection = mock(Collection.class);
     Node subjectNode = mock(Node.class);
     Node objectNode = mock(Node.class);
-    given(objectNode.getURI()).willReturn("uri");
+    String objectUri = "http://example.com/object";
+    given(objectNode.getURI()).willReturn(objectUri);
     Triple triple = Triple.create(subjectNode, mock(Node.class), objectNode);
     Database database = mock(Database.class);
     given(database.findOrCreateCollection(VRE_NAME, subjectNode)).willReturn(collection);
@@ -29,7 +30,7 @@ public class AddToArchetypeTripleProcessorTest {
 
     instance.process(triple, VRE_NAME);
 
-    verify(collection).setArchetype(archetypeCollection);
+    verify(collection).setArchetype(archetypeCollection, objectUri);
   }
 
 }
