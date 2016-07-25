@@ -32,6 +32,18 @@ class Document < Hash
 	"source_ss"
     ]
 
+    @@wanted_reception_relations = [
+	"isBiographyOf",
+	"commentsOnPerson",
+	"isDedicatedTo",
+	"isAwardForPerson",
+	"listsPerson",
+	"mentionsPerson",
+	"isObituaryOf",
+	"quotesPerson",
+	"referencesPerson"
+    ]
+
     attr_reader :id
 
     def initialize data
@@ -55,20 +67,21 @@ class Document < Hash
 
 	self['_childDocuments_'] = Array.new
 	add_creators data
+	add_receptions data
     end
 
     def build_relations data
 	@@new_rel_names.each_with_index do |rel,ind|
 	    if !data['@relations'].nil?
 		self[rel] = Array.new
-		add_relation data,rel,ind
+		add_relation data['@relations'],rel,ind
 	    end
 	end
     end
 
-    def add_relation data,rel,ind
-	if !data['@relations'][@@wanted_relations[ind]].nil?
-	    data['@relations'][@@wanted_relations[ind]].each do |rt|
+    def add_relation relations,rel,ind
+	if !relations[@@wanted_relations[ind]].nil?
+	    relations[@@wanted_relations[ind]].each do |rt|
 		self[rel] << rt['displayName']  if rt['accepted']
 	    end
 	end
@@ -94,6 +107,33 @@ class Document < Hash
 		self['_childDocuments_'] << new_person
 	    end
 	end
+    end
+
+    def add_receptions data
+	doc_id = data["_id"]
+	doc_displayName = data["title"]
+	reception_relations = Array.new
+	if !data['@relations'].nil?
+	    @@wanted_reception_relations.each do |rec_rel|
+		if !data['@relations'][rec_rel].nil?
+		    data['@relations'][rec_rel].each do |rr_data|
+			new_rr = Hash.new
+			new_rr['id'] = rr_data['relationId']
+			new_rr['relationType_s'] = rec_rel
+			new_rr['person_id_s'] = rr_data['id']
+			new_rr['person_displayName_s'] = rr_data['displayName']
+			new_rr['document_id_s'] = doc_id
+			new_rr['displayName_s'] = doc_displayName
+			reception_relations << new_rr
+		    end
+		end
+	    end
+	end
+
+
+	Documents.person_receptions_concat reception_relations
+
+	return
     end
 
     def id

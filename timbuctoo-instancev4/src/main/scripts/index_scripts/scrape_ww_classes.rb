@@ -15,22 +15,26 @@ if __FILE__ == $0
     output_dir = ""
     multiple_archives = ""
     @location = "http://test.repository.huygens.knaw.nl/"
-    @collection = "gettingstarted/"
-    @solr = "http://192.168.99.100:8983/solr/#{@collection}"
+    @person_coll = "wwpersons/"
+    @document_coll = "wwdocuments/"
+    @pers_reception_coll = "wwpersonreceptions/"
+    @doc_reception_coll = "wwdocumentreceptions/"
+#    @collection = "gettingstarted/"
+    @solr = "http://192.168.99.100:8983/solr/"
 
     begin
 	(0..(ARGV.size-1)).each do |i|
 	case ARGV[i]
 	    when '--debug'
 		debug = true
-	    when '-coll'
-		@collection = ARGV[i+1]
+#	    when '-coll'
+#		@collection = ARGV[i+1]
 	    when '-loc'
 		@location = ARGV[i+1]
 	    when '-solr'
-		@solr = "#{ARGV[i+1]}#{@collection}"
+		@solr = "#{ARGV[i+1]}"
 	    when '-h'
-		STDERR.puts "use: ruby scrape_ww_classes.rb -coll collection -loc location -solr solr-site [--debug]"
+		STDERR.puts "use: ruby scrape_ww_classes.rb -loc location -solr solr-site [--debug]"
 		exit(1)
 	end
     end
@@ -45,20 +49,21 @@ if __FILE__ == $0
 
     Person.location = "#{@location}v2.1/"
     Persons.location = "#{@location}v2.1/"
-    Persons.solr = @solr
-    Persons.debug = false
+    Persons.solr = "#{@solr}#{@person_coll}"
+    Persons.debug = debug
     Document.location = "#{@location}v2.1/"
     Documents.location = "#{@location}v2.1/"
-    Documents.solr = @solr
+    Documents.solr_documents = "#{@solr}#{@document_coll}"
+    Documents.solr_receptions = "#{@solr}#{@pers_reception_coll}"
     Documents.debug = debug
 
 
     continu = true
     start_value = 0
-    num_of_lines = Persons.debug ? 10 : 100
+    num_of_lines = 100 # Persons.debug ? 10 : 100
     while(continu)
 	continu = Persons.scrape_file start_value,num_of_lines
-	continu = false if Persons.debug && start_value==200
+#	continu = false if Persons.debug && start_value==200
 	start_value += 100 if continu
     end
 
@@ -66,12 +71,15 @@ if __FILE__ == $0
 
     continu = true
     start_value = 0
-    num_of_lines = debug ? 10 : 100
+    num_of_lines = 100 # debug ? 10 : 100
     while(continu)
 	continu = Documents.scrape_file start_value,num_of_lines
-	continu = false if debug && start_value==200
+#	continu = false if debug && start_value==200
 	start_value += 100 if continu
     end
+
+    Documents.solr_commit "#{@solr}#{@document_coll}"
+    Documents.solr_commit "#{@solr}#{@pers_reception_coll}"
 
     puts "number of documents: #{Documents.number}"
 

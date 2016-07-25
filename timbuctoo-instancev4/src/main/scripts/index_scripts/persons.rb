@@ -21,12 +21,12 @@ class Persons
 	    result << person
 	    start_value += 1
 	end
+	Persons.do_solr_post result
 	STDERR.puts "#{start_value}"  if array.size < 100 && array.size > 0
 	return !line.eql?("[]")
     end
     
-# indexen gaat via de documents   
-# dus deze functie wordt niet meer gebruikt
+
     def Persons.do_solr_post batch
 	STDERR.puts "batch: #{batch.size}" if @@debug
 	STDERR.puts "solr: #{@@solr}" if @@debug
