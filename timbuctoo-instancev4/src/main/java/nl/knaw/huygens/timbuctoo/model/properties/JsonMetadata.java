@@ -125,8 +125,16 @@ public class JsonMetadata {
         }
       });
     relations.stream()
-      .filter(v -> !getProp(v, "relationtype_sourceTypeName", String.class).orElse("").equals(abstractType))
-      .filter(v -> getProp(v, "relationtype_targetTypeName", String.class).orElse("").equals(abstractType))
+      .filter(v -> {
+        final String targetType = getProp(v, "relationtype_targetTypeName", String.class).orElse("");
+        final boolean isSymmetric = getProp(v, "relationtype_symmetric", Boolean.class).orElse(false);
+        if (isSymmetric) {
+          final String sourceType = getProp(v, "relationtype_sourceTypeName", String.class).orElse("");
+          return targetType.equals(abstractType) && !sourceType.equals(targetType);
+        } else {
+          return targetType.equals(abstractType);
+        }
+      })
       .forEach(v -> {
         String timId = getProp(v, "tim_id", String.class).orElse("<unknown>");
         Optional<String> regularName = getProp(v, "relationtype_regularName", String.class);
