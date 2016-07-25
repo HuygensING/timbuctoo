@@ -1,0 +1,16 @@
+digraph graphname{
+	V [label="VRE"]
+	AV [label="Admin"]
+        C [label="VREPersons"]  
+        EN [label=""]
+	ARCH [label="Persons"]
+	ARCH_EN [label=""]
+	E [label="Person,VREPerson"]	
+        V->C [label="hasCollection"]
+	C->ARCH [label="hasArchetype"]
+	AV->ARCH [label="hasCollection"]
+	C->EN
+	ARCH->ARCH_EN
+	EN->E[label="hasEntity"]
+	ARCH_EN->E[label="hasEntity"]
+}
