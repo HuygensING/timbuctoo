@@ -21,10 +21,10 @@ to the database. This configuration could be adding a new Collection to the data
  
 #### Supported cases
 We support 4 types of triples.
-1. Triples that describe a http://www.w3.org/2000/01/rdf-schema#subClassOf with a for Timbuctoo known archetype.
-2. Triples that describe http://www.w3.org/2000/01/rdf-schema#type.
-3. Triples where the object is a literal.
-4. Triples where the object is another resource. This includes subClassOf with a type that is not known as archetype in Timbuctoo.
+ 1. Triples that describe a http://www.w3.org/2000/01/rdf-schema#subClassOf with a for Timbuctoo known archetype.
+ 2. Triples that describe http://www.w3.org/2000/01/rdf-schema#type.
+ 3. Triples where the object is a literal.
+ 4. Triples where the object is another resource. This includes subClassOf with a type that is not known as archetype in Timbuctoo.
  
 Each of the cases has its own TripleProcessor in the [triple processor package](https://github.com/HuygensING/timbuctoo/tree/master/timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf/tripleprocessor).
 
