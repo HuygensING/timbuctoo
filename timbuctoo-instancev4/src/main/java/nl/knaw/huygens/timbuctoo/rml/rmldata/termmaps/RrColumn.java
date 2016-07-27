@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import org.apache.jena.graph.Node;
-import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.graph.NodeFactory;
 
 import java.util.Map;
 
@@ -30,11 +30,11 @@ public class RrColumn implements RrTermMap {
     }
     switch (termType) {
       case IRI:
-        return ModelFactory.createDefaultModel().createResource("" + input.get(referenceString)).asNode();//FIXME use NodeFactory
+        return NodeFactory.createURI("" + input.get(referenceString));
       case BlankNode:
         throw new UnsupportedOperationException("");//FIXME: implement
       case Literal:
-        return ModelFactory.createDefaultModel().createLiteral("" + input.get(referenceString)).asNode();
+        return NodeFactory.createLiteral("" + input.get(referenceString));
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }

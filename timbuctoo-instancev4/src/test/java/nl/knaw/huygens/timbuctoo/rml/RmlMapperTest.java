@@ -127,7 +127,7 @@ public class RmlMapperTest {
         )
       )
     );
-    RmlMappingDocument map = new RmlMappingDocument(mapping1, mapping2);
+    final RmlMappingDocument map = new RmlMappingDocument(mapping1, mapping2);
     HashMap<String, Object> person = new HashMap<>();
     person.put("rdfUri", "http://www.example.org/persons/1");
     person.put("naam", "Bill");

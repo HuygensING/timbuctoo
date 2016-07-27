@@ -20,7 +20,9 @@ public class TestDataSource implements DataSource{
     final Iterable<Map<String, Object>> valuesForThisSource = data.get(rrLogicalSource.source.getURI());
     for (Map<String, Object> values : valuesForThisSource) {
       for (ReferenceGetter reference : references) {
-        String uri = cachedUris.get(reference.source.source.getURI()).get(reference.targetFieldName).get(values.get(reference.child));
+        String uri = cachedUris.get(reference.source.source.getURI())
+                               .get(reference.targetFieldName)
+                               .get(values.get(reference.child));
         values.put(reference.referenceJoinFieldName, uri);
       }
     }

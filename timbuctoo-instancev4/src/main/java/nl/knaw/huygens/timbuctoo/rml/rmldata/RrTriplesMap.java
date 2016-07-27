@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps.RrRe
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 public class RrTriplesMap {
   public final RrSubjectMap subjectMap;
@@ -14,7 +13,9 @@ public class RrTriplesMap {
   private List<ReferenceGetter> parentFields = new ArrayList<>();
   private List<ReferenceGetter> ownJoinFields = new ArrayList<>();
 
-  public RrTriplesMap(RrLogicalSource logicalSource, RrSubjectMap subjectMap, RrPredicateObjectMap... predicateObjectMaps) {
+  public RrTriplesMap(RrLogicalSource logicalSource,
+                      RrSubjectMap subjectMap,
+                      RrPredicateObjectMap... predicateObjectMaps) {
     this.subjectMap = subjectMap;
     this.predicateObjectMaps = predicateObjectMaps;
     for (RrPredicateObjectMap predicateObjectMap : predicateObjectMaps) {

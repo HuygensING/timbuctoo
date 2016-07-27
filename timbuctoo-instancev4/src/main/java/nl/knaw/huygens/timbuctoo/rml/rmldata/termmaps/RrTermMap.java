@@ -6,5 +6,6 @@ import java.util.Map;
 
 public interface RrTermMap {
   Node generateValue(Map<String, Object> input);
+
   void isUsedInObjectMap();
 }
