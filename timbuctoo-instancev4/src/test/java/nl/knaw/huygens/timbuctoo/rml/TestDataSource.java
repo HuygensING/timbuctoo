@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
+import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrLogicalSource;
 
@@ -7,7 +8,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TestDataSource implements DataSource{
+import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.stream;
+
+public class TestDataSource implements DataSource {
   private final Map<String, Iterable<Map<String, Object>>> data;
   private final Map<String, Map<String, Map<Object, String>>> cachedUris = new HashMap<>();
 
@@ -17,17 +20,18 @@ public class TestDataSource implements DataSource{
 
   @Override
   public Iterable<Map<String, Object>> getItems(RrLogicalSource rrLogicalSource, List<ReferenceGetter> references) {
-    final Iterable<Map<String, Object>> valuesForThisSource = data.get(rrLogicalSource.source.getURI());
-    for (Map<String, Object> values : valuesForThisSource) {
-      for (ReferenceGetter reference : references) {
-        String uri = cachedUris.get(reference.source.source.getURI())
-                               .get(reference.targetFieldName)
-                               .get(values.get(reference.child));
-        values.put(reference.referenceJoinFieldName, uri);
-      }
-    }
-
-    return valuesForThisSource;
+    return () -> stream(data.get(rrLogicalSource.source.getURI()))
+      .map(values -> {
+        ImmutableMap.Builder<String, Object> resultBuilder = ImmutableMap.<String, Object>builder().putAll(values);
+        for (ReferenceGetter reference : references) {
+          String uri = cachedUris.get(reference.source.source.getURI())
+            .get(reference.targetFieldName)
+            .get(values.get(reference.child));
+          resultBuilder = resultBuilder.put(reference.referenceJoinFieldName, uri);
+        }
+        return (Map<String, Object>) resultBuilder.build();
+      })
+      .iterator();
   }
 
   @Override

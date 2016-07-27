@@ -18,7 +18,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
 import org.junit.Test;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.rml.TripleMatcher.likeTriple;
@@ -151,15 +150,15 @@ public class RmlMapperTest {
       )
     );
     final RmlMappingDocument map = new RmlMappingDocument(mapping1, mapping2);
-    HashMap<String, Object> person = new HashMap<>();
-    person.put("rdfUri", "http://www.example.org/persons/1");
-    person.put("naam", "Bill");
-    HashMap<String, Object> document = new HashMap<>();
-    document.put("rdfUri", "http://www.example.org/documents/1");
-    document.put("geschrevenDoor", "Bill");
     DataSource input = new TestDataSource(ImmutableMap.of(
-      "http://example.org/mapping1", Lists.newArrayList(person),
-      "http://example.org/mapping2", Lists.newArrayList(document)
+      "http://example.org/mapping1", Lists.newArrayList(ImmutableMap.of(
+        "rdfUri", "http://www.example.org/persons/1",
+        "naam", "Bill"
+      )),
+      "http://example.org/mapping2", Lists.newArrayList(ImmutableMap.of(
+        "rdfUri", "http://www.example.org/documents/1",
+        "geschrevenDoor", "Bill"
+      ))
     ));
     TripleConsumer consumer = mock(TripleConsumer.class);
 
