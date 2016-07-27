@@ -1,10 +1,9 @@
-package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
+package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 
 import javax.ws.rs.GET;
