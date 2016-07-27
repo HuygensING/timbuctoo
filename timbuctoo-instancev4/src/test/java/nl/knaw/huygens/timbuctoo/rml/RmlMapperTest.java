@@ -12,27 +12,31 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrColumn;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrConstant;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps.RrJoinCondition;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps.RrRefObjectMap;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
-import org.apache.jena.graph.Triple;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static nl.knaw.huygens.timbuctoo.rml.TripleMatcher.likeTriple;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 public class RmlMapperTest {
 
   public static final Node_URI EXAMPLE_CLASS = makeUriNode("http://example.org/someClass");
 
+  private static Node_URI makeUriNode(String uri) {
+    return (Node_URI) NodeFactory.createURI(uri);
+  }
+
+  private static Node makeLiteralNode(String value) {
+    return NodeFactory.createLiteral(value);
+  }
 
   @Test
   public void generatesRdfTypeTriplesForSubjectMapsWithRrClass() {
@@ -50,16 +54,11 @@ public class RmlMapperTest {
 
     RmlMapper.execute(input, map, consumer);
 
-    ArgumentCaptor<Triple> tripleArgumentCaptor = ArgumentCaptor.forClass(Triple.class);
-    verify(consumer).accept(tripleArgumentCaptor.capture());
-    assertThat(
-      tripleArgumentCaptor.getValue().getPredicate().getURI(),
-      is("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
-    );
-    assertThat(
-      tripleArgumentCaptor.getValue().getObject(),
-      is(EXAMPLE_CLASS)
-    );
+    verify(consumer).accept(argThat(likeTriple(
+      Node.ANY,
+      makeUriNode("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
+      EXAMPLE_CLASS
+    )));
   }
 
   @Test
@@ -80,12 +79,9 @@ public class RmlMapperTest {
 
     RmlMapper.execute(input, map, consumer);
 
-    ArgumentCaptor<Triple> tripleArgumentCaptor = ArgumentCaptor.forClass(Triple.class);
-    verify(consumer, times(2)).accept(tripleArgumentCaptor.capture());
-    List<Triple> allValues = tripleArgumentCaptor.getAllValues();
-    assertThat(allValues, hasSize(2));
-    assertThat(allValues.get(0).getSubject().getURI(), is("http://www.example.org/example/1"));
-    assertThat(allValues.get(1).getSubject().getURI(), is("http://www.example.org/example/2"));
+    verify(consumer).accept(argThat(likeTriple(makeUriNode("http://www.example.org/example/1"), Node.ANY, Node.ANY)));
+    verify(consumer).accept(argThat(likeTriple(makeUriNode("http://www.example.org/example/2"), Node.ANY, Node.ANY)));
+    verifyNoMoreInteractions(consumer);
   }
 
   @Test
@@ -108,10 +104,7 @@ public class RmlMapperTest {
 
     RmlMapper.execute(input, map, consumer);
 
-    ArgumentCaptor<Triple> tripleArgumentCaptor = ArgumentCaptor.forClass(Triple.class);
-    verify(consumer).accept(tripleArgumentCaptor.capture());
-    assertThat(tripleArgumentCaptor.getValue().getPredicate(), is(theNamePredicate));
-    assertThat(tripleArgumentCaptor.getValue().getObject().getLiteral().getValue(), is("Bill"));
+    verify(consumer).accept(argThat(likeTriple(Node.ANY, theNamePredicate, makeLiteralNode("Bill"))));
   }
 
   @Test
@@ -134,9 +127,7 @@ public class RmlMapperTest {
         )
       )
     );
-
     RmlMappingDocument map = new RmlMappingDocument(mapping1, mapping2);
-
     HashMap<String, Object> person = new HashMap<>();
     person.put("rdfUri", "http://www.example.org/persons/1");
     person.put("naam", "Bill");
@@ -147,15 +138,22 @@ public class RmlMapperTest {
       "http://example.org/mapping1", Lists.newArrayList(person),
       "http://example.org/mapping2", Lists.newArrayList(document)
     ));
+    TripleConsumer consumer = mock(TripleConsumer.class);
 
-    RmlMapper.execute(input, map, System.out::println);
+    RmlMapper.execute(input, map, consumer);
+
+    verify(consumer).accept(argThat(likeTriple(
+        makeUriNode("http://www.example.org/persons/1"),
+        theNamePredicate,
+        makeLiteralNode("Bill")
+      )));
+    verify(consumer).accept(argThat(likeTriple(
+      makeUriNode("http://www.example.org/documents/1"),
+      theWrittenByPredicate,
+      makeUriNode("http://www.example.org/persons/1")
+    )));
   }
 
-  private static Node_URI makeUriNode(String uri) {
-    return (Node_URI) NodeFactory.createURI(uri);
-  }
-
-  //verifyen
   //mapping schrijven voor 2 sheets van EuropeseMigratie (met een relatie) (in java)
   //DataSource schrijven voor de geimporteerde excel vertices
   //rest endpoint die die mapping uitvoert op de database met de geimporteerde data
