@@ -218,7 +218,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       register(environment, new Gremlin(graphManager));
     }
     register(environment, new Graph(graphManager));
-    register(environment, new BulkUpload(new BulkUploadService(graphManager)));
+    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata, excelExportService));

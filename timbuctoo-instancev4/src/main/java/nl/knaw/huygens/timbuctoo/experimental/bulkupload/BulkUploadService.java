@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.XlsxLoade
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -13,10 +14,12 @@ import java.io.InputStream;
 
 public class BulkUploadService {
 
+  private final Vres vres;
   private final TinkerpopGraphManager graphwrapper;
   private final Authorizer authorizer;
 
-  public BulkUploadService(TinkerpopGraphManager graphwrapper/*, Authorizer authorizer*/) {
+  public BulkUploadService(Vres vres, TinkerpopGraphManager graphwrapper/*, Authorizer authorizer*/) {
+    this.vres = vres;
     this.graphwrapper = graphwrapper;
     this.authorizer = null;//authorizer;
   }
@@ -33,7 +36,7 @@ public class BulkUploadService {
     //  }
     //}
 
-    try (TinkerpopSaver saver = new TinkerpopSaver(graphwrapper, vreName, 50_000)) {
+    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, 50_000)) {
       XlsxLoader loader = new AllSheetLoader();
       return loader.loadData(wb, new Importer(saver));
     }

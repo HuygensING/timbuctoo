@@ -1,22 +1,26 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
-import java.util.UUID;
 
 public class TinkerpopSaver implements AutoCloseable, Saver {
+  private final Vres vres;
   private final GraphWrapper wrapper;
   private final Vertex vre;
   private int saveCounter;
   private Transaction tx;
   private final int maxVerticesPerTransaction;
 
-  public TinkerpopSaver(GraphWrapper wrapper, String vreName, int maxVerticesPerTransaction) {
+  public TinkerpopSaver(Vres vres, GraphWrapper wrapper, String vreName, int maxVerticesPerTransaction) {
+    this.vres = vres;
     this.wrapper = wrapper;
     tx = wrapper.getGraph().tx();
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
@@ -25,19 +29,28 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
 
   private Vertex initVre(String vreName) {
     //FIXME namespace vrename per user
+
+    Vertex result = null;
     try (Transaction tx = wrapper.getGraph().tx()) {
-      wrapper.getGraph().traversal().V().hasLabel("VRE").has("name", vreName).forEachRemaining(vre -> {
-        vre.vertices(Direction.BOTH, "hasCollection").forEachRemaining(coll -> {
-          coll.vertices(Direction.BOTH, "hasEntity").forEachRemaining(vertex -> {
+      final GraphTraversal<Vertex, Vertex> vre = wrapper.getGraph().traversal().V()
+        .hasLabel(Vre.DATABASE_LABEL)
+        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+      if (vre.hasNext()) {
+        result = vre.next();
+        result.vertices(Direction.BOTH, "hasRawCollection").forEachRemaining(coll -> {
+          coll.vertices(Direction.BOTH, "hasItem").forEachRemaining(vertex -> {
             vertex.remove();
           });
           coll.remove();
         });
-        vre.remove();
-      });
-      tx.commit();
+        tx.commit();
+      } else {
+        result = wrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
+      }
     }
-    return wrapper.getGraph().addVertex(T.label, "VRE", "name", vreName);
+
+    vres.reload();
+    return result;
   }
 
   private void allowCommit() {
@@ -56,15 +69,10 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   @Override
   public Vertex addEntity(Vertex collection, HashMap<String, Object> currentProperties) {
     allowCommit();
-    Vertex result;
-    result = wrapper.getGraph().addVertex();
 
-    //FIXME re-use code from crudservice create
-    result.property("rev", 1);
-    result.property("tim_id", UUID.randomUUID().toString());
-    result.property("isLatest", true);
+    Vertex result = wrapper.getGraph().addVertex();
 
-    collection.addEdge("hasVertex", result);
+    collection.addEdge("hasItem", result);
     currentProperties.forEach(result::property);
 
     return result;
@@ -73,7 +81,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   @Override
   public Vertex addCollection(String collectionName) {
     Vertex collection = wrapper.getGraph().addVertex("name", collectionName);
-    vre.addEdge("hasCollection", collection);
+    vre.addEdge("hasRawCollection", collection);
     return collection;
   }
 
