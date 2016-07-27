@@ -55,33 +55,57 @@ if __FILE__ == $0
     Documents.location = "#{@location}v2.1/"
     Documents.solr_documents = "#{@solr}#{@document_coll}"
     Documents.solr_receptions = "#{@solr}#{@pers_reception_coll}"
+    Documents.solr_doc_receptions = "#{@solr}#{@doc_reception_coll}"
     Documents.debug = debug
-
 
     continu = true
     start_value = 0
     num_of_lines = 100 # Persons.debug ? 10 : 100
+    STDERR.puts "scrape persons"
     while(continu)
 	continu = Persons.scrape_file start_value,num_of_lines
 #	continu = false if Persons.debug && start_value==200
 	start_value += 100 if continu
     end
+    STDERR.puts
 
     puts "number of persons: #{Persons.size}"
 
     continu = true
     start_value = 0
     num_of_lines = 100 # debug ? 10 : 100
+    STDERR.puts "scrape documents"
     while(continu)
 	continu = Documents.scrape_file start_value,num_of_lines
 #	continu = false if debug && start_value==200
 	start_value += 100 if continu
     end
+    STDERR.puts
 
     Documents.solr_commit "#{@solr}#{@document_coll}"
     Documents.solr_commit "#{@solr}#{@pers_reception_coll}"
 
     puts "number of documents: #{Documents.number}"
+    puts "number of document receptions: #{Documents.document_receptions.size}"
+
+    doc_recptions = Array.new
+    STDERR.puts "start met document receptions"
+    Documents.document_receptions.each_with_index do |dr,ind|
+	doc = Documents.find dr['document_id_s']
+	new_dr = dr
+	new_dr['_childDocuments_'] = doc
+	doc_recptions << new_dr
+	if doc_recptions.size == 200
+#	    STDERR.puts doc_recptions.last
+	    Documents.do_solr_update doc_recptions,Documents.solr_doc_receptions
+	    doc_recptions = Array.new
+	end
+    end
+    if doc_recptions.size > 0
+	STDERR.puts doc_recptions.last
+	Documents.do_solr_update doc_recptions,Documents.solr_doc_receptions
+    end
+    Documents.solr_commit "#{Documents.solr_doc_receptions}",true
 
     Timer.stop
 end

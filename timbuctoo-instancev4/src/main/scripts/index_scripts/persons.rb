@@ -6,13 +6,21 @@ class Persons
     @@persons = Hash.new
 
     def Persons.scrape_file start_value, num_of_lines=100
-	STDERR.puts "debug=#{@@debug}" if @@debug
-	result = Array.new
-	STDERR.puts "start=#{start_value}"
-    
 	location = "#{@@location}domain/wwpersons?rows=#{num_of_lines}&start=#{start_value}&withRelations=true"
 	f = open(location, {:read_timeout=>600})
 	line = f.gets
+	return false  if line.eql?("[]")
+
+    	rest = start_value.modulo(1000)
+	if rest==0
+	    STDERR.print start_value/1000
+	elsif rest==500
+	    STDERR.print "+"
+	else
+	    STDERR.print "."
+	end
+
+	result = Array.new
 	array = JSON.parse(line)
 	array.each do |obj|
 	    person = Person.new(obj)
@@ -22,7 +30,6 @@ class Persons
 	    start_value += 1
 	end
 	Persons.do_solr_post result
-	STDERR.puts "#{start_value}"  if array.size < 100 && array.size > 0
 	return !line.eql?("[]")
     end
     

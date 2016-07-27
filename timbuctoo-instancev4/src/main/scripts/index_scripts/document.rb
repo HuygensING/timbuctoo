@@ -44,6 +44,31 @@ class Document < Hash
 	"referencesPerson"
     ]
 
+    #  eerst e.e.a. van deze relations opslaan;
+    #  nadat alle documenten zijn gelezen de relations
+    #  verder uitwerken en indexeren
+    @@wanted_document_relations = [
+	"isEditionOf",
+	"isSequelOf",
+	"isTranslationOf",
+	"isAdaptationOf",
+	"isPlagiarismOf",
+	"hasAnnotationsOn",
+	"isBibliographyOf",
+	"isCensoringOf",
+	"commentsOnWork",
+	"isAnthologyContaining",
+	"isCopyOf",
+	"isAwardForWork",
+	"isPrefaceOf",
+	"isIntertextualTo",
+	"listsWork",
+	"mentionsWork",
+	"isParodyOf",
+	"quotesWork",
+	"referencesWork"
+    ]
+
     attr_reader :id
 
     def initialize data
@@ -68,6 +93,7 @@ class Document < Hash
 	self['_childDocuments_'] = Array.new
 	add_creators data
 	add_receptions data
+	add_document_receptions data
     end
 
     def build_relations data
@@ -133,6 +159,39 @@ class Document < Hash
 
 	Documents.person_receptions_concat reception_relations
 
+	return
+    end
+
+    def add_document_receptions data
+	doc_id = data["_id"]
+	doc_displayName = data["title"]
+	reception_relations = Array.new
+	if !data['@relations'].nil?
+	    @@wanted_document_relations.each do |rec_rel|
+		if !data['@relations'][rec_rel].nil?
+		    data['@relations'][rec_rel].each do |rr_data|
+			new_rr = Hash.new
+			new_rr['id'] = rr_data['relationId']
+			new_rr['reception_id_s'] = doc_id
+			new_rr['displayName_s'] = doc_displayName
+			new_rr['relationType_s'] = rec_rel
+			new_rr['document_id_s'] = rr_data['id']
+			new_rr['document_displayName_s'] = rr_data['displayName']
+			rel_doc = Documents.find rr_data['id']
+			if !rel_doc.nil?
+			    # dit komt kennelijk nooit voor?
+			    new_rr['_childDocuments_'] = rel_doc
+			    # aparte lijst van voltooide receptions
+			    # die kan worden gecommit
+			    Documents.complete_document_receptions_add new_rr
+			else
+    			    reception_relations << new_rr
+			end
+		    end
+		end
+	    end
+	end
+	Documents.document_receptions_concat reception_relations
 	return
     end
 
