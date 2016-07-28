@@ -7,18 +7,18 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTemplate;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.TermType;
 import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
+
+import java.util.function.Consumer;
+
+import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMap.rrPredicateObjectMap;
 
 public class RrSubjectMap {
   private RrTermMap termMap;
-  private Node_URI className;
 
   public RrTermMap getTermMap() {
     return termMap;
-  }
-
-  public Node_URI getClassName() {
-    return className;
   }
 
   public static Builder rrSubjectMap() {
@@ -27,6 +27,7 @@ public class RrSubjectMap {
 
   public static class Builder {
     private final RrSubjectMap instance;
+    private Node_URI className;
 
     public Builder() {
       this.instance = new RrSubjectMap();
@@ -53,11 +54,17 @@ public class RrSubjectMap {
     }
 
     public Builder withClass(Node_URI className) {
-      instance.className = className;
+      this.className = className;
       return this;
     }
 
-    RrSubjectMap build() {
+    RrSubjectMap build(Consumer<RrPredicateObjectMap.Builder> consumer) {
+      if (this.className != null) {
+        consumer.accept(rrPredicateObjectMap()
+          .withConstant(this.className)
+          .withPredicate((Node_URI) NodeFactory.createURI("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"))
+        );
+      }
       return instance;
     }
   }

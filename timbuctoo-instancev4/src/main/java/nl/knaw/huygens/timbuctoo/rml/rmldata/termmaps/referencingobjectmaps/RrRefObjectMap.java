@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps;
 
+import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
+import nl.knaw.huygens.timbuctoo.rml.rmldata.TripleMapGetter;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -12,6 +14,8 @@ public class RrRefObjectMap implements RrTermMap {
   private RrTriplesMap parentTriplesMap;
   private RrJoinCondition rrJoinCondition;
   private String uniqueId;
+  private RrTriplesMap owner;
+  private DataSource dataSource;
 
   public RrRefObjectMap() {
     this.uniqueId = UUID.randomUUID().toString();
@@ -22,30 +26,28 @@ public class RrRefObjectMap implements RrTermMap {
     return NodeFactory.createURI("" + input.get(uniqueId));
   }
 
-  public RrTriplesMap getParentTriplesMap() {
-    return parentTriplesMap;
-  }
-
-  public RrJoinCondition getRrJoinCondition() {
-    return rrJoinCondition;
-  }
-
-  public String getUniqueId() {
-    return uniqueId;
-  }
-
   public static Builder rrRefObjectMap() {
     return new Builder();
   }
 
+  private void subscribeToParent() {
+    this.parentTriplesMap.subscribeToSubjectsWith(this, this.rrJoinCondition.getParent());
+  }
+
+  public void newSubject(Object value, Node subject) {
+    dataSource.willBeJoinedOn(rrJoinCondition.getChild(), value, subject.getURI(), uniqueId);
+  }
+
   public static class Builder {
     private RrRefObjectMap instance;
+    private String rrTriplesMapUri;
 
     public Builder() {
       this.instance = new RrRefObjectMap();
     }
 
     public Builder withParentTriplesMap(String rrTriplesMapUri) {
+      this.rrTriplesMapUri = rrTriplesMapUri;
       return this;
     }
 
@@ -54,8 +56,17 @@ public class RrRefObjectMap implements RrTermMap {
       return this;
     }
 
-    public RrRefObjectMap build() {
+    public RrRefObjectMap build(RrTriplesMap owner, DataSource dataSource) {
+      this.instance.owner = owner;
+      this.instance.dataSource = dataSource;
       return this.instance;
     }
+
+    public void fixupTripleMaps(TripleMapGetter getter) {
+      final RrRefObjectMap instance = this.instance;
+      instance.parentTriplesMap = getter.getTriplesMap(rrTriplesMapUri);
+      instance.subscribeToParent();
+    }
   }
+
 }

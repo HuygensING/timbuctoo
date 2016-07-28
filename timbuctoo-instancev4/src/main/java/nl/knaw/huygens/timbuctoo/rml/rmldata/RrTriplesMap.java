@@ -1,60 +1,59 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
-import nl.knaw.huygens.timbuctoo.rml.ReferenceGetter;
+import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps.RrRefObjectMap;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Node_URI;
+import org.apache.jena.graph.Triple;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
+
+import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
 public class RrTriplesMap {
   private RrSubjectMap subjectMap;
   private List<RrPredicateObjectMap> predicateObjectMaps = new ArrayList<>();
   private RrLogicalSource logicalSource;
-  private final List<ReferenceGetter> parentFields = new ArrayList<>();
-  private final List<ReferenceGetter> ownJoinFields = new ArrayList<>();
+  private Node_URI uri;
+  private final List<Tuple<RrRefObjectMap, String>> subscriptions = new ArrayList<>();
+  private DataSource dataSource;
 
   public RrTriplesMap() {
   }
 
   void addPredicateObjectMap(RrPredicateObjectMap map) {
     this.predicateObjectMaps.add(map);
-    if (map.getObjectMap() instanceof RrRefObjectMap) {
-      final RrRefObjectMap rrRefObjectMap = (RrRefObjectMap) map.getObjectMap();
-      ownJoinFields.add(new ReferenceGetter(
-        rrRefObjectMap.getParentTriplesMap().logicalSource,
-        rrRefObjectMap.getRrJoinCondition().getParent(),
-        rrRefObjectMap.getRrJoinCondition().getChild(),
-        rrRefObjectMap.getUniqueId()
-      ));
-    }
-  }
-
-  void addParentJoinField(ReferenceGetter getter) {
-    parentFields.add(getter);
-  }
-
-  public List<ReferenceGetter> getFieldsThatWillBeJoinedOn() {
-    return parentFields;
-  }
-
-  public List<ReferenceGetter> getFieldsThatIamJoiningOn() {
-    return ownJoinFields;
-  }
-
-  public RrSubjectMap getSubjectMap() {
-    return subjectMap;
-  }
-
-  public List<RrPredicateObjectMap> getPredicateObjectMaps() {
-    return predicateObjectMaps;
-  }
-
-  public RrLogicalSource getLogicalSource() {
-    return logicalSource;
   }
 
   public static Builder rrTriplesMap() {
     return new Builder();
+  }
+
+  public Node_URI getUri() {
+    return uri;
+  }
+
+  public void subscribeToSubjectsWith(RrRefObjectMap subscriber, String parent) {
+    subscriptions.add(Tuple.tuple(subscriber, parent));
+  }
+
+  //FIXME iwillJoinOnYou should make sure that the tripleMap gets ordered
+
+  public Iterator<Triple> getItems() {
+    return stream(dataSource.getItems())
+      .flatMap(stringObjectMap -> {
+        Node subject = subjectMap.getTermMap().generateValue(stringObjectMap);
+        for (Tuple<RrRefObjectMap, String> subscription : subscriptions) {
+          subscription.getLeft().newSubject(stringObjectMap.get(subscription.getRight()), subject);
+        }
+
+        return predicateObjectMaps.stream()
+          .map(predicateObjectMap -> predicateObjectMap.generateValue(subject, stringObjectMap));
+      }).iterator();
   }
 
   public static class Builder {
@@ -65,6 +64,11 @@ public class RrTriplesMap {
 
     Builder() {
       this.instance = new RrTriplesMap();
+    }
+
+    public Builder withUri(Node_URI uri) {
+      this.instance.uri = uri;
+      return this;
     }
 
     public Builder withLogicalSource(RrLogicalSource.Builder subBuilder) {
@@ -98,13 +102,22 @@ public class RrTriplesMap {
       return subBuilder;
     }
 
-    RrTriplesMap build() {
+    RrTriplesMap build(Function<RrLogicalSource, DataSource> dataSourceFactory) {
       instance.logicalSource = logicalSourceBuilder.build();
-      instance.subjectMap = subjectMapBuilder.build();
+      instance.dataSource = dataSourceFactory.apply(instance.logicalSource);
+
+      instance.subjectMap = subjectMapBuilder.build(this::withPredicateObjectMap);
       for (RrPredicateObjectMap.Builder subBuilder : this.predicateObjectMapBuilders) {
-        instance.addPredicateObjectMap(subBuilder.build(this.instance));
+        instance.addPredicateObjectMap(subBuilder.build(this.instance, this.instance.dataSource));
       }
       return instance;
     }
+
+    void fixupTripleMapLinks(TripleMapGetter getter) {
+      for (RrPredicateObjectMap.Builder subBuilder : this.predicateObjectMapBuilders) {
+        subBuilder.fixupTripleMaps(getter);
+      }
+    }
+
   }
 }

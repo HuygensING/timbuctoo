@@ -3,12 +3,9 @@ package nl.knaw.huygens.timbuctoo.rml;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.DataSource;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.Map;
@@ -39,27 +36,23 @@ public class RmlMapperTest {
 
   @Test
   public void generatesRdfTypeTriplesForSubjectMapsWithRrClass() {
-    RmlMappingDocument map = rmlMappingDocument()
-      .withTripleMap(
-        rrTriplesMap()
-          .withLogicalSource(
-            rrLogicalSource()
-              .withSource(uri("http://example.org/mapping"))
-          )
-          .withSubjectMap(
-            rrSubjectMap()
-              .withConstantTerm(uri("http://example.com/myItem"))
-              .withClass(EXAMPLE_CLASS)
-          )
-      )
-      .build();
+    DataSource input = new TestDataSource(Lists.newArrayList(Maps.newHashMap()));
+
     TripleConsumer consumer = mock(TripleConsumer.class);
-    DataSource input = new TestDataSource(ImmutableMap.of(
-      "http://example.org/mapping", Lists.newArrayList(Maps.newHashMap())
-    ));
 
-
-    RmlMapper.execute(input, map, consumer);
+    rmlMappingDocument()
+      .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/mapping1"))
+        .withLogicalSource(rrLogicalSource()
+          .withSource(uri("http://example.org/mapping"))
+        )
+        .withSubjectMap(rrSubjectMap()
+          .withConstantTerm(uri("http://example.com/myItem"))
+          .withClass(EXAMPLE_CLASS)
+        )
+      )
+      .build(x -> input)
+      .execute(consumer);
 
     verify(consumer).accept(argThat(likeTriple(
       Node.ANY,
@@ -70,8 +63,16 @@ public class RmlMapperTest {
 
   @Test
   public void generatesSubjectsForEachInputObject() {
-    RmlMappingDocument map = rmlMappingDocument()
+    TripleConsumer consumer = mock(TripleConsumer.class);
+    Map<String, Object> entity1 = Maps.newHashMap();
+    entity1.put("rdfUri", "http://www.example.org/example/1");
+    Map<String, Object> entity2 = Maps.newHashMap();
+    entity2.put("rdfUri", "http://www.example.org/example/2");
+    DataSource input = new TestDataSource(Lists.newArrayList(entity1, entity2));
+
+    rmlMappingDocument()
       .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/mapping1"))
         .withLogicalSource(rrLogicalSource()
           .withSource(uri("http://example.org/mapping"))
         )
@@ -80,16 +81,8 @@ public class RmlMapperTest {
           .withClass(EXAMPLE_CLASS)
         )
       )
-      .build();
-    TripleConsumer consumer = mock(TripleConsumer.class);
-    Map<String, Object> entity1 = Maps.newHashMap();
-    entity1.put("rdfUri", "http://www.example.org/example/1");
-    Map<String, Object> entity2 = Maps.newHashMap();
-    entity2.put("rdfUri", "http://www.example.org/example/2");
-    DataSource input = new TestDataSource(ImmutableMap.of(
-      "http://example.org/mapping", Lists.newArrayList(entity1, entity2)));
-
-    RmlMapper.execute(input, map, consumer);
+      .build(x -> input)
+      .execute(consumer);
 
     verify(consumer).accept(argThat(likeTriple(uri("http://www.example.org/example/1"), Node.ANY, Node.ANY)));
     verify(consumer).accept(argThat(likeTriple(uri("http://www.example.org/example/2"), Node.ANY, Node.ANY)));
@@ -99,8 +92,16 @@ public class RmlMapperTest {
   @Test
   public void generatesPredicateForEachInputObject() {
     final Node_URI theNamePredicate = uri("http://example.org/vocab#name");
-    RmlMappingDocument map = rmlMappingDocument()
+
+    TripleConsumer consumer = mock(TripleConsumer.class);
+    DataSource input = new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+        "rdfUri", "http://www.example.org/example/1",
+        "naam", "Bill"
+      )));
+
+    rmlMappingDocument()
       .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/mapping1"))
         .withLogicalSource(rrLogicalSource()
           .withSource(uri("http://example.org/mapping"))
         )
@@ -113,16 +114,8 @@ public class RmlMapperTest {
           .withColumn("naam")
         )
       )
-      .build();
-
-    TripleConsumer consumer = mock(TripleConsumer.class);
-    DataSource input = new TestDataSource(ImmutableMap.of(
-      "http://example.org/mapping", Lists.newArrayList(ImmutableMap.of(
-        "rdfUri", "http://www.example.org/example/1",
-        "naam", "Bill"
-      ))));
-
-    RmlMapper.execute(input, map, consumer);
+      .build(x -> input)
+      .execute(consumer);
 
     verify(consumer).accept(argThat(likeTriple(Node.ANY, theNamePredicate, literal("Bill"))));
   }
@@ -130,8 +123,14 @@ public class RmlMapperTest {
 
   @Test
   public void handlesTemplateMaps() {
-    RmlMappingDocument map = rmlMappingDocument()
+    TripleConsumer consumer = mock(TripleConsumer.class);
+    DataSource input = new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+      "naam", "Bill"
+    )));
+
+    rmlMappingDocument()
       .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/mapping1"))
         .withLogicalSource(rrLogicalSource()
           .withSource(uri("http://example.org/mapping"))
         )
@@ -140,15 +139,8 @@ public class RmlMapperTest {
           .withClass(EXAMPLE_CLASS)
         )
       )
-      .build();
-
-    TripleConsumer consumer = mock(TripleConsumer.class);
-    DataSource input = new TestDataSource(ImmutableMap.of(
-      "http://example.org/mapping", Lists.newArrayList(ImmutableMap.of(
-        "naam", "Bill"
-      ))));
-
-    RmlMapper.execute(input, map, consumer);
+      .build(x -> input)
+      .execute(consumer);
 
     verify(consumer).accept(argThat(
       likeTriple(uri("http://example.org/items/Bill?blah"), Node.ANY, Node.ANY)
@@ -156,25 +148,30 @@ public class RmlMapperTest {
   }
 
   @Test
-  @Ignore
   public void canGenerateLinks() {
     final Node_URI theNamePredicate = uri("http://example.org/vocab#name");
     final Node_URI theWrittenByPredicate = uri("http://example.org/vocab#writtenBy");
-    RmlMappingDocument map = rmlMappingDocument()
+
+    TripleConsumer consumer = mock(TripleConsumer.class);
+
+    rmlMappingDocument()
       .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/personsMap"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/mapping1"))
+          .withSource(uri("http://example.org/persons"))
         )
         .withSubjectMap(rrSubjectMap()
           .withColumnTerm("rdfUri")
         )
         .withPredicateObjectMap(rrPredicateObjectMap()
+          .withPredicate(theNamePredicate)
           .withColumn("naam")
         )
       )
       .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/documentsMap"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/mapping2"))
+          .withSource(uri("http://example.org/documents"))
         )
         .withSubjectMap(rrSubjectMap()
           .withColumnTerm("rdfUri")
@@ -182,25 +179,27 @@ public class RmlMapperTest {
         .withPredicateObjectMap(rrPredicateObjectMap()
           .withPredicate(theWrittenByPredicate)
           .withReference(rrRefObjectMap()
-            .withParentTriplesMap("http://example.org/mapping1")
+            .withParentTriplesMap("http://example.org/personsMap")
             .withJoinCondition("geschrevenDoor", "naam")
           )
         )
       )
-      .build();
-    DataSource input = new TestDataSource(ImmutableMap.of(
-      "http://example.org/mapping1", Lists.newArrayList(ImmutableMap.of(
-        "rdfUri", "http://www.example.org/persons/1",
-        "naam", "Bill"
-      )),
-      "http://example.org/mapping2", Lists.newArrayList(ImmutableMap.of(
-        "rdfUri", "http://www.example.org/documents/1",
-        "geschrevenDoor", "Bill"
-      ))
-    ));
-    TripleConsumer consumer = mock(TripleConsumer.class);
-
-    RmlMapper.execute(input, map, consumer);
+      .build(logicalSource -> {
+        if (logicalSource.getSource().getURI().equals("http://example.org/persons")) {
+          return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+            "rdfUri", "http://www.example.org/persons/1",
+            "naam", "Bill"
+          )));
+        }
+        if (logicalSource.getSource().getURI().equals("http://example.org/documents")) {
+          return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+            "rdfUri", "http://www.example.org/documents/1",
+            "geschrevenDoor", "Bill"
+          )));
+        }
+        return null;
+      })
+      .execute(consumer);
 
     verify(consumer).accept(argThat(likeTriple(
       uri("http://www.example.org/persons/1"),

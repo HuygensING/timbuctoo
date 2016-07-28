@@ -44,9 +44,9 @@ public class TripleMatcher extends TypeSafeDiagnosingMatcher<Triple> {
 
   @Override
   public void describeTo(Description description) {
-    description.appendText("Triple with subject ").appendValue(subject)
-               .appendText(" with predicate ").appendValue(predicate)
-               .appendText(" with object ").appendValue(object);
+    description.appendValue(subject).appendText(" ")
+               .appendValue(predicate).appendText(" ")
+               .appendValue(object).appendText(" .");
   }
 
 }

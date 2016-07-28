@@ -1,46 +1,45 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
 import com.google.common.collect.ImmutableMap;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.DataSource;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.RrLogicalSource;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.stream;
 
 public class TestDataSource implements DataSource {
-  private final Map<String, Iterable<Map<String, Object>>> data;
-  private final Map<String, Map<String, Map<Object, String>>> cachedUris = new HashMap<>();
+  private final Iterable<Map<String, Object>> data;
+  private final Map<String, Tuple<String, Map<Object, String>>> cachedUris = new HashMap<>();
 
-  public TestDataSource(Map<String, Iterable<Map<String, Object>>> data) {
+  public TestDataSource(Iterable<Map<String, Object>> data) {
     this.data = data;
   }
 
   @Override
-  public Iterator<Map<String, Object>> getItems(RrLogicalSource rrLogicalSource, List<ReferenceGetter> references) {
-    return stream(data.get(rrLogicalSource.getSource().getURI()))
+  public Iterator<Map<String, Object>> getItems() {
+    return stream(data)
       .map(values -> {
         ImmutableMap.Builder<String, Object> resultBuilder = ImmutableMap.<String, Object>builder().putAll(values);
-        for (ReferenceGetter reference : references) {
-          String uri = cachedUris.get(reference.source.getSource().getURI())
-            .get(reference.targetFieldName)
-            .get(values.get(reference.child));
-          resultBuilder = resultBuilder.put(reference.referenceJoinFieldName, uri);
+        for (Map.Entry<String, Tuple<String, Map<Object, String>>> stringMapEntry : cachedUris.entrySet()) {
+          final Tuple<String, Map<Object, String>> stringMapTuple = cachedUris.get(stringMapEntry.getKey());
+          String uri = cachedUris.get(stringMapEntry.getKey()).getRight()
+            .get(values.get(stringMapTuple.getLeft()));
+          resultBuilder = resultBuilder.put(stringMapEntry.getKey(), uri);
         }
+
         return (Map<String, Object>) resultBuilder.build();
       })
       .iterator();
   }
 
   @Override
-  public void willBeJoinedOn(RrLogicalSource logicalSource, String fieldName, Object columnValue, String uri) {
+  public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
     Map<Object, String> valueMap = cachedUris
-      .computeIfAbsent(logicalSource.getSource().getURI(), x -> new HashMap<>())
-      .computeIfAbsent(fieldName, x -> new HashMap<>());
-    valueMap.put(columnValue, uri);
+      .computeIfAbsent(outputFieldName, x -> Tuple.tuple(fieldName, new HashMap<>()))
+      .getRight();
+    valueMap.put(referenceJoinValue, uri);
   }
 
 }
