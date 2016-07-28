@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument.rmlMappingDocument;
+import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrLogicalSource.rrLogicalSource;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMap.rrPredicateObjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrSubjectMap.rrSubjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap.rrTriplesMap;
@@ -19,6 +20,8 @@ public class ExampleMapping {
   public static RmlMappingDocument createEmExampleMapping() {
     return rmlMappingDocument()
       .withTripleMap(rrTriplesMap()
+        .withLogicalSource(rrLogicalSource())
+        .withUri((Node_URI) NodeFactory.createURI("http://timbuctoo.com/mappings/personmap"))
         .withSubjectMap(rrSubjectMap()
           .withClass((Node_URI) NodeFactory.createURI("http://timbuctoo.com/emmigrantunits"))
           .withTemplateTerm("http://timbuctoo.com/emmigrantunits/{persoonsId}")
@@ -40,6 +43,7 @@ public class ExampleMapping {
         )
       )
       .withTripleMap(rrTriplesMap()
+        .withLogicalSource(rrLogicalSource())
         .withUri((Node_URI) NodeFactory.createURI("http://timbuctoo.com/mappings/locationmap"))
         .withSubjectMap(rrSubjectMap()
           .withClass((Node_URI) NodeFactory.createURI("http://timbuctoo.com/emlocations"))
