@@ -1,0 +1,21 @@
+digraph {
+	VRE 
+	RmlMappingDocument
+	TriplesMapping1 [label="TriplesMap"]
+	Subject1 [label="SubjectMap"]
+	PredicateObject1_1 [label="PredicateObjectMap"]
+	PredicateObject1_2 [label="PredicateObjectMap"]
+	VRE->RmlMappingDocument [label="hasRmlMapping"]
+	RmlMappingDocument->TriplesMapping1 [label="hasTriplesMapping"]
+	TriplesMapping1->Subject1 [label="hasSubjectMap"]
+	TriplesMapping1->PredicateObject1_1 [label="hasPredicateObjectMap"]
+	TriplesMapping1->PredicateObject1_2 [label="hasPredicateObjectMap"]
+	TriplesMapping2 [label="TriplesMap"]
+	Subject2 [label="SubjectMap"]
+	PredicateObject2_1 [label="PredicateObjectMap"]
+	PredicateObject2_2 [label="PredicateObjectMap"]
+	RmlMappingDocument->TriplesMapping2 [label="hasTriplesMapping"]
+	TriplesMapping2->Subject2 [label="hasSubjectMap"]
+	TriplesMapping2->PredicateObject2_1 [label="hasPredicateObjectMap"]
+	TriplesMapping2->PredicateObject2_2 [label="hasPredicateObjectMap"]	
+}
