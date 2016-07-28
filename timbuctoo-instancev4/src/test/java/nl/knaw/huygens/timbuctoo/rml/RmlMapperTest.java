@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.rml;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.rml.rmldata.rmlsources.UriSource;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
@@ -11,8 +12,8 @@ import org.junit.Test;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.rml.TripleMatcher.likeTriple;
+import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlLogicalSource.rrLogicalSource;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument.rmlMappingDocument;
-import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrLogicalSource.rrLogicalSource;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMap.rrPredicateObjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrSubjectMap.rrSubjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap.rrTriplesMap;
@@ -44,7 +45,7 @@ public class RmlMapperTest {
       .withTripleMap(rrTriplesMap()
         .withUri(uri("http://example.org/mapping1"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/mapping"))
+          .withSource("http://example.org/mapping")
         )
         .withSubjectMap(rrSubjectMap()
           .withConstantTerm(uri("http://example.com/myItem"))
@@ -75,7 +76,7 @@ public class RmlMapperTest {
       .withTripleMap(rrTriplesMap()
         .withUri(uri("http://example.org/mapping1"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/mapping"))
+          .withSource("http://example.org/mapping")
         )
         .withSubjectMap(rrSubjectMap()
           .withColumnTerm("rdfUri")
@@ -105,7 +106,7 @@ public class RmlMapperTest {
       .withTripleMap(rrTriplesMap()
         .withUri(uri("http://example.org/mapping1"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/mapping"))
+          .withSource("http://example.org/mapping")
         )
         .withSubjectMap(rrSubjectMap()
           .withColumnTerm("rdfUri")
@@ -135,7 +136,7 @@ public class RmlMapperTest {
       .withTripleMap(rrTriplesMap()
         .withUri(uri("http://example.org/mapping1"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/mapping"))
+          .withSource("http://example.org/mapping")
         )
         .withSubjectMap(rrSubjectMap()
           .withTemplateTerm("http://example.org/items/{naam}?blah")
@@ -162,7 +163,7 @@ public class RmlMapperTest {
       .withTripleMap(rrTriplesMap()
         .withUri(uri("http://example.org/personsMap"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/persons"))
+          .withSource("http://example.org/persons")
         )
         .withSubjectMap(rrSubjectMap()
           .withColumnTerm("rdfUri")
@@ -175,7 +176,7 @@ public class RmlMapperTest {
       .withTripleMap(rrTriplesMap()
         .withUri(uri("http://example.org/documentsMap"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/documents"))
+          .withSource("http://example.org/documents")
         )
         .withSubjectMap(rrSubjectMap()
           .withColumnTerm("rdfUri")
@@ -189,17 +190,20 @@ public class RmlMapperTest {
         )
       )
       .build(logicalSource -> {
-        if (logicalSource.getSource().getURI().equals("http://example.org/persons")) {
-          return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
-            "rdfUri", "http://www.example.org/persons/1",
-            "naam", "Bill"
-          )));
-        }
-        if (logicalSource.getSource().getURI().equals("http://example.org/documents")) {
-          return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
-            "rdfUri", "http://www.example.org/documents/1",
-            "geschrevenDoor", "Bill"
-          )));
+        if (logicalSource.getSource() instanceof UriSource) {
+          UriSource source = (UriSource) logicalSource.getSource();
+          if (source.getUri().equals("http://example.org/persons")) {
+            return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+              "rdfUri", "http://www.example.org/persons/1",
+              "naam", "Bill"
+            )));
+          }
+          if (source.getUri().equals("http://example.org/documents")) {
+            return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+              "rdfUri", "http://www.example.org/documents/1",
+              "geschrevenDoor", "Bill"
+            )));
+          }
         }
         return null;
       })
@@ -229,7 +233,7 @@ public class RmlMapperTest {
       .withTripleMap(rrTriplesMap()
         .withUri(uri("http://example.org/documentsMap"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/documents"))
+          .withSource("http://example.org/documents")
         )
         .withSubjectMap(rrSubjectMap()
           .withColumnTerm("rdfUri")
@@ -245,7 +249,7 @@ public class RmlMapperTest {
       .withTripleMap(rrTriplesMap()
         .withUri(uri("http://example.org/personsMap"))
         .withLogicalSource(rrLogicalSource()
-          .withSource(uri("http://example.org/persons"))
+          .withSource("http://example.org/persons")
         )
         .withSubjectMap(rrSubjectMap()
           .withColumnTerm("rdfUri")
@@ -256,17 +260,20 @@ public class RmlMapperTest {
         )
       )
       .build(logicalSource -> {
-        if (logicalSource.getSource().getURI().equals("http://example.org/persons")) {
-          return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
-            "rdfUri", "http://www.example.org/persons/1",
-            "naam", "Bill"
-          )));
-        }
-        if (logicalSource.getSource().getURI().equals("http://example.org/documents")) {
-          return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
-            "rdfUri", "http://www.example.org/documents/1",
-            "geschrevenDoor", "Bill"
-          )));
+        if (logicalSource.getSource() instanceof UriSource) {
+          UriSource source = (UriSource) logicalSource.getSource();
+          if (source.getUri().equals("http://example.org/persons")) {
+            return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+              "rdfUri", "http://www.example.org/persons/1",
+              "naam", "Bill"
+            )));
+          }
+          if (source.getUri().equals("http://example.org/documents")) {
+            return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+              "rdfUri", "http://www.example.org/documents/1",
+              "geschrevenDoor", "Bill"
+            )));
+          }
         }
         return null;
       })

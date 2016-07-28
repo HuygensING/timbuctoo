@@ -1,16 +1,16 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
+import nl.knaw.huygens.timbuctoo.rml.rmldata.rmlsources.UriSource;
 import org.apache.jena.graph.Node_Literal;
-import org.apache.jena.graph.Node_URI;
 
 import java.util.Optional;
 
-public class RrLogicalSource {
-  private Node_URI source;
+public class RmlLogicalSource {
+  private RmlSource source;
   private Node_Literal iterator;
   private Optional<Node_Literal> referenceFormulation = Optional.empty();
 
-  public Node_URI getSource() {
+  public RmlSource getSource() {
     return source;
   }
 
@@ -27,18 +27,18 @@ public class RrLogicalSource {
   }
 
   public static class Builder {
-    private final RrLogicalSource instance;
+    private final RmlLogicalSource instance;
 
     public Builder() {
-      this.instance = new RrLogicalSource();
+      this.instance = new RmlLogicalSource();
     }
 
-    RrLogicalSource build() {
+    RmlLogicalSource build() {
       return instance;
     }
 
-    public Builder withSource(Node_URI source) {
-      instance.source = source;
+    public Builder withSource(String source) {
+      instance.source = new UriSource(source);
       return this;
     }
   }

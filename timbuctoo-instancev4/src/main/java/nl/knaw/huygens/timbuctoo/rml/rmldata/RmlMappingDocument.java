@@ -49,7 +49,7 @@ public class RmlMappingDocument {
       return subBuilder;
     }
 
-    public RmlMappingDocument build(Function<RrLogicalSource, DataSource> dataSourceFactory) {
+    public RmlMappingDocument build(Function<RmlLogicalSource, DataSource> dataSourceFactory) {
       for (RrTriplesMap.Builder tripleMapBuilder : this.tripleMapBuilders) {
         final RrTriplesMap triplesMap = tripleMapBuilder.build(dataSourceFactory);
         triplesMaps.put(triplesMap.getUri().getURI(), tuple(this.instance.triplesMaps.size(), triplesMap));

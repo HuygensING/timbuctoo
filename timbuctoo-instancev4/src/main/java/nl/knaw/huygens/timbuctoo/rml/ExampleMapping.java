@@ -10,7 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument.rmlMappingDocument;
-import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrLogicalSource.rrLogicalSource;
+import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlLogicalSource.rrLogicalSource;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMap.rrPredicateObjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrSubjectMap.rrSubjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap.rrTriplesMap;

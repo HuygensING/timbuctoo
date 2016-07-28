@@ -19,7 +19,7 @@ public class RrTriplesMap {
   private final List<Tuple<RrRefObjectMap, String>> subscriptions = new ArrayList<>();
   private RrSubjectMap subjectMap;
   private List<RrPredicateObjectMap> predicateObjectMaps = new ArrayList<>();
-  private RrLogicalSource logicalSource;
+  private RmlLogicalSource logicalSource;
   private DataSource dataSource;
   private Node_URI uri;
   private int order;
@@ -58,7 +58,7 @@ public class RrTriplesMap {
 
   public static class Builder {
     private final RrTriplesMap instance;
-    private RrLogicalSource.Builder logicalSourceBuilder;
+    private RmlLogicalSource.Builder logicalSourceBuilder;
     private RrSubjectMap.Builder subjectMapBuilder;
     private List<RrPredicateObjectMap.Builder> predicateObjectMapBuilders = new ArrayList<>();
 
@@ -71,13 +71,13 @@ public class RrTriplesMap {
       return this;
     }
 
-    public Builder withLogicalSource(RrLogicalSource.Builder subBuilder) {
+    public Builder withLogicalSource(RmlLogicalSource.Builder subBuilder) {
       this.logicalSourceBuilder = subBuilder;
       return this;
     }
 
-    public RrLogicalSource.Builder withLogicalSource() {
-      this.logicalSourceBuilder = new RrLogicalSource.Builder();
+    public RmlLogicalSource.Builder withLogicalSource() {
+      this.logicalSourceBuilder = new RmlLogicalSource.Builder();
       return logicalSourceBuilder;
     }
 
@@ -102,7 +102,7 @@ public class RrTriplesMap {
       return subBuilder;
     }
 
-    RrTriplesMap build(Function<RrLogicalSource, DataSource> dataSourceFactory) {
+    RrTriplesMap build(Function<RmlLogicalSource, DataSource> dataSourceFactory) {
 
       instance.logicalSource = logicalSourceBuilder.build();
       instance.dataSource = dataSourceFactory.apply(instance.logicalSource);
