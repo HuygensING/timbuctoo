@@ -41,5 +41,10 @@ public class RmlLogicalSource {
       instance.source = new UriSource(source);
       return this;
     }
+
+    public Builder withSource(RmlSource source) {
+      instance.source = source;
+      return this;
+    }
   }
 }

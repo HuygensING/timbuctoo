@@ -6,6 +6,7 @@ import org.apache.jena.graph.NodeFactory;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 public class RrTemplate implements RrTermMap {
   private final String template;
@@ -19,7 +20,7 @@ public class RrTemplate implements RrTermMap {
   }
 
   @Override
-  public Node generateValue(Map<String, Object> input) {
+  public Stream<Node> generateValue(Map<String, Object> input) {
     //regex can be tested by going to https://regex101.com/r/fV1zJ1/1
     //It has been tested with
     // http://jan/{} <- should not match
@@ -55,6 +56,6 @@ public class RrTemplate implements RrTermMap {
     }
     regexMatcher.appendTail(resultString);
 
-    return NodeFactory.createURI(resultString.toString());
+    return Stream.of(NodeFactory.createURI(resultString.toString()));
   }
 }

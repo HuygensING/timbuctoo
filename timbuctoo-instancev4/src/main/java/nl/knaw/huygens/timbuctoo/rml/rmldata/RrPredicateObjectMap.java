@@ -3,10 +3,10 @@ package nl.knaw.huygens.timbuctoo.rml.rmldata;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrColumn;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrConstant;
+import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTemplate;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.TermType;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Node_URI;
 import org.apache.jena.graph.Triple;
@@ -14,6 +14,7 @@ import org.apache.jena.graph.Triple;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class RrPredicateObjectMap {
   private Node_URI predicate;
@@ -27,13 +28,14 @@ public class RrPredicateObjectMap {
     return new Builder();
   }
 
-  public Triple generateValue(Node subject, Map<String, Object> stringObjectMap) {
-    Node value = objectMap.generateValue(stringObjectMap);
-    if (reversed) {
-      return new Triple(value, predicate, subject);
-    } else {
-      return new Triple(subject, predicate, value);
-    }
+  public Stream<Triple> generateValue(Node subject, Map<String, Object> stringObjectMap) {
+    return objectMap.generateValue(stringObjectMap).map(value -> {
+      if (reversed) {
+        return new Triple(value, predicate, subject);
+      } else {
+        return new Triple(subject, predicate, value);
+      }
+    });
   }
 
   public void invert(String otherTriplesMap, DataSource otherDataSource) {

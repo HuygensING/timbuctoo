@@ -5,9 +5,11 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class RrRefObjectMap implements RrTermMap {
   private RrTriplesMap parentTriplesMap;
@@ -21,8 +23,13 @@ public class RrRefObjectMap implements RrTermMap {
   }
 
   @Override
-  public Node generateValue(Map<String, Object> input) {
-    return NodeFactory.createURI("" + input.get(uniqueId));
+  public Stream<Node> generateValue(Map<String, Object> input) {
+    final Object result = input.get(uniqueId);
+    if (result instanceof List) {
+      return ((List<Object>) result).stream().map(v -> NodeFactory.createURI("" + v));
+    } else {
+      return Stream.of(NodeFactory.createURI("" + result));
+    }
   }
 
   public static Builder rrRefObjectMap() {
@@ -40,6 +47,7 @@ public class RrRefObjectMap implements RrTermMap {
   public void moveOver(String otherTriplesMap, DataSource otherDataSource) {
     this.dataSource = otherDataSource;
     this.rrTriplesMapUri = otherTriplesMap;
+    this.rrJoinCondition.flip();
   }
 
   public void fixupTripleMaps(Function<String, RrTriplesMap> getter) {

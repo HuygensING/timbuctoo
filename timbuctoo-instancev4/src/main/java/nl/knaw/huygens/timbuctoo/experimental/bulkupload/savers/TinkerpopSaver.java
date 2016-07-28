@@ -12,6 +12,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.HashMap;
 
 public class TinkerpopSaver implements AutoCloseable, Saver {
+  public static final String RAW_COLLECTION_EDGE_NAME = "hasRawCollection";
+  public static final String RAW_ITEM_EDGE_NAME = "hasItem";
+  public static final String RAW_COLLECTION_NAME_PROPERTY_NAME = "name";
   private final Vres vres;
   private final GraphWrapper wrapper;
   private final Vertex vre;
@@ -37,8 +40,8 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
         .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
       if (vre.hasNext()) {
         result = vre.next();
-        result.vertices(Direction.BOTH, "hasRawCollection").forEachRemaining(coll -> {
-          coll.vertices(Direction.BOTH, "hasItem").forEachRemaining(vertex -> {
+        result.vertices(Direction.BOTH, RAW_COLLECTION_EDGE_NAME).forEachRemaining(coll -> {
+          coll.vertices(Direction.BOTH, RAW_ITEM_EDGE_NAME).forEachRemaining(vertex -> {
             vertex.remove();
           });
           coll.remove();
@@ -72,7 +75,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
 
     Vertex result = wrapper.getGraph().addVertex();
 
-    collection.addEdge("hasItem", result);
+    collection.addEdge(RAW_ITEM_EDGE_NAME, result);
     currentProperties.forEach(result::property);
 
     return result;
@@ -80,8 +83,8 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
 
   @Override
   public Vertex addCollection(String collectionName) {
-    Vertex collection = wrapper.getGraph().addVertex("name", collectionName);
-    vre.addEdge("hasRawCollection", collection);
+    Vertex collection = wrapper.getGraph().addVertex(RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName);
+    vre.addEdge(RAW_COLLECTION_EDGE_NAME, collection);
     return collection;
   }
 

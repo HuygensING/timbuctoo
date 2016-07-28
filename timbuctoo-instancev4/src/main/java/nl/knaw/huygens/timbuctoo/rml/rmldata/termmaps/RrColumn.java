@@ -4,6 +4,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class RrColumn implements RrTermMap {
   private final String referenceString;
@@ -22,7 +23,7 @@ public class RrColumn implements RrTermMap {
   }
 
   @Override
-  public Node generateValue(Map<String, Object> input) {
+  public Stream<Node> generateValue(Map<String, Object> input) {
     if (termType == null) {
       if (isUsedInObjectMap) {
         termType = TermType.Literal;
@@ -32,11 +33,11 @@ public class RrColumn implements RrTermMap {
     }
     switch (termType) {
       case IRI:
-        return NodeFactory.createURI("" + input.get(referenceString));
+        return Stream.of(NodeFactory.createURI("" + input.get(referenceString)));
       case BlankNode:
         throw new UnsupportedOperationException("");//FIXME: implement
       case Literal:
-        return NodeFactory.createLiteral("" + input.get(referenceString));
+        return Stream.of(NodeFactory.createLiteral("" + input.get(referenceString)));
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }

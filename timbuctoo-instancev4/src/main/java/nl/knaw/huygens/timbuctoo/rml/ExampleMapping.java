@@ -1,26 +1,28 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
-import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
+import nl.knaw.huygens.timbuctoo.rml.rmldata.rmlsources.TimbuctooRawCollectionSource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.TermType;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
+import org.apache.jena.graph.Triple;
 
-import java.util.Iterator;
-import java.util.Map;
+import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument.rmlMappingDocument;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlLogicalSource.rrLogicalSource;
+import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument.rmlMappingDocument;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMap.rrPredicateObjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrSubjectMap.rrSubjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap.rrTriplesMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap.rrRefObjectMap;
 
 public class ExampleMapping {
-  public static RmlMappingDocument createEmExampleMapping() {
+  public static Stream<Triple> executeEmExampleMapping(GraphWrapper graphWrapper, String vre) {
     return rmlMappingDocument()
       .withTripleMap(rrTriplesMap()
-        .withLogicalSource(rrLogicalSource())
+        .withLogicalSource(rrLogicalSource()
+          .withSource(new TimbuctooRawCollectionSource("emmigrantunits", vre))
+        )
         .withUri((Node_URI) NodeFactory.createURI("http://timbuctoo.com/mappings/personmap"))
         .withSubjectMap(rrSubjectMap()
           .withClass((Node_URI) NodeFactory.createURI("http://timbuctoo.com/emmigrantunits"))
@@ -43,27 +45,20 @@ public class ExampleMapping {
         )
       )
       .withTripleMap(rrTriplesMap()
-        .withLogicalSource(rrLogicalSource())
+        .withLogicalSource(rrLogicalSource()
+          .withSource(new TimbuctooRawCollectionSource("emlocations", vre))
+        )
         .withUri((Node_URI) NodeFactory.createURI("http://timbuctoo.com/mappings/locationmap"))
         .withSubjectMap(rrSubjectMap()
           .withClass((Node_URI) NodeFactory.createURI("http://timbuctoo.com/emlocations"))
-          .withColumnTerm("http://timbuctoo.com/emlocations/{naam}")
+          .withTemplateTerm("http://timbuctoo.com/emlocations/{naam}")
         )
         .withPredicateObjectMap(rrPredicateObjectMap()
           .withPredicate((Node_URI) NodeFactory.createURI("http://timbuctoo.com/naam"))
           .withColumn("naam", TermType.Literal)
         )
       )
-      .build(f -> new DataSource() {
-        @Override
-        public Iterator<Map<String, Object>> getItems() {
-          return Lists.<Map<String, Object>>newArrayList().iterator();
-        }
-
-        @Override
-        public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
-          System.out.println("Does not do a thing");
-        }
-      });
+      .build(new DataSourceFactory(graphWrapper))
+      .execute();
   }
 }

@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 import org.apache.jena.graph.Node;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class RrConstant implements RrTermMap {
   private final Node value;
@@ -12,8 +13,8 @@ public class RrConstant implements RrTermMap {
   }
 
   @Override
-  public Node generateValue(Map<String, Object> input) {
-    return value;
+  public Stream<Node> generateValue(Map<String, Object> input) {
+    return Stream.of(value);
   }
 
 }
