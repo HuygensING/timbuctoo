@@ -7,39 +7,30 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RrTriplesMap {
-  public final RrSubjectMap subjectMap;
-  public final RrPredicateObjectMap[] predicateObjectMaps;
-  public RrLogicalSource logicalSource;
-  private List<ReferenceGetter> parentFields = new ArrayList<>();
-  private List<ReferenceGetter> ownJoinFields = new ArrayList<>();
+  private RrSubjectMap subjectMap;
+  private List<RrPredicateObjectMap> predicateObjectMaps = new ArrayList<>();
+  private RrLogicalSource logicalSource;
+  private final List<ReferenceGetter> parentFields = new ArrayList<>();
+  private final List<ReferenceGetter> ownJoinFields = new ArrayList<>();
 
-  public RrTriplesMap(RrLogicalSource logicalSource,
-                      RrSubjectMap subjectMap,
-                      RrPredicateObjectMap... predicateObjectMaps) {
-    this.subjectMap = subjectMap;
-    this.predicateObjectMaps = predicateObjectMaps;
-    for (RrPredicateObjectMap predicateObjectMap : predicateObjectMaps) {
-      if (predicateObjectMap.objectMap instanceof RrRefObjectMap) {
-        final RrRefObjectMap rrRefObjectMap = (RrRefObjectMap) predicateObjectMap.objectMap;
-        ownJoinFields.add(new ReferenceGetter(
-          rrRefObjectMap.parentTriplesMap.logicalSource,
-          rrRefObjectMap.rrJoinCondition.parent,
-          rrRefObjectMap.rrJoinCondition.child,
-          rrRefObjectMap.uniqueId
-        ));
-      }
-    }
-
-    this.logicalSource = logicalSource;
+  public RrTriplesMap() {
   }
 
-  public void willBeUsedInJoinLaterOn(String parent, String child, String uniqueId) {
-    parentFields.add(new ReferenceGetter(
-      this.logicalSource,
-      parent,
-      child,
-      uniqueId
-    ));
+  void addPredicateObjectMap(RrPredicateObjectMap map) {
+    this.predicateObjectMaps.add(map);
+    if (map.getObjectMap() instanceof RrRefObjectMap) {
+      final RrRefObjectMap rrRefObjectMap = (RrRefObjectMap) map.getObjectMap();
+      ownJoinFields.add(new ReferenceGetter(
+        rrRefObjectMap.getParentTriplesMap().logicalSource,
+        rrRefObjectMap.getRrJoinCondition().getParent(),
+        rrRefObjectMap.getRrJoinCondition().getChild(),
+        rrRefObjectMap.getUniqueId()
+      ));
+    }
+  }
+
+  void addParentJoinField(ReferenceGetter getter) {
+    parentFields.add(getter);
   }
 
   public List<ReferenceGetter> getFieldsThatWillBeJoinedOn() {
@@ -48,5 +39,72 @@ public class RrTriplesMap {
 
   public List<ReferenceGetter> getFieldsThatIamJoiningOn() {
     return ownJoinFields;
+  }
+
+  public RrSubjectMap getSubjectMap() {
+    return subjectMap;
+  }
+
+  public List<RrPredicateObjectMap> getPredicateObjectMaps() {
+    return predicateObjectMaps;
+  }
+
+  public RrLogicalSource getLogicalSource() {
+    return logicalSource;
+  }
+
+  public static Builder rrTriplesMap() {
+    return new Builder();
+  }
+
+  public static class Builder {
+    private final RrTriplesMap instance;
+    private RrLogicalSource.Builder logicalSourceBuilder;
+    private RrSubjectMap.Builder subjectMapBuilder;
+    private List<RrPredicateObjectMap.Builder> predicateObjectMapBuilders = new ArrayList<>();
+
+    Builder() {
+      this.instance = new RrTriplesMap();
+    }
+
+    public Builder withLogicalSource(RrLogicalSource.Builder subBuilder) {
+      this.logicalSourceBuilder = subBuilder;
+      return this;
+    }
+
+    public RrLogicalSource.Builder withLogicalSource() {
+      this.logicalSourceBuilder = new RrLogicalSource.Builder();
+      return logicalSourceBuilder;
+    }
+
+    public Builder withSubjectMap(RrSubjectMap.Builder subBuilder) {
+      this.subjectMapBuilder = subBuilder;
+      return this;
+    }
+
+    public RrSubjectMap.Builder withSubjectMap() {
+      this.subjectMapBuilder = new RrSubjectMap.Builder();
+      return this.subjectMapBuilder;
+    }
+
+    public Builder withPredicateObjectMap(RrPredicateObjectMap.Builder subBuilder) {
+      this.predicateObjectMapBuilders.add(subBuilder);
+      return this;
+    }
+
+    public RrPredicateObjectMap.Builder withPredicateObjectMap() {
+      final RrPredicateObjectMap.Builder subBuilder = new RrPredicateObjectMap.Builder();
+      this.predicateObjectMapBuilders.add(subBuilder);
+      return subBuilder;
+    }
+
+    RrTriplesMap build() {
+      instance.logicalSource = logicalSourceBuilder.build();
+      instance.subjectMap = subjectMapBuilder.build();
+      for (RrPredicateObjectMap.Builder subBuilder : this.predicateObjectMapBuilders) {
+        instance.addPredicateObjectMap(subBuilder.build(this.instance));
+      }
+      return instance;
+    }
   }
 }

@@ -57,8 +57,4 @@ public class RrTemplate implements RrTermMap {
 
     return NodeFactory.createURI(resultString.toString());
   }
-
-  @Override
-  public void isUsedInObjectMap() {
-  }
 }

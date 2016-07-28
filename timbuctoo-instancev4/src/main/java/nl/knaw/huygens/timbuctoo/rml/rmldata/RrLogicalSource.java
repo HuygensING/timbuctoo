@@ -6,20 +6,40 @@ import org.apache.jena.graph.Node_URI;
 import java.util.Optional;
 
 public class RrLogicalSource {
-  public final Node_URI source;
-  public final Node_Literal iterator;
-  public final Optional<Node_Literal> referenceFormulation;
+  private Node_URI source;
+  private Node_Literal iterator;
+  private Optional<Node_Literal> referenceFormulation = Optional.empty();
 
-
-  public RrLogicalSource(Node_URI source, Node_Literal iterator, Node_Literal referenceFormulation) {
-    this.source = source;
-    this.iterator = iterator;
-    this.referenceFormulation = Optional.of(referenceFormulation);
+  public Node_URI getSource() {
+    return source;
   }
 
-  public RrLogicalSource(Node_URI source, Node_Literal iterator) {
-    this.source = source;
-    this.iterator = iterator;
-    this.referenceFormulation = Optional.empty();
+  public Node_Literal getIterator() {
+    return iterator;
+  }
+
+  public Optional<Node_Literal> getReferenceFormulation() {
+    return referenceFormulation;
+  }
+
+  public static Builder rrLogicalSource() {
+    return new Builder();
+  }
+
+  public static class Builder {
+    private final RrLogicalSource instance;
+
+    public Builder() {
+      this.instance = new RrLogicalSource();
+    }
+
+    RrLogicalSource build() {
+      return instance;
+    }
+
+    public Builder withSource(Node_URI source) {
+      instance.source = source;
+      return this;
+    }
   }
 }

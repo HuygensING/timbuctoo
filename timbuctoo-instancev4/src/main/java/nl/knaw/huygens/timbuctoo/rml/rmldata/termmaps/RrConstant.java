@@ -16,8 +16,4 @@ public class RrConstant implements RrTermMap {
     return value;
   }
 
-  @Override
-  public void isUsedInObjectMap() {
-    //Doesn't matter
-  }
 }

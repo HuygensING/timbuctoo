@@ -10,11 +10,13 @@ public class RrColumn implements RrTermMap {
   private TermType termType;
   private boolean isUsedInObjectMap;
 
-  public RrColumn(String referenceString) {
+  public RrColumn(boolean isUsedInObjectMap, String referenceString) {
+    this.isUsedInObjectMap = isUsedInObjectMap;
     this.referenceString = referenceString;
   }
 
-  public RrColumn(String referenceString, TermType termType) {
+  public RrColumn(boolean isUsedInObjectMap, String referenceString, TermType termType) {
+    this.isUsedInObjectMap = isUsedInObjectMap;
     this.referenceString = referenceString;
     this.termType = termType;
   }
@@ -38,10 +40,5 @@ public class RrColumn implements RrTermMap {
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }
-  }
-
-  @Override
-  public void isUsedInObjectMap() {
-    this.isUsedInObjectMap = true;
   }
 }
