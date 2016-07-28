@@ -15,22 +15,22 @@ import java.util.function.Function;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
 public class RrTriplesMap {
+  private final List<Tuple<RrRefObjectMap, String>> subscriptions = new ArrayList<>();
   private RrSubjectMap subjectMap;
   private List<RrPredicateObjectMap> predicateObjectMaps = new ArrayList<>();
   private RrLogicalSource logicalSource;
-  private Node_URI uri;
-  private final List<Tuple<RrRefObjectMap, String>> subscriptions = new ArrayList<>();
   private DataSource dataSource;
+  private Node_URI uri;
 
   public RrTriplesMap() {
   }
 
-  void addPredicateObjectMap(RrPredicateObjectMap map) {
-    this.predicateObjectMaps.add(map);
-  }
-
   public static Builder rrTriplesMap() {
     return new Builder();
+  }
+
+  void addPredicateObjectMap(RrPredicateObjectMap map) {
+    this.predicateObjectMaps.add(map);
   }
 
   public Node_URI getUri() {
@@ -52,7 +52,8 @@ public class RrTriplesMap {
         }
 
         return predicateObjectMaps.stream()
-          .map(predicateObjectMap -> predicateObjectMap.generateValue(subject, stringObjectMap));
+                                  .map(
+                                    predicateObjectMap -> predicateObjectMap.generateValue(subject, stringObjectMap));
       }).iterator();
   }
 
@@ -103,6 +104,7 @@ public class RrTriplesMap {
     }
 
     RrTriplesMap build(Function<RrLogicalSource, DataSource> dataSourceFactory) {
+
       instance.logicalSource = logicalSourceBuilder.build();
       instance.dataSource = dataSourceFactory.apply(instance.logicalSource);
 
