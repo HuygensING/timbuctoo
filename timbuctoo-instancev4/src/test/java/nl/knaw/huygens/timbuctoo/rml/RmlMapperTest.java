@@ -16,7 +16,7 @@ import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrLogicalSource.rrLogicalSou
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMap.rrPredicateObjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrSubjectMap.rrSubjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap.rrTriplesMap;
-import static nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps.RrRefObjectMap.rrRefObjectMap;
+import static nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap.rrRefObjectMap;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -186,6 +186,73 @@ public class RmlMapperTest {
             .withParentTriplesMap("http://example.org/personsMap")
             .withJoinCondition("geschrevenDoor", "naam")
           )
+        )
+      )
+      .build(logicalSource -> {
+        if (logicalSource.getSource().getURI().equals("http://example.org/persons")) {
+          return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+            "rdfUri", "http://www.example.org/persons/1",
+            "naam", "Bill"
+          )));
+        }
+        if (logicalSource.getSource().getURI().equals("http://example.org/documents")) {
+          return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+            "rdfUri", "http://www.example.org/documents/1",
+            "geschrevenDoor", "Bill"
+          )));
+        }
+        return null;
+      })
+      .execute()
+      .forEach(consumer);
+
+    verify(consumer).accept(argThat(likeTriple(
+      uri("http://www.example.org/persons/1"),
+      theNamePredicate,
+      literal("Bill")
+    )));
+    verify(consumer).accept(argThat(likeTriple(
+      uri("http://www.example.org/documents/1"),
+      theWrittenByPredicate,
+      uri("http://www.example.org/persons/1")
+    )));
+  }
+
+  @Test
+  public void canHandleMappingsInTheWrongOrder() {
+    final Node_URI theNamePredicate = uri("http://example.org/vocab#name");
+    final Node_URI theWrittenByPredicate = uri("http://example.org/vocab#writtenBy");
+
+    TripleConsumer consumer = mock(TripleConsumer.class);
+
+    rmlMappingDocument()
+      .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/documentsMap"))
+        .withLogicalSource(rrLogicalSource()
+          .withSource(uri("http://example.org/documents"))
+        )
+        .withSubjectMap(rrSubjectMap()
+          .withColumnTerm("rdfUri")
+        )
+        .withPredicateObjectMap(rrPredicateObjectMap()
+          .withPredicate(theWrittenByPredicate)
+          .withReference(rrRefObjectMap()
+            .withParentTriplesMap("http://example.org/personsMap")
+            .withJoinCondition("geschrevenDoor", "naam")
+          )
+        )
+      )
+      .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/personsMap"))
+        .withLogicalSource(rrLogicalSource()
+          .withSource(uri("http://example.org/persons"))
+        )
+        .withSubjectMap(rrSubjectMap()
+          .withColumnTerm("rdfUri")
+        )
+        .withPredicateObjectMap(rrPredicateObjectMap()
+          .withPredicate(theNamePredicate)
+          .withColumn("naam")
         )
       )
       .build(logicalSource -> {

@@ -6,16 +6,19 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrConstant;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTemplate;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.TermType;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps.RrRefObjectMap;
+import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Node_URI;
 import org.apache.jena.graph.Triple;
 
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Function;
 
 public class RrPredicateObjectMap {
   private Node_URI predicate;
   private RrTermMap objectMap;
+  private boolean reversed;
 
   public RrPredicateObjectMap() {
   }
@@ -26,7 +29,35 @@ public class RrPredicateObjectMap {
 
   public Triple generateValue(Node subject, Map<String, Object> stringObjectMap) {
     Node value = objectMap.generateValue(stringObjectMap);
-    return new Triple(subject, predicate, value);
+    if (reversed) {
+      return new Triple(value, predicate, subject);
+    } else {
+      return new Triple(subject, predicate, value);
+    }
+  }
+
+  public void invert(String otherTriplesMap, DataSource otherDataSource) {
+    reversed = true;
+    if (this.objectMap instanceof RrRefObjectMap) {
+      final RrRefObjectMap objectMap = (RrRefObjectMap) this.objectMap;
+      objectMap.moveOver(otherTriplesMap, otherDataSource);
+    }
+  }
+
+  public void fixupTripleMaps(Function<String, RrTriplesMap> getter) {
+    if (this.objectMap instanceof RrRefObjectMap) {
+      final RrRefObjectMap objectMap = (RrRefObjectMap) this.objectMap;
+      objectMap.fixupTripleMaps(getter);
+    }
+  }
+
+  public Optional<String> getReferingTripleMap() {
+    if (this.objectMap instanceof RrRefObjectMap) {
+      final RrRefObjectMap objectMap = (RrRefObjectMap) this.objectMap;
+      return Optional.of(objectMap.getReferingTripleMap());
+    } else {
+      return Optional.empty();
+    }
   }
 
   public static class Builder {
@@ -72,17 +103,12 @@ public class RrPredicateObjectMap {
       return this.referencingObjectMapBuilder;
     }
 
-    RrPredicateObjectMap build(RrTriplesMap parentTriplesMap, DataSource dataSource) {
+    RrPredicateObjectMap build(DataSource dataSource) {
       if (instance.objectMap == null) {
         instance.objectMap = referencingObjectMapBuilder.build(dataSource);
       }
       return this.instance;
     }
 
-    public void fixupTripleMaps(TripleMapGetter getter) {
-      if (referencingObjectMapBuilder != null) {
-        referencingObjectMapBuilder.fixupTripleMaps(getter);
-      }
-    }
   }
 }

@@ -14,7 +14,7 @@ import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrLogicalSource.rrLogicalSou
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMap.rrPredicateObjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrSubjectMap.rrSubjectMap;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap.rrTriplesMap;
-import static nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps.RrRefObjectMap.rrRefObjectMap;
+import static nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap.rrRefObjectMap;
 
 public class ExampleMapping {
   public static RmlMappingDocument createEmExampleMapping() {

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps.RrRefObjectMap;
+import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Node_URI;
@@ -9,6 +9,7 @@ import org.apache.jena.graph.Triple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -21,6 +22,7 @@ public class RrTriplesMap {
   private RrLogicalSource logicalSource;
   private DataSource dataSource;
   private Node_URI uri;
+  private int order;
 
   public RrTriplesMap() {
   }
@@ -37,11 +39,9 @@ public class RrTriplesMap {
     return uri;
   }
 
-  public void subscribeToSubjectsWith(RrRefObjectMap subscriber, String parent) {
-    subscriptions.add(Tuple.tuple(subscriber, parent));
+  public void subscribeToSubjectsWith(RrRefObjectMap subscriber, String fieldName) {
+    subscriptions.add(Tuple.tuple(subscriber, fieldName));
   }
-
-  //FIXME iwillJoinOnYou should make sure that the tripleMap gets ordered
 
   public Stream<Triple> getItems() {
     return stream(dataSource.getItems())
@@ -109,16 +109,32 @@ public class RrTriplesMap {
 
       instance.subjectMap = subjectMapBuilder.build(this::withPredicateObjectMap);
       for (RrPredicateObjectMap.Builder subBuilder : this.predicateObjectMapBuilders) {
-        instance.addPredicateObjectMap(subBuilder.build(this.instance, this.instance.dataSource));
+        instance.addPredicateObjectMap(subBuilder.build(this.instance.dataSource));
       }
       return instance;
     }
 
-    void fixupTripleMapLinks(TripleMapGetter getter) {
-      for (RrPredicateObjectMap.Builder subBuilder : this.predicateObjectMapBuilders) {
-        subBuilder.fixupTripleMaps(getter);
+    void fixupTripleMapLinks(Function<String, Tuple<Integer, RrTriplesMap>> getter, int index) {
+      for (int i = instance.predicateObjectMaps.size() - 1; i >= 0 ; i--) {
+        RrPredicateObjectMap sub = instance.predicateObjectMaps.get(i);
+        Optional<String> referingTripleMap = sub.getReferingTripleMap();
+        if (referingTripleMap.isPresent()) {
+          final Tuple<Integer, RrTriplesMap> other = getter.apply(referingTripleMap.get());
+          if (index < other.getLeft()) {
+            //we're referencing a triple map that will be executed later on
+            other.getRight().addReferencingObjectMap(instance.getUri().getURI(), sub);
+            instance.predicateObjectMaps.remove(i);
+          } else {
+            sub.fixupTripleMaps(getter.andThen(Tuple::getRight));
+          }
+        }
       }
     }
 
+  }
+
+  private void addReferencingObjectMap(String instanceUri, RrPredicateObjectMap sub) {
+    sub.invert(instanceUri, this.dataSource);
+    this.predicateObjectMaps.add(sub);
   }
 }

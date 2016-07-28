@@ -1,20 +1,20 @@
-package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps;
+package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.TripleMapGetter;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
 
 public class RrRefObjectMap implements RrTermMap {
   private RrTriplesMap parentTriplesMap;
   private RrJoinCondition rrJoinCondition;
   private String uniqueId;
   private DataSource dataSource;
+  private String rrTriplesMapUri;
 
   public RrRefObjectMap() {
     this.uniqueId = UUID.randomUUID().toString();
@@ -30,23 +30,36 @@ public class RrRefObjectMap implements RrTermMap {
   }
 
   private void subscribeToParent() {
-    this.parentTriplesMap.subscribeToSubjectsWith(this, this.rrJoinCondition.getParent());
+    parentTriplesMap.subscribeToSubjectsWith(this, this.rrJoinCondition.getParent());
   }
 
   public void newSubject(Object value, Node subject) {
     dataSource.willBeJoinedOn(rrJoinCondition.getChild(), value, subject.getURI(), uniqueId);
   }
 
+  public void moveOver(String otherTriplesMap, DataSource otherDataSource) {
+    this.dataSource = otherDataSource;
+    this.rrTriplesMapUri = otherTriplesMap;
+  }
+
+  public void fixupTripleMaps(Function<String, RrTriplesMap> getter) {
+    parentTriplesMap = getter.apply(rrTriplesMapUri);
+    subscribeToParent();
+  }
+
+  public String getReferingTripleMap() {
+    return rrTriplesMapUri;
+  }
+
   public static class Builder {
     private RrRefObjectMap instance;
-    private String rrTriplesMapUri;
 
     public Builder() {
       this.instance = new RrRefObjectMap();
     }
 
     public Builder withParentTriplesMap(String rrTriplesMapUri) {
-      this.rrTriplesMapUri = rrTriplesMapUri;
+      instance.rrTriplesMapUri = rrTriplesMapUri;
       return this;
     }
 
@@ -58,12 +71,6 @@ public class RrRefObjectMap implements RrTermMap {
     public RrRefObjectMap build(DataSource dataSource) {
       this.instance.dataSource = dataSource;
       return this.instance;
-    }
-
-    public void fixupTripleMaps(TripleMapGetter getter) {
-      final RrRefObjectMap instance = this.instance;
-      instance.parentTriplesMap = getter.getTriplesMap(rrTriplesMapUri);
-      instance.subscribeToParent();
     }
   }
 

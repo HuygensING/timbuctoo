@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+
 public interface TripleMapGetter {
-  RrTriplesMap getTriplesMap(String uri);
+  Tuple<Integer, RrTriplesMap> getTriplesMap(String uri);
 }

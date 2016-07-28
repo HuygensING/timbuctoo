@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.referencingobjectmaps;
+package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 public class RrJoinCondition {
   private final String child;
