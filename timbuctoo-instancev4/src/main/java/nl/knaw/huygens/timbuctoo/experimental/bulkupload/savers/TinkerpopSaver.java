@@ -43,10 +43,10 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
           });
           coll.remove();
         });
-        tx.commit();
       } else {
         result = wrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
       }
+      tx.commit();
     }
 
     vres.reload();
