@@ -1,13 +1,14 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
-import nl.knaw.huygens.timbuctoo.rml.TripleConsumer;
+import org.apache.jena.graph.Triple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class RmlMappingDocument {
 
@@ -17,10 +18,8 @@ public class RmlMappingDocument {
     this.triplesMaps = new ArrayList<>();
   }
 
-  public void execute(TripleConsumer consumer) {
-    for (RrTriplesMap triplesMap : triplesMaps) {
-      triplesMap.getItems().forEachRemaining(consumer);
-    }
+  public Stream<Triple> execute() {
+    return triplesMaps.stream().flatMap(RrTriplesMap::getItems);
   }
 
   public static Builder rmlMappingDocument() {

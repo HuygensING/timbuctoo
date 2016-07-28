@@ -8,9 +8,9 @@ import org.apache.jena.graph.Node_URI;
 import org.apache.jena.graph.Triple;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
@@ -43,7 +43,7 @@ public class RrTriplesMap {
 
   //FIXME iwillJoinOnYou should make sure that the tripleMap gets ordered
 
-  public Iterator<Triple> getItems() {
+  public Stream<Triple> getItems() {
     return stream(dataSource.getItems())
       .flatMap(stringObjectMap -> {
         Node subject = subjectMap.getTermMap().generateValue(stringObjectMap);
@@ -52,9 +52,8 @@ public class RrTriplesMap {
         }
 
         return predicateObjectMaps.stream()
-                                  .map(
-                                    predicateObjectMap -> predicateObjectMap.generateValue(subject, stringObjectMap));
-      }).iterator();
+          .map(predicateObjectMap -> predicateObjectMap.generateValue(subject, stringObjectMap));
+      });
   }
 
   public static class Builder {

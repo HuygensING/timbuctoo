@@ -52,7 +52,8 @@ public class RmlMapperTest {
         )
       )
       .build(x -> input)
-      .execute(consumer);
+      .execute()
+      .forEach(consumer);
 
     verify(consumer).accept(argThat(likeTriple(
       Node.ANY,
@@ -82,7 +83,8 @@ public class RmlMapperTest {
         )
       )
       .build(x -> input)
-      .execute(consumer);
+      .execute()
+      .forEach(consumer);
 
     verify(consumer).accept(argThat(likeTriple(uri("http://www.example.org/example/1"), Node.ANY, Node.ANY)));
     verify(consumer).accept(argThat(likeTriple(uri("http://www.example.org/example/2"), Node.ANY, Node.ANY)));
@@ -115,7 +117,8 @@ public class RmlMapperTest {
         )
       )
       .build(x -> input)
-      .execute(consumer);
+      .execute()
+      .forEach(consumer);
 
     verify(consumer).accept(argThat(likeTriple(Node.ANY, theNamePredicate, literal("Bill"))));
   }
@@ -140,7 +143,8 @@ public class RmlMapperTest {
         )
       )
       .build(x -> input)
-      .execute(consumer);
+      .execute()
+      .forEach(consumer);
 
     verify(consumer).accept(argThat(
       likeTriple(uri("http://example.org/items/Bill?blah"), Node.ANY, Node.ANY)
@@ -199,7 +203,8 @@ public class RmlMapperTest {
         }
         return null;
       })
-      .execute(consumer);
+      .execute()
+      .forEach(consumer);
 
     verify(consumer).accept(argThat(likeTriple(
       uri("http://www.example.org/persons/1"),
