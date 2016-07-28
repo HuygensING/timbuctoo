@@ -29,7 +29,7 @@ public class RmlMappingDocument {
   public static class Builder implements TripleMapGetter {
     private RmlMappingDocument instance;
     private List<RrTriplesMap.Builder> tripleMapBuilders = new ArrayList<>();
-    Map<String, RrTriplesMap> triplesMaps = new HashMap<>();
+    private Map<String, RrTriplesMap> triplesMaps = new HashMap<>();
 
     public Builder() {
       this.instance = new RmlMappingDocument();

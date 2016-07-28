@@ -14,7 +14,6 @@ public class RrRefObjectMap implements RrTermMap {
   private RrTriplesMap parentTriplesMap;
   private RrJoinCondition rrJoinCondition;
   private String uniqueId;
-  private RrTriplesMap owner;
   private DataSource dataSource;
 
   public RrRefObjectMap() {
@@ -56,8 +55,7 @@ public class RrRefObjectMap implements RrTermMap {
       return this;
     }
 
-    public RrRefObjectMap build(RrTriplesMap owner, DataSource dataSource) {
-      this.instance.owner = owner;
+    public RrRefObjectMap build(DataSource dataSource) {
       this.instance.dataSource = dataSource;
       return this.instance;
     }

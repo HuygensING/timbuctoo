@@ -74,7 +74,7 @@ public class RrPredicateObjectMap {
 
     RrPredicateObjectMap build(RrTriplesMap parentTriplesMap, DataSource dataSource) {
       if (instance.objectMap == null) {
-        instance.objectMap = referencingObjectMapBuilder.build(parentTriplesMap, dataSource);
+        instance.objectMap = referencingObjectMapBuilder.build(dataSource);
       }
       return this.instance;
     }
