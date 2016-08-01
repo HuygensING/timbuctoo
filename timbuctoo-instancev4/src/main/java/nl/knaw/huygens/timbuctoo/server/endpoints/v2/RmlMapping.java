@@ -55,26 +55,56 @@ public class RmlMapping {
       Vertex triplesMap = graph.addVertex("TriplesMap");
       rmlMappingDocument.addEdge("hasTriplesMap", triplesMap);
       triplesMap.property("@id", triplesMapNode.get("@id").asText());
-
       addLogicalSource(triplesMapNode, triplesMap);
       addSubject(triplesMapNode, triplesMap);
       triplesMapNode.get("predicateObjectMap").iterator().forEachRemaining(pom -> {
-        LOG.info("pom: {}", pom);
-        addObjectMap(pom, triplesMap);
+        addPredicateObjectMap(pom, triplesMap);
       });
     });
-
 
     return Response.noContent().build();
   }
 
-  private void addObjectMap(JsonNode pomNode, Vertex triplesMap) {
-    // pomNode.get("objectNode");
+  private void addPredicateObjectMap(JsonNode pomNode, Vertex triplesMap) {
+    LOG.info("Add predicateObjectMap: {}", pomNode);
+    JsonNode objectMapNode = pomNode.get("objectMap");
+    // TODO refactor
+    Graph graph = graphWrapper.getGraph();
+    Vertex predicateObjectMap = graph.addVertex("predicateObjectMap");
+    triplesMap.addEdge("hasPredicateObjectMap", predicateObjectMap);
+    predicateObjectMap.property("predicate", pomNode.get("predicate").asText());
 
+    addObjectMap(objectMapNode, predicateObjectMap);
+  }
+
+  private void addObjectMap(JsonNode objectMapNode, Vertex predicateObjectMap) {
+    Graph graph = graphWrapper.getGraph();
+    Vertex objectMap = graph.addVertex("objectMap");
+    predicateObjectMap.addEdge("hasObjectMap", objectMap);
+
+    if (objectMapNode.has("column")) {
+      objectMap.property("column", objectMapNode.get("column").asText());
+    } else if (objectMapNode.has("reference")) {
+      addReference(objectMapNode, objectMap);
+    }
+  }
+
+  private void addReference(JsonNode objectMapNode, Vertex objectMap) {
+    JsonNode referenceNode = objectMapNode.get("reference");
+    Vertex reference = graphWrapper.getGraph().addVertex("reference");
+    reference.property("parentTriplesMap", referenceNode.get("parentTriplesMap").asText());
+    objectMap.addEdge("hasReference", reference);
+
+    JsonNode joinConditionNode = referenceNode.get("joinCondition");
+    Vertex joinCondition = graphWrapper.getGraph().addVertex("joinCondition");
+    joinCondition.property("child", joinConditionNode.get("child").asText());
+    joinCondition.property("parent", joinConditionNode.get("parent").asText());
+    reference.addEdge("hasJoinCondition", joinCondition);
   }
 
   private void addSubject(JsonNode triplesMapNode, Vertex triplesMap) {
     // TODO support full rml spec
+    LOG.info("Add subject for triplesMapNode: {}", triplesMapNode);
     Graph graph = graphWrapper.getGraph();
     Vertex subject = graph.addVertex("subjectMap");
     triplesMap.addEdge("hasSubjectMap", subject);
@@ -84,6 +114,7 @@ public class RmlMapping {
   }
 
   private void addLogicalSource(JsonNode triplesMapNode, Vertex triplesMap) {
+    LOG.info("Add logical source for triplesMapNode: {}", triplesMapNode);
     // TODO support full rml spec
     Graph graph = graphWrapper.getGraph();
     Vertex logicalSource = graph.addVertex("logicalSource");
