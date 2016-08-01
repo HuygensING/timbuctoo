@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
 import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload;
+import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.MapRawData;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
@@ -52,6 +53,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RmlMapping;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
@@ -219,9 +221,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
     register(environment, new Graph(graphManager));
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
+    register(environment, new RmlMapping(graphManager));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata, excelExportService));
+    register(environment, new MapRawData(graphManager));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService));

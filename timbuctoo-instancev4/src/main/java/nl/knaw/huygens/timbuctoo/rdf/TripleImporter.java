@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorFactory;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
 
-class TripleImporter {
+public class TripleImporter {
 
   private final TripleProcessorFactory tripleProcessorFactory;
   private final String vreName;

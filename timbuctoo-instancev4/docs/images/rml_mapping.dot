@@ -1,0 +1,29 @@
+digraph {
+	VRE 
+	RmlMappingDocument
+	TriplesMapping1 [label="TriplesMap"]
+	VRE->RmlMappingDocument [label="hasRmlMapping"]
+	RmlMappingDocument->TriplesMapping1 [label="hasTriplesMapping"]
+	Subject1 [label="SubjectMap"]
+	TriplesMapping1->Subject1 [label="hasSubjectMap"]
+	PredicateObject1_1 [label="PredicateObjectMap"]
+	TriplesMapping1->PredicateObject1_1 [label="hasPredicateObjectMap"]
+	ObjectMap1_1[label="ObjectMap"]
+	PredicateObject1_1->ObjectMap1_1[label="hasObjectMap"]
+	PredicateObject1_2 [label="PredicateObjectMap"]
+	TriplesMapping1->PredicateObject1_2 [label="hasPredicateObjectMap"]
+	ObjectMap1_2[label="ObjectMap"]
+	Reference
+	ObjectMap1_2->Reference[label="hasReference"]
+	JoinCondition
+	Reference->JoinCondition[label="hasJoinCondition"]
+	PredicateObject1_2->ObjectMap1_2[label="hasObjectMap"]
+	TriplesMapping2 [label="TriplesMap"]
+	Subject2 [label="SubjectMap"]
+	PredicateObject2_1 [label="PredicateObjectMap"]
+	PredicateObject2_2 [label="PredicateObjectMap"]
+	RmlMappingDocument->TriplesMapping2 [label="hasTriplesMapping"]
+	TriplesMapping2->Subject2 [label="hasSubjectMap"]
+	TriplesMapping2->PredicateObject2_1 [label="hasPredicateObjectMap"]
+	TriplesMapping2->PredicateObject2_2 [label="hasPredicateObjectMap"]	
+}
