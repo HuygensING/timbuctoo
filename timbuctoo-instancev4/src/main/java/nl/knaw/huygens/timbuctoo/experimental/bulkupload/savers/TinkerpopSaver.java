@@ -9,7 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String RAW_COLLECTION_EDGE_NAME = "hasRawCollection";
@@ -70,7 +70,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   }
 
   @Override
-  public Vertex addEntity(Vertex collection, HashMap<String, Object> currentProperties) {
+  public Vertex addEntity(Vertex collection, Map<String, Object> currentProperties) {
     allowCommit();
 
     Vertex result = wrapper.getGraph().addVertex();

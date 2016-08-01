@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public interface Saver {
-  Vertex addEntity(Vertex collection, HashMap<String, Object> currentProperties);
+  Vertex addEntity(Vertex collection, Map<String, Object> currentProperties);
 
   Vertex addCollection(String collectionName);
 }
