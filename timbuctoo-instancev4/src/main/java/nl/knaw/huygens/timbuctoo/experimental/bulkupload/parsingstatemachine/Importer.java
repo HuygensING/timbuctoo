@@ -1,19 +1,21 @@
 package nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.Saver;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 public class Importer {
   private Set<Integer> idsToSkip = new HashSet<>();
-  private ImportPropertyDescriptions properties;
+  private ImportPropertyDescriptions propertyDescriptions;
   private final Saver saver;
   private Vertex currentCollection;
-  private String[] currentProperties;
+  private List<ImportProperty> currentProperties;
 
   private ImportState currentState = ImportState.NOTHING;
 
@@ -30,7 +32,7 @@ public class Importer {
     }
     currentCollection = saver.addCollection(collectionName);
     currentState = ImportState.GETTING_DECLARATION;
-    properties = new ImportPropertyDescriptions();
+    propertyDescriptions = new ImportPropertyDescriptions();
     return Result.success();
   }
 
@@ -41,7 +43,7 @@ public class Importer {
     if (currentState != ImportState.GETTING_DECLARATION) {
       return Result.failure("I was not expecting a property declaration here");
     }
-    properties.getOrCreate(id).setPropertyName(name);
+    propertyDescriptions.getOrCreate(id).setPropertyName(name);
     return Result.success();
   }
 
@@ -49,8 +51,7 @@ public class Importer {
     if (currentState == ImportState.GETTING_DECLARATION) {
       currentState = ImportState.GETTING_VALUES;
     }
-
-    currentProperties = new String[properties.getPropertyCount()];
+    currentProperties = Lists.newArrayList();
   }
 
   public Result setValue(int id, String value) {
@@ -60,10 +61,10 @@ public class Importer {
     if (idsToSkip.contains(id) || currentState == ImportState.SKIPPING) {
       return Result.ignored();
     }
-    Optional<ImportPropertyDescription> propOpt = properties.get(id);
+    Optional<ImportPropertyDescription> propOpt = propertyDescriptions.get(id);
     if (propOpt.isPresent()) {
       ImportPropertyDescription prop = propOpt.get();
-      currentProperties[prop.getOrder()] = value;
+      currentProperties.add(new ImportProperty(prop, value));
       return Result.ignored();//actual validation will happen during finishEntity
     } else {
       return Result.failure("No property declared for id " + id);
@@ -73,14 +74,10 @@ public class Importer {
   public HashMap<Integer, Result> finishEntity() {
     HashMap<String, Object> propertyValues = new HashMap<>();
     HashMap<Integer, Result> results = new HashMap<>();
-    for (int i = 0, currentPropertiesLength = currentProperties.length; i < currentPropertiesLength; i++) {
-      String value = currentProperties[i];
-      if (value != null) {
-        ImportPropertyDescription desc = properties.getByOrder(i);
-        propertyValues.put(desc.getPropertyName(), value);
-        results.put(desc.getId(), Result.success());
-      }
-    }
+    currentProperties.stream().filter(property -> property.getValue() != null).forEach(property -> {
+      propertyValues.put(property.getName(), property.getValue());
+      results.put(property.getId(), Result.success());
+    });
 
     saver.addEntity(currentCollection, propertyValues);
 
@@ -98,4 +95,5 @@ public class Importer {
     GETTING_VALUES,
     SKIPPING
   }
+
 }
