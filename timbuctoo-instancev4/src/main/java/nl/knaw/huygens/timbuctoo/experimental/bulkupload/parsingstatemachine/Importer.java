@@ -77,7 +77,7 @@ public class Importer {
       String value = currentProperties[i];
       if (value != null) {
         ImportPropertyDescription desc = properties.getByOrder(i);
-        propertyValues.put("rw" + desc.getPropertyName(), value);
+        propertyValues.put(desc.getPropertyName(), value);
         results.put(desc.getId(), Result.success());
       }
     }
