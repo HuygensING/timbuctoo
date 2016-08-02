@@ -89,7 +89,7 @@ if __FILE__ == $0
     puts "number of document receptions: #{Documents.document_receptions.size}"
 
     doc_recptions = Array.new
-    STDERR.puts "start met document receptions"
+    STDERR.puts "start met document receptions" if debug
     Documents.document_receptions.each_with_index do |dr,ind|
 	doc = Documents.find dr['document_id_s']
 	new_dr = dr
@@ -102,10 +102,10 @@ if __FILE__ == $0
 	end
     end
     if doc_recptions.size > 0
-	STDERR.puts doc_recptions.last
+	STDERR.puts doc_recptions.last if debug
 	Documents.do_solr_update doc_recptions,Documents.solr_doc_receptions
     end
-    Documents.solr_commit "#{Documents.solr_doc_receptions}",true
+    Documents.solr_commit "#{Documents.solr_doc_receptions}"
 
     Timer.stop
 end

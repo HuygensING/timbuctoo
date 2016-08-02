@@ -39,14 +39,22 @@ class Documents
 	if !line.eql?("[]")
 	    Documents.do_solr_update result,@@solr_documents
 	    Documents.do_solr_update @@person_receptions,@@solr_receptions
-	    # dit komt kennelijk nooit voor?
 	    if @@complete_document_receptions.size >= 200
-		puts "#{@@complete_document_receptions.size} document receptions worden geschreven"
+		puts "#{@@complete_document_receptions.size} document receptions worden geschreven" if @@debug
 		Documents.do_solr_update @@complete_document_receptions,
 		    @@solr_doc_receptions
 		@@complete_document_receptions = Array.new
 	    end
 	    @@person_receptions = Array.new
+	else
+	    if @@complete_document_receptions.size > 0
+		puts "#{@@complete_document_receptions.size} document receptions worden geschreven" if @@debug
+		Documents.do_solr_update @@complete_document_receptions,
+		    @@solr_doc_receptions
+	    end
+	    if @@person_receptions.size > 0
+		Documents.do_solr_update @@person_receptions,@@solr_receptions
+	    end
 	end
 	return !line.eql?("[]")
     end
