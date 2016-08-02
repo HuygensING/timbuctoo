@@ -14,6 +14,7 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String RAW_COLLECTION_EDGE_NAME = "hasRawCollection";
@@ -82,7 +83,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public Vertex addEntity(Vertex rawCollection, Map<String, Object> currentProperties) {
     allowCommit();
 
-    Vertex result = graphWrapper.getGraph().addVertex();
+    Vertex result = graphWrapper.getGraph().addVertex("tim_id", UUID.randomUUID().toString());
 
     rawCollection.addEdge(RAW_ITEM_EDGE_NAME, result);
     currentProperties.forEach(result::property);
@@ -125,7 +126,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
       } else {
         previousPropertyDesc.addEdge(NEXT_RAW_PROPERTY_EDGE_NAME, propertyDesc);
       }
-      
+
       previousPropertyDesc = propertyDesc;
     }
 
