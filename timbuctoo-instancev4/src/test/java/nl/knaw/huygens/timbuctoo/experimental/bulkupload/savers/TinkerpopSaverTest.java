@@ -11,6 +11,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -101,5 +102,30 @@ public class TinkerpopSaverTest {
       likeVertex().withProperty("order", 2).withProperty("id", 7).withProperty("name", "third")
     ));
   }
+
+  @Test
+  public void addPropertyDescriptionsStoresTheOrderOfThePropertyDescriptions() {
+    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
+    ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
+    importPropertyDescriptions.getOrCreate(6).setPropertyName("first");
+    importPropertyDescriptions.getOrCreate(5).setPropertyName("second");
+    importPropertyDescriptions.getOrCreate(7).setPropertyName("third");
+
+    instance.addPropertyDescriptions(rawCollection, importPropertyDescriptions);
+
+    Iterator<Vertex> hasFirstProperty = rawCollection.vertices(Direction.OUT, "hasFirstProperty");
+    assertThat(hasFirstProperty.hasNext(), is(true));
+    Vertex first = hasFirstProperty.next();
+    assertThat(first, likeVertex().withProperty("id", 6).withProperty("name", "first"));
+    Iterator<Vertex> hasNextProperty = first.vertices(Direction.OUT, "hasNextProperty");
+    assertThat(hasNextProperty.hasNext(), is(true));
+    Vertex second = hasNextProperty.next();
+    assertThat(second, is(likeVertex().withProperty("id", 5).withProperty("name", "second")));
+    Iterator<Vertex> hasNextProperty2 = second.vertices(Direction.OUT, "hasNextProperty");
+    assertThat(hasNextProperty2.hasNext(), is(true));
+    assertThat(hasNextProperty2.next(), is(likeVertex().withProperty("id", 7).withProperty("name", "third")));
+
+  }
+
 
 }

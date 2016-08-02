@@ -21,6 +21,9 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String RAW_COLLECTION_NAME_PROPERTY_NAME = "name";
   public static final String FIRST_RAW_ITEM_EDGE_NAME = "hasFirstItem";
   public static final String NEXT_RAW_ITEM_EDGE_NAME = "hasNextItem";
+  public static final String RAW_PROPERTY_EDGE_NAME = "hasProperty";
+  public static final String FIRST_RAW_PROPERTY_EDGE_NAME = "hasFirstProperty";
+  public static final String NEXT_RAW_PROPERTY_EDGE_NAME = "hasNextProperty";
   private final Vres vres;
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
@@ -108,13 +111,22 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   @Override
   public void addPropertyDescriptions(Vertex collection, ImportPropertyDescriptions importPropertyDescriptions) {
     Graph graph = graphWrapper.getGraph();
+    Vertex previousPropertyDesc = null;
     for (ImportPropertyDescription importPropertyDescription : importPropertyDescriptions) {
-      Vertex property = graph.addVertex();
-      property.property("id", importPropertyDescription.getId());
-      property.property("name", importPropertyDescription.getPropertyName());
-      property.property("order", importPropertyDescription.getOrder());
+      Vertex propertyDesc = graph.addVertex();
+      propertyDesc.property("id", importPropertyDescription.getId());
+      propertyDesc.property("name", importPropertyDescription.getPropertyName());
+      propertyDesc.property("order", importPropertyDescription.getOrder());
 
-      collection.addEdge("hasProperty", property);
+      collection.addEdge(RAW_PROPERTY_EDGE_NAME, propertyDesc);
+
+      if (previousPropertyDesc == null) {
+        collection.addEdge(FIRST_RAW_PROPERTY_EDGE_NAME, propertyDesc);
+      } else {
+        previousPropertyDesc.addEdge(NEXT_RAW_PROPERTY_EDGE_NAME, propertyDesc);
+      }
+      
+      previousPropertyDesc = propertyDesc;
     }
 
   }
