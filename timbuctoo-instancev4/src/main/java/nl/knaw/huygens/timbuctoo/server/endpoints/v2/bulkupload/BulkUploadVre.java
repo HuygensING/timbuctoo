@@ -88,21 +88,19 @@ public class BulkUploadVre {
     ArrayNode variables = collection.putArray("variables");
 
     Iterator<Vertex> firstVariableT = collectionVertex.vertices(Direction.OUT, FIRST_RAW_PROPERTY_EDGE_NAME);
+    variables.add(jsn("tim_id"));
     if (firstVariableT.hasNext()) {
       Vertex firstVariable = firstVariableT.next();
-
-      variables.add(jsn(firstVariable.value(RAW_PROPERTY_NAME)));
-
       addVariables(variables, firstVariable);
     }
   }
 
 
   private void addVariables(ArrayNode variables, Vertex variable) {
+    variables.add(jsn(variable.value(RAW_PROPERTY_NAME)));
     Iterator<Vertex> nextVariableT = variable.vertices(Direction.OUT, NEXT_RAW_PROPERTY_EDGE_NAME);
     if (nextVariableT.hasNext()) {
       Vertex next = nextVariableT.next();
-      variables.add(jsn(next.value(RAW_PROPERTY_NAME)));
       addVariables(variables, next);
     }
   }
