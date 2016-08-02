@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -15,12 +16,14 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String RAW_COLLECTION_EDGE_NAME = "hasRawCollection";
   public static final String RAW_ITEM_EDGE_NAME = "hasItem";
   public static final String RAW_COLLECTION_NAME_PROPERTY_NAME = "name";
+  public static final String FIRST_RAW_ITEM_EDGE_NAME = "hasFirstItem";
+  public static final String NEXT_RAW_ITEM_EDGE_NAME = "hasNextItem";
   private final Vres vres;
   private final GraphWrapper wrapper;
   private final Vertex vre;
+  private final int maxVerticesPerTransaction;
   private int saveCounter;
   private Transaction tx;
-  private final int maxVerticesPerTransaction;
 
   public TinkerpopSaver(Vres vres, GraphWrapper wrapper, String vreName, int maxVerticesPerTransaction) {
     this.vres = vres;
@@ -36,8 +39,8 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     Vertex result = null;
     try (Transaction tx = wrapper.getGraph().tx()) {
       final GraphTraversal<Vertex, Vertex> vre = wrapper.getGraph().traversal().V()
-        .hasLabel(Vre.DATABASE_LABEL)
-        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+                                                        .hasLabel(Vre.DATABASE_LABEL)
+                                                        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
       if (vre.hasNext()) {
         result = vre.next();
         result.vertices(Direction.BOTH, RAW_COLLECTION_EDGE_NAME).forEachRemaining(coll -> {
@@ -70,13 +73,24 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   }
 
   @Override
-  public Vertex addEntity(Vertex collection, Map<String, Object> currentProperties) {
+  public Vertex addEntity(Vertex rawCollection, Map<String, Object> currentProperties) {
     allowCommit();
 
     Vertex result = wrapper.getGraph().addVertex();
 
-    collection.addEdge(RAW_ITEM_EDGE_NAME, result);
+    rawCollection.addEdge(RAW_ITEM_EDGE_NAME, result);
     currentProperties.forEach(result::property);
+
+    if (!rawCollection.edges(Direction.OUT, FIRST_RAW_ITEM_EDGE_NAME).hasNext()) {
+      rawCollection.addEdge(FIRST_RAW_ITEM_EDGE_NAME, result);
+    } else {
+      Vertex previous = wrapper.getGraph().traversal().V(rawCollection.id())
+                               .out(RAW_ITEM_EDGE_NAME)
+                               .not(__.where(__.out(NEXT_RAW_ITEM_EDGE_NAME)))
+                               .next();
+
+      previous.addEdge(NEXT_RAW_ITEM_EDGE_NAME, result);
+    }
 
     return result;
   }
