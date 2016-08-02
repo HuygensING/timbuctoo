@@ -2,10 +2,13 @@ package nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Spliterator;
+import java.util.function.Consumer;
 
-public class ImportPropertyDescriptions {
+public class ImportPropertyDescriptions implements Iterable<ImportPropertyDescription> {
   private HashMap<Integer, ImportPropertyDescription> propertyDescs = new HashMap<>();
   private List<ImportPropertyDescription> ordered = new ArrayList<>();
 
@@ -38,5 +41,20 @@ public class ImportPropertyDescriptions {
 
   public int getPropertyCount() {
     return ordered.size();
+  }
+
+  @Override
+  public Iterator<ImportPropertyDescription> iterator() {
+    return ordered.iterator();
+  }
+
+  @Override
+  public void forEach(Consumer<? super ImportPropertyDescription> action) {
+    ordered.forEach(action);
+  }
+
+  @Override
+  public Spliterator<ImportPropertyDescription> spliterator() {
+    return ordered.spliterator();
   }
 }

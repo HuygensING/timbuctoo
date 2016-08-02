@@ -50,6 +50,7 @@ public class Importer {
   public void startEntity() {
     if (currentState == ImportState.GETTING_DECLARATION) {
       currentState = ImportState.GETTING_VALUES;
+      saver.addPropertyDescriptions(currentCollection, propertyDescriptions);
     }
     currentProperties = Lists.newArrayList();
   }

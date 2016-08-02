@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.experimental.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -26,15 +27,18 @@ public class TinkerpopSaverTest {
   private static final String VRE_NAME = "vre";
   private static final int MAX_VERTICES_PER_TRANSACTION = 100;
   private Vres vres;
+  private GraphWrapper graphWrapper;
+  private Vertex rawCollection;
 
   @Before
   public void setUp() throws Exception {
     vres = mock(Vres.class);
+    graphWrapper = newGraph().withVertex(v -> v.withProperty("name", "rawCollection")).wrap();
+    rawCollection = graphWrapper.getGraph().traversal().V().has("name", "rawCollection").next();
   }
 
   @Test
   public void theCreationAddsAVreToTheDatabase() {
-    GraphWrapper graphWrapper = newGraph().wrap();
     new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
 
     assertThat(graphWrapper.getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL).next(), is(
@@ -44,8 +48,6 @@ public class TinkerpopSaverTest {
 
   @Test
   public void addEntityAddsEachEntityToTheCollection() {
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withProperty("name", "rawCollection")).wrap();
-    Vertex rawCollection = graphWrapper.getGraph().traversal().V().has("name", "rawCollection").next();
     TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
 
     Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
@@ -57,8 +59,6 @@ public class TinkerpopSaverTest {
 
   @Test
   public void addEntityAddsARelationThatIndicatesTheFirstRelation() {
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withProperty("name", "rawCollection")).wrap();
-    Vertex rawCollection = graphWrapper.getGraph().traversal().V().has("name", "rawCollection").next();
     TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
 
     Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
@@ -71,8 +71,6 @@ public class TinkerpopSaverTest {
 
   @Test
   public void addEntityAppendsTheNewVertexToThePrevious() {
-    final GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withProperty("name", "rawCollection")).wrap();
-    final Vertex rawCollection = graphWrapper.getGraph().traversal().V().has("name", "rawCollection").next();
     final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
 
     final Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
@@ -83,6 +81,25 @@ public class TinkerpopSaverTest {
     assertThat(first.vertices(Direction.OUT, "hasNextItem").next(), is(second));
     assertThat(second.vertices(Direction.OUT, "hasNextItem").hasNext(), is(true));
     assertThat(second.vertices(Direction.OUT, "hasNextItem").next(), is(third));
+  }
+
+  @Test
+  public void addPropertyDescriptionsAddsThePropertyDescriptionsToTheCollection() {
+    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
+    ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
+    importPropertyDescriptions.getOrCreate(6).setPropertyName("first");
+    importPropertyDescriptions.getOrCreate(5).setPropertyName("second");
+    importPropertyDescriptions.getOrCreate(7).setPropertyName("third");
+
+    instance.addPropertyDescriptions(rawCollection, importPropertyDescriptions);
+
+    List<Vertex> properties = graphWrapper.getGraph().traversal().V(rawCollection.id()).out("hasProperty").toList();
+    assertThat(properties, hasSize(3));
+    assertThat(properties, containsInAnyOrder(
+      likeVertex().withProperty("order", 0).withProperty("id", 6).withProperty("name", "first"),
+      likeVertex().withProperty("order", 1).withProperty("id", 5).withProperty("name", "second"),
+      likeVertex().withProperty("order", 2).withProperty("id", 7).withProperty("name", "third")
+    ));
   }
 
 }

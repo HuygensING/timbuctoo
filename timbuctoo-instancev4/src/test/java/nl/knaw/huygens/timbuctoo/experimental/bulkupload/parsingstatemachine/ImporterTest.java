@@ -13,16 +13,35 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class ImporterTest {
+
+  private static final String COLLECTION_NAME = "collectionName";
+
+  @Test
+  public void startEntitySavesThePropertyDescriptionsOnce() {
+    Saver saver = mock(Saver.class);
+    Importer instance = new Importer(saver);
+
+    instance.startCollection(COLLECTION_NAME);
+    verify(saver, never()).addPropertyDescriptions(any(Vertex.class), any(ImportPropertyDescriptions.class));
+
+    instance.startEntity();
+    instance.finishEntity();
+    instance.startEntity();
+    instance.finishEntity();
+    verify(saver, times(1)).addPropertyDescriptions(any(Vertex.class), any(ImportPropertyDescriptions.class));
+  }
+
   @Test
   public void importsEveryEntityForACollection() {
     Saver saver = mock(Saver.class);
     Importer instance = new Importer(saver);
 
-    instance.startCollection("collectionName");
+    instance.startCollection(COLLECTION_NAME);
     instance.startEntity();
     instance.finishEntity();
     instance.startEntity();
@@ -30,17 +49,16 @@ public class ImporterTest {
     instance.finishCollection();
 
     InOrder inOrder = inOrder(saver);
-    inOrder.verify(saver).addCollection("collectionName");
+    inOrder.verify(saver).addCollection(COLLECTION_NAME);
     inOrder.verify(saver, times(2)).addEntity(any(Vertex.class), any(/*hashmap*/));
   }
 
   @Test
-  @SuppressWarnings("unchecked")
   public void setsKnownPropertyOnTheEntity() {
     Saver saver = mock(Saver.class);
     Importer instance = new Importer(saver);
 
-    instance.startCollection("collectionName");
+    instance.startCollection(COLLECTION_NAME);
     instance.registerPropertyName(1, "test");
     instance.registerPropertyName(2, "test2");
     instance.startEntity();
@@ -62,7 +80,7 @@ public class ImporterTest {
     Saver saver = mock(Saver.class);
     Importer instance = new Importer(saver);
 
-    instance.startCollection("collectionName");
+    instance.startCollection(COLLECTION_NAME);
     instance.registerPropertyName(1, "test");
     instance.registerPropertyName(2, "test2");
     instance.startEntity();
