@@ -25,6 +25,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String RAW_PROPERTY_EDGE_NAME = "hasProperty";
   public static final String FIRST_RAW_PROPERTY_EDGE_NAME = "hasFirstProperty";
   public static final String NEXT_RAW_PROPERTY_EDGE_NAME = "hasNextProperty";
+  public static final String RAW_PROPERTY_NAME = "name";
   private final Vres vres;
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
@@ -116,7 +117,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     for (ImportPropertyDescription importPropertyDescription : importPropertyDescriptions) {
       Vertex propertyDesc = graph.addVertex();
       propertyDesc.property("id", importPropertyDescription.getId());
-      propertyDesc.property("name", importPropertyDescription.getPropertyName());
+      propertyDesc.property(RAW_PROPERTY_NAME, importPropertyDescription.getPropertyName());
       propertyDesc.property("order", importPropertyDescription.getOrder());
 
       collection.addEdge(RAW_PROPERTY_EDGE_NAME, propertyDesc);

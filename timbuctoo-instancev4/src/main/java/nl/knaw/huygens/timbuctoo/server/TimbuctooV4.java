@@ -48,12 +48,13 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesD
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RmlMapping;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
@@ -221,7 +222,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
     register(environment, new Graph(graphManager));
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
-    register(environment, new RmlMapping(graphManager));
+    register(environment, new BulkUploadVre(graphManager));
+    register(environment, new SaveRml(graphManager));
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata, excelExportService));

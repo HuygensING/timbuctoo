@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
+package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -22,13 +22,13 @@ import javax.ws.rs.core.Response;
  * For the first step {@link nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload}.
  * This maps the tabular data to a Timbuctoo data model.
  */
-@Path("/v2.1/maprml")
-public class RmlMapping {
+@Path("/v2.1/bulk-upload/{vre}/rml/save")
+public class SaveRml {
 
-  public static final Logger LOG = LoggerFactory.getLogger(RmlMapping.class);
+  public static final Logger LOG = LoggerFactory.getLogger(SaveRml.class);
   private final GraphWrapper graphWrapper;
 
-  public RmlMapping(GraphWrapper graphWrapper) {
+  public SaveRml(GraphWrapper graphWrapper) {
     this.graphWrapper = graphWrapper;
 
   }
