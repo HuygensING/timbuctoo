@@ -88,13 +88,13 @@ public class RawCollection {
     return Response.ok(result).build();
   }
 
-  private GraphTraversal<Vertex, Vertex> getFirstItemTraversal(@QueryParam(START_ID) String startId,
+  private GraphTraversal<Vertex, Vertex> getFirstItemTraversal(String startId,
                                                                GraphTraversal<Vertex, Vertex> collection) {
     GraphTraversal<Vertex, Vertex> firstItem;
     if (startId == null) {
       firstItem = collection.out(FIRST_RAW_ITEM_EDGE_NAME);
     } else {
-      firstItem = collection.out(RAW_ITEM_EDGE_NAME).has("tim_id");
+      firstItem = collection.out(RAW_ITEM_EDGE_NAME).has("tim_id", startId);
     }
     return firstItem;
   }
