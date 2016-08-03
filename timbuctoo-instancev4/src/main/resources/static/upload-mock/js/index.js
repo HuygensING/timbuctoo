@@ -1968,7 +1968,7 @@ var actions = {
 					"Authorization": state.userdata.userId
 				}
 			};
-			_xhr2.default.post("http://test.repository.huygens.knaw.nl" + "/v2.1/bulk-upload", payload, function (err, resp) {
+			_xhr2.default.post("" + "/v2.1/bulk-upload", payload, function (err, resp) {
 				var location = resp.headers.location;
 				_xhr2.default.get(location, function (err, resp, body) {
 					dispatch({ type: "FINISH_UPLOAD", data: JSON.parse(body) });
@@ -4178,7 +4178,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	checkTokenInUrl(state);
 
 	if (!state.archetype || Object.keys(state.archetype).length === 0) {
-		(0, _xhr2.default)("http://test.repository.huygens.knaw.nl" + "/v2.1/metadata/Admin", function (err, resp) {
+		(0, _xhr2.default)("" + "/v2.1/metadata/Admin", function (err, resp) {
 			_store2.default.dispatch({ type: "SET_ARCHETYPE_METADATA", data: JSON.parse(resp.body) });
 		});
 	}
