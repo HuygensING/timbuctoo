@@ -37,6 +37,13 @@ public class BulkUpload {
     @FormDataParam("vre") String vre,
     @FormDataParam("data") FormDataContentDisposition contentDisposition,
     @FormDataParam("file") InputStream fileInputStream) {
+
+    if (vre == null || contentDisposition == null || fileInputStream == null) {
+      StringBuilder errorMessageBuilder = createrrorMessage(vre, contentDisposition, fileInputStream);
+
+      return Response.status(Response.Status.BAD_REQUEST).entity(errorMessageBuilder.toString()).build();
+    }
+
     try {
       return Response.ok()
                      .entity(uploadService.saveToDb(vre, fileInputStream))
@@ -45,6 +52,26 @@ public class BulkUpload {
     } catch (AuthorizationUnavailableException | AuthorizationException | InvalidExcelFileException e) {
       e.printStackTrace();
       return Response.status(500).build();
+    }
+  }
+
+  private StringBuilder createrrorMessage(@FormDataParam("vre") String vre,
+                                          @FormDataParam("data") FormDataContentDisposition contentDisposition,
+                                          @FormDataParam("file") InputStream fileInputStream) {
+    StringBuilder errormessageBuilder = new StringBuilder("The following form params are missing:");
+    errormessageBuilder.append(System.getProperty("line.separator"));
+    addIfNull(errormessageBuilder, vre, "vre");
+    addIfNull(errormessageBuilder, contentDisposition, "data");
+    addIfNull(errormessageBuilder, fileInputStream, "file");
+    return errormessageBuilder;
+  }
+
+  private void addIfNull(StringBuilder messageBuilder, Object parameter, String paramName) {
+    if (parameter == null) {
+      messageBuilder.append("\"");
+      messageBuilder.append(paramName);
+      messageBuilder.append("\"");
+      messageBuilder.append(",");
     }
   }
 
