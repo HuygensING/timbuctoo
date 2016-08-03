@@ -32,4 +32,12 @@ public class UriHelper {
     return uri;
 
   }
+
+  public URI fromResourceUri(URI resourceUri) {
+    URI uri = UriBuilder.fromUri(resourceUri)
+                        .scheme(baseUri.getScheme()).host(baseUri.getHost()).port(baseUri.getPort())
+                        .replacePath(baseUri.getPath()).path(resourceUri.getPath())
+                        .build();
+    return uri;
+  }
 }
