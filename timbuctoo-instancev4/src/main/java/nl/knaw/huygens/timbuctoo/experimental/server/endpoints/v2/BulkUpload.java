@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.rml.UriHelper;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
@@ -35,11 +34,14 @@ public class BulkUpload {
   @Produces("text/html")
   public Response uploadExcelFile(
     @FormDataParam("vre") String vre,
-    @FormDataParam("data") FormDataContentDisposition contentDisposition,
     @FormDataParam("file") InputStream fileInputStream) {
 
-    if (vre == null || contentDisposition == null || fileInputStream == null) {
-      StringBuilder errorMessageBuilder = createrrorMessage(vre, contentDisposition, fileInputStream);
+    if (vre == null || fileInputStream == null) {
+      StringBuilder errormessageBuilder = new StringBuilder("The following form params are missing:");
+      errormessageBuilder.append(System.getProperty("line.separator"));
+      addIfNull(errormessageBuilder, vre, "vre");
+      addIfNull(errormessageBuilder, fileInputStream, "file");
+      StringBuilder errorMessageBuilder = errormessageBuilder;
 
       return Response.status(Response.Status.BAD_REQUEST).entity(errorMessageBuilder.toString()).build();
     }
@@ -53,17 +55,6 @@ public class BulkUpload {
       e.printStackTrace();
       return Response.status(500).build();
     }
-  }
-
-  private StringBuilder createrrorMessage(@FormDataParam("vre") String vre,
-                                          @FormDataParam("data") FormDataContentDisposition contentDisposition,
-                                          @FormDataParam("file") InputStream fileInputStream) {
-    StringBuilder errormessageBuilder = new StringBuilder("The following form params are missing:");
-    errormessageBuilder.append(System.getProperty("line.separator"));
-    addIfNull(errormessageBuilder, vre, "vre");
-    addIfNull(errormessageBuilder, contentDisposition, "data");
-    addIfNull(errormessageBuilder, fileInputStream, "file");
-    return errormessageBuilder;
   }
 
   private void addIfNull(StringBuilder messageBuilder, Object parameter, String paramName) {
