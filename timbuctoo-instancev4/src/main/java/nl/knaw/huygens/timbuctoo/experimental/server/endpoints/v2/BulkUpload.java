@@ -37,11 +37,10 @@ public class BulkUpload {
     @FormDataParam("file") InputStream fileInputStream) {
 
     if (vre == null || fileInputStream == null) {
-      StringBuilder errormessageBuilder = new StringBuilder("The following form params are missing:");
-      errormessageBuilder.append(System.getProperty("line.separator"));
-      addIfNull(errormessageBuilder, vre, "vre");
-      addIfNull(errormessageBuilder, fileInputStream, "file");
-      StringBuilder errorMessageBuilder = errormessageBuilder;
+      StringBuilder errorMessageBuilder = new StringBuilder("The following form params are missing:");
+      errorMessageBuilder.append(System.getProperty("line.separator"));
+      addIfNull(errorMessageBuilder, vre, "vre");
+      addIfNull(errorMessageBuilder, fileInputStream, "file");
 
       return Response.status(Response.Status.BAD_REQUEST).entity(errorMessageBuilder.toString()).build();
     }
