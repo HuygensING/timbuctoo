@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2;
 
-import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.InvalidExcelFileException;
 import nl.knaw.huygens.timbuctoo.rml.UriHelper;
@@ -22,10 +21,12 @@ public class BulkUpload {
 
   private final BulkUploadService uploadService;
   private final UriHelper uriHelper;
+  private final BulkUploadVre bulkUploadVre;
 
-  public BulkUpload(BulkUploadService uploadService, UriHelper uriHelper) {
+  public BulkUpload(BulkUploadService uploadService, UriHelper uriHelper, BulkUploadVre bulkUploadVre) {
     this.uploadService = uploadService;
     this.uriHelper = uriHelper;
+    this.bulkUploadVre = bulkUploadVre;
   }
 
   @POST
@@ -48,7 +49,7 @@ public class BulkUpload {
     try {
       return Response.ok()
                      .entity(uploadService.saveToDb(vre, fileInputStream))
-                     .location(uriHelper.makeUri(BulkUploadVre.class, ImmutableMap.of("vre", vre)))
+                     .location(bulkUploadVre.createUri(vre))
                      .build();
     } catch (AuthorizationUnavailableException | AuthorizationException | InvalidExcelFileException e) {
       e.printStackTrace();

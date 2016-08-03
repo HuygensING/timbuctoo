@@ -49,16 +49,16 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesD
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
@@ -223,14 +223,19 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager));
     }
+    register(environment, new Graph(graphManager));
     // Bulk upload
     UriHelper uriHelper = new UriHelper(configuration);
-    register(environment, new Graph(graphManager));
-    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper));
-    register(environment, new BulkUploadVre(graphManager, uriHelper));
-    register(environment, new RawCollection(graphManager, uriHelper));
-    register(environment, new SaveRml(graphManager));
-    register(environment, new ExecuteRml());
+    RawCollection rawCollection = new RawCollection(graphManager, uriHelper);
+    register(environment, rawCollection);
+    SaveRml saveRml = new SaveRml(graphManager, uriHelper);
+    register(environment, saveRml);
+    ExecuteRml executeRml = new ExecuteRml(uriHelper);
+    register(environment, executeRml);
+    BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, saveRml, executeRml);
+    register(environment, bulkUploadVre);
+    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper, bulkUploadVre));
+
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));

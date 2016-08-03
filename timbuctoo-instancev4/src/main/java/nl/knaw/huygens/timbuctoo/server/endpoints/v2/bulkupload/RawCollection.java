@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -42,15 +41,30 @@ public class RawCollection {
     this.uriHelper = uriHelper;
   }
 
-  private URI createNextLink(String vreName, String collectionName, String startId, int numberOfItems) {
-    URI resourceUri = UriBuilder.fromResource(RawCollection.class)
-                        .queryParam(START_ID, startId).queryParam(NUMBER_OF_ITEMS, numberOfItems)
-                        .buildFromMap(
-                          ImmutableMap.of(
-                            "vre", vreName,
-                            "collection", collectionName
-                          ));
+  public URI makeUri(String vreName, String collectionName, boolean onlyErrors) {
+    URI resourceUri = minimumUri(vreName, collectionName)
+                                .queryParam("onlyErrors", onlyErrors)
+                                .build();
     return uriHelper.fromResourceUri(resourceUri);
+  }
+
+  public URI makeUri(String vreName, String collectionName) {
+    URI resourceUri = minimumUri(vreName, collectionName)
+                                .build();
+    return uriHelper.fromResourceUri(resourceUri);
+  }
+
+  private URI createNextLink(String vreName, String collectionName, String startId, int numberOfItems) {
+    URI resourceUri = minimumUri(vreName, collectionName)
+                                .queryParam(START_ID, startId).queryParam(NUMBER_OF_ITEMS, numberOfItems)
+                                .build();
+    return uriHelper.fromResourceUri(resourceUri);
+  }
+
+  private UriBuilder minimumUri(String vreName, String collectionName) {
+    return UriBuilder.fromResource(RawCollection.class)
+                     .resolveTemplate("vre", vreName)
+                     .resolveTemplate("collection", collectionName);
   }
 
   @GET
@@ -111,5 +125,6 @@ public class RawCollection {
     }
     return vertex;
   }
+
 
 }

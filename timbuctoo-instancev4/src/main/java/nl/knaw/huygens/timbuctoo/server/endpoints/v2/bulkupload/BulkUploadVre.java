@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.rml.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -14,6 +13,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.Iterator;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -28,10 +29,23 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class BulkUploadVre {
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
+  private final RawCollection rawCollection;
+  private final SaveRml saveRml;
+  private final ExecuteRml executeRml;
 
-  public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper) {
+  public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection, SaveRml saveRml,
+                       ExecuteRml executeRml) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
+    this.rawCollection = rawCollection;
+    this.saveRml = saveRml;
+    this.executeRml = executeRml;
+  }
+
+  public URI createUri(String vre) {
+    URI resourceUri = UriBuilder.fromResource(BulkUploadVre.class).resolveTemplate("vre", vre).build();
+
+    return uriHelper.fromResourceUri(resourceUri);
   }
 
   @GET
@@ -50,8 +64,8 @@ public class BulkUploadVre {
     Vertex vreVertex = vreT.next();
 
     ObjectNode result = jsnO("vre", jsn(vreName));
-    result.put("saveMapping", uriHelper.makeUri(SaveRml.class, ImmutableMap.of("vre", vreName)).toString());
-    result.put("executeMapping", uriHelper.makeUri(ExecuteRml.class, ImmutableMap.of("vre", vreName)).toString());
+    result.put("saveMapping", saveRml.makeUri(vreName).toString());
+    result.put("executeMapping", executeRml.makeUri(vreName).toString());
 
     ArrayNode collectionArrayNode = result.putArray("collections");
     vreVertex.vertices(Direction.OUT, RAW_COLLECTION_EDGE_NAME)
@@ -63,16 +77,9 @@ public class BulkUploadVre {
   private void addCollection(ArrayNode collectionArrayNode, Vertex collectionVertex, String vreName) {
     String collectionName = collectionVertex.value("name");
     ObjectNode collection = jsnO("name", jsn(collectionName));
-    collection.put("data", uriHelper.makeUri(RawCollection.class, ImmutableMap.of(
-      "vre", vreName,
-      "collection", collectionName
-    )).toString());
-    collection.put("dataWithErrors", uriHelper.makeUri(RawCollection.class, ImmutableMap.of(
-      "vre", vreName,
-      "collection", collectionName
-    ), ImmutableMap.of(
-      "onlyErrors", "true"
-    )).toASCIIString());
+
+    collection.put("data", rawCollection.makeUri(vreName, collectionName).toString());
+    collection.put("dataWithErrors",  rawCollection.makeUri(vreName, collectionName, true).toString());
     collectionArrayNode.add(collection);
     ArrayNode variables = collection.putArray("variables");
 

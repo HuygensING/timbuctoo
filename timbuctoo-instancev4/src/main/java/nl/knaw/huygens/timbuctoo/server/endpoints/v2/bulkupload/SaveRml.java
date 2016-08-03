@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.rml.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -15,6 +16,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 
 
 /**
@@ -27,10 +30,17 @@ public class SaveRml {
 
   public static final Logger LOG = LoggerFactory.getLogger(SaveRml.class);
   private final GraphWrapper graphWrapper;
+  private final UriHelper uriHelper;
 
-  public SaveRml(GraphWrapper graphWrapper) {
+  public SaveRml(GraphWrapper graphWrapper, UriHelper uriHelper) {
     this.graphWrapper = graphWrapper;
 
+    this.uriHelper = uriHelper;
+  }
+
+  public URI makeUri(String vreName) {
+    URI resourceUri = UriBuilder.fromResource(SaveRml.class).resolveTemplate("vre", vreName).build();
+    return uriHelper.fromResourceUri(resourceUri);
   }
 
   @POST
@@ -125,5 +135,6 @@ public class SaveRml {
     source.property("tim:rawCollection", sourceNode.get("tim:rawCollection").asText());
     source.property("tim:vreName", sourceNode.get("tim:vreName").asText());
   }
+
 
 }
