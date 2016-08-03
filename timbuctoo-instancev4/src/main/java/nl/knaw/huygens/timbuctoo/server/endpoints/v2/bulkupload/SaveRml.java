@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -35,7 +35,7 @@ public class SaveRml {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response mapRml(JsonNode jsonNode, @QueryParam("vre") String vreId) {
+  public Response mapRml(JsonNode jsonNode, @PathParam("vre") String vreId) {
     LOG.info("Start mapping for vre: {}", vreId);
 
     org.apache.tinkerpop.gremlin.structure.Graph graph = graphWrapper.getGraph();
