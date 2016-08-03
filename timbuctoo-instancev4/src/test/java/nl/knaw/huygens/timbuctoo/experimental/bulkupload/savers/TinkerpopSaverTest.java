@@ -10,6 +10,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.InOrder;
 
 import java.util.Iterator;
 import java.util.List;
@@ -21,6 +22,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
 public class TinkerpopSaverTest {
@@ -56,6 +58,19 @@ public class TinkerpopSaverTest {
 
     List<Vertex> items = Lists.newArrayList(rawCollection.vertices(Direction.OUT, "hasItem"));
     assertThat(items, containsInAnyOrder(first, second));
+  }
+
+  @Test
+  public void addEntityAddsEachEntityToTheCollectionAfterItIsAddedToTheLastItemOfTheCollection() {
+    CollectionAdder collectionAdder = mock(CollectionAdder.class);
+    TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION,
+      collectionAdder);
+
+    Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
+
+    InOrder inOrder = inOrder(collectionAdder);
+    inOrder.verify(collectionAdder).addToLastItemOfCollection(rawCollection, first);
+    inOrder.verify(collectionAdder).addToCollection(rawCollection, first);
   }
 
   @Test

@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -30,15 +29,22 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
   private final int maxVerticesPerTransaction;
+  private final CollectionAdder collectionAdder;
   private int saveCounter;
   private Transaction tx;
 
   public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, int maxVerticesPerTransaction) {
+    this(vres, graphWrapper, vreName, maxVerticesPerTransaction, new CollectionAdder(graphWrapper));
+  }
+
+  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, int maxVerticesPerTransaction,
+                        CollectionAdder collectionAdder) {
     this.vres = vres;
     this.graphWrapper = graphWrapper;
     tx = graphWrapper.getGraph().tx();
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
     this.vre = initVre(vreName);
+    this.collectionAdder = collectionAdder;
   }
 
   private Vertex initVre(String vreName) {
@@ -85,20 +91,10 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     allowCommit();
 
     Vertex result = graphWrapper.getGraph().addVertex("tim_id", UUID.randomUUID().toString());
-
-    rawCollection.addEdge(RAW_ITEM_EDGE_NAME, result);
     currentProperties.forEach(result::property);
 
-    if (!rawCollection.edges(Direction.OUT, FIRST_RAW_ITEM_EDGE_NAME).hasNext()) {
-      rawCollection.addEdge(FIRST_RAW_ITEM_EDGE_NAME, result);
-    } else {
-      Vertex previous = graphWrapper.getGraph().traversal().V(rawCollection.id())
-                                    .out(RAW_ITEM_EDGE_NAME)
-                                    .not(__.where(__.out(NEXT_RAW_ITEM_EDGE_NAME)))
-                                    .next();
-
-      previous.addEdge(NEXT_RAW_ITEM_EDGE_NAME, result);
-    }
+    collectionAdder.addToLastItemOfCollection(rawCollection, result);
+    collectionAdder.addToCollection(rawCollection, result);
 
     return result;
   }
