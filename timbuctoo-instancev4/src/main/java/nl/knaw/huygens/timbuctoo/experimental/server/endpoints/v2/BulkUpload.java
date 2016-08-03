@@ -1,9 +1,12 @@
 package nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2;
 
+import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.InvalidExcelFileException;
+import nl.knaw.huygens.timbuctoo.rml.UriHelper;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -19,9 +22,11 @@ import java.io.InputStream;
 public class BulkUpload {
 
   private final BulkUploadService uploadService;
+  private final UriHelper uriHelper;
 
-  public BulkUpload(BulkUploadService uploadService) {
+  public BulkUpload(BulkUploadService uploadService, UriHelper uriHelper) {
     this.uploadService = uploadService;
+    this.uriHelper = uriHelper;
   }
 
   @POST
@@ -33,7 +38,10 @@ public class BulkUpload {
     @FormDataParam("data") FormDataContentDisposition contentDisposition,
     @FormDataParam("file") InputStream fileInputStream) {
     try {
-      return Response.ok().entity(uploadService.saveToDb(vre, fileInputStream)).build();
+      return Response.ok()
+                     .entity(uploadService.saveToDb(vre, fileInputStream))
+                     .location(uriHelper.makeUri(BulkUploadVre.class, ImmutableMap.of("vre", vre)))
+                     .build();
     } catch (AuthorizationUnavailableException | AuthorizationException | InvalidExcelFileException e) {
       e.printStackTrace();
       return Response.status(500).build();

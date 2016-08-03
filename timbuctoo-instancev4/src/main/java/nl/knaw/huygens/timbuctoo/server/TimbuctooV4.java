@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
+import nl.knaw.huygens.timbuctoo.rml.UriHelper;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
@@ -54,6 +55,8 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
@@ -220,10 +223,15 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager));
     }
+    // Bulk upload
+    UriHelper uriHelper = new UriHelper(configuration);
     register(environment, new Graph(graphManager));
-    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager)));
-    register(environment, new BulkUploadVre(graphManager));
+    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper));
+    register(environment, new BulkUploadVre(graphManager, uriHelper));
+    register(environment, new RawCollection());
     register(environment, new SaveRml(graphManager));
+    register(environment, new ExecuteRml());
+
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata, excelExportService));
