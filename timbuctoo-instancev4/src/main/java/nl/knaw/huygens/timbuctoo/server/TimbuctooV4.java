@@ -228,7 +228,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Graph(graphManager));
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper));
     register(environment, new BulkUploadVre(graphManager, uriHelper));
-    register(environment, new RawCollection());
+    register(environment, new RawCollection(graphManager));
     register(environment, new SaveRml(graphManager));
     register(environment, new ExecuteRml());
 
