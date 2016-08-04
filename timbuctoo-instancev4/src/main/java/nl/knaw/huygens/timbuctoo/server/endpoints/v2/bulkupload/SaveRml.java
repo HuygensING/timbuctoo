@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.rml.UriHelper;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;

@@ -31,7 +31,6 @@ import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
-import nl.knaw.huygens.timbuctoo.rml.UriHelper;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;

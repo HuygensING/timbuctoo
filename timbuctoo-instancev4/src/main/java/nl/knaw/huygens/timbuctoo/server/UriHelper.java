@@ -1,6 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rml;
-
-import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
+package nl.knaw.huygens.timbuctoo.server;
 
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;

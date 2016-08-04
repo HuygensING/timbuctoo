@@ -1,6 +1,5 @@
-package nl.knaw.huygens.timbuctoo.rml;
+package nl.knaw.huygens.timbuctoo.server;
 
-import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import org.junit.Test;
 
 import javax.ws.rs.Path;

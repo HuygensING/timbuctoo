@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.rml.UriHelper;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;

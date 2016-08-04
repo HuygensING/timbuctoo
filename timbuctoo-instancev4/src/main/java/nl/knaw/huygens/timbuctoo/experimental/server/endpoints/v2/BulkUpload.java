@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2;
 
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.experimental.bulkupload.InvalidExcelFileException;
-import nl.knaw.huygens.timbuctoo.rml.UriHelper;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
