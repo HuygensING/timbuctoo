@@ -88,7 +88,7 @@ public class SaveRml {
   }
 
   private void removeMappingPart(Vertex mappingPart) {
-    LOG.debug(("Remove old mapping: {}", mappingPart.label());
+    LOG.debug("Remove old mapping: {}", mappingPart.label());
     mappingPart.edges(Direction.OUT).forEachRemaining(edge -> {
         Vertex subPart = edge.inVertex();
         removeMappingPart(subPart);
