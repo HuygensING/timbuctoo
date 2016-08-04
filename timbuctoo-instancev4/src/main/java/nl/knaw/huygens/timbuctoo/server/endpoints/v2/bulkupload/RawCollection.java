@@ -95,7 +95,7 @@ public class RawCollection {
         Vertex nextLinkVertex = nextLinkT.next();
         String id = nextLinkVertex.value("tim_id");
         URI nextLink = createNextLink(vreName, collectionName, id, numberOfItems);
-        result.put("next", nextLink.toString());
+        result.put("_next", nextLink.toString());
       }
     }
 
