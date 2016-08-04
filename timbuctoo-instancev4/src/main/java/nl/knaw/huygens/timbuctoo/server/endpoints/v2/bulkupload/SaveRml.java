@@ -5,7 +5,9 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,8 @@ import java.net.URI;
 public class SaveRml {
 
   public static final Logger LOG = LoggerFactory.getLogger(SaveRml.class);
+  public static final String HAS_TRIPLES_MAP_EDGE_NAME = "hasTriplesMap";
+  public static final String HAS_RML_MAPPING_EDGE_NAME = "hasRmlMapping";
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
 
@@ -46,7 +50,10 @@ public class SaveRml {
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
   public Response mapRml(JsonNode jsonNode, @PathParam("vre") String vreId) {
-    LOG.info("Start mapping for vre: {}", vreId);
+    LOG.debug("Start mapping for vre: {}", vreId);
+    if (jsonNode == null) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("Body should contain a Json object.").build();
+    }
 
     org.apache.tinkerpop.gremlin.structure.Graph graph = graphWrapper.getGraph();
     GraphTraversal<Vertex, Vertex> vreT = graph.traversal().V()
@@ -56,14 +63,49 @@ public class SaveRml {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
 
-    // TODO remove old mapping
     Vertex vreVertex = vreT.next();
+    Transaction tx = graph.tx();
+    if (!tx.isOpen()) {
+      tx.open();
+    }
+    removeOldMapping(vreVertex);
+    tx.commit();
+
+    addNewMapping(jsonNode, graph, vreVertex);
+    tx.commit();
+
+    return Response.noContent().build();
+  }
+
+  private void removeOldMapping(Vertex vreVertex) {
+    vreVertex.edges(Direction.OUT, HAS_RML_MAPPING_EDGE_NAME).forEachRemaining(edge -> {
+        Vertex rmlMapping = edge.inVertex();
+        removeMappingPart(rmlMapping);
+        edge.remove();
+        rmlMapping.remove();
+      }
+    );
+  }
+
+  private void removeMappingPart(Vertex mappingPart) {
+    LOG.debug(("Remove old mapping: {}", mappingPart.label());
+    mappingPart.edges(Direction.OUT).forEachRemaining(edge -> {
+        Vertex subPart = edge.inVertex();
+        removeMappingPart(subPart);
+        edge.remove();
+        subPart.remove();
+      }
+    );
+
+  }
+
+  private void addNewMapping(JsonNode jsonNode, Graph graph, Vertex vreVertex) {
     Vertex rmlMappingDocument = graph.addVertex("RmlMappingDocument");
-    vreVertex.addEdge("hasRmlMapping", rmlMappingDocument);
+    vreVertex.addEdge(HAS_RML_MAPPING_EDGE_NAME, rmlMappingDocument);
 
     jsonNode.get("@graph").iterator().forEachRemaining(triplesMapNode -> {
       Vertex triplesMap = graph.addVertex("TriplesMap");
-      rmlMappingDocument.addEdge("hasTriplesMap", triplesMap);
+      rmlMappingDocument.addEdge(HAS_TRIPLES_MAP_EDGE_NAME, triplesMap);
       triplesMap.property("@id", triplesMapNode.get("@id").asText());
       addLogicalSource(triplesMapNode, triplesMap);
       addSubject(triplesMapNode, triplesMap);
@@ -71,12 +113,10 @@ public class SaveRml {
         addPredicateObjectMap(pom, triplesMap);
       });
     });
-
-    return Response.noContent().build();
   }
 
   private void addPredicateObjectMap(JsonNode pomNode, Vertex triplesMap) {
-    LOG.info("Add predicateObjectMap: {}", pomNode);
+    LOG.debug("Add predicateObjectMap: {}", pomNode);
     JsonNode objectMapNode = pomNode.get("objectMap");
     // TODO refactor
     Graph graph = graphWrapper.getGraph();
@@ -114,7 +154,7 @@ public class SaveRml {
 
   private void addSubject(JsonNode triplesMapNode, Vertex triplesMap) {
     // TODO support full rml spec
-    LOG.info("Add subject for triplesMapNode: {}", triplesMapNode);
+    LOG.debug("Add subject for triplesMapNode: {}", triplesMapNode);
     Graph graph = graphWrapper.getGraph();
     Vertex subject = graph.addVertex("subjectMap");
     triplesMap.addEdge("hasSubjectMap", subject);
@@ -124,7 +164,7 @@ public class SaveRml {
   }
 
   private void addLogicalSource(JsonNode triplesMapNode, Vertex triplesMap) {
-    LOG.info("Add logical source for triplesMapNode: {}", triplesMapNode);
+    LOG.debug("Add logical source for triplesMapNode: {}", triplesMapNode);
     // TODO support full rml spec
     Graph graph = graphWrapper.getGraph();
     Vertex logicalSource = graph.addVertex("logicalSource");
