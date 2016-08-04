@@ -35,4 +35,5 @@ We have added some conventions:
  - When mocking, if the amount of lines needed for the mock becomes "big" then you should take care to keep the "intent" clear. e.g. break it into whitespace separated blocks with comments or extract it to separate methods or builders. If it is hard to mock correctly then you probably should not mock at all but instead use the actual implementation.
  - Give your tests a name that is useful from the perspective of the API. i.e. It should describe what the user of the unit can expect or should take into account.
  - You should only write tests for the code that is used and defined. Code that is handles logical impossibilities (such as the default case in a switch statement that handles all branches of an enum) or code that handles a failed invariant (such as a broken foreign key) should still be written, but not have tests added to source control.
- 
+ - If you want to create an URI from one endpoint to another, use the method 'makeUri' in the endpoint you are linking to. This means you have to inject the endpoint you want to link to in your current endpoint.
+ - If the method 'makeUri' does not exist create one. Use the makeUri method to create a relative URI of the endpoint and use 'UriHelper.fromResourceUri' to make the URI absolute.
