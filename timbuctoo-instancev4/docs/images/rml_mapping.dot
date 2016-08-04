@@ -1,9 +1,13 @@
 digraph {
 	VRE 
 	RmlMappingDocument
-	TriplesMapping1 [label="TriplesMap"]
 	VRE->RmlMappingDocument [label="hasRmlMapping"]
-	RmlMappingDocument->TriplesMapping1 [label="hasTriplesMapping"]
+	TriplesMapping1 [label="TriplesMap"]
+	RmlMappingDocument->TriplesMapping1 [label="hasTriplesMap"]
+	LogicalSource1[label="LogicalSource"]
+	TriplesMapping1->LogicalSource1[label="hasLogicalSource"]
+	Source1[label="Source"]
+	LogicalSource1->Source1[label="hasSource"]
 	Subject1 [label="SubjectMap"]
 	TriplesMapping1->Subject1 [label="hasSubjectMap"]
 	PredicateObject1_1 [label="PredicateObjectMap"]
@@ -19,6 +23,10 @@ digraph {
 	Reference->JoinCondition[label="hasJoinCondition"]
 	PredicateObject1_2->ObjectMap1_2[label="hasObjectMap"]
 	TriplesMapping2 [label="TriplesMap"]
+	LogicalSource2[label="LogicalSource"]
+	TriplesMapping2->LogicalSource2[label="hasLogicalSource"]
+	Source2[label="Source"]
+	LogicalSource2->Source2[label="hasSource"]
 	Subject2 [label="SubjectMap"]
 	PredicateObject2_1 [label="PredicateObjectMap"]
 	PredicateObject2_2 [label="PredicateObjectMap"]
