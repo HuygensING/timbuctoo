@@ -30,9 +30,25 @@ import java.net.URI;
 @Path("/v2.1/bulk-upload/{vre}/rml/save")
 public class SaveRml {
 
-  public static final Logger LOG = LoggerFactory.getLogger(SaveRml.class);
+  private static final Logger LOG = LoggerFactory.getLogger(SaveRml.class);
   public static final String HAS_TRIPLES_MAP_EDGE_NAME = "hasTriplesMap";
   public static final String HAS_RML_MAPPING_EDGE_NAME = "hasRmlMapping";
+  public static final String HAS_LOGICAL_SOURCE_EDGE_NAME = "hasLogicalSource";
+  public static final String HAS_SOURCE_EDGE_NAME = "hasSource";
+  public static final String TIM_RAW_COLLECTION_PROP_NAME = "tim:rawCollection";
+  public static final String TIM_VRE_NAME_PROP_NAME = "tim:vreName";
+  public static final String HAS_SUBJECT_MAP_EDGE_NAME = "hasSubjectMap";
+  public static final String CLASS_PROP_NAME = "class";
+  public static final String TEMPLATE_PROP_NAME = "template";
+  public static final String HAS_PREDICATE_OBJECT_MAP_EDGE_NAME = "hasPredicateObjectMap";
+  public static final String PREDICATE_PROP_NAME = "predicate";
+  public static final String HAS_OBJECT_MAP_EDGE_NAME = "hasObjectMap";
+  public static final String COLUMN_PROP_NAME = "column";
+  public static final String HAS_REFERENCE_EDGE_NAME = "hasReference";
+  public static final String PARENT_TRIPLES_MAP_PROP_NAME = "parentTriplesMap";
+  public static final String HAS_JOIN_CONDITION_EDGE_NAME = "hasJoinCondition";
+  public static final String CHILD_PROP_NAME = "child";
+  public static final String PARENT_PROP_NAME = "parent";
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
 
@@ -121,8 +137,8 @@ public class SaveRml {
     // TODO refactor
     Graph graph = graphWrapper.getGraph();
     Vertex predicateObjectMap = graph.addVertex("predicateObjectMap");
-    triplesMap.addEdge("hasPredicateObjectMap", predicateObjectMap);
-    predicateObjectMap.property("predicate", pomNode.get("predicate").asText());
+    triplesMap.addEdge(HAS_PREDICATE_OBJECT_MAP_EDGE_NAME, predicateObjectMap);
+    predicateObjectMap.property(PREDICATE_PROP_NAME, pomNode.get("predicate").asText());
 
     addObjectMap(objectMapNode, predicateObjectMap);
   }
@@ -130,9 +146,9 @@ public class SaveRml {
   private void addObjectMap(JsonNode objectMapNode, Vertex predicateObjectMap) {
     Graph graph = graphWrapper.getGraph();
     Vertex objectMap = graph.addVertex("objectMap");
-    predicateObjectMap.addEdge("hasObjectMap", objectMap);
+    predicateObjectMap.addEdge(HAS_OBJECT_MAP_EDGE_NAME, objectMap);
 
-    if (objectMapNode.has("column")) {
+    if (objectMapNode.has(COLUMN_PROP_NAME)) {
       objectMap.property("column", objectMapNode.get("column").asText());
     } else if (objectMapNode.has("reference")) {
       addReference(objectMapNode, objectMap);
@@ -142,14 +158,14 @@ public class SaveRml {
   private void addReference(JsonNode objectMapNode, Vertex objectMap) {
     JsonNode referenceNode = objectMapNode.get("reference");
     Vertex reference = graphWrapper.getGraph().addVertex("reference");
-    reference.property("parentTriplesMap", referenceNode.get("parentTriplesMap").asText());
-    objectMap.addEdge("hasReference", reference);
+    reference.property(PARENT_TRIPLES_MAP_PROP_NAME, referenceNode.get("parentTriplesMap").asText());
+    objectMap.addEdge(HAS_REFERENCE_EDGE_NAME, reference);
 
     JsonNode joinConditionNode = referenceNode.get("joinCondition");
     Vertex joinCondition = graphWrapper.getGraph().addVertex("joinCondition");
-    joinCondition.property("child", joinConditionNode.get("child").asText());
-    joinCondition.property("parent", joinConditionNode.get("parent").asText());
-    reference.addEdge("hasJoinCondition", joinCondition);
+    joinCondition.property(CHILD_PROP_NAME, joinConditionNode.get("child").asText());
+    joinCondition.property(PARENT_PROP_NAME, joinConditionNode.get("parent").asText());
+    reference.addEdge(HAS_JOIN_CONDITION_EDGE_NAME, joinCondition);
   }
 
   private void addSubject(JsonNode triplesMapNode, Vertex triplesMap) {
@@ -157,10 +173,10 @@ public class SaveRml {
     LOG.debug("Add subject for triplesMapNode: {}", triplesMapNode);
     Graph graph = graphWrapper.getGraph();
     Vertex subject = graph.addVertex("subjectMap");
-    triplesMap.addEdge("hasSubjectMap", subject);
+    triplesMap.addEdge(HAS_SUBJECT_MAP_EDGE_NAME, subject);
     JsonNode subjectNode = triplesMapNode.get("subjectMap");
-    subject.property("class", subjectNode.get("class").asText());
-    subject.property("template", subjectNode.get("template").asText());
+    subject.property(CLASS_PROP_NAME, subjectNode.get("class").asText());
+    subject.property(TEMPLATE_PROP_NAME, subjectNode.get("template").asText());
   }
 
   private void addLogicalSource(JsonNode triplesMapNode, Vertex triplesMap) {
@@ -168,12 +184,12 @@ public class SaveRml {
     // TODO support full rml spec
     Graph graph = graphWrapper.getGraph();
     Vertex logicalSource = graph.addVertex("logicalSource");
-    triplesMap.addEdge("hasLogicalSource", logicalSource);
+    triplesMap.addEdge(HAS_LOGICAL_SOURCE_EDGE_NAME, logicalSource);
     Vertex source = graph.addVertex("source");
-    logicalSource.addEdge("hasSource", source);
+    logicalSource.addEdge(HAS_SOURCE_EDGE_NAME, source);
     JsonNode sourceNode = triplesMapNode.get("rml:logicalSource").get("rml:source");
-    source.property("tim:rawCollection", sourceNode.get("tim:rawCollection").asText());
-    source.property("tim:vreName", sourceNode.get("tim:vreName").asText());
+    source.property(TIM_RAW_COLLECTION_PROP_NAME, sourceNode.get("tim:rawCollection").asText());
+    source.property(TIM_VRE_NAME_PROP_NAME, sourceNode.get("tim:vreName").asText());
   }
 
 

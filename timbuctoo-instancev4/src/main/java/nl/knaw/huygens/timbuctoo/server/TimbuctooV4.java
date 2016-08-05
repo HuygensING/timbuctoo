@@ -229,7 +229,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, rawCollection);
     SaveRml saveRml = new SaveRml(graphManager, uriHelper);
     register(environment, saveRml);
-    ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager);
+    ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres);
     register(environment, executeRml);
     BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, saveRml, executeRml);
     register(environment, bulkUploadVre);
