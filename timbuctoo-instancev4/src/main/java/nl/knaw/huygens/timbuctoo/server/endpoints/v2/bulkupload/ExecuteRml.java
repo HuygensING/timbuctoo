@@ -79,7 +79,9 @@ public class ExecuteRml {
     GraphTraversal<Vertex, Vertex> vreT =
       graph.traversal().V().hasLabel(Vre.DATABASE_LABEL).has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
     if (!vreT.hasNext()) {
-      return Response.status(Response.Status.NOT_FOUND).build();
+      return Response.status(Response.Status.NOT_FOUND)
+                     .entity(String.format("VRE with name '%s' cannot be found", vreName))
+                     .build();
     }
     Vertex vreVertex = vreT.next();
 
@@ -112,12 +114,10 @@ public class ExecuteRml {
         });
         tx.commit();
       }
-      importPreparer.setupVre(vreName);
-      importPreparer.setUpAdminVre();
-
+      importPreparer.setUpAdminVre(); // FIXME find a better place to create an Admin VRE.
 
       createMappingDocument(mappingVertex).execute().forEach(tripleImporter::importTriple);
-      tx.commit();  
+      tx.commit();
     }
 
     vres.reload();
