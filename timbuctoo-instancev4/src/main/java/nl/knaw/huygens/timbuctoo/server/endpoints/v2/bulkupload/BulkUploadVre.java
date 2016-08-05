@@ -4,11 +4,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -32,14 +34,16 @@ public class BulkUploadVre {
   private final RawCollection rawCollection;
   private final SaveRml saveRml;
   private final ExecuteRml executeRml;
+  private final UserPermissionChecker permissionChecker;
 
   public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection, SaveRml saveRml,
-                       ExecuteRml executeRml) {
+                       ExecuteRml executeRml, UserPermissionChecker permissionChecker) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.rawCollection = rawCollection;
     this.saveRml = saveRml;
     this.executeRml = executeRml;
+    this.permissionChecker = permissionChecker;
   }
 
   public URI createUri(String vre) {
@@ -50,7 +54,19 @@ public class BulkUploadVre {
 
   @GET
   @Produces(APPLICATION_JSON)
-  public Response get(@PathParam("vre") String vreName) {
+  public Response get(@PathParam("vre") String vreName, @HeaderParam("Authorization") String authorizationHeader) {
+    UserPermissionChecker.UserPermission permission = permissionChecker.check(vreName, authorizationHeader);
+
+    switch (permission) {
+      case UNKNOWN_USER:
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+      case NO_PERMISSION:
+        return Response.status(Response.Status.FORBIDDEN).build();
+      case ALLOWED_TO_WRITE:
+        break;
+      default:
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
     org.apache.tinkerpop.gremlin.structure.Graph graph = graphWrapper.getGraph();
 
     GraphTraversal<Vertex, Vertex> vreT =
