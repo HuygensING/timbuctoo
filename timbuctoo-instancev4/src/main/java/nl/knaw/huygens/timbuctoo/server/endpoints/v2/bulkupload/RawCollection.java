@@ -3,14 +3,16 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -35,29 +37,31 @@ public class RawCollection {
   public static final String START_ID = "startId";
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
+  private final UserPermissionChecker userPermissionChecker;
 
-  public RawCollection(GraphWrapper graphWrapper, UriHelper uriHelper) {
+  public RawCollection(GraphWrapper graphWrapper, UriHelper uriHelper, UserPermissionChecker userPermissionChecker) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
+    this.userPermissionChecker = userPermissionChecker;
   }
 
   public URI makeUri(String vreName, String collectionName, boolean onlyErrors) {
     URI resourceUri = minimumUri(vreName, collectionName)
-                                .queryParam("onlyErrors", onlyErrors)
-                                .build();
+      .queryParam("onlyErrors", onlyErrors)
+      .build();
     return uriHelper.fromResourceUri(resourceUri);
   }
 
   public URI makeUri(String vreName, String collectionName) {
     URI resourceUri = minimumUri(vreName, collectionName)
-                                .build();
+      .build();
     return uriHelper.fromResourceUri(resourceUri);
   }
 
   private URI createNextLink(String vreName, String collectionName, String startId, int numberOfItems) {
     URI resourceUri = minimumUri(vreName, collectionName)
-                                .queryParam(START_ID, startId).queryParam(NUMBER_OF_ITEMS, numberOfItems)
-                                .build();
+      .queryParam(START_ID, startId).queryParam(NUMBER_OF_ITEMS, numberOfItems)
+      .build();
     return uriHelper.fromResourceUri(resourceUri);
   }
 
@@ -71,14 +75,29 @@ public class RawCollection {
   @Produces(APPLICATION_JSON)
   public Response get(@PathParam("vre") String vreName, @PathParam("collection") String collectionName,
                       @QueryParam(NUMBER_OF_ITEMS) @DefaultValue("10") int numberOfItems,
-                      @QueryParam(START_ID) String startId) {
+                      @QueryParam(START_ID) String startId, @HeaderParam("Authorization") String authorizationString) {
+
+    UserPermissionChecker.UserPermission permission = userPermissionChecker.check(vreName, authorizationString);
+
+    switch (permission) {
+      case UNKNOWN_USER:
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+      case NO_PERMISSION:
+        return Response.status(Response.Status.FORBIDDEN).build();
+      case ALLOWED_TO_WRITE:
+        break;
+      default:
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
+
     GraphTraversal<Vertex, Vertex> collection = graphWrapper.getGraph().traversal().V()
                                                             .hasLabel(Vre.DATABASE_LABEL)
                                                             .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
                                                             .out(RAW_COLLECTION_EDGE_NAME)
                                                             .has(RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName);
 
-    if (!collection.asAdmin().clone().hasNext()) {
+    if (collectionExists(collection)) {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
 
@@ -100,6 +119,10 @@ public class RawCollection {
     }
 
     return Response.ok(result).build();
+  }
+
+  private boolean collectionExists(GraphTraversal<Vertex, Vertex> collection) {
+    return !collection.asAdmin().clone().hasNext();
   }
 
   private GraphTraversal<Vertex, Vertex> getFirstItemTraversal(String startId,

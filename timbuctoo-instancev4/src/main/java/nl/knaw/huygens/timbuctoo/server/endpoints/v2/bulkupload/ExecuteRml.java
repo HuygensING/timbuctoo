@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.rmlsources.TimbuctooRawCollectionSource;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -25,6 +26,7 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -59,12 +61,15 @@ public class ExecuteRml {
   private final GraphWrapper graphWrapper;
   private final ImportPreparer importPreparer;
   private final Vres vres;
+  private final UserPermissionChecker permissionChecker;
 
-  public ExecuteRml(UriHelper uriHelper, GraphWrapper graphWrapper, Vres vres) {
+  public ExecuteRml(UriHelper uriHelper, GraphWrapper graphWrapper, Vres vres,
+                    UserPermissionChecker permissionChecker) {
     this.uriHelper = uriHelper;
     this.graphWrapper = graphWrapper;
     importPreparer = new ImportPreparer(graphWrapper);
     this.vres = vres;
+    this.permissionChecker = permissionChecker;
   }
 
   public URI makeUri(String vreName) {
@@ -74,7 +79,20 @@ public class ExecuteRml {
   }
 
   @POST
-  public Response post(@PathParam("vre") String vreName) {
+  public Response post(@PathParam("vre") String vreName, @HeaderParam("Authorization") String authorizationHeader) {
+    UserPermissionChecker.UserPermission permission = permissionChecker.check(vreName, authorizationHeader);
+
+    switch (permission) {
+      case UNKNOWN_USER:
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+      case NO_PERMISSION:
+        return Response.status(Response.Status.FORBIDDEN).build();
+      case ALLOWED_TO_WRITE:
+        break;
+      default:
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
     Graph graph = graphWrapper.getGraph();
     GraphTraversal<Vertex, Vertex> vreT =
       graph.traversal().V().hasLabel(Vre.DATABASE_LABEL).has(Vre.VRE_NAME_PROPERTY_NAME, vreName);

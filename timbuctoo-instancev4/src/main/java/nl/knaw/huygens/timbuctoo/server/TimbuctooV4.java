@@ -73,6 +73,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedT
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
+import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
@@ -224,11 +225,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Graph(graphManager));
     // Bulk upload
     UriHelper uriHelper = new UriHelper(configuration);
-    RawCollection rawCollection = new RawCollection(graphManager, uriHelper);
+    UserPermissionChecker permissionChecker = new UserPermissionChecker(loggedInUserStore, authorizer);
+    RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
-    SaveRml saveRml = new SaveRml(graphManager, uriHelper);
+    SaveRml saveRml = new SaveRml(graphManager, uriHelper, permissionChecker);
     register(environment, saveRml);
-    ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres);
+    ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, permissionChecker);
     register(environment, executeRml);
     BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, saveRml, executeRml);
     register(environment, bulkUploadVre);

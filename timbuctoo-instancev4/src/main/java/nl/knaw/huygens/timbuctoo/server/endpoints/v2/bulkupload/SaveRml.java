@@ -2,8 +2,9 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -13,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,7 +32,6 @@ import java.net.URI;
 @Path("/v2.1/bulk-upload/{vre}/rml/save")
 public class SaveRml {
 
-  private static final Logger LOG = LoggerFactory.getLogger(SaveRml.class);
   public static final String HAS_TRIPLES_MAP_EDGE_NAME = "hasTriplesMap";
   public static final String HAS_RML_MAPPING_EDGE_NAME = "hasRmlMapping";
   public static final String HAS_LOGICAL_SOURCE_EDGE_NAME = "hasLogicalSource";
@@ -49,13 +50,15 @@ public class SaveRml {
   public static final String HAS_JOIN_CONDITION_EDGE_NAME = "hasJoinCondition";
   public static final String CHILD_PROP_NAME = "child";
   public static final String PARENT_PROP_NAME = "parent";
+  private static final Logger LOG = LoggerFactory.getLogger(SaveRml.class);
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
+  private final UserPermissionChecker permissionChecker;
 
-  public SaveRml(GraphWrapper graphWrapper, UriHelper uriHelper) {
+  public SaveRml(GraphWrapper graphWrapper, UriHelper uriHelper, UserPermissionChecker permissionChecker) {
     this.graphWrapper = graphWrapper;
-
     this.uriHelper = uriHelper;
+    this.permissionChecker = permissionChecker;
   }
 
   public URI makeUri(String vreName) {
@@ -65,8 +68,22 @@ public class SaveRml {
 
   @POST
   @Consumes(MediaType.APPLICATION_JSON)
-  public Response mapRml(JsonNode jsonNode, @PathParam("vre") String vreId) {
-    LOG.debug("Start mapping for vre: {}", vreId);
+  public Response mapRml(JsonNode jsonNode, @PathParam("vre") String vreId,
+                         @HeaderParam("Authorization") String authorizationHeader) {
+    UserPermissionChecker.UserPermission permission = permissionChecker.check(vreId, authorizationHeader);
+
+    switch (permission) {
+      case UNKNOWN_USER:
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+      case NO_PERMISSION:
+        return Response.status(Response.Status.FORBIDDEN).build();
+      case ALLOWED_TO_WRITE:
+        break;
+      default:
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+
+    LOG.debug("Save mapping for vre: {}", vreId);
     if (jsonNode == null) {
       return Response.status(Response.Status.BAD_REQUEST).entity("Body should contain a Json object.").build();
     }
