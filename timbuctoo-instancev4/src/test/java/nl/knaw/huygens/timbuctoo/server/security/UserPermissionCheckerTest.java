@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
+import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -8,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker.UserPermi
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -20,6 +22,8 @@ public class UserPermissionCheckerTest {
 
   public static final String VRE_NAME = "vreName";
   public static final String AUTHORIZATION_HEADER = "authorizationHeader";
+  public static final boolean ALLOWED_TO_WRITE = true;
+  public static final boolean NOT_ALLOWED_TO_WRITE = false;
   private LoggedInUserStore loggedInUserStore;
   private Authorizer authorizer;
   private UserPermissionChecker instance;
@@ -43,7 +47,7 @@ public class UserPermissionCheckerTest {
   @Test
   public void checkReturnsAllowedToWriteWhenTheUserIsAuthorizedForTheVre() throws Exception {
     given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(new User("displayName")));
-    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(() -> true);
+    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorization(ALLOWED_TO_WRITE));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
 
@@ -53,11 +57,25 @@ public class UserPermissionCheckerTest {
   @Test
   public void checkReturnsNoPermissionWhenTheUserIsNotAuthorized() throws Exception {
     given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(new User("displayName")));
-    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(() -> false);
+    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorization(NOT_ALLOWED_TO_WRITE));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
 
     assertThat(permission, is(UserPermission.NO_PERMISSION));
+  }
+
+  private Authorization authorization(boolean isAllowedToWrite) {
+    return new Authorization() {
+      @Override
+      public List<String> getRoles() {
+        throw new UnsupportedOperationException("Not implemented yet");
+      }
+
+      @Override
+      public boolean isAllowedToWrite() {
+        return isAllowedToWrite;
+      }
+    };
   }
 
   @Test
