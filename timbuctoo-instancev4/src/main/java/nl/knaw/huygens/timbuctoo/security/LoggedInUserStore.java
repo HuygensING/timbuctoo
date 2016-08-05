@@ -6,6 +6,8 @@ import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -19,6 +21,7 @@ import java.util.UUID;
  */
 public class LoggedInUserStore {
 
+  public static final Logger LOG = LoggerFactory.getLogger(LoggedInUserStore.class);
   private final Authenticator authenticator;
   private final UserStore userStore;
   private final AuthenticationHandler authenticationHandler;
@@ -58,7 +61,11 @@ public class LoggedInUserStore {
             users.put(authHeader, nw);
             return Optional.of(nw);
           }
-        } catch (IOException | UnauthorizedException | AuthenticationUnavailableException e) {
+        } catch (UnauthorizedException e) {
+          LOG.warn("User is not retrievable", e);
+          return Optional.empty();
+        } catch (IOException | AuthenticationUnavailableException e) {
+          LOG.error("An exception is thrown while retrieving the user information.", e);
           return Optional.empty();
         }
       }
