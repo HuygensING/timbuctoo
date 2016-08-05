@@ -14,6 +14,7 @@ import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
+import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
@@ -22,10 +23,7 @@ import nl.knaw.huygens.timbuctoo.crud.changelistener.CollectionHasEntityRelation
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
-import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload;
-import nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.MapRawData;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
@@ -54,6 +52,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
@@ -239,7 +238,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata, excelExportService));
-    register(environment, new MapRawData(graphManager));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService));

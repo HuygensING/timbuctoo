@@ -18,10 +18,10 @@ import java.net.URI;
 import java.util.Iterator;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver.FIRST_RAW_PROPERTY_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver.NEXT_RAW_PROPERTY_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver.RAW_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.FIRST_RAW_PROPERTY_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RAW_PROPERTY_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 

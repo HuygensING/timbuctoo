@@ -32,7 +32,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
-import static nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml.CHILD_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml.CLASS_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml.COLUMN_PROP_NAME;

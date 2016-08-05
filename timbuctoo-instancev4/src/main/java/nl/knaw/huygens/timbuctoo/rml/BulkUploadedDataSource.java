@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
-import nl.knaw.huygens.timbuctoo.experimental.bulkupload.savers.TinkerpopSaver;
+import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.rmlsources.TimbuctooRawCollectionSource;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

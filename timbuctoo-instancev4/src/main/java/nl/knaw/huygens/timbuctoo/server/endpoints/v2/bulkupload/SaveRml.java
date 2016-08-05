@@ -24,7 +24,7 @@ import java.net.URI;
 
 /**
  * This endpoint is the second step for the excel bulk upload.
- * For the first step {@link nl.knaw.huygens.timbuctoo.experimental.server.endpoints.v2.BulkUpload}.
+ * For the first step {@link BulkUpload}.
  * This maps the tabular data to a Timbuctoo data model.
  */
 @Path("/v2.1/bulk-upload/{vre}/rml/save")
