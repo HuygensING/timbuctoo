@@ -175,12 +175,25 @@ class Document < Hash
 			new_rr['reception_id_s'] = doc_id
 			new_rr['displayName_s'] = doc_displayName
 			new_rr['relationType_s'] = rec_rel
+			new_rr['date_i'] = rr_data['date_i']
+			new_rr['documentType_s'] = rr_data['documentType_s']
+			new_rr['notes_t'] = rr_data['notes_t']
+			@@new_rel_names.each do |name|
+			    new_rr[name] = rr_data[name]
+			end
 			new_rr['document_id_s'] = rr_data['id']
 			new_rr['document_displayName_s'] = rr_data['displayName']
 			rel_doc = Documents.find rr_data['id']
 			if !rel_doc.nil?
-			    # dit komt kennelijk nooit voor?
-			    new_rr['_childDocuments_'] = rel_doc
+			    # hier alle data toevoegen
+			    new_rr['document_documentType_s'] = rel_doc['documentType_s']
+			    new_rr['document_date_i'] = rel_doc['date_i']
+			    new_rr['document_notes_t'] = rel_doc['notes_t']
+			    @@new_rel_names.each do |name|
+				new_rr["document_#{name}"] = rel_doc[name]
+			    end
+			    new_rr['_childDocuments_'] = rel_doc['_childDocuments_']
+			    # each do ||
 			    # aparte lijst van voltooide receptions
 			    # die kan worden gecommit
 			    Documents.complete_document_receptions_add new_rr
@@ -201,6 +214,10 @@ class Document < Hash
 
     def Document.location= location
 	@@location = location
+    end
+
+    def Document.new_rel_names
+	@@new_rel_names
     end
 
 end

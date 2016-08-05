@@ -50,7 +50,7 @@ if __FILE__ == $0
     Person.location = "#{@location}v2.1/"
     Persons.location = "#{@location}v2.1/"
     Persons.solr = "#{@solr}#{@person_coll}"
-    Persons.debug = debug
+    Persons.debug = false
     Document.location = "#{@location}v2.1/"
     Documents.location = "#{@location}v2.1/"
     Documents.solr_documents = "#{@solr}#{@document_coll}"
@@ -92,10 +92,18 @@ if __FILE__ == $0
     STDERR.puts "start met document receptions" if debug
     Documents.document_receptions.each_with_index do |dr,ind|
 	doc = Documents.find dr['document_id_s']
+	# voeg doc eigenschappen toe aan reception
+	    		    # hier alle data toevoegen
 	new_dr = dr
-	new_dr['_childDocuments_'] = doc
+	new_dr['document_documentType_s'] = doc['documentType_s']
+	new_dr['document_date_i'] = doc['date_i']
+	new_dr['document_notes_t'] = doc['notes_t']
+	Document.new_rel_names.each do |name|
+	    new_dr["document_#{name}"] = doc[name]
+	end
+	new_dr['_childDocuments_'] = doc['_childDocuments_']
 	doc_recptions << new_dr
-	if doc_recptions.size == 200
+	if doc_recptions.size == 100
 #	    STDERR.puts doc_recptions.last
 	    Documents.do_solr_update doc_recptions,Documents.solr_doc_receptions
 	    doc_recptions = Array.new

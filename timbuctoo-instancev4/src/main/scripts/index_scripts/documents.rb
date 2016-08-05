@@ -31,7 +31,7 @@ class Documents
 	array = JSON.parse(line)
 	array.each do |obj|
 	    res = Document.new(obj)
-	    @@documents[res['id']] = res['_childDocuments_']
+	    @@documents[res['id']] = res
 	    result << res
 	    @@number += 1
 	    start_value += 1
