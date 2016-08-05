@@ -39,14 +39,13 @@ public class JsonBasedAuthorizerTest {
     when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
       .thenReturn(vreAuthorization);
 
-    String vreId = VRE_ID;
-    Collection collection = collectionOfVreWithId(vreId);
+    Collection collection = collectionOfVreWithId(VRE_ID);
     String userId = USER_ID;
 
     Authorization authorization = instance.authorizationFor(collection, userId);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationCollection).addAuthorizationFor(vreId, userId, UNVERIFIED_USER_ROLE);
+    verify(authorizationCollection).addAuthorizationFor(VRE_ID, userId, UNVERIFIED_USER_ROLE);
   }
 
   private Collection collectionOfVreWithId(String vreId) {
@@ -58,12 +57,23 @@ public class JsonBasedAuthorizerTest {
   }
 
   @Test
-  public void authorizationForReturnsTheFoundAuthorization() throws Exception {
+  public void authorizationForReturnsTheFoundAuthorizationForTheVreOfTheCollection() throws Exception {
     VreAuthorization vreAuthorization = new VreAuthorization();
     when(authorizationCollection.authorizationFor(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
     Collection collection = collectionOfVreWithId(VRE_ID);
 
     Authorization authorization = instance.authorizationFor(collection, USER_ID);
+
+    assertThat(authorization, is(sameInstance(vreAuthorization)));
+    verify(authorizationCollection, never()).addAuthorizationFor(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
+  }
+
+  @Test
+  public void authorizationForReturnsTheFoundAuthorizationForTheVreIdAndTheUserId() throws Exception {
+    VreAuthorization vreAuthorization = new VreAuthorization();
+    when(authorizationCollection.authorizationFor(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
+
+    Authorization authorization = instance.authorizationFor(VRE_ID, USER_ID);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
     verify(authorizationCollection, never()).addAuthorizationFor(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
