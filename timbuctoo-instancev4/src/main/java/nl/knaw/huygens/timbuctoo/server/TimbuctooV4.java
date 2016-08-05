@@ -232,7 +232,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, executeRml);
     BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, saveRml, executeRml);
     register(environment, bulkUploadVre);
-    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper, bulkUploadVre));
+    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper, bulkUploadVre,
+      loggedInUserStore, authorizer));
 
 
     register(environment, new RelationTypes(graphManager));
