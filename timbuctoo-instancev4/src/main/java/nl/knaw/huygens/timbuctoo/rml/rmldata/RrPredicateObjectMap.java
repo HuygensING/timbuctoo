@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
+import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrColumn;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrConstant;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap;
@@ -11,7 +12,6 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Node_URI;
 import org.apache.jena.graph.Triple;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -28,8 +28,8 @@ public class RrPredicateObjectMap {
     return new Builder();
   }
 
-  public Stream<Triple> generateValue(Node subject, Map<String, Object> stringObjectMap) {
-    return objectMap.generateValue(stringObjectMap).map(value -> {
+  public Stream<Triple> generateValue(Node subject, Row row) {
+    return objectMap.generateValue(row).map(value -> {
       if (reversed) {
         return new Triple(value, predicate, subject);
       } else {

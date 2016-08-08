@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
+import nl.knaw.huygens.timbuctoo.rml.Row;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
-import java.util.Map;
 import java.util.stream.Stream;
 
 public class RrColumn implements RrTermMap {
@@ -23,7 +23,7 @@ public class RrColumn implements RrTermMap {
   }
 
   @Override
-  public Stream<Node> generateValue(Map<String, Object> input) {
+  public Stream<Node> generateValue(Row input) {
     if (termType == null) {
       if (isUsedInObjectMap) {
         termType = TermType.Literal;

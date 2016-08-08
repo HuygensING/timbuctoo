@@ -18,7 +18,7 @@ public class TestDataSource implements DataSource {
   }
 
   @Override
-  public Iterator<Map<String, Object>> getItems() {
+  public Iterator<Row> getRows() {
     return stream(data)
       .map(values -> {
         ImmutableMap.Builder<String, Object> resultBuilder = ImmutableMap.<String, Object>builder().putAll(values);
@@ -29,7 +29,7 @@ public class TestDataSource implements DataSource {
           resultBuilder = resultBuilder.put(stringMapEntry.getKey(), uri);
         }
 
-        return (Map<String, Object>) resultBuilder.build();
+        return new Row(resultBuilder.build());
       })
       .iterator();
   }

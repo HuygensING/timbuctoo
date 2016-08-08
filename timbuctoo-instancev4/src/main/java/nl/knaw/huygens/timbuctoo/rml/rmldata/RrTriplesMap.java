@@ -44,18 +44,18 @@ public class RrTriplesMap {
   }
 
   public Stream<Triple> getItems() {
-    return stream(dataSource.getItems())
-      .flatMap(stringObjectMap -> {
+    return stream(dataSource.getRows())
+      .flatMap(row -> {
         Node subject = subjectMap.getTermMap()
-          .generateValue(stringObjectMap)
+          .generateValue(row)
           .findAny()
           .get();
         for (Tuple<RrRefObjectMap, String> subscription : subscriptions) {
-          subscription.getLeft().newSubject(stringObjectMap.get(subscription.getRight()), subject);
+          subscription.getLeft().newSubject(row.get(subscription.getRight()), subject);
         }
 
         return predicateObjectMaps.stream()
-          .flatMap(predicateObjectMap -> predicateObjectMap.generateValue(subject, stringObjectMap));
+          .flatMap(predicateObjectMap -> predicateObjectMap.generateValue(subject, row));
       });
   }
 

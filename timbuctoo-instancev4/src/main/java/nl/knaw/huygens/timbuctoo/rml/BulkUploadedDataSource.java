@@ -25,7 +25,7 @@ public class BulkUploadedDataSource implements DataSource {
   }
 
   @Override
-  public Iterator<Map<String, Object>> getItems() {
+  public Iterator<Row> getRows() {
     return graphWrapper.getGraph().traversal().V()
       .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
       .has(Vre.VRE_NAME_PROPERTY_NAME, source.getVreName())
@@ -47,7 +47,7 @@ public class BulkUploadedDataSource implements DataSource {
           valueMap.put(stringMapEntry.getKey(), uri);
         }
 
-        return valueMap;
+        return new Row(valueMap);
       })
       .iterator();
   }

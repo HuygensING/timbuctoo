@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
+import nl.knaw.huygens.timbuctoo.rml.Row;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
@@ -20,7 +20,7 @@ public class RrTemplate implements RrTermMap {
   }
 
   @Override
-  public Stream<Node> generateValue(Map<String, Object> input) {
+  public Stream<Node> generateValue(Row input) {
     //regex can be tested by going to https://regex101.com/r/fV1zJ1/1
     //It has been tested with
     // http://jan/{} <- should not match

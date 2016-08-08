@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
+import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -23,7 +23,7 @@ public class RrRefObjectMap implements RrTermMap {
   }
 
   @Override
-  public Stream<Node> generateValue(Map<String, Object> input) {
+  public Stream<Node> generateValue(Row input) {
     final Object result = input.get(uniqueId);
     if (result instanceof List) {
       return ((List<Object>) result).stream().map(v -> NodeFactory.createURI("" + v));
