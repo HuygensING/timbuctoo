@@ -116,10 +116,6 @@ public class ExecuteRml {
     Vertex mappingVertex = vreVertex.vertices(Direction.OUT, HAS_RML_MAPPING_EDGE_NAME).next();
     final TripleImporter tripleImporter = new TripleImporter(graphWrapper, vreName);
     try (Transaction tx = graphWrapper.getGraph().tx()) {
-      final GraphTraversal<Vertex, Vertex> vre = graphWrapper.getGraph().traversal().V()
-                                                             .hasLabel(Vre.DATABASE_LABEL)
-                                                             .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
-
       importPreparer.setUpAdminVre(); // FIXME find a better place to setup an Admin VRE.
 
       createMappingDocument(mappingVertex).execute().forEach(tripleImporter::importTriple);
