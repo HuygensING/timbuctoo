@@ -4,6 +4,8 @@ digraph {
   VRE -> RawCollection [label="hasRawCollection"]
   RcEntityNode[label=""]
   RawCollection -> RcEntityNode
-  RawItem [label="prop1_value=\"val1\"\nprop1_error=\"Exception message\""]
-  RcEntityNode -> RawItem [label="hasItem"]
+  RawItem1 [label="prop1_value=\"val1\"\nprop1_error=\"Exception message\""]
+  RcEntityNode -> RawItem1 [label="hasFirstError"]
+  RawItem2 [label="prop2_value=\"val1\"\nprop2_error=\"Exception message\""]
+  RawItem1 -> RawItem2 [label="hasNextError"]
 }
