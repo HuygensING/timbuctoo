@@ -9944,17 +9944,30 @@ var fetchEntity = function fetchEntity(location, next, fail) {
 	}, fail, "Fetch entity");
 };
 
+var fetchEntityList = function fetchEntityList(domain, start, rows, next) {
+	return _server2["default"].performXhr({
+		method: "GET",
+		headers: { "Accept": "application/json" },
+		url: _config2["default"].apiUrl[_config2["default"].apiVersion] + "/domain/" + domain + "?rows=" + rows + "&start=" + start
+	}, function (err, resp) {
+		var data = JSON.parse(resp.body);
+		next(data);
+	});
+};
+
 var crud = {
 	saveNewEntity: saveNewEntity,
 	updateEntity: updateEntity,
 	deleteEntity: deleteEntity,
-	fetchEntity: fetchEntity
+	fetchEntity: fetchEntity,
+	fetchEntityList: fetchEntityList
 };
 
 exports.saveNewEntity = saveNewEntity;
 exports.updateEntity = updateEntity;
 exports.deleteEntity = deleteEntity;
 exports.fetchEntity = fetchEntity;
+exports.fetchEntityList = fetchEntityList;
 exports.crud = crud;
 
 },{"../config":168,"./server":141}],136:[function(require,module,exports){
@@ -9980,12 +9993,18 @@ var _config = require("../config");
 
 var _config2 = _interopRequireDefault(_config);
 
+var _autocomplete = require("./autocomplete");
+
+var _autocomplete2 = _interopRequireDefault(_autocomplete);
+
 // Skeleton base data per field definition
 var initialData = {
 	names: [],
 	multiselect: [],
 	links: [],
 	keyword: [],
+	"list-of-strings": [],
+	altnames: [],
 	text: "",
 	string: "",
 	select: "",
@@ -10012,16 +10031,76 @@ var makeSkeleton = function makeSkeleton(fieldDefs, domain) {
 	}, {});
 };
 
+var fetchEntityList = function fetchEntityList(domain) {
+	return function (dispatch, getState) {
+		dispatch({ type: "SET_PAGINATION_START", start: 0 });
+		_crud.crud.fetchEntityList(domain, 0, getState().quickSearch.rows, function (data) {
+			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
+		});
+	};
+};
+
+var paginateLeft = function paginateLeft() {
+	return function (dispatch, getState) {
+		var newStart = getState().quickSearch.start - getState().quickSearch.rows;
+		dispatch({ type: "SET_PAGINATION_START", start: newStart < 0 ? 0 : newStart });
+		_crud.crud.fetchEntityList(getState().entity.domain, newStart < 0 ? 0 : newStart, getState().quickSearch.rows, function (data) {
+			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
+		});
+	};
+};
+
+var paginateRight = function paginateRight() {
+	return function (dispatch, getState) {
+		var newStart = getState().quickSearch.start + getState().quickSearch.rows;
+		dispatch({ type: "SET_PAGINATION_START", start: newStart });
+		_crud.crud.fetchEntityList(getState().entity.domain, newStart, getState().quickSearch.rows, function (data) {
+			return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data });
+		});
+	};
+};
+
+var sendQuickSearch = function sendQuickSearch() {
+	return function (dispatch, getState) {
+		var _getState = getState();
+
+		var quickSearch = _getState.quickSearch;
+		var entity = _getState.entity;
+		var vre = _getState.vre;
+
+		if (quickSearch.query.length) {
+			dispatch({ type: "SET_PAGINATION_START", start: 0 });
+			var callback = function callback(data) {
+				return dispatch({ type: "RECEIVE_ENTITY_LIST", data: data.map(function (d) {
+						return {
+							_id: d.key.replace(/.*\//, ""),
+							"@displayName": d.value
+						};
+					}) });
+			};
+			(0, _autocomplete2["default"])("domain/" + entity.domain + "/autocomplete", quickSearch.query, vre.vreId, callback);
+		} else {
+			dispatch(fetchEntityList(entity.domain));
+		}
+	};
+};
+
 // 1) Fetch entity
 // 2) Dispatch RECEIVE_ENTITY for render
 var selectEntity = function selectEntity(domain, entityId) {
 	var errorMessage = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
+	var successMessage = arguments.length <= 3 || arguments[3] === undefined ? null : arguments[3];
+	var next = arguments.length <= 4 || arguments[4] === undefined ? function () {} : arguments[4];
 	return function (dispatch) {
-		return _crud.crud.fetchEntity(_config2["default"].apiUrl[_config2["default"].apiVersion] + "/domain/" + domain + "/" + entityId, function (data) {
-			return dispatch({ type: "RECEIVE_ENTITY", domain: domain, data: data, errorMessage: errorMessage });
+		_crud.crud.fetchEntity(_config2["default"].apiUrl[_config2["default"].apiVersion] + "/domain/" + domain + "/" + entityId, function (data) {
+			dispatch({ type: "RECEIVE_ENTITY", domain: domain, data: data, errorMessage: errorMessage });
+			if (successMessage !== null) {
+				dispatch({ type: "SUCCESS_MESSAGE", message: successMessage });
+			}
 		}, function () {
 			return dispatch({ type: "RECEIVE_ENTITY_FAILURE", errorMessage: "Failed to fetch " + domain + " with ID " + entityId });
 		});
+		next();
 	};
 };
 
@@ -10041,7 +10120,9 @@ var makeNewEntity = function makeNewEntity(domain) {
 var deleteEntity = function deleteEntity() {
 	return function (dispatch, getState) {
 		_crud.crud.deleteEntity(getState().entity.domain, getState().entity.data._id, getState().user.token, getState().vre.vreId, function () {
-			return dispatch(makeNewEntity(getState().entity.domain));
+			dispatch({ type: "SUCCESS_MESSAGE", message: "Sucessfully deleted " + getState().entity.domain + " with ID " + getState().entity.data._id });
+			dispatch(makeNewEntity(getState().entity.domain));
+			dispatch(fetchEntityList(getState().entity.domain));
 		}, function () {
 			return dispatch(selectEntity(getState().entity.domain, getState().entity.data._id, "Failed to delete " + getState().entity.domain + " with ID " + getState().entity.data._id));
 		});
@@ -10069,7 +10150,9 @@ var saveEntity = function saveEntity() {
 						return _relationSavers2["default"][_config2["default"].apiVersion](JSON.parse(resp.body), relationData, getState().vre.collections[getState().entity.domain], getState().user.token, getState().vre.vreId, function () {
 							return(
 								// 3) Refetch entity for render
-								redispatch(selectEntity(getState().entity.domain, getState().entity.data._id))
+								redispatch(selectEntity(getState().entity.domain, getState().entity.data._id, null, "Succesfully saved " + getState().entity.domain + " with ID " + getState().entity.data._id, function () {
+									return dispatch(fetchEntityList(getState().entity.domain));
+								}))
 							);
 						});
 					})
@@ -10092,7 +10175,9 @@ var saveEntity = function saveEntity() {
 								_relationSavers2["default"][_config2["default"].apiVersion](data, relationData, getState().vre.collections[getState().entity.domain], getState().user.token, getState().vre.vreId, function () {
 									return(
 										// 4) Refetch entity for render
-										redispatch(selectEntity(getState().entity.domain, data._id))
+										redispatch(selectEntity(getState().entity.domain, data._id, null, "Succesfully saved " + getState().entity.domain, function () {
+											return dispatch(fetchEntityList(getState().entity.domain));
+										}))
 									);
 								})
 							);
@@ -10113,8 +10198,12 @@ exports.saveEntity = saveEntity;
 exports.selectEntity = selectEntity;
 exports.makeNewEntity = makeNewEntity;
 exports.deleteEntity = deleteEntity;
+exports.fetchEntityList = fetchEntityList;
+exports.paginateRight = paginateRight;
+exports.paginateLeft = paginateLeft;
+exports.sendQuickSearch = sendQuickSearch;
 
-},{"../config":168,"../util/clone-deep":178,"./crud":135,"./relation-savers":139}],137:[function(require,module,exports){
+},{"../config":168,"../util/clone-deep":179,"./autocomplete":134,"./crud":135,"./relation-savers":139}],137:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10162,6 +10251,25 @@ exports["default"] = {
 	onSelectVre: function onSelectVre(vreId) {
 		return _store2["default"].dispatch((0, _vre.setVre)(vreId));
 	},
+	onDismissMessage: function onDismissMessage(messageIndex) {
+		return _store2["default"].dispatch({ type: "DISMISS_MESSAGE", messageIndex: messageIndex });
+	},
+	onSelectDomain: function onSelectDomain(domain) {
+		_store2["default"].dispatch((0, _entity.fetchEntityList)(domain));_store2["default"].dispatch({ type: "SET_QUICKSEARCH_QUERY", value: "" });
+	},
+	onPaginateLeft: function onPaginateLeft() {
+		return _store2["default"].dispatch((0, _entity.paginateLeft)());
+	},
+	onPaginateRight: function onPaginateRight() {
+		return _store2["default"].dispatch((0, _entity.paginateRight)());
+	},
+	onQuickSearchQueryChange: function onQuickSearchQueryChange(value) {
+		return _store2["default"].dispatch({ type: "SET_QUICKSEARCH_QUERY", value: value });
+	},
+	onQuickSearch: function onQuickSearch() {
+		return _store2["default"].dispatch((0, _entity.sendQuickSearch)());
+	},
+
 	onSelectQuery: function onSelectQuery(domain, queryIndex) {
 		var position = arguments.length <= 2 || arguments[2] === undefined ? null : arguments[2];
 		return _store2["default"].dispatch((0, _queries.selectQuery)(domain, queryIndex, position));
@@ -10199,7 +10307,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":177,"./entity":136,"./queries":138,"./vre":143}],138:[function(require,module,exports){
+},{"../store":178,"./entity":136,"./queries":138,"./vre":143}],138:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10518,7 +10626,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":177,"xhr":132}],142:[function(require,module,exports){
+},{"../store":178,"xhr":132}],142:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10686,8 +10794,12 @@ var setVre = function setVre(vreId) {
 			},
 			url: _config2["default"].apiUrl.v4 + "/metadata/" + vreId
 		}, function (err, resp) {
-			dispatch({ type: "SET_VRE", vreId: vreId, collections: JSON.parse(resp.body) });
-		}, null, "Fetch VRE description for " + vreId);
+			if (resp.statusCode === 200) {
+				dispatch({ type: "SET_VRE", vreId: vreId, collections: JSON.parse(resp.body) });
+			}
+		}, function () {
+			return dispatch({ type: "SET_VRE", vreId: vreId, collections: [] });
+		}, "Fetch VRE description for " + vreId);
 	};
 };
 
@@ -10702,8 +10814,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -10848,27 +10958,8 @@ var App = (function (_React$Component) {
 
 			var currentQ = this.props.queries.currentQuery > -1 ? this.props.queries.queries[this.props.queries.currentQuery] : null;
 
-			var _ref = this.props.queries.currentQuery > -1 ? (0, _parsersGremlin2["default"])(this.props.queries.queries[this.props.queries.currentQuery]) : ["", ""];
-
-			var _ref2 = _slicedToArray(_ref, 1);
-
-			var resQ = _ref2[0];
-
+			/*		const [resQ] = this.props.queries.currentQuery > -1 ? parseGremlin(this.props.queries.queries[this.props.queries.currentQuery]) : ["", ""];*/
 			var collections = this.props.vre.collections || {};
-
-			var nameInput = this.props.queries.currentQuery > -1 ? _react2["default"].createElement(_hireFormsInput2["default"], { onChange: this.props.onNameQuery, placeholder: "name query", value: this.props.queries.queries[this.props.queries.currentQuery].name }) : null;
-
-			var saveButton = this.props.queries.currentQuery > -1 ? _react2["default"].createElement(
-				"button",
-				{ disabled: this.props.queries.queries[this.props.queries.currentQuery].name.length ? false : true, onClick: this.props.onSaveQuery },
-				"Save current query"
-			) : null;
-
-			var savedQueries = this.props.queries.savedQueries;
-
-			var savedQuerySelect = _react2["default"].createElement(_hireFormsSelect2["default"], { onChange: this.props.onLoadQuery, options: savedQueries.map(function (q) {
-					return q.name;
-				}), placeholder: "Load query..." });
 
 			var resultPath = currentQ ? (0, _utilCloneDeep2["default"])(currentQ.pathToQuerySelection) : null;
 
@@ -10919,16 +11010,13 @@ var App = (function (_React$Component) {
 					}).map(function (c) {
 						return _react2["default"].createElement(
 							"div",
-							{ key: c, style: { display: "inline-block", height: "40px", width: "40px" } },
+							{ key: c, style: { display: "inline-block", height: "40px", width: "150px" } },
 							_react2["default"].createElement(_queryComponentDraggableIcon2["default"], {
 								domain: c,
 								onDrop: _this.onCreateQuery.bind(_this)
 							})
 						);
-					}),
-					nameInput,
-					saveButton,
-					savedQuerySelect
+					})
 				),
 				_react2["default"].createElement(
 					"div",
@@ -11011,12 +11099,14 @@ module.exports = exports["default"];
 			<pre style={{width: "100%", whiteSpace: "no-wrap"}}>{resQ}</pre>
 */
 
-},{"../../parsers/gremlin":169,"../../util/clone-deep":178,"../../util/get-in":179,"./query-component":154,"./query-component/draggable-icon":145,"./query-filters":164,"./search-icon":167,"hire-forms-input":31,"hire-forms-select":32,"hire-infinity-grid":33,"react":"react","react-dnd":113,"react-dnd-touch-backend":100}],145:[function(require,module,exports){
+},{"../../parsers/gremlin":169,"../../util/clone-deep":179,"../../util/get-in":180,"./query-component":154,"./query-component/draggable-icon":145,"./query-filters":164,"./search-icon":167,"hire-forms-input":31,"hire-forms-select":32,"hire-infinity-grid":33,"react":"react","react-dnd":113,"react-dnd-touch-backend":100}],145:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -11034,10 +11124,6 @@ var _react2 = _interopRequireDefault(_react);
 
 var _hireInfinityGrid = require("hire-infinity-grid");
 
-var _icons = require("./icons");
-
-var _icons2 = _interopRequireDefault(_icons);
-
 var DraggableIcon = (function (_React$Component) {
 	_inherits(DraggableIcon, _React$Component);
 
@@ -11052,8 +11138,17 @@ var DraggableIcon = (function (_React$Component) {
 		value: function render() {
 			return _react2["default"].createElement(
 				"svg",
-				{ height: "40", width: "40" },
-				_icons2["default"][this.props.domain]()
+				{ height: "40", width: "150" },
+				_react2["default"].createElement(
+					"g",
+					null,
+					_react2["default"].createElement(
+						"text",
+						{ style: { userSelect: "none" }, x: "13", y: "25" },
+						this.props.domain
+					),
+					_react2["default"].createElement("rect", _extends({}, this.props, { fill: "rgba(0,0,0,0)", height: "40", width: "150", x: "0", y: "0" }))
+				)
 			);
 		}
 	}]);
@@ -11068,7 +11163,7 @@ DraggableIcon.propTypes = {
 exports["default"] = (0, _hireInfinityGrid.draggable)(DraggableIcon);
 module.exports = exports["default"];
 
-},{"./icons":149,"hire-infinity-grid":33,"react":"react"}],146:[function(require,module,exports){
+},{"hire-infinity-grid":33,"react":"react"}],146:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11097,10 +11192,6 @@ var _deepEqual = require("deep-equal");
 
 var _deepEqual2 = _interopRequireDefault(_deepEqual);
 
-var _icons = require("./icons");
-
-var _icons2 = _interopRequireDefault(_icons);
-
 var _relationComponent = require("./relation-component");
 
 var _relationComponent2 = _interopRequireDefault(_relationComponent);
@@ -11114,10 +11205,10 @@ var _utilDeleteButton = require("./util/delete-button");
 var _utilDeleteButton2 = _interopRequireDefault(_utilDeleteButton);
 
 var baseHeight = 60;
-var baseWidth = baseHeight;
+var baseWidth = 170;
 var basePropertyComponentHeight = 36;
-var baseRelationComponentWidth = 130;
-var baseComponentWidthWithOnlyPropertyFilters = 190;
+var baseRelationComponentWidth = 20;
+var baseComponentWidthWithOnlyPropertyFilters = 80;
 
 var EntityComponent = (function (_React$Component) {
 	_inherits(EntityComponent, _React$Component);
@@ -11294,7 +11385,12 @@ var EntityComponent = (function (_React$Component) {
 							return _this.props.onSetQueryPath(path);
 						},
 						transform: "translate(-20 -20)" }),
-					_icons2["default"][queryEntity.domain]({ className: "handle" })
+					_react2["default"].createElement(
+						"text",
+						{ x: "13", y: "25" },
+						queryEntity.domain
+					),
+					_react2["default"].createElement("rect", { className: "handle", fill: "rgba(0,0,0,0)", height: "40", width: "150", x: "0", y: "0" })
 				),
 				deleteButton,
 				_react2["default"].createElement("line", { stroke: "black", transform: "translate(-20 20)", x1: "0", x2: "0", y1: "0",
@@ -11410,7 +11506,7 @@ EntityComponent.propTypes = {
 exports["default"] = EntityComponent;
 module.exports = exports["default"];
 
-},{"./icons":149,"./property-component":155,"./relation-component":157,"./util/delete-button":158,"deep-equal":3,"react":"react"}],147:[function(require,module,exports){
+},{"./property-component":155,"./relation-component":157,"./util/delete-button":158,"deep-equal":3,"react":"react"}],147:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11756,7 +11852,12 @@ var QueryComponent = (function (_React$Component) {
 				"g",
 				_extends({ className: "query", onClick: this.props.onSelect,
 					transform: "translate(" + this.props.query.position.x + " " + this.props.query.position.y + ") translate(-20 -20) scale(" + this.props.scale + ")" }, this.props),
-				_icons2["default"][this.props.query.domain]({ className: "handle" })
+				_react2["default"].createElement(
+					"text",
+					{ x: "13", y: "25" },
+					"X"
+				),
+				_react2["default"].createElement("rect", { className: "handle", fill: "rgba(0,0,0,0)", height: "40", width: "40", x: "0", y: "0" })
 			);
 		}
 	}]);
@@ -12252,10 +12353,9 @@ var TextBox = (function (_React$Component) {
 	}, {
 		key: "render",
 		value: function render() {
-			var _props = this.props;
-			var text = _props.text;
-			var onSelect = _props.onSelect;
+			var text = this.props.text;
 
+			var rect = this.props.onSelect ? _react2["default"].createElement("rect", _extends({}, this.props, { onClick: this.props.onSelect, title: text })) : _react2["default"].createElement("rect", _extends({}, this.props, { title: text }));
 			return _react2["default"].createElement(
 				"g",
 				null,
@@ -12266,7 +12366,7 @@ var TextBox = (function (_React$Component) {
 						transform: "translate(" + this.state.textLeft + " -2)" },
 					this.state.croppedText || text
 				),
-				_react2["default"].createElement("rect", _extends({}, this.props, { onClick: onSelect, title: text }))
+				rect
 			);
 		}
 	}]);
@@ -12433,7 +12533,7 @@ DatableField.propTypes = {
 exports["default"] = DatableField;
 module.exports = exports["default"];
 
-},{"../../../../util/clone-deep":178,"hire-forms-input":31,"hire-forms-select":32,"react":"react"}],162:[function(require,module,exports){
+},{"../../../../util/clone-deep":179,"hire-forms-input":31,"hire-forms-select":32,"react":"react"}],162:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12798,7 +12898,7 @@ QueryFilters.propTypes = {
 exports["default"] = QueryFilters;
 module.exports = exports["default"];
 
-},{"../../../util/get-in":179,"./fields/id-field":162,"./fields/select":163,"./map-field":165,"./map-prop-field":166,"react":"react"}],165:[function(require,module,exports){
+},{"../../../util/get-in":180,"./fields/id-field":162,"./fields/select":163,"./map-field":165,"./map-prop-field":166,"react":"react"}],165:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13130,7 +13230,7 @@ var parsers = {
 exports["default"] = parseQuery;
 exports.parsers = parsers;
 
-},{"../util/clone-deep":178,"../util/get-in":179}],170:[function(require,module,exports){
+},{"../util/clone-deep":179,"../util/get-in":180}],170:[function(require,module,exports){
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -13161,17 +13261,22 @@ var _componentsQuery = require("./components/query");
 
 var _componentsQuery2 = _interopRequireDefault(_componentsQuery);
 
+var _utilQs = require("./util/qs");
+
+var _utilQs2 = _interopRequireDefault(_utilQs);
+
 document.addEventListener("DOMContentLoaded", function () {
 
 	_store2["default"].subscribe(function () {
 		_reactDom2["default"].render(_react2["default"].createElement(_componentsQuery2["default"], _extends({}, _store2["default"].getState(), _actions2["default"])), document.getElementById("app"));
 	});
 
-	_store2["default"].dispatch((0, _actionsVre.setVre)("WomenWriters"));
+	var vreId = (0, _utilQs2["default"])(window.location.search.substr(1).split("&")).vreId || "WomenWriters";
+	_store2["default"].dispatch((0, _actionsVre.setVre)(vreId));
 	_store2["default"].dispatch((0, _actionsQueries.loadSavedQueries)());
 });
 
-},{"./actions":137,"./actions/queries":138,"./actions/vre":143,"./components/query":144,"./store":177,"react":"react","react-dom":"react-dom"}],171:[function(require,module,exports){
+},{"./actions":137,"./actions/queries":138,"./actions/vre":143,"./components/query":144,"./store":178,"./util/qs":181,"react":"react","react-dom":"react-dom"}],171:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13226,7 +13331,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":180}],172:[function(require,module,exports){
+},{"../util/set-in":182}],172:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13255,21 +13360,35 @@ var _queries = require("./queries");
 
 var _queries2 = _interopRequireDefault(_queries);
 
+var _quickSearch = require("./quick-search");
+
+var _quickSearch2 = _interopRequireDefault(_quickSearch);
+
 exports["default"] = {
 	vre: _vre2["default"],
 	entity: _entity2["default"],
 	user: _user2["default"],
 	messages: _messages2["default"],
-	queries: _queries2["default"]
+	queries: _queries2["default"],
+	quickSearch: _quickSearch2["default"]
 };
 module.exports = exports["default"];
 
-},{"./entity":171,"./messages":173,"./queries":174,"./user":175,"./vre":176}],173:[function(require,module,exports){
+},{"./entity":171,"./messages":173,"./queries":174,"./quick-search":175,"./user":176,"./vre":177}],173:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _utilSetIn = require("../util/set-in");
+
+var _utilSetIn2 = _interopRequireDefault(_utilSetIn);
+
 var initialState = {
 	log: []
 };
@@ -13281,9 +13400,16 @@ exports["default"] = function (state, action) {
 		case "REQUEST_MESSAGE":
 			state.log.push({ message: action.message, type: action.type, time: new Date() });
 			return state;
+		case "SUCCESS_MESSAGE":
+			state.log.push({ message: action.message, type: action.type, time: new Date() });
+			return state;
 		case "ERROR_MESSAGE":
 			state.log.push({ message: action.message, type: action.type, time: new Date() });
 			return state;
+		case "DISMISS_MESSAGE":
+			return _extends({}, state, {
+				log: (0, _utilSetIn2["default"])([action.messageIndex, "dismissed"], true, state.log)
+			});
 	}
 
 	return state;
@@ -13291,7 +13417,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],174:[function(require,module,exports){
+},{"../util/set-in":182}],174:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13477,7 +13603,46 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/get-in":179,"../util/set-in":180}],175:[function(require,module,exports){
+},{"../util/get-in":180,"../util/set-in":182}],175:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var initialState = {
+	start: 0,
+	list: [],
+	rows: 50,
+	query: ""
+};
+
+exports["default"] = function (state, action) {
+	if (state === undefined) state = initialState;
+
+	switch (action.type) {
+		case "SET_PAGINATION_START":
+			return _extends({}, state, { start: action.start });
+		case "RECEIVE_ENTITY_LIST":
+			return _extends({}, state, {
+				list: action.data
+			});
+		case "SET_QUICKSEARCH_QUERY":
+			{
+				return _extends({}, state, {
+					query: action.value
+				});
+			}
+		default:
+			return state;
+	}
+};
+
+module.exports = exports["default"];
+
+},{}],176:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13499,7 +13664,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],176:[function(require,module,exports){
+},{}],177:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13538,7 +13703,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],177:[function(require,module,exports){
+},{}],178:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13569,7 +13734,7 @@ var data = (0, _redux.combineReducers)(_reducers2["default"]);
 exports["default"] = (0, _redux.createStore)(data, (0, _redux.applyMiddleware)( /*logger, */_reduxThunk2["default"]));
 module.exports = exports["default"];
 
-},{"../reducers":172,"redux":128,"redux-thunk":122}],178:[function(require,module,exports){
+},{"../reducers":172,"redux":128,"redux-thunk":122}],179:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13602,7 +13767,7 @@ function deepClone9(obj) {
 exports["default"] = deepClone9;
 module.exports = exports["default"];
 
-},{}],179:[function(require,module,exports){
+},{}],180:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13645,7 +13810,32 @@ var getIn = function getIn(path, data) {
 exports["default"] = getIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":178}],180:[function(require,module,exports){
+},{"./clone-deep":179}],181:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+
+exports["default"] = function (a) {
+    if (a == "") {
+        return {};
+    }
+    var b = {};
+    for (var i = 0; i < a.length; ++i) {
+        var p = a[i].split("=", 2);
+        if (p.length == 1) {
+            b[p[0]] = "";
+        } else {
+            b[p[0]] = decodeURIComponent(p[1].replace(/\+/g, " "));
+        }
+    }
+    return b;
+};
+
+module.exports = exports["default"];
+
+},{}],182:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13696,5 +13886,5 @@ var setIn = function setIn(path, value, data) {
 exports["default"] = setIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":178}]},{},[170])(170)
+},{"./clone-deep":179}]},{},[170])(170)
 });
