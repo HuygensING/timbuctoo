@@ -1,0 +1,9 @@
+digraph {
+  VRE
+  RawCollection
+  VRE -> RawCollection [label="hasRawCollection"]
+  RcEntityNode[label=""]
+  RawCollection -> RcEntityNode
+  RawItem [label="prop1_value=\"val1\"\nprop1_error=\"Exception message\""]
+  RcEntityNode -> RawItem [label="hasItem"]
+}
