@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.ImportPreparer;
@@ -18,7 +17,6 @@ import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -121,18 +119,8 @@ public class ExecuteRml {
       final GraphTraversal<Vertex, Vertex> vre = graphWrapper.getGraph().traversal().V()
                                                              .hasLabel(Vre.DATABASE_LABEL)
                                                              .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
-      if (vre.hasNext()) {
-        Vertex result = vre.next();
-        result.vertices(Direction.BOTH, Vre.HAS_COLLECTION_RELATION_NAME).forEachRemaining(coll -> {
-          coll.vertices(Direction.BOTH, Collection.HAS_ENTITY_NODE_RELATION_NAME).forEachRemaining(entityNode -> {
-            entityNode.vertices(Direction.BOTH, Collection.HAS_ENTITY_RELATION_NAME).forEachRemaining(Element::remove);
-            entityNode.remove();
-          });
-          coll.remove();
-        });
-        tx.commit();
-      }
-      importPreparer.setUpAdminVre(); // FIXME find a better place to create an Admin VRE.
+
+      importPreparer.setUpAdminVre(); // FIXME find a better place to setup an Admin VRE.
 
       createMappingDocument(mappingVertex).execute().forEach(tripleImporter::importTriple);
       tx.commit();
