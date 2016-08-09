@@ -216,7 +216,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RootEndpoint());
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
-    register(environment, new MyVres(loggedInUserStore, authorizer, vres));
     register(environment, new Search(configuration, graphManager, excelExportService));
     register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
@@ -244,6 +243,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata, excelExportService));
+    register(environment, new MyVres(loggedInUserStore, authorizer, vres, saveRml));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService));

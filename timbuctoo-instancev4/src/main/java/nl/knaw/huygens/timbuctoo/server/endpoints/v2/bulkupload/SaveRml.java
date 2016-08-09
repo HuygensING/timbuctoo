@@ -29,7 +29,7 @@ import java.net.URI;
  * For the first step {@link BulkUpload}.
  * This maps the tabular data to a Timbuctoo data model.
  */
-@Path("/v2.1/bulk-upload/{vre}/rml/save")
+@Path("/v2.1/bulk-upload/{vre}/rml")
 public class SaveRml {
 
   public static final String HAS_TRIPLES_MAP_EDGE_NAME = "hasTriplesMap";

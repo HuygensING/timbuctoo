@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -197,9 +197,10 @@ public class JsonMetadata {
   }
 
   public ArrayNode listVres() {
-    List<JsonNode> vres = metadata.getVres().entrySet().stream().map(entry -> jsn(entry.getKey())).collect(toList());
-    ArrayNode result = jsnA(vres.stream());
+    Stream<JsonNode> vres = metadata.getVres().entrySet().stream()
+      .filter(x->x.getValue().getCollections().size() > 0)
+      .map(entry -> jsn(entry.getKey()));
 
-    return result;
+    return jsnA(vres);
   }
 }

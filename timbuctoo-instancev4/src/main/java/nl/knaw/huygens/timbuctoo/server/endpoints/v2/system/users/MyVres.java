@@ -1,34 +1,40 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users;
 
-import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.crud.Authorization;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
-import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
+import static java.util.stream.Collectors.toMap;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 @Path("/v2.1/system/users/me/vres")
 public class MyVres {
   private final LoggedInUserStore loggedInUserStore;
   private final Authorizer authorizer;
   private final Vres vres;
+  private final SaveRml saveRml;
 
-  public MyVres(LoggedInUserStore loggedInUserStore, Authorizer authorizer, Vres vres) {
+  public MyVres(LoggedInUserStore loggedInUserStore, Authorizer authorizer, Vres vres, SaveRml saveRml) {
     this.loggedInUserStore = loggedInUserStore;
     this.authorizer = authorizer;
     this.vres = vres;
+    this.saveRml = saveRml;
   }
 
   @GET
@@ -40,47 +46,64 @@ public class MyVres {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
-    List<VreRole> vreRoleList = vres.getVres().values().stream()
-                                    .filter(vre -> {
-                                      try {
-                                        Authorization authorization =
-                                          authorizer.authorizationFor(vre.getVreName(), user.get().getId());
-                                        return authorization.isAllowedToWrite();
-                                      } catch (AuthorizationUnavailableException e) {
-                                        return false;
-                                      }
-                                    })
-                                    .map(vre -> {
-                                      try {
-                                        Authorization authorization =
-                                          authorizer.authorizationFor(vre.getVreName(), user.get().getId());
-                                        return new VreRole(vre.getVreName(), authorization.getRoles());
-                                      } catch (AuthorizationUnavailableException e) {
-                                        return new VreRole(vre.getVreName(),
-                                          Lists.newArrayList("Role could not be retrieved."));
-                                      }
-                                    })
-                                    .collect(toList());
+    final Map<String, Map<String, ObjectNode>> result = vres.getVres().values().stream()
+      .map(vre -> {
+        boolean isAllowedToWrite;
+        try {
+          isAllowedToWrite = authorizer
+            .authorizationFor(vre.getVreName(), user.get().getId())
+            .isAllowedToWrite();
+        } catch (AuthorizationUnavailableException e) {
+          isAllowedToWrite = false;
+        }
+        boolean isPublished = vre.getCollections().size() > 0;
+        return new VreJson(vre.getVreName(), isAllowedToWrite, isPublished);
+      })
+      .filter(x -> x.isMine() || x.isPublished())
+      .collect(groupingBy(
+        x -> x.isMine() ? "mine" : "public",
+        mapping(x -> {
+          if (x.isMine()) {
+            return jsnO(
+              "name", jsn(x.getVreName()),
+              "published", jsn(x.isPublished),
+              "rmlUri", jsn(x.getRmlUri())
+            );
+          } else {
+            return jsnO(
+              "name", jsn(x.getVreName())
+            );
+          }
+        }, toMap(x -> x.get("name").asText(), x-> x))));
 
-    return Response.ok(vreRoleList).build();
-
+    return Response.ok(result).build();
   }
 
-  private static class VreRole {
-    private String vreName;
-    private List<String> userRoles;
+  private class VreJson {
+    private final boolean isMine;
+    private final boolean isPublished;
+    private final String vreName;
 
-    public VreRole(String vreName, List<String> userRoles) {
+    public VreJson(String vreName, boolean isMine, boolean isPublished) {
       this.vreName = vreName;
-      this.userRoles = userRoles;
-    }
-
-    public List<String> getUserRoles() {
-      return userRoles;
+      this.isMine = isMine;
+      this.isPublished = isPublished;
     }
 
     public String getVreName() {
       return vreName;
+    }
+
+    public boolean isMine() {
+      return isMine;
+    }
+
+    public boolean isPublished() {
+      return isPublished;
+    }
+
+    public String getRmlUri() {
+      return saveRml.makeUri(vreName).toASCIIString();
     }
   }
 }
