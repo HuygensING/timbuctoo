@@ -10,6 +10,7 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
@@ -61,8 +62,9 @@ public class Gremlin {
   private PropertyDescriptorFactory propertyDescriptorFactory;
   private PropertyParserFactory propertyParserFactory;
   private final ObjectMapper mapper;
+  private Vres mappings;
 
-  public Gremlin(GraphWrapper wrapper) {
+  public Gremlin(GraphWrapper wrapper, Vres vres) {
     this.wrapper = wrapper;
     this.engine = new GremlinGroovyScriptEngine();
 
@@ -76,13 +78,15 @@ public class Gremlin {
     propertyParserFactory = new PropertyParserFactory();
     propertyDescriptorFactory = new PropertyDescriptorFactory(propertyParserFactory);
     mapper = new ObjectMapper();
+    this.mappings = vres;
   }
 
   @POST
   @Consumes("application/json")
   @Produces("application/json")
   public Response postJson2(RootQuery rootQuery) throws IOException {
-    GraphTraversal result = wrapper.getLatestState().V().where(rootQuery.getTraversal());
+    rootQuery.setVres(mappings);
+    GraphTraversal result = wrapper.getLatestState().V().where(rootQuery.getTraversal(wrapper.getGraph().traversal()));
     LOG.info(result.toString());
     while (result.hasNext()) {
       Object item = result.next();

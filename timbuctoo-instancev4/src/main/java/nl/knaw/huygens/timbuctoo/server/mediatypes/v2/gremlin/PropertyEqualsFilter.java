@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin;
 
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -25,12 +27,17 @@ public class PropertyEqualsFilter extends AbstractPropertyValueFilter {
   }
 
   @Override
-  public GraphTraversal getTraversal() {
+  public GraphTraversal getTraversal(GraphTraversalSource traversalSource) {
     final String propertyName = getPropertyName();
     final String matchValue = v2UnquotedProps.contains(propertyName) ?
             getValue() : "\"" + getValue() + "\"";
 
     return __.has(propertyName).filter(it ->
             ((String) ((Vertex) it.get()).property(propertyName).value()).contains(matchValue));
+  }
+
+  @Override
+  public void setVres(Vres vres) {
+
   }
 }

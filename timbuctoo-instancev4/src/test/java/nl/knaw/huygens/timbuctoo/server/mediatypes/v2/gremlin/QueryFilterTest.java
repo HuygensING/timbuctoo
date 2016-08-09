@@ -76,6 +76,8 @@ public class QueryFilterTest {
     assertThat(propertyFilter.getType()).isEqualTo("property");
     assertThat(propertyBetweenFilter.getType()).isEqualTo("between");
     assertThat(propertyEqualsFilter.getType()).isEqualTo("value");
+
+
   }
 
   @Test

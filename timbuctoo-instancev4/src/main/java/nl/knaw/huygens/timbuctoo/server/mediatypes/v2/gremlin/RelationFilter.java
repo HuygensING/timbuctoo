@@ -1,9 +1,11 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.gremlin;
 
 
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -27,6 +29,7 @@ public class RelationFilter implements QueryFilter, Resultable {
   private List<QueryFilter> filters;
   private List<EntityRef> results = new ArrayList<>();
   private Set<String> resultIds = new HashSet<>();
+  private Vres vres;
 
   public String getName() {
     return name;
@@ -43,6 +46,14 @@ public class RelationFilter implements QueryFilter, Resultable {
   public void setType(String type) {
     this.type = type;
   }
+
+
+  @Override
+  public void setVres(Vres vres) {
+    this.vres = vres;
+    this.getOr().forEach(queryFilter -> queryFilter.setVres(vres));
+  }
+
 
   public String getTargetDomain() {
     return targetDomain;
@@ -101,9 +112,9 @@ public class RelationFilter implements QueryFilter, Resultable {
   }
 
   @Override
-  public GraphTraversal getTraversal() {
-    GraphTraversal[] traversals = filters.stream()
-            .map(QueryFilter::getTraversal).toArray(GraphTraversal[]::new);
+  public GraphTraversal getTraversal(GraphTraversalSource traversalSource) {
+    GraphTraversal[] traversals = filters
+      .stream().map((queryFilter) -> queryFilter.getTraversal(traversalSource)).toArray(GraphTraversal[]::new);
 
 
     switch (direction) {

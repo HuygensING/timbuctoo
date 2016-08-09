@@ -222,7 +222,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     if (configuration.isAllowGremlinEndpoint()) {
-      register(environment, new Gremlin(graphManager));
+      register(environment, new Gremlin(graphManager, vres));
     }
     register(environment, new Graph(graphManager));
     // Bulk upload
