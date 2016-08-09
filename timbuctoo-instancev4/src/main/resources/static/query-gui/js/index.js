@@ -9890,7 +9890,7 @@ exports["default"] = function (path, query, vreId, done) {
 
 module.exports = exports["default"];
 
-},{"../config":168,"./server":141}],135:[function(require,module,exports){
+},{"../config":161,"./server":141}],135:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9970,7 +9970,7 @@ exports.fetchEntity = fetchEntity;
 exports.fetchEntityList = fetchEntityList;
 exports.crud = crud;
 
-},{"../config":168,"./server":141}],136:[function(require,module,exports){
+},{"../config":161,"./server":141}],136:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10203,7 +10203,7 @@ exports.paginateRight = paginateRight;
 exports.paginateLeft = paginateLeft;
 exports.sendQuickSearch = sendQuickSearch;
 
-},{"../config":168,"../util/clone-deep":179,"./autocomplete":134,"./crud":135,"./relation-savers":139}],137:[function(require,module,exports){
+},{"../config":161,"../util/clone-deep":172,"./autocomplete":134,"./crud":135,"./relation-savers":139}],137:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10307,7 +10307,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":178,"./entity":136,"./queries":138,"./vre":143}],138:[function(require,module,exports){
+},{"../store":171,"./entity":136,"./queries":138,"./vre":143}],138:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10449,7 +10449,7 @@ exports.nameQuery = nameQuery;
 exports.loadSavedQueries = loadSavedQueries;
 exports.loadQuery = loadQuery;
 
-},{"../config":168,"../parsers/gremlin":169,"./server":141}],139:[function(require,module,exports){
+},{"../config":161,"../parsers/gremlin":162,"./server":141}],139:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10626,7 +10626,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":178,"xhr":132}],142:[function(require,module,exports){
+},{"../store":171,"xhr":132}],142:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10806,7 +10806,7 @@ var setVre = function setVre(vreId) {
 exports.listVres = listVres;
 exports.setVre = setVre;
 
-},{"../config":168,"./server":141}],144:[function(require,module,exports){
+},{"../config":161,"./server":141}],144:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11099,7 +11099,7 @@ module.exports = exports["default"];
 			<pre style={{width: "100%", whiteSpace: "no-wrap"}}>{resQ}</pre>
 */
 
-},{"../../parsers/gremlin":169,"../../util/clone-deep":179,"../../util/get-in":180,"./query-component":154,"./query-component/draggable-icon":145,"./query-filters":164,"./search-icon":167,"hire-forms-input":31,"hire-forms-select":32,"hire-infinity-grid":33,"react":"react","react-dnd":113,"react-dnd-touch-backend":100}],145:[function(require,module,exports){
+},{"../../parsers/gremlin":162,"../../util/clone-deep":172,"../../util/get-in":173,"./query-component":147,"./query-component/draggable-icon":145,"./query-filters":157,"./search-icon":160,"hire-forms-input":31,"hire-forms-select":32,"hire-infinity-grid":33,"react":"react","react-dnd":113,"react-dnd-touch-backend":100}],145:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11506,302 +11506,7 @@ EntityComponent.propTypes = {
 exports["default"] = EntityComponent;
 module.exports = exports["default"];
 
-},{"./property-component":155,"./relation-component":157,"./util/delete-button":158,"deep-equal":3,"react":"react"}],147:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-exports["default"] = function (props) {
-	return _react2["default"].createElement(
-		"g",
-		null,
-		_react2["default"].createElement(
-			"text",
-			{ x: "13", y: "25" },
-			"C"
-		),
-		_react2["default"].createElement("rect", _extends({}, props, { fill: "rgba(0,0,0,0)", height: "40", width: "40", x: "0", y: "0" }))
-	);
-};
-
-module.exports = exports["default"];
-
-},{"react":"react"}],148:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-exports["default"] = function (props) {
-	return _react2["default"].createElement(
-		"g",
-		null,
-		_react2["default"].createElement(
-			"text",
-			{ x: "13", y: "25" },
-			"D"
-		),
-		_react2["default"].createElement("rect", _extends({}, props, { fill: "rgba(0,0,0,0)", height: "40", width: "40", x: "0", y: "0" }))
-	);
-};
-
-module.exports = exports["default"];
-
-},{"react":"react"}],149:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _collective = require("./collective");
-
-var _collective2 = _interopRequireDefault(_collective);
-
-var _document = require("./document");
-
-var _document2 = _interopRequireDefault(_document);
-
-var _person = require("./person");
-
-var _person2 = _interopRequireDefault(_person);
-
-var _keyword = require("./keyword");
-
-var _keyword2 = _interopRequireDefault(_keyword);
-
-var _language = require("./language");
-
-var _language2 = _interopRequireDefault(_language);
-
-var _location = require("./location");
-
-var _location2 = _interopRequireDefault(_location);
-
-exports["default"] = {
-	"wwpersons": function wwpersons() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_person2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwperson": function wwperson() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_person2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwdocuments": function wwdocuments() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_document2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwdocument": function wwdocument() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_document2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwcollectives": function wwcollectives() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_collective2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwcollective": function wwcollective() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_collective2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwkeywords": function wwkeywords() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_keyword2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwkeyword": function wwkeyword() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_keyword2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwlanguages": function wwlanguages() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_language2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwlanguage": function wwlanguage() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_language2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwlocations": function wwlocations() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_location2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	},
-	"wwlocation": function wwlocation() {
-		var props = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
-		return _react2["default"].createElement(_location2["default"], _extends({}, props, { onMouseDown: function (ev) {
-				return ev.preventDefault();
-			} }));
-	}
-};
-module.exports = exports["default"];
-
-},{"./collective":147,"./document":148,"./keyword":150,"./language":151,"./location":152,"./person":153,"react":"react"}],150:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-exports["default"] = function (props) {
-	return _react2["default"].createElement(
-		"g",
-		null,
-		_react2["default"].createElement(
-			"text",
-			{ x: "13", y: "25" },
-			"K"
-		),
-		_react2["default"].createElement("rect", _extends({}, props, { fill: "rgba(0,0,0,0)", height: "40", width: "40", x: "0", y: "0" }))
-	);
-};
-
-module.exports = exports["default"];
-
-},{"react":"react"}],151:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-exports["default"] = function (props) {
-	return _react2["default"].createElement(
-		"g",
-		null,
-		_react2["default"].createElement(
-			"text",
-			{ x: "13", y: "25" },
-			"La"
-		),
-		_react2["default"].createElement("rect", _extends({}, props, { fill: "rgba(0,0,0,0)", height: "40", width: "40", x: "0", y: "0" }))
-	);
-};
-
-module.exports = exports["default"];
-
-},{"react":"react"}],152:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-exports["default"] = function (props) {
-	return _react2["default"].createElement(
-		"g",
-		null,
-		_react2["default"].createElement(
-			"text",
-			{ x: "13", y: "25" },
-			"Lo"
-		),
-		_react2["default"].createElement("rect", _extends({}, props, { fill: "rgba(0,0,0,0)", height: "40", width: "40", x: "0", y: "0" }))
-	);
-};
-
-module.exports = exports["default"];
-
-},{"react":"react"}],153:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-exports["default"] = function (props) {
-	return _react2["default"].createElement(
-		"g",
-		null,
-		_react2["default"].createElement(
-			"text",
-			{ x: "13", y: "25" },
-			"P"
-		),
-		_react2["default"].createElement("rect", _extends({}, props, { fill: "rgba(0,0,0,0)", height: "40", width: "40", x: "0", y: "0" }))
-	);
-};
-
-module.exports = exports["default"];
-
-},{"react":"react"}],154:[function(require,module,exports){
+},{"./property-component":148,"./relation-component":150,"./util/delete-button":151,"deep-equal":3,"react":"react"}],147:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11823,10 +11528,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
-
-var _icons = require("./icons");
-
-var _icons2 = _interopRequireDefault(_icons);
 
 var _entityComponent = require("./entity-component");
 
@@ -11855,9 +11556,9 @@ var QueryComponent = (function (_React$Component) {
 				_react2["default"].createElement(
 					"text",
 					{ x: "13", y: "25" },
-					"X"
+					this.props.query.domain
 				),
-				_react2["default"].createElement("rect", { className: "handle", fill: "rgba(0,0,0,0)", height: "40", width: "40", x: "0", y: "0" })
+				_react2["default"].createElement("rect", { className: "handle", fill: "rgba(0,0,0,0)", height: "40", width: "150", x: "0", y: "0" })
 			);
 		}
 	}]);
@@ -11867,7 +11568,6 @@ var QueryComponent = (function (_React$Component) {
 
 QueryComponent.propTypes = {
 	componentIndex: _react2["default"].PropTypes.number,
-	domain: _react2["default"].PropTypes.string,
 	onDeleteQuery: _react2["default"].PropTypes.func,
 	onSelect: _react2["default"].PropTypes.func,
 	onSetQueryPath: _react2["default"].PropTypes.func,
@@ -11879,7 +11579,7 @@ QueryComponent.propTypes = {
 exports["default"] = QueryComponent;
 module.exports = exports["default"];
 
-},{"./entity-component":146,"./icons":149,"react":"react"}],155:[function(require,module,exports){
+},{"./entity-component":146,"react":"react"}],148:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11965,7 +11665,7 @@ propertyComponent.propTypes = {
 exports["default"] = propertyComponent;
 module.exports = exports["default"];
 
-},{"./property-values-component":156,"./util/delete-button":158,"./util/text-box":160,"deep-equal":3,"react":"react"}],156:[function(require,module,exports){
+},{"./property-values-component":149,"./util/delete-button":151,"./util/text-box":153,"deep-equal":3,"react":"react"}],149:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12086,7 +11786,7 @@ PropertyValuesComponent.propTypes = {
 exports["default"] = PropertyValuesComponent;
 module.exports = exports["default"];
 
-},{"./util/delete-button":158,"./util/text-box":160,"deep-equal":3,"react":"react"}],157:[function(require,module,exports){
+},{"./util/delete-button":151,"./util/text-box":153,"deep-equal":3,"react":"react"}],150:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12213,7 +11913,7 @@ RelationComponent.propTypes = {
 exports["default"] = RelationComponent;
 module.exports = exports["default"];
 
-},{"./util/delete-button":158,"./util/direction-toggle":159,"./util/text-box":160,"deep-equal":3,"react":"react"}],158:[function(require,module,exports){
+},{"./util/delete-button":151,"./util/direction-toggle":152,"./util/text-box":153,"deep-equal":3,"react":"react"}],151:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12244,7 +11944,7 @@ deleteButton.propTypes = {
 exports["default"] = deleteButton;
 module.exports = exports["default"];
 
-},{"react":"react"}],159:[function(require,module,exports){
+},{"react":"react"}],152:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12279,7 +11979,7 @@ directionToggle.propTypes = {
 exports["default"] = directionToggle;
 module.exports = exports["default"];
 
-},{"react":"react"}],160:[function(require,module,exports){
+},{"react":"react"}],153:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12383,7 +12083,7 @@ TextBox.propTypes = {
 exports["default"] = TextBox;
 module.exports = exports["default"];
 
-},{"react":"react","react-dom":"react-dom"}],161:[function(require,module,exports){
+},{"react":"react","react-dom":"react-dom"}],154:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12533,7 +12233,7 @@ DatableField.propTypes = {
 exports["default"] = DatableField;
 module.exports = exports["default"];
 
-},{"../../../../util/clone-deep":179,"hire-forms-input":31,"hire-forms-select":32,"react":"react"}],162:[function(require,module,exports){
+},{"../../../../util/clone-deep":172,"hire-forms-input":31,"hire-forms-select":32,"react":"react"}],155:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12614,7 +12314,7 @@ IdField.propTypes = {
 exports["default"] = IdField;
 module.exports = exports["default"];
 
-},{"../../../../actions/autocomplete":134,"hire-forms-autocomplete":30,"react":"react"}],163:[function(require,module,exports){
+},{"../../../../actions/autocomplete":134,"hire-forms-autocomplete":30,"react":"react"}],156:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12671,7 +12371,7 @@ Field.propTypes = {
 exports["default"] = Field;
 module.exports = exports["default"];
 
-},{"hire-forms-select":32,"react":"react"}],164:[function(require,module,exports){
+},{"hire-forms-select":32,"react":"react"}],157:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12898,7 +12598,7 @@ QueryFilters.propTypes = {
 exports["default"] = QueryFilters;
 module.exports = exports["default"];
 
-},{"../../../util/get-in":180,"./fields/id-field":162,"./fields/select":163,"./map-field":165,"./map-prop-field":166,"react":"react"}],165:[function(require,module,exports){
+},{"../../../util/get-in":173,"./fields/id-field":155,"./fields/select":156,"./map-field":158,"./map-prop-field":159,"react":"react"}],158:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12972,7 +12672,7 @@ exports["default"] = function (fieldDef, props) {
 
 module.exports = exports["default"];
 
-},{"./fields/datable":161,"./fields/select":163,"react":"react"}],166:[function(require,module,exports){
+},{"./fields/datable":154,"./fields/select":156,"react":"react"}],159:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13042,7 +12742,7 @@ exports["default"] = function (fieldDef, props) {
 
 module.exports = exports["default"];
 
-},{"./fields/datable":161,"./fields/select":163,"react":"react"}],167:[function(require,module,exports){
+},{"./fields/datable":154,"./fields/select":156,"react":"react"}],160:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13071,7 +12771,7 @@ exports["default"] = function (props) {
 
 module.exports = exports["default"];
 
-},{"react":"react"}],168:[function(require,module,exports){
+},{"react":"react"}],161:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13086,7 +12786,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{}],169:[function(require,module,exports){
+},{}],162:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13230,7 +12930,7 @@ var parsers = {
 exports["default"] = parseQuery;
 exports.parsers = parsers;
 
-},{"../util/clone-deep":179,"../util/get-in":180}],170:[function(require,module,exports){
+},{"../util/clone-deep":172,"../util/get-in":173}],163:[function(require,module,exports){
 "use strict";
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -13276,7 +12976,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_store2["default"].dispatch((0, _actionsQueries.loadSavedQueries)());
 });
 
-},{"./actions":137,"./actions/queries":138,"./actions/vre":143,"./components/query":144,"./store":178,"./util/qs":181,"react":"react","react-dom":"react-dom"}],171:[function(require,module,exports){
+},{"./actions":137,"./actions/queries":138,"./actions/vre":143,"./components/query":144,"./store":171,"./util/qs":174,"react":"react","react-dom":"react-dom"}],164:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13331,7 +13031,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":182}],172:[function(require,module,exports){
+},{"../util/set-in":175}],165:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13374,7 +13074,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"./entity":171,"./messages":173,"./queries":174,"./quick-search":175,"./user":176,"./vre":177}],173:[function(require,module,exports){
+},{"./entity":164,"./messages":166,"./queries":167,"./quick-search":168,"./user":169,"./vre":170}],166:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13417,7 +13117,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":182}],174:[function(require,module,exports){
+},{"../util/set-in":175}],167:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13603,7 +13303,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/get-in":180,"../util/set-in":182}],175:[function(require,module,exports){
+},{"../util/get-in":173,"../util/set-in":175}],168:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13642,7 +13342,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],176:[function(require,module,exports){
+},{}],169:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13664,7 +13364,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],177:[function(require,module,exports){
+},{}],170:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13703,7 +13403,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],178:[function(require,module,exports){
+},{}],171:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13734,7 +13434,7 @@ var data = (0, _redux.combineReducers)(_reducers2["default"]);
 exports["default"] = (0, _redux.createStore)(data, (0, _redux.applyMiddleware)( /*logger, */_reduxThunk2["default"]));
 module.exports = exports["default"];
 
-},{"../reducers":172,"redux":128,"redux-thunk":122}],179:[function(require,module,exports){
+},{"../reducers":165,"redux":128,"redux-thunk":122}],172:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13767,7 +13467,7 @@ function deepClone9(obj) {
 exports["default"] = deepClone9;
 module.exports = exports["default"];
 
-},{}],180:[function(require,module,exports){
+},{}],173:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13810,7 +13510,7 @@ var getIn = function getIn(path, data) {
 exports["default"] = getIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":179}],181:[function(require,module,exports){
+},{"./clone-deep":172}],174:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13835,7 +13535,7 @@ exports["default"] = function (a) {
 
 module.exports = exports["default"];
 
-},{}],182:[function(require,module,exports){
+},{}],175:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13886,5 +13586,5 @@ var setIn = function setIn(path, value, data) {
 exports["default"] = setIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":179}]},{},[170])(170)
+},{"./clone-deep":172}]},{},[163])(163)
 });
