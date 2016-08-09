@@ -31,7 +31,11 @@ public class RrRefObjectMap implements RrTermMap {
     final Object result = input.get(uniqueId);
 
     if (result == null) {
-      input.handleLinkError(rrJoinCondition.getChild());
+      input.handleLinkError(
+        rrJoinCondition.getChild(),
+        parentTriplesMap.getUri().getURI(),
+        rrJoinCondition.getParent()
+      );
       return Stream.empty();
     }
 

@@ -15,7 +15,7 @@ public class TestDataSource implements DataSource {
   private final Map<String, Tuple<String, Map<Object, String>>> cachedUris = new HashMap<>();
 
   public TestDataSource(Iterable<Map<String, Object>> data) {
-    this(data, new NoOpErrorHandler());
+    this(data, new LoggingErrorHandler());
   }
 
   public TestDataSource(Iterable<Map<String, Object>> data, ErrorHandler errorHandler) {

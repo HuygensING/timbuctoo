@@ -350,7 +350,7 @@ public class RmlMapperTest {
       .execute()
       .forEach(consumer);
 
-    verify(errorHandler).handleLink(documentMap, "geschrevenDoor");
+    verify(errorHandler).handleLink(documentMap, "geschrevenDoor", "http://example.org/personsMap", "naam");
   }
 
   //mapping schrijven voor 2 sheets van EuropeseMigratie (met een relatie) (in java)

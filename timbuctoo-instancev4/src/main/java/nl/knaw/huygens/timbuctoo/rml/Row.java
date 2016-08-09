@@ -12,14 +12,14 @@ public class Row {
   }
 
   public Row(Map<String, Object> data) {
-    this(data, new NoOpErrorHandler());
+    this(data, new LoggingErrorHandler());
   }
 
   public Object get(String key) {
     return data.get(key);
   }
 
-  public void handleLinkError(String property) {
-    errorHandler.handleLink(data, property);
+  public void handleLinkError(String childField, String parentCollection, String parentField) {
+    errorHandler.handleLink(data, childField, parentCollection, parentField);
   }
 }
