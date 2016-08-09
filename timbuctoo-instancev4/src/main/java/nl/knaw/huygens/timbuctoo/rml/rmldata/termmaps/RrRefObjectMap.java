@@ -18,22 +18,28 @@ public class RrRefObjectMap implements RrTermMap {
   private DataSource dataSource;
   private String rrTriplesMapUri;
 
-  public RrRefObjectMap() {
+  private RrRefObjectMap() {
     this.uniqueId = UUID.randomUUID().toString();
+  }
+
+  public static Builder rrRefObjectMap() {
+    return new Builder();
   }
 
   @Override
   public Stream<Node> generateValue(Row input) {
     final Object result = input.get(uniqueId);
+
+    if (result == null) {
+      input.handleLinkError(rrJoinCondition.getChild());
+      return Stream.empty();
+    }
+
     if (result instanceof List) {
-      return ((List<Object>) result).stream().map(v -> NodeFactory.createURI("" + v));
+      return ((List<?>) result).stream().map(v -> NodeFactory.createURI("" + v));
     } else {
       return Stream.of(NodeFactory.createURI("" + result));
     }
-  }
-
-  public static Builder rrRefObjectMap() {
-    return new Builder();
   }
 
   private void subscribeToParent() {

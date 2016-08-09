@@ -98,9 +98,9 @@ public class RmlMapperTest {
 
     TripleConsumer consumer = mock(TripleConsumer.class);
     DataSource input = new TestDataSource(Lists.newArrayList(ImmutableMap.of(
-        "rdfUri", "http://www.example.org/example/1",
-        "naam", "Bill"
-      )));
+      "rdfUri", "http://www.example.org/example/1",
+      "naam", "Bill"
+    )));
 
     rmlMappingDocument()
       .withTripleMap(rrTriplesMap()
@@ -290,6 +290,67 @@ public class RmlMapperTest {
       theWrittenByPredicate,
       uri("http://www.example.org/persons/1")
     )));
+  }
+
+  @Test
+  public void whenALinkToAnOtherObjectIsNotAvailableTheExceptionIsRegistered() {
+    ErrorHandler errorHandler = mock(ErrorHandler.class);
+    final Node_URI theNamePredicate = uri("http://example.org/vocab#name");
+    final Node_URI theWrittenByPredicate = uri("http://example.org/vocab#writtenBy");
+
+    Map<String, Object> documentMap = ImmutableMap.of(
+      "rdfUri", "http://www.example.org/documents/1",
+      "geschrevenDoor", "Bill"
+    );
+
+    TripleConsumer consumer = mock(TripleConsumer.class);
+
+    rmlMappingDocument()
+      .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/personsMap"))
+        .withLogicalSource(rrLogicalSource()
+          .withSource("http://example.org/persons")
+        )
+        .withSubjectMap(rrSubjectMap()
+          .withColumnTerm("rdfUri")
+        )
+        .withPredicateObjectMap(rrPredicateObjectMap()
+          .withPredicate(theNamePredicate)
+          .withColumn("naam")
+        )
+      )
+      .withTripleMap(rrTriplesMap()
+        .withUri(uri("http://example.org/documentsMap"))
+        .withLogicalSource(rrLogicalSource()
+          .withSource("http://example.org/documents")
+        )
+        .withSubjectMap(rrSubjectMap()
+          .withColumnTerm("rdfUri")
+        )
+        .withPredicateObjectMap(rrPredicateObjectMap()
+          .withPredicate(theWrittenByPredicate)
+          .withReference(rrRefObjectMap()
+            .withParentTriplesMap("http://example.org/personsMap")
+            .withJoinCondition("geschrevenDoor", "naam")
+          )
+        )
+      )
+      .build(logicalSource -> {
+        if (logicalSource.getSource() instanceof UriSource) {
+          UriSource source = (UriSource) logicalSource.getSource();
+          if (source.getUri().equals("http://example.org/persons")) {
+            return new TestDataSource(Lists.newArrayList(Maps.newHashMap()), errorHandler);
+          }
+          if (source.getUri().equals("http://example.org/documents")) {
+            return new TestDataSource(Lists.newArrayList(documentMap), errorHandler);
+          }
+        }
+        throw new RuntimeException("Unexpected data source request");
+      })
+      .execute()
+      .forEach(consumer);
+
+    verify(errorHandler).handleLink(documentMap, "geschrevenDoor");
   }
 
   //mapping schrijven voor 2 sheets van EuropeseMigratie (met een relatie) (in java)

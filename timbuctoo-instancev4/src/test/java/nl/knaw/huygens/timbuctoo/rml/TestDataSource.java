@@ -11,10 +11,16 @@ import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.stream;
 
 public class TestDataSource implements DataSource {
   private final Iterable<Map<String, Object>> data;
+  private final ErrorHandler errorHandler;
   private final Map<String, Tuple<String, Map<Object, String>>> cachedUris = new HashMap<>();
 
   public TestDataSource(Iterable<Map<String, Object>> data) {
+    this(data, new NoOpErrorHandler());
+  }
+
+  public TestDataSource(Iterable<Map<String, Object>> data, ErrorHandler errorHandler) {
     this.data = data;
+    this.errorHandler = errorHandler;
   }
 
   @Override
@@ -22,24 +28,32 @@ public class TestDataSource implements DataSource {
     return stream(data)
       .map(values -> {
         ImmutableMap.Builder<String, Object> resultBuilder = ImmutableMap.<String, Object>builder().putAll(values);
-        for (Map.Entry<String, Tuple<String, Map<Object, String>>> stringMapEntry : cachedUris.entrySet()) {
-          final Tuple<String, Map<Object, String>> stringMapTuple = cachedUris.get(stringMapEntry.getKey());
-          String uri = cachedUris.get(stringMapEntry.getKey()).getRight()
-            .get(values.get(stringMapTuple.getLeft()));
-          resultBuilder = resultBuilder.put(stringMapEntry.getKey(), uri);
-        }
+        resultBuilder = mapRefs(values, resultBuilder);
 
-        return new Row(resultBuilder.build());
+        return new Row(resultBuilder.build(), errorHandler);
       })
       .iterator();
   }
 
+  private ImmutableMap.Builder<String, Object> mapRefs(Map<String, Object> values,
+                                                       ImmutableMap.Builder<String, Object> resultBuilder) {
+    for (Map.Entry<String, Tuple<String, Map<Object, String>>> cachedUri : cachedUris.entrySet()) {
+      final Tuple<String, Map<Object, String>> stringMapTuple = cachedUris.get(cachedUri.getKey());
+      String uri = cachedUris.get(cachedUri.getKey()).getRight()
+                             .get(values.get(stringMapTuple.getLeft()));
+      if (uri != null) {
+        resultBuilder = resultBuilder.put(cachedUri.getKey(), uri);
+      }
+    }
+    return resultBuilder;
+  }
+
   @Override
   public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
-    Map<Object, String> valueMap = cachedUris
+    Map<Object, String> joinMap = cachedUris
       .computeIfAbsent(outputFieldName, x -> Tuple.tuple(fieldName, new HashMap<>()))
       .getRight();
-    valueMap.put(referenceJoinValue, uri);
+    joinMap.put(referenceJoinValue, uri);
   }
 
 }
