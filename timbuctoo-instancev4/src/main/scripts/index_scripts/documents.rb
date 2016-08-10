@@ -39,7 +39,7 @@ class Documents
 	if !line.eql?("[]")
 	    Documents.do_solr_update result,@@solr_documents
 	    Documents.do_solr_update @@person_receptions,@@solr_receptions
-	    if @@complete_document_receptions.size >= 200
+	    if @@complete_document_receptions.size >= 100
 		puts "#{@@complete_document_receptions.size} document receptions worden geschreven" if @@debug
 		Documents.do_solr_update @@complete_document_receptions,
 		    @@solr_doc_receptions

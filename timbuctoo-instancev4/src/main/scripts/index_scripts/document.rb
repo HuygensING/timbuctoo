@@ -163,9 +163,27 @@ class Document < Hash
     end
 
     def add_document_receptions data
+#	puts "add_document_receptions"
+#	puts data
+#	puts
 	doc_id = data["_id"]
 	doc_displayName = data["title"]
-	reception_relations = Array.new
+	date = data["date"]
+	notes = data["notes"]
+	hasPublishLocation = data["hasPublishLocation"]
+	hasWorkLanguage = data["hasWorkLanguage"]
+	hasGenre = data["hasGenre"]
+	hasDocumentSource = data["hasDocumentSource"]
+#	STDERR.puts "doc_id: #{doc_id}"
+#	STDERR.puts "doc_displayName: #{doc_displayName}"
+#	STDERR.puts "date: #{date}"
+#	STDERR.puts "notes: #{notes}"
+#	STDERR.puts "hasPublishLocation: #{hasPublishLocation}"
+#	STDERR.puts "hasWorkLanguage: #{hasWorkLanguage}"
+#	STDERR.puts "hasGenre: #{hasGenre}"
+#	STDERR.puts "hasDocumentSource: #{hasDocumentSource}"
+
+    	reception_relations = Array.new
 	if !data['@relations'].nil?
 	    @@wanted_document_relations.each do |rec_rel|
 		if !data['@relations'][rec_rel].nil?
@@ -175,12 +193,14 @@ class Document < Hash
 			new_rr['reception_id_s'] = doc_id
 			new_rr['displayName_s'] = doc_displayName
 			new_rr['relationType_s'] = rec_rel
-			new_rr['date_i'] = rr_data['date_i']
+			new_rr['date_i'] = date
+			new_rr['notes_t'] = notes
+			new_rr["publishLocation_ss"] = hasPublishLocation
+			new_rr["language_ss"] = hasWorkLanguage
+			new_rr["genre_ss"] = hasGenre
+			new_rr["source_ss"] = hasDocumentSource
+
 			new_rr['documentType_s'] = rr_data['documentType_s']
-			new_rr['notes_t'] = rr_data['notes_t']
-			@@new_rel_names.each do |name|
-			    new_rr[name] = rr_data[name]
-			end
 			new_rr['document_id_s'] = rr_data['id']
 			new_rr['document_displayName_s'] = rr_data['displayName']
 			rel_doc = Documents.find rr_data['id']

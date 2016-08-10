@@ -103,7 +103,7 @@ if __FILE__ == $0
 	end
 	new_dr['_childDocuments_'] = doc['_childDocuments_']
 	doc_recptions << new_dr
-	if doc_recptions.size == 100
+	if doc_recptions.size == 50
 #	    STDERR.puts doc_recptions.last
 	    Documents.do_solr_update doc_recptions,Documents.solr_doc_receptions
 	    doc_recptions = Array.new
