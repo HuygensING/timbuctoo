@@ -164,7 +164,7 @@ class Document < Hash
 
     def add_document_receptions data
 #	puts "add_document_receptions"
-#	puts data
+#	puts self["genre_ss"]
 #	puts
 	doc_id = data["_id"]
 	doc_displayName = data["title"]
@@ -175,6 +175,7 @@ class Document < Hash
 	hasWorkLanguage = data["hasWorkLanguage"]
 	hasGenre = data["hasGenre"]
 	hasDocumentSource = data["hasDocumentSource"]
+	documentType = data["documentType"]
 #	STDERR.puts "doc_id: #{doc_id}"
 #	STDERR.puts "doc_displayName: #{doc_displayName}"
 #	STDERR.puts "date: #{date}"
@@ -198,12 +199,12 @@ class Document < Hash
 			new_rr['relationType_s'] = rec_rel
 			new_rr['date_i'] = date
 			new_rr['notes_t'] = notes
-			new_rr["publishLocation_ss"] = hasPublishLocation
-			new_rr["language_ss"] = hasWorkLanguage
-			new_rr["genre_ss"] = hasGenre
-			new_rr["source_ss"] = hasDocumentSource
+			new_rr["documentType_s"] = documentType
+			new_rr["publishLocation_ss"] = self["publishLocation_ss"]
+			new_rr["language_ss"] = self["language_ss"]
+			new_rr["genre_ss"] = self["genre_ss"]
+			new_rr["source_ss"] = self["source_ss"]
 
-			new_rr['documentType_s'] = rr_data['documentType_s']
 			new_rr['document_id_s'] = rr_data['id']
 			new_rr['document_displayName_s'] = rr_data['displayName']
 			rel_doc = Documents.find rr_data['id']
