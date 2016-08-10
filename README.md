@@ -2,20 +2,83 @@
 
 [![Join the chat at https://gitter.im/HuygensING/timbuctoo](https://badges.gitter.im/HuygensING/timbuctoo.svg)](https://gitter.im/HuygensING/timbuctoo?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Timbuctoo is a graph-repository for storing and querying research datasets that are interconnected. 
-You can have multiple views over something that we as humans would consider to be the same object. 
-Such as a person, a country, or even something more abstract such as a time period. 
-Each research asserts its own data about the entity.
+The code is available from https://github.com/HuygensING/timbuctoo
 
-## Sneak peek
+---
+
+**Note:** This software is developed by the [Huygens Institute](http://huygens.knaw.nl) in the Netherlands. 
+While we're currently intending to support the software indefinitely, we're certain that we'll support the software at least until *the end of 2017*.
+This notice will be updated before then with the new support duration.
+
+ * Support means that we'll review your pull requests and answer issues or questions on the chat.
+ * It does not mean that we'll fix any issue that you raise.
+ * But it does mean that we'll commit regularly with new features or patches (usually every workday).
+ * While we try to make timbuctoo run everywhere, we're actively running it on Redhat 6. Using it on other platforms may trigger bugs that we are not aware of.
+
+---
+
+## Introduction
+
+Timbuctoo is aimed at historians doing interpretative research.
+Such a researcher collects facts from various documents, interprets and structures them, and creates tables of these facts. 
+The researcher then uses this new dataset either as an object to do analysis on, or as an index that allows them to look at their sources from a distance quickly stepping back to the original source for the real interpretative work.
+
+As such an historian you often need to categorize your findings. 
+For example: you keep track of birthplaces.
+You then need to decide how to write down the birthplace
+ - Do you use the name of the city, or the burrough? 
+ - Do you use the current name or the name when the person was born?
+ - If your dataset spans a long time you might have two different cities on the same geographical location. Are they one name or more?
+
+These judgements are sometimes the core of your research and sometimes incidental to it.
+Timbuctoo aims to make it easier to publish your research dataset and then to re-use other people's published datasets.
+To continue the example: another researcher might create a dataset containing locations, their coördinates and names and how that changed over time. You can then re-use that dataset and link to the entries instead of typing a string of characters that a humand might correctly interpret or not.
+
+## Related work
+There are many tools for storing data (tabular or not). 
+However, there are not many tools that will 
+ - store the data
+ - expose it in a way that it can be retrieved by another researcher
+ - allow the researcher to base it's new dataset on that existing dataset (with a provenance trail)
+ - keep track of updates to the source dataset and allow the user to subscribe to these changes.
+
+Our current aim for timbuctoo is to fulfill these four criteria. Some things that timbuctoo will not do:
+
+ - present the data in a faceted search (for this we're building a different tool that subscribes to timbuctoo's data)
+ - clean up datasets (for this we point you to [openrefine](http://openrefine.org) and [karma](https://github.com/usc-isi-i2/Web-Karma))
+ - visualize the data (for this we'll expose the data in timbuctoo in such a way that it can be picked up by tools such as [palladio](http://hdlab.stanford.edu/projects/palladio/) or [gephi](https://gephi.org/))
+
+We will offer a basic editing interface but we'll also actively try to allow the data to be edited in external tools such as google spreadsheets, openrefine or excel.
+
+## Getting up and running
+
+### Sneak peek
 
 To get a quick look at timbuctoo go to: https://repository.huygens.knaw.nl
 
-## Technologies
+### System requirements
 
-Timbuctoo is a Java Jersey/JAX-RS webservice, that uses Tinkerpop to connect to a Neo4J graph database. This is all glued together by the Dropwizard framework.
+//TODO
 
-## Building
+### Building
 
-To build your own version, make sure you have 'java 8' and 'maven 3' installed and then execute `mvn package` from the root folder of this repository.
-To run the version that you built you can use the shell script `timbuctoo-instancev4/run.sh`. For more information about the command line options read the script.
+This tool has been verified to work on Redhat 6.
+To build your own version, you can either have 'java 8' and 'maven 3' installed or use the maven3 docker container.
+
+* **build** using `mvn clean package`
+* **run** using `timbuctoo-instancev4/run.sh`
+
+### First steps
+
+1. After launching it you should be greated by a login page.
+2. After logging in you should be able to upload an excel file (or download the default excel file). The wizard will guide you onwards.
+3. When a dataset is uploaded you can edit it, and query it.
+
+## Background
+
+Timbuctoo is funded by
+
+ * The Huygens Institute (indefinite)
+ * CLARIAH.nl (until ...)
+ * NDE (funding ends december 2016)
+
