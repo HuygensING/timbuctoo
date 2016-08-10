@@ -170,6 +170,7 @@ class Document < Hash
 	doc_displayName = data["title"]
 	date = data["date"]
 	notes = data["notes"]
+	title = data["title"]
 	hasPublishLocation = data["hasPublishLocation"]
 	hasWorkLanguage = data["hasWorkLanguage"]
 	hasGenre = data["hasGenre"]
@@ -190,6 +191,8 @@ class Document < Hash
 		    data['@relations'][rec_rel].each do |rr_data|
 			new_rr = Hash.new
 			new_rr['id'] = rr_data['relationId']
+			new_rr['type_s'] = "document_reception"
+			new_rr['title_t'] = title
 			new_rr['reception_id_s'] = doc_id
 			new_rr['displayName_s'] = doc_displayName
 			new_rr['relationType_s'] = rec_rel
@@ -209,6 +212,7 @@ class Document < Hash
 			    new_rr['document_documentType_s'] = rel_doc['documentType_s']
 			    new_rr['document_date_i'] = rel_doc['date_i']
 			    new_rr['document_notes_t'] = rel_doc['notes_t']
+			    new_rr['document_title_t'] = rel_doc['title_t']
 			    @@new_rel_names.each do |name|
 				new_rr["document_#{name}"] = rel_doc[name]
 			    end
