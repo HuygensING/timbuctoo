@@ -34,12 +34,20 @@ public class RrSubjectMap {
     }
 
     public Builder withColumnTerm(String referenceString) {
-      instance.termMap = new RrColumn(false, referenceString);
+      /*
+      If the term map does not have a rr:termType property, then its term type is:
+
+        rr:Literal, if it is an object map and at least one of the following conditions is true:
+          [..SNIP...]
+        rr:IRI, otherwise.
+       */
+      instance.termMap = new RrColumn(referenceString, TermType.IRI);
       return this;
     }
 
     public Builder withColumnTerm(String referenceString, TermType type) {
-      instance.termMap = new RrColumn(false, referenceString, type);
+      //assert termtype is IRI or blanknode
+      instance.termMap = new RrColumn(referenceString, type);
       return this;
     }
 
@@ -49,7 +57,20 @@ public class RrSubjectMap {
     }
 
     public Builder withTemplateTerm(String templateString) {
-      instance.termMap = new RrTemplate(templateString);
+      /*
+      If the term map does not have a rr:termType property, then its term type is:
+
+        rr:Literal, if it is an object map and at least one of the following conditions is true:
+          [..SNIP...]
+        rr:IRI, otherwise.
+       */
+      instance.termMap = new RrColumn(templateString, TermType.IRI);
+      return this;
+    }
+
+    public Builder withTemplateTerm(String templateString, TermType type) {
+      //assert termtype is IRI or blanknode
+      instance.termMap = new RrTemplate(templateString, type);
       return this;
     }
 

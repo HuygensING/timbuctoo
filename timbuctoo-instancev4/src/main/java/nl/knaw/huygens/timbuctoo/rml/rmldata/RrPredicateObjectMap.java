@@ -76,12 +76,22 @@ public class RrPredicateObjectMap {
     }
 
     public Builder withColumn(String referenceString) {
-      instance.objectMap = new RrColumn(true, referenceString);
+      /*
+      If the term map does not have a rr:termType property, then its term type is:
+
+        rr:Literal, if it is an object map and at least one of the following conditions is true:
+      ->  It is a column-based term map.
+          It has a rr:language property (and thus a specified language tag).
+          It has a rr:datatype property (and thus a specified datatype).
+        rr:IRI, otherwise.
+       */
+      instance.objectMap = new RrColumn(referenceString, TermType.Literal);
       return this;
     }
 
     public Builder withColumn(String referenceString, TermType type) {
-      instance.objectMap = new RrColumn(true, referenceString, type);
+      //assert termtype is IRI or blanknode
+      instance.objectMap = new RrColumn(referenceString, type);
       return this;
     }
 
@@ -91,7 +101,16 @@ public class RrPredicateObjectMap {
     }
 
     public Builder withTemplate(String templateString) {
-      instance.objectMap = new RrTemplate(templateString);
+      /*
+      If the term map does not have a rr:termType property, then its term type is:
+
+        rr:Literal, if it is an object map and at least one of the following conditions is true:
+          It is a column-based term map.
+          It has a rr:language property (and thus a specified language tag).
+          It has a rr:datatype property (and thus a specified datatype).
+        rr:IRI, otherwise.
+       */
+      instance.objectMap = new RrTemplate(templateString, TermType.IRI);
       return this;
     }
 

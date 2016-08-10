@@ -10,10 +10,12 @@ import java.util.stream.Stream;
 
 public class RrTemplate implements RrTermMap {
   private final String template;
+  private final TermType termType;
   private final Pattern pattern;
 
-  public RrTemplate(String template) {
+  public RrTemplate(String template, TermType termType) {
     this.template = template;
+    this.termType = termType;
     pattern = Pattern.compile(
       "(?<!\\\\)(?:\\\\\\\\)*\\{((?:[^\\\\\\}]|(?:(?<!\\\\)(?:\\\\\\\\)+)|(?:\\\\\\})+)+)\\}"
     );
@@ -31,7 +33,7 @@ public class RrTemplate implements RrTermMap {
     // http://jan/{fo\}o\\\\}} <- should mark before-last curly as the end of the group
     // http://jan/{foo}/{bar}
     // http://jan/{foo}/{bar}?really=\{as} <- should not match as
-    // http://jan/{foo}/{bar}?really=\\{sa} <- should match as
+    // http://jan/{foo}/{bar}?really=\\{as} <- should match as
 
     //Explanation:
     //  (?<!\\)     Negative Lookbehind: will make the regex fizzle if preceded by \ (\\ to escape it)
@@ -56,6 +58,16 @@ public class RrTemplate implements RrTermMap {
     }
     regexMatcher.appendTail(resultString);
 
-    return Stream.of(NodeFactory.createURI(resultString.toString()));
+    switch (termType) {
+      case IRI:
+        return Stream.of(NodeFactory.createURI(resultString.toString()));
+      case BlankNode:
+        return Stream.of(NodeFactory.createBlankNode(resultString.toString()));
+      case Literal:
+        return Stream.of(NodeFactory.createLiteral(resultString.toString()));
+      default:
+        throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
+    }
+
   }
 }
