@@ -6,6 +6,7 @@ class Documents
     @@solr_doc_receptions = ""
     @@debug = false
     @@number = 0
+    @@count_doc_rels = 0
     @@documents = Hash.new
     @@document_receptions = Array.new
     @@complete_document_receptions = Array.new
@@ -39,19 +40,8 @@ class Documents
 	if !line.eql?("[]")
 	    Documents.do_solr_update result,@@solr_documents
 	    Documents.do_solr_update @@person_receptions,@@solr_receptions
-	    if @@complete_document_receptions.size >= 100
-		puts "#{@@complete_document_receptions.size} document receptions worden geschreven" if @@debug
-		Documents.do_solr_update @@complete_document_receptions,
-		    @@solr_doc_receptions
-		@@complete_document_receptions = Array.new
-	    end
 	    @@person_receptions = Array.new
 	else
-	    if @@complete_document_receptions.size > 0
-		puts "#{@@complete_document_receptions.size} document receptions worden geschreven" if @@debug
-		Documents.do_solr_update @@complete_document_receptions,
-		    @@solr_doc_receptions
-	    end
 	    if @@person_receptions.size > 0
 		Documents.do_solr_update @@person_receptions,@@solr_receptions
 	    end
@@ -130,6 +120,10 @@ class Documents
 	@@complete_document_receptions
     end
 
+    def Documents.complete_document_receptions_reset
+	@@complete_document_receptions = Array.new
+    end
+
     def Documents.debug= debug
 	@@debug = debug
     end
@@ -142,5 +136,12 @@ class Documents
 	@@documents[id]
     end
 
+    def Documents.count_doc_rels_inc
+	@@count_doc_rels += 1
+    end
+
+    def Documents.count_doc_rels
+	@@count_doc_rels
+    end
 end
 

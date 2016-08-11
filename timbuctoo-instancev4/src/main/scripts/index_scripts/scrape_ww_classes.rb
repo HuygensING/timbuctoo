@@ -5,6 +5,8 @@ require './person.rb'
 require './persons.rb'
 require './document.rb'
 require './documents.rb'
+require './documentreception.rb'
+require './documentreceptions.rb'
 require 'json'
 
 
@@ -85,35 +87,32 @@ if __FILE__ == $0
     Documents.solr_commit "#{@solr}#{@document_coll}"
     Documents.solr_commit "#{@solr}#{@pers_reception_coll}"
 
-    puts "number of documents: #{Documents.number}"
-    puts "number of document receptions: #{Documents.document_receptions.size}"
-
-    doc_recptions = Array.new
     STDERR.puts "start met document receptions" if debug
-    Documents.document_receptions.each_with_index do |dr,ind|
-	doc = Documents.find dr['document_id_s']
-	# voeg doc eigenschappen toe aan reception
-	    		    # hier alle data toevoegen
-	new_dr = dr
-	new_dr['document_documentType_s'] = doc['documentType_s']
-	new_dr['document_date_i'] = doc['date_i']
-	new_dr['document_notes_t'] = doc['notes_t']
-	Document.new_rel_names.each do |name|
-	    new_dr["document_#{name}"] = doc[name]
-	end
-	new_dr['_childDocuments_'] = doc['_childDocuments_']
-	doc_recptions << new_dr
-	if doc_recptions.size == 50
-#	    STDERR.puts doc_recptions.last
-	    Documents.do_solr_update doc_recptions,Documents.solr_doc_receptions
-	    doc_recptions = Array.new
+    puts "#{DocumentReceptions.get_wanted.size} document receptions waiting to be found and committed"
+    STDERR.puts "#{DocumentReceptions.get_wanted.size} document receptions waiting to be found and committed"
+    #
+
+    document_receptions = Array.new
+    count_reception = 0
+    DocumentReceptions.get_wanted.each do |doc_rec_data|
+	document_receptions << DocumentReception.new(doc_rec_data)
+	count_reception += 1
+	if document_receptions.size >= 100
+	    Documents.do_solr_update(document_receptions,
+		    Documents.solr_doc_receptions)
+	    document_receptions = Array.new
 	end
     end
-    if doc_recptions.size > 0
-	STDERR.puts doc_recptions.last if debug
-	Documents.do_solr_update doc_recptions,Documents.solr_doc_receptions
+    if document_receptions.size > 0
+	Documents.do_solr_update(document_receptions,
+	    Documents.solr_doc_receptions)
     end
-    Documents.solr_commit "#{Documents.solr_doc_receptions}"
+    #  
+
+    Documents.solr_commit Documents.solr_doc_receptions
+
+    puts "number of documents: #{Documents.number}"
+    puts "number of document receptions comitted: #{count_reception}"
 
     Timer.stop
 end

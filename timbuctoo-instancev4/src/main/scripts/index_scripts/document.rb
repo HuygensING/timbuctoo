@@ -163,68 +163,18 @@ class Document < Hash
     end
 
     def add_document_receptions data
-#	puts "add_document_receptions"
-#	puts self["genre_ss"]
-#	puts
-	doc_id = data["_id"]
-	doc_displayName = data["title"]
-	date = data["date"]
-	notes = data["notes"]
-	title = data["title"]
-	hasPublishLocation = data["hasPublishLocation"]
-	hasWorkLanguage = data["hasWorkLanguage"]
-	hasGenre = data["hasGenre"]
-	hasDocumentSource = data["hasDocumentSource"]
-	documentType = data["documentType"]
-#	STDERR.puts "doc_id: #{doc_id}"
-#	STDERR.puts "doc_displayName: #{doc_displayName}"
-#	STDERR.puts "date: #{date}"
-#	STDERR.puts "notes: #{notes}"
-#	STDERR.puts "hasPublishLocation: #{hasPublishLocation}"
-#	STDERR.puts "hasWorkLanguage: #{hasWorkLanguage}"
-#	STDERR.puts "hasGenre: #{hasGenre}"
-#	STDERR.puts "hasDocumentSource: #{hasDocumentSource}"
-
-    	reception_relations = Array.new
+	doc_id = self['id']
+	reception_relations = Array.new
 	if !data['@relations'].nil?
 	    @@wanted_document_relations.each do |rec_rel|
 		if !data['@relations'][rec_rel].nil?
 		    data['@relations'][rec_rel].each do |rr_data|
-			new_rr = Hash.new
-			new_rr['id'] = rr_data['relationId']
-			new_rr['type_s'] = "document_reception"
-			new_rr['title_t'] = title
-			new_rr['reception_id_s'] = doc_id
-			new_rr['displayName_s'] = doc_displayName
-			new_rr['relationType_s'] = rec_rel
-			new_rr['date_i'] = date
-			new_rr['notes_t'] = notes
-			new_rr["documentType_s"] = documentType
-			new_rr["publishLocation_ss"] = self["publishLocation_ss"]
-			new_rr["language_ss"] = self["language_ss"]
-			new_rr["genre_ss"] = self["genre_ss"]
-			new_rr["source_ss"] = self["source_ss"]
-
-			new_rr['document_id_s'] = rr_data['id']
-			new_rr['document_displayName_s'] = rr_data['displayName']
-			rel_doc = Documents.find rr_data['id']
-			if !rel_doc.nil?
-			    # hier alle data toevoegen
-			    new_rr['document_documentType_s'] = rel_doc['documentType_s']
-			    new_rr['document_date_i'] = rel_doc['date_i']
-			    new_rr['document_notes_t'] = rel_doc['notes_t']
-			    new_rr['document_title_t'] = rel_doc['title_t']
-			    @@new_rel_names.each do |name|
-				new_rr["document_#{name}"] = rel_doc[name]
-			    end
-			    new_rr['_childDocuments_'] = rel_doc['_childDocuments_']
-			    # each do ||
-			    # aparte lijst van voltooide receptions
-			    # die kan worden gecommit
-			    Documents.complete_document_receptions_add new_rr
-			else
-    			    reception_relations << new_rr
-			end
+			wanted_reception = Hash.new
+			wanted_reception['reception_id'] = doc_id
+			wanted_reception['document_id'] = rr_data['id']
+			wanted_reception['relation_id'] = rr_data['relationId']
+			wanted_reception['relationType'] = rec_rel
+			DocumentReceptions.add wanted_reception
 		    end
 		end
 	    end
