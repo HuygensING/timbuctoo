@@ -8,7 +8,7 @@ This has been removed and replaced with an RML implementation.
 
 ## Responsibilies
 This package is responsible for
- * Parsing various binary formats
+ * Parsing various formats (currently excel only)
  * generating "collections" (i.e. tables, sheets, files) containing "rows" of "fields"
  * handling imports of arbitrary size (only limited by the space limitations of the target database)
 
