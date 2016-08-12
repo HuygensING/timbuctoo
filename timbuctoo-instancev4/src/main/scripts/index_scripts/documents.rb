@@ -1,3 +1,5 @@
+require 'net/http'
+
 class Documents
 
     @@location = ""
@@ -13,135 +15,115 @@ class Documents
     @@person_receptions = Array.new
 
     def Documents.scrape_file start_value, num_of_lines=100
-	location = "#{@@location}domain/wwdocuments?rows=#{num_of_lines}&start=#{start_value}&withRelations=true"
-	STDERR.puts location  if @@debug
-	f = open(location, {:read_timeout=>600})
-	line = f.gets
-	return false  if line.eql?("[]")
+      filename = "wwdocuments_rows_#{num_of_lines}_start_#{start_value}.json"
+      location = "#{@@location}domain/wwdocuments?rows=#{num_of_lines}&start=#{start_value}&withRelations=true"
 
-     	rest = start_value.modulo(1000)
-	if rest==0
-	    STDERR.print start_value/1000
-	elsif rest==500
-	    STDERR.print "+"
-	else
-	    STDERR.print "."
-	end
+      line = nil
+      if @@debug and File.exists? filename
+        line = File.read filename
+      else
+        f = open(location, {:read_timeout=>600})
+        line = f.gets
+        File.open(filename, 'w') { |file| file.write(line) } if @@debug
+      end
+      return false  if line.eql?("[]")
 
-	result = Array.new
-	array = JSON.parse(line)
-	array.each do |obj|
-	    res = Document.new(obj)
-	    @@documents[res['id']] = res
-	    result << res
-	    @@number += 1
-	    start_value += 1
-	end
-	if !line.eql?("[]")
-	    Documents.do_solr_update result,@@solr_documents
-	    Documents.do_solr_update @@person_receptions,@@solr_receptions
-	    @@person_receptions = Array.new
-	else
-	    if @@person_receptions.size > 0
-		Documents.do_solr_update @@person_receptions,@@solr_receptions
-	    end
-	end
-	return !line.eql?("[]")
+      result = Array.new
+      array = JSON.parse(line)
+      array.each do |obj|
+          res = Document.new(obj)
+          @@documents[res['id']] = res
+          result << res
+          @@number += 1
+          start_value += 1
+      end
+      Documents.do_solr_update result, @@solr_documents
+      return !line.eql?("[]")
     end
 
 
-    def Documents.do_solr_update batch,location,debug=false
-	STDERR.puts "batch.size: #{batch.size}"  if @@debug || debug
-	uri = URI.parse("#{location}update/")
-	STDERR.puts "uri: #{uri}"  if @@debug
-	req = Net::HTTP::Post.new(uri)
-	req.content_type = "application/json"
-	http = Net::HTTP.new(uri.hostname, uri.port)
-	req.body = batch.to_json
-	result = http.request(req)
-	STDERR.puts "result 1: #{result}" if @@debug || debug
+    def Documents.do_solr_update batch,location
+      uri = URI.parse("#{location}update/")
+      req = Net::HTTP::Post.new(uri)
+      req.content_type = "application/json"
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      req.body = batch.to_json
+      http.request(req)
     end
 
     def Documents.solr_commit location, debug=false
-	uri = URI.parse("#{location}update?commit=true")
-	STDERR.puts "uri: #{uri}"  if @@debug || debug
-	req = Net::HTTP::Post.new(uri)
-	http = Net::HTTP.new(uri.hostname, uri.port)
-	result = http.request(req)
-	STDERR.puts "result 2: #{result}" if @@debug || debug
+      uri = URI.parse("#{location}update?commit=true")
+      req = Net::HTTP::Post.new(uri)
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      http.request(req)
     end
 
     def Documents.location= location
-	@@location = location
+    @@location = location
     end
 
     def Documents.solr_documents= solr
-	@@solr_documents = solr
+    @@solr_documents = solr
     end
 
     def Documents.solr_receptions= solr
-	@@solr_receptions = solr
+    @@solr_receptions = solr
     end
 
     def Documents.solr_receptions
-	@@solr_receptions
+    @@solr_receptions
     end
 
     def Documents.solr_doc_receptions= solr
-	@@solr_doc_receptions = solr
+    @@solr_doc_receptions = solr
     end
 
     def Documents.solr_doc_receptions
-	@@solr_doc_receptions
+    @@solr_doc_receptions
     end
 
     def Documents.person_receptions_concat data
-	STDERR.puts "new data size: #{data.size}"  if @@debug
-	@@person_receptions += data
-	STDERR.puts "res size: #{@@person_receptions.size}"   if @@debug
+    @@person_receptions += data
     end
 
     def Documents.document_receptions_concat data
-	STDERR.puts "new data size: #{data.size}"  if @@debug
-	@@document_receptions += data
-	STDERR.puts "res size: #{@@document_receptions.size}"   if @@debug
+    @@document_receptions += data
     end
 
     def Documents.document_receptions
-	@@document_receptions
+    @@document_receptions
     end
 
     def Documents.complete_document_receptions_add data
-	@@complete_document_receptions << data
-	STDERR.puts "res size: #{@@complete_document_receptions.size}"   if @@debug
+    @@complete_document_receptions << data
     end
 
     def Documents.complete_document_receptions
-	@@complete_document_receptions
+    @@complete_document_receptions
     end
 
     def Documents.complete_document_receptions_reset
-	@@complete_document_receptions = Array.new
+    @@complete_document_receptions = Array.new
     end
 
     def Documents.debug= debug
-	@@debug = debug
+    @@debug = debug
     end
 
     def Documents.number
-	@@number
+    @@number
     end
 
     def Documents.find id
-	@@documents[id]
+    @@documents[id]
     end
 
     def Documents.count_doc_rels_inc
-	@@count_doc_rels += 1
+    @@count_doc_rels += 1
     end
 
     def Documents.count_doc_rels
-	@@count_doc_rels
+    @@count_doc_rels
     end
 end
 
