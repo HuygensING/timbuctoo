@@ -1,3 +1,4 @@
+require 'open-uri'
 class Person < Hash
 
     @@location = ""
@@ -68,6 +69,8 @@ class Person < Hash
       end
 
       build_relations data
+
+      add_languages data
     end
 
     def build_name names
@@ -103,9 +106,11 @@ class Person < Hash
           if !data['@relations'].nil?
             if ind==0
                 (0..2).each do |ind_2|
-              if !data['@relations'][@@wanted_relations[ind_2]].nil?
-                  add_relation data,rel,ind_2
-              end
+                  # adds all related locations because these are the first 3 entries in the @@wanted_relations array
+                  # and the @@new_relations array
+                  if !data['@relations'][@@wanted_relations[ind_2]].nil?
+                      add_relation data,rel,ind_2
+                  end
                 end
             else
                 add_relation data,rel,ind
@@ -119,6 +124,19 @@ class Person < Hash
       if !data['@relations'][@@wanted_relations[ind]].nil?
           data['@relations'][@@wanted_relations[ind]].each do |rt|
             self[rel] << rt['displayName']  if rt['accepted']
+          end
+      end
+    end
+
+    def add_languages data
+      if !data['@relations'].nil? and !data["@relations"]["isCreatorOf"].nil?
+          data["@relations"]["isCreatorOf"].each do |work|
+            f = open("#{@@location}domain/wwdocuments/#{work["id"]}", {:read_timeout=>600})
+            line = f.gets
+            doc_data = JSON.parse(line)
+            if !doc_data["@relations"].nil? and !doc_data["@relations"]["hasWorkLanguage"].nil?
+              self["language_ss"] = doc_data["@relations"]["hasWorkLanguage"].map{|lang| lang["displayName"]}
+            end
           end
       end
     end
