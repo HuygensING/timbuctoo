@@ -56,23 +56,36 @@ We will offer a basic editing interface but we'll also actively try to allow the
 
 To get a quick look at timbuctoo go to: https://repository.huygens.knaw.nl
 
-### System requirements
+### 1. System requirements
 
 //TODO
 
-### Building
+### 2. Building it
 
 This tool has been verified to work on Redhat 6.
 To build your own version, you can either have 'java 8' and 'maven 3' installed or use the maven3 docker container.
 
 * **build** using `mvn clean package`
-* **run** using `timbuctoo-instancev4/run.sh`
 
-### First steps
+### 3. Running it
+
+* **run** using `./timbuctoo-instancev4/target/appassembler/bin/timbuctoo server timbuctoo-instancev4/example-config.yaml`
+* **install** by copying the target/appassembler folder wherever you like (i.e. `mv timbuctoo-instancev4/target/appassembler/ my-install-location`
 
 1. After launching it you should be greated by a login page.
 2. After logging in you should be able to upload an excel file (or download the default excel file). The wizard will guide you onwards.
 3. When a dataset is uploaded you can edit it, and query it.
+
+### 4. And now...
+
+Check out the [Contribution guidelines](CONTRIBUTING.md) to read more about how to report bugs or ask questions.
+Browse the projects source code or read [the API documentation]():
+
+* timbuctoo-instancev4 contains the actual timbuctoo code (it's version 4 already, there used to be a version 3 side by side)
+* timbuctoo-test-services contains Hamcrest matchers that aren't really timbuctoo specific. They're a seperate module because of a quirk of history.
+* security-client-agnostic is a http-client agnostic version of security-client that we use to do federated authentication
+* HttpCommand is a concordion plugin that allows you to write a http request and have concordion execute it. It's what powers the automated validation of our API documentation.
+* ContractDiff is another project for our API docs validator. It allows you to specify Json and Http-header contracts. A contract in this context means that you may return more but not less.
 
 ## Background
 

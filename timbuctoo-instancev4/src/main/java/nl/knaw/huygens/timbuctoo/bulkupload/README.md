@@ -66,7 +66,8 @@ Note the following:
  3. Together with the ordered traversal of the items (`hasNextItem`) this allows us to rerender the table as it was uploaded.
  4. All properties are stored as text, regardless of the datatypes that the source format supports.
 
-### Contents of this package
+## Contents of this package
+ * [BulkUploadService](BulkUploadService.java) is the entry point. It performs the actual upload an links everything together.
  * [loaders](loaders) contains two variants of an Excel loader at the moment. To add a new loader you'd add an implementation of [BulkLoader](loaders/BulkLoader.java) here.
    * [AllSheetLoader](loaders/excel/allsheetloader/AllSheetLoader.java) loads all columns of all sheets. *This is the one that timbuctoo currently uses*.
    * [StyleAwareXlsxLoader](loaders/excel/styleawarexlsxloader/StyleAwareXlsxLoader.java) loads only the columns that are marked with a specially named style. *This is not used at the moment.*
