@@ -28,6 +28,7 @@ import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RA
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_ITEM_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.VALUE_PREFIX;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
@@ -140,11 +141,15 @@ public class RawCollection {
   private Vertex addToArray(ArrayNode items, Vertex vertex, int numberOfItems) {
     ObjectNode item = jsnO();
     items.add(item);
-    vertex.properties().forEachRemaining(p -> item.put(p.label(), "" + p.value()));
+    vertex.properties().forEachRemaining(p -> {
+      if (p.key().startsWith(VALUE_PREFIX)) {
+        item.put(p.key().substring(VALUE_PREFIX.length()), "" + p.value());
+      }
+    });
 
     Iterator<Vertex> nextItem = vertex.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME);
-    if (--numberOfItems > 0 && nextItem.hasNext()) {
-      return addToArray(items, nextItem.next(), numberOfItems);
+    if (numberOfItems > 0 && nextItem.hasNext()) {
+      return addToArray(items, nextItem.next(), numberOfItems - 1);
     }
     return vertex;
   }

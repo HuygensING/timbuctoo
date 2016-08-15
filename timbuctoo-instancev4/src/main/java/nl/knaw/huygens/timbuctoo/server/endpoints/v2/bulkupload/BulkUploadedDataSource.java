@@ -21,6 +21,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.VALUE_PREFIX;
+
 public class BulkUploadedDataSource implements DataSource {
   public static final Logger LOG = LoggerFactory.getLogger(BulkUploadedDataSource.class);
   private final String vreName;
@@ -50,7 +53,12 @@ public class BulkUploadedDataSource implements DataSource {
                          final Iterator<VertexProperty<Object>> properties = vertex.properties();
                          while (properties.hasNext()) {
                            VertexProperty prop = properties.next();
-                           valueMap.put(prop.key(), prop.value());
+                           if (prop.key().startsWith(VALUE_PREFIX)) {
+                             valueMap.put(prop.key().substring(VALUE_PREFIX.length()), prop.value());
+                           }
+                           if (prop.key().equals("tim_id")) {
+                             valueMap.put(prop.key(), prop.value());
+                           }
                          }
 
                          for (Map.Entry<String, Tuple<String, Map<Object, List<String>>>> stringMapEntry : cachedUris
@@ -95,7 +103,7 @@ public class BulkUploadedDataSource implements DataSource {
       Object fieldValue = rowData.get(childField);
       if (fieldValue != null) {
         Graph graph = graphWrapper.getGraph();
-        currentVertex.property(childField + "_error",
+        currentVertex.property(ERROR_PREFIX + childField,
           String.format("'%s' does not exist in field '%s' of collection '%s'.",
           fieldValue,
           parentField,

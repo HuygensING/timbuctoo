@@ -25,6 +25,8 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String FIRST_RAW_PROPERTY_EDGE_NAME = "hasFirstProperty";
   public static final String NEXT_RAW_PROPERTY_EDGE_NAME = "hasNextProperty";
   public static final String RAW_PROPERTY_NAME = "name";
+  public static final String VALUE_PREFIX = "value:";
+  public static final String ERROR_PREFIX = "error:";
   private final Vres vres;
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
@@ -91,7 +93,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     allowCommit();
 
     Vertex result = graphWrapper.getGraph().addVertex("tim_id", UUID.randomUUID().toString());
-    currentProperties.forEach(result::property);
+    currentProperties.forEach((key, val) -> result.property(VALUE_PREFIX + key, val));
 
     collectionAdder.addToLastItemOfCollection(rawCollection, result);
     collectionAdder.addToCollection(rawCollection, result);
