@@ -11,7 +11,6 @@ require 'json'
 
 
 if __FILE__ == $0
-    Timer.start
 
     @location = "http://test.repository.huygens.knaw.nl/"
     @person_coll = "wwpersons/"
@@ -65,7 +64,6 @@ if __FILE__ == $0
       continu = Persons.scrape_file start_value,num_of_lines
       start_value += 100 if continu
     end
-    Persons.do_solr_commit
 
     continu = true
     start_value = 0
@@ -75,9 +73,10 @@ if __FILE__ == $0
       continu = Documents.scrape_file start_value,num_of_lines
       start_value += 100 if continu
     end
-    Documents.solr_commit "#{@solr}#{@document_coll}"
-
+    Persons.add_languages
+    Documents.add_creators
+    Persons.create_index
     DocumentReceptions.create_index
-    Timer.stop
+    Documents.create_index
 end
 

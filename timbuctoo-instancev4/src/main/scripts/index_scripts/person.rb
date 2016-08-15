@@ -70,7 +70,7 @@ class Person < Hash
 
       build_relations data
 
-      add_languages data
+      add_work_id_s data
     end
 
     def build_name names
@@ -128,19 +128,22 @@ class Person < Hash
       end
     end
 
-    def add_languages data
-=begin
+    def add_work_id_s data
       if !data['@relations'].nil? and !data["@relations"]["isCreatorOf"].nil?
-          data["@relations"]["isCreatorOf"].each do |work|
-            f = open("#{@@location}domain/wwdocuments/#{work["id"]}", {:read_timeout=>600})
-            line = f.gets
-            doc_data = JSON.parse(line)
-            if !doc_data["@relations"].nil? and !doc_data["@relations"]["hasWorkLanguage"].nil?
-              self["language_ss"] = doc_data["@relations"]["hasWorkLanguage"].map{|lang| lang["displayName"]}
-            end
-          end
+        self["work_id_ss"] = data["@relations"]["isCreatorOf"].map {|work| work["id"]}
+      else
+        self["work_id_ss"] = Array.new
       end
-=end
+    end
+
+    def add_languages
+      self["language_ss"] = Array.new
+      self["work_id_ss"].each do |work_id|
+        document = Documents.find work_id
+        self["language_ss"] += document["language_ss"]
+      end
+      self["language_ss"].uniq!
+      self["work_id_ss"] = Array.new
     end
 
     def id

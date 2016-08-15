@@ -22,22 +22,38 @@ class Persons
 
       return false if line.eql?("[]")
 
-      result = Array.new
       array = JSON.parse(line)
 
       array.each do |obj|
           person = Person.new(obj)
           @@persons[person.id] = person
-          result << person
           start_value += 1
       end
-      Persons.do_solr_post result
       puts "persons: #{start_value}"
       return !line.eql?("[]")
     end
 
-    def Persons.create_index
+    def Persons.add_languages
+      @@persons.each do |key, person|
+        person.add_languages
+      end
+    end
 
+    def Persons.create_index
+      result = Array.new
+      count = 0
+      @@persons.each do |key, person|
+
+        result << person
+        if result.length == 100
+          Persons.do_solr_post result
+          result = Array.new
+          count += 100
+          puts "POST person batch #{count}"
+        end
+      end
+      Persons.do_solr_post result if result.length > 0
+      Persons.do_solr_commit
     end
 
     def Persons.do_solr_post batch

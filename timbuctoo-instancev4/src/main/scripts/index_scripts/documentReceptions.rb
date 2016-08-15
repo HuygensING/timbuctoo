@@ -17,12 +17,15 @@ class DocumentReceptions
 
     def DocumentReceptions.create_index
       batch = Array.new
+      count = 0
       @@wanted_document_receptions.each do |reception_data|
         reception = DocumentReception.new(reception_data)
         batch << reception
-        if batch.length == 10
+        if batch.length == 100
           DocumentReceptions.do_solr_update batch
           batch = Array.new
+          count += 100
+          puts "POST document reception batch #{count}"
         end
       end
       DocumentReceptions.do_solr_update batch

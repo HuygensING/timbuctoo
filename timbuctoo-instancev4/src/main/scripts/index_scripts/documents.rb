@@ -28,37 +28,64 @@ class Documents
       end
       return false  if line.eql?("[]")
 
-      result = Array.new
       array = JSON.parse(line)
       array.each do |obj|
           res = Document.new(obj)
           @@documents[res['id']] = res
-          result << res
           @@number += 1
           start_value += 1
       end
-      Documents.do_solr_update result, @@solr_documents
       puts "documents: #{start_value}"
       return !line.eql?("[]")
     end
 
+    def Documents.add_creators
+      @@documents.each do |key, document|
+        document.add_creators
+      end
+    end
 
-    def Documents.do_solr_update batch,location
-      uri = URI.parse("#{location}update/")
+    def Documents.create_index
+      result = Array.new
+      count = 0
+      @@documents.each do |key, document|
+
+        result << document
+        if result.length == 100
+          Documents.do_solr_post result
+          result = Array.new
+          count += 100
+          puts "POST document batch #{count}"
+        end
+      end
+      Documents.do_solr_post result if result.length > 0
+      Documents.do_solr_commit
+    end
+
+    def Documents.do_solr_post batch
+      uri = URI.parse("#{@@solr_documents}update/")
       req = Net::HTTP::Post.new(uri)
       req.content_type = "application/json"
       req["Authorization"] = @@solr_auth
       http = Net::HTTP.new(uri.hostname, uri.port)
       req.body = batch.to_json
-      http.request(req)
+      response = http.request(req)
+      if response.code.eql?("400")
+        File.open("bad_batch_#{@@bad_batches}.json", 'w') { |file| file.write(batch.to_json) }
+        @@bad_batches += 1
+        puts "BAD BATCH"
+      end
     end
 
-    def Documents.solr_commit location, debug=false
-      uri = URI.parse("#{location}update?commit=true")
+    def Documents.do_solr_commit
+      puts "#{@@solr_documents}update?commit=true"
+
+      uri = URI.parse("#{@@solr_documents}update?commit=true")
       req = Net::HTTP::Post.new(uri)
       req["Authorization"] = @@solr_auth
       http = Net::HTTP.new(uri.hostname, uri.port)
       http.request(req)
+      puts "COMMIT documents"
     end
 
     def Documents.location= location

@@ -91,8 +91,8 @@ class Document < Hash
       build_relations data
 
       self['_childDocuments_'] = Array.new
-      add_creators data
-      add_receptions data
+      add_creator_ids data
+#     add_receptions data
       add_document_receptions data
     end
 
@@ -113,13 +113,17 @@ class Document < Hash
       end
     end
 
-    def add_creators data
-      if !data['@relations'].nil?
-          is_created_by = data['@relations']['isCreatedBy']
+    def add_creator_ids data
+      if !data['@relations'].nil? and !data['@relations']['isCreatedBy'].nil?
+        self["creator_ids"] = data['@relations']['isCreatedBy'].map{|creator| creator["id"]}
+      else
+        self["creator_ids"] = Array.new
       end
-      return if is_created_by.nil?
-      is_created_by.each do |creator|
-          person = Persons.find creator['id']
+    end
+
+    def add_creators
+      self["creator_ids"].each do |creator_id|
+          person = Persons.find creator_id
           if !person.nil?
             # avoid building id's like : "id/id/id/..."
             new_person = person.dup
@@ -133,6 +137,7 @@ class Document < Hash
             self['_childDocuments_'] << new_person
           end
       end
+      self["creator_ids"] = Array.new
     end
 
     def add_receptions data
