@@ -66,8 +66,10 @@ class Person < Hash
       self['modified_l'] = data['^modified']['timeStamp']
       if !data['names'].nil? and data['names'].length > 0
           self['name_t'] = build_name(data['names'])
+          self['nameSort_s'] = build_name_sort(data['names'])
       else
           self['name_t'] = data['@displayName'].sub('[TEMP] ', '')
+          self['nameSort_s'] =  data['@displayName'].sub('[TEMP] ', '')
       end
       build_relations data
       add_work_id_s data
@@ -75,6 +77,13 @@ class Person < Hash
 
     def build_name names
       names.map{|name| name['components'].map{|component| component['value']}.join(" ")}.join(" ")
+    end
+
+    def build_name_sort names
+      names[0]['components'].each do |component|
+        return component['value'] if component['type'].eql?("SURNAME")
+      end
+      ''
     end
 
     def build_relations data

@@ -124,6 +124,9 @@ class Document < Hash
       self['_childDocuments_'] = Array.new
       self['authorGender_ss'] = Array.new
       self['authorName_ss'] = Array.new
+      self['authorNameSort_s'] = ''
+      namesorts = Array.new
+
       # TODO copy author name sort!
       self["creator_ids"].each do |creator_id|
           person = Persons.find creator_id
@@ -140,9 +143,11 @@ class Document < Hash
             self['_childDocuments_'] << new_person
             self['authorGender_ss'] << person['gender_s']
             self['authorName_ss'] << person['displayName_s']
+            namesorts << person['nameSort_s']
             # TODO copy author name sort!
           end
       end
+      self['authorNameSort_s'] = namesorts.sort.first if namesorts.length > 0
       self["creator_ids"] = Array.new
     end
 
