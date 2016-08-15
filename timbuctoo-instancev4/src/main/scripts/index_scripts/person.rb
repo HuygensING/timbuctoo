@@ -64,40 +64,17 @@ class Person < Hash
         end
       end
       self['modified_l'] = data['^modified']['timeStamp']
-      if !data['names'].nil?
+      if !data['names'].nil? and data['names'].length > 0
           self['name_t'] = build_name(data['names'])
+      else
+          self['name_t'] = data['@displayName'].sub('[TEMP] ', '')
       end
-
       build_relations data
-
       add_work_id_s data
     end
 
     def build_name names
-      new_names = Array.new
-      names.each do |name|
-          build_name = Hash.new
-          name['components'].each do |component|
-            if build_name[component['type']].nil?
-                build_name[component['type']] = component['value']
-            else
-                build_name[component['type']] << " #{component['value']}"
-            end
-          end
-          forename = build_name['FORENAME']
-          gen_name = build_name['GEN_NAME']
-          surname = build_name['SURNAME']
-          add_name = build_name['ADD_NAME']
-          role_name = build_name['ROLE_NAME']
-          name_link = build_name['NAME_LINK']
-
-          complete_name = "#{role_name} #{forename} #{gen_name} #{name_link} #{surname} #{add_name}"
-          complete_name.strip!
-          complete_name.gsub!(/  +/," ")
-          new_names << complete_name
-      end
-
-      return new_names.join(" ")
+      names.map{|name| name['components'].map{|component| component['value']}.join(" ")}.join(" ")
     end
 
     def build_relations data
