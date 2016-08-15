@@ -4,15 +4,10 @@ class Documents
 
     @@location = ""
     @@solr_documents = ""
-    @@solr_receptions = ""
     @@solr_auth = ""
     @@debug = false
     @@number = 0
-    @@count_doc_rels = 0
     @@documents = Hash.new
-    @@document_receptions = Array.new
-    @@complete_document_receptions = Array.new
-    @@person_receptions = Array.new
 
     def Documents.scrape_file start_value, num_of_lines=100
       filename = "wwdocuments_rows_#{num_of_lines}_start_#{start_value}.json"
@@ -89,67 +84,27 @@ class Documents
     end
 
     def Documents.location= location
-    @@location = location
+      @@location = location
     end
 
     def Documents.solr_documents= solr
-    @@solr_documents = solr
+      @@solr_documents = solr
     end
 
     def Documents.solr_auth= solr_auth
       @@solr_auth = solr_auth
     end
 
-    def Documents.solr_receptions= solr
-    @@solr_receptions = solr
-    end
-
-    def Documents.solr_receptions
-    @@solr_receptions
-    end
-
-    def Documents.person_receptions_concat data
-    @@person_receptions += data
-    end
-
-    def Documents.document_receptions_concat data
-    @@document_receptions += data
-    end
-
-    def Documents.document_receptions
-    @@document_receptions
-    end
-
-    def Documents.complete_document_receptions_add data
-    @@complete_document_receptions << data
-    end
-
-    def Documents.complete_document_receptions
-    @@complete_document_receptions
-    end
-
-    def Documents.complete_document_receptions_reset
-    @@complete_document_receptions = Array.new
-    end
-
     def Documents.debug= debug
-    @@debug = debug
+      @@debug = debug
     end
 
     def Documents.number
-    @@number
+      @@number
     end
 
     def Documents.find id
-    @@documents[id]
-    end
-
-    def Documents.count_doc_rels_inc
-    @@count_doc_rels += 1
-    end
-
-    def Documents.count_doc_rels
-    @@count_doc_rels
+      @@documents[id]
     end
 end
 

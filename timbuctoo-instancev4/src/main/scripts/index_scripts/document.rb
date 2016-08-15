@@ -32,7 +32,7 @@ class Document < Hash
       "source_ss"
     ]
 
-    @@wanted_reception_relations = [
+    @@wanted_person_reception_relations = [
       "isBiographyOf",
       "commentsOnPerson",
       "isDedicatedTo",
@@ -92,7 +92,7 @@ class Document < Hash
 
       self['_childDocuments_'] = Array.new
       add_creator_ids data
-#     add_receptions data
+      add_person_receptions data
       add_document_receptions data
     end
 
@@ -140,36 +140,26 @@ class Document < Hash
       self["creator_ids"] = Array.new
     end
 
-    def add_receptions data
-      doc_id = data["_id"]
-      doc_displayName = data["title"]
-      reception_relations = Array.new
+    def add_person_receptions data
+      doc_id = self['id']
       if !data['@relations'].nil?
-          @@wanted_reception_relations.each do |rec_rel|
-            if !data['@relations'][rec_rel].nil?
-                data['@relations'][rec_rel].each do |rr_data|
-                  new_rr = Hash.new
-                  new_rr['id'] = rr_data['relationId']
-                  new_rr['relationType_s'] = rec_rel
-                  new_rr['person_id_s'] = rr_data['id']
-                  new_rr['person_displayName_s'] = rr_data['displayName']
-                  new_rr['document_id_s'] = doc_id
-                  new_rr['displayName_s'] = doc_displayName
-                  reception_relations << new_rr
-                end
+        @@wanted_person_reception_relations.each do |rec_rel|
+          if !data['@relations'][rec_rel].nil?
+            data['@relations'][rec_rel].each do |rr_data|
+              wanted_reception = Hash.new
+              wanted_reception['reception_id'] = doc_id
+              wanted_reception['person_id'] = rr_data['id']
+              wanted_reception['relation_id'] = rr_data['relationId']
+              wanted_reception['relationType'] = rec_rel
+              PersonReceptions.add wanted_reception
             end
           end
+        end
       end
-
-
-      Documents.person_receptions_concat reception_relations
-
-      return
     end
 
     def add_document_receptions data
       doc_id = self['id']
-      reception_relations = Array.new
       if !data['@relations'].nil?
           @@wanted_document_relations.each do |rec_rel|
             if !data['@relations'][rec_rel].nil?
@@ -184,8 +174,6 @@ class Document < Hash
             end
           end
       end
-      Documents.document_receptions_concat reception_relations
-      return
     end
 
     def id

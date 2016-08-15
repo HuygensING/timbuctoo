@@ -7,6 +7,8 @@ require './document.rb'
 require './documents.rb'
 require './documentReception.rb'
 require './documentReceptions.rb'
+require './personReception.rb'
+require './personReceptions.rb'
 require 'json'
 
 
@@ -49,12 +51,14 @@ if __FILE__ == $0
     Document.location = "#{@location}v2.1/"
     Documents.location = "#{@location}v2.1/"
     Documents.solr_documents = "#{@solr}#{@document_coll}"
-    Documents.solr_receptions = "#{@solr}#{@pers_reception_coll}"
     Documents.solr_auth = @solr_auth_header
     Documents.debug = true
 
     DocumentReceptions.solr = "#{@solr}#{@doc_reception_coll}"
     DocumentReceptions.solr_auth = @solr_auth_header
+
+    PersonReceptions.solr = "#{@solr}#{@pers_reception_coll}"
+    PersonReceptions.solr_auth = @solr_auth_header
 
     continu = true
     start_value = 0
@@ -73,10 +77,15 @@ if __FILE__ == $0
       continu = Documents.scrape_file start_value,num_of_lines
       start_value += 100 if continu
     end
+
+    # Always run Persons.add_languages before Documents.add_creators to ensure correct _childDocuments_ filters
+    # on wwdocuments index and wwdocumentreceptions index!!
     Persons.add_languages
     Documents.add_creators
+
+    PersonReceptions.create_index
     Persons.create_index
-    DocumentReceptions.create_index
     Documents.create_index
+    DocumentReceptions.create_index
 end
 

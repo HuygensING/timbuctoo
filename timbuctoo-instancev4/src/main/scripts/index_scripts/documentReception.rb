@@ -17,8 +17,6 @@ class DocumentReception < Hash
           return
       end
 
-      Documents.count_doc_rels_inc
-
       self['type_s'] = "document_reception"
       self['id'] = relation_id
       self['reception_id_s'] = reception_doc_id

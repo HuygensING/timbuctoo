@@ -154,5 +154,8 @@ class Person < Hash
       @@location = location
     end
 
+    def Person.new_rel_names
+      @@new_rel_names
+    end
 end
 
