@@ -4,6 +4,7 @@ class Persons
 
     @@location = ""
     @@solr = ""
+    @@solr_auth = ""
     @@debug = false
     @@persons = Hash.new
 
@@ -31,30 +32,40 @@ class Persons
           start_value += 1
       end
       Persons.do_solr_post result
-
+      puts "persons: #{start_value}"
       return !line.eql?("[]")
     end
 
+    def Persons.create_index
+
+    end
 
     def Persons.do_solr_post batch
 
       uri = URI.parse("#{@@solr}update/")
       req = Net::HTTP::Post.new(uri)
       req.content_type = "application/json"
+      req["Authorization"] = @@solr_auth
       http = Net::HTTP.new(uri.hostname, uri.port)
       req.body = batch.to_json
       http.request(req)
     end
 
     def Persons.do_solr_commit
+      puts "COMMIT persons"
       uri = URI.parse("#{@@solr}update?commit=true")
       req = Net::HTTP::Post.new(uri)
+      req["Authorization"] = @@solr_auth
       http = Net::HTTP.new(uri.hostname, uri.port)
       http.request(req)
     end
 
     def Persons.location= location
       @@location = location
+    end
+
+    def Persons.solr_auth= solr_auth
+      @@solr_auth = solr_auth
     end
 
     def Persons.solr= solr

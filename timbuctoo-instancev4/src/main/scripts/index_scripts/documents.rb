@@ -5,7 +5,7 @@ class Documents
     @@location = ""
     @@solr_documents = ""
     @@solr_receptions = ""
-    @@solr_doc_receptions = ""
+    @@solr_auth = ""
     @@debug = false
     @@number = 0
     @@count_doc_rels = 0
@@ -38,6 +38,7 @@ class Documents
           start_value += 1
       end
       Documents.do_solr_update result, @@solr_documents
+      puts "documents: #{start_value}"
       return !line.eql?("[]")
     end
 
@@ -46,6 +47,7 @@ class Documents
       uri = URI.parse("#{location}update/")
       req = Net::HTTP::Post.new(uri)
       req.content_type = "application/json"
+      req["Authorization"] = @@solr_auth
       http = Net::HTTP.new(uri.hostname, uri.port)
       req.body = batch.to_json
       http.request(req)
@@ -54,6 +56,7 @@ class Documents
     def Documents.solr_commit location, debug=false
       uri = URI.parse("#{location}update?commit=true")
       req = Net::HTTP::Post.new(uri)
+      req["Authorization"] = @@solr_auth
       http = Net::HTTP.new(uri.hostname, uri.port)
       http.request(req)
     end
@@ -66,20 +69,16 @@ class Documents
     @@solr_documents = solr
     end
 
+    def Documents.solr_auth= solr_auth
+      @@solr_auth = solr_auth
+    end
+
     def Documents.solr_receptions= solr
     @@solr_receptions = solr
     end
 
     def Documents.solr_receptions
     @@solr_receptions
-    end
-
-    def Documents.solr_doc_receptions= solr
-    @@solr_doc_receptions = solr
-    end
-
-    def Documents.solr_doc_receptions
-    @@solr_doc_receptions
     end
 
     def Documents.person_receptions_concat data

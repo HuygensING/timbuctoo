@@ -129,6 +129,7 @@ class Person < Hash
     end
 
     def add_languages data
+=begin
       if !data['@relations'].nil? and !data["@relations"]["isCreatorOf"].nil?
           data["@relations"]["isCreatorOf"].each do |work|
             f = open("#{@@location}domain/wwdocuments/#{work["id"]}", {:read_timeout=>600})
@@ -139,6 +140,7 @@ class Person < Hash
             end
           end
       end
+=end
     end
 
     def id

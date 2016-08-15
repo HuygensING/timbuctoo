@@ -5,6 +5,7 @@ class DocumentReceptions
     @@bad_batches = 1
     @@wanted_document_receptions = Array.new
     @@solr = ""
+    @@solr_auth = ""
 
     def DocumentReceptions.add wanted_reception
       @@wanted_document_receptions << wanted_reception
@@ -34,6 +35,7 @@ class DocumentReceptions
       uri = URI.parse("#{@@solr}update/")
       req = Net::HTTP::Post.new(uri)
       req.content_type = "application/json"
+      req["Authorization"] = @@solr_auth
       http = Net::HTTP.new(uri.hostname, uri.port)
       req.body = batch.to_json
       response = http.request(req)
@@ -48,12 +50,17 @@ class DocumentReceptions
       puts "COMMIT document receptions"
       uri = URI.parse("#{@@solr}update?commit=true")
       req = Net::HTTP::Post.new(uri)
+      req["Authorization"] = @@solr_auth
       http = Net::HTTP.new(uri.hostname, uri.port)
       http.request(req)
     end
 
     def DocumentReceptions.solr= solr
       @@solr = solr
+    end
+
+    def DocumentReceptions.solr_auth= solr_auth
+      @@solr_auth = solr_auth
     end
 end
 
