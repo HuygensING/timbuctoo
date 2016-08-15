@@ -90,7 +90,6 @@ class Document < Hash
 
       build_relations data
 
-      self['_childDocuments_'] = Array.new
       add_creator_ids data
       add_person_receptions data
       add_document_receptions data
@@ -122,6 +121,10 @@ class Document < Hash
     end
 
     def add_creators
+      self['_childDocuments_'] = Array.new
+      self['authorGender_ss'] = Array.new
+      self['authorName_ss'] = Array.new
+      # TODO copy author name sort!
       self["creator_ids"].each do |creator_id|
           person = Persons.find creator_id
           if !person.nil?
@@ -135,6 +138,9 @@ class Document < Hash
                 new_person[new_key] = new_person.delete(old_key)
             end
             self['_childDocuments_'] << new_person
+            self['authorGender_ss'] << person['gender_s']
+            self['authorName_ss'] << person['displayName_s']
+            # TODO copy author name sort!
           end
       end
       self["creator_ids"] = Array.new

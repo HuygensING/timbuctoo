@@ -25,6 +25,8 @@ class PersonReception < Hash
     self['title_t'] = reception_doc["title_t"] if reception_doc['title_t'].is_a? String
     self['date_i'] = reception_doc["date_i"] if reception_doc['date_i'].is_a? Integer
     self['notes_t'] = reception_doc["notes_t"] if reception_doc['notes_t'].is_a? String
+    self['authorGender_ss'] = reception_doc["authorGender_ss"] if reception_doc["authorGender_ss"].is_a? Array
+    self['authorName_ss'] = reception_doc["authorName_ss"] if reception_doc["authorName_ss"].is_a? Array
     self["documentType_s"] = reception_doc["documentType_s"]
 
     Document.new_rel_names.each do |name|
