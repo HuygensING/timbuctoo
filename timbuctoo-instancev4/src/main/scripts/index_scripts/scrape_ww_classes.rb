@@ -5,76 +5,94 @@ require './person.rb'
 require './persons.rb'
 require './document.rb'
 require './documents.rb'
+require './documentReception.rb'
+require './documentReceptions.rb'
+require './personReception.rb'
+require './personReceptions.rb'
 require 'json'
 
 
 if __FILE__ == $0
-    Timer.start
 
-    debug = false
-    output_dir = ""
-    multiple_archives = ""
     @location = "http://test.repository.huygens.knaw.nl/"
-    @collection = "gettingstarted/"
-    @solr = "http://192.168.99.100:8983/solr/#{@collection}"
+    @person_coll = "wwpersons/"
+    @document_coll = "wwdocuments/"
+    @pers_reception_coll = "wwpersonreceptions/"
+    @doc_reception_coll = "wwdocumentreceptions/"
+    @solr_auth_header = ""
+    @solr = "http://192.168.99.100:8983/solr/"
 
     begin
-	(0..(ARGV.size-1)).each do |i|
-	case ARGV[i]
-	    when '--debug'
-		debug = true
-	    when '-coll'
-		@collection = ARGV[i+1]
-	    when '-loc'
-		@location = ARGV[i+1]
-	    when '-solr'
-		@solr = "#{ARGV[i+1]}#{@collection}"
-	    when '-h'
-		STDERR.puts "use: ruby scrape_ww_classes.rb -coll collection -loc location -solr solr-site [--debug]"
-		exit(1)
-	end
-    end
+      (0..(ARGV.size-1)).each do |i|
+        case ARGV[i]
+          when '--debug'
+            debug = true
+          when '-loc'
+            @location = ARGV[i+1]
+          when '-solr'
+            @solr = "#{ARGV[i+1]}"
+          when '-solr-auth'
+            @solr_auth_header = "#{ARGV[i+1]}"
+          when '-h'
+            STDERR.puts "use: ruby scrape_ww_classes.rb -loc location -solr solr-site [--debug]"
+            exit(1)
+        end
+      end
     rescue => detail
-	STDERR.puts "#{detail}"
+      STDERR.puts "#{detail}"
     end
-
-    #
-    # scrape persons en bewaar in Hash
-    # scrape documents en gebruik de person-hash
-    #
 
     Person.location = "#{@location}v2.1/"
     Persons.location = "#{@location}v2.1/"
-    Persons.solr = @solr
+    Persons.solr = "#{@solr}#{@person_coll}"
+    Persons.solr_auth = @solr_auth_header
     Persons.debug = false
+
     Document.location = "#{@location}v2.1/"
     Documents.location = "#{@location}v2.1/"
-    Documents.solr = @solr
-    Documents.debug = debug
+    Documents.solr_documents = "#{@solr}#{@document_coll}"
+    Documents.solr_auth = @solr_auth_header
+    Documents.debug = false
 
+    DocumentReceptions.solr = "#{@solr}#{@doc_reception_coll}"
+    DocumentReceptions.solr_auth = @solr_auth_header
 
-    continu = true
-    start_value = 0
-    num_of_lines = Persons.debug ? 10 : 100
-    while(continu)
-	continu = Persons.scrape_file start_value,num_of_lines
-	continu = false if Persons.debug && start_value==200
-	start_value += 100 if continu
-    end
-
-    puts "number of persons: #{Persons.size}"
+    PersonReceptions.solr = "#{@solr}#{@pers_reception_coll}"
+    PersonReceptions.solr_auth = @solr_auth_header
 
     continu = true
     start_value = 0
-    num_of_lines = debug ? 10 : 100
+    num_of_lines = 100 # Persons.debug ? 10 : 100
+
     while(continu)
-	continu = Documents.scrape_file start_value,num_of_lines
-	continu = false if debug && start_value==200
-	start_value += 100 if continu
+      continu = Persons.scrape_file start_value,num_of_lines
+      start_value += 100 if continu
     end
 
-    puts "number of documents: #{Documents.number}"
+    continu = true
+    start_value = 0
+    num_of_lines = 100 # debug ? 10 : 100
 
-    Timer.stop
+    while(continu)
+      continu = Documents.scrape_file start_value,num_of_lines
+      start_value += 100 if continu
+    end
+
+    # Always run Persons.add_languages before Documents.add_creators to ensure correct _childDocuments_ filters
+    # on wwdocuments index and wwdocumentreceptions index!!
+    Persons.add_languages
+    Documents.add_creators
+
+    Persons.delete_index
+    Persons.create_index
+
+    Documents.delete_index
+    Documents.create_index
+
+    PersonReceptions.delete_index
+    PersonReceptions.create_index
+
+    DocumentReceptions.delete_index
+    DocumentReceptions.create_index
 end
 
