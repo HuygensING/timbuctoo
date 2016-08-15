@@ -42,19 +42,29 @@ class Documents
 
     def Documents.create_index
       result = Array.new
-      count = 0
       @@documents.each do |key, document|
 
         result << document
         if result.length == 100
           Documents.do_solr_post result
           result = Array.new
-          count += 100
-          puts "POST document batch #{count}"
         end
       end
       Documents.do_solr_post result if result.length > 0
       Documents.do_solr_commit
+    end
+
+    def Documents.delete_index
+      puts "DELETE documents index"
+      uri = URI.parse("#{@@solr_documents}update/")
+      req = Net::HTTP::Post.new(uri)
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      req.content_type = 'text/xml'
+      req.body = '<delete><query>*:*</query></delete>'
+      response = http.request(req)
+      if !response.code.eql?("200")
+        puts "SOMETHING WENT WRONG: Documents.delete_index"
+      end
     end
 
     def Documents.do_solr_post batch
@@ -73,8 +83,6 @@ class Documents
     end
 
     def Documents.do_solr_commit
-      puts "#{@@solr_documents}update?commit=true"
-
       uri = URI.parse("#{@@solr_documents}update?commit=true")
       req = Net::HTTP::Post.new(uri)
       req["Authorization"] = @@solr_auth

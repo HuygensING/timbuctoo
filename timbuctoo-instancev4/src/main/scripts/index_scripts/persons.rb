@@ -41,19 +41,29 @@ class Persons
 
     def Persons.create_index
       result = Array.new
-      count = 0
       @@persons.each do |key, person|
 
         result << person
         if result.length == 100
           Persons.do_solr_post result
           result = Array.new
-          count += 100
-          puts "POST person batch #{count}"
         end
       end
       Persons.do_solr_post result if result.length > 0
       Persons.do_solr_commit
+    end
+
+    def Persons.delete_index
+      puts "DELETE persons index"
+      uri = URI.parse("#{@@solr}update/")
+      req = Net::HTTP::Post.new(uri)
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      req.content_type = 'text/xml'
+      req.body = '<delete><query>*:*</query></delete>'
+      response = http.request(req)
+      if !response.code.eql?("200")
+        puts "SOMETHING WENT WRONG: Persons.delete_index"
+      end
     end
 
     def Persons.do_solr_post batch

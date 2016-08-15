@@ -17,15 +17,12 @@ class DocumentReceptions
 
     def DocumentReceptions.create_index
       batch = Array.new
-      count = 0
       @@wanted_document_receptions.each do |reception_data|
         reception = DocumentReception.new(reception_data)
         batch << reception
         if batch.length == 100
           DocumentReceptions.do_solr_update batch
           batch = Array.new
-          count += 100
-          puts "POST document reception batch #{count}"
         end
       end
       DocumentReceptions.do_solr_update batch
@@ -33,6 +30,19 @@ class DocumentReceptions
       DocumentReceptions.do_solr_commit
     end
 
+
+    def DocumentReceptions.delete_index
+      puts "DELETE document receptions index"
+      uri = URI.parse("#{@@solr}update/")
+      req = Net::HTTP::Post.new(uri)
+      http = Net::HTTP.new(uri.hostname, uri.port)
+      req.content_type = 'text/xml'
+      req.body = '<delete><query>*:*</query></delete>'
+      response = http.request(req)
+      if !response.code.eql?("200")
+        puts "SOMETHING WENT WRONG: DocumentReceptions.delete_index"
+      end
+    end
 
     def DocumentReceptions.do_solr_update batch
       uri = URI.parse("#{@@solr}update/")

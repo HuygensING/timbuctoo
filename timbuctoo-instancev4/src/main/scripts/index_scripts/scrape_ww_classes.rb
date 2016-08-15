@@ -46,13 +46,13 @@ if __FILE__ == $0
     Persons.location = "#{@location}v2.1/"
     Persons.solr = "#{@solr}#{@person_coll}"
     Persons.solr_auth = @solr_auth_header
-    Persons.debug = true
+    Persons.debug = false
 
     Document.location = "#{@location}v2.1/"
     Documents.location = "#{@location}v2.1/"
     Documents.solr_documents = "#{@solr}#{@document_coll}"
     Documents.solr_auth = @solr_auth_header
-    Documents.debug = true
+    Documents.debug = false
 
     DocumentReceptions.solr = "#{@solr}#{@doc_reception_coll}"
     DocumentReceptions.solr_auth = @solr_auth_header
@@ -83,9 +83,16 @@ if __FILE__ == $0
     Persons.add_languages
     Documents.add_creators
 
-    PersonReceptions.create_index
+    Persons.delete_index
     Persons.create_index
+
+    Documents.delete_index
     Documents.create_index
+
+    PersonReceptions.delete_index
+    PersonReceptions.create_index
+
+    DocumentReceptions.delete_index
     DocumentReceptions.create_index
 end
 
