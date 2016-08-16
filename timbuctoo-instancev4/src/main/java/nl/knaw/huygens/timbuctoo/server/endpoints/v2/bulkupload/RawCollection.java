@@ -100,6 +100,10 @@ public class RawCollection {
     if (collectionExists(collection)) {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
+    if (numberOfItems > 100 || numberOfItems < 1) {
+      return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("error", jsn("number of items must be between 1" +
+        " and 100"))).build();
+    }
 
     final String edgeLabel;
       edgeLabel = NEXT_RAW_ITEM_EDGE_NAME;
