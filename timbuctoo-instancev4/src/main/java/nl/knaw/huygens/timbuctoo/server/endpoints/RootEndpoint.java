@@ -13,6 +13,6 @@ public class RootEndpoint {
   @GET
   @Produces(MediaType.TEXT_HTML)
   public Response getHomepage() {
-    return Response.temporaryRedirect(URI.create("/static/intro/")).build();
+    return Response.temporaryRedirect(URI.create("/static/upload/")).build();
   }
 }
