@@ -32,7 +32,6 @@ public class BulkUploadedDataSource implements DataSource {
   private final TimbuctooErrorHandler errorHandler;
   private Map<String, Tuple<String, Map<Object, List<String>>>> cachedUris = new HashMap<>();
 
-  public static final String HAS_FIRST_ERROR = "hasFirstError";
   public static final String HAS_NEXT_ERROR = "hasNextError";
 
   public BulkUploadedDataSource(String vreName, String collectionName, GraphWrapper graphWrapper) {
@@ -125,7 +124,7 @@ public class BulkUploadedDataSource implements DataSource {
                                    .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
                                    .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
                                    .next();
-          collection.addEdge(HAS_FIRST_ERROR, currentVertex);
+          collection.addEdge(HAS_NEXT_ERROR, currentVertex);
         } else {
           lastError.addEdge(HAS_NEXT_ERROR, lastError);
         }

@@ -15,6 +15,7 @@ import org.mockito.InOrder;
 import java.util.Iterator;
 import java.util.List;
 
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -80,7 +81,7 @@ public class TinkerpopSaverTest {
     Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
     instance.addEntity(rawCollection, Maps.newHashMap());
 
-    List<Vertex> hasFirstItems = Lists.newArrayList(rawCollection.vertices(Direction.OUT, "hasFirstItem"));
+    List<Vertex> hasFirstItems = Lists.newArrayList(rawCollection.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME));
     assertThat(hasFirstItems, hasSize(1));
     assertThat(hasFirstItems, contains(first));
   }
@@ -93,10 +94,10 @@ public class TinkerpopSaverTest {
     final Vertex second = instance.addEntity(rawCollection, Maps.newHashMap());
     final Vertex third = instance.addEntity(rawCollection, Maps.newHashMap());
 
-    assertThat(first.vertices(Direction.OUT, "hasNextItem").hasNext(), is(true));
-    assertThat(first.vertices(Direction.OUT, "hasNextItem").next(), is(second));
-    assertThat(second.vertices(Direction.OUT, "hasNextItem").hasNext(), is(true));
-    assertThat(second.vertices(Direction.OUT, "hasNextItem").next(), is(third));
+    assertThat(first.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME).hasNext(), is(true));
+    assertThat(first.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME).next(), is(second));
+    assertThat(second.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME).hasNext(), is(true));
+    assertThat(second.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME).next(), is(third));
   }
 
   @Test

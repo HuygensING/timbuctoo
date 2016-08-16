@@ -13,8 +13,8 @@ public class CollectionAdder {
   }
 
   public void addToLastItemOfCollection(Vertex rawCollection, Vertex result) {
-    if (!rawCollection.edges(Direction.OUT, TinkerpopSaver.FIRST_RAW_ITEM_EDGE_NAME).hasNext()) {
-      rawCollection.addEdge(TinkerpopSaver.FIRST_RAW_ITEM_EDGE_NAME, result);
+    if (!rawCollection.edges(Direction.OUT, TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME).hasNext()) {
+      rawCollection.addEdge(TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME, result);
     } else {
       Vertex previous = graphWrapper.getGraph().traversal().V(rawCollection.id())
                                     .out(TinkerpopSaver.RAW_ITEM_EDGE_NAME)

@@ -19,7 +19,6 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String RAW_COLLECTION_EDGE_NAME = "hasRawCollection";
   public static final String RAW_ITEM_EDGE_NAME = "hasItem";
   public static final String RAW_COLLECTION_NAME_PROPERTY_NAME = "name";
-  public static final String FIRST_RAW_ITEM_EDGE_NAME = "hasFirstItem";
   public static final String NEXT_RAW_ITEM_EDGE_NAME = "hasNextItem";
   public static final String RAW_PROPERTY_EDGE_NAME = "hasProperty";
   public static final String FIRST_RAW_PROPERTY_EDGE_NAME = "hasFirstProperty";

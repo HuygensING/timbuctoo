@@ -1,6 +1,5 @@
-package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
+package nl.knaw.huygens.timbuctoo.server.endpoints.v4;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;

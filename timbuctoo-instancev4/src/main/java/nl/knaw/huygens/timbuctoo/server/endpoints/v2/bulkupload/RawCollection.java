@@ -23,7 +23,6 @@ import java.net.URI;
 import java.util.Iterator;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.FIRST_RAW_ITEM_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME;
@@ -102,19 +101,39 @@ public class RawCollection {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
 
+    final String edgeLabel;
+      edgeLabel = NEXT_RAW_ITEM_EDGE_NAME;
+
+
     ObjectNode result = jsnO("name", jsn(collectionName));
     ArrayNode items = result.putArray("items");
 
-    GraphTraversal<Vertex, Vertex> firstItem = getFirstItemTraversal(startId, collection);
+    Optional<Vertex> lastAddedVertex = getFirstItemTraversal(startId, collection, edgeLabel)
+      .emit()
+      .repeat(__.out(edgeLabel))
+      .times(numberOfItems - 1)
+      .toStream()
+      //construct array of results
+      .peek(vertex -> {
+        ObjectNode values = jsnO();
+        ObjectNode errors = jsnO();
+        vertex.properties().forEachRemaining(p -> {
+          if (p.key().startsWith(VALUE_PREFIX)) {
+            values.put(p.key().substring(VALUE_PREFIX.length()), "" + p.value());
+          }
+        });
+        items.add(jsnO("values", values, "errors", errors));
+      })
+      //keep reference to the last result
+      .reduce((prev, cur) -> cur);
 
-    if (firstItem.hasNext()) {
-      Vertex lastAddedVertex = addToArray(items, firstItem.next(), numberOfItems);
 
-      Iterator<Vertex> nextLinkT = lastAddedVertex.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME);
+    if (lastAddedVertex.isPresent()) {
+      Iterator<Vertex> nextLinkT = lastAddedVertex.get().vertices(Direction.OUT, edgeLabel);
       if (nextLinkT.hasNext()) {
         Vertex nextLinkVertex = nextLinkT.next();
         String id = nextLinkVertex.value("tim_id");
-        URI nextLink = createNextLink(vreName, collectionName, id, numberOfItems);
+        URI nextLink = createNextLink(vreName, collectionName, id, numberOfItems, onlyErrors);
         result.put("_next", nextLink.toString());
       }
     }
@@ -127,32 +146,15 @@ public class RawCollection {
   }
 
   private GraphTraversal<Vertex, Vertex> getFirstItemTraversal(String startId,
-                                                               GraphTraversal<Vertex, Vertex> collection) {
+                                                               GraphTraversal<Vertex, Vertex> collection,
+                                                               String edgeLabel) {
     GraphTraversal<Vertex, Vertex> firstItem;
     if (startId == null) {
-      firstItem = collection.out(FIRST_RAW_ITEM_EDGE_NAME);
+      firstItem = collection.out(edgeLabel);
     } else {
       firstItem = collection.out(RAW_ITEM_EDGE_NAME).has("tim_id", startId);
     }
     return firstItem;
   }
-
-  // returns the last added vertex
-  private Vertex addToArray(ArrayNode items, Vertex vertex, int numberOfItems) {
-    ObjectNode item = jsnO();
-    items.add(item);
-    vertex.properties().forEachRemaining(p -> {
-      if (p.key().startsWith(VALUE_PREFIX)) {
-        item.put(p.key().substring(VALUE_PREFIX.length()), "" + p.value());
-      }
-    });
-
-    Iterator<Vertex> nextItem = vertex.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME);
-    if (numberOfItems > 0 && nextItem.hasNext()) {
-      return addToArray(items, nextItem.next(), numberOfItems - 1);
-    }
-    return vertex;
-  }
-
 
 }
