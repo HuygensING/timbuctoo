@@ -353,6 +353,7 @@ public class Gremlin {
       }
     } else {
       result.append(item);
+      result.append(item).append("\n");
     }
   }
 
