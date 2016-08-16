@@ -198,7 +198,7 @@ public class JsonMetadata {
 
   public ArrayNode listVres() {
     Stream<JsonNode> vres = metadata.getVres().entrySet().stream()
-      .filter(x->x.getValue().getCollections().size() > 0)
+      .filter(x -> x.getValue().getCollections().size() > 0)
       .map(entry -> jsn(entry.getKey()));
 
     return jsnA(vres);
