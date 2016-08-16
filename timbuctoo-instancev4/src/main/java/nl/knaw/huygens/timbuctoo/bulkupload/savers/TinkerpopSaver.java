@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -51,19 +52,22 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   private Vertex initVre(String vreName) {
     //FIXME namespace vrename per user
 
-    Vertex result = null;
+    final Vertex result;
     try (Transaction tx = graphWrapper.getGraph().tx()) {
       final GraphTraversal<Vertex, Vertex> vre = graphWrapper.getGraph().traversal().V()
                                                              .hasLabel(Vre.DATABASE_LABEL)
                                                              .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
       if (vre.hasNext()) {
         result = vre.next();
-        result.vertices(Direction.BOTH, RAW_COLLECTION_EDGE_NAME).forEachRemaining(coll -> {
-          coll.vertices(Direction.BOTH, RAW_ITEM_EDGE_NAME).forEachRemaining(vertex -> {
-            vertex.remove();
-          });
-          coll.remove();
-        });
+        graphWrapper.getGraph().traversal().V(result.id())
+                    .out(RAW_COLLECTION_EDGE_NAME)
+                    .union(
+                      __.out(RAW_ITEM_EDGE_NAME),
+                      __.out(RAW_PROPERTY_EDGE_NAME),
+                      __.identity() //the collection
+                    )
+                    .drop()
+                    .toList();//force traversal and thus side-effects
       } else {
         result = graphWrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
       }
