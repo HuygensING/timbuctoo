@@ -13,8 +13,10 @@ import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -25,6 +27,8 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
@@ -104,6 +108,8 @@ public class ExecuteRml {
                      .build();
     }
 
+    LOG.info(rmlMappingDocument.toString());
+
     Graph graph = graphWrapper.getGraph();
     GraphTraversal<Vertex, Vertex> vreT =
       graph.traversal().V().hasLabel(Vre.DATABASE_LABEL).has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
@@ -129,7 +135,27 @@ public class ExecuteRml {
     final TripleImporter tripleImporter = new TripleImporter(graphWrapper, vreName);
 
     try (Transaction tx = graphWrapper.getGraph().tx()) {
-      importPreparer.setUpAdminVre(); // FIXME find a better place to setup an Admin VRE.
+      importPreparer.setUpAdminVre();
+
+      graphWrapper
+        .getGraph()
+        .traversal()
+        .V()
+        .hasLabel(Vre.DATABASE_LABEL)
+        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+        .out("hasCollection")
+        .union(
+          __.out("hasDisplayName"),
+          __.out("hasProperty"),
+          __.out("hasEntityNode")
+            .union(
+              __.out("hasEntity"), //the entities
+              __.identity() //the entityNodes container
+            ),
+          __.identity() //the collection
+        )
+        .drop()
+        .toList();//force traversal and thus side-effects
 
       rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(tripleImporter::importTriple);
       tx.commit();
