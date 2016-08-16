@@ -16,4 +16,11 @@ public class RrConstant implements RrTermMap {
     return value;
   }
 
+  @Override
+  public String toString() {
+    return String.format("      Constant: %s\n",
+      this.value
+    );
+  }
+
 }

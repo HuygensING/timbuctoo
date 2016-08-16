@@ -48,4 +48,13 @@ public class RrRefObjectMap {
     dataSource.willBeJoinedOn(rrJoinCondition.getChild(), value, subject.getURI(), uniqueId);
   }
 
+
+  @Override
+  public String toString() {
+    return String.format("      References %s on %s using %s\n",
+      this.rrJoinCondition.getParent(),
+      this.parentTriplesMapUri,
+      this.rrJoinCondition.getChild()
+    );
+  }
 }

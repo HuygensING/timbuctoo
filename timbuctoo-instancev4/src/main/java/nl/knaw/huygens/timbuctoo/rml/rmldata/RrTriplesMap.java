@@ -9,6 +9,7 @@ import org.apache.jena.graph.Triple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
@@ -56,4 +57,15 @@ public class RrTriplesMap {
   public DataSource getDataSource() {
     return dataSource;
   }
+
+  @Override
+  public String toString() {
+    return String.format("  TriplesMap: \n  uri: %s\n  datasource:\n%s  subjectMap:\n%s  predicateObjectMaps:\n%s",
+      uri,
+      this.dataSource,
+      this.subjectMap,
+      String.join("", this.predicateObjectMaps.stream().map(x -> String.format("%s", x)).collect(Collectors.toList()))
+    );
+  }
+
 }

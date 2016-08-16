@@ -15,4 +15,12 @@ public class RrSubjectMap {
   public Node generateValue(Row row) {
     return termMap.generateValue(row);
   }
+
+  @Override
+  public String toString() {
+    return String.format("    SubjectMap: \n%s",
+      this.termMap
+    );
+  }
+
 }

@@ -22,4 +22,13 @@ public class RrPredicateObjectMapOfTermMap implements RrPredicateObjectMap {
   public Stream<Triple> generateValue(Node subject, Row row) {
     return Stream.of(new Triple(subject, predicateMap.generateValue(row), objectMap.generateValue(row)));
   }
+
+  @Override
+  public String toString() {
+    return String.format("    predicateMap:\n%s    objectMap:\n%s    ================================\n",
+      this.predicateMap,
+      this.objectMap
+    );
+  }
+
 }

@@ -26,4 +26,13 @@ public class RrColumn implements RrTermMap {
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }
   }
+
+  @Override
+  public String toString() {
+    return String.format("      Column: %s (%s)\n",
+      this.referenceString,
+      this.termType
+    );
+  }
+
 }

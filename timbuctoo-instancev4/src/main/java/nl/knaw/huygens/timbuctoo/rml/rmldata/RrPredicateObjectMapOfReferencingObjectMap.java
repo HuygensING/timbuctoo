@@ -34,4 +34,15 @@ public class RrPredicateObjectMapOfReferencingObjectMap implements RrPredicateOb
         .map(value -> new Triple(subject, predicate, value));
     }
   }
+
+  @Override
+  public String toString() {
+    return String.format("    isInverted: %s\n    predicateMap:\n%s    objectMap:\n%s    " +
+        "================================\n",
+      this.isInverted,
+      this.predicateMap,
+      this.objectMap
+    );
+  }
+
 }

@@ -69,4 +69,20 @@ public class RrTemplate implements RrTermMap {
     }
 
   }
+
+  @Override
+  public String toString() {
+    Matcher regexMatcher = pattern.matcher(template);
+    StringBuffer resultString = new StringBuffer();
+    while (regexMatcher.find()) {
+      regexMatcher.appendReplacement(resultString, "«" + regexMatcher.group(1) + "»" );
+    }
+    regexMatcher.appendTail(resultString);
+
+    return String.format("      Template: %s (%s)\n",
+      resultString,
+      this.termType
+    );
+  }
+
 }

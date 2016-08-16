@@ -108,4 +108,9 @@ public class BulkUploadedDataSource implements DataSource {
       this.currentVertex = currentVertex;
     }
   }
+
+  @Override
+  public String toString() {
+    return String.format("    BulkUploadedDatasource: %s, %s\n", this.vreName, this.collectionName);
+  }
 }
