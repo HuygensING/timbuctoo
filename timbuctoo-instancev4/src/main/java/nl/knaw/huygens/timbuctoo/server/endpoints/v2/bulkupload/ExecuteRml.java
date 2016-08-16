@@ -160,6 +160,7 @@ public class ExecuteRml {
         .drop()
         .toList();//force traversal and thus side-effects
 
+      importPreparer.setupVre(vreName);
       //first save the mapping, which also contains the archetypes for the collections
       model.listStatements().forEachRemaining(statement -> tripleImporter.importTriple(new Triple(
         statement.getSubject().asNode(),
