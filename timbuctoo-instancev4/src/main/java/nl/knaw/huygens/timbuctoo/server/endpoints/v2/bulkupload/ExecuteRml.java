@@ -37,6 +37,7 @@ import java.nio.charset.StandardCharsets;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -163,6 +164,13 @@ public class ExecuteRml {
 
     vres.reload();
 
-    return Response.status(200).entity(jsnO("success", jsn(true))).build();
+    boolean hasError = graph.traversal().V()
+                            .hasLabel(Vre.DATABASE_LABEL)
+                            .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+                            .out(RAW_COLLECTION_EDGE_NAME)
+                            .out(HAS_NEXT_ERROR)
+                            .hasNext();
+
+    return Response.ok().entity(jsnO("success", jsn(!hasError))).build();
   }
 }
