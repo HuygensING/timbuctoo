@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
+import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -31,6 +32,10 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 @Path("/v2.1/bulk-upload/{vre}/rml/execute")
 public class ExecuteRml {
@@ -62,6 +67,7 @@ public class ExecuteRml {
 
   @POST
   @Consumes("application/ld+json")
+  @Produces(MediaType.APPLICATION_JSON)
   public Response post(String rdfData, @PathParam("vre") String vreName,
                        @HeaderParam("Authorization") String authorizationHeader) {
     UserPermissionChecker.UserPermission permission = permissionChecker.check(vreName, authorizationHeader);
@@ -78,7 +84,12 @@ public class ExecuteRml {
     }
 
     if (rdfData == null || rdfData.length() == 0) {
-      return Response.status(Response.Status.BAD_REQUEST).entity("Body should contain a Json-LD object.").build();
+      return Response.status(Response.Status.BAD_REQUEST)
+                     .entity(jsnO(
+                       "success", jsn(false),
+                       "errors", jsnA(jsn("Body should contain a Json-LD object."))
+                     ))
+                     .build();
     }
 
     Model model = ModelFactory.createDefaultModel() ;
@@ -86,7 +97,10 @@ public class ExecuteRml {
     final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(model, dataSourceFactory);
     if (rmlMappingDocument.getErrors().size() > 0) {
       return Response.status(Response.Status.BAD_REQUEST)
-                     .entity(String.join("\n", rmlMappingDocument.getErrors()))
+                     .entity(jsnO(
+                       "success", jsn(false),
+                       "errors", jsnA(rmlMappingDocument.getErrors().stream().map(JsonBuilder::jsn))
+                     ))
                      .build();
     }
 
@@ -95,14 +109,20 @@ public class ExecuteRml {
       graph.traversal().V().hasLabel(Vre.DATABASE_LABEL).has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
     if (!vreT.hasNext()) {
       return Response.status(Response.Status.NOT_FOUND)
-                     .entity(String.format("VRE with name '%s' cannot be found", vreName))
+                     .entity(jsnO(
+                       "success", jsn(false),
+                       "errors", jsnA(jsn(String.format("VRE with name '%s' cannot be found", vreName)))
+                     ))
                      .build();
     }
     Vertex vreVertex = vreT.next();
 
     if (!vreVertex.vertices(Direction.OUT, RAW_COLLECTION_EDGE_NAME).hasNext()) {
       return Response.status(Response.Status.PRECONDITION_FAILED)
-                     .entity("The VRE is missing raw collections to map.")
+                     .entity(jsnO(
+                       "success", jsn(false),
+                       "errors", jsnA(jsn("The VRE is missing raw collections to map."))
+                     ))
                      .build();
     }
 
@@ -117,6 +137,6 @@ public class ExecuteRml {
 
     vres.reload();
 
-    return Response.noContent().build();
+    return Response.status(200).entity(jsnO("success", jsn(true))).build();
   }
 }
