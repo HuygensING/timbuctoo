@@ -33,7 +33,7 @@ public class TripleProcessorFactory {
   }
 
   private boolean describesRelation(Triple triple) {
-    return triple.getObject().isURI();
+    return triple.getObject().isURI() || triple.getObject().isBlank();
   }
 
   private boolean describesProperty(Triple triple) {
