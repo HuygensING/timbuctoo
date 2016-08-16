@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -21,13 +22,16 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_ITEM_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.VALUE_PREFIX;
+import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
@@ -35,6 +39,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class RawCollection {
   public static final String NUMBER_OF_ITEMS = "rows";
   public static final String START_ID = "startId";
+  public static final String ONLY_ERRORS = "onlyErrors";
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
   private final UserPermissionChecker userPermissionChecker;
@@ -47,7 +52,7 @@ public class RawCollection {
 
   public URI makeUri(String vreName, String collectionName, boolean onlyErrors) {
     URI resourceUri = minimumUri(vreName, collectionName)
-      .queryParam("onlyErrors", onlyErrors)
+      .queryParam(ONLY_ERRORS, onlyErrors)
       .build();
     return uriHelper.fromResourceUri(resourceUri);
   }
@@ -58,9 +63,11 @@ public class RawCollection {
     return uriHelper.fromResourceUri(resourceUri);
   }
 
-  private URI createNextLink(String vreName, String collectionName, String startId, int numberOfItems) {
+  private URI createNextLink(String vreName, String collectionName, String startId, int numberOfItems,
+                             boolean onlyErrors) {
     URI resourceUri = minimumUri(vreName, collectionName)
       .queryParam(START_ID, startId).queryParam(NUMBER_OF_ITEMS, numberOfItems)
+      .queryParam(ONLY_ERRORS, onlyErrors)
       .build();
     return uriHelper.fromResourceUri(resourceUri);
   }
@@ -75,7 +82,8 @@ public class RawCollection {
   @Produces(APPLICATION_JSON)
   public Response get(@PathParam("vre") String vreName, @PathParam("collection") String collectionName,
                       @QueryParam(NUMBER_OF_ITEMS) @DefaultValue("10") int numberOfItems,
-                      @QueryParam(START_ID) String startId, @HeaderParam("Authorization") String authorizationString) {
+                      @QueryParam(START_ID) String startId, @HeaderParam("Authorization") String authorizationString,
+                      @QueryParam(ONLY_ERRORS) @DefaultValue("false") boolean onlyErrors) {
 
     UserPermissionChecker.UserPermission permission = userPermissionChecker.check(vreName, authorizationString);
 
@@ -106,7 +114,11 @@ public class RawCollection {
     }
 
     final String edgeLabel;
+    if (onlyErrors) {
+      edgeLabel = HAS_NEXT_ERROR;
+    } else {
       edgeLabel = NEXT_RAW_ITEM_EDGE_NAME;
+    }
 
 
     ObjectNode result = jsnO("name", jsn(collectionName));
@@ -124,6 +136,9 @@ public class RawCollection {
         vertex.properties().forEachRemaining(p -> {
           if (p.key().startsWith(VALUE_PREFIX)) {
             values.put(p.key().substring(VALUE_PREFIX.length()), "" + p.value());
+          }
+          if (p.key().startsWith(ERROR_PREFIX)) {
+            errors.put(p.key().substring(ERROR_PREFIX.length()), "" + p.value());
           }
         });
         items.add(jsnO("values", values, "errors", errors));
