@@ -10,8 +10,10 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.ResIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -157,6 +159,13 @@ public class ExecuteRml {
         )
         .drop()
         .toList();//force traversal and thus side-effects
+
+      //first save the mapping, which also contains the archetypes for the collections
+      model.listStatements().forEachRemaining(statement -> tripleImporter.importTriple(new Triple(
+        statement.getSubject().asNode(),
+        statement.getPredicate().asNode(),
+        statement.getObject().asNode()
+      )));
 
       rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(tripleImporter::importTriple);
       tx.commit();
