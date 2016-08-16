@@ -14,6 +14,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -26,7 +27,7 @@ public class JenaBasedReader {
   private static final String NS_RR = "http://www.w3.org/ns/r2rml#";
   private static final String NS_RML = "http://semweb.mmlab.be/ns/rml#";
 
-  public RmlMappingDocument fromRdf(Model data, Function<RdfResource, DataSource> dataSourceFactory) {
+  public RmlMappingDocument fromRdf(Model data, Function<RdfResource, Optional<DataSource>> dataSourceFactory) {
     ResIterator tripleMaps = data.listSubjectsWithProperty(data.createProperty(NS_RR + "subjectMap"));
     MappingDocumentBuilder resultBuilder = rmlMappingDocument();
     try {

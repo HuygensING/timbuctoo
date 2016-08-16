@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -34,10 +35,12 @@ public class MappingDocumentBuilder {
     return subBuilder;
   }
 
-  public RmlMappingDocument build(Function<RdfResource, DataSource> dataSourceFactory) {
+  public RmlMappingDocument build(Function<RdfResource, Optional<DataSource>> dataSourceFactory) {
     List<RrTriplesMap> triplesMaps =
       this.tripleMapBuilders.stream()
-                            .map(tripleMapBuilder -> tripleMapBuilder.build(dataSourceFactory, this::getRrTriplesMap))
+                            .map(tripleMapBuilder -> tripleMapBuilder.build(dataSourceFactory, this::getRrTriplesMap,
+                              errors::add))
+                            .filter(x -> x != null)
                             .collect(Collectors.toList());
     Set<RrTriplesMap> seenTriplesMaps = new HashSet<>();
     triplesMaps.forEach(map -> {

@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -47,20 +48,26 @@ public class TriplesMapBuilder {
     return subBuilder;
   }
 
-  RrTriplesMap build(Function<RdfResource, DataSource> dataSourceFactory,
-                     Function<String, PromisedTriplesMap> getTriplesMap) {
+  RrTriplesMap build(Function<RdfResource, Optional<DataSource>> dataSourceFactory,
+                     Function<String, PromisedTriplesMap> getTriplesMap, Consumer<String> errorLogger) {
 
-    RrTriplesMap instance = new RrTriplesMap(
-      subjectMapBuilder.build(predicateObjectMapBuilders::add),
-      dataSourceFactory.apply(logicalSource),
-      uri
-    );
 
-    for (PredicateObjectMapBuilder builder : this.predicateObjectMapBuilders) {
-      builder.build(getTriplesMap, instance);
+    Optional<DataSource> dataSource = dataSourceFactory.apply(logicalSource);
+    if (dataSource.isPresent()) {
+      RrTriplesMap instance = new RrTriplesMap(
+        subjectMapBuilder.build(predicateObjectMapBuilders::add),
+        dataSource.get(),
+        uri
+      );
+
+      for (PredicateObjectMapBuilder builder : this.predicateObjectMapBuilders) {
+        builder.build(getTriplesMap, instance);
+      }
+      return instance;
+    } else {
+      errorLogger.accept("No datasource could be constructed for map " + uri);
+      return null;
     }
-
-    return instance;
   }
 
 }

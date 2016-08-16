@@ -59,7 +59,7 @@ public class RmlMapperTest {
           )
         )
       )
-      .build(x -> input)
+      .build(x -> Optional.of(input))
       .execute(new ThrowingErrorHandler())
       .collect(toList());
 
@@ -87,7 +87,7 @@ public class RmlMapperTest {
           .withClass(rdf(EXAMPLE_CLASS))
         )
       )
-      .build(x -> input)
+      .build(x -> Optional.of(input))
       .execute(new ThrowingErrorHandler())
       .collect(toList());
 
@@ -116,7 +116,7 @@ public class RmlMapperTest {
           .withObjectMap(tm -> tm.withColumnTerm("naam"))
         )
       )
-      .build(x -> input)
+      .build(x -> Optional.of(input))
       .execute(new ThrowingErrorHandler())
       .collect(toList());
 
@@ -138,7 +138,7 @@ public class RmlMapperTest {
           .withTermMap(tm -> tm.withTemplateTerm("http://example.org/items/{naam}?blah"))
         )
       )
-      .build(x -> input)
+      .build(x -> Optional.of(input))
       .execute(new ThrowingErrorHandler())
       .collect(toList());
 
@@ -215,10 +215,10 @@ public class RmlMapperTest {
       .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
       .build(logicalSource -> {
         if (logicalSource.asIri().get().equals("http://example.org/persons")) {
-          return new TestDataSource(Lists.newArrayList(ImmutableMap.of()), errorHandler);
+          return Optional.of(new TestDataSource(Lists.newArrayList(ImmutableMap.of()), errorHandler));
         }
         if (logicalSource.asIri().get().equals("http://example.org/documents")) {
-          return new TestDataSource(Lists.newArrayList(firstDocument), errorHandler);
+          return Optional.of(new TestDataSource(Lists.newArrayList(firstDocument), errorHandler));
         }
         return null;
       })
@@ -255,19 +255,19 @@ public class RmlMapperTest {
       );
   }
 
-  private Function<RdfResource, DataSource> makePersonDocumentSourceFactory() {
+  private Function<RdfResource, Optional<DataSource>> makePersonDocumentSourceFactory() {
     return logicalSource -> {
       if (logicalSource.asIri().get().equals("http://example.org/persons")) {
-        return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+        return Optional.of(new TestDataSource(Lists.newArrayList(ImmutableMap.of(
           "rdfUri", "http://www.example.org/persons/1",
           "naam", "Bill"
-        )));
+        ))));
       }
       if (logicalSource.asIri().get().equals("http://example.org/documents")) {
-        return new TestDataSource(Lists.newArrayList(ImmutableMap.of(
+        return Optional.of(new TestDataSource(Lists.newArrayList(ImmutableMap.of(
           "rdfUri", "http://www.example.org/documents/1",
           "geschrevenDoor", "Bill"
-        )));
+        ))));
       }
       return null;
     };

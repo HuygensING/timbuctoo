@@ -4,10 +4,11 @@ import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 
-public class DataSourceFactory implements Function<RdfResource, DataSource> {
+public class DataSourceFactory implements Function<RdfResource, Optional<DataSource>> {
   private final GraphWrapper graphWrapper;
   private static final String NS_RML = "http://semweb.mmlab.be/ns/rml#";
 
@@ -16,19 +17,19 @@ public class DataSourceFactory implements Function<RdfResource, DataSource> {
   }
 
   @Override
-  public DataSource apply(RdfResource rdfResource) {
+  public Optional<DataSource> apply(RdfResource rdfResource) {
     for (RdfResource resource : rdfResource.out(NS_RML + "source")) {
       Set<RdfResource> rawCollection = resource.out("http://timbuctoo.com/mapping#rawCollection");
       Set<RdfResource> vreName = resource.out("http://timbuctoo.com/mapping#vreName");
 
       if (rawCollection.size() == 1 && vreName.size() == 1) {
-        return new BulkUploadedDataSource(
+        return Optional.of(new BulkUploadedDataSource(
           vreName.iterator().next().asLiteral().get().getValue(),
           rawCollection.iterator().next().asLiteral().get().getValue(),
           graphWrapper
-        );
+        ));
       }
     }
-    return null;
+    return Optional.empty();
   }
 }
