@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.crud.changelistener.CollectionHasEntityRelation
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -267,6 +268,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
+    register(environment, new TransactionFilter(graphManager));
     //Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
 
