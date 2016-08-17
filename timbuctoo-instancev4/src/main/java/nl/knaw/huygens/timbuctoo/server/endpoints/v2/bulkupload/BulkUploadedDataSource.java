@@ -1,8 +1,10 @@
-package nl.knaw.huygens.timbuctoo.rml;
+package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.rml.rmldata.rmlsources.TimbuctooRawCollectionSource;
+import nl.knaw.huygens.timbuctoo.rml.DataSource;
+import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
+import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -21,24 +23,26 @@ import java.util.Map;
 
 public class BulkUploadedDataSource implements DataSource {
   public static final Logger LOG = LoggerFactory.getLogger(BulkUploadedDataSource.class);
-  private final TimbuctooRawCollectionSource source;
+  private final String vreName;
+  private final String collectionName;
   private final GraphWrapper graphWrapper;
   private final TimbuctooErrorHandler errorHandler;
   private Map<String, Tuple<String, Map<Object, List<String>>>> cachedUris = new HashMap<>();
 
-  public BulkUploadedDataSource(TimbuctooRawCollectionSource source, GraphWrapper graphWrapper) {
-    this.source = source;
+  public BulkUploadedDataSource(String vreName, String collectionName, GraphWrapper graphWrapper) {
+    this.vreName = vreName;
+    this.collectionName = collectionName;
     this.graphWrapper = graphWrapper;
     this.errorHandler = new TimbuctooErrorHandler(graphWrapper);
   }
 
   @Override
-  public Iterator<Row> getRows() {
+  public Iterator<Row> getRows(ErrorHandler defaultErrorHandler) {
     return graphWrapper.getGraph().traversal().V()
                        .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
-                       .has(Vre.VRE_NAME_PROPERTY_NAME, source.getVreName())
+                       .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
                        .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
-                       .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, source.getRawCollectionName())
+                       .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
                        .out(TinkerpopSaver.RAW_ITEM_EDGE_NAME)
                        .toStream()
                        .map(vertex -> {
@@ -85,8 +89,8 @@ public class BulkUploadedDataSource implements DataSource {
     }
 
     @Override
-    public void handleLink(Map<String, Object> rowData, String childField, String parentCollection,
-                           String parentField) {
+    public void linkError(Map<String, Object> rowData, String childField, String parentCollection,
+                          String parentField) {
 
       Object fieldValue = rowData.get(childField);
       if (fieldValue != null) {

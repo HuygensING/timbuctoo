@@ -6,6 +6,6 @@ import org.apache.jena.graph.Node;
 import java.util.stream.Stream;
 
 public interface RrTermMap {
-  Stream<Node> generateValue(Row input);
+  Node generateValue(Row input);
 
 }

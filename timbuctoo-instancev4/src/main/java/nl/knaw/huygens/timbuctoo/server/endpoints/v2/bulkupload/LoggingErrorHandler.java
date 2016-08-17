@@ -1,5 +1,6 @@
-package nl.knaw.huygens.timbuctoo.rml;
+package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
+import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,7 +14,7 @@ public class LoggingErrorHandler implements ErrorHandler {
   public static final Logger LOG = LoggerFactory.getLogger(LoggingErrorHandler.class);
 
   @Override
-  public void handleLink(Map<String, Object> rowData, String childField, String parentCollection, String parentField) {
+  public void linkError(Map<String, Object> rowData, String childField, String parentCollection, String parentField) {
     if (rowData.get(childField) != null) {
       LOG.error("Row's field '{}' with value '{}' could not be linked to field '{}' of the collection '{}'",
         childField,

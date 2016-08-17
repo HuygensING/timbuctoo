@@ -11,15 +11,11 @@ public class Row {
     this.errorHandler = errorHandler;
   }
 
-  public Row(Map<String, Object> data) {
-    this(data, new LoggingErrorHandler());
-  }
-
   public Object get(String key) {
     return data.get(key);
   }
 
   public void handleLinkError(String childField, String parentCollection, String parentField) {
-    errorHandler.handleLink(data, childField, parentCollection, parentField);
+    errorHandler.linkError(data, childField, parentCollection, parentField);
   }
 }

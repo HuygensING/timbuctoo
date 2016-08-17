@@ -134,6 +134,7 @@
     <rpm-maven-plugin.version>2.1.5</rpm-maven-plugin.version>
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
+    <jsonld-java.version>0.8.3</jsonld-java.version>
   </properties>
 
   <dependencies>
@@ -269,6 +270,15 @@
       <version>${huygens.security.version}</version>
     </dependency>
 
+    <!-- ### RDF ## -->
+    <!-- Apache Jena -->
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>apache-jena-libs</artifactId>
+      <type>pom</type>
+      <version>3.1.0</version>
+    </dependency>
+
     <!-- ### Std lib additions ## -->
     <!-- Guava -->
     <dependency>
@@ -282,14 +292,6 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>3.4</version>
-    </dependency>
-
-    <!-- Apache Jena for RDF -->
-    <dependency>
-      <groupId>org.apache.jena</groupId>
-      <artifactId>apache-jena-libs</artifactId>
-      <type>pom</type>
-      <version>3.1.0</version>
     </dependency>
 
     <!--Try monad-->

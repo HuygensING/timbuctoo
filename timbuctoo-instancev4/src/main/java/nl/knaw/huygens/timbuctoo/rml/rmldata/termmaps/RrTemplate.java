@@ -16,13 +16,6 @@ public class RrTemplate implements RrTermMap {
   public RrTemplate(String template, TermType termType) {
     this.template = template;
     this.termType = termType;
-    pattern = Pattern.compile(
-      "(?<!\\\\)(?:\\\\\\\\)*\\{((?:[^\\\\\\}]|(?:(?<!\\\\)(?:\\\\\\\\)+)|(?:\\\\\\})+)+)\\}"
-    );
-  }
-
-  @Override
-  public Stream<Node> generateValue(Row input) {
     //regex can be tested by going to https://regex101.com/r/fV1zJ1/1
     //It has been tested with
     // http://jan/{} <- should not match
@@ -50,7 +43,13 @@ public class RrTemplate implements RrTermMap {
     // nothing matches an odd number of slashes so \\} is matched in two steps: first \\ is matched as "an even number
     // of slashes" then the } is matched as the end of the regex. On the other hand \\\} is has the first two slashes
     // matched by the even number of slashes matcher and the remaining \} matched by the "exact combination \}" matcher
+    pattern = Pattern.compile(
+      "(?<!\\\\)(?:\\\\\\\\)*\\{((?:[^\\\\\\}]|(?:(?<!\\\\)(?:\\\\\\\\)+)|(?:\\\\\\})+)+)\\}"
+    );
+  }
 
+  @Override
+  public Node generateValue(Row input) {
     Matcher regexMatcher = pattern.matcher(template);
     StringBuffer resultString = new StringBuffer();
     while (regexMatcher.find()) {
@@ -60,11 +59,11 @@ public class RrTemplate implements RrTermMap {
 
     switch (termType) {
       case IRI:
-        return Stream.of(NodeFactory.createURI(resultString.toString()));
+        return NodeFactory.createURI(resultString.toString());
       case BlankNode:
-        return Stream.of(NodeFactory.createBlankNode(resultString.toString()));
+        return NodeFactory.createBlankNode(resultString.toString());
       case Literal:
-        return Stream.of(NodeFactory.createLiteral(resultString.toString()));
+        return NodeFactory.createLiteral(resultString.toString());
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }

@@ -17,9 +17,7 @@ public class RrJoinCondition {
     return parent;
   }
 
-  public void flip() {
-    String temp = parent;
-    parent = child;
-    child = temp;
+  public RrJoinCondition flipped() {
+    return new RrJoinCondition(parent, child);
   }
 }

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
 import com.google.common.collect.ImmutableMap;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.util.HashMap;
@@ -15,7 +16,7 @@ public class TestDataSource implements DataSource {
   private final Map<String, Tuple<String, Map<Object, String>>> cachedUris = new HashMap<>();
 
   public TestDataSource(Iterable<Map<String, Object>> data) {
-    this(data, new LoggingErrorHandler());
+    this(data, null);
   }
 
   public TestDataSource(Iterable<Map<String, Object>> data, ErrorHandler errorHandler) {
@@ -24,13 +25,13 @@ public class TestDataSource implements DataSource {
   }
 
   @Override
-  public Iterator<Row> getRows() {
+  public Iterator<Row> getRows(ErrorHandler defaultErrorHandler) {
     return stream(data)
       .map(values -> {
         ImmutableMap.Builder<String, Object> resultBuilder = ImmutableMap.<String, Object>builder().putAll(values);
         resultBuilder = mapRefs(values, resultBuilder);
 
-        return new Row(resultBuilder.build(), errorHandler);
+        return new Row(resultBuilder.build(), errorHandler == null ? defaultErrorHandler : errorHandler);
       })
       .iterator();
   }

@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -28,13 +27,11 @@ public class MyVres {
   private final LoggedInUserStore loggedInUserStore;
   private final Authorizer authorizer;
   private final Vres vres;
-  private final SaveRml saveRml;
 
-  public MyVres(LoggedInUserStore loggedInUserStore, Authorizer authorizer, Vres vres, SaveRml saveRml) {
+  public MyVres(LoggedInUserStore loggedInUserStore, Authorizer authorizer, Vres vres) {
     this.loggedInUserStore = loggedInUserStore;
     this.authorizer = authorizer;
     this.vres = vres;
-    this.saveRml = saveRml;
   }
 
   @GET
@@ -66,15 +63,14 @@ public class MyVres {
           if (x.isMine()) {
             return jsnO(
               "name", jsn(x.getVreName()),
-              "published", jsn(x.isPublished),
-              "rmlUri", jsn(x.getRmlUri())
+              "published", jsn(x.isPublished)
             );
           } else {
             return jsnO(
               "name", jsn(x.getVreName())
             );
           }
-        }, toMap(x -> x.get("name").asText(), x-> x))));
+        }, toMap(x -> x.get("name").asText(), x -> x))));
 
     return Response.ok(result).build();
   }
@@ -102,8 +98,5 @@ public class MyVres {
       return isPublished;
     }
 
-    public String getRmlUri() {
-      return saveRml.makeUri(vreName).toASCIIString();
-    }
   }
 }

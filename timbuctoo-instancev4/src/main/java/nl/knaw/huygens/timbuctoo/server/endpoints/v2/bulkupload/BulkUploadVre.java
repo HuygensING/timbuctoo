@@ -32,16 +32,14 @@ public class BulkUploadVre {
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
   private final RawCollection rawCollection;
-  private final SaveRml saveRml;
   private final ExecuteRml executeRml;
   private final UserPermissionChecker permissionChecker;
 
-  public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection, SaveRml saveRml,
+  public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection,
                        ExecuteRml executeRml, UserPermissionChecker permissionChecker) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.rawCollection = rawCollection;
-    this.saveRml = saveRml;
     this.executeRml = executeRml;
     this.permissionChecker = permissionChecker;
   }
@@ -80,7 +78,6 @@ public class BulkUploadVre {
     Vertex vreVertex = vreT.next();
 
     ObjectNode result = jsnO("vre", jsn(vreName));
-    result.put("saveMapping", saveRml.makeUri(vreName).toString());
     result.put("executeMapping", executeRml.makeUri(vreName).toString());
 
     ArrayNode collectionArrayNode = result.putArray("collections");

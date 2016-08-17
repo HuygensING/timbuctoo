@@ -29,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
+import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
@@ -54,9 +55,9 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
@@ -229,12 +230,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UserPermissionChecker permissionChecker = new UserPermissionChecker(loggedInUserStore, authorizer);
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
-    SaveRml saveRml = new SaveRml(graphManager, uriHelper, permissionChecker);
-    register(environment, saveRml);
-    ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, permissionChecker);
+    ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
+      new DataSourceFactory(graphManager));
     register(environment, executeRml);
     BulkUploadVre bulkUploadVre =
-      new BulkUploadVre(graphManager, uriHelper, rawCollection, saveRml, executeRml, permissionChecker);
+      new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker);
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper, bulkUploadVre,
       loggedInUserStore, authorizer));
@@ -243,7 +243,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new VresEndpoint(jsonMetadata, excelExportService));
-    register(environment, new MyVres(loggedInUserStore, authorizer, vres, saveRml));
+    register(environment, new MyVres(loggedInUserStore, authorizer, vres));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService));
