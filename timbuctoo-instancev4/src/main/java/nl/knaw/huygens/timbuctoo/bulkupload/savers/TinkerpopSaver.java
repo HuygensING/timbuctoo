@@ -50,8 +50,6 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   }
 
   private Vertex initVre(String vreName) {
-    //FIXME namespace vrename per user
-
     final Vertex result;
     try (Transaction tx = graphWrapper.getGraph().tx()) {
       final GraphTraversal<Vertex, Vertex> vre = graphWrapper.getGraph().traversal().V()

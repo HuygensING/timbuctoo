@@ -24,17 +24,8 @@ public class BulkUploadService {
     this.authorizer = null;//authorizer;
   }
 
-  //FIXME: add authorizer on admin
-  public String saveToDb(String vreName, InputStream wb/*, String userId*/)
+  public String saveToDb(String vreName, InputStream wb)
     throws AuthorizationUnavailableException, AuthorizationException, InvalidExcelFileException {
-    //
-    //for (Collection collection : vre.getCollections().values()) {
-    //  if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
-    //    throw new AuthorizationException(
-    //      "You cannot use bulkupload because you are not allowed to edit " + collection.getCollectionName()
-    //    );
-    //  }
-    //}
 
     try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, 50_000)) {
       XlsxLoader loader = new AllSheetLoader();

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
+import com.google.common.base.Strings;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidExcelFileException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationCreationException;
@@ -10,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.UUID;
 
 @Path("/v2.1/bulk-upload")
 public class BulkUpload {
@@ -45,54 +48,43 @@ public class BulkUpload {
 
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
-  //@Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
   @Produces("text/html")
   public Response uploadExcelFile(
-    @FormDataParam("vre") String vre,
     @FormDataParam("file") InputStream fileInputStream,
+    @FormDataParam("file") FormDataContentDisposition fileDetails,
     @HeaderParam("Authorization") String authorization) {
 
-    if (vre == null || fileInputStream == null) {
-      StringBuilder errorMessageBuilder = new StringBuilder("The following form params are missing:");
-      errorMessageBuilder.append(System.getProperty("line.separator"));
-      addIfNull(errorMessageBuilder, vre, "vre");
-      addIfNull(errorMessageBuilder, fileInputStream, "file");
+    if (fileInputStream == null) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("The file is missing").build();
+    } else {
+      Optional<User> user = loggedInUserStore.userFor(authorization);
+      if (!user.isPresent()) {
+        return Response.status(Response.Status.FORBIDDEN).entity("User not known").build();
+      } else {
+        String namespacedVre = user.get().getPersistentId() + "_" + stripFunnyCharacters(fileDetails.getFileName());
+        try {
+          authorizationCreator.createAuthorization(namespacedVre, user.get().getId(), UserRoles.ADMIN_ROLE);
+        } catch (AuthorizationCreationException e) {
+          LOG.error("Cannot add authorization for user {} and VRE {}", user.get().getId(), namespacedVre);
+          LOG.error("Exception thrown", e);
+          return Response.status(Response.Status.FORBIDDEN).entity("Unable to create authorization for user").build();
+        }
 
-      return Response.status(Response.Status.BAD_REQUEST).entity(errorMessageBuilder.toString()).build();
-    }
-
-    Optional<User> user = loggedInUserStore.userFor(authorization);
-    if (!user.isPresent()) {
-
-      return Response.status(Response.Status.FORBIDDEN).entity("User not known").build();
-    }
-
-    try {
-      authorizationCreator.createAuthorization(vre, user.get().getId(), UserRoles.ADMIN_ROLE);
-    } catch (AuthorizationCreationException e) {
-      LOG.error("Cannot add authorization for user {} and VRE {}", user.get().getId(), vre);
-      LOG.error("Exception thrown", e);
-      return Response.status(Response.Status.FORBIDDEN).entity("Unable to create authorization for user").build();
-    }
-
-    try {
-      return Response.ok()
-                     .entity(uploadService.saveToDb(vre, fileInputStream))
-                     .location(bulkUploadVre.createUri(vre))
-                     .build();
-    } catch (AuthorizationUnavailableException | AuthorizationException | InvalidExcelFileException e) {
-      e.printStackTrace();
-      return Response.status(500).build();
+        try {
+          return Response.ok()
+                         .entity(uploadService.saveToDb(namespacedVre, fileInputStream))
+                         .location(bulkUploadVre.createUri(namespacedVre))
+                         .build();
+        } catch (AuthorizationUnavailableException | AuthorizationException | InvalidExcelFileException e) {
+          e.printStackTrace();
+          return Response.status(500).build();
+        }
+      }
     }
   }
 
-  private void addIfNull(StringBuilder messageBuilder, Object parameter, String paramName) {
-    if (parameter == null) {
-      messageBuilder.append("\"");
-      messageBuilder.append(paramName);
-      messageBuilder.append("\"");
-      messageBuilder.append(",");
-    }
+  private String stripFunnyCharacters(String vre) {
+    return vre.replaceFirst("\\.[a-zA-Z]+$", "").replaceAll("[^a-zA-Z-]", "_");
   }
 
 }
