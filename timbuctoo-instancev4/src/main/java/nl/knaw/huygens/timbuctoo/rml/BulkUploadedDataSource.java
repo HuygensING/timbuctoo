@@ -97,7 +97,6 @@ public class BulkUploadedDataSource implements DataSource {
           parentField,
           parentCollection
         ));
-        graph.tx().commit();
       }
     }
 
