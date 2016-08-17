@@ -32,11 +32,14 @@ public class BulkUploadedDataSource implements DataSource {
   private final TimbuctooErrorHandler errorHandler;
   private Map<String, Tuple<String, Map<Object, List<String>>>> cachedUris = new HashMap<>();
 
+  public static final String HAS_FIRST_ERROR = "hasFirstError";
+  public static final String HAS_NEXT_ERROR = "hasNextError";
+
   public BulkUploadedDataSource(String vreName, String collectionName, GraphWrapper graphWrapper) {
     this.vreName = vreName;
     this.collectionName = collectionName;
     this.graphWrapper = graphWrapper;
-    this.errorHandler = new TimbuctooErrorHandler(graphWrapper);
+    this.errorHandler = new TimbuctooErrorHandler(graphWrapper, vreName, collectionName);
   }
 
   @Override
@@ -90,10 +93,16 @@ public class BulkUploadedDataSource implements DataSource {
 
   private static class TimbuctooErrorHandler implements ErrorHandler {
     private final GraphWrapper graphWrapper;
+    private final String vreName;
+    private final String collectionName;
     private Vertex currentVertex;
+    private Vertex lastError;
 
-    public TimbuctooErrorHandler(GraphWrapper graphWrapper) {
+
+    public TimbuctooErrorHandler(GraphWrapper graphWrapper, String vreName, String collectionName) {
       this.graphWrapper = graphWrapper;
+      this.vreName = vreName;
+      this.collectionName = collectionName;
     }
 
     @Override
@@ -109,6 +118,18 @@ public class BulkUploadedDataSource implements DataSource {
           parentField,
           parentCollection
         ));
+        if (lastError == null) {
+          Vertex collection = graph.traversal().V()
+                                   .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+                                   .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+                                   .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
+                                   .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
+                                   .next();
+          collection.addEdge(HAS_FIRST_ERROR, currentVertex);
+        } else {
+          lastError.addEdge(HAS_NEXT_ERROR, lastError);
+        }
+        lastError = currentVertex;
       }
     }
 
