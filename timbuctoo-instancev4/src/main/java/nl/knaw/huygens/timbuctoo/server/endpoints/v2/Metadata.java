@@ -1,13 +1,16 @@
-package nl.knaw.huygens.timbuctoo.server.endpoints.v4;
+package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -31,9 +34,9 @@ public class Metadata {
   }
 
   @GET
-  public Response get(@PathParam("vre") String vreName) {
-    ObjectNode result = jsonMetadata.getForVre(vreName);
+  public Response get(@PathParam("vre") String vreName,
+                      @QueryParam("withCollectionInfo") @DefaultValue("false") boolean withCollectionInfo) {
+    ObjectNode result = jsonMetadata.getForVre(vreName, withCollectionInfo);
     return Response.ok(result).build();
   }
-
 }

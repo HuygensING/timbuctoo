@@ -14,6 +14,7 @@ class CollectionDescription {
   private final String entityTypeName;
   private final String vreName;
   private final String rdfUri;
+  private boolean unknown;
 
   private CollectionDescription(String entityTypeName, String vreName, String rdfUri) {
     this.entityTypeName = entityTypeName;
@@ -22,7 +23,9 @@ class CollectionDescription {
   }
 
   public static CollectionDescription getDefault(String vreName) {
-    return createCollectionDescription(DEFAULT_COLLECTION_NAME, vreName);
+    CollectionDescription result = createCollectionDescription(DEFAULT_COLLECTION_NAME, vreName);
+    result.unknown = true;
+    return result;
   }
 
   public static CollectionDescription fromVertex(String vreName, Vertex vertex) {
@@ -99,6 +102,8 @@ class CollectionDescription {
     return rdfUri;
   }
 
-
+  public boolean isUnknown() {
+    return unknown;
+  }
 }
 

@@ -40,7 +40,7 @@ public class JsonMetadata {
     this.graph = graph;
   }
 
-  public ArrayNode getForCollection(Collection collection, List<Vertex> relations) {
+  private JsonNode getForCollection(Collection collection, List<Vertex> relations, boolean withCollectionInfo) {
     ArrayNode result = jsnA();
     collection.getWriteableProperties().forEach((name, prop) -> {
       ObjectNode desc = jsnO(
@@ -180,11 +180,20 @@ public class JsonMetadata {
           }
         }
       });
-
-    return result;
+    if (withCollectionInfo) {
+      return jsnO(
+        "collectionName", jsn(collection.getCollectionName()),
+        "collectionLabel", jsn(collection.getCollectionLabel()),
+        "unknown", jsn(collection.isUnknown()),
+        "relationCollection", jsn(collection.isRelationCollection()),
+        "properties", result
+      );
+    } else {
+      return result;
+    }
   }
 
-  public ObjectNode getForVre(String vreName) {
+  public ObjectNode getForVre(String vreName, boolean withCollectionInfo) {
     final List<Vertex> relations = graph.getGraph().traversal().V()
       .has(T.label, LabelP.of("relationtype"))
       .toList();
@@ -192,7 +201,8 @@ public class JsonMetadata {
     ObjectNode result = jsnO();
     metadata.getVre(vreName)
       .getCollections()
-      .forEach((key, coll) -> result.set(coll.getCollectionName(), getForCollection(coll, relations)));
+      .forEach((key, coll) ->
+        result.set(coll.getCollectionName(), getForCollection(coll, relations, withCollectionInfo)));
     return result;
   }
 

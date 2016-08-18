@@ -13,12 +13,10 @@ import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.ResIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -38,6 +36,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_LABEL_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -169,6 +169,22 @@ public class ExecuteRml {
       )));
 
       rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(tripleImporter::importTriple);
+
+      //Give the collections a proper name
+      graphWrapper
+        .getGraph()
+        .traversal()
+        .V()
+        .hasLabel(Vre.DATABASE_LABEL)
+        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+        .out(HAS_COLLECTION_RELATION_NAME)
+        .forEachRemaining(v -> {
+          if (!v.property(COLLECTION_LABEL_PROPERTY_NAME).isPresent()) {
+            String typeName = v.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+            v.property(COLLECTION_LABEL_PROPERTY_NAME, typeName.substring(vreName.length()));
+          }
+        });
+
       tx.commit();
     }
 

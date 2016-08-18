@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_ENTITIES_LABEL;
+import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_IS_UNKNOWN_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
@@ -153,6 +154,8 @@ public class Database {
       collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, collectionDescription.getEntityTypeName());
       collectionVertex.property(RDF_URI_PROP, collectionDescription.getRdfUri());
       collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
+      collectionVertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME, collectionDescription.isUnknown());
+
       Vertex containerVertex = graphWrapper.getGraph().addVertex(COLLECTION_ENTITIES_LABEL);
       collectionVertex.addEdge(HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
 

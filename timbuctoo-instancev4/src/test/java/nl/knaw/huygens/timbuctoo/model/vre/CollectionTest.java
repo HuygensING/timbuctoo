@@ -85,7 +85,7 @@ public class CollectionTest {
       }).build();
 
     new Collection("person", "person", null, Maps.newLinkedHashMap(), "persons",
-      new Vre(vreName), Maps.newHashMap(), false).save(graph, vreName);
+      new Vre(vreName), null, false, Maps.newHashMap(), false).save(graph, vreName);
 
   }
 

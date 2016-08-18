@@ -23,11 +23,14 @@ import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.toMap;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 
 public class Collection {
   public static final String DATABASE_LABEL = "collection";
   public static final String COLLECTION_ENTITIES_LABEL = "collectionEntities";
   public static final String COLLECTION_NAME_PROPERTY_NAME = "collectionName";
+  public static final String COLLECTION_IS_UNKNOWN_PROPERTY_NAME = "isUnknownCollection";
+  public static final String COLLECTION_LABEL_PROPERTY_NAME = "collectionLabel";
   public static final String ENTITY_TYPE_NAME_PROPERTY_NAME = "entityTypeName";
   public static final String HAS_ENTITY_NODE_RELATION_NAME = "hasEntityNode";
   public static final String HAS_PROPERTY_RELATION_NAME = "hasProperty";
@@ -46,10 +49,12 @@ public class Collection {
   private final LinkedHashMap<String, LocalProperty> writeableProperties;
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations;
   private final boolean isRelationCollection;
+  private final String collectionLabel;
+  private boolean unknown;
 
   Collection(@NotNull String entityTypeName, @NotNull String abstractType,
              @NotNull ReadableProperty displayName, @NotNull LinkedHashMap<String, ReadableProperty> properties,
-             @NotNull String collectionName, @NotNull Vre vre,
+             @NotNull String collectionName, @NotNull Vre vre, @NotNull String collectionLabel, boolean unknown,
              // FIXME: not functionally used (see TIM-955)
              @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
              boolean isRelationCollection) {
@@ -59,6 +64,12 @@ public class Collection {
     this.properties = properties;
     this.collectionName = collectionName;
     this.vre = vre;
+    this.unknown = unknown;
+    if (collectionLabel == null) {
+      this.collectionLabel = collectionName;
+    } else {
+      this.collectionLabel = collectionLabel;
+    }
     this.derivedRelations = derivedRelations;
     this.isRelationCollection = isRelationCollection;
     writeableProperties = properties.entrySet().stream()
@@ -97,6 +108,10 @@ public class Collection {
     return collectionName;
   }
 
+  public String getCollectionLabel() {
+    return collectionLabel;
+  }
+
   public Vre getVre() {
     return vre;
   }
@@ -120,11 +135,13 @@ public class Collection {
     final ReadableProperty displayName = loadDisplayName(collectionVertex);
     final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex);
     final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
+    final String label = getProp(collectionVertex, COLLECTION_LABEL_PROPERTY_NAME, String.class).orElse(null);
     final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
     boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
+    boolean unknown = getProp(collectionVertex, COLLECTION_IS_UNKNOWN_PROPERTY_NAME, Boolean.class).orElse(false);
 
-    return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre, derivedRelations,
-      isRelationCollection);
+    return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre,
+      label, unknown, derivedRelations, isRelationCollection);
   }
 
   private static ReadableProperty loadDisplayName(Vertex collectionVertex) {
@@ -184,6 +201,8 @@ public class Collection {
     collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, collectionName);
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
     collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, isRelationCollection);
+    collectionVertex.property(COLLECTION_LABEL_PROPERTY_NAME, collectionLabel);
+    collectionVertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME, unknown);
 
     saveArchetypeRelation(graph, collectionVertex);
 
@@ -284,5 +303,9 @@ public class Collection {
       LOG.debug("Creating new vertex");
     }
     return collectionVertex;
+  }
+
+  public boolean isUnknown() {
+    return unknown;
   }
 }

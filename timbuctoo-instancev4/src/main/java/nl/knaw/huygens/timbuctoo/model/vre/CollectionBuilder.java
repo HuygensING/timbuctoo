@@ -19,6 +19,7 @@ public class CollectionBuilder {
   private LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap();
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
   private boolean isRelationCollection = false;
+  private String collectionLabel;
 
   private CollectionBuilder(String collectionName, String defaultPrefix) {
     this.collectionName = collectionName;
@@ -41,6 +42,11 @@ public class CollectionBuilder {
 
   public CollectionBuilder withDisplayName(ReadableProperty displayName) {
     this.displayName = displayName;
+    return this;
+  }
+
+  public CollectionBuilder withLabel(String label) {
+    this.collectionLabel = label;
     return this;
   }
 
@@ -84,6 +90,8 @@ public class CollectionBuilder {
       properties,
       collectionName,
       vre,
+      collectionLabel,
+      false, //unknown is only constructed by the RDF importer
       derivedRelations,
       isRelationCollection);
     vre.addCollection(collection);
