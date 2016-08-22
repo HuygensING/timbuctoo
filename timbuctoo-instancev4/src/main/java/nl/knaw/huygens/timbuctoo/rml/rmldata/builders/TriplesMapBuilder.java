@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -49,7 +50,7 @@ public class TriplesMapBuilder {
   }
 
   RrTriplesMap build(Function<RdfResource, Optional<DataSource>> dataSourceFactory,
-                     Function<String, PromisedTriplesMap> getTriplesMap, Consumer<String> errorLogger) {
+                     BiFunction<String, String, PromisedTriplesMap> getTriplesMap, Consumer<String> errorLogger) {
 
 
     Optional<DataSource> dataSource = dataSourceFactory.apply(logicalSource);
@@ -61,7 +62,7 @@ public class TriplesMapBuilder {
       );
 
       for (PredicateObjectMapBuilder builder : this.predicateObjectMapBuilders) {
-        builder.build(getTriplesMap, instance);
+        builder.build(requesteduri -> getTriplesMap.apply(this.uri, requesteduri), instance);
       }
       return instance;
     } else {

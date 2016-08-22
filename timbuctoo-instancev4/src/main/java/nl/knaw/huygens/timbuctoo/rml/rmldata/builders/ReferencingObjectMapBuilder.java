@@ -27,10 +27,8 @@ public class ReferencingObjectMapBuilder {
 
   public void build(TermMapBuilder predicateMap,
                     Function<String, PromisedTriplesMap> getTriplesMap, RrTriplesMap ownTriplesMap) {
-    getTriplesMap.apply(parentTriplesMapUri).onTriplesMapReceived((referencingTriplesMap, seenTriplesMaps) -> {
-      if (seenTriplesMaps.contains(ownTriplesMap)) { //Then I'm earlier then the one I'm refering to
-        //We need to give the datasource that we're going to ask for Subject urls time to gather them. so we're
-        // inverting the link
+    getTriplesMap.apply(parentTriplesMapUri).onTriplesMapReceived((referencingTriplesMap, flippedEdge) -> {
+      if (flippedEdge) {
         referencingTriplesMap.addPredicateObjectMap(
           new RrPredicateObjectMapOfReferencingObjectMap(
             predicateMap.build(),
