@@ -16,7 +16,9 @@ Each idea belongs to an Epic (a word derived from the fact that ideas are often 
 [[Edit-GUI]]Edit-GUI::
   A GUI that will use the data descriptions to be able to edit arbitrary collections. We're aiming for something that allows a quick edit. It does not need to be customisable. (CLARIAH task 11.100)
 [[Query-GUI]]Query-GUI::
-  A gui for graph querying. The approach is that a user draws a pattern of the graph and the system answers what nodes match that pattern.
+  A gui for graph querying. The approach is that a user draws a pattern of the graph and the system answers what nodes match that pattern. note: 1. This is not an open-ended tool, but must have a clearly defined ceiling after which the user should switch to a true language such as SQL, SPARQL or an imperative language. 2. The tool will show what query it generates so that the user is put in contact with the query language. (3) The tool should provide queries based on the archetypes. (4) And you should be able to share your queries.
+[[Faceted-search]]Faceted-search::
+  Each dataset gets a faceted search based on the archetypes it specified. We're also building extension points to plug in more complex indexing configurations.
 [[Discover-GUI]]Discover-GUI::
   A gui that is not aimed at precise querying, but rather to get a high-level overview of the data so that you know what queries to write.
 [[RDF-import-export]]RDF-import-export::
@@ -27,6 +29,8 @@ Each idea belongs to an Epic (a word derived from the fact that ideas are often 
   * Link to RDF subjects in a specific other dataset
   * Import (parts of) other datasets into your own dataset
   * Use RDF-transform to generate a new (read-only?) dataset that is fully dependent on other datasets
+  * A GUI that allows you to see published datasets (with the author, institution etc.)
+  * User management that specifies who is allowed to see your data
 [[Dataset-search]]Dataset-search::
   * find subjects using their properties and then find the datasets that contain them
 [[Data-curation-tools]]Data curation tools::
@@ -75,9 +79,25 @@ Development steps::
 3.  bouw een library die nquads en het patch formaat streamend kan parsen (als top level directory in timbuctoo, of direct als losse repo) er is zeker een library die je als basis kan gebruiken (1 seconde googlen leverde https://github.com/nxparser/nxparser op, wellicht is er een betere)
 4.  bouw een functie die gegeven een url, de discovery functie aanroept, de files download en streamend parsed en importeert met de de library uit de vorige stap
 
+=== [TIM-++] Hyperlinks kunnen aanleggen ^<<Dataset-interdependencies>>^
+We willen kunnen zorgen dat we de urls van de subject via een same-as relatie kunnen aanlegen zodat je in de edit-interface in ieder geval kan naar de dbpedia/VIAF versie kan linken.
+
+=== [TIM-++] Archetypes beter implementeren ^<<Edit-GUI>>^ ^<<RDF-import-export>>^
+Als je in de mapper een archetype selecteert. Moet dit ervoor zorgen dat de edit interface ook echt dat datamodel toont (dus juist ook missende properties) zodat je als user het model herkent. Bonuspunten voor een GUI die echt toegespitst is op een archetype (bij personen rechtsboven groot de geboorte- en sterfdatum zien)
+
+Velden van het model lostrekken van de extra velden (misschien handig om de mapping en de edit gui op elkaar te laten lijken wat dat betreft)
+
+=== [TIM-++] Faceted search autogenereren op basis van de archetypes ^<<RDF-import-export>>^
+Als tijdelijke shortcut kunnen we er eentje genereren voor de demo dataset.
+
+=== [TIM-++] Meer 1 stijl maken
+ - jouw stylesheet toepassen
+ - gemockte onderdelen toevoegen
+   - Een user environment (dit zijn je datasets, dit zijn je queries)
+
 == Ready for data curation work
 
-This version will refine the MVP until people who perform data-curation and storage as a job will find in timbuctoo a helpfull tool.
+This version will refine the MVP until people who perform data-curation and storage as a job will find in timbuctoo a helpful tool.
 
 [[TIM-1050]]
 === [TIM-1050] Verder kunnen werken aan een tussentijds opgeslagen import^<<Edit-GUI>>^
