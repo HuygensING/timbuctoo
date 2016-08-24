@@ -299,7 +299,52 @@ public class TinkerpopJsonCrudServiceRelationTest {
 
   @Test
   public void setsCreatedInfo() throws Exception {
-    testRelationUpdate((oldEdge, newEdge, totalEdgeCount) -> assertThat(2, is(2)));
+    String typeId = "10000000-046d-477a-acbb-1c18b2a7c7e9";
+    String sourceId = "20000000-742e-4351-9154-b33c10dbf5b2";
+    String targetId = "30000000-bc09-4959-a8b9-1cafad9a60f6";
+    Graph graph = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId)
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex("source", v -> v
+        .withTimId(sourceId)
+        .withType("person")
+        .withVre("ww")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex("target", v -> v
+        .withTimId(targetId)
+        .withProperty("rev", 1)
+        .withType("person")
+        .withVre("ww")
+        .withProperty("isLatest", true)
+      )
+      .build();
+    String collectionName = "wwrelations";
+    TinkerpopJsonCrudService instance = newJsonCrudService()
+      .withClock(Clock.fixed(Instant.ofEpochMilli(1337), ZoneId.systemDefault()))
+      .forGraph(graph);
+
+    instance.create(collectionName, jsnO(
+      "accepted", jsn(true),
+      "^typeId", jsn(typeId),
+      "^sourceId", jsn(sourceId),
+      "^targetId", jsn(targetId)
+    ), "the user provided to create()");
+
+    Edge newEdge = graph.traversal().V().has("tim_id", sourceId).outE().has("isLatest", true).next();
+    assertThat(getModificationInfo("modified", newEdge), is(jsnO(
+      "timeStamp", jsn(1337),
+      "userId", jsn("the user provided to create()")
+    )));
+    assertThat(getModificationInfo("created", newEdge), is(jsnO(
+      "timeStamp", jsn(1337),
+      "userId", jsn("the user provided to create()")
+    )));
   }
 
   private ObjectNode getModificationInfo(String prop, Element elm) {

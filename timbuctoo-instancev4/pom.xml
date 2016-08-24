@@ -279,6 +279,14 @@
       <version>3.1.0</version>
     </dependency>
 
+    <!-- ### make generating of value types easier -->
+    <dependency>
+      <groupId>org.immutables</groupId>
+      <artifactId>value</artifactId>
+      <version>2.2.12</version>
+      <scope>provided</scope>
+    </dependency>
+
     <!-- ### Std lib additions ## -->
     <!-- Guava -->
     <dependency>

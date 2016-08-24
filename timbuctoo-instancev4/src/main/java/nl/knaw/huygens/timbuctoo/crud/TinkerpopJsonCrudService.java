@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
+import nl.knaw.huygens.timbuctoo.database.dto.RelationCreateDescription;
+import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
@@ -82,6 +86,7 @@ public class TinkerpopJsonCrudService {
   private final JsonNodeFactory nodeFactory;
   private final UserStore userStore;
   private final ChangeListener listener;
+  private final DataAccess dataAccess;
   private Authorizer authorizer;
   private EntityFetcher entityFetcher;
 
@@ -100,6 +105,7 @@ public class TinkerpopJsonCrudService {
     this.listener = listener;
     this.authorizer = authorizer;
     this.entityFetcher = entityFetcher;
+    this.dataAccess = new DataAccess(graphwrapper, entityFetcher, authorizer, listener);
     nodeFactory = JsonNodeFactory.instance;
   }
 
@@ -109,153 +115,63 @@ public class TinkerpopJsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    Authorization authorization = null;
     try {
-      authorization = authorizer.authorizationFor(collection, userId);
+      Authorization authorization = authorizer.authorizationFor(collection, userId);
+      if (!authorization.isAllowedToWrite()) {
+        throw AuthorizationException.notAllowedToCreate(collectionName);
+      }
+
+      if (collection.isRelationCollection()) {
+        return createRelation(collection, input, userId);
+      } else {
+        return createEntity(collection, input, userId);
+      }
     } catch (AuthorizationUnavailableException e) {
       throw new IOException(e.getMessage());
     }
-    if (!authorization.isAllowedToWrite()) {
-      throw AuthorizationException.notAllowedToCreate(collectionName);
-    }
-
-    if (collection.isRelationCollection()) {
-      return createRelation(collection, input, userId);
-    } else {
-      return createEntity(collection, input, userId);
-    }
   }
 
-  private UUID createRelation(Collection collection, ObjectNode input, String userId) throws IOException {
-    String entityTypeName = collection.getEntityTypeName();
-    String abstractName = collection.getAbstractType();
-    // FIXME: string concatenating methods like this should be delegated to a configuration clas
-    final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
-
-    JsonNode accepted = input.get("accepted");
-    JsonNode source = input.get("^sourceId");
-    JsonNode target = input.get("^targetId");
-    JsonNode type = input.get("^typeId");
-
-    if (accepted == null || !accepted.isBoolean()) {
-      throw new IOException("Accepted must be a boolean");
-    }
-
-    Graph graph = graphwrapper.getGraph();
-    GraphTraversalSource traversal = graph.traversal();
+  private UUID asUuid(ObjectNode input, String fieldName) throws IOException {
     try {
-      String collectionName = collection.getCollectionName();
-      Vertex sourceV = entityFetcher.getEntity(traversal, UUID.fromString(source.asText("")), null, collectionName)
-                                    .next();
-      try {
-        Vertex targetV = entityFetcher.getEntity(traversal, UUID.fromString(target.asText("")), null, collectionName)
-                                      .next();
-        try {
-          Vertex typeV = entityFetcher.getEntity(traversal, UUID.fromString(type.asText("")), null, collectionName)
-                                      .next();
+      return UUID.fromString(input.get(fieldName).asText(""));
+    } catch (IllegalArgumentException | NullPointerException e) {
+      throw new IOException(fieldName + " must contain a valid UUID", e);
+    }
+  }
 
-          //check if the relation already exists
-          final Optional<Edge> existingEdge = stream(sourceV.edges(Direction.BOTH))
-            .filter(e ->
-            (e.inVertex().id().equals(targetV.id()) || e.outVertex().id().equals(targetV.id())) &&
-              getProp(e, "typeId", String.class).map(x -> x.equals(type.asText(""))).orElse(false)
-            )
-            //sort by rev (ascending)
-            .sorted((o1, o2) ->
-              getProp(o1, "rev", Integer.class).orElse(-1)
-                .compareTo(getProp(o2, "rev", Integer.class).orElse(-1))
-            )
-            //get last element, i.e. with the highest rev, i.e. the most recent
-            .reduce((o1, o2) -> o2);
+  private UUID createRelation(Collection collection, ObjectNode input, String userId)
+    throws IOException, AuthorizationException, AuthorizationUnavailableException {
+    JsonNode acceptedRaw = input.get("accepted");
 
-          if (existingEdge.isPresent()) {
-            final Optional<Boolean> isAccepted = getProp(existingEdge.get(), acceptedPropName, Boolean.class);
-            final Optional<String> tim_id = getProp(existingEdge.get(), "tim_id", String.class);
-            final Optional<Integer> rev = getProp(existingEdge.get(), "rev", Integer.class);
-            //if the relation exists and is a valid relation
-            if (isAccepted.isPresent() && tim_id.isPresent() && rev.isPresent()) {
-              try {
-                final UUID tim_uuid = UUID.fromString(tim_id.get());
-                //if not already an active relation
-                if (!isAccepted.get()) {
-                  replaceRelation(collection, tim_uuid, jsnO("^rev", jsn(rev.get()), "accepted", jsn(true)) , userId);
-                }
-                return tim_uuid;
-              } catch (NotFoundException e) {
-                LOG.error(
-                  Logmarkers.databaseInvariant,
-                  "I have a vertex with tim_id=" + tim_id.get() + ", but replaceRelation throws a notfoundexception!"
-                );
-              } catch (IllegalArgumentException e) {
-                LOG.error(Logmarkers.databaseInvariant, "wrongly formatted UUID as tim_id: " + tim_id.get());
-              }
-            }
-          }
+    UUID sourceId = asUuid(input, "^sourceId");
+    UUID targetId = asUuid(input, "^targetId");
+    UUID typeId = asUuid(input, "^typeId");
 
-          Collection sourceType = getCollection(collection.getVre(), sourceV);
-          Collection targetType = getCollection(collection.getVre(), targetV);
-          verifyTypes(sourceType, typeV, targetType);
+    boolean accepted;
+    if (acceptedRaw == null || !acceptedRaw.isBoolean()) {
+      throw new IOException("Accepted must be a boolean");
+    } else {
+      accepted = acceptedRaw.asBoolean();
+    }
 
-          String label = getProp(typeV, "relationtype_regularName", String.class)
-            .orElseThrow(() -> new IOException("Requested relation has no regular name"));
-
-          try {
-            UUID id = UUID.randomUUID();
-            Edge edge = sourceV.addEdge(label, targetV,
-              acceptedPropName, accepted.asBoolean(),
-              "types", jsnA(jsn(entityTypeName), jsn(abstractName)).toString(),
-              "typeId", type.asText(),
-              "tim_id", id.toString(),
-              "isLatest", true,
-              "rev", 1
-            );
-            setCreated(edge, userId);
-
-            //Make sure this is the last line of the method. We don't want to commit half our changes
-            //this also means checking each function that we call to see if they don't call commit()
-            graph.tx().commit();
-            return id;
-          } catch (IllegalArgumentException e) {
-            throw new RuntimeException("The relation could not be created", e);
-          }
-        } catch (IllegalArgumentException | NoSuchElementException e) {
-          throw new IOException("^typeId must contain a UUID pointing to an existing relationType", e);
+    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+      RelationCreateDescription description = db.getCurrentRelationIfExists(sourceId, typeId, targetId, collection);
+      if (description.getExistingRelation().isPresent()) { //Idempotent POSTS :)
+        final EntityRelation existingEdge = description.getExistingRelation().get();
+        if (!existingEdge.isAccepted()) {
+          //if not already an active relation
+          db.updateRelation(existingEdge, userId, true, clock.millis());
         }
-      } catch (IllegalArgumentException | NoSuchElementException e) {
-        throw new IOException("^targetId must contain a UUID pointing to an existing entity", e);
+        db.success();
+        return existingEdge.getTimId();
+      } else {
+        EntityRelation relation = db.createRelation(description, userId, accepted, clock.millis());
+        db.success();
+        return relation.getTimId();
       }
-    } catch (IllegalArgumentException | NoSuchElementException e) {
-      throw new IOException("^sourceId must contain a UUID pointing to an existing entity", e);
+    } catch (RelationNotPossibleException e) {
+      throw new IOException(e.getMessage(), e);
     }
-  }
-
-  private void verifyTypes(Collection sourceV, Vertex typeV, Collection targetV) throws IOException {
-    Optional<String> sourceType = getProp(typeV, "relationtype_sourceTypeName", String.class);
-
-    if (sourceType.isPresent() && !sourceV.getAbstractType().equals(sourceType.get())) {
-      throw new IOException("Source is a " + sourceV.getAbstractType() + " instead of " + sourceType.get());
-    }
-
-    Optional<String> targetType = getProp(typeV, "relationtype_targetTypeName", String.class);
-
-    if (targetType.isPresent() && !targetV.getAbstractType().equals(targetType.get())) {
-      throw new IOException("Target is a " + targetType.get() + " instead of " + targetV.getAbstractType());
-    }
-  }
-
-  private Collection getCollection(Vre vre, Element sourceV) throws IOException {
-    String[] types = getEntityTypes(sourceV).orElseGet(() -> {
-      LOG.error(databaseInvariant, "Entitytypes not presen on vertex with ID " + sourceV.id());
-      return Try.success(new String[0]);
-    }).getOrElse(() -> {
-      LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + sourceV.id());
-      return new String[0];
-    });
-    String ownType = vre.getOwnType(types);
-    if (ownType == null) {
-      throw new IOException("Element with id() " + sourceV.id() + " is not of the vre of the relation");
-    }
-    return vre.getCollectionForTypeName(ownType);
   }
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)

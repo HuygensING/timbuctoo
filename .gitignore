@@ -4,6 +4,7 @@
 .classpath
 .settings
 .project
+/timbuctoo-instancev4/generated-sources
 
 # intellij files and folders
 *.iml
