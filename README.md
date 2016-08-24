@@ -7,7 +7,7 @@ The code is available from https://github.com/HuygensING/timbuctoo
 ---
 
 **Note:** This software is developed by the [Huygens Institute](http://huygens.knaw.nl) in the Netherlands. 
-While we're currently intending to support the software indefinitely, we're certain that we'll support the software at least until *the end of 2017*.
+While we're currently intending to support the software indefinitely, we're certain that we'll support the software at least until *the end of 2018*.
 This notice will be updated before then with the new support duration.
 
  * Support means that we'll review your pull requests and answer issues or questions on the chat.
