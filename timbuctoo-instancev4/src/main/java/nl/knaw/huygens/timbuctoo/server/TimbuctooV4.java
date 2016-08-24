@@ -25,6 +25,8 @@ import nl.knaw.huygens.timbuctoo.crud.changelistener.DenormalizedSortFieldUpdate
 import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
+import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
+import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
@@ -195,6 +197,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       changeListeners,
       authorizer,
       new Neo4jLuceneEntityFetcher(graphManager));
+
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(
       graphManager,
@@ -202,6 +205,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       vres
     );
     final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
+
+    final WomenWritersJsonCrudService womenWritersJsonCrudService = new WomenWritersJsonCrudService(
+      graphManager,
+      vres,
+      userStore,
+      (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
+      new Neo4jLuceneEntityFetcher(graphManager));
 
 
     environment.lifecycle().manage(graphManager);
@@ -222,6 +232,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
+    register(environment, new WomenWritersEntityGet(womenWritersJsonCrudService));
+
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager, vres));
     }
