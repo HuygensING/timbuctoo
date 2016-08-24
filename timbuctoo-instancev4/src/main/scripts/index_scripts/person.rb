@@ -64,6 +64,8 @@ class Person < Hash
         end
       end
       self['modified_l'] = data['^modified']['timeStamp']
+      self['modifiedBy_s'] = data['^modified']['username'] || data['^modified']['userId']
+
       if !data['names'].nil? and data['names'].length > 0
           self['name_t'] = build_name(data['names'])
           self['nameSort_s'] = build_name_sort(data['names'])

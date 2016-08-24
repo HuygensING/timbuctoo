@@ -87,6 +87,7 @@ class Document < Hash
       self['title_t'] = title_t  if !title_t.empty?
 
       self['modified_l'] = data['^modified']['timeStamp']
+      self['modifiedBy_s'] = data['^modified']['username'] || data['^modified']['userId']
 
       build_relations data
 
