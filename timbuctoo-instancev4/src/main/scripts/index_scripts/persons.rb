@@ -59,6 +59,7 @@ class Persons
       req = Net::HTTP::Post.new(uri)
       http = Net::HTTP.new(uri.hostname, uri.port)
       req.content_type = 'text/xml'
+      req["Authorization"] = @@solr_auth
       req.body = '<delete><query>*:*</query></delete>'
       response = http.request(req)
       if !response.code.eql?("200")

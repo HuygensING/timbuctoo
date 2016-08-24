@@ -36,6 +36,7 @@ class DocumentReceptions
       uri = URI.parse("#{@@solr}update/")
       req = Net::HTTP::Post.new(uri)
       http = Net::HTTP.new(uri.hostname, uri.port)
+      req["Authorization"] = @@solr_auth
       req.content_type = 'text/xml'
       req.body = '<delete><query>*:*</query></delete>'
       response = http.request(req)
