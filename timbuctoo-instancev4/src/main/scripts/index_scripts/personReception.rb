@@ -37,12 +37,14 @@ class PersonReception < Hash
 
     self['person_id_s'] = recepted_person_id
     self['person_displayName_s'] = recepted_person['displayName_s']
+    self['person_name_t'] = recepted_person['name_t'] if recepted_person['name_t'].is_a? String
     self['person_types_ss'] = recepted_person["types_ss"] if recepted_person["types_ss"].is_a? Array
     self['person_gender_s'] = recepted_person["gender_s"] if recepted_person["gender_s"].is_a? String
     self['person_birthDate_i'] = recepted_person["birthDate_i"] if recepted_person["birthDate_i"].is_a? Integer
     self['person_deathDate_i'] = recepted_person["deathDate_i"] if recepted_person["deathDate_i"].is_a? Integer
     self['person_notes_t'] = recepted_person["notes_t"] if recepted_person["notes_t"].is_a? String
     self['person_children_s']= recepted_person["children_s"] if recepted_person["children_s"].is_a? String
+    self['person_nameSort_s'] = recepted_person['nameSort_s'] if recepted_person['nameSort_s'].is_a? String
 
     Person.new_rel_names.each do |name|
       self["person_#{name}"] = recepted_person[name]

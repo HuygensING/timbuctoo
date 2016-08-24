@@ -42,6 +42,8 @@ class DocumentReception < Hash
       self['document_title_t'] = recepted_doc['title_t'] if recepted_doc['title_t'].is_a? String
       self['document_authorGender_ss'] = recepted_doc["authorGender_ss"] if recepted_doc["authorGender_ss"].is_a? Array
       self['document_authorName_ss'] = recepted_doc["authorName_ss"] if recepted_doc["authorName_ss"].is_a? Array
+      self['document_authorNameSort_s'] = recepted_doc['authorNameSort_s'] if recepted_doc['authorNameSort_s'].is_a? String
+
       Document.new_rel_names.each do |name|
           self["document_#{name}"] = recepted_doc[name]
       end
