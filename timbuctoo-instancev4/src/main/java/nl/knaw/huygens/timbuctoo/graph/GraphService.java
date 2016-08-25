@@ -15,8 +15,10 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GraphService {
+  private static final int MAX_LINKS_PER_NODE = 20;
   private final GraphWrapper graphWrapper;
   private Vres mappings;
 
@@ -67,15 +69,19 @@ public class GraphService {
     final Optional<Collection> sourceCollection = GraphReadUtils.getCollectionByVreId(vertex, mappings, vreId);
 
     d3Graph.addNode(vertex, sourceCollection.get().getEntityTypeName());
+    AtomicInteger count = new AtomicInteger(0);
+
     vertex.edges(Direction.BOTH, relationNames.toArray(new String[relationNames.size()])).forEachRemaining(edge -> {
-      final Boolean isAccepted = edge.property(relationTypeName + "_accepted").isPresent() ?
-        (Boolean) edge.property(relationTypeName + "_accepted").value() : false;
+      if (count.incrementAndGet() < MAX_LINKS_PER_NODE) {
+        final Boolean isAccepted = edge.property(relationTypeName + "_accepted").isPresent() ?
+          (Boolean) edge.property(relationTypeName + "_accepted").value() : false;
 
-      final Boolean isLatest = edge.property("isLatest").isPresent() ?
-        (Boolean) edge.property("isLatest").value() : false;
+        final Boolean isLatest = edge.property("isLatest").isPresent() ?
+          (Boolean) edge.property("isLatest").value() : false;
 
-      if (isAccepted && isLatest) {
-        loadLinks(relationTypeName, vreId, d3Graph, relationNames, depth, currentDepth, edge);
+        if (isAccepted && isLatest) {
+          loadLinks(relationTypeName, vreId, d3Graph, relationNames, depth, currentDepth, edge);
+        }
       }
     });
   }
