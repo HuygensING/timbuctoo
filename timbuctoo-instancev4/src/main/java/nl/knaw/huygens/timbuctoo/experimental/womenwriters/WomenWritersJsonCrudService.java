@@ -258,21 +258,26 @@ public class WomenWritersJsonCrudService {
 
             List<JsonNode> authors = new ArrayList<>();
 
-            final Iterator<Vertex> isCreatedBy = vertex.vertices(Direction.OUT, "isCreatedBy");
+            final Iterator<Edge> isCreatedBy = vertex.edges(Direction.OUT, "isCreatedBy");
             while (isCreatedBy.hasNext()) {
 
-              final Vertex author = isCreatedBy.next();
-              final Collection personCollection = vre.getCollectionForTypeName("wwperson");
-              final String authorName = getDisplayname(traversalSource, author, personCollection).orElse(null);
-              String authorGender = getProp(author, "wwperson_gender", String.class).orElse(null);
-              if (authorGender != null) {
-                authorGender = authorGender.replaceAll("\"", "");
-              }
-              if (authorName != null) {
-                authors.add(jsnO(
-                  tuple("displayName", jsn(authorName)),
-                  tuple("gender", jsn(authorGender))
-                ));
+              final Edge next = isCreatedBy.next();
+              final Boolean isAccepted = (Boolean) next.property("wwrelation_accepted").value();
+              final Object isLatest = next.property("isLatest").value();
+              if (isAccepted && (Boolean) isLatest) {
+                final Vertex author = next.inVertex();
+                final Collection personCollection = vre.getCollectionForTypeName("wwperson");
+                final String authorName = getDisplayname(traversalSource, author, personCollection).orElse(null);
+                String authorGender = getProp(author, "wwperson_gender", String.class).orElse(null);
+                if (authorGender != null) {
+                  authorGender = authorGender.replaceAll("\"", "");
+                }
+                if (authorName != null) {
+                  authors.add(jsnO(
+                    tuple("displayName", jsn(authorName)),
+                    tuple("gender", jsn(authorGender))
+                  ));
+                }
               }
             }
 
