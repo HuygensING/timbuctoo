@@ -2,7 +2,10 @@ package nl.knaw.huygens.timbuctoo.graph;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.HuygensIng;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -53,7 +56,7 @@ public class GraphServiceTest {
       }
 
       @Override
-      public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
+      public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... nulls) {
         return graph.traversal().V();
       }
     };
@@ -63,6 +66,19 @@ public class GraphServiceTest {
   public void getShouldGenerateAD3Graph() throws NotFoundException, IOException {
 
     Graph graph = newGraph()
+            .withVertex("relationCollection", v ->
+              v.withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "wwrelation")
+              .withProperty(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true)
+            )
+            .withVertex("vreNode", v ->
+              v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "WomenWriters")
+               .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "relationCollection")
+            )
+            .withVertex(v ->
+              v.withLabel(Collection.DATABASE_LABEL)
+               .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "wwperson")
+               .withIncomingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "vreNode")
+            )
             // Should be first index in the node list because it is the requested entity
             .withVertex("v1", v -> v
                     .withProperty("isLatest", true)
@@ -74,57 +90,72 @@ public class GraphServiceTest {
             .withVertex("v2", v -> v
                     .withTimId("2")
                     .withProperty("types", TYPES)
-                    .withOutgoingRelation(RELATION_NAME, "v1")
+                    .withOutgoingRelation(RELATION_NAME, "v1", r ->
+                      r.withAccepted("wwrelation", true)
+                       .withIsLatest(true)
+                    )
                     .withProperty("wwperson_tempName", "name2")
             )
             // Should come back as direct relation to v1 because RELATION_NAME_2 is requested
             .withVertex("v3", v -> v
                     .withTimId("3")
                     .withProperty("types", TYPES)
-                    .withOutgoingRelation(RELATION_NAME_2, "v1")
+                    .withOutgoingRelation(RELATION_NAME_2, "v1", r ->
+                      r.withAccepted("wwrelation", true)
+                       .withIsLatest(true)
+                    )
                     .withProperty("wwperson_tempName", "name3")
             )
             // Should come back as once removed relation to v2->v1 because depth=2
             .withVertex("v4", v -> v
                     .withTimId("4")
                     .withProperty("types", TYPES)
-                    .withOutgoingRelation(RELATION_NAME, "v2")
+                    .withOutgoingRelation(RELATION_NAME, "v2", r ->
+                      r.withAccepted("wwrelation", true)
+                       .withIsLatest(true)
+                    )
                     .withProperty("wwperson_tempName", "name4")
             )
             // Should not come back because UNREQUESTED_RELATION is not requested
             .withVertex("v5", v -> v
                     .withTimId("5")
                     .withProperty("types", TYPES)
-                    .withOutgoingRelation(UNREQUESTED_RELATION, "v1")
+                    .withOutgoingRelation(UNREQUESTED_RELATION, "v1", r ->
+                      r.withAccepted("wwrelation_accepted", true)
+                       .withIsLatest(true)
+                    )
                     .withProperty("wwperson_tempName", "name5")
             )
             // Should not come back because it is twice removed and depth=2
             .withVertex("v6", v -> v
                     .withTimId("6")
                     .withProperty("types", TYPES)
-                    .withOutgoingRelation(RELATION_NAME, "v4")
+                    .withOutgoingRelation(RELATION_NAME, "v4", r ->
+                      r.withAccepted("wwrelation", true)
+                       .withIsLatest(true)
+                    )
                     .withProperty("wwperson_tempName", "name6")
             )
             .build();
 
-    List<Vertex> vertices = graph.traversal().V().asAdmin().clone().toList();
+    List<Vertex> vertices = graph.traversal().V()
+                                 .has("wwperson_tempName")
+                                 .asAdmin().clone().toList();
     Collections.sort(vertices, (vertexA, vertexB) -> ((String) vertexA.property("wwperson_tempName").value())
             .compareTo((String) vertexB.property("wwperson_tempName").value()));
 
     GraphWrapper graphWrapper = createGraphWrapper(graph);
-    GraphService underTest = new GraphService(graphWrapper);
-
+    GraphService underTest = new GraphService(graphWrapper, HuygensIng.mappings);
     D3Graph result = underTest.get(
             "wwperson", UUID.fromString(THE_UUID), Lists.newArrayList(RELATION_NAME, RELATION_NAME_2), 2);
 
-    assertThat(result.getNodes().get(0), is(new Node(vertices.get(0))));
+    assertThat(result.getNodes().get(0), is(new Node(vertices.get(0), "wwperson")));
     assertThat(result.getNodes(), containsInAnyOrder(
-            new Node(vertices.get(0)),
-            new Node(vertices.get(1)),
-            new Node(vertices.get(2)),
-            new Node(vertices.get(3))
+            new Node(vertices.get(0), "wwperson"),
+            new Node(vertices.get(1), "wwperson"),
+            new Node(vertices.get(2), "wwperson"),
+            new Node(vertices.get(3), "wwperson")
     ));
-
     assertThat(result.getLinks(), containsInAnyOrder(
             new Link(mockEdge(RELATION_NAME), 0, 1),
             new Link(mockEdge(RELATION_NAME_2), 0, 2),

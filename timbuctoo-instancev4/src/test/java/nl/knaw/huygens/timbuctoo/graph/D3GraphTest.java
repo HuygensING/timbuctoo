@@ -43,12 +43,12 @@ public class D3GraphTest {
     Vertex mockVertex1 = mockVertex("1", "document", "document_title", "title1");
     Vertex mockVertex2 = mockVertex("2", "document", "document_title", "title2");
 
-    underTest.addNode(mockVertex1);
-    underTest.addNode(mockVertex2);
+    underTest.addNode(mockVertex1, null);
+    underTest.addNode(mockVertex2, null);
 
     assertThat(underTest.getNodes(), contains(
-            new Node(mockVertex1),
-            new Node(mockVertex2)
+            new Node(mockVertex1, null),
+            new Node(mockVertex2, null)
     ));
   }
 
@@ -57,11 +57,11 @@ public class D3GraphTest {
     D3Graph underTest = new D3Graph();
     Vertex mockVertex1 = mockVertex("1", "document", "document_title", "title1");
 
-    underTest.addNode(mockVertex1);
-    underTest.addNode(mockVertex1);
+    underTest.addNode(mockVertex1, null);
+    underTest.addNode(mockVertex1, null);
 
     assertThat(underTest.getNodes(), contains(
-            new Node(mockVertex1)
+            new Node(mockVertex1, null)
     ));
   }
 
@@ -71,11 +71,11 @@ public class D3GraphTest {
     Vertex mockVertex1 = mockVertex("1", "document", "document_title", "title1");
     Vertex mockVertex2 = mockVertex("2", "unsupported", "document_title", "title2");
 
-    underTest.addNode(mockVertex1);
-    underTest.addNode(mockVertex2);
+    underTest.addNode(mockVertex1, null);
+    underTest.addNode(mockVertex2, null);
 
     assertThat(underTest.getNodes(), contains(
-            new Node(mockVertex1)
+            new Node(mockVertex1, null)
     ));
   }
 
@@ -87,12 +87,12 @@ public class D3GraphTest {
     Vertex mockVertex3 = mockVertex("3", "document", "document_title", "title3");
 
     Edge mockEdge = mockEdge("someRelation");
-    underTest.addNode(mockVertex1);
-    underTest.addNode(mockVertex2);
-    underTest.addNode(mockVertex3);
+    underTest.addNode(mockVertex1, null);
+    underTest.addNode(mockVertex2, null);
+    underTest.addNode(mockVertex3, null);
 
-    underTest.addLink(mockEdge, mockVertex1, mockVertex2);
-    underTest.addLink(mockEdge, mockVertex1, mockVertex3);
+    underTest.addLink(mockEdge, mockVertex1, mockVertex2, null, null);
+    underTest.addLink(mockEdge, mockVertex1, mockVertex3, null, null);
 
     assertThat(underTest.getLinks(), contains(
             new Link(mockEdge, 0, 1),
@@ -107,11 +107,13 @@ public class D3GraphTest {
     Vertex mockVertex2 = mockVertex("2", "document", "document_title", "title2");
 
     Edge mockEdge = mockEdge("someRelation");
-    underTest.addNode(mockVertex1);
-    underTest.addNode(mockVertex2);
+    underTest.addNode(mockVertex1, null);
+    underTest.addNode(mockVertex2, null);
 
-    underTest.addLink(mockEdge, mockVertex1, mockVertex2);
-    underTest.addLink(mockEdge, mockVertex2, mockVertex1);
+    underTest.addLink(mockEdge, mockVertex1, mockVertex2, null,
+      null);
+    underTest.addLink(mockEdge, mockVertex2, mockVertex1, null,
+      null);
 
     assertThat(underTest.getLinks(), contains(
             new Link(mockEdge, 0, 1)
@@ -126,13 +128,16 @@ public class D3GraphTest {
     Vertex mockVertex3 = mockVertex("3", "unsupported", "document_title", "title3");
 
     Edge mockEdge = mockEdge("someRelation");
-    underTest.addNode(mockVertex1);
-    underTest.addNode(mockVertex2);
-    underTest.addNode(mockVertex3);
+    underTest.addNode(mockVertex1, null);
+    underTest.addNode(mockVertex2, null);
+    underTest.addNode(mockVertex3, null);
 
-    underTest.addLink(mockEdge, mockVertex1, mockVertex2);
-    underTest.addLink(mockEdge, mockVertex1, mockVertex3);
-    underTest.addLink(mockEdge, mockVertex3, mockVertex1);
+    underTest.addLink(mockEdge, mockVertex1, mockVertex2, null,
+      null);
+    underTest.addLink(mockEdge, mockVertex1, mockVertex3, null,
+      null);
+    underTest.addLink(mockEdge, mockVertex3, mockVertex1, null,
+      null);
 
 
     assertThat(underTest.getLinks(), contains(
