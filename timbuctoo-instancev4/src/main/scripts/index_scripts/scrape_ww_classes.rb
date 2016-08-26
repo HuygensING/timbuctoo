@@ -9,6 +9,8 @@ require './documentReception.rb'
 require './documentReceptions.rb'
 require './personReception.rb'
 require './personReceptions.rb'
+require './collective.rb'
+require './collectives.rb'
 require 'json'
 
 
@@ -17,6 +19,7 @@ if __FILE__ == $0
     @location = "http://test.repository.huygens.knaw.nl/"
     @person_coll = "wwpersons/"
     @document_coll = "wwdocuments/"
+    @collective_coll = "wwcollectives/"
     @pers_reception_coll = "wwpersonreceptions/"
     @doc_reception_coll = "wwdocumentreceptions/"
     @solr_auth_header = ""
@@ -53,6 +56,12 @@ if __FILE__ == $0
     Documents.solr_documents = "#{@solr}#{@document_coll}"
     Documents.solr_auth = @solr_auth_header
     Documents.debug = false
+    
+    Collective.location = "#{@location}v2.1/"
+    Collectives.location = "#{@location}v2.1/"
+    Collectives.solr = "#{@solr}#{@collective_coll}"
+    Collectives.solr_auth = @solr_auth_header
+    Collectives.debug = false
 
     DocumentReceptions.solr = "#{@solr}#{@doc_reception_coll}"
     DocumentReceptions.solr_auth = @solr_auth_header
@@ -63,6 +72,13 @@ if __FILE__ == $0
     continu = true
     start_value = 0
     num_of_lines = 100 # Persons.debug ? 10 : 100
+
+    while(continu)
+      continu = Collectives.scrape_file start_value,num_of_lines
+      start_value += 100 if continu
+    end
+    Collectives.delete_index
+    Collectives.create_index
 
     while(continu)
       continu = Persons.scrape_file start_value,num_of_lines
