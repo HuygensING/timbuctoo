@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# set -o xtrace
+
 # An example hook script to verify what is about to be pushed.  Called by "git
 # push" after it has checked the remote status, but before anything has been
 # pushed.  If this script exits with a non-zero status nothing will be pushed.
@@ -19,16 +21,10 @@
 # This sample shows how to prevent push of commits where the log message starts
 # with "WIP" (work in progress).
 
-protected_branch='refs/heads/develop'
-
 remote="$1"
 url="$2"
 
 z40=0000000000000000000000000000000000000000
-
-if [ "$remote" = master ]; then
-	echo "disallowing pushes to master, make sure its a fast-forward and use --no-verify to overrule"
-fi
 
 while read local_ref local_sha remote_ref remote_sha; do
 	if [ "$local_sha" != $z40 ]; then #local_sha is 000.. when we're deleting a remote branch
@@ -81,13 +77,11 @@ while read local_ref local_sha remote_ref remote_sha; do
 			mavencache="-v $HOME/.m2:/root/.m2"
 		fi
 
-    if [ "$remote_ref" = "$protected_branch" ]; then
-			set -o pipefail
-			#run the maven container
-			#check out the local ref into a clean empty directory, without a ~/.m2 directory present
-			#do a test (verify doesn't work on empty databases yet and a verify fail should correlate 1 tot 1 with a test fail)
-			docker run $mavencache -v "$(git rev-parse --show-toplevel)":/root/timbuctoo maven:3.3-jdk-8 bash -c "git clone -b ${local_ref#refs/heads/} /root/timbuctoo /root/build && cd /root/build && mvn test" | tee prepushresult.txt && rm prepushresult.txt || exit 1
-		fi
+		set -o pipefail
+		#run the maven container
+		#check out the local ref into a clean empty directory, without a ~/.m2 directory present
+		#do a test (verify doesn't work on empty databases yet and a verify fail should correlate 1 tot 1 with a test fail)
+		docker run --rm $mavencache -v "$(git rev-parse --show-toplevel)":/root/timbuctoo maven:3.3-jdk-8 bash -c "git clone -b ${local_ref#refs/heads/} /root/timbuctoo /root/build && cd /root/build && mvn test" | tee prepushresult.txt && rm prepushresult.txt || exit 1
 	fi
 done
 
