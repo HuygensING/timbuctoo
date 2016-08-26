@@ -80,6 +80,10 @@ if __FILE__ == $0
     Collectives.delete_index
     Collectives.create_index
 
+    continu = true
+    start_value = 0
+    num_of_lines = 100 # debug ? 10 : 100
+
     while(continu)
       continu = Persons.scrape_file start_value,num_of_lines
       start_value += 100 if continu
