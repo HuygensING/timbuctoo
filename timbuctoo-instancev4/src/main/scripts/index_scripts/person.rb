@@ -57,7 +57,14 @@ class Person < Hash
       @@wanted_properties.each_with_index do |property,ind|
         if !data[property].nil?
           if (ind==4 || ind==5)
-              self[@@new_prop_names[ind]] = data[property].to_i
+              parsedDate = 0
+              if data[property].length > 4 and data[property].match(/.*([0-9]{4}).*/)
+                pStr = data[property].sub(/.*([0-9]{4}).*/, '\1')
+                parsedDate = pStr.to_i
+              elsif data[property].match(/^-?[0-9]{4}$/) or data[property].match(/^-?[0-9]{3}$/) or data[property].match(/^-?[0-9]{2}$/) or data[property].match(/^-?[0-9]$/)
+                parsedDate = data[property].to_i
+              end
+              self[@@new_prop_names[ind]] = parsedDate if parsedDate != 0
           else
               self[@@new_prop_names[ind]] = data[property]
           end
