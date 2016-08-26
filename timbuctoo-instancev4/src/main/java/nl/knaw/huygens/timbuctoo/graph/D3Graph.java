@@ -20,27 +20,28 @@ public class D3Graph {
     links = Lists.newArrayList();
   }
 
-  public void addNode(Vertex vertex) {
+  public void addNode(Vertex vertex, String entityTypeName) {
     try {
-      Node node = new Node(vertex);
+      Node node = new Node(vertex, entityTypeName);
 
       if (!nodes.contains(node)) {
         nodes.add(node);
       }
 
     } catch (IOException e) {
-      LOG.warn("Node not added because " +  e.getMessage());
+      LOG.debug("Node not added because " +  e.getMessage());
     }
   }
 
-  public void addLink(Edge edge, Vertex source, Vertex target) {
+  public void addLink(Edge edge, Vertex source, Vertex target, String sourceTypeName, String targetTypeName) {
     try {
-      Link link = new Link(edge, nodes.indexOf(new Node(source)), nodes.indexOf(new Node(target)));
+      Link link = new Link(edge, nodes.indexOf(new Node(source, sourceTypeName)), nodes.indexOf(new Node(target,
+        targetTypeName)));
       if (!links.contains(link)) {
         links.add(link);
       }
     } catch (IOException e) {
-      LOG.warn("Link not added because " + e.getMessage());
+      LOG.debug("Link not added because " + e.getMessage());
     }
   }
 

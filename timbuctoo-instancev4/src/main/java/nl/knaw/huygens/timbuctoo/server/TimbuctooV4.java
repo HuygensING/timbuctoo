@@ -237,7 +237,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager, vres));
     }
-    register(environment, new Graph(graphManager));
+    register(environment, new Graph(graphManager, vres));
     // Bulk upload
     UriHelper uriHelper = new UriHelper(configuration);
     UserPermissionChecker permissionChecker = new UserPermissionChecker(loggedInUserStore, authorizer);

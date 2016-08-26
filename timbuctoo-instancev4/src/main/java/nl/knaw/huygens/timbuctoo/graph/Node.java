@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.graph;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.model.GraphReadUtils;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
@@ -9,6 +10,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,9 +34,12 @@ public class Node {
   private String type;
   private String key;
 
-  public Node(Vertex vertex) throws IOException {
+  public Node(Vertex vertex, String entityTypeName) throws IOException {
     this.type = getVertexType(vertex);
-    this.key = this.type + "s/" + vertex.property("tim_id").value();
+
+    this.key = entityTypeName == null ? this.type + "s/" + vertex.property("tim_id").value() :
+      entityTypeName + "s/" + vertex.property("tim_id").value();
+
     if (!propertyDescriptors.containsKey(type)) {
       throw new IOException("type not supported: " + type);
     }

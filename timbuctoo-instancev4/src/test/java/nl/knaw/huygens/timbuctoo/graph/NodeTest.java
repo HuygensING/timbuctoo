@@ -39,42 +39,42 @@ public class NodeTest {
 
   @Test
   public void getLabelReturnsTheLabel() throws IOException {
-    Node underTest = new Node(mockDocumentVertex);
+    Node underTest = new Node(mockDocumentVertex, null);
 
     assertThat(underTest.getLabel(), is(DOCUMENT_LABEL));
   }
 
   @Test
   public void getTypeReturnsTheType() throws IOException {
-    Node underTest = new Node(mockDocumentVertex);
+    Node underTest = new Node(mockDocumentVertex, null);
 
     assertThat(underTest.getType(), is(TYPE));
   }
 
   @Test
   public void getKeyReturnsTheKey() throws IOException {
-    Node underTest = new Node(mockDocumentVertex);
+    Node underTest = new Node(mockDocumentVertex, null);
 
     assertThat(underTest.getKey(), is(TYPE + "s/" + TIM_ID));
   }
 
   @Test
   public void equalsReturnsFalseWhenOtherIsNull() throws IOException {
-    Node underTest = new Node(mockDocumentVertex);
+    Node underTest = new Node(mockDocumentVertex, null);
 
     assertThat(underTest.equals(null), is(false));
   }
 
   @Test
   public void equalsReturnsTrueWhenOtherHasTheSameMemoryReference() throws IOException {
-    Node underTest = new Node(mockDocumentVertex);
+    Node underTest = new Node(mockDocumentVertex, null);
 
     assertThat(underTest.equals(underTest), is(true));
   }
 
   @Test
   public void equalsReturnsFalseWhenOtherIsNotANode() throws IOException {
-    Node underTest = new Node(mockDocumentVertex);
+    Node underTest = new Node(mockDocumentVertex, null);
 
     assertThat(underTest.equals(new Object()), is(false));
 
@@ -82,8 +82,8 @@ public class NodeTest {
 
   @Test
   public void equalsReturnsTrueWhenOtherNodeHasTheSameKey() throws IOException {
-    Node underTest = new Node(mockDocumentVertex);
-    Node toCompare = new Node(mockDocumentVertex);
+    Node underTest = new Node(mockDocumentVertex, null);
+    Node toCompare = new Node(mockDocumentVertex, null);
 
     assertThat(underTest.equals(toCompare), is(true));
     assertThat(underTest == toCompare, is(false));
@@ -104,7 +104,7 @@ public class NodeTest {
     given(mockPersonVertex.value("wwperson_tempName")).willReturn(tempName);
     given(mockPersonVertex.keys()).willReturn(Sets.newHashSet("wwperson_tempName"));
 
-    Node underTest = new Node(mockPersonVertex);
+    Node underTest = new Node(mockPersonVertex, null);
 
     assertThat(underTest.getType(), is(type));
     assertThat(underTest.getKey(), is(type + "s/" + timId));
@@ -123,6 +123,6 @@ public class NodeTest {
     given(timIdProperty.value()).willReturn(timId);
     given(typesProperty.value()).willReturn("[\"" + type +  "\"]");
 
-    new Node(mockUnsupportedVertex);
+    new Node(mockUnsupportedVertex, null);
   }
 }
