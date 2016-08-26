@@ -135,7 +135,8 @@ class Person < Hash
       self["language_ss"] = Array.new
       self["work_id_ss"].each do |work_id|
         document = Documents.find work_id
-        self["language_ss"] += document["language_ss"]
+        puts "problem! with finding document id #{work_id} in person id #{self["id"]}" if document.nil?
+        self["language_ss"] += document["language_ss"] unless document.nil?
       end
       self["language_ss"].uniq!
       self["work_id_ss"] = Array.new
