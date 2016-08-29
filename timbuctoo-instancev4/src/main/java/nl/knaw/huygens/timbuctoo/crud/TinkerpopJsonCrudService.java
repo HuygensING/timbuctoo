@@ -9,8 +9,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
-import nl.knaw.huygens.timbuctoo.database.dto.RelationCreateDescription;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
@@ -141,34 +139,22 @@ public class TinkerpopJsonCrudService {
 
   private UUID createRelation(Collection collection, ObjectNode input, String userId)
     throws IOException, AuthorizationException, AuthorizationUnavailableException {
-    JsonNode acceptedRaw = input.get("accepted");
 
     UUID sourceId = asUuid(input, "^sourceId");
     UUID targetId = asUuid(input, "^targetId");
     UUID typeId = asUuid(input, "^typeId");
 
-    boolean accepted;
-    if (acceptedRaw == null || !acceptedRaw.isBoolean()) {
-      throw new IOException("Accepted must be a boolean");
-    } else {
-      accepted = acceptedRaw.asBoolean();
-    }
-
     try (DataAccess.DataAccessMethods db = dataAccess.start()) {
-      RelationCreateDescription description = db.getCurrentRelationIfExists(sourceId, typeId, targetId, collection);
-      if (description.getExistingRelation().isPresent()) { //Idempotent POSTS :)
-        final EntityRelation existingEdge = description.getExistingRelation().get();
-        if (!existingEdge.isAccepted()) {
-          //if not already an active relation
-          db.updateRelation(existingEdge, userId, true, clock.millis());
-        }
-        db.success();
-        return existingEdge.getTimId();
-      } else {
-        EntityRelation relation = db.createRelation(description, userId, accepted, clock.millis());
-        db.success();
-        return relation.getTimId();
-      }
+      UUID relationId = db.acceptRelation(
+        sourceId,
+        typeId,
+        targetId,
+        collection,
+        userId,
+        clock.instant()
+      );
+      db.success();
+      return relationId;
     } catch (RelationNotPossibleException e) {
       throw new IOException(e.getMessage(), e);
     }

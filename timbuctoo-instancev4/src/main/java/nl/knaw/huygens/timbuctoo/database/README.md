@@ -11,19 +11,27 @@ We'd like to access the database only in a correct manner.
 ##Goal
 DataAccess will solve both problems by becoming the only way to access the database and by guaranteeing the following attributes.
 
- * The methods are only accessible while inside an AutoCloseable wrapper that manages the transaction.
- * ~~no two transaction may run at the same time~~ will be possible once no code uses graphWrapper directly anymore
- * Each method returns an Immutable Value object without Tinkerpop or Neo4j references
- * A value object will never hit the database to lazy load more data. 
-   If needed more variants are provided to handle the differen clients needs
- * A method is quite tightly coupled to the client. While a method may be used by more then one client is has a very tightly defined implementation and re-use is not expected to be the rule.
- * of course, internally methods may re-use each other freely.
- * A mutation is a separate method adhering to the same practices as a retrieval method.
+ * The methods are only accessible while inside an AutoCloseable wrapper that manages the transaction. 
+   (So that the client code is forced to think about transaction lifetime)
+ * ~~no two transaction may run at the same time~~ (will be possible once no code uses graphWrapper directly anymore)
+ * Each method returns an Immutable Value object without Tinkerpop or Neo4j references. 
+   (So that timbuctoo is less dependent on one database implementation)
+ * A value object will never hit the database to lazy load more data.
+   (so that the client code can more easily reason about performance. Only db.something() calls will hit the database)
+ * A method is quite tightly coupled to the client. While a method may be used by more then one client is has a very tightly defined implementation and re-use is not expected to be the rule. 
+   (So that removing some client code will also clearly remove their constraints on the data model)
+    * of course, internally methods may re-use each other freely (so that we do not have code duplication)
+ * A mutation is a separate method adhering to the same practices as a retrieval method. 
+   (a second requirement to make only db.something() calls hit the database)
  * You might have a mutation method that also retrieves data, but this is not the norm.
- * You may implement the interface DataAccess methods and register your implementation with DataAccess to have your class run in an experiment.
- * The methods will only get or mutate state. They will not trigger or calculate state (i.e. they will not generate handle id's etc, they might require a parameter containing a handle id though)
-
- * The dataAccess class will perform authorization.
+   (explicitly mentioned for people who expect full Command Query Separation) 
+ * The dataAccess methods will only get or mutate state. They will not trigger or calculate state (i.e. they will not generate handle id's etc, they might require a parameter containing a handle id though)
+   (This prevents scope creep because everything could be in dataAccess. It also makes the dataAccess methods easier to test)
+     * But: The dataAccess class will perform authorization.
+       (This prevents code duplication, and prevents security bugs)
+     * But: The dataAccess class will generate the unique ID's
+       (because otherwise it would still need to verify uniqueness and throw exceptions which would make the code needlessly complex)
+ * ~~You may add a custom DataAccess implementation which only implements a few methods that will then be run in an experiment. So you can try out a new database without having to write a full implementation~~ might be added once we have one full implementation. 
  * initially there is no interface and only one implementation to facilitate easier refactoring
 
 #TransactionFilter

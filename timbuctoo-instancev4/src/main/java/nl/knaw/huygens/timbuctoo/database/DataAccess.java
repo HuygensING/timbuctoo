@@ -5,8 +5,6 @@ import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
-import nl.knaw.huygens.timbuctoo.database.dto.ImmutableRelationCreateDescription;
-import nl.knaw.huygens.timbuctoo.database.dto.RelationCreateDescription;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
@@ -29,11 +27,11 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.Instant;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
@@ -105,21 +103,76 @@ public class DataAccess {
       }
     }
 
-    public RelationCreateDescription getCurrentRelationIfExists(UUID sourceId, UUID typeId, UUID targetId,
-                                                                Collection coll) throws RelationNotPossibleException,
-        IOException {
-      List<RelationType> descs = getRelationDescription(traversal, typeId);
+    /**
+     * Creates a relation between two entities.
+     *
+     * <p>If a relation already exists, it will not create a new one.</p>
+     * @param sourceId Id of the source Entity
+     * @param typeId Id of the relation type
+     * @param targetId Id of the target Entity
+     * @param collection the relation collection (not the collection of the source or target vertices)
+     * @param userId the user under which the relation is created. Will be validated and written to the database
+     * @param instant the time under which the acceptance should be recorded
+     *
+     * @return the UUID of the relation
+     *
+     * @throws RelationNotPossibleException if a relation is not possible
+     * @throws AuthorizationUnavailableException if the relation datafile cannot be read
+     * @throws AuthorizationException if the user is not authorized
+     */
+    public UUID acceptRelation(UUID sourceId, UUID typeId, UUID targetId, Collection collection, String userId,
+                               Instant instant) throws RelationNotPossibleException, AuthorizationUnavailableException,
+        AuthorizationException {
 
-      if (descs.size() == 0) {
-        throw new RelationNotPossibleException("Relation type " + typeId + " does not exist");
-      }
+      checkIfAllowedToWrite(authorizer, userId, collection);
 
-      Vertex sourceV = getEntityByFullIteration(traversal, sourceId)
-        .orElseThrow(() -> new RelationNotPossibleException("source is not present"));
-      Vertex targetV = getEntityByFullIteration(traversal, targetId)
-        .orElseThrow(() -> new RelationNotPossibleException("target is not present"));
+      RelationType descs = getRelationDescription(traversal, typeId)
+        .orElseThrow(notPossible("Relation type " + typeId + " does not exist"));
+      Vertex sourceV = getEntityByFullIteration(traversal, sourceId).orElseThrow(notPossible("source is not present"));
+      Vertex targetV = getEntityByFullIteration(traversal, targetId).orElseThrow(notPossible("target is not present"));
+
       //check if the relation already exists
-      final Optional<EntityRelation> existingEdge = stream(sourceV.edges(Direction.BOTH))
+      final Optional<EntityRelation> existingEdgeOpt = getEntityRelation(sourceV, targetV, typeId, collection);
+
+      if (existingEdgeOpt.isPresent()) {
+        final EntityRelation existingEdge = existingEdgeOpt.get();
+        if (!existingEdge.isAccepted()) {
+          //if not already an active relation
+          updateRelation(existingEdge, collection, userId, true, instant.toEpochMilli());
+        }
+        return existingEdge.getTimId();
+      } else {
+        Collection sourceCollection = getCollection(collection.getVre(), sourceV)
+          .orElseThrow(notPossible("Source vertex is not part of the VRE of " + collection.getCollectionName()));
+        Collection targetCollection = getCollection(collection.getVre(), targetV)
+          .orElseThrow(notPossible("Target vertex is not part of the VRE of " + collection.getCollectionName()));
+        RelationType.DirectionalRelationType desc = descs.getForDirection(sourceCollection, targetCollection)
+          .orElseThrow(notPossible("You can't have a " + descs.getName() + " from " +
+            sourceCollection.getEntityTypeName() + " to " + targetCollection.getEntityTypeName() + " or vice versa"));
+
+        return createRelation(sourceV, targetV, desc, userId, collection, true, instant.toEpochMilli());
+      }
+    }
+
+    private Supplier<RelationNotPossibleException> notPossible(String message) {
+      return () -> new RelationNotPossibleException(message);
+    }
+
+
+    /*******************************************************************************************************************
+     * Support methods:
+     ******************************************************************************************************************/
+    private Optional<Collection> getCollection(Vre vre, Element sourceV) {
+      String ownType = vre.getOwnType(getEntityTypes(sourceV));
+      if (ownType == null) {
+        return Optional.empty();
+      }
+      return Optional.of(vre.getCollectionForTypeName(ownType));
+    }
+
+    private Optional<EntityRelation> getEntityRelation(Vertex sourceV, Vertex targetV, UUID typeId,
+                                                       Collection collection) {
+      return stream(sourceV.edges(Direction.BOTH))
         .filter(e ->
           (e.inVertex().id().equals(targetV.id()) || e.outVertex().id().equals(targetV.id())) &&
             getRequiredProp(e, "typeId", "").equals(typeId.toString())
@@ -128,76 +181,37 @@ public class DataAccess {
         .sorted((o1, o2) -> getRequiredProp(o1, "rev", -1).compareTo(getRequiredProp(o2, "rev", -1)))
         //get last element, i.e. with the highest rev, i.e. the most recent
         .reduce((o1, o2) -> o2)
-        .map(edge -> makeEntityRelation(edge, coll));
-
-      Collection sourceCollection = getCollection(coll.getVre(), sourceV)
-        .orElseThrow(() -> new RelationNotPossibleException("Source vertex is not part of the VRE of " +
-          coll.getCollectionName()));
-      Collection targetCollection = getCollection(coll.getVre(), targetV)
-        .orElseThrow(() -> new RelationNotPossibleException("Target vertex is not part of the VRE of " +
-          coll.getCollectionName()));
-
-      for (RelationType desc : descs) {
-        if (desc.isValid(sourceCollection, targetCollection)) {
-          return ImmutableRelationCreateDescription.builder()
-                                                   .existingRelation(existingEdge)
-                                                   .collection(coll)
-                                                   .sourceId(getRequiredProp(sourceV, "tim_id", ""))
-                                                   .targetId(getRequiredProp(targetV, "tim_id", ""))
-                                                   .description(desc)
-                                                   .build();
-        }
-      }
-      throw new RelationNotPossibleException("You can't have a " + descs.get(0).getName() + " from " +
-        sourceCollection.getEntityTypeName() + " to " +
-        targetCollection.getEntityTypeName() + " or vice versa");
+        .map(edge -> makeEntityRelation(edge, collection));
     }
 
-    public void updateRelation(EntityRelation existingEdge, String userId, boolean accepted, long time) throws
-        AuthorizationUnavailableException, AuthorizationException {
-
-      checkIfAllowedToWrite(authorizer, userId, existingEdge.getCollection());
+    private void updateRelation(EntityRelation existingEdge, Collection collection, String userId, boolean accepted,
+                                long time) throws AuthorizationUnavailableException, AuthorizationException {
       final Edge origEdge = getExpectedEdge(traversal, existingEdge.getTimId().toString());
       final Edge newEdge = EdgeManipulator.duplicateEdge(origEdge);
-      newEdge.property(existingEdge.getCollection().getEntityTypeName() + "_accepted", accepted);
+      newEdge.property(collection.getEntityTypeName() + "_accepted", accepted);
       newEdge.property("rev", existingEdge.getRevision() + 1);
       setModified(newEdge, userId, time);
     }
 
-    public EntityRelation createRelation(RelationCreateDescription relationMetadata, String userId,
-                                         boolean accepted, long time) throws
+    private UUID createRelation(Vertex source, Vertex target, RelationType.DirectionalRelationType relationType,
+                                String userId, Collection collection, boolean accepted, long time) throws
         AuthorizationException, AuthorizationUnavailableException {
-
-      checkIfAllowedToWrite(authorizer, userId, relationMetadata.getCollection());
-
       UUID id = UUID.randomUUID();
-      Edge edge = getExpectedVertex(traversal, relationMetadata.getSourceId()).addEdge(
-        relationMetadata.getDescription().getDbName(),
-        getExpectedVertex(traversal, relationMetadata.getTargetId()),
-        relationMetadata.getCollection().getEntityTypeName() + "_accepted", accepted,
+      Edge edge = source.addEdge(
+        relationType.getDbName(),
+        target,
+        collection.getEntityTypeName() + "_accepted", accepted,
         "types", jsnA(
-          jsn(relationMetadata.getCollection().getEntityTypeName()),
-          jsn(relationMetadata.getCollection().getAbstractType())
+          jsn(collection.getEntityTypeName()),
+          jsn(collection.getAbstractType())
         ).toString(),
-        "typeId", relationMetadata.getDescription().getTimId(),
+        "typeId", relationType.getTimId(),
         "tim_id", id.toString(),
         "isLatest", true,
         "rev", 1
       );
       setCreated(edge, userId, time);
-      return makeEntityRelation(edge, relationMetadata.getCollection());
-
-    }
-
-    /*******************************************************************************************************************
-     * Support methods:
-     */
-    private Optional<Collection> getCollection(Vre vre, Element sourceV) {
-      String ownType = vre.getOwnType(getEntityTypes(sourceV));
-      if (ownType == null) {
-        return Optional.empty();
-      }
-      return Optional.of(vre.getCollectionForTypeName(ownType));
+      return id;
     }
 
     private void setCreated(Element element, String userId, long time) {
@@ -234,7 +248,6 @@ public class DataAccess {
                                     .isAccepted(getRequiredProp(edge, acceptedPropName, false))
                                     .timId(asUuid(getRequiredProp(edge, "tim_id", ""), edge))
                                     .revision(getRequiredProp(edge, "rev", -1))
-                                    .collection(collection)
                                     .build();
     }
 
@@ -272,16 +285,6 @@ public class DataAccess {
       }
     }
 
-    private static Vertex getExpectedVertex(GraphTraversalSource traversal, String timId) {
-      GraphTraversal<Vertex, Vertex> vertex = traversal.V().has("tim_id", timId);
-      if (vertex.hasNext()) {
-        return vertex.next();
-      } else {
-        throw new ObjectSuddenlyDisappearedException("The code assumes that the vertex with id " + timId + " is " +
-          "available, but it isn't!");
-      }
-    }
-
     private static Edge getExpectedEdge(GraphTraversalSource traversal, String timId) {
       GraphTraversal<Edge, Edge> edge = traversal.E().has("tim_id", timId);
       if (edge.hasNext()) {
@@ -307,17 +310,13 @@ public class DataAccess {
       }
     }
 
-    private static List<RelationType> getRelationDescription(GraphTraversalSource traversal, UUID typeId) {
-      final ArrayList<RelationType> result = new ArrayList<>();
-      getFirst(traversal
+    private static Optional<RelationType> getRelationDescription(GraphTraversalSource traversal, UUID typeId) {
+      return getFirst(traversal
         .V()
         //.has(T.label, LabelP.of("relationtype"))
         .has("tim_id", typeId.toString())
       )
-        .map(RelationType::bothWays)
-        .ifPresent(descs ->
-          descs.values().forEach(result::add));
-      return result;
+      .map(RelationType::new);
     }
 
     private static void checkIfAllowedToWrite(Authorizer authorizer, String userId, Collection collection) throws

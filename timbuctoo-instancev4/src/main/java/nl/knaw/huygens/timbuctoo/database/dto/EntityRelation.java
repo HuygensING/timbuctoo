@@ -12,7 +12,5 @@ public interface EntityRelation {
 
   UUID getTimId();
 
-  Collection getCollection();
-
   int getRevision();
 }
