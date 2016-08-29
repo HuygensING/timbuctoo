@@ -1,7 +1,7 @@
-package nl.knaw.huygens.timbuctoo.crud.changelistener;
+package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.crud.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;

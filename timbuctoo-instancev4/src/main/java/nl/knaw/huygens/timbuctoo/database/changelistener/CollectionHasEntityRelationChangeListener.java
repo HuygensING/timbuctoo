@@ -1,12 +1,11 @@
-package nl.knaw.huygens.timbuctoo.crud.changelistener;
+package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.crud.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;

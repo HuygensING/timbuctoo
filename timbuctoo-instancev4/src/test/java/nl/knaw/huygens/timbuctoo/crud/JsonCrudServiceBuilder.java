@@ -1,8 +1,9 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
-import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
+import nl.knaw.huygens.timbuctoo.database.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
+import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;

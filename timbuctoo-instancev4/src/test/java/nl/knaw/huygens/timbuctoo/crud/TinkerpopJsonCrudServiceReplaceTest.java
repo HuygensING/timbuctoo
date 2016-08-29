@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;

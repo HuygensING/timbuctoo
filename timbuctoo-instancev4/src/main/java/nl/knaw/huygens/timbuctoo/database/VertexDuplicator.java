@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.crud;
+package nl.knaw.huygens.timbuctoo.database;
 
 
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;

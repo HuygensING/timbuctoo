@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
-import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;

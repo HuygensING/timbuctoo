@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.crud.changelistener;
+package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
