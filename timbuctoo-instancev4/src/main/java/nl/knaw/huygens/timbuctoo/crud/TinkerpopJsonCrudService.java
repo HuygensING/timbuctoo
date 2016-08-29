@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
@@ -59,7 +58,6 @@ import static java.util.stream.Collectors.toSet;
 import static java.util.stream.Stream.concat;
 import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
-import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
@@ -162,68 +160,23 @@ public class TinkerpopJsonCrudService {
   }
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)
-    throws IOException, AuthorizationException {
-    String collectionName = collection.getCollectionName();
+    throws IOException, AuthorizationException, AuthorizationUnavailableException {
 
-    Map<String, LocalProperty> mapping = collection.getWriteableProperties();
     Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
-    Map<String, LocalProperty> baseMapping = baseCollection.isPresent() ?
-      baseCollection.get().getWriteableProperties() : Maps.newHashMap();
 
-    UUID id = UUID.randomUUID();
-
-    Graph graph = graphwrapper.getGraph();
-    GraphTraversalSource traversalSource = graph.traversal();
-    GraphTraversal<Vertex, Vertex> traversalWithVertex = traversalSource.addV();
-
-    Vertex vertex = traversalWithVertex.next();
-
-    Iterator<String> fieldNames = input.fieldNames();
-    while (fieldNames.hasNext()) {
-      String fieldName = fieldNames.next();
-      if (!fieldName.startsWith("@") && !fieldName.startsWith("^") && !fieldName.equals("_id")) {
-        if (mapping.containsKey(fieldName)) {
-          try {
-            mapping.get(fieldName).setJson(vertex, input.get(fieldName));
-          } catch (IOException e) {
-            graph.tx().rollback();
-            throw new IOException(fieldName + " could not be saved. " + e.getMessage(), e);
-          }
-        } else {
-          graph.tx().rollback();
-          throw new IOException(String.format("Items of %s have no property %s", collectionName, fieldName));
-        }
-
-        if (baseMapping.containsKey(fieldName)) {
-          try {
-            baseMapping.get(fieldName).setJson(vertex, input.get(fieldName));
-          } catch (IOException e) {
-            LOG.error(configurationFailure, "Field could not be parsed by Admin VRE converter {}_{}",
-              baseCollection.get().getCollectionName(), fieldName);
-          }
-        }
+    UUID id;
+    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+      try {
+        id = db.createEntity(collection, baseCollection, input, userId, clock.instant());
+        db.success();
+      } catch (IOException | AuthorizationException | AuthorizationUnavailableException e) {
+        db.rollback();
+        throw e;
       }
     }
 
-    vertex.property("tim_id", id.toString());
-    vertex.property("rev", 1);
-    vertex.property("types", String.format(
-      "[\"%s\", \"%s\"]",
-      collection.getEntityTypeName(),
-      collection.getAbstractType()
-    ));
-
-    setCreated(vertex, userId);
-
-    listener.onCreate(vertex);
-
-    duplicateVertex(graph, vertex);
-    //Make sure this is the last line of the method. We don't want to commit if an exception happens halfway
-    //the return statement below should return a variable directly without any additional logic
-    graph.tx().commit();
-
     //but out of process commands that require our changes need to come after a commit of course :)
-    handleAdder.add(new HandleAdderParameters(id, 1, handleUrlFor.apply(collectionName, id, 1)));
+    handleAdder.add(new HandleAdderParameters(id, 1, handleUrlFor.apply(collection.getCollectionName(), id, 1)));
     return id;
   }
 
@@ -260,7 +213,7 @@ public class TinkerpopJsonCrudService {
 
     Vertex entityTs = null;
     try {
-      entityTs = entityFetcher.getEntity(traversalSource, id, rev,  collection.getCollectionName()).next();
+      entityTs = entityFetcher.getEntity(traversalSource, id, rev, collection.getCollectionName()).next();
     } catch (NoSuchElementException e) {
       throw new NotFoundException();
     }
@@ -317,7 +270,7 @@ public class TinkerpopJsonCrudService {
 
     result.set("^deleted", nodeFactory.booleanNode(getProp(entity, "deleted", Boolean.class).orElse(false)));
 
-    result.set("^pid",nodeFactory.textNode(getProp(entity, "pid", String.class).orElse(null)));
+    result.set("^pid", nodeFactory.textNode(getProp(entity, "pid", String.class).orElse(null)));
 
     return result;
   }
@@ -365,8 +318,8 @@ public class TinkerpopJsonCrudService {
                               }
                               String targetCollection = targetType + "s";
                               String uuid = getProp(vertex, "tim_id", String.class).orElse("");
-                              String displayName = getDisplayname(traversalSource, vertex, collection.getVre()
-                                .getCollectionForTypeName(targetType))
+                              String displayName = getDisplayname(traversalSource, vertex,
+                                collection.getVre().getCollectionForTypeName(targetType))
                                 .orElse("<No displayname found>");
 
                               URI relatedEntityUri =
@@ -397,78 +350,97 @@ public class TinkerpopJsonCrudService {
     Object[] relationTypes = traversalSource.V().has(T.label, LabelP.of("relationtype")).id().toList().toArray();
 
     return collection.getVre().getCollections().values().stream()
-      .filter(Collection::isRelationCollection)
-      .findAny()
-      .map(Collection::getEntityTypeName)
-      .map(ownRelationType -> traversalSource.V(entity.id())
-        .union(
-          __.outE()
-            .as("edge")
-            .label().as("label")
-            .select("edge"),
-          __.inE()
-            .as("edge")
-            .label().as("edgeLabel")
-            .V(relationTypes)
-            .has("relationtype_regularName", __.where(P.eq("edgeLabel")))
-            .properties("relationtype_inverseName").value()
-            .as("label")
-            .select("edge")
-        )
-        .where(
-          //FIXME move to strategy
-          __.has("isLatest", true)
-            .not(__.has("deleted", true))
-            .not(__.hasLabel("VERSION_OF"))
-            //The old timbuctoo showed relations from all VRE's. Changing that behaviour caused breakage in the
-            //frontend and exposed errors in the database that
-            //.has("types", new P<>((val, def) -> val.contains("\"" + ownRelationType + "\""), ""))
-            // FIXME: string concatenating methods like this should be delegated to a configuration clas
-            .not(__.has(ownRelationType + "_accepted", false))
-        )
-        .otherV().as("vertex")
-        .select("edge", "vertex", "label")
-        .map(r -> {
-          try {
-            Map<String, Object> val = r.get();
-            Edge edge = (Edge) val.get("edge");
-            Vertex vertex = (Vertex) val.get("vertex");
-            String label = (String) val.get("label");
+                     .filter(Collection::isRelationCollection)
+                     .findAny()
+                     .map(Collection::getEntityTypeName)
+                     .map(ownRelationType -> traversalSource.V(entity.id())
+                                                            .union(
+                                                              __.outE()
+                                                                .as("edge")
+                                                                .label().as("label")
+                                                                .select("edge"),
+                                                              __.inE()
+                                                                .as("edge")
+                                                                .label().as("edgeLabel")
+                                                                .V(relationTypes)
+                                                                .has("relationtype_regularName",
+                                                                  __.where(P.eq("edgeLabel")))
+                                                                .properties("relationtype_inverseName").value()
+                                                                .as("label")
+                                                                .select("edge")
+                                                            )
+                                                            .where(
+                                                              //FIXME move to strategy
+                                                              __.has("isLatest", true)
+                                                                .not(__.has("deleted", true))
+                                                                .not(__.hasLabel("VERSION_OF"))
+                                                                //The old timbuctoo showed relations from all VRE's.
+                                                                // Changing that behaviour caused breakage in the
+                                                                //frontend and exposed errors in the database that
+                                                                //.has("types", new P<>((val, def) -> val.contains
+                                                                // ("\"" + ownRelationType + "\""), ""))
+                                                                // FIXME: string concatenating methods like this
+                                                                // should be delegated to a configuration clas
+                                                                .not(__.has(ownRelationType + "_accepted", false))
+                                                            )
+                                                            .otherV().as("vertex")
+                                                            .select("edge", "vertex", "label")
+                                                            .map(r -> {
+                                                              try {
+                                                                Map<String, Object> val = r.get();
+                                                                Edge edge = (Edge) val.get("edge");
+                                                                Vertex vertex = (Vertex) val.get("vertex");
+                                                                String label = (String) val.get("label");
 
-            String targetEntityType = getOwnEntityType(collection, vertex);
-            Collection targetCollection = vre.getCollectionForTypeName(targetEntityType);
-            if (targetEntityType == null) {
-              //this means that the edge is of this VRE, but the Vertex it points to is of another VRE
-              //In that case we use the admin vre
-              targetEntityType = admin.getOwnType(getEntityTypesOrDefault(vertex));
-              targetCollection = admin.getCollectionForTypeName(targetEntityType);
-            }
+                                                                String targetEntityType =
+                                                                  getOwnEntityType(collection, vertex);
+                                                                Collection targetCollection =
+                                                                  vre.getCollectionForTypeName(targetEntityType);
+                                                                if (targetEntityType == null) {
+                                                                  //this means that the edge is of this VRE, but the
+                                                                  // Vertex it points to is of another VRE
+                                                                  //In that case we use the admin vre
+                                                                  targetEntityType =
+                                                                    admin.getOwnType(getEntityTypesOrDefault(vertex));
+                                                                  targetCollection =
+                                                                    admin.getCollectionForTypeName(targetEntityType);
+                                                                }
 
-            String displayName =
-              getDisplayname(traversalSource, vertex, targetCollection)
-                .orElse("<No displayname found>");
-            String uuid = getProp(vertex, "tim_id", String.class).orElse("");
+                                                                String displayName =
+                                                                  getDisplayname(traversalSource, vertex,
+                                                                    targetCollection)
+                                                                    .orElse("<No displayname found>");
+                                                                String uuid =
+                                                                  getProp(vertex, "tim_id", String.class).orElse("");
 
-            URI relatedEntityUri =
-              relationUrlFor.apply(targetCollection.getCollectionName(), UUID.fromString(uuid), null);
-            return jsnO(
-              tuple("id", jsn(uuid)),
-              tuple("path", jsn(relatedEntityUri.toString())),
-              tuple("relationType", jsn(label)),
-              tuple("type", jsn(targetEntityType)),
-              tuple("accepted", jsn(getProp(edge, "accepted", Boolean.class).orElse(true))),
-              tuple("relationId",
-                getProp(edge, "tim_id", String.class).map(x -> (JsonNode) jsn(x)).orElse(jsn())),
-              tuple("rev", jsn(getProp(edge, "rev", Integer.class).orElse(1))),
-              tuple("displayName", jsn(displayName))
-            );
-          } catch (Exception e) {
-            LOG.error(databaseInvariant, "Something went wrong while formatting the entity", e);
-            return null;
-          }
-        })
-      )
-      .orElse(EmptyGraph.instance().traversal().V().map(x->jsnO()));
+                                                                URI relatedEntityUri =
+                                                                  relationUrlFor
+                                                                    .apply(targetCollection.getCollectionName(),
+                                                                      UUID.fromString(uuid), null);
+                                                                return jsnO(
+                                                                  tuple("id", jsn(uuid)),
+                                                                  tuple("path", jsn(relatedEntityUri.toString())),
+                                                                  tuple("relationType", jsn(label)),
+                                                                  tuple("type", jsn(targetEntityType)),
+                                                                  tuple("accepted", jsn(
+                                                                    getProp(edge, "accepted", Boolean.class)
+                                                                      .orElse(true))),
+                                                                  tuple("relationId",
+                                                                    getProp(edge, "tim_id", String.class)
+                                                                      .map(x -> (JsonNode) jsn(x)).orElse(jsn())),
+                                                                  tuple("rev",
+                                                                    jsn(getProp(edge, "rev", Integer.class).orElse(1))),
+                                                                  tuple("displayName", jsn(displayName))
+                                                                );
+                                                              } catch (Exception e) {
+                                                                LOG.error(databaseInvariant,
+                                                                  "Something went wrong while formatting the entity",
+                                                                  e);
+                                                                return null;
+                                                              }
+                                                            })
+                     )
+                     .orElse(EmptyGraph.instance().traversal().V().map(x -> jsnO()));
   }
 
   private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
@@ -562,14 +534,6 @@ public class TinkerpopJsonCrudService {
       });
   }
 
-  private void setCreated(Element element, String userId) {
-    String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
-      clock.millis(),
-      nodeFactory.textNode(userId)
-    );
-    element.property("created", value);
-    element.property("modified", value);
-  }
 
   private void setModified(Element element, String userId) {
     String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
@@ -612,7 +576,7 @@ public class TinkerpopJsonCrudService {
     if (rev == null || !rev.isNumber()) {
       throw new IOException("^rev must be a number");
     }
-    for (Iterator<String> fieldNames = data.fieldNames(); fieldNames.hasNext();) {
+    for (Iterator<String> fieldNames = data.fieldNames(); fieldNames.hasNext(); ) {
       String name = fieldNames.next();
       if (!name.startsWith("^") && !name.startsWith("@") && !name.equals("_id") && !name.equals("accepted")) {
         throw new IOException("Only 'accepted' is a changeable property");
@@ -623,10 +587,10 @@ public class TinkerpopJsonCrudService {
     Edge origEdge;
     try {
       origEdge = graph.traversal().E()
-        .has("tim_id", id.toString())
-        .has("isLatest", true)
-        .has("rev", rev.intValue())
-        .next();
+                      .has("tim_id", id.toString())
+                      .has("isLatest", true)
+                      .has("rev", rev.intValue())
+                      .next();
     } catch (NoSuchElementException e) {
       throw new NotFoundException();
     }

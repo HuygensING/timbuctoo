@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
@@ -7,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -28,11 +32,13 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
-import static com.codahale.metrics.MetricRegistry.name;
+import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
+import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -58,24 +64,27 @@ public class DataAccess {
   }
 
   public DataAccessMethods start() {
-    return new DataAccessMethods(graphwrapper, authorizer);
+    return new DataAccessMethods(graphwrapper, authorizer, listener);
   }
 
 
   public static class DataAccessMethods implements AutoCloseable {
     private final Transaction transaction;
     private final Authorizer authorizer;
+    private final ChangeListener listener;
     private final GraphTraversalSource traversal;
     private Optional<Boolean> isSuccess = Optional.empty();
 
-    private DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer) {
+    private DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener) {
       this.transaction = graphWrapper.getGraph().tx();
       this.authorizer = authorizer;
+      this.listener = listener;
       if (!transaction.isOpen()) {
         transaction.open();
       }
-      traversal = graphWrapper.getGraph().traversal();
+      this.traversal = graphWrapper.getGraph().traversal();
     }
+
 
     public void success() {
       isSuccess = Optional.of(true);
@@ -137,7 +146,7 @@ public class DataAccess {
         final EntityRelation existingEdge = existingEdgeOpt.get();
         if (!existingEdge.isAccepted()) {
           //if not already an active relation
-          updateRelation(existingEdge, collection, userId, true, instant.toEpochMilli());
+          updateRelation(existingEdge, collection, userId, true, instant);
         }
         return existingEdge.getTimId();
       } else {
@@ -146,15 +155,66 @@ public class DataAccess {
         Collection targetCollection = getCollection(collection.getVre(), targetV)
           .orElseThrow(notPossible("Target vertex is not part of the VRE of " + collection.getCollectionName()));
         RelationType.DirectionalRelationType desc = descs.getForDirection(sourceCollection, targetCollection)
-          .orElseThrow(notPossible("You can't have a " + descs.getName() + " from " +
-            sourceCollection.getEntityTypeName() + " to " + targetCollection.getEntityTypeName() + " or vice versa"));
+                                                         .orElseThrow(notPossible(
+                                                           "You can't have a " + descs.getName() + " from " +
+                                                             sourceCollection.getEntityTypeName() + " to " +
+                                                             targetCollection.getEntityTypeName() + " or vice versa"));
 
-        return createRelation(sourceV, targetV, desc, userId, collection, true, instant.toEpochMilli());
+        return createRelation(sourceV, targetV, desc, userId, collection, true, instant);
       }
     }
 
     private Supplier<RelationNotPossibleException> notPossible(String message) {
       return () -> new RelationNotPossibleException(message);
+    }
+
+    public UUID createEntity(Collection col, Optional<Collection> baseCollection, ObjectNode input, String userId,
+                             Instant creationTime)
+      throws IOException, AuthorizationUnavailableException, AuthorizationException {
+
+      checkIfAllowedToWrite(authorizer, userId, col);
+
+      Map<String, LocalProperty> mapping = col.getWriteableProperties();
+      Map<String, LocalProperty> baseMapping = baseCollection.isPresent() ?
+        baseCollection.get().getWriteableProperties() : Maps.newHashMap();
+
+      UUID id = UUID.randomUUID();
+
+      GraphTraversal<Vertex, Vertex> traversalWithVertex = traversal.addV();
+
+      Vertex vertex = traversalWithVertex.next();
+
+      Iterator<String> fieldNames = input.fieldNames();
+      while (fieldNames.hasNext()) {
+        String fieldName = fieldNames.next();
+        if (!fieldName.startsWith("@") && !fieldName.startsWith("^") && !fieldName.equals("_id")) {
+          if (mapping.containsKey(fieldName)) {
+            try {
+              mapping.get(fieldName).setJson(vertex, input.get(fieldName));
+            } catch (IOException e) {
+              throw new IOException(fieldName + " could not be saved. " + e.getMessage(), e);
+            }
+          } else {
+            throw new IOException(String.format("Items of %s have no property %s", col.getCollectionName(), fieldName));
+          }
+
+          if (baseMapping.containsKey(fieldName)) {
+            try {
+              baseMapping.get(fieldName).setJson(vertex, input.get(fieldName));
+            } catch (IOException e) {
+              LOG.error(configurationFailure, "Field could not be parsed by Admin VRE converter {}_{}",
+                baseCollection.get().getCollectionName(), fieldName);
+            }
+          }
+        }
+      }
+
+      setAdministrativeProperties(col, userId, creationTime, id, vertex);
+
+      listener.onCreate(vertex);
+
+      duplicateVertex(traversal, vertex);
+      return id;
     }
 
 
@@ -184,7 +244,7 @@ public class DataAccess {
     }
 
     private void updateRelation(EntityRelation existingEdge, Collection collection, String userId, boolean accepted,
-                                long time) throws AuthorizationUnavailableException, AuthorizationException {
+                                Instant time) throws AuthorizationUnavailableException, AuthorizationException {
       final Edge origEdge = getExpectedEdge(traversal, existingEdge.getTimId().toString());
       final Edge newEdge = EdgeManipulator.duplicateEdge(origEdge);
       newEdge.property(collection.getEntityTypeName() + "_accepted", accepted);
@@ -193,8 +253,8 @@ public class DataAccess {
     }
 
     private UUID createRelation(Vertex source, Vertex target, RelationType.DirectionalRelationType relationType,
-                                String userId, Collection collection, boolean accepted, long time) throws
-        AuthorizationException, AuthorizationUnavailableException {
+                                String userId, Collection collection, boolean accepted, Instant time) throws
+      AuthorizationException, AuthorizationUnavailableException {
       UUID id = UUID.randomUUID();
       Edge edge = source.addEdge(
         relationType.getDbName(),
@@ -213,18 +273,31 @@ public class DataAccess {
       return id;
     }
 
-    private void setCreated(Element element, String userId, long time) {
+    private void setAdministrativeProperties(Collection col, String userId, Instant creationTime, UUID id,
+                                             Vertex vertex) {
+      vertex.property("tim_id", id.toString());
+      vertex.property("rev", 1);
+      vertex.property("types", String.format(
+        "[\"%s\", \"%s\"]",
+        col.getEntityTypeName(),
+        col.getAbstractType()
+      ));
+
+      setCreated(vertex, userId, creationTime);
+    }
+
+    private void setCreated(Element element, String userId, Instant instant) {
       final String value = jsnO(
-        "timeStamp", jsn(time),
+        "timeStamp", jsn(instant.toEpochMilli()),
         "userId", jsn(userId)
       ).toString();
       element.property("created", value);
       element.property("modified", value);
     }
 
-    private void setModified(Element element, String userId, long time) {
+    private void setModified(Element element, String userId, Instant instant) {
       final String value = jsnO(
-        "timeStamp", jsn(time),
+        "timeStamp", jsn(instant.toEpochMilli()),
         "userId", jsn(userId)
       ).toString();
       element.property("modified", value);
@@ -315,15 +388,14 @@ public class DataAccess {
         //.has(T.label, LabelP.of("relationtype"))
         .has("tim_id", typeId.toString())
       )
-      .map(RelationType::new);
+        .map(RelationType::new);
     }
 
     private static void checkIfAllowedToWrite(Authorizer authorizer, String userId, Collection collection) throws
-        AuthorizationException, AuthorizationUnavailableException {
+      AuthorizationException, AuthorizationUnavailableException {
       if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
         throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
       }
     }
-
   }
 }

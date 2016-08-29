@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database;
 
 
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -13,7 +14,12 @@ import java.util.Iterator;
 
 public class VertexDuplicator {
   public static void duplicateVertex(Graph graph, Vertex vertex) {
-    Vertex duplicate = graph.addVertex();
+    GraphTraversalSource traversal = graph.traversal();
+    duplicateVertex(traversal, vertex);
+  }
+
+  public static void duplicateVertex(GraphTraversalSource traversal, Vertex vertex) {
+    Vertex duplicate = traversal.addV().next();
 
     for (Iterator<VertexProperty<Object>> properties = vertex.properties(); properties.hasNext(); ) {
       VertexProperty<Object> property = properties.next();
