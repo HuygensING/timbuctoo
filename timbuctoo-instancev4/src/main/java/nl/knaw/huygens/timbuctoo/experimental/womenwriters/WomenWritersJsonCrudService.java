@@ -37,11 +37,13 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.groupingBy;
@@ -166,7 +168,7 @@ public class WomenWritersJsonCrudService {
     getModification(entity, "created").ifPresent(val -> result.set("^created", val));
 
     result.set("@variationRefs", getVariationRefs(entity, id, entityTypeName));
-
+    result.set("@authorLanguages", jsnA(getLanguagesForAuthor(traversalSource, collection.getVre(), entity).stream()));
     result.set("^deleted", nodeFactory.booleanNode(getProp(entity, "deleted", Boolean.class).orElse(false)));
 
     result.set("^pid",nodeFactory.textNode(getProp(entity, "pid", String.class).orElse(null)));
@@ -256,30 +258,7 @@ public class WomenWritersJsonCrudService {
               gender = gender.replaceAll("\"", "");
             }
 
-            List<JsonNode> authors = new ArrayList<>();
-
-            final Iterator<Edge> isCreatedBy = vertex.edges(Direction.OUT, "isCreatedBy");
-            while (isCreatedBy.hasNext()) {
-
-              final Edge next = isCreatedBy.next();
-              final Boolean isAccepted = (Boolean) next.property("wwrelation_accepted").value();
-              final Object isLatest = next.property("isLatest").value();
-              if (isAccepted && (Boolean) isLatest) {
-                final Vertex author = next.inVertex();
-                final Collection personCollection = vre.getCollectionForTypeName("wwperson");
-                final String authorName = getDisplayname(traversalSource, author, personCollection).orElse(null);
-                String authorGender = getProp(author, "wwperson_gender", String.class).orElse(null);
-                if (authorGender != null) {
-                  authorGender = authorGender.replaceAll("\"", "");
-                }
-                if (authorName != null) {
-                  authors.add(jsnO(
-                    tuple("displayName", jsn(authorName)),
-                    tuple("gender", jsn(authorGender))
-                  ));
-                }
-              }
-            }
+            List<JsonNode> authors = getAuthorsForPublication(traversalSource, vre, vertex);
 
             URI relatedEntityUri =
               relationUrlFor.apply(targetCollection.getCollectionName(), UUID.fromString(uuid), null);
@@ -303,6 +282,63 @@ public class WomenWritersJsonCrudService {
         })
       )
       .orElse(EmptyGraph.instance().traversal().V().map(x->jsnO()));
+  }
+
+  private Set<JsonNode> getLanguagesForAuthor(GraphTraversalSource traversalSource, Vre vre, Vertex vertex) {
+    Set<JsonNode> languages = new HashSet<>();
+
+    final Iterator<Edge> isCreatorOf = vertex.edges(Direction.IN, "isCreatedBy");
+
+    while (isCreatorOf.hasNext()) {
+      final Edge next = isCreatorOf.next();
+      final Boolean creatorOfIsAccepted = (Boolean) next.property("wwrelation_accepted").value();
+      final Boolean creatorOfIsLatest = (Boolean)  next.property("isLatest").value();
+      if (creatorOfIsAccepted && creatorOfIsLatest) {
+        final Vertex publication = next.outVertex();
+        final Iterator<Edge> hasWorkLanguage = publication.edges(Direction.OUT, "hasWorkLanguage");
+        while (hasWorkLanguage.hasNext()) {
+          final Edge nextLanguage = hasWorkLanguage.next();
+          final Boolean languageIsAccepted = (Boolean) nextLanguage.property("wwrelation_accepted").value();
+          final Boolean languageIsLatest = (Boolean) nextLanguage.property("isLatest").value();
+          if (languageIsAccepted && languageIsLatest) {
+            final Vertex languageVertex = nextLanguage.inVertex();
+            final String language = getProp(languageVertex, "wwlanguage_name", String.class).orElse(null);
+            if (language != null) {
+              languages.add(jsn(language));
+            }
+          }
+        }
+      }
+    }
+    return languages;
+  }
+
+  private List<JsonNode> getAuthorsForPublication(GraphTraversalSource traversalSource, Vre vre, Vertex vertex) {
+    List<JsonNode> authors = new ArrayList<>();
+
+    final Iterator<Edge> isCreatedBy = vertex.edges(Direction.OUT, "isCreatedBy");
+
+    while (isCreatedBy.hasNext()) {
+      final Edge next = isCreatedBy.next();
+      final Boolean isAccepted = (Boolean) next.property("wwrelation_accepted").value();
+      final Object isLatest = next.property("isLatest").value();
+      if (isAccepted && (Boolean) isLatest) {
+        final Vertex author = next.inVertex();
+        final Collection personCollection = vre.getCollectionForTypeName("wwperson");
+        final String authorName = getDisplayname(traversalSource, author, personCollection).orElse(null);
+        String authorGender = getProp(author, "wwperson_gender", String.class).orElse(null);
+        if (authorGender != null) {
+          authorGender = authorGender.replaceAll("\"", "");
+        }
+        if (authorName != null) {
+          authors.add(jsnO(
+            tuple("displayName", jsn(authorName)),
+            tuple("gender", jsn(authorGender))
+          ));
+        }
+      }
+    }
+    return authors;
   }
 
   private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
