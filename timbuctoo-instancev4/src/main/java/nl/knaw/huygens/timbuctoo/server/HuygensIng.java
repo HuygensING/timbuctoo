@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 
 import java.util.Map;
 
@@ -23,7 +21,6 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.s
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringOfYesNoUnknown;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToEncodedStringOf;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToUnencodedStringOf;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public class HuygensIng {
 
@@ -119,13 +116,6 @@ public class HuygensIng {
         .withProperty("tempPsChildren", localProperty("wwperson_tempPsChildren"))
         .withProperty("tempPseudonyms", localProperty("wwperson_tempPseudonyms"))
         .withProperty("tempSpouse", localProperty("wwperson_tempSpouse"))
-        // FIXME: not functioning and not used. (see TIM-955)
-        .withDerivedRelation("hasPersonLanguage", () -> {
-          P<String> isWw = new P<>((types, extra) -> types.contains("\"wwrelation\""), "");
-          return __
-            .outE("isCreatorOf").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV()
-            .outE("hasWorkLanguage").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV();
-        })
       )
       .withCollection("wwdocuments", c -> c
         .withDisplayName(wwdocumentDisplayNameProperty())

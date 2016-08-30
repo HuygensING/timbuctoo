@@ -25,11 +25,9 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.isNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -589,52 +587,6 @@ public class TinkerpopJsonCrudServiceReadTest {
         "isPseudonymOf", jsnA(
           jsnO(
             "displayName", jsn("Pieter van Reigersberch")
-          )
-        )
-      )
-    ).toString()).allowingExtraUnexpectedFields());
-  }
-
-  @Test
-  public void showsDerivedRelations() throws Exception {
-    UUID id = UUID.randomUUID();
-    Graph graph = newGraph()
-      .withVertex("source", v -> v
-        .withOutgoingRelation("isCreatorOf", "someWork", r -> r
-          .withIsLatest(true)
-          .withDeleted(false)
-        )
-        .withVre("ww")
-        .withType("derivedrelation")
-        .isLatest(true)
-        .withTimId(id.toString())
-      )
-      .withVertex("someWork", v -> v
-        .withOutgoingRelation("hasWorkLanguage", "dutch", r -> r
-          .withIsLatest(true)
-          .withDeleted(false)
-        )
-        .isLatest(true)
-        .withVre("ww")
-        .withType("document")
-      )
-      .withVertex("dutch", v -> v
-        .withVre("ww")
-        .withType("language")
-        .withProperty("wwlanguage_name", "Dutch")
-        .isLatest(true)
-        .withTimId(UUID.randomUUID().toString())
-      )
-      .build();
-
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
-    String resultJson = instance.get("wwderivedrelations", id).toString();
-
-    assertThat(resultJson, sameJSONAs(jsnO(
-      "@relations", jsnO(
-        "hasPersonLanguage", jsnA(
-          jsnO(
-            "displayName", jsn("Dutch")
           )
         )
       )

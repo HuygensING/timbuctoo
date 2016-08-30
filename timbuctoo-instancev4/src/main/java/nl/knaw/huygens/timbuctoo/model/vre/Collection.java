@@ -47,7 +47,6 @@ public class Collection {
   private final ReadableProperty displayName;
   private final LinkedHashMap<String, ReadableProperty> properties;
   private final LinkedHashMap<String, LocalProperty> writeableProperties;
-  private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations;
   private final boolean isRelationCollection;
   private final String collectionLabel;
   private boolean unknown;
@@ -55,8 +54,6 @@ public class Collection {
   Collection(@NotNull String entityTypeName, @NotNull String abstractType,
              @NotNull ReadableProperty displayName, @NotNull LinkedHashMap<String, ReadableProperty> properties,
              @NotNull String collectionName, @NotNull Vre vre, @NotNull String collectionLabel, boolean unknown,
-             // FIXME: not functionally used (see TIM-955)
-             @NotNull Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations,
              boolean isRelationCollection) {
     this.entityTypeName = entityTypeName;
     this.abstractType = abstractType;
@@ -70,7 +67,6 @@ public class Collection {
     } else {
       this.collectionLabel = collectionLabel;
     }
-    this.derivedRelations = derivedRelations;
     this.isRelationCollection = isRelationCollection;
     writeableProperties = properties.entrySet().stream()
                                     .filter(e -> e.getValue() instanceof LocalProperty)
@@ -116,11 +112,6 @@ public class Collection {
     return vre;
   }
 
-  // FIXME: not functionally used (see TIM-955)
-  public Map<String, Supplier<GraphTraversal<Object, Vertex>>> getDerivedRelations() {
-    return derivedRelations;
-  }
-
   public boolean isRelationCollection() {
     return isRelationCollection;
   }
@@ -141,7 +132,7 @@ public class Collection {
     boolean unknown = getProp(collectionVertex, COLLECTION_IS_UNKNOWN_PROPERTY_NAME, Boolean.class).orElse(false);
 
     return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre,
-      label, unknown, derivedRelations, isRelationCollection);
+      label, unknown, isRelationCollection);
   }
 
   private static ReadableProperty loadDisplayName(Vertex collectionVertex) {

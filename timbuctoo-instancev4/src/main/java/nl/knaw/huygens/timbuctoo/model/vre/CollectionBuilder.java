@@ -55,11 +55,6 @@ public class CollectionBuilder {
     return this;
   }
 
-  public CollectionBuilder withDerivedRelation(String name, Supplier<GraphTraversal<Object, Vertex>> func) {
-    this.derivedRelations.put(name, func);
-    return this;
-  }
-
   public CollectionBuilder isRelationCollection() {
     this.isRelationCollection = true;
     return this;
@@ -92,7 +87,6 @@ public class CollectionBuilder {
       vre,
       collectionLabel,
       false, //unknown is only constructed by the RDF importer
-      derivedRelations,
       isRelationCollection);
     vre.addCollection(collection);
   }

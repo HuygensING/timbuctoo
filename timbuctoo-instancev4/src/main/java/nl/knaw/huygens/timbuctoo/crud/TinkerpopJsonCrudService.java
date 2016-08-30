@@ -26,7 +26,6 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -50,12 +49,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
-import static java.util.stream.Stream.concat;
 import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
@@ -282,64 +279,13 @@ public class TinkerpopJsonCrudService {
     final long[] relationCount = new long[1];
 
     GraphTraversal<Vertex, ObjectNode> realRelations = getRealRelations(entity, traversalSource, collection);
-    GraphTraversal<Vertex, ObjectNode> derivedRelations = getDerivedRelations(entity, traversalSource, collection);
 
-    Map<String, List<ObjectNode>> relations = concat(stream(realRelations), stream(derivedRelations))
+    Map<String, List<ObjectNode>> relations = stream(realRelations)
       .filter(x -> x != null)
       .peek(x -> relationCount[0]++)
       .collect(groupingBy(jsn -> jsn.get("relationType").asText()));
 
     return new Tuple<>(mapper.valueToTree(relations), relationCount[0]);
-  }
-
-  // FIXME: remove, not functioning and unused (see TIM-955)
-  private GraphTraversal<Vertex, ObjectNode> getDerivedRelations(Vertex entity, GraphTraversalSource traversalSource,
-                                                                 Collection collection) {
-    return traversalSource.withSack("").V(entity.id())
-                          .union(
-                            collection.getDerivedRelations().entrySet().stream().map(entry -> {
-                              return __.sack((left, right) -> entry.getKey()).union(entry.getValue().get())
-                                       .as("targetVertex");
-                            }).toArray(GraphTraversal[]::new)
-                          )
-                          .sack().as("sack")
-                          .select("targetVertex", "sack")
-                          .map((Function<Traverser<Map<String, Object>>, ObjectNode>) r -> {
-                            try {
-                              Vertex vertex = (Vertex) r.get().get("targetVertex");
-                              String relationType = (String) r.get().get("sack");
-                              String targetType = getOwnEntityType(collection, vertex);
-                              if (targetType == null) {
-                                //this means that the vertex is of another VRE
-                                throw new IOException(
-                                  "The derived relation " + relationType + " points to vertex " + vertex +
-                                    " which is not part of this vre"
-                                );
-                              }
-                              String targetCollection = targetType + "s";
-                              String uuid = getProp(vertex, "tim_id", String.class).orElse("");
-                              String displayName = getDisplayname(traversalSource, vertex,
-                                collection.getVre().getCollectionForTypeName(targetType))
-                                .orElse("<No displayname found>");
-
-                              URI relatedEntityUri =
-                                relationUrlFor.apply(targetCollection, UUID.fromString(uuid), null);
-                              return jsnO(
-                                tuple("id", jsn(uuid)),
-                                tuple("path", jsn(relatedEntityUri.toString())),
-                                tuple("type", jsn(relationType)),
-                                tuple("relationType", jsn(relationType)),
-                                tuple("accepted", jsn(true)),
-                                tuple("relationId", jsn("derived")),
-                                tuple("rev", jsn(1)),
-                                tuple("displayName", jsn(displayName))
-                              );
-                            } catch (Exception e) {
-                              LOG
-                                .error(Logmarkers.databaseInvariant, "Error while generating derived-relation data", e);
-                              return null;
-                            }
-                          });
   }
 
   private GraphTraversal<Vertex, ObjectNode> getRealRelations(Vertex entity, GraphTraversalSource traversalSource,

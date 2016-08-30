@@ -12,8 +12,6 @@ import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.net.URI;
@@ -22,7 +20,6 @@ import java.time.Clock;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -62,14 +59,6 @@ public class JsonCrudServiceBuilder {
         .withCollection("wwcollectives", c -> c
           .withDisplayName(localProperty("wwcollective_name"))
           .withProperty("name", localProperty("wwcollective_name"))
-        )
-        .withCollection("wwderivedrelations", c -> c
-          .withDerivedRelation("hasPersonLanguage", () -> {
-            P<String> isWw = new P<>((types, extra) -> types.contains("\"wwrelation\""), "");
-            return __
-              .outE("isCreatorOf").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV()
-              .outE("hasWorkLanguage").has("isLatest", true).not(has("isDeleted", true)).has("types", isWw).inV();
-          })
         )
         .withCollection("wwdisplaynames", c -> c
           .withDisplayName(PropertyTypes.localProperty("wwperson_displayName"))
