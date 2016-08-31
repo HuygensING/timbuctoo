@@ -301,8 +301,11 @@ public class WomenWritersJsonCrudService {
         final Iterator<Edge> hasWorkLanguage = publication.edges(Direction.OUT, "hasWorkLanguage");
         while (hasWorkLanguage.hasNext()) {
           final Edge nextLanguage = hasWorkLanguage.next();
-          final Boolean languageIsAccepted = (Boolean) nextLanguage.property("wwrelation_accepted").value();
-          final Boolean languageIsLatest = (Boolean) nextLanguage.property("isLatest").value();
+          final Boolean languageIsAccepted = nextLanguage.property("wwrelation_accepted").isPresent() ?
+            (Boolean) nextLanguage.property("wwrelation_accepted").value() : false;
+          final Boolean languageIsLatest = nextLanguage.property("isLatest").isPresent() ?
+            (Boolean) nextLanguage.property("isLatest").value() : false;
+
           if (languageIsAccepted && languageIsLatest) {
             final Vertex languageVertex = nextLanguage.inVertex();
             final String language = getProp(languageVertex, "wwlanguage_name", String.class).orElse(null);
