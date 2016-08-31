@@ -1,21 +1,21 @@
-#DataAccess
+# DataAccess
 > Wrapper around data access methods
 
-##Context
+## Context
 We are using a database, but we're not convinced that it's the best one.
 We would like to be able to switch to other databases and the *evaluate* whether other databases make more sense.
 
-Furthermore Tinkerpop requires us to handle transactions thoughtfully but provides a rather lax API.
+Furthermore TinkerPop requires us to handle transactions thoughtfully but provides a rather lax API.
 We'd like to access the database only in a correct manner.
 
-##Goal
+## Goal
 DataAccess will solve both problems by becoming the only way to access the database and by guaranteeing the following attributes.
 
  * The methods are only accessible while inside an AutoCloseable wrapper that manages the transaction. 
    (So that the client code is forced to think about transaction lifetime)
  * ~~no two transaction may run at the same time~~ (will be possible once no code uses graphWrapper directly anymore)
- * Each method returns an Immutable Value object without Tinkerpop or Neo4j references. 
-   (So that timbuctoo is less dependent on one database implementation)
+ * Each method returns an Immutable Value object without TinkerPop or Neo4j references. 
+   (So that Timbuctoo is less dependent on one database implementation)
  * A value object will never hit the database to lazy load more data.
    (so that the client code can more easily reason about performance. Only db.something() calls will hit the database)
  * A method is quite tightly coupled to the client. While a method may be used by more then one client is has a very tightly defined implementation and re-use is not expected to be the rule. 
@@ -33,8 +33,131 @@ DataAccess will solve both problems by becoming the only way to access the datab
        (because otherwise it would still need to verify uniqueness and throw exceptions which would make the code needlessly complex)
  * ~~You may add a custom DataAccess implementation which only implements a few methods that will then be run in an experiment. So you can try out a new database without having to write a full implementation~~ might be added once we have one full implementation. 
  * initially there is no interface and only one implementation to facilitate easier refactoring
+ 
+## Data model
+### Entity
+Contains the information of the Entity saved in the database. 
+For example a person or a document.
+Each Entity has properties.
+Most Entities have relations.
 
-#TransactionFilter
+```java
+public interface Entity {
+  List<TimProperty> getProperties();
+  
+  List<RelationRef> getRelations();
+  //...
+} 
+```
+
+### TimProperty
+Contains the information of the property of an Entity.
+The TimProperty interface has implementations for all property types used in Timbuctoo.
+A TimProperty can be a wrapper around a Java type like String, int, boolean or a Timbuctoo custom type like PersonNamesValue and Datable. 
+This way we can provide an implementation (e.g a [DataAccessMethods](./DataAccess.java) implementation, a jersey serializer, or a js client of the API) with a finite list of types that they should be able to handle.
+
+#### Example
+If this is the interface
+```java
+public interface TimProperty {
+   <ResultType> ResultType convert(PropertyConverter<ResultType, InputType> converter);
+}
+```
+Then we can implement it for two property types like so:
+
+```java
+public class PersonNamesProperty implements TimProperty { 
+   public <ValueType> ValueType convert(PropertyConverter<ResultType, InputType> converter){
+     //...
+   }
+}
+
+public class StringProperty implements TimProperty {
+  
+  public StringProperty(String name, String value){
+    
+  }
+  
+  public <ResultType> ResultType convert(PropertyConverter<ResultType, InputType> converter){
+    //...
+  }
+}
+```
+
+### PropertyConverter
+A PropertyConverter converts a Timbuctoo specific type to an output type.
+It will also convert an output type to a timbuctoo specific type (and thus function like a factory method).
+The input of PropertyConverter#from is a the property's name and it's value, so you can choose which converter to use based on the property name.
+The from method is responsible for determining what the input value contains and picking the right TimProperty implementation to return.
+
+The to methods all return the same result type because we don't think adding a type parameter for each result value is needed.
+They return a Tuple of String, Type where the left contains the propertyName as defined by the converter. 
+This allows a converter to change the name as well.
+This is currently needed for our database (which prefixes all properties with the collection and dataset name)
+```java
+public interface PropertyConverter<Type>{
+  TimProperty from(String name, Type value);
+  
+  Tuple<String, Type> to(PersonNamesValue value);
+  
+  Tuple<String, Type> to(String value);
+}
+```
+ 
+#### Example
+
+```java
+public class JsonPropertyConverter implements TimPropertyConverter<JsonNode> {
+  public TinkerPopPropertyConverter(Collection collection) {
+    //store the collection for later use in deciding what property type 
+  }
+  
+  public TimProperty from(String name, JsonNode value){
+    //use the collection to determine the property type 
+  }
+    
+  public Tuple<String, JsonNode> to(PersonNamesValue value){
+    //...
+  }
+  
+  public Tuple<String, JsonNode> to(String value){
+    //...
+  }
+}
+```
+
+```java
+public class TinkerPopPropertyConverter implements TimPropertyConverter<Object> {
+  public TinkerPopPropertyConverter(Collection collection) {
+    
+  }
+  
+  public TimProperty from(Tuple<String, Object> value){
+    //...
+  }
+    
+  public Tuple<String, Object> to(PersonNamesValue value){
+    //...
+  }
+  
+  public Tuple<String, Object> to(String value){
+    //...
+  }
+}
+```
+
+### RelationRef
+Represents a reference of another Entity. 
+It contains information like the name of the relation and the display name of the other Entity. 
+An Entity does not contain teh related entities.
+Only these RelationRefs.
+
+### EntityRelation
+Is a way to represent a relation between two Entities. 
+This representation is used when a relation is saved in the database.
+ 
+
+# TransactionFilter
 > closes transactions at the end of a request
 
 This is a stopgap method that should prevent the problems that will be really fixed by the DataAccess class.
