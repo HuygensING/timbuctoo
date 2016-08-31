@@ -291,8 +291,11 @@ public class WomenWritersJsonCrudService {
 
     while (isCreatorOf.hasNext()) {
       final Edge next = isCreatorOf.next();
-      final Boolean creatorOfIsAccepted = (Boolean) next.property("wwrelation_accepted").value();
-      final Boolean creatorOfIsLatest = (Boolean)  next.property("isLatest").value();
+      final Boolean creatorOfIsAccepted = next.property("wwrelation_accepted").isPresent() ?
+        (Boolean) next.property("wwrelation_accepted").value() : false;
+      final Boolean creatorOfIsLatest = next.property("isLatest").isPresent() ?
+        (Boolean) next.property("isLatest").value() : false;
+
       if (creatorOfIsAccepted && creatorOfIsLatest) {
         final Vertex publication = next.outVertex();
         final Iterator<Edge> hasWorkLanguage = publication.edges(Direction.OUT, "hasWorkLanguage");
@@ -320,8 +323,11 @@ public class WomenWritersJsonCrudService {
 
     while (isCreatedBy.hasNext()) {
       final Edge next = isCreatedBy.next();
-      final Boolean isAccepted = (Boolean) next.property("wwrelation_accepted").value();
-      final Object isLatest = next.property("isLatest").value();
+      final Boolean isAccepted = (Boolean) next.property("wwrelation_accepted").isPresent() ?
+        (Boolean) next.property("wwrelation_accepted").value() : false;
+      final Object isLatest = next.property("isLatest").isPresent() ?
+        (Boolean) next.property("isLatest").value() : false;
+
       if (isAccepted && (Boolean) isLatest) {
         final Vertex author = next.inVertex();
         final Collection personCollection = vre.getCollectionForTypeName("wwperson");
