@@ -97,7 +97,8 @@ class Document < Hash
       self['modifiedBy_s'] = data['^modified']['username'] || data['^modified']['userId']
 
       build_relations data
-
+      self['languageSort_s'] = self['language_ss'].sort.join(" ")
+      self['locationSort_s'] = self['publishLocation_ss'].sort.join(" ")
       add_creator_ids data
       add_person_receptions data
       add_document_receptions data

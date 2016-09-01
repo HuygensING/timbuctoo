@@ -76,6 +76,7 @@ class Person < Hash
       if !data['names'].nil? and data['names'].length > 0
           self['name_t'] = build_name(data['names'])
           self['nameSort_s'] = build_name_sort(data['names'])
+          self['displayName_s'] = build_display_name(data['names'])
       else
           self['name_t'] = data['@displayName'].sub('[TEMP] ', '')
           self['nameSort_s'] =  data['@displayName'].sub('[TEMP] ', '')
@@ -93,6 +94,10 @@ class Person < Hash
         return component['value'] if component['type'].eql?("SURNAME")
       end
       ''
+    end
+
+    def build_display_name names
+      names.map{|name| name['components'].map{|component| component['value']}.join(" ")}.join(", ")
     end
 
     def build_relations data
@@ -139,8 +144,11 @@ class Person < Hash
         self["language_ss"] += document["language_ss"] unless document.nil?
       end
       self["language_ss"].uniq!
+      self["languageSort_s"] = self["language_ss"].sort.join(" ")
+      self["locationSort_s"] = self["relatedLocations_ss"].sort.join(" ")
       self["work_id_ss"] = Array.new
     end
+
 
     def id
       self['id']
