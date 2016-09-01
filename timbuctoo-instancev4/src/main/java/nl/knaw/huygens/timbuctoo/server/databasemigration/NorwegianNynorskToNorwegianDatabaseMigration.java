@@ -20,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -31,7 +30,6 @@ import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDef
 
 public class NorwegianNynorskToNorwegianDatabaseMigration extends AbstractVertexMigration {
   public static final Logger LOG = LoggerFactory.getLogger(NorwegianNynorskToNorwegianDatabaseMigration.class);
-  private static final Clock clock = Clock.systemDefaultZone();
 
   private Vertex norwegianVertex;
 
