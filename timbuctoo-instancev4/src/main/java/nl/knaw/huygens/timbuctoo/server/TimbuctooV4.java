@@ -46,6 +46,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.HuygensIngConfigToData
 import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameDatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.NorwegianNynorskToNorwegianDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
@@ -169,10 +170,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       .put(AutocompleteLuceneIndexDatabaseMigration.class.getName(), new AutocompleteLuceneIndexDatabaseMigration());
     migrations.put(LocationNamesToLocationNameDatabaseMigration.class.getName(),
       new LocationNamesToLocationNameDatabaseMigration());
-
     // Persist HuygensIng mappings in database
     migrations.put("config-to-database-migration-patched-version",
       new HuygensIngConfigToDatabaseMigration(HuygensIng.mappings, HuygensIng.keywordTypes));
+    migrations.put(NorwegianNynorskToNorwegianDatabaseMigration.class.getName(),
+      new NorwegianNynorskToNorwegianDatabaseMigration());
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final Vres vres = new DatabaseConfiguredVres(graphManager);
