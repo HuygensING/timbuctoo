@@ -19,6 +19,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.toMap;
@@ -298,5 +299,9 @@ public class Collection {
 
   public boolean isUnknown() {
     return unknown;
+  }
+
+  public Optional<ReadableProperty> getProperty(String propertyName) {
+    return Optional.ofNullable(properties.get(propertyName));
   }
 }

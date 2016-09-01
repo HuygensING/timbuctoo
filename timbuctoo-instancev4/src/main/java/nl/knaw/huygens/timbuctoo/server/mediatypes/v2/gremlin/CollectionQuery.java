@@ -79,7 +79,7 @@ public class CollectionQuery implements QueryFilter, Resultable {
   private Consumer<Traverser<Object>> loadResult(GraphTraversalSource traversalSource, String domain) {
     return vertexT -> {
       final GraphTraversal<?, Try<JsonNode>> displayNameT =
-        vres.getCollectionForType(domain).get().getDisplayName().traversal().sideEffect(x -> {
+        vres.getCollectionForType(domain).get().getDisplayName().traversalJson().sideEffect(x -> {
           x.get().onSuccess(node -> {
             final String timId = (String) ((Vertex) vertexT.get()).property("tim_id").value();
             EntityRef entityRef = new EntityRef(domain, timId);

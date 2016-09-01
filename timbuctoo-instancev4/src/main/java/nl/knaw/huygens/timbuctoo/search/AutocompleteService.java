@@ -139,7 +139,7 @@ public class AutocompleteService {
 
       results = traversalSource.as("vertex")
                                .where(typeFilter)
-                               .union(collection.getDisplayName().traversal())
+                               .union(collection.getDisplayName().traversalJson())
                                .filter(x -> x.get().isSuccess())
                                .map(x -> x.get().get().asText())
                                .as("displayName")
@@ -174,7 +174,7 @@ public class AutocompleteService {
     } else {
       results = traversalSource.as("vertex")
                                .where(typeFilter)
-                               .union(collection.getDisplayName().traversal())
+                               .union(collection.getDisplayName().traversalJson())
                                .filter(x -> x.get().isSuccess())
                                .map(x -> x.get().get().asText())
                                .as("displayName")

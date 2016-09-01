@@ -14,7 +14,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.function.Supplier;
 
 public abstract class ReadableProperty {
-  private final Supplier<GraphTraversal<?, Try<JsonNode>>> getter;
+  private final Supplier<GraphTraversal<?, Try<JsonNode>>> getterJson;
+  private Supplier<GraphTraversal<?, Try<Object>>> getterRaw;
 
   public static final String DATABASE_LABEL = "property";
   public static final String DISPLAY_NAME_PROPERTY_NAME = "@displayName";
@@ -22,12 +23,18 @@ public abstract class ReadableProperty {
   public static final String PROPERTY_TYPE_NAME = "propertyType";
   public static final String HAS_NEXT_PROPERTY_RELATION_NAME = "hasNextProperty";
 
-  public ReadableProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getter) {
-    this.getter = getter;
+  public ReadableProperty(Supplier<GraphTraversal<?, Try<JsonNode>>> getterJson,
+                          Supplier<GraphTraversal<?, Try<Object>>> getterRaw) {
+    this.getterJson = getterJson;
+    this.getterRaw = getterRaw;
   }
 
-  public GraphTraversal<?, Try<JsonNode>> traversal() {
-    return getter.get();
+  public GraphTraversal<?, Try<JsonNode>> traversalJson() {
+    return getterJson.get();
+  }
+
+  public GraphTraversal<?, Try<Object>> traversalRaw() {
+    return getterRaw.get();
   }
 
   public abstract String getTypeId();
@@ -58,7 +65,8 @@ public abstract class ReadableProperty {
     String[] options = null;
     if (propertyVertex.property(LocalProperty.OPTIONS_PROPERTY_NAME).isPresent()) {
       final String optionsJson = propertyVertex.value(LocalProperty.OPTIONS_PROPERTY_NAME);
-      options = new ObjectMapper().readValue(optionsJson, new TypeReference<String[]>() { });
+      options = new ObjectMapper().readValue(optionsJson, new TypeReference<String[]>() {
+      });
     }
 
     if (propertyVertex.property(LocalProperty.DATABASE_PROPERTY_NAME).isPresent()) {

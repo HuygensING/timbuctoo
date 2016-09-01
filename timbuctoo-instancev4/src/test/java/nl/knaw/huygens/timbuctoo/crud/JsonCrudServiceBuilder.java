@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
+import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -16,10 +17,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.net.URI;
 import java.time.Clock;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.anyUserIsAllowedToWriteAnyCollectionAuthorizer;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +38,7 @@ public class JsonCrudServiceBuilder {
   private UrlGenerator handleUrlGenerator;
   private TinkerpopGraphManager graphManager;
   private ChangeListener changeListener = new CompositeChangeListener(
-          new AddLabelChangeListener()
+    new AddLabelChangeListener()
   );
   private EntityFetcher entityFetcher;
 
@@ -79,6 +82,14 @@ public class JsonCrudServiceBuilder {
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/relationUrl");
     authorizer = anyUserIsAllowedToWriteAnyCollectionAuthorizer();
     graphManager = mock(TinkerpopGraphManager.class);
+    userStore = mock(UserStore.class);
+
+    try {
+      when(userStore.userFor(any())).thenReturn(Optional.empty());
+      when(userStore.userForId(any())).thenReturn(Optional.empty());
+    } catch (AuthenticationUnavailableException e) {
+      e.printStackTrace();
+    }
 
     entityFetcher = new GremlinEntityFetcher();
   }

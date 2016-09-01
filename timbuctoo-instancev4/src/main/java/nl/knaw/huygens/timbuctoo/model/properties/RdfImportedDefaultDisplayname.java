@@ -11,13 +11,22 @@ public class RdfImportedDefaultDisplayname extends ReadableProperty {
   public static final String TYPE = "default-rdf-imported-displayname";
 
   public RdfImportedDefaultDisplayname() {
-    super(() -> __.<Vertex, Try<JsonNode>>map(traverser -> {
-      final Vertex vertex = traverser.get();
-      if (vertex.property("rdfUri").isPresent()) {
-        return Try.success(jsn(vertex.value("rdfUri")));
-      }
-      return Try.success(jsn("<no rdf uri found>"));
-    }));
+    super(() ->
+        __.<Vertex, Try<JsonNode>>map(traverser -> {
+          final Vertex vertex = traverser.get();
+          if (vertex.property("rdfUri").isPresent()) {
+            return Try.success(jsn(vertex.value("rdfUri")));
+          }
+          return Try.success(jsn("<no rdf uri found>"));
+        }),
+      () -> __.<Vertex, Try<Object>>map(traverser -> {
+        final Vertex vertex = traverser.get();
+        if (vertex.property("rdfUri").isPresent()) {
+          return Try.success(vertex.value("rdfUri"));
+        }
+        return Try.success("<no rdf uri found>");
+      })
+    );
   }
 
 

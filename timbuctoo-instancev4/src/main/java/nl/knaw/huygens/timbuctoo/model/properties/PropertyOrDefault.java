@@ -2,27 +2,35 @@ package nl.knaw.huygens.timbuctoo.model.properties;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import javaslang.control.Try;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public class PropertyOrDefault extends ReadableProperty {
 
   public PropertyOrDefault(ReadableProperty prop, JsonNode orElse) {
     super(() ->
       __.<Object, Try<JsonNode>>coalesce(
-        prop.traversal(),
+        prop.traversalJson(),
         __.map(x -> Try.success(orElse))
-      )
+      ),
+      () ->
+        __.coalesce(
+          prop.traversalRaw(),
+          __.map(x -> Try.success((Object) orElse.asText()))
+        )
     );
   }
 
   public PropertyOrDefault(ReadableProperty prop, ReadableProperty orElse) {
     super(() ->
       __.<Object, Try<JsonNode>>coalesce(
-        prop.traversal(),
-        orElse.traversal()
-      )
+        prop.traversalJson(),
+        orElse.traversalJson()
+      ),
+      () ->
+        __.coalesce(
+          prop.traversalRaw(),
+          orElse.traversalRaw()
+        )
     );
   }
 

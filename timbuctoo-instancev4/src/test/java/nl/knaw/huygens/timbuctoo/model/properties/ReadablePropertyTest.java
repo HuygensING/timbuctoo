@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.model.properties;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToUnencodedStringOfLimitedValuesConverter;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -31,7 +30,7 @@ public class ReadablePropertyTest {
 
   @Test
   public void saveCreatesANewVertexWithCorrectLabelAndProperties() {
-    ReadableProperty readableProperty = new ReadableProperty(null) {
+    ReadableProperty readableProperty = new ReadableProperty(null, null) {
       @Override
       public String getTypeId() {
         return null;

@@ -14,21 +14,36 @@ public class WwDocumentDisplayName extends ReadableProperty {
 
   public WwDocumentDisplayName() {
     super(() ->
-      __.as("doc").union(
-        new PropertyOrDefault(localProperty("wwdocument_date", datable), jsn("")).traversal()
-      ).as("date")
-      .select("doc").union(
-        new PropertyOrDefault(localProperty("wwdocument_title"), jsn("")).traversal()
-      ).as("title")
-      .select("title", "date")
-      .map(x -> {
-        Try<JsonNode> date = (Try<JsonNode>) x.get().get("date");
-        Try<JsonNode> title = (Try<JsonNode>) x.get().get("title");
-        return Try.success((JsonNode) jsn(
-          title.getOrElse(jsn("")).asText() +
-            " (" + date.getOrElse(jsn("<date>")).asText() + ")"
-        ));
-      })
+        __.as("doc").union(
+          new PropertyOrDefault(localProperty("wwdocument_date", datable), jsn("")).traversalJson()
+        ).as("date")
+          .select("doc").union(
+          new PropertyOrDefault(localProperty("wwdocument_title"), jsn("")).traversalJson()
+        ).as("title")
+          .select("title", "date")
+          .map(x -> {
+            Try<JsonNode> date = (Try<JsonNode>) x.get().get("date");
+            Try<JsonNode> title = (Try<JsonNode>) x.get().get("title");
+            return Try.success((JsonNode) jsn(
+              title.getOrElse(jsn("")).asText() +
+                " (" + date.getOrElse(jsn("<date>")).asText() + ")"
+            ));
+          }),
+      () ->
+        __.as("doc").union(
+          new PropertyOrDefault(localProperty("wwdocument_date", datable), jsn("")).traversalRaw()
+        ).as("date")
+          .select("doc").union(
+          new PropertyOrDefault(localProperty("wwdocument_title"), jsn("")).traversalRaw()
+        ).as("title")
+          .select("title", "date")
+          .map(x -> {
+            Try<Object> date = (Try<Object>) x.get().get("date");
+            Try<Object> title = (Try<Object>) x.get().get("title");
+            return Try.success((Object) (title.getOrElse("") +
+              " (" + date.getOrElse(jsn("<date>")) + ")"
+            ));
+          })
     );
   }
 

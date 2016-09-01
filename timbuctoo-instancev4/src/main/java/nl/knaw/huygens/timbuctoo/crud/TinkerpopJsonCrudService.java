@@ -9,8 +9,12 @@ import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.dto.Entity;
+import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
+import nl.knaw.huygens.timbuctoo.database.dto.property.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
@@ -99,7 +103,7 @@ public class TinkerpopJsonCrudService {
     this.listener = listener;
     this.authorizer = authorizer;
     this.entityFetcher = entityFetcher;
-    this.dataAccess = new DataAccess(graphwrapper, entityFetcher, authorizer, listener);
+    this.dataAccess = new DataAccess(graphwrapper, entityFetcher, authorizer, listener, mappings);
     nodeFactory = JsonNodeFactory.instance;
   }
 
@@ -190,7 +194,7 @@ public class TinkerpopJsonCrudService {
     if (collection.isRelationCollection()) {
       return getRelation(id, rev, collection);
     } else {
-      return getVertex(id, rev, collection);
+      return getEntity(id, rev, collection);
     }
   }
 
@@ -198,79 +202,88 @@ public class TinkerpopJsonCrudService {
     return jsnO("message", jsn("Getting a wwrelation is not yet supported"));
   }
 
-  private JsonNode getVertex(UUID id, Integer rev, Collection collection) throws NotFoundException {
-    final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
-    final String entityTypeName = collection.getEntityTypeName();
-    final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
+  private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
+    Entity entity = dataAccess.getEntity(id, rev, collection);
 
     final ObjectNode result = JsonNodeFactory.instance.objectNode();
 
-    result.set("@type", nodeFactory.textNode(entityTypeName));
+    result.set("@type", nodeFactory.textNode(collection.getEntityTypeName()));
     result.set("_id", nodeFactory.textNode(id.toString()));
 
-    Vertex entityTs = null;
-    try {
-      entityTs = entityFetcher.getEntity(traversalSource, id, rev, collection.getCollectionName()).next();
-    } catch (NoSuchElementException e) {
-      throw new NotFoundException();
-    }
-    GraphTraversal<Vertex, Vertex> entityT = traversalSource.V(entityTs.id());
+    result.set("^rev", jsn(entity.getRev()));
+    result.set("^deleted", jsn(entity.getDeleted()));
+    result.set("^pid", jsn(entity.getPid()));
 
-    if (!entityT.asAdmin().clone().hasNext()) {
-      throw new NotFoundException();
-    }
+    JsonNode variationRefs = jsnA(entity.getTypes()
+                                        .stream()
+                                        .map(type -> {
+                                          ObjectNode variationRef = jsnO();
+                                          variationRef.set("id", jsn(id.toString()));
+                                          variationRef.set("type", jsn(type));
+                                          return variationRef;
+                                        }));
+    result.set("@variationRefs", variationRefs);
 
-    GraphTraversal[] propertyGetters = mapping
-      .entrySet().stream()
-      //append error handling and resuling to the traversal
-      .map(prop -> prop.getValue().traversal().sideEffect(x ->
-        x.get()
-         .onSuccess(node -> result.set(prop.getKey(), node))
-         .onFailure(e -> {
-           if (e.getCause() instanceof IOException) {
-             LOG.error(
-               databaseInvariant,
-               "Property '" + prop.getKey() + "' is not encoded correctly",
-               e.getCause()
-             );
-           } else {
-             LOG.error("Something went wrong while reading the property '" + prop.getKey() + "'.", e.getCause());
-           }
-         })
-      ))
-      .toArray(GraphTraversal[]::new);
+    Change modified = entity.getModified();
+    result.set("^modified", mapChange(modified));
+    Change created = entity.getCreated();
+    result.set("^created", mapChange(created));
 
-    entityT.asAdmin().clone().union(propertyGetters).forEachRemaining(x -> {
-      //Force side effects to happen
+    // translate TimProperties to Json
+    JsonPropertyConverter jsonPropertyConverter = new JsonPropertyConverter(collection);
+    entity.getProperties().forEach(prop -> {
+      Tuple<String, JsonNode> convertedProperty = null;
+      try {
+        convertedProperty = prop.convert(jsonPropertyConverter);
+      } catch (IOException e) {
+        LOG.error(
+          databaseInvariant,
+          "Property '" + prop.getName() + "' is not encoded correctly",
+          e.getCause()
+        );
+      }
+      result.set(convertedProperty.getLeft(), convertedProperty.getRight());
     });
-    Vertex entity = entityT.asAdmin().clone().next();
 
-    String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
-    if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
-      throw new NotFoundException();
-    }
-
-    Tuple<ObjectNode, Long> relations = getRelations(entity, traversalSource, collection);
-    result.set("@relationCount", nodeFactory.numberNode(relations.getRight()));
-    result.set("@relations", relations.getLeft());
-
-    result.set(
-      "^rev", nodeFactory.numberNode(
-        getProp(entity, "rev", Integer.class)
-          .orElse(rev == null ? -1 : rev)
-      )
-    );
-    getModification(entity, "modified").ifPresent(val -> result.set("^modified", val));
-    getModification(entity, "created").ifPresent(val -> result.set("^created", val));
-
-    result.set("@variationRefs", getVariationRefs(entity, id, entityTypeName));
-
-    result.set("^deleted", nodeFactory.booleanNode(getProp(entity, "deleted", Boolean.class).orElse(false)));
-
-    result.set("^pid", nodeFactory.textNode(getProp(entity, "pid", String.class).orElse(null)));
+    result.set("@relationCount", nodeFactory.numberNode(entity.getRelations().size()));
+    result.set("@relations", mapRelations(entity.getRelations()));
 
     return result;
   }
+
+
+
+  private JsonNode mapRelations(List<RelationRef> relations) {
+    ObjectNode relationsNode = jsnO();
+    relations.stream().map(relationRef -> jsnO(
+      tuple("id", jsn(relationRef.getEntityId())),
+      tuple("path", jsn(relationUrlFor.apply(relationRef.getCollectionName(),
+        UUID.fromString(relationRef.getEntityId()), null).toString())),
+      tuple("relationType", jsn(relationRef.getRelationType())),
+      tuple("type", jsn(relationRef.getEntityType())),
+      tuple("accepted", jsn(relationRef.isRelationAccepted())),
+      tuple("relationId", jsn(relationRef.getRelationId())),
+      tuple("rev", jsn(relationRef.getRelationRev())),
+      tuple("displayName", jsn(relationRef.getDisplayName()))
+    )).collect(groupingBy(x -> x.get("relationType").asText())).entrySet().forEach(relationsType ->
+      relationsNode.set(relationsType.getKey(), jsnA(relationsType.getValue().stream())));
+
+    return relationsNode;
+  }
+
+  private JsonNode mapChange(Change change) {
+    String userId = change.getUserId();
+    ObjectNode changeNode = new ObjectMapper().valueToTree(change);
+
+    try {
+      userStore.userForId(userId).ifPresent(user -> changeNode.set("username", jsn(user.getDisplayName())));
+    } catch (AuthenticationUnavailableException e) {
+      LOG.error("Could not retrieve user store", e);
+    }
+
+    return changeNode;
+  }
+
 
   private Tuple<ObjectNode, Long> getRelations(Vertex entity, GraphTraversalSource traversalSource,
                                                Collection collection) {
@@ -353,9 +366,9 @@ public class TinkerpopJsonCrudService {
                                                                 }
 
                                                                 String displayName =
-                                                                  getDisplayname(traversalSource, vertex,
+                                                                  dataAccess.getDisplayname(traversalSource, vertex,
                                                                     targetCollection)
-                                                                    .orElse("<No displayname found>");
+                                                                            .orElse("<No displayname found>");
                                                                 String uuid =
                                                                   getProp(vertex, "tim_id", String.class).orElse("");
 
@@ -375,7 +388,8 @@ public class TinkerpopJsonCrudService {
                                                                     getProp(edge, "tim_id", String.class)
                                                                       .map(x -> (JsonNode) jsn(x)).orElse(jsn())),
                                                                   tuple("rev",
-                                                                    jsn(getProp(edge, "rev", Integer.class).orElse(1))),
+                                                                    jsn(
+                                                                      getProp(edge, "rev", Integer.class).orElse(1))),
                                                                   tuple("displayName", jsn(displayName))
                                                                 );
                                                               } catch (Exception e) {
@@ -389,38 +403,8 @@ public class TinkerpopJsonCrudService {
                      .orElse(EmptyGraph.instance().traversal().V().map(x -> jsnO()));
   }
 
-  private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
-                                          Collection targetCollection) {
-    ReadableProperty displayNameProperty = targetCollection.getDisplayName();
-    if (displayNameProperty != null) {
-      GraphTraversal<Vertex, Try<JsonNode>> displayNameGetter = traversalSource.V(vertex.id()).union(
-        targetCollection.getDisplayName().traversal()
-      );
-      if (displayNameGetter.hasNext()) {
-        Try<JsonNode> traversalResult = displayNameGetter.next();
-        if (!traversalResult.isSuccess()) {
-          LOG.error(databaseInvariant, "Retrieving displayname failed", traversalResult.getCause());
-        } else {
-          if (traversalResult.get() == null) {
-            LOG.error(databaseInvariant, "Displayname was null");
-          } else {
-            if (!traversalResult.get().isTextual()) {
-              LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
-            } else {
-              return Optional.of(traversalResult.get().asText());
-            }
-          }
-        }
-      } else {
-        LOG.error(databaseInvariant, "Displayname traversal resulted in no results: " + displayNameGetter);
-      }
-    } else {
-      LOG.warn("No displayname configured for " + targetCollection.getEntityTypeName());
-    }
-    return Optional.empty();
-  }
-
   /* returns the entitytype for the current collection's vre or else the type of the current collection */
+
   private String getOwnEntityType(Collection collection, Element vertex) throws IOException {
     final Vre vre = collection.getVre();
     return getEntityTypes(vertex)
@@ -730,33 +714,38 @@ public class TinkerpopJsonCrudService {
       final ObjectNode result = JsonNodeFactory.instance.objectNode();
       final List<GraphTraversal> propertyGetters = mapping
         .entrySet().stream()
-        .map(prop -> prop.getValue().traversal().sideEffect(x -> {
-          x.get()
-            .onSuccess(node -> result.set(prop.getKey(), node))
-            .onFailure(e -> {
-              if (e.getCause() instanceof IOException) {
-                LOG.error(
-                  databaseInvariant,
-                  "Property '" + prop.getKey() + "' is not encoded correctly",
-                  e.getCause()
-                );
-              } else {
-                LOG.error("Something went wrong while reading the property '" + prop.getKey() + "'.", e.getMessage());
-              }
-            });
+        .map(prop -> prop.getValue().traversalJson().sideEffect(tryTraverser -> {
+          tryTraverser.get()
+                      .onSuccess(node -> result.set(prop.getKey(), node))
+                      .onFailure(e -> {
+                        if (e.getCause() instanceof IOException) {
+                          LOG.error(
+                            databaseInvariant,
+                            "Property '" + prop.getKey() +
+                              "' is not encoded correctly",
+                            e.getCause()
+                          );
+                        } else {
+                          LOG.error(
+                            "Something went wrong while reading the property '" +
+                              prop.getKey() + "'.", e.getMessage());
+                        }
+                      });
         }))
         .collect(Collectors.toList());
 
-      propertyGetters.add(collection.getDisplayName().traversal().sideEffect( x -> {
-        x.get()
-          .onSuccess(node -> result.set("@displayName", node))
-          .onFailure(e -> LOG.error(databaseInvariant, "Failed to make displayname for {}", collectionName, e));
+      propertyGetters.add(collection.getDisplayName().traversalJson().sideEffect(tryTraverser -> {
+        tryTraverser.get()
+                    .onSuccess(node -> result.set("@displayName", node))
+                    .onFailure(
+                      e -> LOG.error(databaseInvariant, "Failed to make displayname for {}", collectionName, e));
       }));
 
       traversalSource.V(entityT.get().id())
-        .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()])).forEachRemaining(x -> {
-          // side effects
-        });
+                     .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()]))
+                     .forEachRemaining(x -> {
+                       // side effects
+                     });
 
       Vertex entity = entityT.get();
       if (withRelations) {

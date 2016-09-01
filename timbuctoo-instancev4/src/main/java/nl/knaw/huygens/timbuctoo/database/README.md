@@ -59,27 +59,48 @@ This way we can provide an implementation (e.g a [DataAccessMethods](./DataAcces
 #### Example
 If this is the interface
 ```java
-public interface TimProperty {
-   <ResultType> ResultType convert(PropertyConverter<ResultType, InputType> converter);
+public abstract class TimProperty {
+  private final String name;
+  private final Value value;
+
+  public TimProperty(String name, Value value){
+     this.name = name;
+     this.value = value;
+   }
+ 
+   public abstract <Type> Tuple<String, Type> convert(PropertyConverter<Type> propertyConverter) throws IOException;
+ 
+   public String getName() {
+     return name;
+   }
+ 
+   public Value getValue() {
+     return value;
+   }
 }
 ```
 Then we can implement it for two property types like so:
 
 ```java
-public class PersonNamesProperty implements TimProperty { 
-   public <ValueType> ValueType convert(PropertyConverter<ResultType, InputType> converter){
-     //...
-   }
+public class PersonNamesProperty extends TimProperty<PersonNames> {
+  public PersonNamesProperty(String name, PersonNames value) {
+    super(name, value);
+  }
+
+  @Override
+  public <Type> Tuple<String, Type> convert(PropertyConverter<Type> propertyConverter) throws IOException {
+    return propertyConverter.to(this);
+  }
 }
 
-public class StringProperty implements TimProperty {
-  
-  public StringProperty(String name, String value){
-    
+public class StringProperty extends TimProperty<String> {
+  public StringProperty(String name, String value) {
+    super(name, value);
   }
-  
-  public <ResultType> ResultType convert(PropertyConverter<ResultType, InputType> converter){
-    //...
+
+  @Override
+  public <Type> Tuple<String, Type> convert(PropertyConverter<Type> propertyConverter) throws IOException {
+    return propertyConverter.to(this);
   }
 }
 ```
@@ -95,12 +116,18 @@ They return a Tuple of String, Type where the left contains the propertyName as 
 This allows a converter to change the name as well.
 This is currently needed for our database (which prefixes all properties with the collection and dataset name)
 ```java
-public interface PropertyConverter<Type>{
-  TimProperty from(String name, Type value);
+public abstract class PropertyConverter<Type>{
+  public TimProperty from(String name, Type value){
+    //...
+  }
   
-  Tuple<String, Type> to(PersonNamesValue value);
+  protected abstract PersonNamesProperty createPersonNamesProperty(String name, Type value);
   
-  Tuple<String, Type> to(String value);
+  protected abstract StringProperty createStringProperty(String name, Type value);
+  
+  protected abstract Tuple<String, Type> to(PersonNamesProperty property);
+    
+  protected abstract Tuple<String, Type> to(StringProperty property);
 }
 ```
  
@@ -112,15 +139,19 @@ public class JsonPropertyConverter implements TimPropertyConverter<JsonNode> {
     //store the collection for later use in deciding what property type 
   }
   
-  public TimProperty from(String name, JsonNode value){
-    //use the collection to determine the property type 
+  protected PersonNamesProperty createPersonNamesProperty(String name, JsonNode value) {
+    //...
   }
     
-  public Tuple<String, JsonNode> to(PersonNamesValue value){
+  protected StringProperty createStringProperty(String name, JsonNode value) {
+    //...
+  }
+    
+  protected Tuple<String, JsonNode> to(PersonNamesProperty property){
     //...
   }
   
-  public Tuple<String, JsonNode> to(String value){
+  protected Tuple<String, JsonNode> to(StringProperty property){
     //...
   }
 }
@@ -131,16 +162,20 @@ public class TinkerPopPropertyConverter implements TimPropertyConverter<Object> 
   public TinkerPopPropertyConverter(Collection collection) {
     
   }
-  
-  public TimProperty from(Tuple<String, Object> value){
+
+  protected PersonNamesProperty createPersonNamesProperty(String name, Object value) {
     //...
   }
     
-  public Tuple<String, Object> to(PersonNamesValue value){
+  protected StringProperty createStringProperty(String name, Object value) {
+    //...
+  }    
+
+  protected Tuple<String, Object> to(PersonNamesProperty property){
     //...
   }
   
-  public Tuple<String, Object> to(String value){
+  protected Tuple<String, Object> to(StringProperty propertyName){
     //...
   }
 }

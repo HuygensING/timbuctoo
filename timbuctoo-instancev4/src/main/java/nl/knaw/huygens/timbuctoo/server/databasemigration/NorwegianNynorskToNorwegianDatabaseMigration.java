@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
-import nl.knaw.huygens.timbuctoo.crud.changelistener.CollectionHasEntityRelationChangeListener;
-import nl.knaw.huygens.timbuctoo.crud.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
+import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
+import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

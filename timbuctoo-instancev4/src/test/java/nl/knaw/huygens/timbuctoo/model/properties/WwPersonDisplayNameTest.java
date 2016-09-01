@@ -30,7 +30,7 @@ public class WwPersonDisplayNameTest {
 
     WwPersonDisplayName instance = new WwPersonDisplayName();
 
-    Try<JsonNode> result = graph.traversal().V().union(instance.traversal()).next();
+    Try<JsonNode> result = graph.traversal().V().union(instance.traversalJson()).next();
 
     assertThat(result.get().asText(), equalTo(expectedName));
   }
@@ -50,7 +50,7 @@ public class WwPersonDisplayNameTest {
 
     WwPersonDisplayName instance = new WwPersonDisplayName();
 
-    Try<JsonNode> result = graph.traversal().V().union(instance.traversal()).next();
+    Try<JsonNode> result = graph.traversal().V().union(instance.traversalJson()).next();
 
     assertThat(result.get().asText(), equalTo("[TEMP] " + tempName));
   }
@@ -68,7 +68,7 @@ public class WwPersonDisplayNameTest {
 
     WwPersonDisplayName instance = new WwPersonDisplayName();
 
-    Try<JsonNode> result = graph.traversal().V().union(instance.traversal()).next();
+    Try<JsonNode> result = graph.traversal().V().union(instance.traversalJson()).next();
 
     assertThat(result.get().asText(), equalTo("[TEMP] " + tempName));
   }

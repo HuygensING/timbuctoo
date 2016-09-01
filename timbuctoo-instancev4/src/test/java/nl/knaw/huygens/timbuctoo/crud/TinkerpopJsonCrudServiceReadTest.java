@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.crud;
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.contractdiff.diffresults.DiffResult;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
@@ -13,7 +12,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import java.net.URI;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -24,12 +22,11 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.UserStoreBuilder.newUserStore;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class TinkerpopJsonCrudServiceReadTest {
@@ -251,8 +248,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    UserStore userStore = mock(JsonBasedUserStore.class);
-    when(userStore.userForId("USER1")).thenReturn(Optional.of(new User("Username for USER1")));
+    UserStore userStore = newUserStore().withUser("USER1", new User("Username for USER1")).build();
 
     TinkerpopJsonCrudService instance = newJsonCrudService().withUserStore(userStore).forGraph(graph);
 
@@ -281,8 +277,7 @@ public class TinkerpopJsonCrudServiceReadTest {
       )
       .build();
 
-    UserStore userStore = mock(JsonBasedUserStore.class);
-    when(userStore.userForId("USER1")).thenReturn(Optional.of(new User("Username for USER1")));
+    UserStore userStore = newUserStore().withUser("USER1", new User("Username for USER1")).build();
 
     TinkerpopJsonCrudService instance = newJsonCrudService().withUserStore(userStore).forGraph(graph);
 

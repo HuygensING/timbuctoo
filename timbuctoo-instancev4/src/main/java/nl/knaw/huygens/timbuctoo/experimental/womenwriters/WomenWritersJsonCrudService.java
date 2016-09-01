@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
@@ -127,7 +126,7 @@ public class WomenWritersJsonCrudService {
     GraphTraversal[] propertyGetters = mapping
       .entrySet().stream()
       //append error handling and resuling to the traversal
-      .map(prop -> prop.getValue().traversal().sideEffect(x ->
+      .map(prop -> prop.getValue().traversalJson().sideEffect(x ->
         x.get()
          .onSuccess(node -> result.set(prop.getKey(), node))
          .onFailure(e -> {
@@ -355,7 +354,7 @@ public class WomenWritersJsonCrudService {
     ReadableProperty displayNameProperty = targetCollection.getDisplayName();
     if (displayNameProperty != null) {
       GraphTraversal<Vertex, Try<JsonNode>> displayNameGetter = traversalSource.V(vertex.id()).union(
-        targetCollection.getDisplayName().traversal()
+        targetCollection.getDisplayName().traversalJson()
       );
       if (displayNameGetter.hasNext()) {
         Try<JsonNode> traversalResult = displayNameGetter.next();

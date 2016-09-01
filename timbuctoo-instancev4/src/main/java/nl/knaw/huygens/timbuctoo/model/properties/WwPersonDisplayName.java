@@ -39,7 +39,29 @@ public class WwPersonDisplayName extends ReadableProperty {
           LOG.error("Parse failure for {} ", vertex.value("wwperson_names").toString());
         }
         return Try.success(displayName);
-      })
+      }),
+      () ->
+        __.map(x -> {
+          Object displayName = null;
+          Vertex vertex = (Vertex) x.get();
+          try {
+            final PersonNames personNames = vertex.property("wwperson_names").isPresent() ?
+              new PersonNamesConverter().tinkerpopToJava(vertex.value("wwperson_names")) : new PersonNames();
+            final String parsedName = personNames.defaultName().getShortName();
+
+            if (parsedName.length() > 0) {
+              displayName = jsn(parsedName);
+            } else {
+              final String tempName = vertex.property("wwperson_tempName").isPresent() ?
+                vertex.value("wwperson_tempName") : "";
+
+              displayName = String.format("[TEMP] %s", tempName);
+            }
+          } catch (IOException e) {
+            LOG.error("Parse failure for {} ", vertex.value("wwperson_names").toString());
+          }
+          return Try.success(displayName);
+        })
     );
   }
 

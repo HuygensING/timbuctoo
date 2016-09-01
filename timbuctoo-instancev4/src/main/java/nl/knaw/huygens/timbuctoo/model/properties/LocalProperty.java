@@ -28,7 +28,8 @@ public class LocalProperty extends ReadableProperty {
   private final Converter converter;
 
   public LocalProperty(String propName, Converter converter) {
-    super(() -> __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerpopToJson(prop.get()))));
+    super(() -> __.<Object, String>values(propName).map(prop -> Try.of(() -> converter.tinkerpopToJson(prop.get()))),
+      () -> __.values(propName).map(prop -> Try.of(prop::get)));
     this.propName = propName;
     this.converter = converter;
   }
