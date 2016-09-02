@@ -64,6 +64,8 @@ class SolrIO
     raise "Delete on #{index_name} failed for url #{@base_url}" unless response.code.eql?('200')
   end
 
+  # Deletes an entire solr index
+  # @param [String] index_name name of the index
   def delete_index(index_name)
     uri = URI.parse("#{@base_url}/admin/cores?action=UNLOAD&core=#{index_name}")
     req = Net::HTTP::Post.new(uri)
