@@ -65,7 +65,7 @@ class SolrIO
   end
 
   def delete_index(index_name)
-    uri = URI.parse("#{@base_url}/admin/collections?action=DELETE&name=#{index_name}")
+    uri = URI.parse("#{@base_url}/admin/cores?action=UNLOAD&core=#{index_name}")
     req = Net::HTTP::Post.new(uri)
     req['Authorization'] = @authorization unless @authorization.nil?
     http = Net::HTTP.new(uri.hostname, uri.port)
