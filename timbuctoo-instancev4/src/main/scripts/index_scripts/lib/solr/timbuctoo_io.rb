@@ -6,7 +6,7 @@ class TimbuctooIO
   # @param [String] base_url the timbuctoo server base url
   # @params [Boolean] dump_files flag for dumping files
   # @params [String] dump_dir the directory to dump the files in
-  def initialize (base_url, dump_files: false, dump_dir: "./")
+  def initialize (base_url, dump_files: false, dump_dir: './')
     @base_url = base_url
     @dump_files = dump_files
     @dump_dir = dump_dir || './'
@@ -59,8 +59,8 @@ class TimbuctooIO
     http = Net::HTTP.new(uri.hostname, uri.port)
 
     response = http.request(req)
-    raise "http request to failed with status #{response.code}: #{location}" unless response.code.eql?("200")
-    json_data = response.body
+    raise "http request to failed with status #{response.code}: #{location}" unless response.code.eql?('200')
+    response.body
   end
 
   def dump_to_file (collection_name, batch_size, start_value, with_relations, response_body)
