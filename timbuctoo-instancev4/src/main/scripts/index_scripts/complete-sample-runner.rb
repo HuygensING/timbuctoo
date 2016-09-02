@@ -61,7 +61,7 @@ class SampleRunner
     @timbuctoo_io = TimbuctooIO.new('http://localhost:8089', {:dump_files => true, :dump_dir => '/home/rar011/tmp'})
     @default_mapper = DefaultMapper.new(sample_default_config)
     @custom_mapper = WwPersonConverter.new(sample_custom_config)
-    @solr_io = SolrIO.new("http://localhost:8983/solr")
+    @solr_io = SolrIO.new('http://localhost:8983/solr')
   end
 
 
@@ -70,12 +70,12 @@ class SampleRunner
     @custom_batch << post_process_custom_mapping(record)
 
     if @custom_batch.length >= 100
-      @solr_io.update("test_custom_index", @custom_batch)
+      @solr_io.update('test_custom_index', @custom_batch)
       @custom_batch = []
     end
 
     if @default_batch.length >= 100
-      @solr_io.update("test_default_index", @default_batch)
+      @solr_io.update('test_default_index', @default_batch)
       @default_batch = []
     end
 
