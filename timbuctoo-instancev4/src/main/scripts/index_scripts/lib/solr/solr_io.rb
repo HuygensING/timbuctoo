@@ -1,0 +1,2 @@
+class SolrIO
+end
