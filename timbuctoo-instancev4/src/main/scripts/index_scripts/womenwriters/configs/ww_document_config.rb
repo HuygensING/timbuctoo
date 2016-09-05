@@ -1,5 +1,4 @@
 class WwDocumentConfig
-
   def WwDocumentConfig.get
     {
       :properties => [

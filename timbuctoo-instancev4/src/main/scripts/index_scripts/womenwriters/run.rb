@@ -2,7 +2,9 @@ require 'optparse'
 
 require '../lib/timbuctoo_solr/timbuctoo_io'
 require '../lib/timbuctoo_solr/solr_io'
+require '../lib/timbuctoo_solr/default_mapper'
 
+require './configs/ww_collective_config'
 require './configs/ww_person_config'
 require './configs/ww_document_config'
 require './mappers/ww_person_mapper'
@@ -27,6 +29,8 @@ class WomenWritersIndexer
 
     @person_mapper = WwPersonMapper.new(WwPersonConfig.get)
     @document_mapper = WwDocumentMapper.new(WwDocumentConfig.get)
+    @collective_mapper = DefaultMapper.new(WwCollectiveConfig.get)
+
     @person_reception_mapper = WwPersonReceptionMapper.new(@person_mapper, @document_mapper)
     @document_reception_mapper = WwDocumentReceptionMapper.new(@document_mapper)
 
@@ -53,39 +57,71 @@ class WomenWritersIndexer
     puts "Found #{@document_mapper.person_receptions.length} person receptions"
     puts "Found #{@document_mapper.document_receptions.length} document receptions"
 
+    reindex_collectives
+    reindex_persons
+    reindex_documents
+    reindex_person_receptions
+    reindex_document_receptions
+  end
 
-    puts "DELETE persons"
-    @solr_io.delete_data("wwpersons")
-    puts "UPDATE persons"
-    @person_mapper.send_cached_batches_to("wwpersons", @solr_io.method(:update))
-    puts "COMMIT persons"
-    @solr_io.commit("wwpersons")
-
-    puts "DELETE documents"
-    @solr_io.delete_data("wwdocuments")
-    puts "UPDATE documents"
-    @document_mapper.send_cached_batches_to("wwdocuments", @solr_io.method(:update))
-    puts "COMMIT documents"
-    @solr_io.commit("wwdocuments")
-
-
-    puts "DELETE person receptions"
-    @solr_io.delete_data("wwpersonreceptions")
-    puts "UPDATE person receptions"
-    update_reception_index(@person_reception_mapper, "wwpersonreceptions", :person_receptions)
-    puts "COMMIT person receptions"
-    @solr_io.commit("wwpersonreceptions")
-
+  private
+  def reindex_document_receptions
     puts "DELETE document receptions"
     @solr_io.delete_data("wwdocumentreceptions")
     puts "UPDATE document receptions"
     update_reception_index(@document_reception_mapper, "wwdocumentreceptions", :document_receptions)
     puts "COMMIT document receptions"
     @solr_io.commit("wwdocumentreceptions")
-
   end
 
-  private
+  def reindex_person_receptions
+    puts "DELETE person receptions"
+    @solr_io.delete_data("wwpersonreceptions")
+    puts "UPDATE person receptions"
+    update_reception_index(@person_reception_mapper, "wwpersonreceptions", :person_receptions)
+    puts "COMMIT person receptions"
+    @solr_io.commit("wwpersonreceptions")
+  end
+
+  def reindex_documents
+    puts "DELETE documents"
+    @solr_io.delete_data("wwdocuments")
+    puts "UPDATE documents"
+    @document_mapper.send_cached_batches_to("wwdocuments", @solr_io.method(:update))
+    puts "COMMIT documents"
+    @solr_io.commit("wwdocuments")
+  end
+
+  def reindex_persons
+    puts "DELETE persons"
+    @solr_io.delete_data("wwpersons")
+    puts "UPDATE persons"
+    @person_mapper.send_cached_batches_to("wwpersons", @solr_io.method(:update))
+    puts "COMMIT persons"
+    @solr_io.commit("wwpersons")
+  end
+
+  def reindex_collectives
+    puts "DELETE collectives"
+    @solr_io.delete_data("wwcollectives")
+    puts "UPDATE collectives"
+    batch = []
+    batch_size = 500
+    @timbuctoo_io.scrape_collection("wwcollectives", {
+        :process_record => -> (record) {
+          batch << @collective_mapper.convert(record)
+          if batch.length >= batch_size
+            @solr_io.update("wwcollectives", batch)
+            batch = []
+          end
+        },
+        :from_file => @options[:from_file]
+    })
+    @solr_io.update("wwcollectives", batch)
+    puts "COMMIT collectives"
+    @solr_io.commit("wwcollectives")
+  end
+
   def update_reception_index(reception_mapper, index_name, reception_entry)
     batch = []
     batch_size = 500
