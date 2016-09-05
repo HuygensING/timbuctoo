@@ -17,6 +17,8 @@ class WwDocumentMapper < DefaultMapper
     data = super(record)
     data['type_s'] = 'document'
     add_english_title(data)
+    add_location_sort(data)
+    add_language_sort(data)
 
     puts "document scrape: #{@record_count}" if @record_count % 100 == 0
     @record_count += 1
@@ -71,6 +73,14 @@ class WwDocumentMapper < DefaultMapper
   end
 
   private
+  def add_location_sort(data)
+    data["locationSort_s"] = data["publishLocation_ss"].sort.join(" ")
+  end
+
+  def add_language_sort(data)
+    data["languageSort_s"] = data["language_ss"].sort.join(" ")
+  end
+
   def add_english_title(data)
     unless data['^englishTitle'].nil?
       data['title_t'] = data['title_t'].nil? ? data['^englishTitle'] : "#{data['title_t']} #{data['^englishTitle']}"

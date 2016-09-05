@@ -4,7 +4,7 @@ class WwDocumentConfig
     {
       :properties => [
         { :name => '_id',  :converted_name => 'id'},
-        { :name => '@displayName', :converted_name => 'displayName_s'},
+        { :name => 'title', :converted_name => 'displayName_s'},
         { :name => 'title', :converted_name => 'title_t'},
         { :name => 'documentType', :converted_name => 'documentType_s'},
         { :name => 'englishTitle', :converted_name  => '^englishTitle'},
