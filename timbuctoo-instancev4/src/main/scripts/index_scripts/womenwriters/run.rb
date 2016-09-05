@@ -2,8 +2,6 @@ require 'optparse'
 
 require '../lib/timbuctoo_solr/timbuctoo_io'
 require '../lib/timbuctoo_solr/solr_io'
-require '../lib/mixins/converters/to_year_converter'
-require '../lib/mixins/converters/to_names_converter'
 
 require './configs/ww_person_config'
 require './configs/ww_document_config'
@@ -33,6 +31,8 @@ class WomenWritersIndexer
         :dump_dir => options[:dump_dir],
     })
 
+    @solr_io = SolrIO.new('http://localhost:8983/solr', {:authorization => options[:solr_auth]})
+
   end
 
   def run
@@ -41,17 +41,34 @@ class WomenWritersIndexer
         :from_file => @options[:from_file],
         :process_record => @person_mapper.method(:convert)
     })
+    puts "SCRAPE: #{@person_mapper.record_count} persons"
 
     @timbuctoo_io.scrape_collection("wwdocuments", {
         :with_relations => true,
         :from_file => @options[:from_file],
         :process_record => @document_mapper.method(:convert)
     })
+    puts "SCRAPE: #{@document_mapper.record_count} documents"
 
+    # Always run person_mapper.add_languages before @document_mapper.add_creators to ensure correct _childDocuments_
+    # filters on wwdocuments index and wwdocumentreceptions index!!
     @person_mapper.add_languages(@document_mapper)
-    @person_mapper.cache.each do |id, person|
-      p person if person['language_ss'].length > 1
-    end
+    @document_mapper.add_creators(@person_mapper)
+
+
+    puts "DELETE persons"
+    @solr_io.delete_data("wwperson_test")
+    puts "UPDATE persons"
+    @person_mapper.send_cached_batches_to("wwperson_test", @solr_io.method(:update))
+    puts "COMMIT persons"
+    @solr_io.commit("wwperson_test")
+
+    puts "DELETE documents"
+    @solr_io.delete_data("wwdocument_test")
+    puts "UPDATE documents"
+    @document_mapper.send_cached_batches_to("wwdocument_test", @solr_io.method(:update))
+    puts "COMMIT documents"
+    @solr_io.commit("wwdocument_test")
   end
 end
 

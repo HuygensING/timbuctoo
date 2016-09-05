@@ -1,19 +1,28 @@
 require File.dirname(__FILE__) + '/../../lib/timbuctoo_solr/default_mapper'
 
+require File.dirname(__FILE__) + '/../../lib/mixins/converters/to_year_converter'
+require File.dirname(__FILE__) + '/../../lib/mixins/converters/to_names_converter'
+
 class WwPersonMapper < DefaultMapper
-  attr_reader :cache
   include ToYearConverter
   include ToNamesConverter
+
+  attr_reader :cache, :record_count
 
   def initialize options
     super options
     @cache = {}
+    @record_count = 0
   end
 
   def convert(record)
     data = super(record)
+    data['type_s'] = 'person'
     convert_temp_name(data)
     add_location_sort(data)
+
+    puts "Person scrape: #{@record_count}" if @record_count % 100 == 0
+    @record_count += 1
     @cache[data['id']] = data
   end
 
@@ -37,6 +46,19 @@ class WwPersonMapper < DefaultMapper
       @cache[id]['languageSort_s'] = @cache[id]['language_ss'].sort.join(" ")
       @cache[id].delete('@workIds')
     end
+  end
+
+  def send_cached_batches_to(index_name, batch_callback)
+    batch_size = 500
+    batch = []
+    @cache.each do |key, record|
+      batch << record
+      if batch.length >= batch_size
+        batch_callback.call(index_name, batch)
+        batch = []
+      end
+    end
+    batch_callback.call(index_name, batch)
   end
 
   private
