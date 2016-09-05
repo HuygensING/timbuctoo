@@ -11,6 +11,8 @@ class WwDocumentConfig
         { :name => 'date', :converted_name => 'date_i', :type => 'year'},
         { :name => 'notes', :converted_name => 'notes_t'},
         { :name => ['^modified', 'timeStamp'], :converted_name => 'modified_l' },
+        { :name => ['^modified', 'userId'], :converted_name => 'modifiedBy_s' },
+        { :name => ['^modified', 'username'], :converted_name => 'modifiedBy_s' },
       ], :relations => [
         { :relation_name => 'hasPublishLocation', :property_name => 'displayName', :converted_name => 'publishLocation_ss'},
         { :relation_name => 'hasWorkLanguage', :property_name => 'displayName', :converted_name => 'language_ss'},
