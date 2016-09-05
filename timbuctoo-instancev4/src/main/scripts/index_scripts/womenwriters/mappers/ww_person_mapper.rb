@@ -19,8 +19,6 @@ class WwPersonMapper < DefaultMapper
     data = super(record)
     convert_temp_name(data)
     add_location_sort(data)
-
-    p data
     @cache[data['id']] = data
   end
 

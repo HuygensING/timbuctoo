@@ -13,6 +13,8 @@ class WwPersonConfig
             { :name => 'notes', :converted_name => 'notes_t'},
             { :name => 'children', :converted_name => 'children_s'},
             { :name => ['^modified', 'timeStamp'], :converted_name => 'modified_l' },
+
+
             { :name => '@displayName', :converted_name => '@displayName'}
         ], :relations => [
             { :relation_name => ['hasResidenceLocation', 'hasBirthPlace', 'hasDeathPlace'], :property_name => 'displayName', :converted_name => 'relatedLocations_ss' },

@@ -6,7 +6,9 @@ require '../lib/mixins/converters/to_year_converter'
 require '../lib/mixins/converters/to_names_converter'
 
 require './configs/ww_person_config'
+require './configs/ww_document_config'
 require './mappers/ww_person_mapper'
+require './mappers/ww_document_mapper'
 
 options = {}
 
@@ -22,13 +24,15 @@ end.parse!
 class WomenWritersIndexer
   def initialize(options)
     @options = options
+
     @person_mapper = WwPersonMapper.new(WwPersonConfig.get)
+    @document_mapper = WwDocumentMapper.new(WwDocumentConfig.get)
+
     @timbuctoo_io = TimbuctooIO.new(options[:timbuctoo_url], {
         :dump_files => options[:dump_files],
         :dump_dir => options[:dump_dir],
     })
 
-#    @document_mapper = WwDocumentMapper.new
   end
 
   def run
@@ -38,7 +42,11 @@ class WomenWritersIndexer
         :process_record => @person_mapper.method(:convert)
     })
 
-    p @person_mapper.find ("fa0920d0-83a9-4522-9be3-79b39c4bd311")
+    @timbuctoo_io.scrape_collection("wwdocuments", {
+        :with_relations => true,
+        :from_file => @options[:from_file],
+        :process_record => @document_mapper.method(:convert)
+    })
   end
 end
 
