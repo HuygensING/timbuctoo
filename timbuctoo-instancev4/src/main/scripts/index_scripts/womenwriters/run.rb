@@ -35,87 +35,89 @@ class WomenWritersIndexer
         :dump_dir => options[:dump_dir],
     })
 
-    @solr_io = SolrIO.new('http://localhost:8983/solr', {:authorization => options[:solr_auth]})
+    @solr_io = SolrIO.new(options[:solr_url], {:authorization => options[:solr_auth]})
 
   end
 
   def run
-    @timbuctoo_io.scrape_collection("wwpersons", {
-        :with_relations => true,
-        :from_file => @options[:from_file],
-        :process_record => @person_mapper.method(:convert)
-    })
-    puts "SCRAPE: #{@person_mapper.record_count} persons"
-
-    @timbuctoo_io.scrape_collection("wwdocuments", {
-        :with_relations => true,
-        :from_file => @options[:from_file],
-        :process_record => @document_mapper.method(:convert)
-    })
-    puts "SCRAPE: #{@document_mapper.record_count} documents"
+    # Scrape persons and documents from Timbuctoo
+    scrape_persons
+    scrape_documents
 
     # Always run person_mapper.add_languages before @document_mapper.add_creators to ensure correct _childDocuments_
     # filters on wwdocuments index and wwdocumentreceptions index!!
     @person_mapper.add_languages(@document_mapper)
     @document_mapper.add_creators(@person_mapper)
 
+
     puts "Found #{@document_mapper.person_receptions.length} person receptions"
     puts "Found #{@document_mapper.document_receptions.length} document receptions"
 
 
     puts "DELETE persons"
-    @solr_io.delete_data("wwperson_test")
+    @solr_io.delete_data("wwpersons")
     puts "UPDATE persons"
-    @person_mapper.send_cached_batches_to("wwperson_test", @solr_io.method(:update))
+    @person_mapper.send_cached_batches_to("wwpersons", @solr_io.method(:update))
     puts "COMMIT persons"
-    @solr_io.commit("wwperson_test")
+    @solr_io.commit("wwpersons")
 
     puts "DELETE documents"
-    @solr_io.delete_data("wwdocument_test")
+    @solr_io.delete_data("wwdocuments")
     puts "UPDATE documents"
-    @document_mapper.send_cached_batches_to("wwdocument_test", @solr_io.method(:update))
+    @document_mapper.send_cached_batches_to("wwdocuments", @solr_io.method(:update))
     puts "COMMIT documents"
-    @solr_io.commit("wwdocument_test")
+    @solr_io.commit("wwdocuments")
 
 
     puts "DELETE person receptions"
-    @solr_io.delete_data("wwpersonreception_test")
+    @solr_io.delete_data("wwpersonreceptions")
     puts "UPDATE person receptions"
-    batch = []
-    batch_size = 500
-    @document_mapper.person_receptions.each do |person_reception|
-      batch << @person_reception_mapper.convert(person_reception)
-      if batch.length >= batch_size
-        @solr_io.update("wwpersonreception_test", batch)
-        batch = []
-      end
-    end
-    @solr_io.update("wwpersonreception_test", batch)
+    update_reception_index(@person_reception_mapper, "wwpersonreceptions", :person_receptions)
     puts "COMMIT person receptions"
-    @solr_io.commit("wwpersonreception_test")
+    @solr_io.commit("wwpersonreceptions")
 
     puts "DELETE document receptions"
-    @solr_io.delete_data("wwdocumentreception_test")
+    @solr_io.delete_data("wwdocumentreceptions")
     puts "UPDATE document receptions"
+    update_reception_index(@document_reception_mapper, "wwdocumentreceptions", :document_receptions)
+    puts "COMMIT document receptions"
+    @solr_io.commit("wwdocumentreceptions")
+
+  end
+
+  private
+  def update_reception_index(reception_mapper, index_name, reception_entry)
     batch = []
     batch_size = 500
-
-    @document_mapper.document_receptions.each do |document_reception|
-      batch << @document_reception_mapper.convert(document_reception)
+    @document_mapper.send(reception_entry).each do |reception|
+      batch << reception_mapper.convert(reception)
       if batch.length >= batch_size
-        @solr_io.update("wwdocumentreception_test", batch)
+        @solr_io.update(index_name, batch)
         batch = []
       end
     end
-    @solr_io.update("wwdocumentreception_test", batch)
-
-    puts "COMMIT document receptions"
-    @solr_io.commit("wwdocumentreception_test")
+    @solr_io.update(index_name, batch)
   end
+
+  def scrape_documents
+    @timbuctoo_io.scrape_collection("wwdocuments", {
+        :with_relations => true,
+        :from_file => @options[:from_file],
+        :process_record => @document_mapper.method(:convert)
+    })
+    puts "SCRAPE: #{@document_mapper.record_count} documents"
+  end
+
+  def scrape_persons
+    @timbuctoo_io.scrape_collection("wwpersons", {
+        :with_relations => true,
+        :from_file => @options[:from_file],
+        :process_record => @person_mapper.method(:convert)
+    })
+    puts "SCRAPE: #{@person_mapper.record_count} persons"
+  end
+
 end
 
 
 WomenWritersIndexer.new(options).run
-
-# timbuctoo_io.scrape_collection("wwpersons", { :with_relations => true })
-# timbuctoo_io.scrape_collection("wwdocuments", { :with_relations => true })

@@ -37,7 +37,7 @@ class WwPersonMapper < DefaultMapper
       record['@workIds'].each do |work_id|
         work = document_mapper.find(work_id)
         if work.nil?
-          $stderr.puts "WARNING Problem with work #{work_id} created by author #{id}"
+          $stderr.puts "WARNING Problem with work #{work_id} created by author #{id} (wrong VRE?)"
         else
           @cache[id]['language_ss'].concat(work['language_ss'])
         end

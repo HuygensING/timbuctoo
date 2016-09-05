@@ -28,7 +28,7 @@ class WwPersonConfig
             { :relation_name => 'hasFinancialSituation', :property_name => 'displayName', :converted_name => 'financialSituation_ss' },
             { :relation_name => 'isMemberOf', :property_name => 'displayName', :converted_name => 'memberships_ss' },
 
-
+            # Locates publications
             { :relation_name => 'isCreatorOf', :property_name => 'id', :converted_name => '@workIds'}
         ]
       }
