@@ -144,10 +144,10 @@ class Document < Hash
             new_person = person.dup
             new_person['id'] = "#{id}/#{person.id}"
             old_keys = new_person.keys
-            old_keys.delete('id')
+            old_keys.delete_data('id')
             old_keys.each do |old_key|
                 new_key = "person_#{old_key}"
-                new_person[new_key] = new_person.delete(old_key)
+                new_person[new_key] = new_person.delete_data(old_key)
             end
             self['_childDocuments_'] << new_person
             self['authorGender_ss'] << person['gender_s']
