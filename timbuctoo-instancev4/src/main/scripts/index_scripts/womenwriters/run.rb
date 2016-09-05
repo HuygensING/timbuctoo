@@ -56,6 +56,9 @@ class WomenWritersIndexer
     @document_mapper.add_creators(@person_mapper)
 
 
+    @document_mapper.send_cached_batches_to("wwdocument_test", -> (foo, records) {  records.each{|record| p record if record["isTranslationOf"].length > 0 }})
+
+=begin
     puts "DELETE persons"
     @solr_io.delete_data("wwperson_test")
     puts "UPDATE persons"
@@ -69,6 +72,7 @@ class WomenWritersIndexer
     @document_mapper.send_cached_batches_to("wwdocument_test", @solr_io.method(:update))
     puts "COMMIT documents"
     @solr_io.commit("wwdocument_test")
+=end
   end
 end
 

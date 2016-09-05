@@ -7,10 +7,46 @@ class WwDocumentMapper < DefaultMapper
 
   attr_reader :cache, :record_count
 
+  @person_reception_names = [
+      "isBiographyOf",
+      "commentsOnPerson",
+      "isDedicatedTo",
+      "isAwardForPerson",
+      "listsPerson",
+      "mentionsPerson",
+      "isObituaryOf",
+      "quotesPerson",
+      "referencesPerson"
+  ]
+
+  @document_reception_names = [
+      "isEditionOf",
+      "isSequelOf",
+      "isTranslationOf",
+      "isAdaptationOf",
+      "isPlagiarismOf",
+      "hasAnnotationsOn",
+      "isBibliographyOf",
+      "isCensoringOf",
+      "commentsOnWork",
+      "isAnthologyContaining",
+      "isCopyOf",
+      "isAwardForWork",
+      "isPrefaceOf",
+      "isIntertextualTo",
+      "listsWork",
+      "mentionsWork",
+      "isParodyOf",
+      "quotesWork",
+      "referencesWork"
+  ]
+
   def initialize(options)
     super options
     @cache = {}
     @record_count = 0
+    @person_receptions = []
+    @document_receptions = []
   end
 
   def convert(record)
