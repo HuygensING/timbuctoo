@@ -47,6 +47,11 @@ class WomenWritersIndexer
         :from_file => @options[:from_file],
         :process_record => @document_mapper.method(:convert)
     })
+
+    @person_mapper.add_languages(@document_mapper)
+    @person_mapper.cache.each do |id, person|
+      p person if person['language_ss'].length > 1
+    end
   end
 end
 

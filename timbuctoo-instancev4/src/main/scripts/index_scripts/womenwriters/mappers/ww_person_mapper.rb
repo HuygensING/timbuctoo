@@ -1,6 +1,7 @@
 require File.dirname(__FILE__) + '/../../lib/timbuctoo_solr/default_mapper'
 
 class WwPersonMapper < DefaultMapper
+  attr_reader :cache
   include ToYearConverter
   include ToNamesConverter
 
@@ -8,12 +9,6 @@ class WwPersonMapper < DefaultMapper
     super options
     @cache = {}
   end
-
-=begin
-    {label: "Language", field: "language_ss", type: "list-facet", collapse: true},
-    {label: "Language", field: "languageSort_s"}
-=end
-
 
   def convert(record)
     data = super(record)
@@ -24,6 +19,24 @@ class WwPersonMapper < DefaultMapper
 
   def find(id)
     @cache[id]
+  end
+
+  def add_languages(document_mapper)
+    @cache.each do |id, record|
+      @cache[id]['language_ss'] = []
+
+      record['@workIds'].each do |work_id|
+        work = document_mapper.find(work_id)
+        if work.nil?
+          $stderr.puts "WARNING Problem with work #{work_id} created by author #{id}"
+        else
+          @cache[id]['language_ss'].concat(work['language_ss'])
+        end
+      end
+      @cache[id]['language_ss'].uniq!
+      @cache[id]['languageSort_s'] = @cache[id]['language_ss'].sort.join(" ")
+      @cache[id].delete('@workIds')
+    end
   end
 
   private

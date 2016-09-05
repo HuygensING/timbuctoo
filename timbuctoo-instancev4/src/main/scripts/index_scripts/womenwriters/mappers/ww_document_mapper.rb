@@ -21,7 +21,6 @@ class WwDocumentMapper < DefaultMapper
       data.delete('^englishTitle')
     end
 
-    p data
     @cache[data['id']] = data
   end
 
