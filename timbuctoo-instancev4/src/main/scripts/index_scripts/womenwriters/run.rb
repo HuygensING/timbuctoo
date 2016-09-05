@@ -7,6 +7,7 @@ require './configs/ww_person_config'
 require './configs/ww_document_config'
 require './mappers/ww_person_mapper'
 require './mappers/ww_document_mapper'
+require './mappers/ww_person_reception_mapper'
 
 options = {}
 
@@ -25,6 +26,7 @@ class WomenWritersIndexer
 
     @person_mapper = WwPersonMapper.new(WwPersonConfig.get)
     @document_mapper = WwDocumentMapper.new(WwDocumentConfig.get)
+    @person_reception_mapper = WwPersonReceptionMapper.new(@person_mapper, @document_mapper)
 
     @timbuctoo_io = TimbuctooIO.new(options[:timbuctoo_url], {
         :dump_files => options[:dump_files],
@@ -55,10 +57,10 @@ class WomenWritersIndexer
     @person_mapper.add_languages(@document_mapper)
     @document_mapper.add_creators(@person_mapper)
 
+    puts "Found #{@document_mapper.person_receptions.length} person receptions"
+    puts "Found #{@document_mapper.document_receptions.length} document receptions"
 
-    @document_mapper.send_cached_batches_to("wwdocument_test", -> (foo, records) {  records.each{|record| p record if record["isTranslationOf"].length > 0 }})
 
-=begin
     puts "DELETE persons"
     @solr_io.delete_data("wwperson_test")
     puts "UPDATE persons"
@@ -72,7 +74,24 @@ class WomenWritersIndexer
     @document_mapper.send_cached_batches_to("wwdocument_test", @solr_io.method(:update))
     puts "COMMIT documents"
     @solr_io.commit("wwdocument_test")
-=end
+
+
+    puts "DELETE person receptions"
+    @solr_io.delete_data("wwpersonreception_test")
+    puts "UPDATE person receptions"
+    batch = []
+    batch_size = 500
+    @document_mapper.person_receptions.each do |person_reception|
+      batch << @person_reception_mapper.convert(person_reception)
+      if batch.length >= batch_size
+        @solr_io.update("wwpersonreception_test", batch)
+        batch = []
+      end
+    end
+    @solr_io.update("wwpersonreception_test", batch)
+    puts "COMMIT person receptions"
+    @solr_io.commit("wwpersonreception_test")
+
   end
 end
 

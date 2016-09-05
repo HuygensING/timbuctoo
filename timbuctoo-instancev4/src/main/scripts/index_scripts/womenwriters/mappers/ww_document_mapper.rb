@@ -5,41 +5,7 @@ require File.dirname(__FILE__) + '/../../lib/mixins/converters/to_year_converter
 class WwDocumentMapper < DefaultMapper
   include ToYearConverter
 
-  attr_reader :cache, :record_count
-
-  @person_reception_names = [
-      "isBiographyOf",
-      "commentsOnPerson",
-      "isDedicatedTo",
-      "isAwardForPerson",
-      "listsPerson",
-      "mentionsPerson",
-      "isObituaryOf",
-      "quotesPerson",
-      "referencesPerson"
-  ]
-
-  @document_reception_names = [
-      "isEditionOf",
-      "isSequelOf",
-      "isTranslationOf",
-      "isAdaptationOf",
-      "isPlagiarismOf",
-      "hasAnnotationsOn",
-      "isBibliographyOf",
-      "isCensoringOf",
-      "commentsOnWork",
-      "isAnthologyContaining",
-      "isCopyOf",
-      "isAwardForWork",
-      "isPrefaceOf",
-      "isIntertextualTo",
-      "listsWork",
-      "mentionsWork",
-      "isParodyOf",
-      "quotesWork",
-      "referencesWork"
-  ]
+  attr_reader :cache, :record_count, :person_receptions, :document_receptions
 
   def initialize(options)
     super options
@@ -55,6 +21,9 @@ class WwDocumentMapper < DefaultMapper
     add_english_title(data)
     add_location_sort(data)
     add_language_sort(data)
+
+    add_document_receptions(record)
+    add_person_receptions(record)
 
     puts "document scrape: #{@record_count}" if @record_count % 100 == 0
     @record_count += 1
@@ -124,4 +93,76 @@ class WwDocumentMapper < DefaultMapper
     end
   end
 
+  def add_person_receptions(record)
+    unless record['@relations'].nil?
+      WwDocumentMapper.person_reception_names.each do |rec_rel|
+        unless record['@relations'][rec_rel].nil?
+          record['@relations'][rec_rel].each do |rr_data|
+            wanted_reception = Hash.new
+            wanted_reception[:reception_id] = record['_id']
+            wanted_reception[:person_id] = rr_data['id']
+            wanted_reception[:relation_id] = rr_data['relationId']
+            wanted_reception[:relationType] = rec_rel
+            @person_receptions << wanted_reception
+          end
+        end
+      end
+    end
+  end
+
+  def add_document_receptions(record)
+    unless record['@relations'].nil?
+      WwDocumentMapper.document_reception_names.each do |rec_rel|
+        unless record['@relations'][rec_rel].nil?
+          record['@relations'][rec_rel].each do |rr_data|
+            wanted_reception = Hash.new
+            wanted_reception[:reception_id] = record['_id']
+            wanted_reception[:document_id] = rr_data['id']
+            wanted_reception[:relation_id] = rr_data['relationId']
+            wanted_reception[:relationType] = rec_rel
+            @document_receptions << wanted_reception
+          end
+        end
+      end
+    end
+  end
+
+
+  def WwDocumentMapper.person_reception_names
+    [
+        "isBiographyOf",
+        "commentsOnPerson",
+        "isDedicatedTo",
+        "isAwardForPerson",
+        "listsPerson",
+        "mentionsPerson",
+        "isObituaryOf",
+        "quotesPerson",
+        "referencesPerson"
+    ]
+  end
+
+  def WwDocumentMapper.document_reception_names
+    [
+        "isEditionOf",
+        "isSequelOf",
+        "isTranslationOf",
+        "isAdaptationOf",
+        "isPlagiarismOf",
+        "hasAnnotationsOn",
+        "isBibliographyOf",
+        "isCensoringOf",
+        "commentsOnWork",
+        "isAnthologyContaining",
+        "isCopyOf",
+        "isAwardForWork",
+        "isPrefaceOf",
+        "isIntertextualTo",
+        "listsWork",
+        "mentionsWork",
+        "isParodyOf",
+        "quotesWork",
+        "referencesWork"
+    ]
+  end
 end
