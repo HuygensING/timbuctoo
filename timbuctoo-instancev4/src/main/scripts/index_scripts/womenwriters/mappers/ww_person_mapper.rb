@@ -1,13 +1,19 @@
 require File.dirname(__FILE__) + '/../../lib/timbuctoo_solr/default_mapper'
 
 class WwPersonMapper < DefaultMapper
+  include ToYearConverter
+  include ToNamesConverter
+
   def initialize options
     super options
     @cache = {}
   end
 
-  include ToYearConverter
-  include ToNamesConverter
+=begin
+    {label: "Language", field: "language_ss", type: "list-facet", collapse: true},
+    {label: "Language", field: "languageSort_s"}
+=end
+
 
   def convert(record)
     data = super(record)
@@ -35,4 +41,5 @@ class WwPersonMapper < DefaultMapper
     end
     data.delete('@displayName')
   end
+
 end
