@@ -5,7 +5,6 @@ class WwPersonReceptionMapper
   end
 
   def convert(reception_id: nil, person_id: nil, relation_id: nil, relationType: nil)
-    puts "#{reception_id} #{person_id} #{relation_id} #{relationType}"
     person = @person_mapper.find (person_id)
     reception = @document_mapper.find (reception_id)
 

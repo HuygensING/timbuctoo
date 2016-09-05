@@ -8,6 +8,7 @@ require './configs/ww_document_config'
 require './mappers/ww_person_mapper'
 require './mappers/ww_document_mapper'
 require './mappers/ww_person_reception_mapper'
+require './mappers/ww_document_reception_mapper'
 
 options = {}
 
@@ -27,6 +28,7 @@ class WomenWritersIndexer
     @person_mapper = WwPersonMapper.new(WwPersonConfig.get)
     @document_mapper = WwDocumentMapper.new(WwDocumentConfig.get)
     @person_reception_mapper = WwPersonReceptionMapper.new(@person_mapper, @document_mapper)
+    @document_reception_mapper = WwDocumentReceptionMapper.new(@document_mapper)
 
     @timbuctoo_io = TimbuctooIO.new(options[:timbuctoo_url], {
         :dump_files => options[:dump_files],
@@ -92,6 +94,23 @@ class WomenWritersIndexer
     puts "COMMIT person receptions"
     @solr_io.commit("wwpersonreception_test")
 
+    puts "DELETE document receptions"
+    @solr_io.delete_data("wwdocumentreception_test")
+    puts "UPDATE document receptions"
+    batch = []
+    batch_size = 500
+
+    @document_mapper.document_receptions.each do |document_reception|
+      batch << @document_reception_mapper.convert(document_reception)
+      if batch.length >= batch_size
+        @solr_io.update("wwdocumentreception_test", batch)
+        batch = []
+      end
+    end
+    @solr_io.update("wwdocumentreception_test", batch)
+
+    puts "COMMIT document receptions"
+    @solr_io.commit("wwdocumentreception_test")
   end
 end
 
