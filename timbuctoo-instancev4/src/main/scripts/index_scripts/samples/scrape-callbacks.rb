@@ -1,7 +1,5 @@
 require 'json'
-
 require '../lib/timbuctoo_solr/timbuctoo_io'
-require '../lib/timbuctoo_solr/default_mapper'
 
 timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
 

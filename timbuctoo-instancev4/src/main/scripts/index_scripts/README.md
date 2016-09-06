@@ -13,7 +13,7 @@ collection, which was linked to a document from a document collection (like genr
 Creating an index for a Timbuctoo collection is a 3-step process:
 
 1. [Scrape](#scraping) Timbuctoo data
-2. Convert to solr docs
+2. [Convert](#converting) to solr docs
 3. Send solr docs to solr server
 
 ### Libraries
@@ -94,9 +94,7 @@ parameter to a lambda function. The next examples illustrate this:
 ```ruby
 # samples/scrape-callbacks.rb
 require 'json'
-
 require '../lib/timbuctoo_solr/timbuctoo_io'
-require '../lib/timbuctoo_solr/default_mapper'
 
 timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
 
@@ -128,6 +126,55 @@ record_processor = RecordProcessor.new
 timbuctoo_io.scrape_collection('dcararchives', {
     :process_record => record_processor.method(:process_record_callback) # referencing a method in a different class instance
 })
+```
+
+
+### Converting
+To convert records from Timbuctoo format to a format that can be indexed into solr the DefaultMapper can be used.
+The DefaultMapper expects a configuration upon construction, telling it which properties to map to a solr field.
+
+#### Mapping direct properties using DefaultMapper
+This example shows how to map Timbuctoo record properties to a solr format using the [data_driven_schema_configs](https://cwiki.apache.org/confluence/display/solr/Schemaless+Mode)
+config set of Solr 6. This format uses field name suffixes to identify data types, and the field named 'id' as 
+for  uniqueness constraint.
+
+This first example illustrates conversion of some properties in the 'wwcollectives' collection
+```ruby
+# samples/conversion-1.rb
+require '../lib/timbuctoo_solr/timbuctoo_io'
+require '../lib/timbuctoo_solr/default_mapper'
+
+timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
+
+@collectives_mapper = DefaultMapper.new({
+  :properties => [ # configure direct properties of Timbuctoo record
+      {
+          :name => '_id', # the property name in the Timbuctoo data
+          :converted_name => 'id' # the name used for Solr
+      },
+      { :name => 'name',  :converted_name => 'name_t'}, # name field for full-text search
+      { :name => 'type',  :converted_name => 'type_s'}, # type field as string for filtering
+      { :name => '@displayName',  :converted_name => 'displayName_s'}, # the human readable display name
+      {
+          :name => [ '^modified', 'timeStamp' ], # a nested property ({ "^modified": {"timeStamp": ... }})
+          :converted_name => 'modified_l' # this field is of type long
+      }
+  ]
+})
+
+def process(record)
+  p @collectives_mapper.convert(record)
+end
+
+
+timbuctoo_io.scrape_collection('wwcollectives', :process_record => method(:process))
+```
+
+Some samples of the output:
+```
+{"id"=>"bead82cb-3396-4194-8e01-c965d21314d5", "name_t"=>"Suomen Naisyhdistys", "type_s"=>"ASSOCIATION", "displayName_s"=>"Suomen Naisyhdistys", "modified_l"=>1457519077226}
+{"id"=>"3750675a-8a6f-4bca-84b3-c8a0f8927a24", "name_t"=>"Naisasialiitto Unioni", "type_s"=>"ASSOCIATION", "displayName_s"=>"Naisasialiitto Unioni", "modified_l"=>1457519140679}
+{"id"=>"5040485d-58d2-4539-968c-8bf7182f83ba", "name_t"=>"Suomalainen naisliitto", "type_s"=>"ASSOCIATION", "displayName_s"=>"Suomalainen naisliitto", "modified_l"=>1457521488510}
 ```
 
 
