@@ -9,14 +9,14 @@ key properties of directly related objects; for instance a keyword value from a 
 collection, which was linked to a document from a document collection (like genre).
 
 
-### Usage
+## Usage
 Creating an index for a Timbuctoo collection is a 3-step process:
 
 1. Scrape Timbuctoo data
 2. Convert to solr docs
 3. Send solr docs to solr server
 
-#### Libraries
+### Libraries
 For that purpose there are three classes in the dir ```lib/timbuctoo_solr```.
 
 1. TimbuctooIO ```lib/timbuctoo_solr/timbuctoo_io.rb```
@@ -26,11 +26,11 @@ For that purpose there are three classes in the dir ```lib/timbuctoo_solr```.
 The next sections will explain the 3-step process in more detail, using examples which 
 can be found in the ```samples``` dir.
 
-#### Scraping
+### Scraping
 A scrape of a Timbuctoo collection is done in batches using the method 
 ```scrape_collection``` in TimbuctooIO.
 
-##### Basic scrape
+#### Basic scrape
 This script above scrapes the collection 'dcararchives' from the Timbuctoo test repository:
 ```ruby
 # samples/basic-scrape.rb
@@ -49,7 +49,7 @@ Sample of the output:
 ```
 
 
-##### Configuring the scrape
+#### Configuring the scrape
 The code block below documents some options exposed by TimbuctooIO to alter scraping behaviour.
 ```ruby
 # samples/basic-scrape.rb
@@ -69,7 +69,7 @@ Dumping files has the advantage of not having to re-scrape the collection during
 The filenames of the dump files have a signature reflecting the parameters of the scrape.
 For instance, the above example outputs files with this format: ```dcararchives_rows_1000_start_1000_with_relations.json```
 
-##### Re-scraping from locally dumped files
+#### Re-scraping from locally dumped files
 To scrape from the locally dumped files in stead of Timbuctoo, add the ```:from_file``` flag to the
 ```scrape_collection``` method. In this case the value of ```:dump_dir``` in the constructor must
 match the location of the dumped files. If the (some of the) files are not present, TimbuctooIO
@@ -83,6 +83,8 @@ timbuctoo_io.scrape_collection('dcararchives', {
     :from_file => true # scrape from local file dump in stead of Timbuctoo, if files are present
 })
 ```
+
+### Converting
 
 
 
