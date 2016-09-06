@@ -78,7 +78,7 @@ public class Index {
                        @QueryParam("withRelations") @DefaultValue("false") boolean withRelations) {
 
     try {
-      List<ObjectNode> jsonNodes = crudService.fetchCollection(collectionName, rows, start, withRelations);
+      List<ObjectNode> jsonNodes = crudService.getCollection(collectionName, rows, start, withRelations);
       return Response.ok(jsonNodes).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
