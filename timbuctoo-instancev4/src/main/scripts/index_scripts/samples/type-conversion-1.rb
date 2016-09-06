@@ -13,7 +13,13 @@ end
    :properties => [
        { :name => '_id', :converted_name => 'id' },
        { :name => '@displayName',  :converted_name => 'displayName_s', :type => 'foo_type'},
-   ]
+   ],
+   :relations => [{
+       :relation_name => 'isCreatorOf', # name of the relation to follow
+       :property_name => 'displayName', # get the displayName property of the related object
+       :converted_name => 'members_ss', # list of strings data type
+       :type => 'foo_type'
+    }]
 })
 
 def process(record)
@@ -21,4 +27,4 @@ def process(record)
 end
 
 
-timbuctoo_io.scrape_collection('wwpersons', :process_record => method(:process))
+timbuctoo_io.scrape_collection('wwpersons', :process_record => method(:process), :with_relations => true)

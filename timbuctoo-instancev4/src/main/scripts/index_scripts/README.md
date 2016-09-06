@@ -252,6 +252,43 @@ When writing a custom converter which has a good chance of being reused by anoth
 adding this converter in a similar module under ```lib/mixins/converters```.
 
 
+#### Mapping properties of direct relations
+The DefaultMapper can also be configured with properties derived from directly related objects. This requires that
+```TimbuctooIO.scrape_collection``` is invoked with ```{ :with_relations => true }```.
+
+Example:
+```ruby
+# samples/conversion-with-relations.rb
+
+@collectives_mapper = DefaultMapper.new({
+  :properties => [
+    { :name => '_id', :converted_name => 'id' },
+    { :name => '@displayName',  :converted_name => 'displayName_s'}
+  ],
+  :relations => [
+    {
+      :relation_name => 'hasMember', # name of the relation to follow
+      :property_name => 'displayName', # get the displayName property of the related object
+      :converted_name => 'members_ss' # list of strings data type
+    },
+    {
+      :relation_name => 'hasMember', # name of the relation to follow
+      :property_name => 'path', # get the path property to the related object
+      :converted_name => 'memberId_ss' # list of strings data type
+    }
+  ]
+})
+```
+
+Sample of the output
+```
+{"id"=>"3286ea24-d4fb-4c94-8a06-e04b8aa5741b", "displayName_s"=>"Accademia degli Arcadia", "members_ss"=>["Paolina Secco Suardo Grismondi", "Hélène Baletti Riccoboni"], "memberId_ss"=>["domain/wwpersons/676c4572-25ce-4c19-af97-903a08e388e8", "domain/wwpersons/8b1e5848-cf76-448c-9427-5221dba236ef"]}
+{"id"=>"769cd459-63bb-4b32-bc82-3630dfe3ec64", "displayName_s"=>"Academies of Rouen, Lyon, Bologne, Padoue, Cortone, Florence, Rome Arcadia (Briquet)", "members_ss"=>["Anne-Marie du Boccage"], "memberId_ss"=>["domain/wwpersons/16b64aed-2d82-481b-9796-56cb51b71711"]}
+{"id"=>"f3fb32d9-b28b-4aa8-88f9-d8945e44a1bb", "displayName_s"=>"Other : Political party", "members_ss"=>[], "memberId_ss"=>[]}
+```
+
+The same type conversion rules apply to properties derived from relations (see: ```samples/type-conversion-1.rb```).
+
 
 ## Open issues
 
