@@ -11,11 +11,11 @@ def process_record_callback(record)
 end
 
 timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record => lambda {|record| process_record_callback(record)} # lambda syntax
+    :process_record => lambda {|record| process_record_callback(record) } # lambda syntax
 })
 
 timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record => -> (record) { process_record_callback(record)} # lambda shorthand syntax
+    :process_record => -> (record) { process_record_callback(record) } # lambda shorthand syntax
 })
 
 timbuctoo_io.scrape_collection('dcararchives', {
@@ -31,6 +31,5 @@ end
 
 record_processor = RecordProcessor.new
 timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record => record_processor.method(:process_record_callback) # referencing a method in a different class
+    :process_record => record_processor.method(:process_record_callback) # referencing a method in a different class instance
 })
-

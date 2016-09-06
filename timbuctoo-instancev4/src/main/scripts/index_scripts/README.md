@@ -12,7 +12,7 @@ collection, which was linked to a document from a document collection (like genr
 ## Usage
 Creating an index for a Timbuctoo collection is a 3-step process:
 
-1. Scrape Timbuctoo data
+1. [Scrape](#scraping) Timbuctoo data
 2. Convert to solr docs
 3. Send solr docs to solr server
 
@@ -106,11 +106,11 @@ def process_record_callback(record)
 end
 
 timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record => lambda {|record| process_record_callback(record)} # lambda syntax
+    :process_record => lambda {|record| process_record_callback(record) } # lambda syntax
 })
 
 timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record => -> (record) { process_record_callback(record)} # lambda shorthand syntax
+    :process_record => -> (record) { process_record_callback(record) } # lambda shorthand syntax
 })
 
 timbuctoo_io.scrape_collection('dcararchives', {
@@ -126,7 +126,7 @@ end
 
 record_processor = RecordProcessor.new
 timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record => record_processor.method(:process_record_callback) # referencing a method in a different class
+    :process_record => record_processor.method(:process_record_callback) # referencing a method in a different class instance
 })
 ```
 
