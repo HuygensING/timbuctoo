@@ -28,7 +28,11 @@ can be found in the ```samples``` dir.
 
 ### Scraping
 A scrape of a Timbuctoo collection is done in batches using the method 
-```scrape_collection``` in TimbuctooIO.
+```scrape_collection``` in TimbuctooIO. This can either be done with or without
+direct relations:
+
+1. [Sample scrape response without relations](http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10)
+2. [Sample with relations](http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10&withRelations=true)
 
 #### Basic scrape
 This script above scrapes the collection 'dcararchives' from the Timbuctoo test repository:
@@ -47,6 +51,7 @@ Sample of the output:
 {"beginDate"=>"1700", "countries"=>["NL"], "endDate"=>"1800", "extent"=>"1 folder", "itemNo"=>"9169", "madeBy"=>"MS", "notes"=>"18th century.", "origFilename"=>"/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD9_9169", "refCode"=>"AD.9", "refCodeArchive"=>"Archief Nederlandse Jezuieten", "reminders"=>"Gegevens ontvangen van Hans de Valk, 19-4-2007", "titleEng"=>"Documents relating to the RC mission on Curaçao in the 18th century", "titleNld"=>"Stukken betreffende de missie op Curaçao in de 18e eeuw", "@displayName"=>"Stukken betreffende de missie op Curaçao in de 18e eeuw", "^rev"=>1, "^modified"=>{"timeStamp"=>1411642687699, "userId"=>"importer", "vreId"=>"dcar"}, "^created"=>{"timeStamp"=>1411642687699, "userId"=>"importer", "vreId"=>"dcar"}, "@variationRefs"=>[{"id"=>"778bb9f8-a4fa-4a55-aed3-997da73112a0", "type"=>"archive"}, {"id"=>"778bb9f8-a4fa-4a55-aed3-997da73112a0", "type"=>"dcararchive"}], "^deleted"=>false, "_id"=>"778bb9f8-a4fa-4a55-aed3-997da73112a0"}
 {"beginDate"=>"1670", "countries"=>["NL"], "endDate"=>"1870", "extent"=>"1 folder", "itemNo"=>"9170", "madeBy"=>"MS", "notes"=>"Undated.", "origFilename"=>"/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD10_9170", "refCode"=>"AD.10", "refCodeArchive"=>"Archief Nederlandse Jezuieten", "reminders"=>"Gegevens ontvangen van Hans de Valk, 19-4-2007", "titleEng"=>"(Handwritten) notes concerning the Jesuit mission and missionaries in Suriname and Curaçao during the Republic and in the 19th century", "titleNld"=>"(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw", "@displayName"=>"(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw", "^rev"=>1, "^modified"=>{"timeStamp"=>1411642687699, "userId"=>"importer", "vreId"=>"dcar"}, "^created"=>{"timeStamp"=>1411642687699, "userId"=>"importer", "vreId"=>"dcar"}, "@variationRefs"=>[{"id"=>"bead3064-ada9-4ee5-aad0-e5a926026574", "type"=>"archive"}, {"id"=>"bead3064-ada9-4ee5-aad0-e5a926026574", "type"=>"dcararchive"}], "^deleted"=>false, "_id"=>"bead3064-ada9-4ee5-aad0-e5a926026574"}
 ```
+
 
 
 #### Configuring the scrape
@@ -177,7 +182,74 @@ Some samples of the output:
 {"id"=>"5040485d-58d2-4539-968c-8bf7182f83ba", "name_t"=>"Suomalainen naisliitto", "type_s"=>"ASSOCIATION", "displayName_s"=>"Suomalainen naisliitto", "modified_l"=>1457521488510}
 ```
 
+#### Converting the value of a Timbuctoo property
+The DefaultMapper configuration can be supplied with a type parameter per property. It ships one supported data type (int)
+which will pass the property value to the ```convert_to_int``` method, which attempts to cast the value using ```to_i```.
 
+This example converts the string value of 'birthDate' into the int value of 'birthDate_i'
+```ruby
+# samples/conversion-2.rb
+
+@person_mapper = DefaultMapper.new({
+  :properties => [
+    { :name => '_id', :converted_name => 'id' },
+    { :name => '@displayName',  :converted_name => 'displayName_s'},
+    { :name => 'birthDate', :converted_name => 'birthDate_i', :type => 'int' }
+  ]
+})
+```
+
+Asking the DefaultMapper to convert to any other type than 'int' will raise the following message:
+```
+default_mapper.rb:55:in `convert_value': Type 'your_type' not supported please define method convert_to_your_type (RuntimeError)
+```
+
+As illustrated in ```samples/conversion-raise.rb```.
+
+To remedy this we recommend inheriting from DefaultMapper and implementing the method 'convert_to_your_type':
+```ruby
+# samples/type-conversion-1.rb
+
+class FooMapper < DefaultMapper
+  def convert_to_foo_type(value)
+    "fooified #{value}"
+  end
+end
+
+@person_mapper = FooMapper.new({
+   :properties => [
+       { :name => '_id', :converted_name => 'id' },
+       { :name => '@displayName',  :converted_name => 'displayName_s', :type => 'foo_type'},
+   ]
+})
+```
+
+For some common data types modules are provided in ```lib/mixins/converters```, delegating the responsibility of hand-writing
+type converters. Ruby modules can be used as mixins inside a class using the ```include``` instruction.
+```ruby
+# samples/type-conversion-2.rb
+
+require '../lib/mixins/converters/to_names_converter'
+require '../lib/mixins/converters/to_year_converter'
+
+class PersonMapper < DefaultMapper
+  include ToNamesConverter
+  include ToYearConverter
+end
+
+@person_mapper = PersonMapper.new({
+  :properties => [
+    { :name => '_id', :converted_name => 'id' },
+    { :name => 'birthDate', :converted_name => 'birthDate_i', :type => 'year' },
+    { :name => 'names', :converted_name => 'name_t', :type => 'names'},
+    { :name => 'names', :converted_name => 'nameSort_s', :type => 'name_sort'},
+    { :name => 'names', :converted_name => 'displayName_s', :type => 'names_display_name'},
+  ]
+})
+```
+
+When writing a custom converter which has a good chance of being reused by another indexer, we recommend
+adding this converter in a similar module under ```lib/mixins/converters```.
 
 
 
