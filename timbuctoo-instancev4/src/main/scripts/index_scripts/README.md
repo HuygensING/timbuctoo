@@ -338,8 +338,6 @@ please be aware that this sample does not illustrate all the possibilities.
 
 ```ruby
 # samples/indexer.rb
-require 'open-uri'
-
 require '../lib/timbuctoo_solr/timbuctoo_io'
 require '../lib/timbuctoo_solr/default_mapper'
 require '../lib/timbuctoo_solr/solr_io'
