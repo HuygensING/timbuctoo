@@ -5,10 +5,10 @@ import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
-class AddPropertyTripleProcessor {
+class PropertyTripleProcessor {
   private final Database database;
 
-  public AddPropertyTripleProcessor(Database database) {
+  public PropertyTripleProcessor(Database database) {
     this.database = database;
   }
 

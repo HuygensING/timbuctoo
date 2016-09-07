@@ -10,18 +10,18 @@ public class TripleProcessorImpl implements TripleProcessor {
   private static final Logger LOG = getLogger(TripleProcessorImpl.class);
   private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   private static final String RDF_SUB_CLASS_OF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
-  private final AddToCollectionTripleProcessor addToCollection;
-  private final AddPropertyTripleProcessor addProperty;
-  private final AddRelationTripleProcessor addRelation;
-  private final AddToArchetypeTripleProcessor addToArchetype;
+  private final CollectionMembershipTripleProcessor collectionMembership;
+  private final PropertyTripleProcessor property;
+  private final RelationTripleProcessor relation;
+  private final ArchetypeTripleProcessor archetype;
   private Database database;
 
   public TripleProcessorImpl(Database database) {
     this.database = database;
-    this.addToCollection = new AddToCollectionTripleProcessor(database);
-    this.addToArchetype = new AddToArchetypeTripleProcessor(database);
-    this.addProperty = new AddPropertyTripleProcessor(database);
-    this.addRelation = new AddRelationTripleProcessor(database);
+    this.collectionMembership = new CollectionMembershipTripleProcessor(database);
+    this.archetype = new ArchetypeTripleProcessor(database);
+    this.property = new PropertyTripleProcessor(database);
+    this.relation = new RelationTripleProcessor(database);
   }
 
   private boolean subclassOfKnownArchetype(Triple triple) {
@@ -44,13 +44,13 @@ public class TripleProcessorImpl implements TripleProcessor {
   @Override
   public void process(String vreName, Triple triple) {
     if (predicateIsType(triple)) {
-      addToCollection.process(vreName, triple);
+      collectionMembership.process(vreName, triple);
     } else if (subclassOfKnownArchetype(triple)) {
-      addToArchetype.process(vreName, triple);
+      archetype.process(vreName, triple);
     } else if (objectIsLiteral(triple)) {
-      addProperty.process(vreName, triple);
+      property.process(vreName, triple);
     } else if (objectIsNonLiteral(triple)) {
-      addRelation.process(vreName, triple);
+      relation.process(vreName, triple);
     } else {
       //This means that the object is neither a literal, nor a non-literal.
       //That would only happen if I misunderstand something

@@ -7,10 +7,10 @@ import org.apache.jena.graph.Triple;
 
 import java.util.Optional;
 
-class AddToCollectionTripleProcessor {
+class CollectionMembershipTripleProcessor {
   private final Database database;
 
-  public AddToCollectionTripleProcessor(Database database) {
+  public CollectionMembershipTripleProcessor(Database database) {
     this.database = database;
   }
 

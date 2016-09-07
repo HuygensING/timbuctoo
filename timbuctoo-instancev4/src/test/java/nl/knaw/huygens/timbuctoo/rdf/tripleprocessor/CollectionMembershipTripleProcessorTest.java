@@ -14,7 +14,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AddToCollectionTripleProcessorTest {
+public class CollectionMembershipTripleProcessorTest {
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
   private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
@@ -36,7 +36,7 @@ public class AddToCollectionTripleProcessorTest {
     when(database.getDefaultCollection("vreName")).thenReturn(defaultCollection);
     Entity entity = mock(Entity.class);
     when(database.findOrCreateEntity("vreName", triple.getSubject())).thenReturn(entity);
-    AddToCollectionTripleProcessor instance = new AddToCollectionTripleProcessor(database);
+    CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database);
 
     instance.process("vreName", triple);
 

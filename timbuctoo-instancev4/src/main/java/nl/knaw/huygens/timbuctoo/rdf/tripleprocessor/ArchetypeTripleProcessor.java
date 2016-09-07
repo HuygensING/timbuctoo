@@ -9,10 +9,10 @@ import org.apache.jena.graph.Triple;
 import java.util.Optional;
 import java.util.Set;
 
-class AddToArchetypeTripleProcessor {
+class ArchetypeTripleProcessor {
   private final Database database;
 
-  public AddToArchetypeTripleProcessor(Database database) {
+  public ArchetypeTripleProcessor(Database database) {
     this.database = database;
   }
 

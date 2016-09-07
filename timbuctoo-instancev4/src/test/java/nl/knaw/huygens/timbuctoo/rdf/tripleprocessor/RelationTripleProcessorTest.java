@@ -13,7 +13,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class AddRelationTripleProcessorTest {
+public class RelationTripleProcessorTest {
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
   private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
@@ -30,7 +30,7 @@ public class AddRelationTripleProcessorTest {
     final Entity objectEntity = mock(Entity.class);
     final Relation relation = mock(Relation.class);
     final RelationType relationType = mock(RelationType.class);
-    final AddRelationTripleProcessor instance = new AddRelationTripleProcessor(database);
+    final RelationTripleProcessor instance = new RelationTripleProcessor(database);
     final Triple triple = TripleHelper.createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
     final String vreName = "vreName";
     given(database.findOrCreateEntity(vreName, triple.getSubject())).willReturn(subjectEntity);

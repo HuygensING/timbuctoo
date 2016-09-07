@@ -16,14 +16,14 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class AddToArchetypeTripleProcessorTest {
+public class ArchetypeTripleProcessorTest {
 
   public static final String VRE_NAME = "vreName";
   public static final String OBJECT_URI = "http://example.com/object";
   private Collection collection;
   private Collection archetypeCollection;
   private Triple triple;
-  private AddToArchetypeTripleProcessor instance;
+  private ArchetypeTripleProcessor instance;
   private Database database;
   private Entity entity1;
   private Entity entity2;
@@ -47,7 +47,7 @@ public class AddToArchetypeTripleProcessorTest {
     Set<Entity> entitiesOfCollection = Sets.newHashSet(entity1, entity2);
     given(database.findEntitiesByCollection(collection)).willReturn(entitiesOfCollection);
 
-    instance = new AddToArchetypeTripleProcessor(database);
+    instance = new ArchetypeTripleProcessor(database);
   }
 
   @Test
