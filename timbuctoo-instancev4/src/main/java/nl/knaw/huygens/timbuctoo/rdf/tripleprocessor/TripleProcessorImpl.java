@@ -14,7 +14,6 @@ public class TripleProcessorImpl implements TripleProcessor {
   private final AddPropertyTripleProcessor addProperty;
   private final AddRelationTripleProcessor addRelation;
   private final AddToArchetypeTripleProcessor addToArchetype;
-  private final UnsupportedTripleProcessor unsupported;
   private Database database;
 
   public TripleProcessorImpl(Database database) {
@@ -23,7 +22,6 @@ public class TripleProcessorImpl implements TripleProcessor {
     this.addToArchetype = new AddToArchetypeTripleProcessor(database);
     this.addProperty = new AddPropertyTripleProcessor(database);
     this.addRelation = new AddRelationTripleProcessor(database);
-    this.unsupported = new UnsupportedTripleProcessor();
   }
 
   private boolean subclassOfKnownArchetype(Triple triple) {
@@ -54,8 +52,9 @@ public class TripleProcessorImpl implements TripleProcessor {
     } else if (objectIsNonLiteral(triple)) {
       addRelation.process(vreName, triple);
     } else {
+      //This means that the object is neither a literal, nor a non-literal.
+      //That would only happen if I misunderstand something
       LOG.error("Triple matches no pattern: ", triple.toString());
-      unsupported.process(vreName, triple);
     }
   }
 }
