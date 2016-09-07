@@ -25,7 +25,7 @@ public class WwPersonDisplayName extends ReadableProperty {
         try {
           final PersonNames personNames = vertex.property("wwperson_names").isPresent() ?
             new PersonNamesConverter().tinkerpopToJava(vertex.value("wwperson_names")) : new PersonNames();
-          final String parsedName = personNames.defaultName().getShortName();
+          final String parsedName = personNames.defaultName().getFullName();
 
           if (parsedName.length() > 0) {
             displayName = jsn(parsedName);

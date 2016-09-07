@@ -19,7 +19,7 @@ class PersonNamesDefaultNamePropertyParser implements PropertyParser {
       try {
         PersonNames personNames = readPersonNames(value);
 
-        return personNames.defaultName().getShortName();
+        return personNames.defaultName().getFullName();
       } catch (IOException e) {
         LOG.error("Cannot parse '{}' as PersonNames", value);
         LOG.error("Exception thrown", e);

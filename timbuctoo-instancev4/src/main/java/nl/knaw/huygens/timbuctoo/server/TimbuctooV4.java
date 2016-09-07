@@ -166,8 +166,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations
       .put(WwDocumentSortIndexesDatabaseMigration.class.getName(), new WwDocumentSortIndexesDatabaseMigration());
     migrations.put(InvariantsFix.class.getName(), new InvariantsFix(HuygensIng.mappings));
-    migrations
-      .put(AutocompleteLuceneIndexDatabaseMigration.class.getName(), new AutocompleteLuceneIndexDatabaseMigration());
     migrations.put(LocationNamesToLocationNameDatabaseMigration.class.getName(),
       new LocationNamesToLocationNameDatabaseMigration());
     // Persist HuygensIng mappings in database
@@ -175,6 +173,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new HuygensIngConfigToDatabaseMigration(HuygensIng.mappings, HuygensIng.keywordTypes));
     migrations.put(NorwegianNynorskToNorwegianDatabaseMigration.class.getName(),
       new NorwegianNynorskToNorwegianDatabaseMigration());
+    // Force reindex by renaming the migration in order to get the full default name as displayname in the
+    // autocomplete index of wwpersons
+    migrations.put(AutocompleteLuceneIndexDatabaseMigration.class.getName() + "-reindex",
+      new AutocompleteLuceneIndexDatabaseMigration());
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final Vres vres = new DatabaseConfiguredVres(graphManager);
