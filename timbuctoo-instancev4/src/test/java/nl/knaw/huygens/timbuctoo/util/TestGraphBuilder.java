@@ -1,10 +1,14 @@
 package nl.knaw.huygens.timbuctoo.util;
 
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.test.TestGraphDatabaseFactory;
@@ -17,8 +21,13 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import static nl.knaw.huygens.timbuctoo.util.Neo4jHelper.cleanDb;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public class TestGraphBuilder {
+
+  private static final SubgraphStrategy LATEST_ELEMENTS =
+    SubgraphStrategy.build().edgeCriterion(has("isLatest", true)).vertexCriterion(has("isLatest", true)).create();
+
   private static GraphDatabaseService neo4jDb = new TestGraphDatabaseFactory().newImpermanentDatabase();
   private final List<VertexBuilder> vertexBuilders = new ArrayList<>();
   private final Map<String, VertexBuilder> identifiableVertexBuilders = new HashMap<>();
@@ -86,12 +95,22 @@ public class TestGraphBuilder {
 
       @Override
       public GraphTraversalSource getLatestState() {
-        throw new UnsupportedOperationException("Not implemented yet");
+        return GraphTraversalSource.build().with(LATEST_ELEMENTS).create(graph);
       }
 
       @Override
       public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
-        throw new UnsupportedOperationException("Not implemented yet");
+        if (entityTypeNames.length == 1) {
+          String type = entityTypeNames[0];
+          return getLatestState().V().has(T.label, LabelP.of(type));
+        } else {
+          P<String> labels = LabelP.of(entityTypeNames[0]);
+          for (int i = 1; i < entityTypeNames.length; i++) {
+            labels = labels.or(LabelP.of(entityTypeNames[i]));
+          }
+
+          return getLatestState().V().has(T.label, labels);
+        }
       }
     };
   }
