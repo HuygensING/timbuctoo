@@ -1,8 +1,8 @@
-require './lib/timbuctoo_solr/timbuctoo_io'
-require './lib/timbuctoo_solr/solr_io'
-require './lib/timbuctoo_solr/default_mapper'
-require './lib/mixins/converters/to_year_converter'
-require './lib/mixins/converters/to_names_converter'
+require '../lib/timbuctoo_solr/timbuctoo_io'
+require '../lib/timbuctoo_solr/solr_io'
+require '../lib/timbuctoo_solr/default_mapper'
+require '../lib/mixins/converters/to_year_converter'
+require '../lib/mixins/converters/to_names_converter'
 
 
 
@@ -102,7 +102,7 @@ class SampleRunner
     @solr_io.delete_data("test_custom_index")
     @solr_io.delete_data("test_default_index")
 
-    @timbuctoo_io.scrape_collection('wwpersons', {:process_record => method(:process_record), :with_relations => true, :from_file => true}) # fancy ruby shorthand
+    @timbuctoo_io.scrape_collection('wwpersons', {:process_record => method(:process_record), :with_relations => true, :from_file => false}) # fancy ruby shorthand
     #@timbuctoo_io.scrape_collection('wwpersons', {:process_record => -> (record) {process_record(record)}}) # short lambda syntax
     #@timbuctoo_io.scrape_collection('wwpersons', {:process_record => lambda {|record| process_record(record)}}) # lambda syntax
 
