@@ -342,9 +342,7 @@ require '../lib/timbuctoo_solr/timbuctoo_io'
 require '../lib/timbuctoo_solr/default_mapper'
 require '../lib/timbuctoo_solr/solr_io'
 
-
 class Indexer
-
   def initialize
     @timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
     @solr_io = SolrIO.new('http://localhost:8983/solr')
