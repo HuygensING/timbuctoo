@@ -93,9 +93,6 @@ class SampleRunner
   end
 
   def run
-    @solr_io.delete_index("test_custom_index")
-    @solr_io.delete_index("test_default_index")
-
     @solr_io.create("test_custom_index")
     @solr_io.create("test_default_index")
 
@@ -110,6 +107,9 @@ class SampleRunner
     @solr_io.update("test_default_index", @default_batch)
     @solr_io.commit("test_custom_index")
     @solr_io.commit("test_default_index")
+
+    @solr_io.delete_index("test_custom_index")
+    @solr_io.delete_index("test_default_index")
   end
 end
 

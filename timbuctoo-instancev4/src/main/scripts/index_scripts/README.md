@@ -14,7 +14,9 @@ Creating an index for a Timbuctoo collection is a 3-step process:
 
 1. [Scrape](#scraping) Timbuctoo data
 2. [Convert](#converting) to solr docs
-3. Send solr docs to solr server
+3. Send [solr](#solr) docs to solr server
+
+For the impatient: [skip to complete example](#indexing).
 
 ### Libraries
 For that purpose there are three classes in the dir ```lib/timbuctoo_solr```.
@@ -288,6 +290,96 @@ Sample of the output
 ```
 
 The same type conversion rules apply to properties derived from relations (see: ```samples/type-conversion-1.rb```).
+
+### Solr
+The class SolrIO exposes a few basic CRUD methods. The samples in this section assumes a local running solr 6 server ([quickstart](http://lucene.apache.org/solr/quickstart.html)).
+The constructor is invoked with the solr url (usually including /solr without trailing slash). Optionally a value for the header 'Authorization' 
+can be added in the constructor as well.
+
+#### CRUD methods of SolrIO
+Use the ```create``` method to create an index. By default an index is created with the config set 'data_driven_schema_configs'
+If the index already exists, this method will raise an exception.
+
+Use the ```update``` method to send a batch of data to be indexed.
+
+Use the ```delete_data``` method to delete all contents of an index
+
+Use the ```commit``` method to commit the changes that were sent.
+
+Use the ```delete_index``` method to purge the entire index from solr.
+
+Example:
+```ruby
+# samples/solr.rb
+require '../lib/timbuctoo_solr/solr_io'
+
+# Initialize for local solr
+solr_io = SolrIO.new('http://localhost:8983/solr')
+
+# Create index named 'testing'
+solr_io.create('testing')
+
+# Update index with batch of one record
+solr_io.update('testing', [{:id => "foobar", :value_i => 123}])
+solr_io.commit('testing')
+
+# Throw away the data
+solr_io.delete_data('testing')
+
+solr_io.commit('testing')
+
+solr_io.delete_index('testing')
+```
+
+
+### Indexing
+This sample code integrates most of the pieces listed above into one sample indexer. If you skipped directly to this section,
+please be aware that this sample does not illustrate all the possibilities.
+
+```ruby
+# samples/indexer.rb
+require '../lib/timbuctoo_solr/timbuctoo_io'
+require '../lib/timbuctoo_solr/default_mapper'
+require '../lib/timbuctoo_solr/solr_io'
+
+class Indexer
+  def initialize
+    @timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
+    @solr_io = SolrIO.new('http://localhost:8983/solr')
+
+    @mapper = DefaultMapper.new({
+        :properties => [
+            { :name => '_id', :converted_name => 'id' },
+            { :name => '@displayName',  :converted_name => 'displayName_s'},
+            { :name => [ '^modified', 'timeStamp' ], :converted_name => 'modified_l'}
+        ],
+        :relations => [
+            {
+                :relation_name => 'has_archive_keyword', # name of the relation to follow
+                :property_name => 'displayName', # get the path property to the related object
+                :converted_name => 'keyword_ss' # list of strings data type
+            }
+        ]
+    })
+  end
+
+  def run
+    @solr_io.create('testing')
+    @timbuctoo_io.scrape_collection('dcararchives', :with_relations => true, :process_record => method(:process))
+    @solr_io.commit('testing')
+    @solr_io.delete_index('testing')
+  end
+
+  def process(record)
+    @solr_io.update('testing', [@mapper.convert(record)])
+  end
+end
+
+Indexer.new.run
+```
+
+A more elaborate example is in ```samples/complete-sample-runner.rb```. 
+
 
 
 ## Open issues
