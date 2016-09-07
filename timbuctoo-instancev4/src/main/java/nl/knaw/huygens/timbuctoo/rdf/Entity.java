@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -26,7 +27,16 @@ public class Entity {
     collections.forEach(collection -> collection.addProperty(vertex, propertyName, value));
   }
 
+  public void removeProperty(String propertyName) {
+    collections.forEach(collection -> collection.removeProperty(vertex, propertyName));
+  }
+
   public void addToCollection(Collection newCollection) {
+    handleCollectionAdd(newCollection);
+    newCollection.getArchetype().ifPresent(this::handleCollectionAdd);
+  }
+
+  private void handleCollectionAdd(Collection newCollection) {
     collections.add(newCollection);
     newCollection.add(vertex);
 
@@ -41,8 +51,31 @@ public class Entity {
   }
 
   public void removeFromCollection(Collection collection) {
+    handleCollectionRemove(collection);
+    collection.getArchetype().ifPresent(archetype -> {
+      boolean lastCollectionOfArchetype = !collections.stream()
+                                                      .filter(x -> archetype.equals(x.getArchetype().orElse(null)))
+                                                      .findAny()
+                                                      .isPresent();
+      if (lastCollectionOfArchetype) {
+        handleCollectionRemove(archetype);
+      }
+    });
+  }
+
+  private void handleCollectionRemove(Collection collection) {
     collection.remove(vertex);
     collections.remove(collection);
     typesHelper.updateTypeInformation(vertex, collections);
+  }
+
+  public void removeRelation(RelationType relationType, Entity other) {
+    vertex.edges(Direction.BOTH, relationType.getRegularName()).forEachRemaining(edge -> {
+      if (edge.inVertex().id().equals(vertex.id()) && edge.outVertex().id().equals(other.vertex.id())) {
+        edge.remove();
+      } else if (edge.inVertex().id().equals(other.vertex.id()) && edge.outVertex().id().equals(vertex.id())) {
+        edge.remove();
+      }
+    });
   }
 }

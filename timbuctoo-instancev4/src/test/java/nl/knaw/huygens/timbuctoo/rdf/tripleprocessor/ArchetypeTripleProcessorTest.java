@@ -41,7 +41,7 @@ public class ArchetypeTripleProcessorTest {
     triple = Triple.create(subjectNode, mock(Node.class), objectNode);
     database = mock(Database.class);
     given(database.findOrCreateCollection(VRE_NAME, subjectNode)).willReturn(collection);
-    given(database.findArchetypeCollection(objectNode)).willReturn(Optional.of(archetypeCollection));
+    given(database.findArchetypeCollection(objectNode.getLocalName())).willReturn(Optional.of(archetypeCollection));
     entity1 = mock(Entity.class);
     entity2 = mock(Entity.class);
     Set<Entity> entitiesOfCollection = Sets.newHashSet(entity1, entity2);
@@ -52,14 +52,14 @@ public class ArchetypeTripleProcessorTest {
 
   @Test
   public void processSetsTheCollectionArchetype() {
-    instance.process(VRE_NAME, triple);
+    instance.process(VRE_NAME, true, triple);
 
     verify(collection).setArchetype(archetypeCollection, OBJECT_URI);
   }
 
   @Test
   public void processAddsTheEntitiesOfTheCollectionToTheNewArchetype() {
-    instance.process(VRE_NAME, triple);
+    instance.process(VRE_NAME, true, triple);
 
     verify(entity1).addToCollection(archetypeCollection);
     verify(entity2).addToCollection(archetypeCollection);
@@ -67,7 +67,7 @@ public class ArchetypeTripleProcessorTest {
 
   @Test
   public void processRemovesThePreviousArchetypeOfTheCollectionFromTheEntities() {
-    instance.process(VRE_NAME, triple);
+    instance.process(VRE_NAME, true, triple);
 
     verify(entity1).removeFromCollection(previousArchetype);
     verify(entity2).removeFromCollection(previousArchetype);

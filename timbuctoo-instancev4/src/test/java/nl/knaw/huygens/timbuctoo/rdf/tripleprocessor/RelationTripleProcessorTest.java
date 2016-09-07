@@ -38,7 +38,7 @@ public class RelationTripleProcessorTest {
     given(database.findOrCreateRelationType(triple.getPredicate())).willReturn(relationType);
     given(subjectEntity.addRelation(any(), any())).willReturn(relation);
 
-    instance.process(vreName, triple);
+    instance.process(vreName, true, triple);
 
     verify(subjectEntity).addRelation(relationType, objectEntity);
     verify(relation).setCommonVreProperties(vreName);

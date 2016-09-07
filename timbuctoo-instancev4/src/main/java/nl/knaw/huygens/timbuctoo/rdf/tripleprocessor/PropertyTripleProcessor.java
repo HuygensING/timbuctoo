@@ -12,13 +12,17 @@ class PropertyTripleProcessor {
     this.database = database;
   }
 
-  public void process(String vreName, Triple triple) {
+  public void process(String vreName, boolean isAssertion, Triple triple) {
     Node node = triple.getSubject();
     Entity entity = database.findOrCreateEntity(vreName, node);
 
     String propertyName = triple.getPredicate().getLocalName();
-    String value = triple.getObject().getLiteralLexicalForm();
-    entity.addProperty(propertyName, value);
+    if (isAssertion) {
+      String value = triple.getObject().getLiteralLexicalForm();
+      entity.addProperty(propertyName, value);
+    } else {
+      entity.removeProperty(propertyName);
+    }
   }
 
 }

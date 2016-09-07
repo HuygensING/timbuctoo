@@ -12,6 +12,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -39,6 +40,7 @@ public class EntityTest {
   public void addToCollectionAddsTheEntityToTheCollection() {
     Vertex vertex = mock(Vertex.class);
     Collection newCollection = mock(Collection.class);
+    given(newCollection.getArchetype()).willReturn(Optional.empty());
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(otherCollection);
     TypesHelper typesHelper = mock(TypesHelper.class);
@@ -75,6 +77,7 @@ public class EntityTest {
   public void removeFromCollectionRemovesTheVertexOfTheEntityFromTheCollection() {
     Vertex vertex = mock(Vertex.class);
     Collection collectionToRemoveFrom = mock(Collection.class);
+    given(collectionToRemoveFrom.getArchetype()).willReturn(Optional.empty());
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(collectionToRemoveFrom, otherCollection);
     TypesHelper typesHelper = mock(TypesHelper.class);
@@ -87,11 +90,16 @@ public class EntityTest {
     assertThat(collections, contains(otherCollection));
   }
 
+  //FIXME: once we're using easily constructable objects for collections and vertices I need to add tests to verify
+  //that adding and removing from a collection also adds and removes it from the archetype (in case of remove a remove
+  //should only remove from the archetyp if no other collection inherits from that archetype)
+
   @SuppressWarnings("unchecked")
   @Test
   public void removeFromCollectionRemovesUpdatesTheTypesInformation() {
     Vertex vertex = mock(Vertex.class);
     Collection collectionToRemoveFrom = mock(Collection.class);
+    given(collectionToRemoveFrom.getArchetype()).willReturn(Optional.empty());
     Collection otherCollection = mock(Collection.class);
     Set<Collection> collections = Sets.newHashSet(collectionToRemoveFrom, otherCollection);
     TypesHelper typesHelper = mock(TypesHelper.class);

@@ -16,17 +16,24 @@ class ArchetypeTripleProcessor {
     this.database = database;
   }
 
-  public void process(String vreName, Triple triple) {
+  public void process(String vreName, boolean isAssertion, Triple triple) {
     Collection collection = database.findOrCreateCollection(vreName, triple.getSubject());
     Collection previousArchetype = collection.getArchetype().get(); // collection must have an archetype
     Node tripleObject = triple.getObject();
-    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(tripleObject);
+    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(tripleObject.getLocalName());
 
     if (!archetypeCollectionOptional.isPresent()) {
       return;
     }
 
-    Collection archetypeCollection = archetypeCollectionOptional.get();
+    Collection archetypeCollection;
+    if (isAssertion) {
+      archetypeCollection = archetypeCollectionOptional.get();
+    } else {
+      //FIXME: assert that triple's archetype is equal to current archetype
+      archetypeCollection = database.getConcepts();
+    }
+
     collection.setArchetype(archetypeCollection, tripleObject.getURI());
 
     Set<Entity> entities = database.findEntitiesByCollection(collection);

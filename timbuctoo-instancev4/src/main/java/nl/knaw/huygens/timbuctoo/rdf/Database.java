@@ -168,8 +168,12 @@ public class Database {
     return new Collection(collectionDescription.getVreName(), collectionVertex, graphWrapper);
   }
 
-  public Optional<Collection> findArchetypeCollection(Node node) {
-    CollectionDescription collectionDescription = CollectionDescription.createForAdmin(node.getLocalName());
+  public Collection getConcepts() {
+    return findArchetypeCollection("concepts").get();
+  }
+
+  public Optional<Collection> findArchetypeCollection(String name) {
+    CollectionDescription collectionDescription = CollectionDescription.createForAdmin(name);
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> colTraversal =
       graph.traversal().V()

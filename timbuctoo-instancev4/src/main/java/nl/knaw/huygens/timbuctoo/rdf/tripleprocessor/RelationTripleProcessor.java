@@ -13,12 +13,16 @@ class RelationTripleProcessor {
     this.database = database;
   }
 
-  public void process(String vreName, Triple triple) {
+  public void process(String vreName, boolean isAssertion, Triple triple) {
     final Entity subject = database.findOrCreateEntity(vreName, triple.getSubject());
     final Entity object = database.findOrCreateEntity(vreName, triple.getObject());
     final RelationType relationType = database.findOrCreateRelationType(triple.getPredicate());
 
-    final Relation relation = subject.addRelation(relationType, object);
-    relation.setCommonVreProperties(vreName);
+    if (isAssertion) {
+      final Relation relation = subject.addRelation(relationType, object);
+      relation.setCommonVreProperties(vreName);
+    } else {
+      subject.removeRelation(relationType, object);
+    }
   }
 }

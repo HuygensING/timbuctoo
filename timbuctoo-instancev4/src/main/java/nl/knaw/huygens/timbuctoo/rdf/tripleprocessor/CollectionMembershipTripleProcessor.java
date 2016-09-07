@@ -5,8 +5,6 @@ import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import org.apache.jena.graph.Triple;
 
-import java.util.Optional;
-
 class CollectionMembershipTripleProcessor {
   private final Database database;
 
@@ -14,15 +12,20 @@ class CollectionMembershipTripleProcessor {
     this.database = database;
   }
 
-  public void process(String vreName, Triple triple) {
+  public void process(String vreName, boolean isAssertion, Triple triple) {
     Entity entity = database.findOrCreateEntity(vreName, triple.getSubject());
 
-    Collection collection = database.findOrCreateCollection(vreName, triple.getObject());
-    entity.addToCollection(collection);
-    Optional<Collection> archetype = collection.getArchetype();
-    archetype.ifPresent(entity::addToCollection);
+    Collection collection;
+    Collection prevCollection;
+    if (isAssertion) {
+      prevCollection = database.getDefaultCollection(vreName);
+      collection = database.findOrCreateCollection(vreName, triple.getObject());
+    } else {
+      prevCollection = database.findOrCreateCollection(vreName, triple.getObject());
+      collection = database.getDefaultCollection(vreName);
+    }
 
-    Collection defaultCollection = database.getDefaultCollection(vreName);
-    entity.removeFromCollection(defaultCollection);
+    entity.addToCollection(collection);
+    entity.removeFromCollection(prevCollection);
   }
 }

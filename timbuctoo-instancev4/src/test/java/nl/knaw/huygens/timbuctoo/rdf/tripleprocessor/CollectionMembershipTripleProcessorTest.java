@@ -38,11 +38,10 @@ public class CollectionMembershipTripleProcessorTest {
     when(database.findOrCreateEntity("vreName", triple.getSubject())).thenReturn(entity);
     CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database);
 
-    instance.process("vreName", triple);
+    instance.process("vreName", true, triple);
 
     InOrder inOrder = inOrder(entity);
     inOrder.verify(entity).addToCollection(collectionFromTriple);
-    inOrder.verify(entity).addToCollection(archetypeCollection);
     inOrder.verify(entity).removeFromCollection(defaultCollection);
   }
 

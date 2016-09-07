@@ -211,4 +211,15 @@ public class Collection {
   public int hashCode() {
     return collectionDescription.hashCode();
   }
+
+  @Override
+  public String toString() {
+    return "{Collection " + this.collectionDescription.getCollectionName() + "}";
+  }
+
+
+  public void removeProperty(Vertex vertex, String propertyName) {
+    String collectionPropertyName = getDescription().createPropertyName(propertyName);
+    vertex.property(collectionPropertyName).remove();
+  }
 }

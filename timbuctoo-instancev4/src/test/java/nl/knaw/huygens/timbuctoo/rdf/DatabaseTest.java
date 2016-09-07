@@ -371,7 +371,7 @@ public class DatabaseTest {
 
     Node node = mock(Node.class);
 
-    Optional<Collection> archetypeCollection = instance.findArchetypeCollection(node);
+    Optional<Collection> archetypeCollection = instance.findArchetypeCollection(node.getLocalName());
 
     assertThat(archetypeCollection, is(not(present())));
   }
@@ -396,7 +396,7 @@ public class DatabaseTest {
     when(node.getLocalName()).thenReturn("knownArchetype");
     Database instance = new Database(graphWrapper);
 
-    Optional<Collection> archetypeCollection = instance.findArchetypeCollection(node);
+    Optional<Collection> archetypeCollection = instance.findArchetypeCollection(node.getLocalName());
 
     assertThat(archetypeCollection, is(present()));
   }

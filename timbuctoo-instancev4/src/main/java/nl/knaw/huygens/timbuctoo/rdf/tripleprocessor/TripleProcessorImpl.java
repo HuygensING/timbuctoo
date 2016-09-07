@@ -42,15 +42,16 @@ public class TripleProcessorImpl implements TripleProcessor {
   }
 
   @Override
+  //FIXME: add unittests for isAssertion
   public void process(String vreName, boolean isAssertion, Triple triple) {
     if (predicateIsType(triple)) {
-      collectionMembership.process(vreName, triple);
+      collectionMembership.process(vreName, isAssertion, triple);
     } else if (subclassOfKnownArchetype(triple)) {
-      archetype.process(vreName, triple);
+      archetype.process(vreName, isAssertion, triple);
     } else if (objectIsLiteral(triple)) {
-      property.process(vreName, triple);
+      property.process(vreName, isAssertion, triple);
     } else if (objectIsNonLiteral(triple)) {
-      relation.process(vreName, triple);
+      relation.process(vreName, isAssertion, triple);
     } else {
       //This means that the object is neither a literal, nor a non-literal.
       //That would only happen if I misunderstand something
