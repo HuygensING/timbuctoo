@@ -333,7 +333,56 @@ solr_io.delete_index('testing')
 
 
 ### Indexing
-This sample code integrates most of the pieces listed above into one sample indexer.
+This sample code integrates most of the pieces listed above into one sample indexer. If you skipped directly to this section,
+please be aware that this sample does not illustrate all the possibilities.
+
+```ruby
+# samples/indexer.rb
+require 'open-uri'
+
+require '../lib/timbuctoo_solr/timbuctoo_io'
+require '../lib/timbuctoo_solr/default_mapper'
+require '../lib/timbuctoo_solr/solr_io'
+
+
+class Indexer
+
+  def initialize
+    @timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
+    @solr_io = SolrIO.new('http://localhost:8983/solr')
+
+    @mapper = DefaultMapper.new({
+        :properties => [
+            { :name => '_id', :converted_name => 'id' },
+            { :name => '@displayName',  :converted_name => 'displayName_s'},
+            { :name => [ '^modified', 'timeStamp' ], :converted_name => 'modified_l'}
+        ],
+        :relations => [
+            {
+                :relation_name => 'has_archive_keyword', # name of the relation to follow
+                :property_name => 'displayName', # get the path property to the related object
+                :converted_name => 'keyword_ss' # list of strings data type
+            }
+        ]
+    })
+  end
+
+  def run
+    @solr_io.create('testing')
+    @timbuctoo_io.scrape_collection('dcararchives', :with_relations => true, :process_record => method(:process))
+    @solr_io.commit('testing')
+    @solr_io.delete_index('testing')
+  end
+
+  def process(record)
+    @solr_io.update('testing', [@mapper.convert(record)])
+  end
+end
+
+Indexer.new.run
+```
+
+A more elaborate example is in ```samples/complete-sample-runner.rb```. 
 
 
 
