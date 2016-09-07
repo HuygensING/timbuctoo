@@ -166,6 +166,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations
       .put(WwDocumentSortIndexesDatabaseMigration.class.getName(), new WwDocumentSortIndexesDatabaseMigration());
     migrations.put(InvariantsFix.class.getName(), new InvariantsFix(HuygensIng.mappings));
+    migrations
+      .put(AutocompleteLuceneIndexDatabaseMigration.class.getName(), new AutocompleteLuceneIndexDatabaseMigration());
     migrations.put(LocationNamesToLocationNameDatabaseMigration.class.getName(),
       new LocationNamesToLocationNameDatabaseMigration());
     // Persist HuygensIng mappings in database
