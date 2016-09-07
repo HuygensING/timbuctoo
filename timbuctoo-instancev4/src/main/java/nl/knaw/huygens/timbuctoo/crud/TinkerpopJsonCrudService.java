@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
@@ -47,6 +46,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
@@ -218,14 +219,9 @@ public class TinkerpopJsonCrudService {
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
     try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
-      Iterator<Entity> entities = dataAccessMethods.getCollection(collection, rows, start);
-      List<ObjectNode> result = Lists.newArrayList();
-      entities.forEachRemaining(entity -> {
-        final ObjectNode mappedEntity = mapEntity(collection, entity, withRelations);
-
-        result.add(mappedEntity);
-      });
-
+      Stream<Entity> entities = dataAccessMethods.getCollection(collection, rows, start);
+      List<ObjectNode> result = entities.map(entity -> mapEntity(collection, entity, withRelations))
+                                        .collect(Collectors.toList());
       dataAccessMethods.success();
       return result;
     }

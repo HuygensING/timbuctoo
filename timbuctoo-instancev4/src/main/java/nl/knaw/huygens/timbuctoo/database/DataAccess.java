@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.Entity;
-import nl.knaw.huygens.timbuctoo.database.dto.EntityIterator;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
@@ -42,6 +41,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
@@ -165,9 +165,9 @@ public class DataAccess {
         }
         return existingEdge.getTimId();
       } else {
-        Collection sourceCollection = getCollection(collection.getVre(), sourceV)
+        Collection sourceCollection = getOwnCollectionOfElement(collection.getVre(), sourceV)
           .orElseThrow(notPossible("Source vertex is not part of the VRE of " + collection.getCollectionName()));
-        Collection targetCollection = getCollection(collection.getVre(), targetV)
+        Collection targetCollection = getOwnCollectionOfElement(collection.getVre(), targetV)
           .orElseThrow(notPossible("Target vertex is not part of the VRE of " + collection.getCollectionName()));
         RelationType.DirectionalRelationType desc = descs.getForDirection(sourceCollection, targetCollection)
                                                          .orElseThrow(notPossible(
@@ -259,17 +259,19 @@ public class DataAccess {
       return new EntityMapper(collection, traversal, mappings).mapEntity(entityT);
     }
 
-    public Iterator<Entity> getCollection(Collection collection, int rows, int start) {
+    public Stream<Entity> getCollection(Collection collection, int rows, int start) {
       GraphTraversal<Vertex, Vertex> entities =
         getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
 
-      return new EntityIterator(new EntityMapper(collection, traversal, mappings), entities);
+      EntityMapper entityMapper = new EntityMapper(collection, traversal, mappings);
+
+      return entities.toStream().map(entityMapper::mapEntity);
     }
 
     /*******************************************************************************************************************
      * Support methods:
      ******************************************************************************************************************/
-    private Optional<Collection> getCollection(Vre vre, Element sourceV) {
+    private Optional<Collection> getOwnCollectionOfElement(Vre vre, Element sourceV) {
       String ownType = vre.getOwnType(getEntityTypes(sourceV));
       if (ownType == null) {
         return Optional.empty();
