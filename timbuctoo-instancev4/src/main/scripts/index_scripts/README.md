@@ -292,7 +292,7 @@ Sample of the output
 The same type conversion rules apply to properties derived from relations (see: ```samples/type-conversion-1.rb```).
 
 ### Solr
-The class SolrIO exposes a few basic CRUD methods. The samples in this section assumes a local running solr 6 server ([quickstart](http://lucene.apache.org/solr/quickstart.html)).
+The class SolrIO exposes a few basic CRUD methods. The samples in this section assume a local running solr 6 server ([quickstart](http://lucene.apache.org/solr/quickstart.html)).
 The constructor is invoked with the solr url (usually including /solr without trailing slash). Optionally a value for the header 'Authorization' 
 can be added in the constructor as well.
 
