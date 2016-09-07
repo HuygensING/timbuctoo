@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
 
 import java.util.List;
+import java.util.UUID;
 
 public class Entity {
   private List<TimProperty<?>> properties;
@@ -14,6 +15,8 @@ public class Entity {
   private Change modified;
   private Change created;
   private List<RelationRef> relations;
+  private String displayName;
+  private UUID id;
 
 
   public void setProperties(List<TimProperty<?>> properties) {
@@ -78,5 +81,21 @@ public class Entity {
 
   public List<RelationRef> getRelations() {
     return relations;
+  }
+
+  public void setDisplayName(String displayName) {
+    this.displayName = displayName;
+  }
+
+  public String getDisplayName() {
+    return displayName;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
+  }
+
+  public UUID getId() {
+    return id;
   }
 }

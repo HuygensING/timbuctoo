@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
@@ -16,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleExceptio
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -40,6 +40,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
+import org.neo4j.helpers.Strings;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -53,7 +54,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
@@ -205,29 +205,50 @@ public class TinkerpopJsonCrudService {
   private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
     Entity entity = dataAccess.getEntity(id, rev, collection);
 
-    final ObjectNode result = JsonNodeFactory.instance.objectNode();
+    return mapEntity(collection, entity, true);
+  }
 
-    result.set("@type", nodeFactory.textNode(collection.getEntityTypeName()));
-    result.set("_id", nodeFactory.textNode(id.toString()));
+  public List<ObjectNode> getCollection(String collectionName, int rows, int start, boolean withRelations)
+    throws InvalidCollectionException {
+    final Collection collection = mappings.getCollection(collectionName)
+                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    result.set("^rev", jsn(entity.getRev()));
-    result.set("^deleted", jsn(entity.getDeleted()));
-    result.set("^pid", jsn(entity.getPid()));
+    Iterator<Entity> entities = dataAccess.getCollection(collection, rows, start);
+    List<ObjectNode> result = Lists.newArrayList();
+    entities.forEachRemaining(entity -> {
+      final ObjectNode mappedEntity = mapEntity(collection, entity, withRelations);
+
+      result.add(mappedEntity);
+    });
+
+    return result;
+  }
+
+  private ObjectNode mapEntity(Collection collection, Entity entity, boolean withRelations) {
+    final ObjectNode mappedEntity = JsonNodeFactory.instance.objectNode();
+    String id = entity.getId().toString();
+
+    mappedEntity.set("@type", nodeFactory.textNode(collection.getEntityTypeName()));
+    mappedEntity.set("_id", nodeFactory.textNode(id));
+
+    mappedEntity.set("^rev", jsn(entity.getRev()));
+    mappedEntity.set("^deleted", jsn(entity.getDeleted()));
+    mappedEntity.set("^pid", jsn(entity.getPid()));
 
     JsonNode variationRefs = jsnA(entity.getTypes()
                                         .stream()
                                         .map(type -> {
                                           ObjectNode variationRef = jsnO();
-                                          variationRef.set("id", jsn(id.toString()));
+                                          variationRef.set("id", jsn(id));
                                           variationRef.set("type", jsn(type));
                                           return variationRef;
                                         }));
-    result.set("@variationRefs", variationRefs);
+    mappedEntity.set("@variationRefs", variationRefs);
 
     Change modified = entity.getModified();
-    result.set("^modified", mapChange(modified));
+    mappedEntity.set("^modified", mapChange(modified));
     Change created = entity.getCreated();
-    result.set("^created", mapChange(created));
+    mappedEntity.set("^created", mapChange(created));
 
     // translate TimProperties to Json
     JsonPropertyConverter jsonPropertyConverter = new JsonPropertyConverter(collection);
@@ -242,92 +263,19 @@ public class TinkerpopJsonCrudService {
           e.getCause()
         );
       }
-      result.set(convertedProperty.getLeft(), convertedProperty.getRight());
+      mappedEntity.set(convertedProperty.getLeft(), convertedProperty.getRight());
     });
 
-    result.set("@relationCount", nodeFactory.numberNode(entity.getRelations().size()));
-    result.set("@relations", mapRelations(entity.getRelations()));
+    if (!Strings.isBlank(entity.getDisplayName())) {
+      mappedEntity.set("@displayName", jsn(entity.getDisplayName()));
+    }
 
-    return result;
+    if (withRelations) {
+      mappedEntity.set("@relationCount", nodeFactory.numberNode(entity.getRelations().size()));
+      mappedEntity.set("@relations", mapRelations(entity.getRelations()));
+    }
+    return mappedEntity;
   }
-
-  public List<ObjectNode> getCollection(String collectionName, int rows, int start, boolean withRelations)
-    throws InvalidCollectionException {
-    final Collection collection = mappings.getCollection(collectionName)
-                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
-    final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
-
-    GraphTraversal<Vertex, Vertex> entities =
-      graphwrapper.getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
-    final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
-
-
-    return entities.asAdmin().clone().map(entityT -> {
-      final ObjectNode result = JsonNodeFactory.instance.objectNode();
-      final List<GraphTraversal> propertyGetters = mapping
-        .entrySet().stream()
-        .map(prop -> prop.getValue().traversalJson().sideEffect(tryTraverser -> {
-          tryTraverser.get()
-                      .onSuccess(node -> result.set(prop.getKey(), node))
-                      .onFailure(e -> {
-                        if (e.getCause() instanceof IOException) {
-                          LOG.error(
-                            databaseInvariant,
-                            "Property '" + prop.getKey() +
-                              "' is not encoded correctly",
-                            e.getCause()
-                          );
-                        } else {
-                          LOG.error(
-                            "Something went wrong while reading the property '" +
-                              prop.getKey() + "'.", e.getMessage());
-                        }
-                      });
-        }))
-        .collect(Collectors.toList());
-
-      propertyGetters.add(collection.getDisplayName().traversalJson().sideEffect(tryTraverser -> {
-        tryTraverser.get()
-                    .onSuccess(node -> result.set("@displayName", node))
-                    .onFailure(
-                      e -> LOG.error(databaseInvariant, "Failed to make displayname for {}", collectionName, e));
-      }));
-
-      traversalSource.V(entityT.get().id())
-                     .union(propertyGetters.toArray(new GraphTraversal[propertyGetters.size()]))
-                     .forEachRemaining(x -> {
-                       // side effects
-                     });
-
-      Vertex entity = entityT.get();
-      if (withRelations) {
-        Tuple<ObjectNode, Long> relations = getRelations(entity, traversalSource, collection);
-        result.set("@relationCount", nodeFactory.numberNode(relations.getRight()));
-        result.set("@relations", relations.getLeft());
-      }
-
-      result.set(
-        "^rev", nodeFactory.numberNode(
-          getProp(entity, "rev", Integer.class)
-            .orElse(0)
-        )
-      );
-      getModification(entity, "modified").ifPresent(val -> result.set("^modified", val));
-      getModification(entity, "created").ifPresent(val -> result.set("^created", val));
-
-      result.set("@variationRefs", getVariationRefs(entity, UUID.fromString(entity.value("tim_id")),
-        collection.getCollectionName()));
-
-      result.set("^deleted", nodeFactory.booleanNode(getProp(entity, "deleted", Boolean.class).orElse(false)));
-      result.set("_id", jsn(entity.value("tim_id")));
-
-      getProp(entity, "pid", String.class)
-        .ifPresent(pid -> result.set("^pid", nodeFactory.textNode(pid)));
-
-      return result;
-    }).toList();
-  }
-
 
 
   private JsonNode mapRelations(List<RelationRef> relations) {

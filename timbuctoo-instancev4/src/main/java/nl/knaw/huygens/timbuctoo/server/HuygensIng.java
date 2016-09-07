@@ -22,9 +22,11 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.s
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToEncodedStringOf;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.stringToUnencodedStringOf;
 
+@Deprecated
 public class HuygensIng {
 
   //fixme move to database
+  @Deprecated
   public static Map<String, Map<String, String>> keywordTypes = ImmutableMap.of(
     "WomenWriters",
     ImmutableMap.<String, String>builder()
@@ -56,6 +58,7 @@ public class HuygensIng {
     "THEATERSCRIPT",
     "WORK"
   };
+  @Deprecated
   public static Vres mappings = new VresBuilder()
     .withVre("WomenWriters", "ww", vre -> vre
       .withCollection("wwcollectives", c -> c
