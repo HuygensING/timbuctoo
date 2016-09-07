@@ -14,5 +14,6 @@ public interface GraphWrapper {
    */
   GraphTraversalSource getLatestState();
 
+  @Deprecated
   GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames);
 }

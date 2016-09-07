@@ -24,27 +24,20 @@ import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.neo4j.helpers.Strings;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.net.URI;
 import java.time.Clock;
 import java.util.Iterator;
 import java.util.List;
@@ -61,7 +54,6 @@ import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
-import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -203,9 +195,21 @@ public class TinkerpopJsonCrudService {
   }
 
   private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
-    Entity entity = dataAccess.getEntity(id, rev, collection);
+    try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
 
-    return mapEntity(collection, entity, true);
+      try {
+        Entity entity = dataAccessMethods.getEntity(id, rev, collection);
+
+        ObjectNode result = mapEntity(collection, entity, true);
+
+        dataAccessMethods.success();
+        return result;
+      } catch (NotFoundException e) {
+        dataAccessMethods.rollback();
+        throw e;
+      }
+    }
+
   }
 
   public List<ObjectNode> getCollection(String collectionName, int rows, int start, boolean withRelations)
@@ -213,15 +217,18 @@ public class TinkerpopJsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    Iterator<Entity> entities = dataAccess.getCollection(collection, rows, start);
-    List<ObjectNode> result = Lists.newArrayList();
-    entities.forEachRemaining(entity -> {
-      final ObjectNode mappedEntity = mapEntity(collection, entity, withRelations);
+    try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
+      Iterator<Entity> entities = dataAccessMethods.getCollection(collection, rows, start);
+      List<ObjectNode> result = Lists.newArrayList();
+      entities.forEachRemaining(entity -> {
+        final ObjectNode mappedEntity = mapEntity(collection, entity, withRelations);
 
-      result.add(mappedEntity);
-    });
+        result.add(mappedEntity);
+      });
 
-    return result;
+      dataAccessMethods.success();
+      return result;
+    }
   }
 
   private ObjectNode mapEntity(Collection collection, Entity entity, boolean withRelations) {
@@ -309,125 +316,6 @@ public class TinkerpopJsonCrudService {
     return changeNode;
   }
 
-
-  private Tuple<ObjectNode, Long> getRelations(Vertex entity, GraphTraversalSource traversalSource,
-                                               Collection collection) {
-    final ObjectMapper mapper = new ObjectMapper();
-
-    final long[] relationCount = new long[1];
-
-    GraphTraversal<Vertex, ObjectNode> realRelations = getRealRelations(entity, traversalSource, collection);
-
-    Map<String, List<ObjectNode>> relations = stream(realRelations)
-      .filter(x -> x != null)
-      .peek(x -> relationCount[0]++)
-      .collect(groupingBy(jsn -> jsn.get("relationType").asText()));
-
-    return new Tuple<>(mapper.valueToTree(relations), relationCount[0]);
-  }
-
-  private GraphTraversal<Vertex, ObjectNode> getRealRelations(Vertex entity, GraphTraversalSource traversalSource,
-                                                              Collection collection) {
-    final Vre vre = collection.getVre();
-    final Vre admin = mappings.getVre("Admin");
-
-    Object[] relationTypes = traversalSource.V().has(T.label, LabelP.of("relationtype")).id().toList().toArray();
-
-    return collection.getVre().getCollections().values().stream()
-                     .filter(Collection::isRelationCollection)
-                     .findAny()
-                     .map(Collection::getEntityTypeName)
-                     .map(ownRelationType -> traversalSource.V(entity.id())
-                                                            .union(
-                                                              __.outE()
-                                                                .as("edge")
-                                                                .label().as("label")
-                                                                .select("edge"),
-                                                              __.inE()
-                                                                .as("edge")
-                                                                .label().as("edgeLabel")
-                                                                .V(relationTypes)
-                                                                .has("relationtype_regularName",
-                                                                  __.where(P.eq("edgeLabel")))
-                                                                .properties("relationtype_inverseName").value()
-                                                                .as("label")
-                                                                .select("edge")
-                                                            )
-                                                            .where(
-                                                              //FIXME move to strategy
-                                                              __.has("isLatest", true)
-                                                                .not(__.has("deleted", true))
-                                                                .not(__.hasLabel("VERSION_OF"))
-                                                                //The old timbuctoo showed relations from all VRE's.
-                                                                // Changing that behaviour caused breakage in the
-                                                                //frontend and exposed errors in the database that
-                                                                //.has("types", new P<>((val, def) -> val.contains
-                                                                // ("\"" + ownRelationType + "\""), ""))
-                                                                // FIXME: string concatenating methods like this
-                                                                // should be delegated to a configuration clas
-                                                                .not(__.has(ownRelationType + "_accepted", false))
-                                                            )
-                                                            .otherV().as("vertex")
-                                                            .select("edge", "vertex", "label")
-                                                            .map(r -> {
-                                                              try {
-                                                                Map<String, Object> val = r.get();
-                                                                Edge edge = (Edge) val.get("edge");
-                                                                Vertex vertex = (Vertex) val.get("vertex");
-                                                                String label = (String) val.get("label");
-
-                                                                String targetEntityType =
-                                                                  getOwnEntityType(collection, vertex);
-                                                                Collection targetCollection =
-                                                                  vre.getCollectionForTypeName(targetEntityType);
-                                                                if (targetEntityType == null) {
-                                                                  //this means that the edge is of this VRE, but the
-                                                                  // Vertex it points to is of another VRE
-                                                                  //In that case we use the admin vre
-                                                                  targetEntityType =
-                                                                    admin.getOwnType(getEntityTypesOrDefault(vertex));
-                                                                  targetCollection =
-                                                                    admin.getCollectionForTypeName(targetEntityType);
-                                                                }
-
-                                                                String displayName =
-                                                                  dataAccess.getDisplayname(traversalSource, vertex,
-                                                                    targetCollection)
-                                                                            .orElse("<No displayname found>");
-                                                                String uuid =
-                                                                  getProp(vertex, "tim_id", String.class).orElse("");
-
-                                                                URI relatedEntityUri =
-                                                                  relationUrlFor
-                                                                    .apply(targetCollection.getCollectionName(),
-                                                                      UUID.fromString(uuid), null);
-                                                                return jsnO(
-                                                                  tuple("id", jsn(uuid)),
-                                                                  tuple("path", jsn(relatedEntityUri.toString())),
-                                                                  tuple("relationType", jsn(label)),
-                                                                  tuple("type", jsn(targetEntityType)),
-                                                                  tuple("accepted", jsn(
-                                                                    getProp(edge, "accepted", Boolean.class)
-                                                                      .orElse(true))),
-                                                                  tuple("relationId",
-                                                                    getProp(edge, "tim_id", String.class)
-                                                                      .map(x -> (JsonNode) jsn(x)).orElse(jsn())),
-                                                                  tuple("rev",
-                                                                    jsn(
-                                                                      getProp(edge, "rev", Integer.class).orElse(1))),
-                                                                  tuple("displayName", jsn(displayName))
-                                                                );
-                                                              } catch (Exception e) {
-                                                                LOG.error(databaseInvariant,
-                                                                  "Something went wrong while formatting the entity",
-                                                                  e);
-                                                                return null;
-                                                              }
-                                                            })
-                     )
-                     .orElse(EmptyGraph.instance().traversal().V().map(x -> jsnO()));
-  }
-
   /* returns the entitytype for the current collection's vre or else the type of the current collection */
 
   private String getOwnEntityType(Collection collection, Element vertex) throws IOException {
@@ -437,58 +325,6 @@ public class TinkerpopJsonCrudService {
       .orElse(Try.success(collection.getEntityTypeName()))
       .get(); //throws IOException on failure
   }
-
-  private ArrayNode getVariationRefs(Vertex entity, UUID id, String entityTypeName) {
-    try {
-      ObjectMapper mapper = new ObjectMapper();
-      ArrayNode variationRefs = nodeFactory.arrayNode();
-      JsonNode types = mapper.readTree((String) entity.value("types"));
-      if (!types.isArray()) {
-        throw new IOException("types should be a JSON encoded Array");
-      }
-      for (int i = 0; i < types.size(); i++) {
-        ObjectNode ref = nodeFactory.objectNode();
-        ref.set("id", nodeFactory.textNode(id.toString()));
-        ref.set("type", nodeFactory.textNode(types.get(i).asText()));
-        variationRefs.add(ref);
-      }
-      return variationRefs;
-    } catch (Exception e) {
-      //When something goes wrong we log the error and return a functional representation
-      LOG.error(databaseInvariant, "Error while generating variation refs", e);
-      return jsnA(
-        jsnO(
-          "id", jsn(id.toString()),
-          "type", jsn(entityTypeName)
-        )
-      );
-    }
-  }
-
-  private Optional<ObjectNode> getModification(Vertex entity, String propertyName) {
-    ObjectMapper mapper = new ObjectMapper();
-    return getProp(entity, propertyName, String.class)
-      .flatMap(content -> {
-        try {
-          return Optional.of(mapper.readTree(content));
-        } catch (IOException e) {
-          return Optional.empty();
-        }
-      })
-      .flatMap(parsed -> parsed instanceof ObjectNode ? Optional.of((ObjectNode) parsed) : Optional.empty())
-      .map(modifiedObj -> {
-        try {
-          userStore.userForId(modifiedObj.get("userId").asText(""))
-                   .map(User::getDisplayName)
-                   .ifPresent(userName -> modifiedObj.set("username", nodeFactory.textNode(userName)));
-        } catch (AuthenticationUnavailableException e) {
-          LOG.error(Logmarkers.serviceUnavailable, "could not get user for modifiedObj", e);
-          modifiedObj.set("username", nodeFactory.nullNode());
-        }
-        return modifiedObj;
-      });
-  }
-
 
   private void setModified(Element element, String userId) {
     String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",

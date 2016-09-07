@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
-import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
@@ -15,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -23,6 +20,8 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -31,6 +30,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Property;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -73,94 +73,31 @@ public class DataAccess {
   }
 
   public DataAccessMethods start() {
-    return new DataAccessMethods(graphwrapper, authorizer, listener);
-  }
-
-  public Entity getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
-    final Map<String, ReadableProperty> mapping = collection.getReadableProperties();
-    final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
-
-    GraphTraversal<Vertex, Vertex> fetchedEntity = entityFetcher.getEntity(
-      traversalSource,
-      id,
-      rev,
-      collection.getCollectionName()
-    );
-
-    if (!fetchedEntity.hasNext()) {
-      throw new NotFoundException();
-    }
-
-    Vertex entityVertex = entityFetcher.getEntity(traversalSource, id, rev, collection.getCollectionName()).next();
-    GraphTraversal<Vertex, Vertex> entityT = traversalSource.V(entityVertex.id());
-
-    if (!entityT.asAdmin().clone().hasNext()) {
-      throw new NotFoundException();
-    }
-
-    String entityTypesStr = getProp(entityT.asAdmin().clone().next(), "types", String.class).orElse("[]");
-    if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
-      throw new NotFoundException();
-    }
-
-    return new EntityMapper(collection, traversalSource, mappings).mapEntity(entityT);
-  }
-
-  public Iterator<Entity> getCollection(Collection collection, int rows, int start) {
-    GraphTraversal<Vertex, Vertex> entities =
-      graphwrapper.getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
-    final GraphTraversalSource traversalSource = graphwrapper.getGraph().traversal();
-
-    return new EntityIterator(new EntityMapper(collection, traversalSource, mappings), entities);
-  }
-
-  // TODO make private when this method is not used in the TinkerpopJsonCrudService
-  public Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
-                                         Collection targetCollection) {
-    ReadableProperty displayNameProperty = targetCollection.getDisplayName();
-    if (displayNameProperty != null) {
-      GraphTraversal<Vertex, Try<JsonNode>> displayNameGetter = traversalSource.V(vertex.id()).union(
-        targetCollection.getDisplayName().traversalJson()
-      );
-      if (displayNameGetter.hasNext()) {
-        Try<JsonNode> traversalResult = displayNameGetter.next();
-        if (!traversalResult.isSuccess()) {
-          LOG.error(databaseInvariant, "Retrieving displayname failed", traversalResult.getCause());
-        } else {
-          if (traversalResult.get() == null) {
-            LOG.error(databaseInvariant, "Displayname was null");
-          } else {
-            if (!traversalResult.get().isTextual()) {
-              LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
-            } else {
-              return Optional.of(traversalResult.get().asText());
-            }
-          }
-        }
-      } else {
-        LOG.error(databaseInvariant, "Displayname traversal resulted in no results: " + displayNameGetter);
-      }
-    } else {
-      LOG.warn("No displayname configured for " + targetCollection.getEntityTypeName());
-    }
-    return Optional.empty();
+    return new DataAccessMethods(graphwrapper, authorizer, listener, entityFetcher, mappings);
   }
 
   public static class DataAccessMethods implements AutoCloseable {
     private final Transaction transaction;
     private final Authorizer authorizer;
     private final ChangeListener listener;
+    private final EntityFetcher entityFetcher;
+    private final Vres mappings;
     private final GraphTraversalSource traversal;
     private Optional<Boolean> isSuccess = Optional.empty();
+    private final GraphTraversalSource latestState;
 
-    private DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener) {
+    private DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
+                              EntityFetcher entityFetcher, Vres mappings) {
       this.transaction = graphWrapper.getGraph().tx();
       this.authorizer = authorizer;
       this.listener = listener;
+      this.entityFetcher = entityFetcher;
+      this.mappings = mappings;
       if (!transaction.isOpen()) {
         transaction.open();
       }
       this.traversal = graphWrapper.getGraph().traversal();
+      this.latestState = graphWrapper.getLatestState();
     }
 
 
@@ -295,6 +232,39 @@ public class DataAccess {
       return id;
     }
 
+    public Entity getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
+      GraphTraversal<Vertex, Vertex> fetchedEntity = entityFetcher.getEntity(
+        traversal,
+        id,
+        rev,
+        collection.getCollectionName()
+      );
+
+      if (!fetchedEntity.hasNext()) {
+        throw new NotFoundException();
+      }
+
+      Vertex entityVertex = entityFetcher.getEntity(traversal, id, rev, collection.getCollectionName()).next();
+      GraphTraversal<Vertex, Vertex> entityT = traversal.V(entityVertex.id());
+
+      if (!entityT.asAdmin().clone().hasNext()) {
+        throw new NotFoundException();
+      }
+
+      String entityTypesStr = getProp(entityT.asAdmin().clone().next(), "types", String.class).orElse("[]");
+      if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
+        throw new NotFoundException();
+      }
+
+      return new EntityMapper(collection, traversal, mappings).mapEntity(entityT);
+    }
+
+    public Iterator<Entity> getCollection(Collection collection, int rows, int start) {
+      GraphTraversal<Vertex, Vertex> entities =
+        getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
+
+      return new EntityIterator(new EntityMapper(collection, traversal, mappings), entities);
+    }
 
     /*******************************************************************************************************************
      * Support methods:
@@ -473,6 +443,20 @@ public class DataAccess {
       AuthorizationException, AuthorizationUnavailableException {
       if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
         throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
+      }
+    }
+
+    private GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
+      if (entityTypeNames.length == 1) {
+        String type = entityTypeNames[0];
+        return latestState.V().has(T.label, LabelP.of(type));
+      } else {
+        P<String> labels = LabelP.of(entityTypeNames[0]);
+        for (int i = 1; i < entityTypeNames.length; i++) {
+          labels = labels.or(LabelP.of(entityTypeNames[i]));
+        }
+
+        return latestState.V().has(T.label, labels);
       }
     }
   }
