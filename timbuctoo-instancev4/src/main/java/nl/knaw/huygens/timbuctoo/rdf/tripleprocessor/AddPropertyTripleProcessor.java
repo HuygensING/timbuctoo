@@ -5,14 +5,13 @@ import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
-class AddPropertyTripleProcessor implements TripleProcessor {
+class AddPropertyTripleProcessor {
   private final Database database;
 
   public AddPropertyTripleProcessor(Database database) {
     this.database = database;
   }
 
-  @Override
   public void process(String vreName, Triple triple) {
     Node node = triple.getSubject();
     Entity entity = database.findOrCreateEntity(vreName, node);

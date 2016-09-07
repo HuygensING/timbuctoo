@@ -7,14 +7,13 @@ import org.apache.jena.graph.Triple;
 
 import java.util.Optional;
 
-class AddToCollectionTripleProcessor implements TripleProcessor {
+class AddToCollectionTripleProcessor {
   private final Database database;
 
   public AddToCollectionTripleProcessor(Database database) {
     this.database = database;
   }
 
-  @Override
   public void process(String vreName, Triple triple) {
     Entity entity = database.findOrCreateEntity(vreName, triple.getSubject());
 

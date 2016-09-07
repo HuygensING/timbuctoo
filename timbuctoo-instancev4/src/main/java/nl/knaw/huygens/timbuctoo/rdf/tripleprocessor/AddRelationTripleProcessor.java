@@ -6,14 +6,13 @@ import nl.knaw.huygens.timbuctoo.rdf.Relation;
 import nl.knaw.huygens.timbuctoo.rdf.RelationType;
 import org.apache.jena.graph.Triple;
 
-class AddRelationTripleProcessor implements TripleProcessor {
+class AddRelationTripleProcessor {
   private final Database database;
 
   public AddRelationTripleProcessor(Database database) {
     this.database = database;
   }
 
-  @Override
   public void process(String vreName, Triple triple) {
     final Entity subject = database.findOrCreateEntity(vreName, triple.getSubject());
     final Entity object = database.findOrCreateEntity(vreName, triple.getObject());
