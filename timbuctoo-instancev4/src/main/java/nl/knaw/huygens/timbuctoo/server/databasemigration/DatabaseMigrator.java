@@ -32,9 +32,15 @@ public class DatabaseMigrator {
                                                                                            .property("name")
                                                                                            .value())
                                            .toList();
+
+    Long vertexCount = graph.traversal().V().count().next();
+
     migrations.forEach((name, migration) -> {
 
-      if (!executedMigrations.contains(name)) {
+      if (vertexCount == 0L) {
+        LOG.info("Skipping migration with name '{}' because this is a clean database. ", name);
+        this.saveExecution(graph, name);
+      } else  if (!executedMigrations.contains(name)) {
         LOG.info("Executing migration with name '{}'", name);
         try {
           migration.execute(graphWrapper);
