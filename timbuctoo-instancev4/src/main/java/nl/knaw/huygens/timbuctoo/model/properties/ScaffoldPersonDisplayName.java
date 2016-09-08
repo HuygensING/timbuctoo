@@ -40,6 +40,7 @@ class ScaffoldPersonDisplayName extends ReadableProperty {
         final List<String> names = NAME_PARTS
           .stream()
           .map(part -> nameParts.containsKey(part) ? nameParts.get(part) : "")
+          .filter(part -> part.length() > 0)
           .collect(Collectors.toList());
 
         return Try.success((JsonNode) jsn(String.join(" ", names)));
