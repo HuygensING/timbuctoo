@@ -62,6 +62,14 @@ public class LocalProperty extends ReadableProperty {
     }
   }
 
+  public void setValue(Vertex vertex, Object value) throws IOException {
+    if (value == null) {
+      vertex.property(propName).remove();
+    } else {
+      vertex.property(propName, value);
+    }
+  }
+
   public GraphTraversal<?, Try<ExcelDescription>> getExcelDescription() {
     Supplier<GraphTraversal<?, Try<ExcelDescription>>> supplier =
       () -> __.<Object, String>values(propName).map(prop -> Try.of(() ->

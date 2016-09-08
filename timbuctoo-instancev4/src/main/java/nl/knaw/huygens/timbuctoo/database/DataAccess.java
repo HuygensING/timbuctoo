@@ -222,9 +222,8 @@ public class DataAccess {
         if (baseMapping.containsKey(fieldName)) {
           try {
             property.convert(baseColConverter);
-            String dbName = baseMapping.get(fieldName).getDatabasePropertyName();
             Tuple<String, Object> convertedProp = property.convert(baseColConverter);
-            vertex.property(dbName, convertedProp.getRight());
+            baseMapping.get(fieldName).setValue(vertex, convertedProp.getRight());
           } catch (IOException e) {
             LOG.error(configurationFailure, "Field could not be parsed by Admin VRE converter {}_{}",
               baseCollection.get().getCollectionName(), fieldName);
