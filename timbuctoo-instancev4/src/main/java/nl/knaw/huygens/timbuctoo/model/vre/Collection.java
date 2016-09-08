@@ -20,7 +20,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 import static java.util.stream.Collectors.toMap;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
@@ -128,7 +127,6 @@ public class Collection {
     final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex);
     final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
     final String label = getProp(collectionVertex, COLLECTION_LABEL_PROPERTY_NAME, String.class).orElse(null);
-    final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
     boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
     boolean unknown = getProp(collectionVertex, COLLECTION_IS_UNKNOWN_PROPERTY_NAME, Boolean.class).orElse(false);
 
