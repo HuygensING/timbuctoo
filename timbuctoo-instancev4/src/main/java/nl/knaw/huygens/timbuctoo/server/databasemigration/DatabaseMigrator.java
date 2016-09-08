@@ -15,7 +15,7 @@ import java.util.UUID;
 
 public class DatabaseMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(DatabaseMigrator.class);
-  private static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
+  protected static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
   private final GraphWrapper graphWrapper;
   private final Map<String, DatabaseMigration> migrations;
 
