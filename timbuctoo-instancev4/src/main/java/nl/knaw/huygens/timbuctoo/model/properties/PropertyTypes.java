@@ -20,4 +20,8 @@ public class PropertyTypes {
   public static ReadableProperty wwdocumentDisplayNameProperty() {
     return new WwDocumentDisplayName();
   }
+
+  public static ReadableProperty scaffoldPersonDisplayNameProperty(String vreName) {
+    return new ScaffoldPersonDisplayName(vreName);
+  }
 }

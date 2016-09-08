@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.scaffoldPersonDisplayNameProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 
 public class ScaffoldVresConfig {
@@ -15,6 +16,7 @@ public class ScaffoldVresConfig {
       vre
         .withCollection("persons", collection ->
           collection
+            .withDisplayName(scaffoldPersonDisplayNameProperty(""))
             .withProperty("familyName", localProperty("person_familyName"))
             .withProperty("givenName", localProperty("person_givenName"))
             .withProperty("preposition", localProperty("person_preposition"))
