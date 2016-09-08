@@ -5,13 +5,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.dto.Entity;
+import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.property.JsonPropertyConverter;
+import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -155,13 +159,38 @@ public class TinkerpopJsonCrudService {
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)
     throws IOException, AuthorizationException, AuthorizationUnavailableException {
+    JsonPropertyConverter converter = new JsonPropertyConverter(collection);
+
+    Iterator<String> fieldNames = input.fieldNames();
+    List<TimProperty<?>> properties = Lists.newArrayList();
+    while (fieldNames.hasNext()) {
+      String fieldName = fieldNames.next();
+      if (!fieldName.startsWith("@") && !fieldName.startsWith("^") && !fieldName.equals("_id")) {
+        try {
+          properties.add(converter.from(fieldName, input.get(fieldName)));
+        } catch (UnknownPropertyException e) {
+          LOG.error("Property with name '{}' is unknown for collection '{}'.", fieldName,
+            collection.getCollectionName());
+          throw new IOException(
+            String.format("Items of %s have no property %s", collection.getCollectionName(), fieldName));
+        } catch (IOException e) {
+          LOG.error("Property '{}' with value '{}' could not be converted", fieldName, input.get(fieldName));
+          throw new IOException(
+            String.format("Property '%s' could not be converted. %s", fieldName, e.getMessage()),
+            e
+          );
+        }
+      }
+    }
+
+    CreateEntity createEntity = new CreateEntity(properties);
 
     Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
 
     UUID id;
     try (DataAccess.DataAccessMethods db = dataAccess.start()) {
       try {
-        id = db.createEntity(collection, baseCollection, input, userId, clock.instant());
+        id = db.createEntity(collection, baseCollection, createEntity, userId, clock.instant());
         db.success();
       } catch (IOException | AuthorizationException | AuthorizationUnavailableException e) {
         db.rollback();
@@ -199,7 +228,7 @@ public class TinkerpopJsonCrudService {
     try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
 
       try {
-        Entity entity = dataAccessMethods.getEntity(id, rev, collection);
+        ReadEntity entity = dataAccessMethods.getEntity(id, rev, collection);
 
         ObjectNode result = mapEntity(collection, entity, true);
 
@@ -219,7 +248,7 @@ public class TinkerpopJsonCrudService {
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
     try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
-      Stream<Entity> entities = dataAccessMethods.getCollection(collection, rows, start);
+      Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start);
       List<ObjectNode> result = entities.map(entity -> mapEntity(collection, entity, withRelations))
                                         .collect(Collectors.toList());
       dataAccessMethods.success();
@@ -227,7 +256,7 @@ public class TinkerpopJsonCrudService {
     }
   }
 
-  private ObjectNode mapEntity(Collection collection, Entity entity, boolean withRelations) {
+  private ObjectNode mapEntity(Collection collection, ReadEntity entity, boolean withRelations) {
     final ObjectNode mappedEntity = JsonNodeFactory.instance.objectNode();
     String id = entity.getId().toString();
 

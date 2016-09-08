@@ -15,7 +15,7 @@ public abstract class PropertyConverter<TypeT> {
     this.collection = collection;
   }
 
-  public final TimProperty from(String propertyName, TypeT value) throws UnknownPropertyException, IOException {
+  public final TimProperty<?> from(String propertyName, TypeT value) throws UnknownPropertyException, IOException {
     Optional<ReadableProperty> property = collection.getProperty(propertyName);
     if (!property.isPresent()) {
       throw new UnknownPropertyException(String.format(
@@ -49,7 +49,7 @@ public abstract class PropertyConverter<TypeT> {
         return createStringOfLimitedValues(propertyName, value);
       default:
         throw new UnknownPropertyException(String.format(
-          "Property with name '%s' of collection with name '%s' have unknown type '%s'",
+          "Property '%s' of collection '%s' has unknown type '%s'",
           propertyName,
           collection.getCollectionName(),
           property.get().getUniqueTypeId()
@@ -103,4 +103,11 @@ public abstract class PropertyConverter<TypeT> {
 
   protected abstract Tuple<String, TypeT> to(StringOfLimitedValuesProperty property) throws IOException;
 
+  protected IOException readOnlyProperty(String propertyName, Class<? extends TimProperty> propertyType) {
+    return new IOException(String.format(
+      "'%s' of type '%s' cannot be stored, because it is a read-only property.",
+      propertyName,
+      propertyType
+    ));
+  }
 }

@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.io.IOException;
 
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
+
 public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
 
   private final ObjectMapper objectMapper;
@@ -89,52 +91,52 @@ public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
 
   @Override
   protected Tuple<String, Object> to(AltNamesProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return tuple(property.getName(), objectMapper.valueToTree(property.getValue().list));
   }
 
   @Override
   protected Tuple<String, Object> to(DatableProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return tuple(property.getName(), property.getValue());
   }
 
   @Override
   protected Tuple<String, Object> to(DefaultFullPersonNameProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    throw readOnlyProperty(property.getName(), property.getClass());
   }
 
   @Override
   protected Tuple<String, Object> to(DefaultLocationNameProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    throw readOnlyProperty(property.getName(), property.getClass());
   }
 
   @Override
   protected Tuple<String, Object> to(HyperLinksProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return tuple(property.getName(), property.getValue());
   }
 
   @Override
   protected Tuple<String, Object> to(PersonNamesProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return tuple(property.getName(), objectMapper.writeValueAsString(property.getValue()));
   }
 
   @Override
   protected Tuple<String, Object> to(ArrayOfLimitedValuesProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return tuple(property.getValue(), property.getValue());
   }
 
   @Override
   protected Tuple<String, Object> to(EncodedStringOfLimitedValuesProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return tuple(property.getName(), property.getValue());
   }
 
   @Override
   protected Tuple<String, Object> to(StringProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return tuple(property.getName(), property.getValue());
   }
 
   @Override
   protected Tuple<String, Object> to(StringOfLimitedValuesProperty property) throws IOException {
-    throw new UnsupportedOperationException("Not implemented yet");
+    return tuple(property.getName(), property.getValue());
   }
 
 }

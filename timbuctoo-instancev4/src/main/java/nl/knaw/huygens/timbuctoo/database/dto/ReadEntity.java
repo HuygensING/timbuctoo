@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import java.util.List;
 import java.util.UUID;
 
-public class Entity {
+public class ReadEntity {
   private List<TimProperty<?>> properties;
   private int rev;
   private boolean deleted;

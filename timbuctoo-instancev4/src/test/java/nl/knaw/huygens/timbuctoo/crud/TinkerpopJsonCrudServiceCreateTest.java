@@ -33,13 +33,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class TinkerpopJsonCrudServiceCreateTest {
@@ -178,9 +178,9 @@ public class TinkerpopJsonCrudServiceCreateTest {
   }
 
   @Test
-  public void throwsWhenPropertyMapperThrowsProperties() throws Exception {
+  public void throwsWhenPropertyCannotBeConverted() throws Exception {
     LocalProperty throwingMap = mock(LocalProperty.class);
-    doThrow(new IOException("PARSE ERROR")).when(throwingMap).setJson(any(), any());
+    when(throwingMap.getUniqueTypeId()).thenReturn("person-names");
 
     Graph graph = newGraph().build();
     TinkerpopJsonCrudService instance = newJsonCrudService().withVres(new VresBuilder()
@@ -191,12 +191,13 @@ public class TinkerpopJsonCrudServiceCreateTest {
       ).build(Maps.newHashMap())).forGraph(graph);
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
-    expectedException.expectMessage(new RegexMatcher(Pattern.compile(".*name.*")));
+
+    expectedException.expectMessage(containsString("'name'"));
 
     instance.create(
       "wwpersons",
       JsonBuilder.jsnO(
-        "name", jsn("Hans")
+        "name", jsn("notAPersonNamesString")
       ),
       ""
     );

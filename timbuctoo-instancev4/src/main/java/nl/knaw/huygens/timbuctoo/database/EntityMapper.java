@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import javaslang.control.Try;
-import nl.knaw.huygens.timbuctoo.database.dto.Entity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverter;
@@ -52,11 +52,11 @@ public class EntityMapper {
     this.mappings = mappings;
   }
 
-  public Entity mapEntity(Vertex next) {
+  public ReadEntity mapEntity(Vertex next) {
     return mapEntity(traversalSource.V(next.id()));
   }
 
-  public Entity mapEntity(GraphTraversal<Vertex, Vertex> entityT) {
+  public ReadEntity mapEntity(GraphTraversal<Vertex, Vertex> entityT) {
     final List<TimProperty<?>> properties = Lists.newArrayList();
     TinkerPopPropertyConverter dbPropertyConverter = new TinkerPopPropertyConverter(collection);
     String entityTypeName = collection.getEntityTypeName();
@@ -97,7 +97,7 @@ public class EntityMapper {
       //Force side effects to happen
     });
 
-    Entity entity = new Entity();
+    ReadEntity entity = new ReadEntity();
     entity.setProperties(properties);
 
     Vertex entityVertex = entityT.asAdmin().clone().next();

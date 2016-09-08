@@ -2,12 +2,18 @@ package nl.knaw.huygens.timbuctoo.database.dto.property;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import nl.knaw.huygens.timbuctoo.model.AltNames;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.io.IOException;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
 
 public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
 
@@ -19,54 +25,87 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
   }
 
   @Override
-  protected AltNamesProperty createAltNamesProperty(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected AltNamesProperty createAltNamesProperty(String propertyName, JsonNode value) throws IOException {
+    return new AltNamesProperty(propertyName, objectMapper.treeToValue(value, AltNames.class));
   }
 
   @Override
-  protected DatableProperty createDatableProperty(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected DatableProperty createDatableProperty(String propertyName, JsonNode value) throws IOException {
+    if (!value.isTextual()) {
+      throw new IOException(
+        String.format("Could not convert '%s', datable should be presented as String", propertyName)
+      );
+    }
+    return new DatableProperty(propertyName, value.toString());
   }
 
   @Override
-  protected DefaultFullPersonNameProperty createDefaultFullPersonNameProperty(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected DefaultFullPersonNameProperty createDefaultFullPersonNameProperty(String propertyName, JsonNode value)
+    throws IOException {
+    throw readOnlyProperty(propertyName, DefaultFullPersonNameProperty.class);
   }
 
   @Override
-  protected DefaultLocationNameProperty createDefaultLocationNameProperty(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected DefaultLocationNameProperty createDefaultLocationNameProperty(String propertyName, JsonNode value)
+    throws IOException {
+    throw readOnlyProperty(propertyName, DefaultFullPersonNameProperty.class);
   }
 
   @Override
-  protected HyperLinksProperty createHyperLinksProperty(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected HyperLinksProperty createHyperLinksProperty(String propertyName, JsonNode value) throws IOException {
+    if (value instanceof ArrayNode) {
+      value.forEach(rethrowConsumer(val -> {
+        if (!val.isObject()) {
+          throw new IOException("each item in the array should be an object node");
+        } else {
+          if (!val.has("url") || !val.get("url").isTextual()) {
+            throw new IOException("each item in the array must have an url property containing a string");
+          }
+          if (!val.has("label") || !val.get("url").isTextual()) {
+            throw new IOException("each item in the array must have an url property containing a string");
+          }
+        }
+      }));
+      return new HyperLinksProperty(propertyName, objectMapper.writeValueAsString(value));
+    }
+    throw new IOException(String.format("'%s' should be an array of hyperlinks.", propertyName));
   }
 
   @Override
-  protected PersonNamesProperty createPersonNamesProperty(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected PersonNamesProperty createPersonNamesProperty(String propertyName, JsonNode value)
+    throws IOException {
+    ObjectNode dbJson = jsnO("list", value);
+    return new PersonNamesProperty(propertyName, objectMapper.treeToValue(dbJson, PersonNames.class));
   }
 
   @Override
-  protected ArrayOfLimitedValuesProperty createArrayOfLimitedValuesProperty(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected ArrayOfLimitedValuesProperty createArrayOfLimitedValuesProperty(String propertyName, JsonNode value)
+    throws IOException {
+    return new ArrayOfLimitedValuesProperty(propertyName, objectMapper.writeValueAsString(value));
   }
 
   @Override
   protected EncodedStringOfLimitedValuesProperty createEncodedStringOfLimitedValuesProperty(String propertyName,
-                                                                                            JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+                                                                                            JsonNode value)
+    throws IOException {
+    return new EncodedStringOfLimitedValuesProperty(propertyName, objectMapper.writeValueAsString(value));
   }
 
   @Override
-  protected StringProperty createStringProperty(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected StringProperty createStringProperty(String propertyName, JsonNode value) throws IOException {
+    if (!value.isTextual()) {
+      throw new IOException(String.format("'%s' should be a String.", propertyName));
+    }
+    return new StringProperty(propertyName, value.asText(""));
   }
 
   @Override
-  protected StringOfLimitedValuesProperty createStringOfLimitedValues(String propertyName, JsonNode value) {
-    throw new UnsupportedOperationException("Not implemented yet");
+  protected StringOfLimitedValuesProperty createStringOfLimitedValues(String propertyName, JsonNode value)
+    throws IOException {
+    if (!value.isTextual()) {
+      throw new IOException(String.format("'%s' should be a String.", propertyName));
+    }
+    return new StringOfLimitedValuesProperty(propertyName, value.asText());
   }
 
   @Override

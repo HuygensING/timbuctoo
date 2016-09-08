@@ -1,14 +1,16 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
-import nl.knaw.huygens.timbuctoo.database.dto.Entity;
+import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
+import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
@@ -19,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
 import org.apache.tinkerpop.gremlin.process.traversal.Traversal;
@@ -128,7 +131,6 @@ public class DataAccess {
 
     /**
      * Creates a relation between two entities.
-     *
      * <p>If a relation already exists, it will not create a new one.</p>
      * @param sourceId Id of the source Entity
      * @param typeId Id of the relation type
@@ -145,7 +147,7 @@ public class DataAccess {
      */
     public UUID acceptRelation(UUID sourceId, UUID typeId, UUID targetId, Collection collection, String userId,
                                Instant instant) throws RelationNotPossibleException, AuthorizationUnavailableException,
-        AuthorizationException {
+      AuthorizationException {
 
       checkIfAllowedToWrite(authorizer, userId, collection);
 
@@ -183,15 +185,18 @@ public class DataAccess {
       return () -> new RelationNotPossibleException(message);
     }
 
-    public UUID createEntity(Collection col, Optional<Collection> baseCollection, ObjectNode input, String userId,
+    public UUID createEntity(Collection col, Optional<Collection> baseCollection, CreateEntity input, String userId,
                              Instant creationTime)
       throws IOException, AuthorizationUnavailableException, AuthorizationException {
 
       checkIfAllowedToWrite(authorizer, userId, col);
 
       Map<String, LocalProperty> mapping = col.getWriteableProperties();
+      TinkerPopPropertyConverter colConverter = new TinkerPopPropertyConverter(col);
       Map<String, LocalProperty> baseMapping = baseCollection.isPresent() ?
         baseCollection.get().getWriteableProperties() : Maps.newHashMap();
+      TinkerPopPropertyConverter baseColConverter = baseCollection.isPresent() ? // converter not needed without mapping
+        new TinkerPopPropertyConverter(baseCollection.get()) : null;
 
       UUID id = UUID.randomUUID();
 
@@ -199,29 +204,33 @@ public class DataAccess {
 
       Vertex vertex = traversalWithVertex.next();
 
-      Iterator<String> fieldNames = input.fieldNames();
-      while (fieldNames.hasNext()) {
-        String fieldName = fieldNames.next();
-        if (!fieldName.startsWith("@") && !fieldName.startsWith("^") && !fieldName.equals("_id")) {
-          if (mapping.containsKey(fieldName)) {
-            try {
-              mapping.get(fieldName).setJson(vertex, input.get(fieldName));
-            } catch (IOException e) {
-              throw new IOException(fieldName + " could not be saved. " + e.getMessage(), e);
-            }
-          } else {
-            throw new IOException(String.format("Items of %s have no property %s", col.getCollectionName(), fieldName));
+      for (TimProperty<?> property : input.getProperties()) {
+        String fieldName = property.getName();
+        if (mapping.containsKey(fieldName)) {
+          try {
+            String dbName = mapping.get(fieldName).getDatabasePropertyName();
+            Tuple<String, Object> convertedProp = property.convert(colConverter);
+            vertex.property(dbName, convertedProp.getRight());
+          } catch (IOException e) {
+            throw new IOException(fieldName + " could not be saved. " + e.getMessage(), e);
           }
+        } else {
+          throw new IOException(String.format("Items of %s have no property %s", col.getCollectionName(),
+            fieldName));
+        }
 
-          if (baseMapping.containsKey(fieldName)) {
-            try {
-              baseMapping.get(fieldName).setJson(vertex, input.get(fieldName));
-            } catch (IOException e) {
-              LOG.error(configurationFailure, "Field could not be parsed by Admin VRE converter {}_{}",
-                baseCollection.get().getCollectionName(), fieldName);
-            }
+        if (baseMapping.containsKey(fieldName)) {
+          try {
+            property.convert(baseColConverter);
+            String dbName = baseMapping.get(fieldName).getDatabasePropertyName();
+            Tuple<String, Object> convertedProp = property.convert(baseColConverter);
+            vertex.property(dbName, convertedProp.getRight());
+          } catch (IOException e) {
+            LOG.error(configurationFailure, "Field could not be parsed by Admin VRE converter {}_{}",
+              baseCollection.get().getCollectionName(), fieldName);
           }
         }
+
       }
 
       setAdministrativeProperties(col, userId, creationTime, id, vertex);
@@ -232,7 +241,7 @@ public class DataAccess {
       return id;
     }
 
-    public Entity getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
+    public ReadEntity getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
       GraphTraversal<Vertex, Vertex> fetchedEntity = entityFetcher.getEntity(
         traversal,
         id,
@@ -259,7 +268,7 @@ public class DataAccess {
       return new EntityMapper(collection, traversal, mappings).mapEntity(entityT);
     }
 
-    public Stream<Entity> getCollection(Collection collection, int rows, int start) {
+    public Stream<ReadEntity> getCollection(Collection collection, int rows, int start) {
       GraphTraversal<Vertex, Vertex> entities =
         getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
 
