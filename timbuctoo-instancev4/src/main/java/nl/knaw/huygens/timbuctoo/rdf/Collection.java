@@ -16,6 +16,7 @@ import java.util.Iterator;
 import java.util.Objects;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
@@ -127,8 +128,13 @@ public class Collection {
       archetypeDisplayName.properties().forEachRemaining(archetypeDisplayNameProp -> {
         final String value = (String) archetypeDisplayNameProp.value();
         final String key = archetypeDisplayNameProp.key();
-        // FIXME: display name now points to archetype variant of property!
-        displayName.property(key, value);
+        if (key.equals(LocalProperty.DATABASE_PROPERTY_NAME)) {
+          // FIXME: string manipulation to get unprefixed property name
+          final String newValue = value.replaceAll("^.+_", "");
+          displayName.property(key, collectionDescription.getEntityTypeName() + "_" + newValue);
+        } else {
+          displayName.property(key, value);
+        }
       });
       vertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayName);
     }
