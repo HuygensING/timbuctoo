@@ -72,4 +72,13 @@ public class StringArrayToEncodedArrayOfLimitedValues implements Converter, HasO
   public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
     return new ListOfStringsExcelDescription(tinkerpopToJson(value), typeId);
   }
+
+  @Override
+  public void validate(Object value) throws IOException {
+    if (!(value instanceof String)) {
+      throw new IOException("should be an array.");
+    }
+    JsonNode result = objectMapper.readTree((String) value);
+    throwIfInvalid(result);
+  }
 }

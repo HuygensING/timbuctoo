@@ -63,6 +63,7 @@ public class LocalProperty extends ReadableProperty {
   }
 
   public void setValue(Vertex vertex, Object value) throws IOException {
+    converter.validate(value);
     if (value == null) {
       vertex.property(propName).remove();
     } else {

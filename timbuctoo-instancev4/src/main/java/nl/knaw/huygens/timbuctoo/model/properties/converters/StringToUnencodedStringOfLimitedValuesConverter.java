@@ -55,4 +55,13 @@ public class StringToUnencodedStringOfLimitedValuesConverter implements Converte
   public Collection<String> getOptions() {
     return this.allowedValues;
   }
+
+  @Override
+  public void validate(Object value) throws IOException {
+    if (!(value instanceof String)) {
+      throw new IOException("should be a string");
+    }
+    JsonNode result = jsn((String) value);
+    StringToEncodedStringOfLimitedValuesConverter.throwIfInvalid(result, this.allowedValues);
+  }
 }

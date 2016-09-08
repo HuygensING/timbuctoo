@@ -15,4 +15,8 @@ public interface Converter {
   String getUniqueTypeIdentifier();
 
   ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException;
+
+  default void validate(Object value) throws IOException{
+    // no validation needed by default.
+  }
 }
