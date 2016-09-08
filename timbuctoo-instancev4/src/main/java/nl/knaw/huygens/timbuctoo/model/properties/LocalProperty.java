@@ -33,7 +33,9 @@ public class LocalProperty extends ReadableProperty {
     this.converter = converter;
   }
 
-
+  public String getDatabasePropertyName() {
+    return propName;
+  }
 
   public Optional<Collection<String>> getOptions() {
     if (converter instanceof HasOptions) {
