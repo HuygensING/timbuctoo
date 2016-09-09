@@ -4834,7 +4834,8 @@ var configureSearchClients = function configureSearchClients() {
 						});
 					}
 				}),
-				name: collection.collectionName
+				name: collection.collectionName,
+				label: collection.collectionLabel
 			};
 		});
 
