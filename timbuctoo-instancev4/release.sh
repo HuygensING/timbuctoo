@@ -18,14 +18,14 @@ git add pom.xml
 git commit -m "Release $currentversionNoSnapshot"
 
 git checkout stable
-git merge --ff-only master
+git merge -q --ff-only master
 
 tagname=v$currentversionNoSnapshot
 git tag $tagname
 
 git checkout master
 
-cat pom.xml | sed "s/$currentversionNoSnapshot<\/version><\!--marker for release.sh-->/$newversion<\/version><\!--marker for release.sh-->/" > pom.changed
+cat pom.xml | sed "s/$currentversionNoSnapshot<\/version><\!--marker for release.sh-->/${newversion}-SNAPSHOT<\/version><\!--marker for release.sh-->/" > pom.changed
 mv pom.changed pom.xml
 
 git add pom.xml
