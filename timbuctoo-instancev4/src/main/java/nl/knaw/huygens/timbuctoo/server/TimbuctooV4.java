@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.crud.changelistener.CompositeChangeListener;
@@ -50,6 +51,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.NorwegianNynorskToNorw
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
+import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.Redirections;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
@@ -180,6 +182,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put(AutocompleteLuceneIndexDatabaseMigration.class.getName() + "-reindex",
       new AutocompleteLuceneIndexDatabaseMigration());
 
+    final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
+
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final Vres vres = new DatabaseConfiguredVres(graphManager);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
@@ -191,14 +195,18 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new CollectionHasEntityRelationChangeListener(graphManager)
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
+    UrlGenerator makePathWithServer = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
+    UrlGenerator makePathWithoutServerAndVersion =
+      (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", ""));
+
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
       vres,
       handleAdder,
       userStore,
-      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
-      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
-      (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
+      makePathWithServer,
+      makePathWithServer,
+      makePathWithoutServerAndVersion,
       Clock.systemDefaultZone(),
       changeListeners,
       authorizer,
@@ -207,7 +215,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(
       graphManager,
-      (coll, id, rev) -> URI.create(configuration.getBaseUri() + SingleEntity.makeUrl(coll, id, rev).getPath()),
+      makePathWithServer,
       vres
     );
     final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
@@ -216,7 +224,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       graphManager,
       vres,
       userStore,
-      (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", "")),
+      makePathWithoutServerAndVersion,
       new Neo4jLuceneEntityFetcher(graphManager));
 
 
@@ -239,13 +247,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new WomenWritersEntityGet(womenWritersJsonCrudService));
+    register(environment, new Redirections(uriHelper));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager, vres));
     }
     register(environment, new Graph(graphManager, vres));
     // Bulk upload
-    UriHelper uriHelper = new UriHelper(configuration);
     UserPermissionChecker permissionChecker = new UserPermissionChecker(loggedInUserStore, authorizer);
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
