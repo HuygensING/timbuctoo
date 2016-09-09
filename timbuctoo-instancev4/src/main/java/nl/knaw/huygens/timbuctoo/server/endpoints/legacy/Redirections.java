@@ -10,6 +10,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
+@Path("/domain/")
 public class Redirections {
 
   private final UriHelper uriHelper;
@@ -18,7 +19,7 @@ public class Redirections {
     this.uriHelper = uriHelper;
   }
 
-  @Path("/domain/{collection}/{id}")
+  @Path("{collection}/{id}")
   public Response singleEntity(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id,
                                @QueryParam("rev") Integer rev) {
     return Response.status(301)
@@ -26,7 +27,7 @@ public class Redirections {
                    .build();
   }
 
-  @Path("/domain/{collection}")
+  @Path("{collection}")
   public Response index(@PathParam("collection") String collectionName) {
     return Response.status(301)
                    .location(uriHelper.fromResourceUri(Index.makeUrl(collectionName)))
