@@ -127,30 +127,8 @@ public class TinkerpopJsonCrudService {
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)
     throws IOException, AuthorizationException, AuthorizationUnavailableException {
-    JsonPropertyConverter converter = new JsonPropertyConverter(collection);
 
-    Iterator<String> fieldNames = input.fieldNames();
-    List<TimProperty<?>> properties = Lists.newArrayList();
-    while (fieldNames.hasNext()) {
-      String fieldName = fieldNames.next();
-      if (!fieldName.startsWith("@") && !fieldName.startsWith("^") && !fieldName.equals("_id")) {
-        try {
-          properties.add(converter.from(fieldName, input.get(fieldName)));
-        } catch (UnknownPropertyException e) {
-          LOG.error("Property with name '{}' is unknown for collection '{}'.", fieldName,
-            collection.getCollectionName());
-          throw new IOException(
-            String.format("Items of %s have no property %s", collection.getCollectionName(), fieldName));
-        } catch (IOException e) {
-          LOG.error("Property '{}' with value '{}' could not be converted", fieldName, input.get(fieldName));
-          throw new IOException(
-            String.format("Property '%s' could not be converted. %s", fieldName, e.getMessage()),
-            e
-          );
-        }
-      }
-    }
-
+    List<TimProperty<?>> properties = getDataProperties(collection, input);
     CreateEntity createEntity = new CreateEntity(properties);
 
     Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
@@ -169,6 +147,33 @@ public class TinkerpopJsonCrudService {
     // The handle can only be added after the changes are committed.
     handleAdder.add(new HandleAdderParameters(id, 1, handleUrlFor.apply(collection.getCollectionName(), id, 1)));
     return id;
+  }
+
+  /**
+   * Retrieve all the properties that contain client data.
+   */
+  private List<TimProperty<?>> getDataProperties(Collection collection, ObjectNode input) throws IOException {
+    JsonPropertyConverter converter = new JsonPropertyConverter(collection);
+
+    Set<String> fieldNames = getDataFields(input);
+    List<TimProperty<?>> properties = Lists.newArrayList();
+    for (String fieldName : fieldNames) {
+      try {
+        properties.add(converter.from(fieldName, input.get(fieldName)));
+      } catch (UnknownPropertyException e) {
+        LOG.error("Property with name '{}' is unknown for collection '{}'.", fieldName,
+          collection.getCollectionName());
+        throw new IOException(
+          String.format("Items of %s have no property %s", collection.getCollectionName(), fieldName));
+      } catch (IOException e) {
+        LOG.error("Property '{}' with value '{}' could not be converted", fieldName, input.get(fieldName));
+        throw new IOException(
+          String.format("Property '%s' could not be converted. %s", fieldName, e.getMessage()),
+          e
+        );
+      }
+    }
+    return properties;
   }
 
   public JsonNode get(String collectionName, UUID id) throws InvalidCollectionException, NotFoundException {
@@ -362,32 +367,24 @@ public class TinkerpopJsonCrudService {
     }
     int rev = data.get("^rev").asInt();
 
-    final Set<String> fieldNames = stream(data.fieldNames())
-      .filter(x -> !x.startsWith("@"))
-      .filter(x -> !x.startsWith("^"))
-      .filter(x -> !Objects.equals(x, "_id"))
-      .collect(toSet());
-
-    List<TimProperty<?>> properties = Lists.newArrayList();
-    JsonPropertyConverter converter = new JsonPropertyConverter(collection);
-    for (String fieldName : fieldNames) {
-      if (!fieldName.startsWith("@") && !fieldName.startsWith("^") && !fieldName.equals("_id")) {
-        try {
-          properties.add(converter.from(fieldName, data.get(fieldName)));
-        } catch (UnknownPropertyException e) {
-          LOG.error("Property with name '{}' is unknown for collection '{}'.", fieldName,
-            collection.getCollectionName());
-          throw new IOException(
-            String.format("Items of %s have no property %s", collection.getCollectionName(), fieldName));
-        } catch (IOException e) {
-          LOG.error("Property '{}' with value '{}' could not be converted", fieldName, data.get(fieldName));
-          throw new IOException(
-            String.format("Property '%s' could not be converted. %s", fieldName, e.getMessage()),
-            e
-          );
-        }
-      }
-    }
+    List<TimProperty<?>> properties =
+      getDataProperties(collection, data);
+    // for (String fieldName : fieldNames) {
+    //   try {
+    //     properties.add(converter.from(fieldName, data.get(fieldName)));
+    //   } catch (UnknownPropertyException e) {
+    //     LOG.error("Property with name '{}' is unknown for collection '{}'.", fieldName,
+    //       collection.getCollectionName());
+    //     throw new IOException(
+    //       String.format("Items of %s have no property %s", collection.getCollectionName(), fieldName));
+    //   } catch (IOException e) {
+    //     LOG.error("Property '{}' with value '{}' could not be converted", fieldName, data.get(fieldName));
+    //     throw new IOException(
+    //       String.format("Property '%s' could not be converted. %s", fieldName, e.getMessage()),
+    //       e
+    //     );
+    //   }
+    // }
 
     UpdateEntity updateEntity = new UpdateEntity(id, properties, rev, clock.instant());
 
@@ -420,6 +417,14 @@ public class TinkerpopJsonCrudService {
       newRev,
       handleUrlFor.apply(collection.getCollectionName(), id, newRev)
     ));
+  }
+
+  private Set<String> getDataFields(ObjectNode data) {
+    return stream(data.fieldNames())
+      .filter(x -> !x.startsWith("@"))
+      .filter(x -> !x.startsWith("^"))
+      .filter(x -> !Objects.equals(x, "_id"))
+      .collect(toSet());
   }
 
   public void delete(String collectionName, UUID id, String userId)

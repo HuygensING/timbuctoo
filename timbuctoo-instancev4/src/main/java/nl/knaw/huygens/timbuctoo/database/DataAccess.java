@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
@@ -20,7 +19,6 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverte
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.model.GraphReadUtils;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -136,7 +134,7 @@ public class DataAccess {
     }
 
     @SuppressWarnings("unchecked")
-    public static <V> V getRequiredProp(final Element element, final String key, V valueOnException) {
+    private static <V> V getRequiredProp(final Element element, final String key, V valueOnException) {
       try {
         Iterator<? extends Property<Object>> revProp = element.properties(key);
         if (revProp.hasNext()) {
