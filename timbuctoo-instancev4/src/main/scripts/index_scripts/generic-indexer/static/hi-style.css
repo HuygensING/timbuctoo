@@ -1,0 +1,22 @@
+@charset "UTF-8";
+/* CSS Document 
+
+*/
+@import 'https://fonts.googleapis.com/css?family=Roboto:300,300i,500,500i|Secular+One';
+
+body {
+	font-weight:300;
+	}
+
+strong {
+	font-weight:500;
+	}
+
+.hi-Green {
+	background-color: #269075;
+	}
+
+.logo {
+	height:1.5em;
+	width:auto;
+	}

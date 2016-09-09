@@ -20,7 +20,10 @@ $ bundle install # (may require root permissions)
 ## Starting the web app
 
 ```sh
+$ export TIMBUCTOO_URL=http://localhost:8080
+$ export SOLR_URL=http://localhost:8983/solr
 $ foreman start
 ```
 
 Then navigate to http://localhost:4567
+
