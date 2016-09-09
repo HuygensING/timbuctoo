@@ -45,7 +45,6 @@ import java.time.Clock;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
@@ -55,7 +54,6 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
-import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
@@ -361,10 +359,6 @@ public class TinkerpopJsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    Authorization authorization = authorizer.authorizationFor(collection, userId);
-    if (!authorization.isAllowedToWrite()) {
-      throw AuthorizationException.notAllowedToEdit(collectionName, id);
-    }
 
     if (collection.isRelationCollection()) {
       replaceRelation(collection, id, data, userId);
@@ -374,10 +368,7 @@ public class TinkerpopJsonCrudService {
   }
 
   private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId)
-    throws IOException, NotFoundException {
-
-    // FIXME: string concatenating methods like this should be delegated to a configuration class
-    final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
+    throws IOException, NotFoundException, AuthorizationException, AuthorizationUnavailableException {
 
     JsonNode accepted = data.get("accepted");
     if (accepted == null || !accepted.isBoolean()) {
@@ -387,6 +378,7 @@ public class TinkerpopJsonCrudService {
     if (rev == null || !rev.isNumber()) {
       throw new IOException("^rev must be a number");
     }
+
     for (Iterator<String> fieldNames = data.fieldNames(); fieldNames.hasNext(); ) {
       String name = fieldNames.next();
       if (!name.startsWith("^") && !name.startsWith("@") && !name.equals("_id") && !name.equals("accepted")) {
@@ -394,26 +386,14 @@ public class TinkerpopJsonCrudService {
       }
     }
 
-    Graph graph = graphwrapper.getGraph();
-    Edge origEdge;
-    try {
-      origEdge = graph.traversal().E()
-                      .has("tim_id", id.toString())
-                      .has("isLatest", true)
-                      .has("rev", rev.intValue())
-                      .next();
-    } catch (NoSuchElementException e) {
-      throw new NotFoundException();
+    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+      try {
+        db.replaceRelation(collection, id, rev.asInt(), accepted.asBoolean(), userId, clock.instant());
+      } catch (NotFoundException | AuthorizationUnavailableException | AuthorizationException e) {
+        db.rollback();
+        throw e;
+      }
     }
-
-    Edge edge = duplicateEdge(origEdge);
-    edge.property(acceptedPropName, accepted.booleanValue());
-    edge.property("rev", getProp(origEdge, "rev", Integer.class).orElse(1) + 1);
-    setModified(edge, userId);
-
-    //Make sure this is the last line of the method. We don't want to commit half our changes
-    //this also means checking each function that we call to see if they don't call commit()
-    graph.tx().commit();
   }
 
   private void replaceEntity(Collection collection, UUID id, ObjectNode data, String userId)

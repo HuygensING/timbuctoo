@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -53,6 +54,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
@@ -454,6 +456,36 @@ public class DataAccess {
       return newRev;
     }
 
+    public void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
+                                Instant instant)
+      throws NotFoundException, AuthorizationUnavailableException, AuthorizationException {
+
+      checkIfAllowedToWrite(authorizer, userId, collection);
+
+      // FIXME: string concatenating methods like this should be delegated to a configuration class
+      final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
+
+
+      // FIXME: throw a AlreadyUpdatedException when the rev of the client is not the latest
+      Edge origEdge;
+      try {
+        origEdge = traversal.E()
+                            .has("tim_id", id.toString())
+                            .has("isLatest", true)
+                            .has("rev", rev)
+                            .next();
+      } catch (NoSuchElementException e) {
+        throw new NotFoundException();
+      }
+
+      //FIXME: throw a distinct Exception when the client tries to save a relation with wrong source, target or type.
+
+      Edge edge = duplicateEdge(origEdge);
+      edge.property(acceptedPropName, accepted);
+      edge.property("rev", getProp(origEdge, "rev", Integer.class).orElse(1) + 1);
+      setModified(edge, userId, instant);
+    }
+
     /*******************************************************************************************************************
      * Support methods:
      ******************************************************************************************************************/
@@ -563,5 +595,7 @@ public class DataAccess {
       }
       listener.onUpdate(old, entity);
     }
+
+
   }
 }

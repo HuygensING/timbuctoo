@@ -34,6 +34,15 @@ DataAccess will solve both problems by becoming the only way to access the datab
  * ~~You may add a custom DataAccess implementation which only implements a few methods that will then be run in an experiment. So you can try out a new database without having to write a full implementation~~ might be added once we have one full implementation. 
  * initially there is no interface and only one implementation to facilitate easier refactoring
  
+## Issues
+ * DataAccess
+    * replaceRelation
+        * throw an AlreadyUpdatedException when the rev of the client is not the latest
+            * this is to prevent update wars.
+        * throw a distinct Exception when the client tries to save a relation with different source, target or type.
+            * we want to be sure the client updates the right relation.
+            * throw a new custom exception.
+ 
 ## Data model
 ### Entity
 Contains the information of the Entity saved in the database. 
