@@ -27,3 +27,6 @@ $ foreman start
 
 Then navigate to http://localhost:4567
 
+## Javascript sources for client app are from this project:
+
+https://github.com/HuygensING/timbuctoo-generic-search-client/tree/master
