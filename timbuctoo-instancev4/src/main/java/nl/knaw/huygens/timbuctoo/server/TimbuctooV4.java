@@ -51,7 +51,6 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.NorwegianNynorskToNorw
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.Redirections;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
@@ -247,7 +246,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
     register(environment, new WomenWritersEntityGet(womenWritersJsonCrudService));
-    register(environment, new Redirections(uriHelper));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager, vres));
