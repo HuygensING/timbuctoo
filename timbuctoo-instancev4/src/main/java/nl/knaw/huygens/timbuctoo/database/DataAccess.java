@@ -179,21 +179,6 @@ public class DataAccess {
       }
     }
 
-    private static String[] getEntityTypes(Element element) {
-      try {
-        String typesProp = getRequiredProp(element, "types", "");
-        if (typesProp.equals("[]")) {
-          LOG.error(databaseInvariant, "Entitytypes not presen on vertex with ID " + element.id());
-          return new String[0];
-        } else {
-          return arrayToEncodedArray.tinkerpopToJava(typesProp, String[].class);
-        }
-      } catch (IOException e) {
-        LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
-        return new String[0];
-      }
-    }
-
     private static Optional<RelationType> getRelationDescription(GraphTraversalSource traversal, UUID typeId) {
       return getFirst(traversal
         .V()
@@ -207,6 +192,21 @@ public class DataAccess {
       AuthorizationException, AuthorizationUnavailableException {
       if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
         throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
+      }
+    }
+
+    private static String[] getEntityTypes(Element element) {
+      try {
+        String typesProp = getRequiredProp(element, "types", "");
+        if (typesProp.equals("[]")) {
+          LOG.error(databaseInvariant, "Entitytypes not present on vertex with ID " + element.id());
+          return new String[0];
+        } else {
+          return arrayToEncodedArray.tinkerpopToJava(typesProp, String[].class);
+        }
+      } catch (IOException e) {
+        LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
+        return new String[0];
       }
     }
 
@@ -528,13 +528,9 @@ public class DataAccess {
       entity.property("rev", newRev);
 
       entity.edges(Direction.BOTH).forEachRemaining(edge -> {
-        try {
-          String entityType = getOwnEntityType(collection, edge);
-          if (entityType != null) {
-            edge.property(entityType + "_accepted", false);
-          }
-        } catch (IOException e) {
-          LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable");
+        Optional<Collection> ownEdgeCol = getOwnCollectionOfElement(collection.getVre(), edge);
+        if (ownEdgeCol.isPresent()) {
+          edge.property(ownEdgeCol.get().getEntityTypeName() + "_accepted", false);
         }
       });
 
@@ -656,14 +652,7 @@ public class DataAccess {
       listener.onUpdate(old, entity);
     }
 
-    private String getOwnEntityType(Collection collection, Element element) throws IOException {
-      final Vre vre = collection.getVre();
-      return GraphReadUtils.getEntityTypes(element)
-                           .map(x -> x.map(vre::getOwnType))
-                           .orElse(Try.success(collection.getEntityTypeName()))
-                           .get(); //throws IOException on failure
-    }
-  }
 
+  }
 
 }
