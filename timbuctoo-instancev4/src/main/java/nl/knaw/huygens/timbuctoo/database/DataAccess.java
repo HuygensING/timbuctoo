@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
@@ -18,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverte
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
+import nl.knaw.huygens.timbuctoo.model.GraphReadUtils;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -176,7 +179,7 @@ public class DataAccess {
       }
     }
 
-    public static String[] getEntityTypes(Element element) {
+    private static String[] getEntityTypes(Element element) {
       try {
         String typesProp = getRequiredProp(element, "types", "");
         if (typesProp.equals("[]")) {
@@ -486,6 +489,63 @@ public class DataAccess {
       setModified(edge, userId, instant);
     }
 
+    public int deleteEntity(Collection collection, UUID id, String userId, Instant deleteTime)
+      throws AuthorizationException, AuthorizationUnavailableException, NotFoundException {
+
+      checkIfAllowedToWrite(authorizer, userId, collection);
+
+      GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(traversal, id, null,
+        collection.getCollectionName());
+
+      if (!entityTraversal.hasNext()) {
+        throw new NotFoundException();
+      }
+
+      Vertex entity = entityTraversal.next();
+      String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
+      if (entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
+        try {
+          ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
+          if (entityTypes.size() == 1) {
+            entity.property("deleted", true);
+          } else {
+            for (int i = entityTypes.size() - 1; i >= 0; i--) {
+              JsonNode val = entityTypes.get(i);
+              if (val != null && val.asText("").equals(collection.getEntityTypeName())) {
+                entityTypes.remove(i);
+              }
+            }
+            entity.property("types", entityTypes.toString());
+          }
+        } catch (IOException e) {
+          LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
+        }
+      } else {
+        throw new NotFoundException();
+      }
+
+      int newRev = getProp(entity, "rev", Integer.class).orElse(1) + 1;
+      entity.property("rev", newRev);
+
+      entity.edges(Direction.BOTH).forEachRemaining(edge -> {
+        try {
+          String entityType = getOwnEntityType(collection, edge);
+          if (entityType != null) {
+            edge.property(entityType + "_accepted", false);
+          }
+        } catch (IOException e) {
+          LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable");
+        }
+      });
+
+      setModified(entity, userId, deleteTime);
+      entity.property("pid").remove();
+      callUpdateListener(entity);
+      duplicateVertex(traversal, entity);
+
+      return newRev;
+    }
+
     /*******************************************************************************************************************
      * Support methods:
      ******************************************************************************************************************/
@@ -596,6 +656,14 @@ public class DataAccess {
       listener.onUpdate(old, entity);
     }
 
-
+    private String getOwnEntityType(Collection collection, Element element) throws IOException {
+      final Vre vre = collection.getVre();
+      return GraphReadUtils.getEntityTypes(element)
+                           .map(x -> x.map(vre::getOwnType))
+                           .orElse(Try.success(collection.getEntityTypeName()))
+                           .get(); //throws IOException on failure
+    }
   }
+
+
 }

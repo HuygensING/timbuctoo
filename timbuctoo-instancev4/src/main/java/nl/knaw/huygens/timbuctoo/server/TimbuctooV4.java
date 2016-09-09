@@ -206,7 +206,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       handleAdder,
       userStore,
       uriWithRev,
-      uriWithRev,
       pathWithoutVersionAndRevision,
       Clock.systemDefaultZone(),
       changeListeners,

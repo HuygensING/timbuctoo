@@ -2,11 +2,9 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
@@ -17,11 +15,9 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
-import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -30,13 +26,6 @@ import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
-import org.apache.tinkerpop.gremlin.structure.Element;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.helpers.Strings;
 import org.slf4j.Logger;
 
@@ -54,11 +43,7 @@ import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
-import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
-import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypes;
-import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
-import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -69,35 +54,25 @@ public class TinkerpopJsonCrudService {
 
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(TinkerpopJsonCrudService.class);
 
-  private final GraphWrapper graphwrapper;
   private final Vres mappings;
   private final HandleAdder handleAdder;
   private final UrlGenerator handleUrlFor;
-  private final UrlGenerator autoCompleteUrlFor;
   private final UrlGenerator relationUrlFor;
   private final Clock clock;
   private final JsonNodeFactory nodeFactory;
   private final UserStore userStore;
-  private final ChangeListener listener;
   private final DataAccess dataAccess;
-  private Authorizer authorizer;
-  private EntityFetcher entityFetcher;
 
   public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
                                   HandleAdder handleAdder, UserStore userStore, UrlGenerator handleUrlFor,
-                                  UrlGenerator autoCompleteUrlFor, UrlGenerator relationUrlFor, Clock clock,
+                                  UrlGenerator relationUrlFor, Clock clock,
                                   ChangeListener listener, Authorizer authorizer, EntityFetcher entityFetcher) {
-    this.graphwrapper = graphwrapper;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
     this.handleUrlFor = handleUrlFor;
-    this.autoCompleteUrlFor = autoCompleteUrlFor;
     this.relationUrlFor = relationUrlFor;
     this.userStore = userStore;
     this.clock = clock;
-    this.listener = listener;
-    this.authorizer = authorizer;
-    this.entityFetcher = entityFetcher;
     this.dataAccess = new DataAccess(graphwrapper, entityFetcher, authorizer, listener, mappings);
     nodeFactory = JsonNodeFactory.instance;
   }
@@ -334,24 +309,6 @@ public class TinkerpopJsonCrudService {
     return changeNode;
   }
 
-  /* returns the entitytype for the current collection's vre or else the type of the current collection */
-
-  private String getOwnEntityType(Collection collection, Element vertex) throws IOException {
-    final Vre vre = collection.getVre();
-    return getEntityTypes(vertex)
-      .map(x -> x.map(vre::getOwnType))
-      .orElse(Try.success(collection.getEntityTypeName()))
-      .get(); //throws IOException on failure
-  }
-
-  private void setModified(Element element, String userId) {
-    String value = String.format("{\"timeStamp\":%s,\"userId\":%s}",
-      clock.millis(),
-      nodeFactory.textNode(userId)
-    );
-    element.property("modified", value);
-  }
-
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
     throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException, AuthorizationException,
     AuthorizationUnavailableException {
@@ -470,84 +427,22 @@ public class TinkerpopJsonCrudService {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
-
-    final Authorization authorization;
-    try {
-      authorization = authorizer.authorizationFor(collection, userId);
-      if (!authorization.isAllowedToWrite()) {
-        throw AuthorizationException.notAllowedToDelete(collectionName, id);
-      }
-    } catch (AuthorizationUnavailableException e) {
-      throw new IOException(e.getMessage());
-    }
-
-    final Graph graph = graphwrapper.getGraph();
-    final GraphTraversalSource traversalSource = graph.traversal();
-    GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(traversalSource, id, null, collectionName);
-
-    if (!entityTraversal.hasNext()) {
-      throw new NotFoundException();
-    }
-
-    Vertex entity = entityTraversal.next();
-    String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
-    if (entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
+    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
       try {
-        ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
-        if (entityTypes.size() == 1) {
-          entity.property("deleted", true);
-        } else {
-          for (int i = entityTypes.size() - 1; i >= 0; i--) {
-            JsonNode val = entityTypes.get(i);
-            if (val != null && val.asText("").equals(collection.getEntityTypeName())) {
-              entityTypes.remove(i);
-            }
-          }
-          entity.property("types", entityTypes.toString());
-        }
-      } catch (IOException e) {
-        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
+        int newRev = db.deleteEntity(collection, id, userId, clock.instant());
+        handleAdder.add(new HandleAdderParameters(id, newRev, handleUrlFor.apply(collectionName, id, newRev)));
+
+        //Make sure this is the last line of the method. We don't want to commit half our changes
+        //this also means checking each function that we call to see if they don't call commit()
+        db.success();
+      } catch (NotFoundException | AuthorizationException e) {
+        db.rollback();
+        throw e;
+      } catch (AuthorizationUnavailableException e) {
+        db.rollback();
+        throw new IOException(e.getMessage());
       }
-    } else {
-      throw new NotFoundException();
     }
-    int newRev = getProp(entity, "rev", Integer.class).orElse(1) + 1;
-    entity.property("rev", newRev);
 
-    entity.edges(Direction.BOTH).forEachRemaining(edge -> {
-      try {
-        String entityType = getOwnEntityType(collection, edge);
-        if (entityType != null) {
-          edge.property(entityType + "_accepted", false);
-        }
-      } catch (IOException e) {
-        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable");
-      }
-    });
-
-    setModified(entity, userId);
-    entity.property("pid").remove();
-    callUpdateListener(entity);
-    duplicateVertex(graph, entity);
-
-
-    handleAdder.add(new HandleAdderParameters(id, newRev, handleUrlFor.apply(collectionName, id, newRev)));
-
-    //Make sure this is the last line of the method. We don't want to commit half our changes
-    //this also means checking each function that we call to see if they don't call commit()
-    graph.tx().commit();
   }
-
-  private void callUpdateListener(Vertex entity) {
-    final Iterator<Edge> prevEdges = entity.edges(Direction.IN, "VERSION_OF");
-    Optional<Vertex> old = Optional.empty();
-    if (prevEdges.hasNext()) {
-      old = Optional.of(prevEdges.next().outVertex());
-    } else {
-      LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
-    }
-    listener.onUpdate(old, entity);
-  }
-
-
 }

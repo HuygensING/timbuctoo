@@ -100,7 +100,7 @@ public class JsonCrudServiceBuilder {
 
   public TinkerpopJsonCrudService build() {
     return new TinkerpopJsonCrudService(graphWrapper, vres, handleAdder, userStore, handleUrlGenerator,
-      autoCompleteUrlGenerator, relationUrlGenerator, clock, changeListener, authorizer,
+      relationUrlGenerator, clock, changeListener, authorizer,
       entityFetcher);
   }
 
