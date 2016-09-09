@@ -6,13 +6,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.property.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
@@ -111,11 +111,6 @@ public class TinkerpopJsonCrudService {
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
     try {
-      Authorization authorization = authorizer.authorizationFor(collection, userId);
-      if (!authorization.isAllowedToWrite()) {
-        throw AuthorizationException.notAllowedToCreate(collectionName);
-      }
-
       if (collection.isRelationCollection()) {
         return createRelation(collection, input, userId);
       } else {
@@ -198,7 +193,7 @@ public class TinkerpopJsonCrudService {
       }
     }
 
-    //but out of process commands that require our changes need to come after a commit of course :)
+    // The handle can only be added after the changes are committed.
     handleAdder.add(new HandleAdderParameters(id, 1, handleUrlFor.apply(collection.getCollectionName(), id, 1)));
     return id;
   }
@@ -422,78 +417,67 @@ public class TinkerpopJsonCrudService {
   }
 
   private void replaceEntity(Collection collection, UUID id, ObjectNode data, String userId)
-    throws NotFoundException, IOException, AlreadyUpdatedException {
+    throws NotFoundException, IOException, AlreadyUpdatedException, AuthorizationException,
+    AuthorizationUnavailableException {
 
-    final Graph graph = graphwrapper.getGraph();
-    final GraphTraversalSource traversalSource = graph.traversal();
-
-    GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(traversalSource, id, null,
-      collection.getCollectionName());
-
-    if (!entityTraversal.hasNext()) {
-      throw new NotFoundException();
-    }
-    Vertex entity = entityTraversal.next();
-    int curRev = getProp(entity, "rev", Integer.class).orElse(1);
     if (data.get("^rev") == null) {
       throw new IOException("data object should have a ^rev property indicating the revision this update was based on");
     }
-    if (curRev != data.get("^rev").asInt()) {
-      throw new AlreadyUpdatedException();
-    }
+    int rev = data.get("^rev").asInt();
 
-    int newRev = curRev + 1;
-    entity.property("rev", newRev);
-
-    String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
-    if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
-      try {
-        ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
-        entityTypes.add(collection.getEntityTypeName());
-
-        entity.property("types", entityTypes.toString());
-      } catch (IOException e) {
-        LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
-      }
-    }
-
-    final Map<String, LocalProperty> collectionProperties = collection.getWriteableProperties();
-
-    final Set<String> dataFields = stream(data.fieldNames())
+    final Set<String> fieldNames = stream(data.fieldNames())
       .filter(x -> !x.startsWith("@"))
       .filter(x -> !x.startsWith("^"))
       .filter(x -> !Objects.equals(x, "_id"))
       .collect(toSet());
 
-    for (String name : dataFields) {
+    List<TimProperty<?>> properties = Lists.newArrayList();
+    JsonPropertyConverter converter = new JsonPropertyConverter(collection);
+    for (String fieldName : fieldNames) {
+      if (!fieldName.startsWith("@") && !fieldName.startsWith("^") && !fieldName.equals("_id")) {
+        try {
+          properties.add(converter.from(fieldName, data.get(fieldName)));
+        } catch (UnknownPropertyException e) {
+          LOG.error("Property with name '{}' is unknown for collection '{}'.", fieldName,
+            collection.getCollectionName());
+          throw new IOException(
+            String.format("Items of %s have no property %s", collection.getCollectionName(), fieldName));
+        } catch (IOException e) {
+          LOG.error("Property '{}' with value '{}' could not be converted", fieldName, data.get(fieldName));
+          throw new IOException(
+            String.format("Property '%s' could not be converted. %s", fieldName, e.getMessage()),
+            e
+          );
+        }
+      }
+    }
+
+    UpdateEntity updateEntity = new UpdateEntity(id, properties, rev, clock.instant());
+
+
+    final Map<String, LocalProperty> collectionProperties = collection.getWriteableProperties();
+
+    Set<String> propertyNames =
+      updateEntity.getProperties().stream().map(prop -> prop.getName()).collect(Collectors.toSet());
+
+    for (String name : propertyNames) {
       if (!collectionProperties.containsKey(name)) {
-        graph.tx().rollback();
         throw new IOException(name + " is not a valid property");
       }
+    }
+    int newRev;
+    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
       try {
-        collectionProperties.get(name).setJson(entity, data.get(name));
-      } catch (IOException e) {
-        graph.tx().rollback();
-        throw new IOException(name + " could not be saved. " + e.getMessage(), e);
+        newRev = db.replaceEntity(collection, userId, updateEntity);
+        db.success();
+      } catch (NotFoundException | IOException | AlreadyUpdatedException | AuthorizationUnavailableException |
+        AuthorizationException e) {
+        db.rollback();
+        throw e;
       }
     }
 
-    for (String name : Sets.difference(collectionProperties.keySet(), dataFields)) {
-      collectionProperties.get(name).setJson(entity, null);
-    }
-
-    setModified(entity, userId);
-    entity.property("pid").remove();
-
-    callUpdateListener(entity);
-
-    duplicateVertex(graph, entity);
-
-    //Make sure this is at the last line of the method. We don't want to commit half our changes
-    //this also means checking each function that we call to see if they don't call commit()
-    graph.tx().commit();
-
-    //but out of process commands that require our changes need to come after a commit of course :)
+    // The handle can only be added after the changes are committed.
     handleAdder.add(new HandleAdderParameters(
       id,
       newRev,

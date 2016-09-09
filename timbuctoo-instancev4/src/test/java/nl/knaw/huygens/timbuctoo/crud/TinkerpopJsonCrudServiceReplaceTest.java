@@ -49,6 +49,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class TinkerpopJsonCrudServiceReplaceTest {
@@ -325,9 +326,9 @@ public class TinkerpopJsonCrudServiceReplaceTest {
   }
 
   @Test
-  public void throwsWhenPropertyMapperThrowsProperties() throws Exception {
+  public void throwsWhenPropertyCannotBeParsed() throws Exception {
     LocalProperty throwingMap = mock(LocalProperty.class);
-    doThrow(new IOException("MOCKED PARSE ERROR")).when(throwingMap).setJson(any(), any());
+    when(throwingMap.getUniqueTypeId()).thenReturn("person-names");
 
     String id = UUID.randomUUID().toString();
     Graph graph = newGraph()
@@ -347,9 +348,9 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       ).build(Maps.newHashMap())).forGraph(graph);
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
-    expectedException.expectMessage(new RegexMatcher(Pattern.compile(".*name.*")));
+    expectedException.expectMessage(containsString("'name'"));
 
-    instance.replace("wwpersons", UUID.fromString(id), JsonBuilder.jsnO("name", jsn("Hans"), "^rev", jsn(1)), "");
+    instance.replace("wwpersons", UUID.fromString(id), jsnO("name", jsn("notAPersonNamesString"), "^rev", jsn(1)), "");
   }
 
   @Test
@@ -371,7 +372,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
     TinkerpopJsonCrudService instance =
       newJsonCrudService().withHandleAdder(urlGen, handleAdder).forGraph(graph);
 
-    instance.replace("wwpersons", UUID.fromString(uuid), JsonBuilder.jsnO("^rev", jsn(oldRev)), "");
+    instance.replace("wwpersons", UUID.fromString(uuid), jsnO("^rev", jsn(oldRev)), "");
 
     verify(handleAdder, times(1)).add(
       new HandleAdderParameters(
@@ -414,7 +415,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
       .withChangeListener(changeListener)
       .forGraph(graph);
 
-    instance.replace("wwpersons", UUID.fromString(uuid), JsonBuilder.jsnO("^rev", jsn(oldRev)), "");
+    instance.replace("wwpersons", UUID.fromString(uuid), jsnO("^rev", jsn(oldRev)), "");
 
     verify(changeListener).onUpdate(any(), argThat(likeVertex().withoutProperty("pid")));
   }
@@ -504,6 +505,7 @@ public class TinkerpopJsonCrudServiceReplaceTest {
         .withTimId(id)
         .withProperty("isLatest", true)
         .withProperty("rev", 2)
+        .withType("wwperson")
       )
       .build();
     TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);

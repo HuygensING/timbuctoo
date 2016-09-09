@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
@@ -9,10 +12,12 @@ import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -42,8 +47,10 @@ import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
@@ -86,8 +93,8 @@ public class DataAccess {
     private final EntityFetcher entityFetcher;
     private final Vres mappings;
     private final GraphTraversalSource traversal;
-    private Optional<Boolean> isSuccess = Optional.empty();
     private final GraphTraversalSource latestState;
+    private Optional<Boolean> isSuccess = Optional.empty();
 
     private DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
                               EntityFetcher entityFetcher, Vres mappings) {
@@ -103,6 +110,100 @@ public class DataAccess {
       this.latestState = graphWrapper.getLatestState();
     }
 
+    private static UUID asUuid(String input, Element source) {
+      try {
+        return UUID.fromString(input);
+      } catch (IllegalArgumentException e) {
+        LOG.error(databaseInvariant, "wrongly formatted UUID as tim_id: " + input + " on " +
+          source.id());
+        return UUID.fromString("00000000-0000-0000-0000-000000000000");
+      }
+    }
+
+    private static EntityRelation makeEntityRelation(Edge edge, Collection collection) {
+      final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
+
+      return ImmutableEntityRelation.builder()
+                                    .isAccepted(getRequiredProp(edge, acceptedPropName, false))
+                                    .timId(asUuid(getRequiredProp(edge, "tim_id", ""), edge))
+                                    .revision(getRequiredProp(edge, "rev", -1))
+                                    .build();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <V> V getRequiredProp(final Element element, final String key, V valueOnException) {
+      try {
+        Iterator<? extends Property<Object>> revProp = element.properties(key);
+        if (revProp.hasNext()) {
+          Object value = revProp.next().value();
+          return (V) valueOnException.getClass().cast(value);
+        } else {
+          LOG.error(databaseInvariant, "Value is missing for property " + key + " on element with id " + element.id());
+          return valueOnException;
+        }
+      } catch (RuntimeException e) {
+        LOG.error(databaseInvariant, "Something went wrong while getting the property " + key + " from the element " +
+          "with id " + (element != null ? element.id() : "<NULL>") + ": " + e.getMessage());
+        return valueOnException;
+      }
+    }
+
+    private static Optional<Vertex> getEntityByFullIteration(GraphTraversalSource traversal, UUID id) {
+      return getFirst(traversal
+        .V()
+        .has("tim_id", id.toString())
+        .not(__.has("deleted", true))
+        .has("isLatest", true));
+    }
+
+    private static <T> Optional<T> getFirst(Traversal<?, T> traversal) {
+      if (traversal.hasNext()) {
+        return Optional.of(traversal.next());
+      } else {
+        return Optional.empty();
+      }
+    }
+
+    private static Edge getExpectedEdge(GraphTraversalSource traversal, String timId) {
+      GraphTraversal<Edge, Edge> edge = traversal.E().has("tim_id", timId);
+      if (edge.hasNext()) {
+        return edge.next();
+      } else {
+        throw new ObjectSuddenlyDisappearedException("The code assumes that the edge with id " + timId + " is " +
+          "available, but it isn't!");
+      }
+    }
+
+    public static String[] getEntityTypes(Element element) {
+      try {
+        String typesProp = getRequiredProp(element, "types", "");
+        if (typesProp.equals("[]")) {
+          LOG.error(databaseInvariant, "Entitytypes not presen on vertex with ID " + element.id());
+          return new String[0];
+        } else {
+          return arrayToEncodedArray.tinkerpopToJava(typesProp, String[].class);
+        }
+      } catch (IOException e) {
+        LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
+        return new String[0];
+      }
+    }
+
+    private static Optional<RelationType> getRelationDescription(GraphTraversalSource traversal, UUID typeId) {
+      return getFirst(traversal
+        .V()
+        //.has(T.label, LabelP.of("relationtype"))
+        .has("tim_id", typeId.toString())
+      )
+        .map(RelationType::new);
+    }
+
+    private static void checkIfAllowedToWrite(Authorizer authorizer, String userId, Collection collection) throws
+      AuthorizationException, AuthorizationUnavailableException {
+      if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
+        throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
+      }
+    }
 
     public void success() {
       isSuccess = Optional.of(true);
@@ -132,18 +233,17 @@ public class DataAccess {
     /**
      * Creates a relation between two entities.
      * <p>If a relation already exists, it will not create a new one.</p>
-     * @param sourceId Id of the source Entity
-     * @param typeId Id of the relation type
-     * @param targetId Id of the target Entity
+     *
+     * @param sourceId   Id of the source Entity
+     * @param typeId     Id of the relation type
+     * @param targetId   Id of the target Entity
      * @param collection the relation collection (not the collection of the source or target vertices)
-     * @param userId the user under which the relation is created. Will be validated and written to the database
-     * @param instant the time under which the acceptance should be recorded
-     *
+     * @param userId     the user under which the relation is created. Will be validated and written to the database
+     * @param instant    the time under which the acceptance should be recorded
      * @return the UUID of the relation
-     *
-     * @throws RelationNotPossibleException if a relation is not possible
+     * @throws RelationNotPossibleException      if a relation is not possible
      * @throws AuthorizationUnavailableException if the relation datafile cannot be read
-     * @throws AuthorizationException if the user is not authorized
+     * @throws AuthorizationException            if the user is not authorized
      */
     public UUID acceptRelation(UUID sourceId, UUID typeId, UUID targetId, Collection collection, String userId,
                                Instant instant) throws RelationNotPossibleException, AuthorizationUnavailableException,
@@ -276,6 +376,84 @@ public class DataAccess {
       return entities.toStream().map(entityMapper::mapEntity);
     }
 
+    /**
+     * Sets the new values of the entity contained in replaceEntity and removes the other values.
+     *
+     * @return the new revision of entity
+     * @throws NotFoundException       when the entity does not exist in the database
+     * @throws AlreadyUpdatedException when the entity is updated in between the read and this update
+     */
+    public int replaceEntity(Collection collection, String userId, UpdateEntity updateEntity)
+      throws NotFoundException, AlreadyUpdatedException, IOException, AuthorizationUnavailableException,
+      AuthorizationException {
+
+      checkIfAllowedToWrite(authorizer, userId, collection);
+
+      GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(
+        this.traversal,
+        updateEntity.getId(),
+        null,
+        collection.getCollectionName()
+      );
+
+
+      if (!entityTraversal.hasNext()) {
+        throw new NotFoundException();
+      }
+
+      Vertex entityVertex = entityTraversal.next();
+
+      int curRev = getProp(entityVertex, "rev", Integer.class).orElse(1);
+      if (curRev != updateEntity.getRev()) {
+        throw new AlreadyUpdatedException();
+      }
+
+      int newRev = updateEntity.getRev() + 1;
+      entityVertex.property("rev", newRev);
+
+      // update properties
+      TinkerPopPropertyConverter tinkerPopPropertyConverter = new TinkerPopPropertyConverter(collection);
+      for (TimProperty<?> property : updateEntity.getProperties()) {
+        try {
+          Tuple<String, Object> nameValue = property.convert(tinkerPopPropertyConverter);
+
+          collection.getWriteableProperties().get(nameValue.getLeft()).setValue(entityVertex, nameValue.getRight());
+        } catch (IOException e) {
+          throw new IOException(property.getName() + " could not be saved. " + e.getMessage(), e);
+        }
+      }
+
+      // Set removed values to null.
+      Set<String> propertyNames = updateEntity.getProperties().stream()
+                                              .map(prop -> prop.getName())
+                                              .collect(Collectors.toSet());
+      for (String name : Sets.difference(collection.getWriteableProperties().keySet(),
+        propertyNames)) {
+        collection.getWriteableProperties().get(name).setJson(entityVertex, null);
+      }
+
+      String entityTypesStr = getProp(entityVertex, "types", String.class).orElse("[]");
+      if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
+        try {
+          ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
+          entityTypes.add(collection.getEntityTypeName());
+
+          entityVertex.property("types", entityTypes.toString());
+        } catch (IOException e) {
+          // FIXME potential bug?
+          LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
+        }
+      }
+
+      setModified(entityVertex, userId, updateEntity.getUpdateInstant());
+      entityVertex.property("pid").remove();
+
+      callUpdateListener(entityVertex);
+
+      duplicateVertex(traversal, entityVertex);
+      return newRev;
+    }
+
     /*******************************************************************************************************************
      * Support methods:
      ******************************************************************************************************************/
@@ -361,101 +539,6 @@ public class DataAccess {
       element.property("modified", value);
     }
 
-    private static UUID asUuid(String input, Element source) {
-      try {
-        return UUID.fromString(input);
-      } catch (IllegalArgumentException e) {
-        LOG.error(databaseInvariant, "wrongly formatted UUID as tim_id: " + input + " on " +
-          source.id());
-        return UUID.fromString("00000000-0000-0000-0000-000000000000");
-      }
-    }
-
-    private static EntityRelation makeEntityRelation(Edge edge, Collection collection) {
-      final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
-
-      return ImmutableEntityRelation.builder()
-                                    .isAccepted(getRequiredProp(edge, acceptedPropName, false))
-                                    .timId(asUuid(getRequiredProp(edge, "tim_id", ""), edge))
-                                    .revision(getRequiredProp(edge, "rev", -1))
-                                    .build();
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <V> V getRequiredProp(final Element element, final String key, V valueOnException) {
-      try {
-        Iterator<? extends Property<Object>> revProp = element.properties(key);
-        if (revProp.hasNext()) {
-          Object value = revProp.next().value();
-          return (V) valueOnException.getClass().cast(value);
-        } else {
-          LOG.error(databaseInvariant, "Value is missing for property " + key + " on element with id " + element.id());
-          return valueOnException;
-        }
-      } catch (RuntimeException e) {
-        LOG.error(databaseInvariant, "Something went wrong while getting the property " + key + " from the element " +
-          "with id " + (element != null ? element.id() : "<NULL>") + ": " + e.getMessage());
-        return valueOnException;
-      }
-    }
-
-    private static Optional<Vertex> getEntityByFullIteration(GraphTraversalSource traversal, UUID id) {
-      return getFirst(traversal
-        .V()
-        .has("tim_id", id.toString())
-        .not(__.has("deleted", true))
-        .has("isLatest", true));
-    }
-
-    private static <T> Optional<T> getFirst(Traversal<?, T> traversal) {
-      if (traversal.hasNext()) {
-        return Optional.of(traversal.next());
-      } else {
-        return Optional.empty();
-      }
-    }
-
-    private static Edge getExpectedEdge(GraphTraversalSource traversal, String timId) {
-      GraphTraversal<Edge, Edge> edge = traversal.E().has("tim_id", timId);
-      if (edge.hasNext()) {
-        return edge.next();
-      } else {
-        throw new ObjectSuddenlyDisappearedException("The code assumes that the edge with id " + timId + " is " +
-          "available, but it isn't!");
-      }
-    }
-
-    public static String[] getEntityTypes(Element element) {
-      try {
-        String typesProp = getRequiredProp(element, "types", "");
-        if (typesProp.equals("[]")) {
-          LOG.error(databaseInvariant, "Entitytypes not presen on vertex with ID " + element.id());
-          return new String[0];
-        } else {
-          return arrayToEncodedArray.tinkerpopToJava(typesProp, String[].class);
-        }
-      } catch (IOException e) {
-        LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
-        return new String[0];
-      }
-    }
-
-    private static Optional<RelationType> getRelationDescription(GraphTraversalSource traversal, UUID typeId) {
-      return getFirst(traversal
-        .V()
-        //.has(T.label, LabelP.of("relationtype"))
-        .has("tim_id", typeId.toString())
-      )
-        .map(RelationType::new);
-    }
-
-    private static void checkIfAllowedToWrite(Authorizer authorizer, String userId, Collection collection) throws
-      AuthorizationException, AuthorizationUnavailableException {
-      if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
-        throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
-      }
-    }
-
     private GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
       if (entityTypeNames.length == 1) {
         String type = entityTypeNames[0];
@@ -468,6 +551,17 @@ public class DataAccess {
 
         return latestState.V().has(T.label, labels);
       }
+    }
+
+    private void callUpdateListener(Vertex entity) {
+      final Iterator<Edge> prevEdges = entity.edges(Direction.IN, "VERSION_OF");
+      Optional<Vertex> old = Optional.empty();
+      if (prevEdges.hasNext()) {
+        old = Optional.of(prevEdges.next().outVertex());
+      } else {
+        LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
+      }
+      listener.onUpdate(old, entity);
     }
   }
 }
