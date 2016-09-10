@@ -1,13 +1,15 @@
 package nl.knaw.huygens.timbuctoo.remote.rs;
 
 
+import com.google.common.base.Preconditions;
+
+import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAnyAttribute;
 import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 
 @XmlType(name = "ln",
@@ -30,17 +32,17 @@ public class RsLnBean {
 
   private RsLnBean() {}
 
-  public RsLnBean(String rel, String href) {
-    this.rel = rel;
-    this.href = href;
+  public RsLnBean(@Nonnull String rel, @Nonnull String href) {
+    this.rel = Preconditions.checkNotNull(rel);
+    this.href = Preconditions.checkNotNull(href);
   }
 
   public String getRel() {
     return rel;
   }
 
-  public RsLnBean setRel(String rel) {
-    this.rel = rel;
+  public RsLnBean setRel(@Nonnull String rel) {
+    this.rel = Preconditions.checkNotNull(rel);
     return this;
   }
 
@@ -48,13 +50,13 @@ public class RsLnBean {
     return href;
   }
 
-  public RsLnBean setHref(String href) {
-    this.href = href;
+  public RsLnBean setHref(@Nonnull String href) {
+    this.href = Preconditions.checkNotNull(href);
     return this;
   }
 
-  public String getEncoding() {
-    return encoding;
+  public Optional<String> getEncoding() {
+    return Optional.ofNullable(encoding);
   }
 
   public RsLnBean setEncoding(String encoding) {
@@ -62,8 +64,8 @@ public class RsLnBean {
     return this;
   }
 
-  public String getHash() {
-    return hash;
+  public Optional<String> getHash() {
+    return Optional.ofNullable(hash);
   }
 
   public RsLnBean setHash(String hash) {
@@ -71,8 +73,8 @@ public class RsLnBean {
     return this;
   }
 
-  public Long getLength() {
-    return length;
+  public Optional<Long> getLength() {
+    return Optional.ofNullable(length);
   }
 
   public RsLnBean setLength(Long length) {
@@ -80,8 +82,8 @@ public class RsLnBean {
     return this;
   }
 
-  public ZonedDateTime getModified() {
-    return modified;
+  public Optional<ZonedDateTime> getModified() {
+    return Optional.ofNullable(modified);
   }
 
   public RsLnBean setModified(ZonedDateTime modified) {
@@ -89,8 +91,8 @@ public class RsLnBean {
     return this;
   }
 
-  public String getPath() {
-    return path;
+  public Optional<String> getPath() {
+    return Optional.ofNullable(path);
   }
 
   public RsLnBean setPath(String path) {
@@ -98,8 +100,8 @@ public class RsLnBean {
     return this;
   }
 
-  public Integer getPri() {
-    return pri;
+  public Optional<Integer> getPri() {
+    return Optional.ofNullable(pri);
   }
 
   public RsLnBean setPri(Integer pri) {
@@ -107,8 +109,8 @@ public class RsLnBean {
     return this;
   }
 
-  public String getType() {
-    return type;
+  public Optional<String> getType() {
+    return Optional.ofNullable(type);
   }
 
   public RsLnBean setType(String type) {

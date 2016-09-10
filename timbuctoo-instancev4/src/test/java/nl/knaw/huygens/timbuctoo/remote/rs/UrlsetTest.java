@@ -15,7 +15,7 @@ import java.time.ZonedDateTime;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-public class UrlsetBeanTest {
+public class UrlsetTest {
 
   @Test
   public void testSerializeDeserialize() throws JAXBException {
@@ -43,21 +43,21 @@ public class UrlsetBeanTest {
       .setPri(1)
       .setType("application/xml");
 
-    UrlBean url1 = new UrlBean("http://example.com/capabilitylist1.xml")
-      .setRsMd(urlRsMd)
+    UrlItem url1 = new UrlItem("http://example.com/capabilitylist1.xml")
+      .setMetadata(urlRsMd)
       .add(urlLink1)
       .add(new RsLnBean("duplicate", "http://also.com/capabilitylist1.xml"));
 
-    UrlBean url2 = new UrlBean("http://example.com/capabilitylist2.xml");
+    UrlItem url2 = new UrlItem("http://example.com/capabilitylist2.xml");
 
-    UrlsetBean urlset = new UrlsetBean(rsMd)
+    Urlset urlset = new Urlset(rsMd)
       .add(new RsLnBean("describedby", "http://example.com/info_about_source.xml"))
       .add(new RsLnBean("up", "http://example.com/attic"))
       .add(url1)
       .add(url2);
 
 
-    JAXBContext jaxbContext = JAXBContext.newInstance(UrlsetBean.class);
+    JAXBContext jaxbContext = JAXBContext.newInstance(Urlset.class);
     Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 
     jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
@@ -69,7 +69,7 @@ public class UrlsetBeanTest {
 
     Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
     InputStream in = IOUtils.toInputStream(writer.toString());
-    UrlsetBean returned = (UrlsetBean) jaxbUnmarshaller.unmarshal(in);
+    Urlset returned = (Urlset) jaxbUnmarshaller.unmarshal(in);
     IOUtils.closeQuietly(in);
 
     writer = new StringWriter();
@@ -81,4 +81,5 @@ public class UrlsetBeanTest {
     assertThat(output2, equalTo(output1));
 
   }
+
 }

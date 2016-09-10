@@ -1,11 +1,15 @@
 package nl.knaw.huygens.timbuctoo.remote.rs;
 
 
+import com.google.common.base.Preconditions;
+
+import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import java.time.ZonedDateTime;
+import java.util.Optional;
 
 @XmlType(name = "md",
   namespace = "http://www.openarchives.org/rs/terms/"
@@ -13,8 +17,9 @@ import java.time.ZonedDateTime;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class RsMdBean {
 
-  @XmlAttribute() private ZonedDateTime at;
   @XmlAttribute() private String capability;
+
+  @XmlAttribute() private ZonedDateTime at;
   @XmlAttribute() private ZonedDateTime completed;
   @XmlAttribute() private ZonedDateTime from;
   @XmlAttribute() private ZonedDateTime until;
@@ -28,12 +33,21 @@ public class RsMdBean {
 
   private RsMdBean() {}
 
-  public RsMdBean(String capability) {
-    this.capability = capability;
+  public RsMdBean(@Nonnull String capability) {
+    this.capability = Preconditions.checkNotNull(capability);
   }
 
-  public ZonedDateTime getAt() {
-    return at;
+  public String getCapability() {
+    return capability;
+  }
+
+  public RsMdBean setCapability(@Nonnull String capability) {
+    this.capability = Preconditions.checkNotNull(capability);
+    return this;
+  }
+
+  public Optional<ZonedDateTime> getAt() {
+    return Optional.ofNullable(at);
   }
 
   public RsMdBean setAt(ZonedDateTime at) {
@@ -41,17 +55,8 @@ public class RsMdBean {
     return this;
   }
 
-  public String getCapability() {
-    return capability;
-  }
-
-  public RsMdBean setCapability(String capability) {
-    this.capability = capability;
-    return this;
-  }
-
-  public ZonedDateTime getCompleted() {
-    return completed;
+  public Optional<ZonedDateTime> getCompleted() {
+    return Optional.ofNullable(completed);
   }
 
   public RsMdBean setCompleted(ZonedDateTime completed) {
@@ -59,8 +64,8 @@ public class RsMdBean {
     return this;
   }
 
-  public ZonedDateTime getFrom() {
-    return from;
+  public Optional<ZonedDateTime> getFrom() {
+    return Optional.ofNullable(from);
   }
 
   public RsMdBean setFrom(ZonedDateTime from) {
@@ -68,8 +73,8 @@ public class RsMdBean {
     return this;
   }
 
-  public ZonedDateTime getUntil() {
-    return until;
+  public Optional<ZonedDateTime> getUntil() {
+    return Optional.ofNullable(until);
   }
 
   public RsMdBean setUntil(ZonedDateTime until) {
@@ -77,8 +82,8 @@ public class RsMdBean {
     return this;
   }
 
-  public String getChange() {
-    return change;
+  public Optional<String> getChange() {
+    return Optional.ofNullable(change);
   }
 
   public RsMdBean setChange(String change) {
@@ -86,8 +91,8 @@ public class RsMdBean {
     return this;
   }
 
-  public String getEncoding() {
-    return encoding;
+  public Optional<String> getEncoding() {
+    return Optional.ofNullable(encoding);
   }
 
   public RsMdBean setEncoding(String encoding) {
@@ -95,8 +100,8 @@ public class RsMdBean {
     return this;
   }
 
-  public String getHash() {
-    return hash;
+  public Optional<String> getHash() {
+    return Optional.ofNullable(hash);
   }
 
   public RsMdBean setHash(String hash) {
@@ -104,8 +109,8 @@ public class RsMdBean {
     return this;
   }
 
-  public Long getLength() {
-    return length;
+  public Optional<Long> getLength() {
+    return Optional.ofNullable(length);
   }
 
   public RsMdBean setLength(Long length) {
@@ -113,8 +118,8 @@ public class RsMdBean {
     return this;
   }
 
-  public String getPath() {
-    return path;
+  public Optional<String> getPath() {
+    return Optional.ofNullable(path);
   }
 
   public RsMdBean setPath(String path) {
@@ -122,8 +127,8 @@ public class RsMdBean {
     return this;
   }
 
-  public String getType() {
-    return type;
+  public Optional<String> getType() {
+    return Optional.ofNullable(type);
   }
 
   public RsMdBean setType(String type) {
