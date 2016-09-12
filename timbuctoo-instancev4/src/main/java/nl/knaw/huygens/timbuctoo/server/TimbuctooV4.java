@@ -195,18 +195,19 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new CollectionHasEntityRelationChangeListener(graphManager)
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
-    UrlGenerator makePathWithServer = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
-    UrlGenerator makePathWithoutServerAndVersion =
+    UrlGenerator uriWithRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
+    UrlGenerator pathWithoutVersion =
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", ""));
+    UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
       graphManager,
       vres,
       handleAdder,
       userStore,
-      makePathWithServer,
-      makePathWithServer,
-      makePathWithoutServerAndVersion,
+      uriWithRev,
+      uriWithRev,
+      pathWithoutVersion,
       Clock.systemDefaultZone(),
       changeListeners,
       authorizer,
@@ -215,7 +216,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(
       graphManager,
-      (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null)),
+      uriWithoutRev,
       vres
     );
     final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
@@ -224,7 +225,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       graphManager,
       vres,
       userStore,
-      makePathWithoutServerAndVersion,
+      pathWithoutVersion,
       new Neo4jLuceneEntityFetcher(graphManager));
 
 
