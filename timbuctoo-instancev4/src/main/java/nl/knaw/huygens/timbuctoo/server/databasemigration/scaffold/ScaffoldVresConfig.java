@@ -17,14 +17,14 @@ public class ScaffoldVresConfig {
         .withCollection("persons", collection ->
           collection
             .withDisplayName(scaffoldPersonDisplayNameProperty(""))
+            .withProperty("gender", localProperty("person_gender"))
+            .withProperty("birthDate", localProperty("person_birthDate", datable))
+            .withProperty("deathDate", localProperty("person_deathDate", datable))
             .withProperty("familyName", localProperty("person_familyName"))
             .withProperty("givenName", localProperty("person_givenName"))
             .withProperty("preposition", localProperty("person_preposition"))
             .withProperty("intraposition", localProperty("person_intraposition"))
             .withProperty("postposition", localProperty("person_postposition"))
-            .withProperty("gender", localProperty("person_gender"))
-            .withProperty("birthDate", localProperty("person_birthDate", datable))
-            .withProperty("deathDate", localProperty("person_deathDate", datable))
         )
         .withCollection("locations", collection ->
           collection
