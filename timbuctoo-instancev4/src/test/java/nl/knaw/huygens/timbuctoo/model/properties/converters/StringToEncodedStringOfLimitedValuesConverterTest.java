@@ -25,4 +25,20 @@ public class StringToEncodedStringOfLimitedValuesConverterTest {
     assertThat(excelDescription, instanceOf(StringExcelDescription.class));
     assertThat(excelDescription.getType(), equalTo("string"));
   }
+
+  @Test(expected = IOException.class)
+  public void validateThrowsAnExceptionWhenTheValueIsNotAnExpectedValue() throws IOException {
+    StringToEncodedStringOfLimitedValuesConverter instance =
+      new StringToEncodedStringOfLimitedValuesConverter("val1", "val2");
+
+    instance.validate("\"val3\"");
+  }
+
+  @Test
+  public void validateDoesNothingWhenTheValueIsAnExpectedValue() throws IOException {
+    StringToEncodedStringOfLimitedValuesConverter instance =
+      new StringToEncodedStringOfLimitedValuesConverter("val1", "val2");
+
+    instance.validate("\"val2\"");
+  }
 }

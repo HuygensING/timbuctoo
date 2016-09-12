@@ -11,8 +11,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
-
 public class StringToEncodedStringOfLimitedValuesConverter implements Converter, HasOptions {
 
   static final String TYPE = "encoded-string-of-limited-values";
@@ -76,7 +74,7 @@ public class StringToEncodedStringOfLimitedValuesConverter implements Converter,
     if (!(value instanceof String)) {
       throw new IOException("should be a string.");
     }
-    JsonNode result = jsn((String) value);
-    StringToEncodedStringOfLimitedValuesConverter.throwIfInvalid(result, this.allowedValues);
+    JsonNode result = objectMapper.readTree((String) value);
+    throwIfInvalid(result, this.allowedValues);
   }
 }
