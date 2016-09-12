@@ -44,6 +44,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyApiRedirects;
@@ -168,6 +169,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
 
     migrations.put("fix-dcarkeywords-displayname-migration", new FixDcarKeywordDisplayNameMigration());
+    migrations.put("fix-pids-migration", new MakePidsAbsoluteUrls());
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
