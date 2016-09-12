@@ -4898,38 +4898,84 @@ var _solrFacetedSearchReact = require("solr-faceted-search-react");
 
 var _solrFacetedSearchReact2 = _interopRequireDefault(_solrFacetedSearchReact);
 
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
 var App = (function (_React$Component) {
 	_inherits(App, _React$Component);
 
-	function App() {
+	function App(props) {
 		_classCallCheck(this, App);
 
-		_get(Object.getPrototypeOf(App.prototype), "constructor", this).apply(this, arguments);
+		_get(Object.getPrototypeOf(App.prototype), "constructor", this).call(this, props);
+		this.state = {
+			activeClient: null
+		};
 	}
 
 	_createClass(App, [{
+		key: "setActiveClient",
+		value: function setActiveClient(name) {
+			this.setState({ activeClient: name });
+		}
+	}, {
 		key: "render",
 		value: function render() {
+			var _this = this;
+
 			var _props = this.props;
 			var solr = _props.solr;
 			var onCreateIndexes = _props.onCreateIndexes;
+			var activeClient = this.state.activeClient;
 
-			console.log((0, _actionsSolr.getSearchClients)());
+			var searchClients = (0, _actionsSolr.getSearchClients)();
+
+			var visibleClient = !activeClient && searchClients.length > 0 ? searchClients[0].name : activeClient;
+
 			return solr.indexPresent ? _react2["default"].createElement(
 				"div",
 				null,
-				(0, _actionsSolr.getSearchClients)().map(function (searchClient) {
-					return _react2["default"].createElement(_solrFacetedSearchReact2["default"], _extends({}, solr.searchStates[searchClient.name], searchClient.client.getHandlers(), {
-						key: searchClient.name,
-						onSelectDoc: function () {
-							for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-								args[_key] = arguments[_key];
-							}
+				_react2["default"].createElement(
+					"header",
+					null,
+					_react2["default"].createElement(
+						"nav",
+						{ className: "navbar navbar-default" },
+						_react2["default"].createElement(
+							"ul",
+							{ className: "nav navbar-nav" },
+							searchClients.map(function (searchClient) {
+								return _react2["default"].createElement(
+									"li",
+									{ className: (0, _classnames2["default"])({ active: searchClient.name === visibleClient }), key: searchClient.name },
+									_react2["default"].createElement(
+										"a",
+										{ onClick: function () {
+												return _this.setActiveClient(searchClient.name);
+											} },
+										searchClient.label
+									)
+								);
+							})
+						)
+					)
+				),
+				searchClients.map(function (searchClient) {
+					return _react2["default"].createElement(
+						"div",
+						{ key: searchClient.name, style: { display: searchClient.name == visibleClient ? "block" : "none" } },
+						_react2["default"].createElement(_solrFacetedSearchReact2["default"], _extends({}, solr.searchStates[searchClient.name], searchClient.client.getHandlers(), {
+							onSelectDoc: function () {
+								for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+									args[_key] = arguments[_key];
+								}
 
-							return console.log(args);
-						},
-						truncateFacetListsAt: 20
-					}));
+								return console.log(args);
+							},
+							truncateFacetListsAt: 20
+						}))
+					);
 				})
 			) : _react2["default"].createElement(
 				"div",
@@ -4960,7 +5006,7 @@ var App = (function (_React$Component) {
 exports["default"] = App;
 module.exports = exports["default"];
 
-},{"../actions/solr":28,"react":"react","solr-faceted-search-react":18}],30:[function(require,module,exports){
+},{"../actions/solr":28,"classnames":"classnames","react":"react","solr-faceted-search-react":18}],30:[function(require,module,exports){
 "use strict";
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
