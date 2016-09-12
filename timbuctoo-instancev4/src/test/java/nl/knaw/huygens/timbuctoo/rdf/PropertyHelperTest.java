@@ -24,7 +24,7 @@ public class PropertyHelperTest {
     final CollectionDescription newCollectionDescription =
       CollectionDescription.createCollectionDescription(entityTypeName, vreName);
     when(newCollection.getDescription()).thenReturn(newCollectionDescription);
-
+    when(newCollection.getVreName()).thenReturn("vreName");
     final CollectionDescription existingCollectionDescription1 =
       CollectionDescription.createCollectionDescription("existingCollection1", vreName);
     final Collection existingCollection1 = mock(Collection.class);
@@ -55,6 +55,7 @@ public class PropertyHelperTest {
     final CollectionDescription newCollectionDescription =
       CollectionDescription.createCollectionDescription(entityTypeName, vreName);
     when(newCollection.getDescription()).thenReturn(newCollectionDescription);
+    when(newCollection.getVreName()).thenReturn("vreName");
     final Set<Collection> existingCollections = Sets.newHashSet(newCollection);
     final Vertex vertex = newGraph().build().addVertex();
     vertex.property(CollectionDescription.getDefault(vreName).createPropertyName("prop1"), "value1");
