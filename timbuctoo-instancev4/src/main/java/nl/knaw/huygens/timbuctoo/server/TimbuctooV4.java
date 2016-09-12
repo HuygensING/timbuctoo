@@ -215,7 +215,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(
       graphManager,
-      makePathWithServer,
+      (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null)),
       vres
     );
     final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
