@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
@@ -99,9 +100,9 @@ public class JsonCrudServiceBuilder {
   }
 
   public TinkerpopJsonCrudService build() {
-    return new TinkerpopJsonCrudService(graphWrapper, vres, handleAdder, userStore, handleUrlGenerator,
-      relationUrlGenerator, clock, changeListener, authorizer,
-      entityFetcher);
+    return new TinkerpopJsonCrudService(vres, handleAdder, userStore, handleUrlGenerator,
+      relationUrlGenerator, clock,
+      new DataAccess(graphWrapper, entityFetcher, authorizer, changeListener, vres));
   }
 
   public TinkerpopJsonCrudService forGraph(Graph graph) {

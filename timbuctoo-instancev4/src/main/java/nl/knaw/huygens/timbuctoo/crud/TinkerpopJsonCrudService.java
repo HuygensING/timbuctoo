@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
@@ -22,9 +21,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.neo4j.helpers.Strings;
 import org.slf4j.Logger;
@@ -63,17 +60,16 @@ public class TinkerpopJsonCrudService {
   private final UserStore userStore;
   private final DataAccess dataAccess;
 
-  public TinkerpopJsonCrudService(GraphWrapper graphwrapper, Vres mappings,
+  public TinkerpopJsonCrudService(Vres mappings,
                                   HandleAdder handleAdder, UserStore userStore, UrlGenerator handleUrlFor,
-                                  UrlGenerator relationUrlFor, Clock clock,
-                                  ChangeListener listener, Authorizer authorizer, EntityFetcher entityFetcher) {
+                                  UrlGenerator relationUrlFor, Clock clock, DataAccess dataAccess) {
     this.mappings = mappings;
     this.handleAdder = handleAdder;
     this.handleUrlFor = handleUrlFor;
     this.relationUrlFor = relationUrlFor;
     this.userStore = userStore;
     this.clock = clock;
-    this.dataAccess = new DataAccess(graphwrapper, entityFetcher, authorizer, listener, mappings);
+    this.dataAccess = dataAccess;
     nodeFactory = JsonNodeFactory.instance;
   }
 
@@ -369,22 +365,6 @@ public class TinkerpopJsonCrudService {
 
     List<TimProperty<?>> properties =
       getDataProperties(collection, data);
-    // for (String fieldName : fieldNames) {
-    //   try {
-    //     properties.add(converter.from(fieldName, data.get(fieldName)));
-    //   } catch (UnknownPropertyException e) {
-    //     LOG.error("Property with name '{}' is unknown for collection '{}'.", fieldName,
-    //       collection.getCollectionName());
-    //     throw new IOException(
-    //       String.format("Items of %s have no property %s", collection.getCollectionName(), fieldName));
-    //   } catch (IOException e) {
-    //     LOG.error("Property '{}' with value '{}' could not be converted", fieldName, data.get(fieldName));
-    //     throw new IOException(
-    //       String.format("Property '%s' could not be converted. %s", fieldName, e.getMessage()),
-    //       e
-    //     );
-    //   }
-    // }
 
     UpdateEntity updateEntity = new UpdateEntity(id, properties, rev, clock.instant());
 
