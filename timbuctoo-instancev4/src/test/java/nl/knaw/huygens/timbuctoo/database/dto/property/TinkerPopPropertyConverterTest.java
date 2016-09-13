@@ -1,12 +1,9 @@
-package nl.knaw.huygens.timbuctoo.database.dto;
+package nl.knaw.huygens.timbuctoo.database.dto.property;
 
 
-import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverter;
-import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -69,6 +66,16 @@ public class TinkerPopPropertyConverterTest {
     TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
 
     instance.from(PROPERTY_NAME, new Object());
+  }
+
+  @Test
+  public void toReturnsTheNameOfAnArrayOfLimitedValuesProperty() throws Exception {
+    TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(null);
+    ArrayOfLimitedValuesProperty property = new ArrayOfLimitedValuesProperty("name", "[]");
+
+    Tuple<String, Object> value = instance.to(property);
+
+    assertThat(value.getLeft(), is("name"));
   }
 
 }

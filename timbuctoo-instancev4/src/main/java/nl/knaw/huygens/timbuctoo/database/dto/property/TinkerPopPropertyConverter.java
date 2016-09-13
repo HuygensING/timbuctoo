@@ -121,7 +121,7 @@ public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
 
   @Override
   protected Tuple<String, Object> to(ArrayOfLimitedValuesProperty property) throws IOException {
-    return tuple(property.getValue(), property.getValue());
+    return tuple(property.getName(), property.getValue());
   }
 
   @Override
