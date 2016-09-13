@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.remote.rs;
 import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,12 +13,14 @@ import java.util.List;
   )
 public class Sitemapindex extends RsRoot<Sitemapindex, SitemapItem> {
 
+  public static final QName QNAME = new QName("http://www.sitemaps.org/schemas/sitemap/0.9", "sitemapindex");
+
   @XmlElement(name = "sitemap", namespace = "http://www.sitemaps.org/schemas/sitemap/0.9")
   private List<SitemapItem> siteMapList = new ArrayList<>();
 
-  private Sitemapindex() {}
+  protected Sitemapindex() {}
 
-  public Sitemapindex(@Nonnull RsMdBean rsMd) {
+  public Sitemapindex(@Nonnull RsMd rsMd) {
     setMetadata(rsMd);
   }
 

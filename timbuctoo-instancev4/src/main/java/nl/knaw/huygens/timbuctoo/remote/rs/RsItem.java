@@ -19,9 +19,9 @@ public abstract class RsItem<T extends RsItem> {
   private ZonedDateTime lastmod;
   private String changefreq;
   @XmlElement(name = "md", namespace = "http://www.openarchives.org/rs/terms/")
-  private RsMdBean rsMd;
+  private RsMd rsMd;
   @XmlElement(name = "ln", namespace = "http://www.openarchives.org/rs/terms/")
-  private List<RsLnBean> rsLnList = new ArrayList<>();
+  private List<RsLn> rsLnList = new ArrayList<>();
 
   public String getLoc() {
     return loc;
@@ -50,25 +50,20 @@ public abstract class RsItem<T extends RsItem> {
     return (T) this;
   }
 
-  public Optional<RsMdBean> getMetadata() {
+  public Optional<RsMd> getMetadata() {
     return Optional.ofNullable(rsMd);
   }
 
-  public T setMetadata(RsMdBean rsMd) {
+  public T setMetadata(RsMd rsMd) {
     this.rsMd = rsMd;
     return (T) this;
   }
 
-  public List<RsLnBean> getLinkList() {
+  public List<RsLn> getLinkList() {
     return rsLnList;
   }
 
-  public T setLinkList(@Nonnull List<RsLnBean> rsLnList) {
-    this.rsLnList = Preconditions.checkNotNull(rsLnList);
-    return (T) this;
-  }
-
-  public T add(RsLnBean rsLn) {
+  public T add(RsLn rsLn) {
     rsLnList.add(rsLn);
     return (T) this;
   }

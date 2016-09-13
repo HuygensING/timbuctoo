@@ -13,20 +13,20 @@ import java.util.List;
 public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
 
   @XmlElement(name = "md", namespace = "http://www.openarchives.org/rs/terms/")
-  private RsMdBean rsMd;
+  private RsMd rsMd;
   @XmlElement(name = "ln", namespace = "http://www.openarchives.org/rs/terms/")
-  private List<RsLnBean> linkList = new ArrayList<>();
+  private List<RsLn> linkList = new ArrayList<>();
 
-  public RsMdBean getMetadata() {
+  public RsMd getMetadata() {
     return rsMd;
   }
 
-  public T setMetadata(@Nonnull RsMdBean rsMd) {
+  public T setMetadata(@Nonnull RsMd rsMd) {
     this.rsMd = Preconditions.checkNotNull(rsMd);
     return (T) this;
   }
 
-  public List<RsLnBean> getLinkList() {
+  public List<RsLn> getLinkList() {
     return linkList;
   }
 
@@ -37,7 +37,7 @@ public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
     return (T) this;
   }
 
-  public T add(RsLnBean rsLn) {
+  public T add(RsLn rsLn) {
     linkList.add(rsLn);
     return (T) this;
   }

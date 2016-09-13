@@ -15,7 +15,7 @@ import java.util.Optional;
   namespace = "http://www.openarchives.org/rs/terms/"
   )
 @XmlAccessorType(XmlAccessType.FIELD)
-public class RsMdBean {
+public class RsMd {
 
   @XmlAttribute() private String capability;
 
@@ -31,9 +31,9 @@ public class RsMdBean {
   @XmlAttribute() private String path;
   @XmlAttribute() private String type;
 
-  private RsMdBean() {}
+  private RsMd() {}
 
-  public RsMdBean(@Nonnull String capability) {
+  public RsMd(@Nonnull String capability) {
     this.capability = Preconditions.checkNotNull(capability);
   }
 
@@ -41,7 +41,7 @@ public class RsMdBean {
     return capability;
   }
 
-  public RsMdBean setCapability(@Nonnull String capability) {
+  public RsMd setCapability(@Nonnull String capability) {
     this.capability = Preconditions.checkNotNull(capability);
     return this;
   }
@@ -50,7 +50,7 @@ public class RsMdBean {
     return Optional.ofNullable(at);
   }
 
-  public RsMdBean setAt(ZonedDateTime at) {
+  public RsMd setAt(ZonedDateTime at) {
     this.at = at;
     return this;
   }
@@ -59,7 +59,7 @@ public class RsMdBean {
     return Optional.ofNullable(completed);
   }
 
-  public RsMdBean setCompleted(ZonedDateTime completed) {
+  public RsMd setCompleted(ZonedDateTime completed) {
     this.completed = completed;
     return this;
   }
@@ -68,7 +68,7 @@ public class RsMdBean {
     return Optional.ofNullable(from);
   }
 
-  public RsMdBean setFrom(ZonedDateTime from) {
+  public RsMd setFrom(ZonedDateTime from) {
     this.from = from;
     return this;
   }
@@ -77,7 +77,7 @@ public class RsMdBean {
     return Optional.ofNullable(until);
   }
 
-  public RsMdBean setUntil(ZonedDateTime until) {
+  public RsMd setUntil(ZonedDateTime until) {
     this.until = until;
     return this;
   }
@@ -86,7 +86,7 @@ public class RsMdBean {
     return Optional.ofNullable(change);
   }
 
-  public RsMdBean setChange(String change) {
+  public RsMd setChange(String change) {
     this.change = change;
     return this;
   }
@@ -95,7 +95,7 @@ public class RsMdBean {
     return Optional.ofNullable(encoding);
   }
 
-  public RsMdBean setEncoding(String encoding) {
+  public RsMd setEncoding(String encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -104,7 +104,7 @@ public class RsMdBean {
     return Optional.ofNullable(hash);
   }
 
-  public RsMdBean setHash(String hash) {
+  public RsMd setHash(String hash) {
     this.hash = hash;
     return this;
   }
@@ -113,7 +113,7 @@ public class RsMdBean {
     return Optional.ofNullable(length);
   }
 
-  public RsMdBean setLength(Long length) {
+  public RsMd setLength(Long length) {
     this.length = length;
     return this;
   }
@@ -122,7 +122,7 @@ public class RsMdBean {
     return Optional.ofNullable(path);
   }
 
-  public RsMdBean setPath(String path) {
+  public RsMd setPath(String path) {
     this.path = path;
     return this;
   }
@@ -131,7 +131,7 @@ public class RsMdBean {
     return Optional.ofNullable(type);
   }
 
-  public RsMdBean setType(String type) {
+  public RsMd setType(String type) {
     this.type = type;
     return this;
   }

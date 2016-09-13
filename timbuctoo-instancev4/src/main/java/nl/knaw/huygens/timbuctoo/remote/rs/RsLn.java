@@ -17,7 +17,7 @@ import java.util.Optional;
   propOrder = { "rel", "href" }
   )
 @XmlAccessorType(XmlAccessType.FIELD)
-public class RsLnBean {
+public class RsLn {
 
   @XmlAttribute() private String rel;
   @XmlAttribute() private String href;
@@ -30,9 +30,9 @@ public class RsLnBean {
   @XmlAttribute() private Integer pri;
   @XmlAttribute() private String type;
 
-  private RsLnBean() {}
+  private RsLn() {}
 
-  public RsLnBean(@Nonnull String rel, @Nonnull String href) {
+  public RsLn(@Nonnull String rel, @Nonnull String href) {
     this.rel = Preconditions.checkNotNull(rel);
     this.href = Preconditions.checkNotNull(href);
   }
@@ -41,7 +41,7 @@ public class RsLnBean {
     return rel;
   }
 
-  public RsLnBean setRel(@Nonnull String rel) {
+  public RsLn setRel(@Nonnull String rel) {
     this.rel = Preconditions.checkNotNull(rel);
     return this;
   }
@@ -50,7 +50,7 @@ public class RsLnBean {
     return href;
   }
 
-  public RsLnBean setHref(@Nonnull String href) {
+  public RsLn setHref(@Nonnull String href) {
     this.href = Preconditions.checkNotNull(href);
     return this;
   }
@@ -59,7 +59,7 @@ public class RsLnBean {
     return Optional.ofNullable(encoding);
   }
 
-  public RsLnBean setEncoding(String encoding) {
+  public RsLn setEncoding(String encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -68,7 +68,7 @@ public class RsLnBean {
     return Optional.ofNullable(hash);
   }
 
-  public RsLnBean setHash(String hash) {
+  public RsLn setHash(String hash) {
     this.hash = hash;
     return this;
   }
@@ -77,7 +77,7 @@ public class RsLnBean {
     return Optional.ofNullable(length);
   }
 
-  public RsLnBean setLength(Long length) {
+  public RsLn setLength(Long length) {
     this.length = length;
     return this;
   }
@@ -86,7 +86,7 @@ public class RsLnBean {
     return Optional.ofNullable(modified);
   }
 
-  public RsLnBean setModified(ZonedDateTime modified) {
+  public RsLn setModified(ZonedDateTime modified) {
     this.modified = modified;
     return this;
   }
@@ -95,7 +95,7 @@ public class RsLnBean {
     return Optional.ofNullable(path);
   }
 
-  public RsLnBean setPath(String path) {
+  public RsLn setPath(String path) {
     this.path = path;
     return this;
   }
@@ -104,7 +104,7 @@ public class RsLnBean {
     return Optional.ofNullable(pri);
   }
 
-  public RsLnBean setPri(Integer pri) {
+  public RsLn setPri(Integer pri) {
     this.pri = pri;
     return this;
   }
@@ -113,7 +113,7 @@ public class RsLnBean {
     return Optional.ofNullable(type);
   }
 
-  public RsLnBean setType(String type) {
+  public RsLn setType(String type) {
     this.type = type;
     return this;
   }
