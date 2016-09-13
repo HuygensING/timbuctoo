@@ -462,18 +462,6 @@
         </configuration>
       </plugin>
       <plugin>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>3.0.0</version>
-        <configuration>
-          <filesets>
-            <fileset>
-              <directory>docker/appassembler</directory>
-              <followSymlinks>false</followSymlinks>
-            </fileset>
-          </filesets>
-        </configuration>
-      </plugin>
-      <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>2.19.1</version>
         <configuration>
@@ -698,20 +686,6 @@
                   <commandlineArgs>
                     ${basedir}/src/spec/resources/ ${basedir}/target/concordion/
                   </commandlineArgs>
-                </configuration>
-              </execution>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>exec</goal>
-                </goals>
-                <configuration>
-                  <executable>cp</executable>
-                  <arguments>
-                    <argument>-R</argument>
-                    <argument>./target/appassembler</argument>
-                    <argument>./docker/appassembler</argument>
-                  </arguments>
                 </configuration>
               </execution>
             </executions>

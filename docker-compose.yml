@@ -1,0 +1,26 @@
+version: '2' # version of this docker-compose file, unrelated to the langident version
+
+services:
+  timbuctoo:
+    image: huygensing/timbuctoo:latest
+    environment:
+      BASE_URI: http://localhost:8080
+    ports:
+      - "8080:80"
+      - "8081:81"
+    volumes:
+      - ~/Documents/timbuctoo/timbuctoo-instancev4/docker_config.yaml:/app/timbuctoo-instancev4/docker_config.yaml
+  solr:
+    image: solr
+    ports:
+      - "8983:8983"
+  search-gui:
+    image: huygensing/timbuctoo:faceted-search-site
+    ports:
+      - "8082:80"
+    links:
+      - timbuctoo
+      - solr
+    environment:
+      TIMBUCTOO_URL: http://timbuctoo
+      SOLR_URL: http://solr:8983/solr
