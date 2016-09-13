@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
@@ -109,9 +110,33 @@ public class Collection {
   }
 
   public void setArchetype(Collection archetypeCollection, String originalArchetypeUri) {
-    vertex.edges(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).forEachRemaining(edge -> edge.remove());
+    vertex.edges(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME).forEachRemaining(Element::remove);
     Edge edge = vertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.vertex);
     edge.property(RDF_URI_PROP, originalArchetypeUri);
+    copyDisplayNameFromArchetype(archetypeCollection);
+  }
+
+  private void copyDisplayNameFromArchetype(Collection archetypeCollection) {
+    final Iterator<Vertex> archetypeDisplayNameT = archetypeCollection
+      .vertex.vertices(Direction.OUT, HAS_DISPLAY_NAME_RELATION_NAME);
+
+    if (archetypeDisplayNameT.hasNext()) {
+      final Vertex archetypeDisplayName = archetypeDisplayNameT.next();
+      vertex.edges(Direction.OUT, HAS_DISPLAY_NAME_RELATION_NAME).forEachRemaining(Element::remove);
+      final Vertex displayName = graphWrapper.getGraph().addVertex(ReadableProperty.DATABASE_LABEL);
+      archetypeDisplayName.properties().forEachRemaining(archetypeDisplayNameProp -> {
+        final String value = (String) archetypeDisplayNameProp.value();
+        final String key = archetypeDisplayNameProp.key();
+        if (key.equals(LocalProperty.DATABASE_PROPERTY_NAME)) {
+          // FIXME: string manipulation to get unprefixed property name
+          final String newValue = value.replaceAll("^.+_", "");
+          displayName.property(key, collectionDescription.getEntityTypeName() + "_" + newValue);
+        } else {
+          displayName.property(key, value);
+        }
+      });
+      vertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayName);
+    }
   }
 
   public String getVreName() {

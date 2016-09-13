@@ -186,6 +186,7 @@ public class JsonMetadata {
         "collectionLabel", jsn(collection.getCollectionLabel()),
         "unknown", jsn(collection.isUnknown()),
         "relationCollection", jsn(collection.isRelationCollection()),
+        "archetypeName", jsn(collection.getAbstractType()),
         "properties", result
       );
     } else {

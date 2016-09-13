@@ -21,7 +21,8 @@ public class RrColumn implements RrTermMap {
       case BlankNode:
         return NodeFactory.createBlankNode("" + input.get(referenceString));
       case Literal:
-        return NodeFactory.createLiteral("" + input.get(referenceString));
+        final Object value = input.get(this.referenceString);
+        return NodeFactory.createLiteral(value == null ? "" : "" + value);
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }

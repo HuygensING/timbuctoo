@@ -49,7 +49,7 @@ public abstract class ReadableProperty {
     return propertyVertex;
   }
 
-  public static ReadableProperty load(Vertex propertyVertex)
+  public static ReadableProperty load(Vertex propertyVertex, String prefix)
     throws IOException, NoSuchMethodException, InstantiationException, IllegalAccessException,
     InvocationTargetException {
     final String type = propertyVertex.value(PROPERTY_TYPE_NAME);
@@ -60,6 +60,8 @@ public abstract class ReadableProperty {
       return new WwPersonDisplayName();
     } else if (type.equals(RdfImportedDefaultDisplayname.TYPE)) {
       return new RdfImportedDefaultDisplayname();
+    } else if (type.equals(ScaffoldPersonDisplayName.TYPE)) {
+      return new ScaffoldPersonDisplayName(prefix);
     }
 
     String[] options = null;
