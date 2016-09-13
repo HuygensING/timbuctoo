@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -21,16 +22,17 @@ public class ImportPreparer {
   }
 
   public void setUpAdminVre() {
-    final GraphTraversal<Vertex, Vertex> adminVreT = graphWrapper.getGraph().traversal().V()
-                                                             .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
-                                                             .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
+    GraphTraversalSource traversalSource = graphWrapper.getGraph().traversal();
+    final GraphTraversal<Vertex, Vertex> adminVreT = traversalSource.V()
+                                                                    .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+                                                                    .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
 
     if (adminVreT.hasNext()) {
       final Vertex adminVreVertex = adminVreT.next();
-      if (graphWrapper.getGraph().traversal().V(adminVreVertex.id())
-                      .out(Vre.HAS_COLLECTION_RELATION_NAME)
-                      .where(__.has(Collection.COLLECTION_NAME_PROPERTY_NAME, "concepts"))
-                      .count().next() == 0L) {
+      if (!traversalSource.V(adminVreVertex.id())
+                          .out(Vre.HAS_COLLECTION_RELATION_NAME)
+                          .where(__.has(Collection.COLLECTION_NAME_PROPERTY_NAME, "concepts"))
+                          .hasNext()) {
         final Vertex conceptsVertex = graphWrapper.getGraph().addVertex(Collection.DATABASE_LABEL);
         final Vertex conceptsEntityNode = graphWrapper.getGraph().addVertex(Collection.COLLECTION_ENTITIES_LABEL);
         conceptsVertex.property(Collection.COLLECTION_NAME_PROPERTY_NAME, "concepts");
@@ -42,7 +44,6 @@ public class ImportPreparer {
         conceptsVertex.addEdge(Collection.HAS_ENTITY_NODE_RELATION_NAME, conceptsEntityNode);
         graphWrapper.getGraph().tx().commit();
       }
-
     } else {
       Vre vre = VreBuilder.vre("Admin", "").withCollection("concepts").build();
       vre.save(graphWrapper.getGraph(), Optional.empty());
