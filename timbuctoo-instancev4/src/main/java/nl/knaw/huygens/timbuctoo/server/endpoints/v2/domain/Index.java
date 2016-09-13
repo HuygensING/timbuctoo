@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
@@ -40,10 +40,10 @@ public class Index {
                      ));
   }
 
-  private final TinkerpopJsonCrudService crudService;
+  private final JsonCrudService crudService;
   private final LoggedInUserStore loggedInUserStore;
 
-  public Index(TinkerpopJsonCrudService crudService, LoggedInUserStore loggedInUserStore) {
+  public Index(JsonCrudService crudService, LoggedInUserStore loggedInUserStore) {
     this.crudService = crudService;
     this.loggedInUserStore = loggedInUserStore;
   }

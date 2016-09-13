@@ -5,8 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
-import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

@@ -17,7 +17,7 @@ import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
-import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
@@ -202,7 +202,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
-    final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
+    final JsonCrudService crudService = new JsonCrudService(
       vres,
       handleAdder,
       userStore,

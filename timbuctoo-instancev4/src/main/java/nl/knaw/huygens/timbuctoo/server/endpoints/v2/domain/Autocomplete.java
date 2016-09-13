@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 
 import javax.ws.rs.GET;

@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.database.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -143,7 +143,7 @@ public class WwPersonIndexDescriptionTest {
     Node addNode = (Node) mocks.get(3);
 
 
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
             .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
             .forGraph(graph);
 
@@ -184,7 +184,7 @@ public class WwPersonIndexDescriptionTest {
     Node removeNode = (Node) mocks.get(2);
 
 
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
             .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
             .forGraph(graph);
 
@@ -224,7 +224,7 @@ public class WwPersonIndexDescriptionTest {
     Node addNode = (Node) mocks.get(3);
 
 
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
             .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
             .forGraph(graph);
 
@@ -259,7 +259,7 @@ public class WwPersonIndexDescriptionTest {
                     .withProperty("rev", 1)
             )
             .build();
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
       .withChangeListener(new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()))
       .forGraph(graph);
 
@@ -278,7 +278,7 @@ public class WwPersonIndexDescriptionTest {
   public void crudServiceInvokesIndexDescriptionAddIndexedSortPropertiesForWwPersonsOnCreate() throws Exception {
     Graph graph = newGraph().build();
 
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
       .withChangeListener(new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()))
       .forGraph(graph);
 

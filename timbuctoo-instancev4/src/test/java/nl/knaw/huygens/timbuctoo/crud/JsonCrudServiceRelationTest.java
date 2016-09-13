@@ -31,7 +31,7 @@ import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class TinkerpopJsonCrudServiceRelationTest {
+public class JsonCrudServiceRelationTest {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -66,7 +66,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
       .withClock(Clock.fixed(Instant.ofEpochMilli(1337), ZoneId.systemDefault()))
       .forGraph(graph);
 
@@ -115,7 +115,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.replace("wwrelations", edgeId, jsnO(
       "accepted", jsn(false),
@@ -155,7 +155,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       )
       .build();
 
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     instance.create("wwrelations", jsnO(
       "accepted", jsn(true),
@@ -195,7 +195,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
         .withProperty("isLatest", true)
       )
       .build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(IOException.class);
     instance.create("wwrelations", jsnO(
@@ -235,7 +235,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
         .withProperty("isLatest", true)
       )
       .build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(IOException.class);
     instance.create("wwrelations", jsnO(
@@ -276,7 +276,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
         .withProperty("isLatest", true)
       )
       .build();
-    TinkerpopJsonCrudService instance = newJsonCrudService().forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().forGraph(graph);
 
     expectedException.expect(IOException.class);
     instance.create("wwrelations", jsnO(
@@ -325,7 +325,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       )
       .build();
     String collectionName = "wwrelations";
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
       .withClock(Clock.fixed(Instant.ofEpochMilli(1337), ZoneId.systemDefault()))
       .forGraph(graph);
 
@@ -401,7 +401,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
       )
       .build();
     String collectionName = "wwrelations";
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
       .withClock(Clock.fixed(Instant.ofEpochMilli(1337), ZoneId.systemDefault()))
       .forGraph(graph);
 
@@ -453,7 +453,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
     String collectionName = "wwrelations";
     String userId = "userId";
     Authorizer authorizer = userIsNotAllowedToWriteTheCollection(collectionName, userId);
-    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationException.class);
 
@@ -493,7 +493,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
     String wwrelations = "wwrelations";
     String userId = "userId";
     Authorizer authorizer = userIsNotAllowedToWriteTheCollection(wwrelations, userId);
-    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationException.class);
 
@@ -534,7 +534,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
     String collectionName = "wwrelations";
     String userId = "userId";
     Authorizer authorizer = authorizerThrowsAuthorizationUnavailableException();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(IOException.class);
 
@@ -573,7 +573,7 @@ public class TinkerpopJsonCrudServiceRelationTest {
     String wwrelations = "wwrelations";
     String userId = "userId";
     Authorizer authorizer = authorizerThrowsAuthorizationUnavailableException();
-    TinkerpopJsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
+    JsonCrudService instance = newJsonCrudService().withAuthorizer(authorizer).forGraph(graph);
 
     expectedException.expect(AuthorizationUnavailableException.class);
 

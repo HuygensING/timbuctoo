@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 
-import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -70,7 +70,7 @@ public class WwKeywordIndexDescriptionTest {
     Node addNode = (Node) mocks.get(3);
 
 
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
             .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
             .forGraph(graph);
 
@@ -114,7 +114,7 @@ public class WwKeywordIndexDescriptionTest {
     Node addNode = (Node) mocks.get(3);
 
 
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
             .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
             .forGraph(graph);
 
@@ -160,7 +160,7 @@ public class WwKeywordIndexDescriptionTest {
     Node removeNode = (Node) mocks.get(2);
 
 
-    TinkerpopJsonCrudService instance = newJsonCrudService()
+    JsonCrudService instance = newJsonCrudService()
             .withChangeListener(new FulltextIndexChangeListener(mockDatabaseService, new IndexDescriptionFactory()))
             .forGraph(graph);
 

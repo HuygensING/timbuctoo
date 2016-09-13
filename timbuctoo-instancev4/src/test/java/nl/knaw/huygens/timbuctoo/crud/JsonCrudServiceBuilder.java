@@ -99,13 +99,13 @@ public class JsonCrudServiceBuilder {
     return new JsonCrudServiceBuilder();
   }
 
-  public TinkerpopJsonCrudService build() {
-    return new TinkerpopJsonCrudService(vres, handleAdder, userStore, handleUrlGenerator,
+  public JsonCrudService build() {
+    return new JsonCrudService(vres, handleAdder, userStore, handleUrlGenerator,
       relationUrlGenerator, clock,
       new DataAccess(graphWrapper, entityFetcher, authorizer, changeListener, vres));
   }
 
-  public TinkerpopJsonCrudService forGraph(Graph graph) {
+  public JsonCrudService forGraph(Graph graph) {
     if (this.graphWrapper != null) {
       throw new RuntimeException("Use .build() when specifying a custom graphWrapper");
     } else {

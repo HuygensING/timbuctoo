@@ -47,9 +47,9 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
-public class TinkerpopJsonCrudService {
+public class JsonCrudService {
 
-  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(TinkerpopJsonCrudService.class);
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(JsonCrudService.class);
 
   private final Vres mappings;
   private final HandleAdder handleAdder;
@@ -60,9 +60,9 @@ public class TinkerpopJsonCrudService {
   private final UserStore userStore;
   private final DataAccess dataAccess;
 
-  public TinkerpopJsonCrudService(Vres mappings,
-                                  HandleAdder handleAdder, UserStore userStore, UrlGenerator handleUrlFor,
-                                  UrlGenerator relationUrlFor, Clock clock, DataAccess dataAccess) {
+  public JsonCrudService(Vres mappings,
+                         HandleAdder handleAdder, UserStore userStore, UrlGenerator handleUrlFor,
+                         UrlGenerator relationUrlFor, Clock clock, DataAccess dataAccess) {
     this.mappings = mappings;
     this.handleAdder = handleAdder;
     this.handleUrlFor = handleUrlFor;

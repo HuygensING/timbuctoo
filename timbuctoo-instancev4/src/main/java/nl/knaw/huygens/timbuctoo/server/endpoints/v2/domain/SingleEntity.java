@@ -7,7 +7,7 @@ import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
-import nl.knaw.huygens.timbuctoo.crud.TinkerpopJsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -57,10 +57,10 @@ public class SingleEntity {
     }
   }
 
-  private final TinkerpopJsonCrudService crudService;
+  private final JsonCrudService crudService;
   private final LoggedInUserStore loggedInUserStore;
 
-  public SingleEntity(TinkerpopJsonCrudService crudService, LoggedInUserStore loggedInUserStore) {
+  public SingleEntity(JsonCrudService crudService, LoggedInUserStore loggedInUserStore) {
     this.crudService = crudService;
     this.loggedInUserStore = loggedInUserStore;
   }
