@@ -106,18 +106,24 @@ public class JsonCrudService {
     UUID typeId = asUuid(input, "^typeId");
 
     try (DataAccess.DataAccessMethods db = dataAccess.start()) {
-      UUID relationId = db.acceptRelation(
-        sourceId,
-        typeId,
-        targetId,
-        collection,
-        userId,
-        clock.instant()
-      );
-      db.success();
-      return relationId;
-    } catch (RelationNotPossibleException e) {
-      throw new IOException(e.getMessage(), e);
+      try {
+        UUID relationId = db.acceptRelation(
+          sourceId,
+          typeId,
+          targetId,
+          collection,
+          userId,
+          clock.instant()
+        );
+        db.success();
+        return relationId;
+      } catch (RelationNotPossibleException e) {
+        db.rollback();
+        throw new IOException(e.getMessage(), e);
+      } catch (AuthorizationException | AuthorizationUnavailableException e) {
+        db.rollback();
+        throw e;
+      }
     }
   }
 
