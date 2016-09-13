@@ -44,7 +44,27 @@ class ScaffoldPersonDisplayName extends ReadableProperty {
           .collect(Collectors.toList());
 
         return Try.success((JsonNode) jsn(String.join(" ", names)));
-      })
+      }),
+      () ->
+        __.map(x -> {
+          final Map<String, String> nameParts = Maps.newHashMap();
+          final Vertex vertex = (Vertex) x.get();
+          vertex.properties().forEachRemaining(prop -> {
+            for (String namePart : NAME_PARTS) {
+              if (prop.key().endsWith(namePart) && prop.key().startsWith(prefix)) {
+                nameParts.put(namePart, (String) prop.value());
+              }
+            }
+          });
+
+          final List<String> names = NAME_PARTS
+            .stream()
+            .map(part -> nameParts.containsKey(part) ? nameParts.get(part) : "")
+            .filter(part -> part.length() > 0)
+            .collect(Collectors.toList());
+
+          return Try.success((Object) String.join(" ", names));
+        })
     );
   }
 
