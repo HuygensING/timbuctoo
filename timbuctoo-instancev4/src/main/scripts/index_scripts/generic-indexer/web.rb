@@ -5,6 +5,8 @@ require './generic_indexer'
 
 
 class Web < Sinatra::Base
+
+
   get '/' do
     File.read(File.join('static', 'index.html'))
   end
@@ -36,8 +38,9 @@ class Web < Sinatra::Base
           :solr_url => ENV['SOLR_URL']
       ).run
       status 200
-    rescue
+    rescue Exception => e
       status 500
+      raise e
     end
   end
 end
