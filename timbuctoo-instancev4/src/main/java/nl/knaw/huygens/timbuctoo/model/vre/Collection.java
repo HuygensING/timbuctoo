@@ -123,8 +123,8 @@ public class Collection {
 
     final String entityTypeName = collectionVertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
     final String abstractType = archetype == null ? entityTypeName : archetype.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
-    final ReadableProperty displayName = loadDisplayName(collectionVertex);
-    final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex);
+    final ReadableProperty displayName = loadDisplayName(collectionVertex, vre);
+    final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex, vre);
     final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
     final String label = getProp(collectionVertex, COLLECTION_LABEL_PROPERTY_NAME, String.class).orElse(null);
     boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
@@ -134,14 +134,14 @@ public class Collection {
       label, unknown, isRelationCollection);
   }
 
-  private static ReadableProperty loadDisplayName(Vertex collectionVertex) {
+  private static ReadableProperty loadDisplayName(Vertex collectionVertex, Vre vre) {
     final Iterator<Vertex> initialV = collectionVertex.vertices(Direction.OUT, HAS_DISPLAY_NAME_RELATION_NAME);
     if (!initialV.hasNext()) {
       return null;
     }
 
     try {
-      return ReadableProperty.load(initialV.next());
+      return ReadableProperty.load(initialV.next(), vre.getVreName());
     } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |
       IllegalAccessException e) {
 
@@ -151,7 +151,7 @@ public class Collection {
     return null;
   }
 
-  private static LinkedHashMap<String, ReadableProperty> loadProperties(Vertex collectionVertex) {
+  private static LinkedHashMap<String, ReadableProperty> loadProperties(Vertex collectionVertex, Vre vre) {
     final Iterator<Vertex> initialV = collectionVertex.vertices(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME);
     final LinkedHashMap<String, ReadableProperty> properties = Maps.newLinkedHashMap();
     if (!initialV.hasNext()) {
@@ -160,10 +160,12 @@ public class Collection {
 
     Vertex current = initialV.next();
     try {
-      properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), ReadableProperty.load(current));
+      properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME),
+        ReadableProperty.load(current, vre.getVreName()));
       while (current.vertices(Direction.OUT, ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME).hasNext()) {
         current = current.vertices(Direction.OUT, ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME).next();
-        properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME), ReadableProperty.load(current));
+        properties.put(current.value(ReadableProperty.CLIENT_PROPERTY_NAME),
+          ReadableProperty.load(current, vre.getVreName()));
       }
 
     } catch (IOException | NoSuchMethodException | InstantiationException | InvocationTargetException |

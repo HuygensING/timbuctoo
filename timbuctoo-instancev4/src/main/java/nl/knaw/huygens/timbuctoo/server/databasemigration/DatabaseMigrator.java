@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -15,7 +16,7 @@ import java.util.UUID;
 
 public class DatabaseMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(DatabaseMigrator.class);
-  private static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
+  protected static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
   private final GraphWrapper graphWrapper;
   private final Map<String, DatabaseMigration> migrations;
 
@@ -26,15 +27,21 @@ public class DatabaseMigrator {
 
   public void execute() {
     Graph graph = graphWrapper.getGraph();
-    List<String> executedMigrations = graph.traversal().V()
+    GraphTraversalSource traversalSource = graph.traversal();
+    List<String> executedMigrations = traversalSource.V()
                                            .has("type", EXECUTED_MIGRATIONS_TYPE)
                                            .map(vertexTraverser -> (String) vertexTraverser.get()
                                                                                            .property("name")
                                                                                            .value())
                                            .toList();
-    migrations.forEach((name, migration) -> {
 
-      if (!executedMigrations.contains(name)) {
+    boolean verticesAvailable = traversalSource.V().hasNext();
+
+    migrations.forEach((name, migration) -> {
+      if (!verticesAvailable) {
+        LOG.info("Skipping migration with name '{}' because this is a clean database. ", name);
+        this.saveExecution(graph, name);
+      } else if (!executedMigrations.contains(name)) {
         LOG.info("Executing migration with name '{}'", name);
         try {
           migration.execute(graphWrapper);

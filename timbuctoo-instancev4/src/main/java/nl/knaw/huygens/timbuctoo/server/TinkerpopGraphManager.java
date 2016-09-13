@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -58,6 +59,7 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
     synchronized (graphWaitList) {
       this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
       new DatabaseMigrator(this, migrations).execute();
+      new ScaffoldMigrator(this).execute();
 
       graphWaitList.forEach(consumer -> {
         try {

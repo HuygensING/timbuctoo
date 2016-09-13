@@ -30,7 +30,7 @@ class PropertyHelper {
 
     entityVertex.properties().forEachRemaining(prop -> {
       final String unprefixedPropertyName = getUnprefixedPropertyName(prop.key(), allPossibleCollectionDescriptions);
-      if (unprefixedPropertyName != null) {
+      if (unprefixedPropertyName != null && !newCollection.getVreName().equals("Admin")) {
         newCollection.addProperty(entityVertex, unprefixedPropertyName, (String) prop.value());
       }
     });

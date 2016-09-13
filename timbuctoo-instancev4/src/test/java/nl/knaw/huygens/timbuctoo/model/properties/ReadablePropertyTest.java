@@ -65,7 +65,7 @@ public class ReadablePropertyTest {
     vertex.property(LocalProperty.OPTIONS_PROPERTY_NAME, new ObjectMapper().writeValueAsString(options));
     vertex.property(LocalProperty.DATABASE_PROPERTY_NAME, "dbName");
 
-    ReadableProperty result = ReadableProperty.load(vertex);
+    ReadableProperty result = ReadableProperty.load(vertex, null);
 
     assertThat(result, instanceOf(LocalProperty.class));
     assertThat(result.getUniqueTypeId(), equalTo(typeIdentifier));
@@ -89,9 +89,9 @@ public class ReadablePropertyTest {
     rdfDisplayNameVertex.property(CLIENT_PROPERTY_NAME, "@displayName");
     rdfDisplayNameVertex.property(PROPERTY_TYPE_NAME, rdfDisplayNameTypeId);
 
-    ReadableProperty documentResult = ReadableProperty.load(documentDisplayNameVertex);
-    ReadableProperty personResult = ReadableProperty.load(personDisplayNameVertex);
-    ReadableProperty rdfResult = ReadableProperty.load(rdfDisplayNameVertex);
+    ReadableProperty documentResult = ReadableProperty.load(documentDisplayNameVertex, null);
+    ReadableProperty personResult = ReadableProperty.load(personDisplayNameVertex, null);
+    ReadableProperty rdfResult = ReadableProperty.load(rdfDisplayNameVertex, null);
 
     assertThat(documentResult, instanceOf(WwDocumentDisplayName.class));
     assertThat(personResult, instanceOf(WwPersonDisplayName.class));
@@ -109,6 +109,6 @@ public class ReadablePropertyTest {
     vertex.property(CLIENT_PROPERTY_NAME, "clientName");
     vertex.property(PROPERTY_TYPE_NAME, typeIdentifier);
 
-    ReadableProperty.load(vertex);
+    ReadableProperty.load(vertex, null);
   }
 }
