@@ -1,9 +1,4 @@
-= Changelog
-:toc: macro
-:toc-title: 
-:toclevels: 4
-
-NOTE: Apologies, we're a Dutch team and we used to comunicate primarily in Dutch. This list will be translated to English, but for now many parts are Dutch or a Dutch/English hybrid.
+= Roadmap
 
 This document contains our todo list. It contains a list of ideas for improvements. It is a semi-automated dump from our issue tracker.
 
