@@ -27,11 +27,14 @@ public class ScaffoldMigrator {
 
   public void execute() {
     Graph graph = graphWrapper.getGraph();
-    Long vertexCount = graph
-      .traversal().V().not(__.has("type", DatabaseMigrator.EXECUTED_MIGRATIONS_TYPE))
-      .count().next();
+    //The migrations are executed first, so those vertices _will_ be present, even on a new empty database
+    //The code below will add vertices, so a second launch will not run this code
+    boolean databaseHasNonMigrationNodes = graph
+      .traversal().V()
+      .not(__.has("type", DatabaseMigrator.EXECUTED_MIGRATIONS_TYPE))
+      .hasNext();
 
-    if (vertexCount == 0) {
+    if (!databaseHasNonMigrationNodes) {
       LOG.info("Setting up a new scaffold for empty database");
       try {
         new HuygensIngConfigToDatabaseMigration(ScaffoldVresConfig.mappings, Maps.newHashMap()).execute(graphWrapper);
