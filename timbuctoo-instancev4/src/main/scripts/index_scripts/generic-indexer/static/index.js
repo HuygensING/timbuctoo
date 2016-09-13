@@ -4943,6 +4943,12 @@ var App = (function (_React$Component) {
 						"nav",
 						{ className: "navbar navbar-default" },
 						_react2["default"].createElement(
+							"div",
+							{ className: "navbar-header" },
+							_react2["default"].createElement("img", { style: { height: "44px", margin: "3px" },
+								src: "https://www.huygens.knaw.nl/wp-content/bestanden/2011/03/LOGO-huygens-ing.gif" })
+						),
+						_react2["default"].createElement(
 							"ul",
 							{ className: "nav navbar-nav" },
 							searchClients.map(function (searchClient) {
