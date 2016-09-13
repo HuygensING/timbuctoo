@@ -119,7 +119,7 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
 
   @Override
   protected Tuple<String, JsonNode> to(DatableProperty property) throws IOException {
-    return new Tuple<>(property.getName(), new ObjectMapper().readTree(property.getValue()));
+    return new Tuple<>(property.getName(), objectMapper.readTree(property.getValue()));
   }
 
   @Override
