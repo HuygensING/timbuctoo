@@ -196,8 +196,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
     UrlGenerator uriWithRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
-    UrlGenerator pathWithoutVersion =
-      (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, rev).getPath().replaceFirst("^/v2.1/", ""));
+    UrlGenerator pathWithoutVersionAndRevision =
+      (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, null).toString().replaceFirst("^/v2.1/", ""));
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final TinkerpopJsonCrudService crudService = new TinkerpopJsonCrudService(
@@ -207,7 +207,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       userStore,
       uriWithRev,
       uriWithRev,
-      pathWithoutVersion,
+      pathWithoutVersionAndRevision,
       Clock.systemDefaultZone(),
       changeListeners,
       authorizer,
@@ -225,7 +225,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       graphManager,
       vres,
       userStore,
-      pathWithoutVersion,
+      pathWithoutVersionAndRevision,
       new Neo4jLuceneEntityFetcher(graphManager));
 
 
