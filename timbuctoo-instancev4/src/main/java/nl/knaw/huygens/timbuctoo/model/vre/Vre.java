@@ -124,13 +124,12 @@ public class Vre {
     return Maps.newHashMap();
   }
 
-  // FIXME remove parameter keywordTypes
-  public Vertex save(Graph graph, Optional<Map<String, String>> keywordTypes) {
+  public Vertex save(Graph graph) {
     LOG.info("Persisting vre '{}' to database", vreName);
 
     Vertex vreVertex = findOrCreateVreVertex(graph);
 
-    saveProperties(keywordTypes, vreVertex);
+    saveProperties(this.getKeywordTypes(), vreVertex);
 
     saveCollections(graph, vreVertex);
 
@@ -144,14 +143,14 @@ public class Vre {
     });
   }
 
-  private void saveProperties(Optional<Map<String, String>> keywordTypes, Vertex vreVertex) {
+  private void saveProperties(Map<String, String> keywordTypes, Vertex vreVertex) {
     vreVertex.property(VRE_NAME_PROPERTY_NAME, vreName);
-    if (keywordTypes.isPresent()) {
-      try {
-        vreVertex.property(KEYWORD_TYPES_PROPERTY_NAME, new ObjectMapper().writeValueAsString(keywordTypes.get()));
-      } catch (JsonProcessingException e) {
-        LOG.error("Failed to serialize keyword types to JSON {}", keywordTypes.get());
+    try {
+      if (!keywordTypes.isEmpty()) {
+        vreVertex.property(KEYWORD_TYPES_PROPERTY_NAME, new ObjectMapper().writeValueAsString(keywordTypes));
       }
+    } catch (JsonProcessingException e) {
+      LOG.error("Failed to serialize keyword types to JSON {}", keywordTypes);
     }
   }
 

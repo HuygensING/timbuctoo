@@ -14,7 +14,6 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
@@ -42,7 +41,7 @@ public class VreTest {
   public void saveCreatesAVertexForTheVre() {
     final Vre vre = new Vre("VreName");
 
-    final Vertex result = vre.save(graph, Optional.empty());
+    final Vertex result = vre.save(graph);
 
     assertThat(result, likeVertex()
       .withLabel(DATABASE_LABEL)
@@ -56,19 +55,19 @@ public class VreTest {
     existingVertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
     final Vre vre = new Vre("VreName");
 
-    final Vertex result = vre.save(graph, Optional.empty());
+    final Vertex result = vre.save(graph);
 
     assertThat(result, equalTo(existingVertex));
   }
 
   @Test
   public void saveAddsKeywordTypesWhenAvailable() throws JsonProcessingException {
-    final Vre vre = new Vre("VreName");
     Map<String, String> keyWordTypes = Maps.newHashMap();
     keyWordTypes.put("typeA", "valueA");
     keyWordTypes.put("typeB", "valueB");
+    final Vre vre = new Vre("VreName", keyWordTypes);
 
-    final Vertex result = vre.save(graph, Optional.of(keyWordTypes));
+    final Vertex result = vre.save(graph);
 
     assertThat(result.property(KEYWORD_TYPES_PROPERTY_NAME).value(),
       equalTo(new ObjectMapper().writeValueAsString(keyWordTypes))
@@ -82,7 +81,7 @@ public class VreTest {
       .withCollection("prefixdocuments")
       .build();
 
-    final Vertex savedVertex = vre.save(graph, Optional.empty());
+    final Vertex savedVertex = vre.save(graph);
     final List<Vertex> result = Lists.newArrayList(savedVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME));
 
     assertThat(result, containsInAnyOrder(

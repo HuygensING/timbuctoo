@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.experimental.womenwriters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
@@ -66,7 +65,7 @@ public class WomenWritersJsonCrudServiceTest {
           .withDisplayName(localProperty("displayName"))
         )
       )
-      .build(Maps.newHashMap());
+      .build();
   }
 
 

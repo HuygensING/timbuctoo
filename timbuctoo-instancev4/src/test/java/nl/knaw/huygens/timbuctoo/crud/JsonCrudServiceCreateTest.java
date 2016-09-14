@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -145,7 +144,7 @@ public class JsonCrudServiceCreateTest {
         .withCollection("wwpersons", c -> c
           .withProperty("name", localProperty("wwname"))
         )
-      ).build(Maps.newHashMap())).forGraph(graph);
+      ).build()).forGraph(graph);
 
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
@@ -163,7 +162,7 @@ public class JsonCrudServiceCreateTest {
           .withProperty("name", localProperty("wwname"))
           .withProperty("age", localProperty("wwage"))
         )
-      ).build(Maps.newHashMap())).forGraph(graph);
+      ).build()).forGraph(graph);
 
     instance.create(
       "wwpersons",
@@ -188,7 +187,7 @@ public class JsonCrudServiceCreateTest {
         .withCollection("wwpersons", c -> c
           .withProperty("name", throwingMap)
         )
-      ).build(Maps.newHashMap())).forGraph(graph);
+      ).build()).forGraph(graph);
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
 

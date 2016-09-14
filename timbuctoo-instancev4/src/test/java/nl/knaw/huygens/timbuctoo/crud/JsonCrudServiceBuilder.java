@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
-import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
@@ -73,7 +72,7 @@ public class JsonCrudServiceBuilder {
           .withDisplayName(PropertyTypes.localProperty("displayName"))
         )
       )
-      .build(Maps.newHashMap());
+      .build();
 
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/");
     clock = Clock.systemDefaultZone();

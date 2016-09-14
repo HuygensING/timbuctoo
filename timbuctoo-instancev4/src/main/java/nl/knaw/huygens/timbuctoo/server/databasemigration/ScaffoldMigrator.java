@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.scaffold.ScaffoldVresConfig;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -37,7 +36,7 @@ public class ScaffoldMigrator {
     if (!databaseHasNonMigrationNodes) {
       LOG.info("Setting up a new scaffold for empty database");
       try {
-        new HuygensIngConfigToDatabaseMigration(ScaffoldVresConfig.mappings, Maps.newHashMap()).execute(graphWrapper);
+        new HuygensIngConfigToDatabaseMigration(ScaffoldVresConfig.mappings).execute(graphWrapper);
       } catch (IOException e) {
         throw new RuntimeException(e);
       }

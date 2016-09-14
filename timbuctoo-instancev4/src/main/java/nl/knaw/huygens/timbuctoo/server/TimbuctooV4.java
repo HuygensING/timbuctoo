@@ -175,7 +175,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new LocationNamesToLocationNameDatabaseMigration());
     // Persist HuygensIng mappings in database
     migrations.put("config-to-database-migration-patched-version",
-      new HuygensIngConfigToDatabaseMigration(HuygensIng.mappings, HuygensIng.keywordTypes));
+      new HuygensIngConfigToDatabaseMigration(HuygensIng.mappings));
     migrations.put(NorwegianNynorskToNorwegianDatabaseMigration.class.getName(),
       new NorwegianNynorskToNorwegianDatabaseMigration());
     // Force reindex by renaming the migration in order to get the full default name as displayname in the

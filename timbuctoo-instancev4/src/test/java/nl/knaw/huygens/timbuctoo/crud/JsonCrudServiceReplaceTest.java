@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -36,15 +35,12 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -210,7 +206,7 @@ public class JsonCrudServiceReplaceTest {
           .withProperty("age", localProperty("wwperson_age"))
         )
       )
-      .build(Maps.newHashMap())).forGraph(graph);
+      .build()).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "name", jsn("newName"),
@@ -253,7 +249,7 @@ public class JsonCrudServiceReplaceTest {
           .withProperty("age", localProperty("wwperson_age"))
         )
       )
-      .build(Maps.newHashMap())).forGraph(graph);
+      .build()).forGraph(graph);
 
     instance.replace("wwpersons", UUID.fromString(id), jsnO(
       "age", jsn("42"),
@@ -344,7 +340,7 @@ public class JsonCrudServiceReplaceTest {
         .withCollection("wwpersons", c -> c
           .withProperty("name", throwingMap)
         )
-      ).build(Maps.newHashMap())).forGraph(graph);
+      ).build()).forGraph(graph);
     expectedException.expect(IOException.class);
     //message should contain the property that is unrecognized
     expectedException.expectMessage(containsString("'name'"));

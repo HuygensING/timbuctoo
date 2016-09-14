@@ -3,8 +3,8 @@ package nl.knaw.huygens.timbuctoo.model.properties;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -16,7 +16,6 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,9 +60,7 @@ public class JsonMetadata {
     String abstractType = collection.getAbstractType();
     Vre vre = collection.getVre();
 
-    Map<String, String> keywordTypes = Optional
-      .ofNullable(metadata.getKeywordTypes().get(vre.getVreName()))
-      .orElse(new HashMap<>());
+    Map<String, String> keywordTypes = vre.getKeywordTypes();
 
     String relationCollectionName = vre
       .getImplementerOf("relation")

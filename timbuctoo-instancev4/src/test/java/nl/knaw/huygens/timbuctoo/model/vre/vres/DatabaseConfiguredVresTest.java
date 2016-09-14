@@ -11,12 +11,10 @@ import org.junit.Test;
 import org.mockito.stubbing.OngoingStubbing;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -55,8 +53,6 @@ public class DatabaseConfiguredVresTest {
     assertThat(instance.getCollection("documents").get(), instanceOf(Collection.class));
     assertThat(instance.getCollectionForType("document").get(), instanceOf(Collection.class));
     assertThat(instance.getVres().get("VreA"), instanceOf(Vre.class));
-    assertThat(instance.getKeywordTypes().get("VreA"), instanceOf(Map.class));
-    assertThat(instance.getKeywordTypes().get("VreA").get("key"), equalTo("value"));
   }
 
   @Test

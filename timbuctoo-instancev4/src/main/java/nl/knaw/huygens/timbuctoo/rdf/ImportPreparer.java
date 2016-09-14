@@ -12,8 +12,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.Optional;
-
 public class ImportPreparer {
   private final GraphWrapper graphWrapper;
 
@@ -46,7 +44,7 @@ public class ImportPreparer {
       }
     } else {
       Vre vre = VreBuilder.vre("Admin", "").withCollection("concepts").build();
-      vre.save(graphWrapper.getGraph(), Optional.empty());
+      vre.save(graphWrapper.getGraph());
     }
   }
 
@@ -54,6 +52,6 @@ public class ImportPreparer {
     Vre vre = VreBuilder.vre(vreName, vreName)
                         .withCollection(vreName + "relations", CollectionBuilder::isRelationCollection)
                         .build();
-    vre.save(graphWrapper.getGraph(), Optional.empty());
+    vre.save(graphWrapper.getGraph());
   }
 }

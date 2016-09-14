@@ -5,8 +5,6 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 
-import java.util.Map;
-
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwPersonNameOrTempName;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.wwdocumentDisplayNameProperty;
@@ -24,21 +22,6 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.s
 
 @Deprecated
 public class HuygensIng {
-
-  //fixme move to database
-  @Deprecated
-  public static Map<String, Map<String, String>> keywordTypes = ImmutableMap.of(
-    "WomenWriters",
-    ImmutableMap.<String, String>builder()
-      .put("hasEducation","education")
-      .put("hasFinancialSituation","financialSituation")
-      .put("hasGenre","genre")
-      .put("hasMaritalStatus","maritalStatus")
-      .put("hasProfession","profession")
-      .put("hasReligion","religion")
-      .put("hasSocialClass","socialClass")
-      .build()
-  );
 
   private static final String[] DOCUMENT_TYPES = new String[]{
     "UNKNOWN",
@@ -61,6 +44,17 @@ public class HuygensIng {
   @Deprecated
   public static Vres mappings = new VresBuilder()
     .withVre("WomenWriters", "ww", vre -> vre
+      .withKeywordTypes(
+        ImmutableMap.<String, String>builder()
+          .put("hasEducation","education")
+          .put("hasFinancialSituation","financialSituation")
+          .put("hasGenre","genre")
+          .put("hasMaritalStatus","maritalStatus")
+          .put("hasProfession","profession")
+          .put("hasReligion","religion")
+          .put("hasSocialClass","socialClass")
+          .build()
+      )
       .withCollection("wwcollectives", c -> c
         .withDisplayName(localProperty("wwcollective_name"))
 
@@ -490,6 +484,6 @@ public class HuygensIng {
           )
           .withCollection("charterrelations", CollectionBuilder::isRelationCollection)
       )
-    .build(keywordTypes);
+    .build();
 
 }

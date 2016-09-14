@@ -14,11 +14,9 @@ import static java.util.stream.Collectors.toMap;
 
 class ConfiguredVres implements Vres {
   private final Map<String, Collection> collections = new HashMap<>();
-  private final Map<String, Map<String, String>> keywordTypes;
   private Map<String, Vre> vres;
 
-  ConfiguredVres(List<Vre> vres, Map<String, Map<String, String>> keywordTypes) {
-    this.keywordTypes = keywordTypes;
+  ConfiguredVres(List<Vre> vres) {
     loadFromVreList(vres);
   }
 
@@ -50,10 +48,6 @@ class ConfiguredVres implements Vres {
     return vres;
   }
 
-  @Override
-  public Map<String, Map<String, String>> getKeywordTypes() {
-    return keywordTypes;
-  }
 
   @Override
   public void reload() {

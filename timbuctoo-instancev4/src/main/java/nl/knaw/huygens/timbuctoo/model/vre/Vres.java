@@ -15,7 +15,5 @@ public interface Vres {
 
   Map<String, Vre> getVres();
 
-  Map<String, Map<String, String>> getKeywordTypes();
-
   void reload();
 }

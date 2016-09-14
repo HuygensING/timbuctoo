@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -70,6 +69,8 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
 
   @Test
   public void executeSavesTheVreMappingsToAGraph() throws IOException {
+    final Map<String, String> keywordTypes = new HashMap<>();
+    keywordTypes.put("keywordA", "valueA");
     final Vres mappings = new VresBuilder()
       .withVre("Admin", "", vre -> {
         vre
@@ -78,6 +79,7 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
       })
       .withVre("VreA", "prefixa", vre -> {
         vre
+          .withKeywordTypes(keywordTypes)
           .withCollection("prefixapersons")
           .withCollection("prefixadocuments");
       })
@@ -85,13 +87,9 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
         vre
           .withCollection("prefixbpersons");
       })
-      .build(Maps.newHashMap());
-    final Map<String, Map<String, String>> keywordTypeMappings = new HashMap<>();
-    final Map<String, String> keywordTypes = new HashMap<>();
-    keywordTypes.put("keywordA", "valueA");
-    keywordTypeMappings.put("VreA", keywordTypes);
+      .build();
 
-    new HuygensIngConfigToDatabaseMigration(mappings, keywordTypeMappings).execute(graphWrapper);
+    new HuygensIngConfigToDatabaseMigration(mappings).execute(graphWrapper);
 
     final List<Vertex> vreResult = graphWrapper.getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL).toList();
     final List<Vertex> collectionsForAdmin = getCollectionsForVre("Admin");
@@ -178,9 +176,9 @@ public class HuygensIngConfigToDatabaseMigrationIntegrationTest {
         vre
           .withCollection("prefixbpersons");
       })
-      .build(Maps.newHashMap());
+      .build();
 
-    new HuygensIngConfigToDatabaseMigration(mappings, Maps.newHashMap()).execute(graphWrapper);
+    new HuygensIngConfigToDatabaseMigration(mappings).execute(graphWrapper);
 
     final List<Vertex> persons = getEntitiesForCollection("persons");
     final List<Vertex> documents = getEntitiesForCollection("documents");

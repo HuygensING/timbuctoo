@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toMap;
-
 public class DatabaseConfiguredVres implements Vres {
 
   private final GraphWrapper graphWrapper;
@@ -38,11 +36,6 @@ public class DatabaseConfiguredVres implements Vres {
     return getLoadedInstance().getVres();
   }
 
-  @Override
-  public Map<String, Map<String, String>> getKeywordTypes() {
-    return getLoadedInstance().getKeywordTypes();
-  }
-
   private Vres getLoadedInstance() {
     if (loadedInstance != null) {
       return loadedInstance;
@@ -62,6 +55,6 @@ public class DatabaseConfiguredVres implements Vres {
       keywordTypes.put(vre.getVreName(), vre.getKeywordTypes());
     });
 
-    loadedInstance = new ConfiguredVres(vreList, keywordTypes);
+    loadedInstance = new ConfiguredVres(vreList);
   }
 }

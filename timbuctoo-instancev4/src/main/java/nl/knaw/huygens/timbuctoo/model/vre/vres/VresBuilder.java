@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 import static java.util.stream.Collectors.toList;
@@ -26,7 +25,7 @@ public class VresBuilder {
     return this;
   }
 
-  public Vres build(Map<String, Map<String, String>> keywordTypes) {
-    return new CodeConfiguredVres(vres.stream().map(VreBuilder::build).collect(toList()), keywordTypes);
+  public Vres build() {
+    return new CodeConfiguredVres(vres.stream().map(VreBuilder::build).collect(toList()));
   }
 }

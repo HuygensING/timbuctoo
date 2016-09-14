@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration.scaffold;
 
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -33,5 +32,5 @@ public class ScaffoldVresConfig {
             .withProperty("country", localProperty("location_country"))
         )
         .withCollection("relations", CollectionBuilder::isRelationCollection))
-    .build(Maps.newHashMap());
+    .build();
 }
