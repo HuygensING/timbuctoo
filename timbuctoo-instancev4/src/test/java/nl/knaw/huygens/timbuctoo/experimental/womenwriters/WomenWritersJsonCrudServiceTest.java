@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -115,12 +116,17 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isCreatorOf")
       )
       .wrap();
+    final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
-      graphWrapper,
       vres,
       userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
-      new GremlinEntityFetcher()
+      new DataAccess(graphWrapper,
+      entityFetcher,
+        null, // no Authorizer needed for get
+        null, //no ChangeListener needed for get
+      vres
+      )
     );
 
     JsonNode result = instance.get("wwdocuments", workId);
@@ -182,12 +188,17 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isCreatorOf")
       )
       .wrap();
+    final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
-      graphWrapper,
       vres,
       userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
-      new GremlinEntityFetcher()
+      new DataAccess(graphWrapper,
+      entityFetcher,
+        null, // no Authorizer needed for get
+        null, //no ChangeListener needed for get
+      vres
+      )
     );
 
     JsonNode result = instance.get("wwpersons", pers1Id);
@@ -267,12 +278,17 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isWorkLanguageOf")
       )
       .wrap();
+    final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
-      graphWrapper,
       vres,
       userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
-      new GremlinEntityFetcher()
+      new DataAccess(graphWrapper,
+      entityFetcher,
+        null, // no Authorizer needed for get
+        null, //no ChangeListener needed for get
+      vres
+      )
     );
 
     JsonNode result = instance.get("wwpersons", pers1Id);

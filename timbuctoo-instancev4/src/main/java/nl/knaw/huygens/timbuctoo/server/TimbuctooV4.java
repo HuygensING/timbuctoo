@@ -202,6 +202,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
+    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners, vres);
     final JsonCrudService crudService = new JsonCrudService(
       vres,
       handleAdder,
@@ -209,7 +210,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriWithRev,
       pathWithoutVersionAndRevision,
       Clock.systemDefaultZone(),
-      new DataAccess(graphManager, entityFetcher, authorizer, changeListeners, vres));
+      dataAccess);
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(
@@ -220,11 +221,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
 
     final WomenWritersJsonCrudService womenWritersJsonCrudService = new WomenWritersJsonCrudService(
-      graphManager,
       vres,
       userStore,
       pathWithoutVersionAndRevision,
-      new Neo4jLuceneEntityFetcher(graphManager));
+      dataAccess);
 
 
     environment.lifecycle().manage(graphManager);
