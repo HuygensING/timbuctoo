@@ -10,9 +10,12 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.net.URI;
+import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
@@ -22,6 +25,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -29,6 +33,7 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 public class WomenWritersJsonCrudServiceTest {
 
   private final Vres vres;
+  private UserStore userStore;
 
   public WomenWritersJsonCrudServiceTest() {
     vres = new VresBuilder()
@@ -63,6 +68,12 @@ public class WomenWritersJsonCrudServiceTest {
       .build(Maps.newHashMap());
   }
 
+
+  @Before
+  public void setUp() throws Exception {
+    userStore = mock(UserStore.class);
+    Mockito.when(userStore.userForId(anyString())).thenReturn(Optional.empty());
+  }
 
   @Test
   public void getReturnsAJsonNodeWithARelationsPropertyWithTheGenderOfTheAuthors()
@@ -107,7 +118,7 @@ public class WomenWritersJsonCrudServiceTest {
     WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
       graphWrapper,
       vres,
-      mock(UserStore.class),
+      userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
       new GremlinEntityFetcher()
     );
@@ -174,7 +185,7 @@ public class WomenWritersJsonCrudServiceTest {
     WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
       graphWrapper,
       vres,
-      mock(UserStore.class),
+      userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
       new GremlinEntityFetcher()
     );
@@ -202,7 +213,7 @@ public class WomenWritersJsonCrudServiceTest {
     GraphWrapper graphWrapper = newGraph()
       .withVertex("work1", v ->
         v.withOutgoingRelation("isCreatedBy", "pers1", r -> r.withIsLatest(true).withAccepted("wwrelation", true))
-        .withOutgoingRelation("hasWorkLanguage", "lang1", r -> r.withIsLatest(true).withAccepted("wwrelation", true))
+         .withOutgoingRelation("hasWorkLanguage", "lang1", r -> r.withIsLatest(true).withAccepted("wwrelation", true))
          .withVre("ww")
          .withVre("")
          .withType("document")
@@ -259,7 +270,7 @@ public class WomenWritersJsonCrudServiceTest {
     WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
       graphWrapper,
       vres,
-      mock(UserStore.class),
+      userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
       new GremlinEntityFetcher()
     );
