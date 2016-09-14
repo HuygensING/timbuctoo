@@ -8,7 +8,7 @@ services:
     ports:
       - "8080:80"
       - "8081:81"
-    volumes:
+    volumes: #override auth so you can edit it to contain secrets
       - ~/Documents/timbuctoo/timbuctoo-instancev4/docker_config.yaml:/app/timbuctoo-instancev4/docker_config.yaml
   solr:
     image: solr
@@ -22,5 +22,6 @@ services:
       - timbuctoo
       - solr
     environment:
-      TIMBUCTOO_URL: http://timbuctoo
+      TIMBUCTOO_SCRAPE_URL: http://timbuctoo
+      TIMBUCTOO_BROWSER_URL: http://localhost:8080
       SOLR_URL: http://solr:8983/solr
