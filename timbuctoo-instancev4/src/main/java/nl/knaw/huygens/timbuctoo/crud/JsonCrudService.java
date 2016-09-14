@@ -189,14 +189,10 @@ public class JsonCrudService {
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
     if (collection.isRelationCollection()) {
-      return getRelation(id, rev, collection);
+      return jsnO("message", jsn("Getting a relation is not yet supported"));
     } else {
       return getEntity(id, rev, collection);
     }
-  }
-
-  private JsonNode getRelation(UUID id, Integer rev, Collection collection) throws NotFoundException {
-    return jsnO("message", jsn("Getting a wwrelation is not yet supported"));
   }
 
   private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
