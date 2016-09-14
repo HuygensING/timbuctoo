@@ -22,7 +22,8 @@ The indexer can be started via the run.rb script (see source for expected parame
 The indexer can also be started through the generic search webapp, when the correct environment variables are set.
 
 ```sh
-$ export TIMBUCTOO_URL=http://localhost:8080
+$ export TIMBUCTOO_SCRAPE_URL=http://localhost:8080
+$ export TIMBUCTOO_BROWSER_URL=http://localhost:8080
 $ export SOLR_URL=http://localhost:8983/solr
 $ export PORT=4567
 $ foreman start
@@ -36,7 +37,7 @@ There is also a Dockerfile wrapping the web-app in /src/main/scripts/index_scrip
 
 ```sh
 $ docker build -t huygensing/timbuctoo-generic-search .
-$ docker run -p -e SOLR_URL='http://solr' -e TIMBUCTOO_URL='http://timbuctoo' 80:80 huygensing/timbuctoo-generic-search
+$ docker run -p -e SOLR_URL='http://solr' -e TIMBUCTOO_SCRAPE_URL='http://timbuctoo' TIMBUCTOO_BROWSER_URL='http://localhost:8080' 80:80 huygensing/timbuctoo-generic-search
 ```
 
 

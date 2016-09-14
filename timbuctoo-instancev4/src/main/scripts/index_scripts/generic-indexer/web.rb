@@ -18,7 +18,7 @@ class Web < Sinatra::Base
 
   get '/globals.js' do
     response['Content-type'] = 'text/javascript'
-    "var globals = {env: {SERVER: '#{ENV['TIMBUCTOO_URL']}'}};"
+    "var globals = {env: {SERVER: '#{ENV['TIMBUCTOO_BROWSER_URL']}'}};"
   end
 
   get '/*.js' do
@@ -34,7 +34,7 @@ class Web < Sinatra::Base
     begin
       GenericIndexer.new(
           :vre_id => params[:vre_id],
-          :timbuctoo_url => ENV['TIMBUCTOO_URL'],
+          :timbuctoo_url => ENV['TIMBUCTOO_SCRAPE_URL'],
           :solr_url => ENV['SOLR_URL']
       ).run
       status 200

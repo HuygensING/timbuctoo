@@ -18,7 +18,8 @@ RUN cd /root/app/generic-indexer; bundle install
 
 EXPOSE 80
 
-ENV TIMBUCTOO_URL http://timbuctoo
+ENV TIMBUCTOO_SCRAPE_URL http://timbuctoo
+ENV TIMBUCTOO_BROWSER_URL http://timbuctoo
 ENV SOLR_URL http://solr
 ENV PORT 80
 
