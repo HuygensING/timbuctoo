@@ -99,7 +99,7 @@ public class DataAccess {
     private final GraphTraversalSource latestState;
     private Optional<Boolean> isSuccess = Optional.empty();
 
-    private DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
+    DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
                               EntityFetcher entityFetcher, Vres mappings) {
       this.transaction = graphWrapper.getGraph().tx();
       this.authorizer = authorizer;
@@ -111,101 +111,6 @@ public class DataAccess {
       }
       this.traversal = graphWrapper.getGraph().traversal();
       this.latestState = graphWrapper.getLatestState();
-    }
-
-    private static UUID asUuid(String input, Element source) {
-      try {
-        return UUID.fromString(input);
-      } catch (IllegalArgumentException e) {
-        LOG.error(databaseInvariant, "wrongly formatted UUID as tim_id: " + input + " on " +
-          source.id());
-        return UUID.fromString("00000000-0000-0000-0000-000000000000");
-      }
-    }
-
-    private static EntityRelation makeEntityRelation(Edge edge, Collection collection) {
-      final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
-
-      return ImmutableEntityRelation.builder()
-                                    .isAccepted(getRequiredProp(edge, acceptedPropName, false))
-                                    .timId(asUuid(getRequiredProp(edge, "tim_id", ""), edge))
-                                    .revision(getRequiredProp(edge, "rev", -1))
-                                    .build();
-    }
-
-    @SuppressWarnings("unchecked")
-    private static <V> V getRequiredProp(final Element element, final String key, V valueOnException) {
-      try {
-        Iterator<? extends Property<Object>> revProp = element.properties(key);
-        if (revProp.hasNext()) {
-          Object value = revProp.next().value();
-          return (V) valueOnException.getClass().cast(value);
-        } else {
-          LOG.error(databaseInvariant, "Value is missing for property " + key + " on element with id " + element.id());
-          return valueOnException;
-        }
-      } catch (RuntimeException e) {
-        LOG.error(databaseInvariant, "Something went wrong while getting the property " + key + " from the element " +
-          "with id " + (element != null ? element.id() : "<NULL>") + ": " + e.getMessage());
-        return valueOnException;
-      }
-    }
-
-    private static Optional<Vertex> getEntityByFullIteration(GraphTraversalSource traversal, UUID id) {
-      return getFirst(traversal
-        .V()
-        .has("tim_id", id.toString())
-        .not(__.has("deleted", true))
-        .has("isLatest", true));
-    }
-
-    private static <T> Optional<T> getFirst(Traversal<?, T> traversal) {
-      if (traversal.hasNext()) {
-        return Optional.of(traversal.next());
-      } else {
-        return Optional.empty();
-      }
-    }
-
-    private static Edge getExpectedEdge(GraphTraversalSource traversal, String timId) {
-      GraphTraversal<Edge, Edge> edge = traversal.E().has("tim_id", timId);
-      if (edge.hasNext()) {
-        return edge.next();
-      } else {
-        throw new ObjectSuddenlyDisappearedException("The code assumes that the edge with id " + timId + " is " +
-          "available, but it isn't!");
-      }
-    }
-
-    private static Optional<RelationType> getRelationDescription(GraphTraversalSource traversal, UUID typeId) {
-      return getFirst(traversal
-        .V()
-        //.has(T.label, LabelP.of("relationtype"))
-        .has("tim_id", typeId.toString())
-      )
-        .map(RelationType::new);
-    }
-
-    private static void checkIfAllowedToWrite(Authorizer authorizer, String userId, Collection collection) throws
-      AuthorizationException, AuthorizationUnavailableException {
-      if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
-        throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
-      }
-    }
-
-    private static String[] getEntityTypes(Element element) {
-      try {
-        String typesProp = getRequiredProp(element, "types", "");
-        if (typesProp.equals("[]")) {
-          LOG.error(databaseInvariant, "Entitytypes not present on vertex with ID " + element.id());
-          return new String[0];
-        } else {
-          return arrayToEncodedArray.tinkerpopToJava(typesProp, String[].class);
-        }
-      } catch (IOException e) {
-        LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
-        return new String[0];
-      }
     }
 
     public void success() {
@@ -282,10 +187,6 @@ public class DataAccess {
 
         return createRelation(sourceV, targetV, desc, userId, collection, true, instant);
       }
-    }
-
-    private Supplier<RelationNotPossibleException> notPossible(String message) {
-      return () -> new RelationNotPossibleException(message);
     }
 
     public UUID createEntity(Collection col, Optional<Collection> baseCollection, CreateEntity input, String userId,
@@ -543,6 +444,105 @@ public class DataAccess {
     /*******************************************************************************************************************
      * Support methods:
      ******************************************************************************************************************/
+    private Supplier<RelationNotPossibleException> notPossible(String message) {
+      return () -> new RelationNotPossibleException(message);
+    }
+
+    private static UUID asUuid(String input, Element source) {
+      try {
+        return UUID.fromString(input);
+      } catch (IllegalArgumentException e) {
+        LOG.error(databaseInvariant, "wrongly formatted UUID as tim_id: " + input + " on " +
+          source.id());
+        return UUID.fromString("00000000-0000-0000-0000-000000000000");
+      }
+    }
+
+    private static EntityRelation makeEntityRelation(Edge edge, Collection collection) {
+      final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
+
+      return ImmutableEntityRelation.builder()
+                                    .isAccepted(getRequiredProp(edge, acceptedPropName, false))
+                                    .timId(asUuid(getRequiredProp(edge, "tim_id", ""), edge))
+                                    .revision(getRequiredProp(edge, "rev", -1))
+                                    .build();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <V> V getRequiredProp(final Element element, final String key, V valueOnException) {
+      try {
+        Iterator<? extends Property<Object>> revProp = element.properties(key);
+        if (revProp.hasNext()) {
+          Object value = revProp.next().value();
+          return (V) valueOnException.getClass().cast(value);
+        } else {
+          LOG.error(databaseInvariant, "Value is missing for property " + key + " on element with id " + element.id());
+          return valueOnException;
+        }
+      } catch (RuntimeException e) {
+        LOG.error(databaseInvariant, "Something went wrong while getting the property " + key + " from the element " +
+          "with id " + (element != null ? element.id() : "<NULL>") + ": " + e.getMessage());
+        return valueOnException;
+      }
+    }
+
+    private static Optional<Vertex> getEntityByFullIteration(GraphTraversalSource traversal, UUID id) {
+      return getFirst(traversal
+        .V()
+        .has("tim_id", id.toString())
+        .not(__.has("deleted", true))
+        .has("isLatest", true));
+    }
+
+    private static <T> Optional<T> getFirst(Traversal<?, T> traversal) {
+      if (traversal.hasNext()) {
+        return Optional.of(traversal.next());
+      } else {
+        return Optional.empty();
+      }
+    }
+
+    private static Edge getExpectedEdge(GraphTraversalSource traversal, String timId) {
+      GraphTraversal<Edge, Edge> edge = traversal.E().has("tim_id", timId);
+      if (edge.hasNext()) {
+        return edge.next();
+      } else {
+        throw new ObjectSuddenlyDisappearedException("The code assumes that the edge with id " + timId + " is " +
+          "available, but it isn't!");
+      }
+    }
+
+    private static Optional<RelationType> getRelationDescription(GraphTraversalSource traversal, UUID typeId) {
+      return getFirst(traversal
+        .V()
+        //.has(T.label, LabelP.of("relationtype"))
+        .has("tim_id", typeId.toString())
+      )
+        .map(RelationType::new);
+    }
+
+    private static void checkIfAllowedToWrite(Authorizer authorizer, String userId, Collection collection) throws
+      AuthorizationException, AuthorizationUnavailableException {
+      if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
+        throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
+      }
+    }
+
+    private static String[] getEntityTypes(Element element) {
+      try {
+        String typesProp = getRequiredProp(element, "types", "");
+        if (typesProp.equals("[]")) {
+          LOG.error(databaseInvariant, "Entitytypes not present on vertex with ID " + element.id());
+          return new String[0];
+        } else {
+          return arrayToEncodedArray.tinkerpopToJava(typesProp, String[].class);
+        }
+      } catch (IOException e) {
+        LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
+        return new String[0];
+      }
+    }
+
     private Optional<Collection> getOwnCollectionOfElement(Vre vre, Element sourceV) {
       String ownType = vre.getOwnType(getEntityTypes(sourceV));
       if (ownType == null) {
