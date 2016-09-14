@@ -32,8 +32,9 @@ class GenericConfigs
               .map {|prop| prop['type'].eql?("datable") ?
                     { :name => prop['name'], :converted_name => "#{prop['name']}_i", :type => "year" }
                   : { :name => prop['name'], :converted_name => "#{prop['name']}_s" }
-              } <<  { :name => '@displayName', :converted_name => 'displayName_s'}  <<
-                    { :name => '_id', :converted_name => 'id' } ,
+              } <<  { :name => '@displayName', :converted_name => 'displayName_s' }  <<
+                    { :name => '_id', :converted_name => 'id' } <<
+                    { :name => '@displayName', :converted_name => 'displayName_t' },
           :relations => archetype_mapping['properties']
               .select {|prop| prop['type'].eql?("relation") }
               .map {|rel| {

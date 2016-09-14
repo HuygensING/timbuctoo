@@ -4806,7 +4806,7 @@ var configureSearchClients = function configureSearchClients() {
 			return {
 				client: new _solrFacetedSearchReact.SolrClient({
 					url: "/solr/" + collection.collectionName + "/select",
-					searchFields: archetypes.find(function (archetype) {
+					searchFields: [{ label: "Search", field: "displayName_t", type: "text" }].concat(archetypes.find(function (archetype) {
 						return archetype.archetypeName === collection.archetypeName;
 					}).properties.map(function (prop) {
 						return {
@@ -4815,7 +4815,7 @@ var configureSearchClients = function configureSearchClients() {
 							type: getFacetType(prop.type),
 							collapse: true
 						};
-					}),
+					})),
 					sortFields: archetypes.find(function (archetype) {
 						return archetype.archetypeName === collection.archetypeName;
 					}).properties.map(function (prop) {
@@ -4876,11 +4876,11 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -4901,6 +4901,24 @@ var _solrFacetedSearchReact2 = _interopRequireDefault(_solrFacetedSearchReact);
 var _classnames = require("classnames");
 
 var _classnames2 = _interopRequireDefault(_classnames);
+
+var customComponents = function customComponents(collectionName) {
+	return _extends({}, _solrFacetedSearchReact.defaultComponentPack, {
+		results: _extends({}, _solrFacetedSearchReact.defaultComponentPack.results, {
+			result: function result(props) {
+				console.log(props);return _react2["default"].createElement(
+					"li",
+					{ className: "list-group-item" },
+					_react2["default"].createElement(
+						"a",
+						{ target: "_blank", href: globals.env.SERVER + "/v2.1/domain/" + collectionName + "/" + props.doc.id },
+						props.doc.displayName_s
+					)
+				);
+			}
+		})
+	});
+};
 
 var App = (function (_React$Component) {
 	_inherits(App, _React$Component);
@@ -4979,6 +4997,7 @@ var App = (function (_React$Component) {
 
 								return console.log(args);
 							},
+							customComponents: customComponents(searchClient.name),
 							truncateFacetListsAt: 20
 						}))
 					);
