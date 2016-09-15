@@ -31,12 +31,12 @@ public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
 
   public abstract List<C> getItemList();
 
-  public T withItem(C item) {
+  public T addItem(C item) {
     getItemList().add(item);
     return (T) this;
   }
 
-  public T withLink(RsLn rsLn) {
+  public T addLink(RsLn rsLn) {
     linkList.add(rsLn);
     return (T) this;
   }

@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
-
-import com.google.common.base.Preconditions;
-
 import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -10,6 +7,7 @@ import javax.xml.bind.annotation.XmlElement;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -28,7 +26,7 @@ public abstract class RsItem<T extends RsItem> {
   }
 
   public T withLoc(@Nonnull String loc) {
-    this.loc = Preconditions.checkNotNull(loc);
+    this.loc = Objects.requireNonNull(loc);
     return (T) this;
   }
 
@@ -63,7 +61,7 @@ public abstract class RsItem<T extends RsItem> {
     return rsLnList;
   }
 
-  public T withLink(RsLn rsLn) {
+  public T addLink(RsLn rsLn) {
     rsLnList.add(rsLn);
     return (T) this;
   }

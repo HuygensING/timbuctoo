@@ -1,15 +1,6 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsBuilder;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsLn;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.SitemapItem;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.Sitemapindex;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.UrlItem;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -32,6 +23,7 @@ public class RsBuilderTest {
     String urlsetXml = rsBuilder.toXml(createUrlset(), true);
 
     //System.out.println(sitemapindexXml);
+    //System.out.println(urlsetXml);
 
     InputStream sitemapindexIs = IOUtils.toInputStream(sitemapindexXml);
     RsRoot root = rsBuilder.setInputStream(sitemapindexIs).build().get();
@@ -66,10 +58,10 @@ public class RsBuilderTest {
   private Sitemapindex createSitemapIndex() {
 
     return new Sitemapindex(new RsMd("resourcelist"))
-      .withLink(new RsLn("up", "http://example.com/dataset1/capabilitylist.xml"))
-      .withItem(new SitemapItem("http://example.com/resourcelist1.xml")
+      .addLink(new RsLn("up", "http://example.com/dataset1/capabilitylist.xml"))
+      .addItem(new SitemapItem("http://example.com/resourcelist1.xml")
         .withMetadata(new RsMd().withAt(ZonedDateTime.now(ZoneOffset.UTC))))
-      .withItem(new SitemapItem("http://example.com/resourcelist2.xml")
+      .addItem(new SitemapItem("http://example.com/resourcelist2.xml")
         .withMetadata(new RsMd().withAt(ZonedDateTime.now(ZoneOffset.UTC))));
   }
 
@@ -100,16 +92,16 @@ public class RsBuilderTest {
 
     UrlItem url1 = new UrlItem("http://example.com/capabilitylist1.xml")
       .withMetadata(urlRsMd)
-      .withLink(urlLink1)
-      .withLink(new RsLn("duplicate", "http://also.com/capabilitylist1.xml"));
+      .addLink(urlLink1)
+      .addLink(new RsLn("duplicate", "http://also.com/capabilitylist1.xml"));
 
     UrlItem url2 = new UrlItem("http://example.com/capabilitylist2.xml");
 
     return new Urlset(rsMd)
-      .withLink(new RsLn("describedby", "http://example.com/info_about_source.xml"))
-      .withLink(new RsLn("up", "http://example.com/attic"))
-      .withItem(url1)
-      .withItem(url2);
+      .addLink(new RsLn("describedby", "http://example.com/info_about_source.xml"))
+      .addLink(new RsLn("up", "http://example.com/attic"))
+      .addItem(url1)
+      .addItem(url2);
 
   }
 }
