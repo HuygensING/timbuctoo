@@ -1,15 +1,13 @@
 package nl.knaw.huygens.timbuctoo.database.dto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -43,11 +41,17 @@ public class TinkerPopToEntityMapper {
   private final Collection collection;
   private final GraphTraversalSource traversalSource;
   private final Vres mappings;
+  private final DataAccess.CustomEntityProperties customEntityProperties;
+  private final DataAccess.CustomRelationProperties customRelationProperties;
 
-  public TinkerPopToEntityMapper(Collection collection, GraphTraversalSource traversalSource, Vres mappings) {
+  public TinkerPopToEntityMapper(Collection collection, GraphTraversalSource traversalSource, Vres mappings,
+                                 DataAccess.CustomEntityProperties customEntityProperties,
+                                 DataAccess.CustomRelationProperties customRelationProperties) {
     this.collection = collection;
     this.traversalSource = traversalSource;
     this.mappings = mappings;
+    this.customEntityProperties = customEntityProperties;
+    this.customRelationProperties = customRelationProperties;
   }
 
   public ReadEntity mapEntity(Vertex next) {
@@ -143,10 +147,13 @@ public class TinkerPopToEntityMapper {
       entity.setCreated(new Change());
     }
 
-    entity.setDisplayName(getDisplayname(traversalSource, entityVertex, collection).orElse(""));
+    entity.setDisplayName(DisplayNameHelper.getDisplayname(traversalSource, entityVertex, collection).orElse(""));
     entity.setId(UUID.fromString(entityVertex.value("tim_id")));
 
     entity.setRelations(getRelations(entityVertex, traversalSource, collection));
+
+    customEntityProperties.execute(entity, entityVertex);
+
     return entity;
   }
 
@@ -218,8 +225,8 @@ public class TinkerPopToEntityMapper {
               targetCollection = adminVre.getCollectionForTypeName(targetEntityType);
             }
 
-            String displayName = getDisplayname(traversalSource, target, targetCollection)
-              .orElse("<No displayname found>");
+            String displayName = DisplayNameHelper.getDisplayname(traversalSource, target, targetCollection)
+                                                  .orElse("<No displayname found>");
             String uuid = getProp(target, "tim_id", String.class).orElse("");
             boolean accepted = getProp(edge, "accepted", Boolean.class).orElse(true);
             String relationId =
@@ -227,8 +234,11 @@ public class TinkerPopToEntityMapper {
                 .orElse("");
             int relationRev = getProp(edge, "rev", Integer.class).orElse(1);
 
-            return new RelationRef(uuid, targetCollection.getCollectionName(), targetEntityType, accepted, relationId,
-              relationRev, label, displayName);
+            RelationRef relationRef =
+              new RelationRef(uuid, targetCollection.getCollectionName(), targetEntityType, accepted, relationId,
+                relationRev, label, displayName);
+            customRelationProperties.execute(traversalSource, vre, target, relationRef);
+            return relationRef;
           } catch (Exception e) {
             LOG.error(databaseInvariant,
               "Something went wrong while formatting the entity",
@@ -246,34 +256,4 @@ public class TinkerPopToEntityMapper {
     return relations;
   }
 
-  private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
-                                          Collection targetCollection) {
-    ReadableProperty displayNameProperty = targetCollection.getDisplayName();
-    if (displayNameProperty != null) {
-      GraphTraversal<Vertex, Try<JsonNode>> displayNameGetter = traversalSource.V(vertex.id()).union(
-        targetCollection.getDisplayName().traversalJson()
-      );
-      if (displayNameGetter.hasNext()) {
-        Try<JsonNode> traversalResult = displayNameGetter.next();
-        if (!traversalResult.isSuccess()) {
-          LOG.error(databaseInvariant, "Retrieving displayname failed", traversalResult.getCause());
-        } else {
-          if (traversalResult.get() == null) {
-            LOG.error(databaseInvariant, "Displayname was null");
-          } else {
-            if (!traversalResult.get().isTextual()) {
-              LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
-            } else {
-              return Optional.of(traversalResult.get().asText());
-            }
-          }
-        }
-      } else {
-        LOG.error(databaseInvariant, "Displayname traversal resulted in no results: " + displayNameGetter);
-      }
-    } else {
-      LOG.warn("No displayname configured for " + targetCollection.getEntityTypeName());
-    }
-    return Optional.empty();
-  }
 }

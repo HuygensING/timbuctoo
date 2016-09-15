@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
@@ -17,15 +16,12 @@ import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.WwReadEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.WwRelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -47,15 +43,11 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -65,19 +57,16 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
-import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
-import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class DataAccess {
@@ -102,6 +91,14 @@ public class DataAccess {
     return new DataAccessMethods(graphwrapper, authorizer, listener, entityFetcher, mappings);
   }
 
+  public interface CustomEntityProperties {
+    void execute(ReadEntity entity, Vertex entityVertex);
+  }
+
+  public interface CustomRelationProperties {
+    void execute(GraphTraversalSource traversalSource, Vre vre, Vertex target, RelationRef relationRef);
+  }
+
   public static class DataAccessMethods implements AutoCloseable {
     private final Transaction transaction;
     private final Authorizer authorizer;
@@ -113,7 +110,7 @@ public class DataAccess {
     private Optional<Boolean> isSuccess = Optional.empty();
 
     DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
-                              EntityFetcher entityFetcher, Vres mappings) {
+                      EntityFetcher entityFetcher, Vres mappings) {
       this.transaction = graphWrapper.getGraph().tx();
       this.authorizer = authorizer;
       this.listener = listener;
@@ -257,7 +254,9 @@ public class DataAccess {
       return id;
     }
 
-    public ReadEntity getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
+    public ReadEntity getEntity(UUID id, Integer rev, Collection collection,
+                                CustomEntityProperties customEntityProperties,
+                                CustomRelationProperties customRelationProperties) throws NotFoundException {
       GraphTraversal<Vertex, Vertex> fetchedEntity = entityFetcher.getEntity(
         traversal,
         id,
@@ -281,28 +280,19 @@ public class DataAccess {
         throw new NotFoundException();
       }
 
-      return new TinkerPopToEntityMapper(collection, traversal, mappings).mapEntity(entityT);
+      return new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties,
+        customRelationProperties).mapEntity(entityT);
     }
 
-    // get entity for the women writers vre
-    public WwReadEntity getWwEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
-      ReadEntity entity = this.getEntity(id, rev, collection);
 
-      Vertex entityVertex = traversal.V().has("tim_id", id.toString()).next();
-      Set<String> languages = getLanguagesForAuthor(
-        collection.getVre(),
-        entityVertex
-      );
-      WwReadEntity wwReadEntity = new WwReadEntity(entity, languages);
-      wwReadEntity.setRelations(getWwRelations(entityVertex, traversal, collection));
-      return wwReadEntity;
-    }
-
-    public Stream<ReadEntity> getCollection(Collection collection, int rows, int start) {
+    public Stream<ReadEntity> getCollection(Collection collection, int rows, int start,
+                                            CustomEntityProperties customEntityProperties,
+                                            CustomRelationProperties customRelationProperties) {
       GraphTraversal<Vertex, Vertex> entities =
         getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
 
-      TinkerPopToEntityMapper tinkerPopToEntityMapper = new TinkerPopToEntityMapper(collection, traversal, mappings);
+      TinkerPopToEntityMapper tinkerPopToEntityMapper =
+        new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties, customRelationProperties);
 
       return entities.toStream().map(tinkerPopToEntityMapper::mapEntity);
     }
@@ -677,208 +667,6 @@ public class DataAccess {
       listener.onUpdate(old, entity);
     }
 
-    private Set<String> getLanguagesForAuthor(Vre vre, Vertex vertex) {
-      Set<String> languages = new HashSet<>();
-
-      final Iterator<Edge> isCreatorOf = vertex.edges(Direction.IN, "isCreatedBy");
-
-      while (isCreatorOf.hasNext()) {
-        final Edge next = isCreatorOf.next();
-        final Boolean creatorOfIsAccepted = next.property("wwrelation_accepted").isPresent() ?
-          (Boolean) next.property("wwrelation_accepted").value() : false;
-        final Boolean creatorOfIsLatest = next.property("isLatest").isPresent() ?
-          (Boolean) next.property("isLatest").value() : false;
-
-        if (creatorOfIsAccepted && creatorOfIsLatest) {
-          final Vertex publication = next.outVertex();
-          final Iterator<Edge> hasWorkLanguage = publication.edges(Direction.OUT, "hasWorkLanguage");
-          while (hasWorkLanguage.hasNext()) {
-            final Edge nextLanguage = hasWorkLanguage.next();
-            final Boolean languageIsAccepted = nextLanguage.property("wwrelation_accepted").isPresent() ?
-              (Boolean) nextLanguage.property("wwrelation_accepted").value() : false;
-            final Boolean languageIsLatest = nextLanguage.property("isLatest").isPresent() ?
-              (Boolean) nextLanguage.property("isLatest").value() : false;
-
-            if (languageIsAccepted && languageIsLatest) {
-              final Vertex languageVertex = nextLanguage.inVertex();
-              final String language = getProp(languageVertex, "wwlanguage_name", String.class).orElse(null);
-              if (language != null) {
-                languages.add(language);
-              }
-            }
-          }
-        }
-      }
-      return languages;
-    }
-
-    private List<RelationRef> getWwRelations(Vertex entity, GraphTraversalSource traversalSource,
-                                             Collection collection) {
-      final Vre vre = collection.getVre();
-      Vre adminVre = mappings.getVre("Admin");
-      Map<String, Collection> collectionsOfVre = vre.getCollections();
-
-      Object[] relationTypes = traversalSource.V().has(T.label, LabelP.of("relationtype")).id().toList().toArray();
-
-      GraphTraversal<Vertex, RelationRef> realRelations = collectionsOfVre
-        .values().stream()
-        .filter(Collection::isRelationCollection)
-        .findAny()
-        .map(Collection::getEntityTypeName)
-        .map(ownRelationType -> traversalSource
-          .V(entity.id())
-          .union(
-            __.outE()
-              .as("edge")
-              .label().as("label")
-              .select("edge"),
-            __.inE()
-              .as("edge")
-              .label().as("edgeLabel")
-              .V(relationTypes)
-              .has("relationtype_regularName",
-                __.where(P.eq("edgeLabel")))
-              .properties("relationtype_inverseName").value()
-              .as("label")
-              .select("edge")
-          )
-          .where(
-            //FIXME move to strategy
-            __.has("isLatest", true)
-              .not(__.has("deleted", true))
-              .not(__.hasLabel("VERSION_OF"))
-              //The old timbuctoo showed relations from all
-              // VRE's.
-              // Changing that behaviour caused breakage in
-              // the
-              //frontend and exposed errors in the database
-              // that
-              //.has("types", new P<>((val, def) -> val
-              // .contains
-              // ("\"" + ownRelationType + "\""), ""))
-              // FIXME: string concatenating methods like this
-              // should be delegated to a configuration clas
-              .not(
-                __.has(ownRelationType + "_accepted", false))
-          )
-          .otherV().as("vertex")
-          .select("edge", "vertex", "label")
-          .map(r -> {
-            try {
-              Map<String, Object> val = r.get();
-              Edge edge = (Edge) val.get("edge");
-              Vertex target = (Vertex) val.get("vertex");
-              String label = (String) val.get("label");
-
-              String targetEntityType = vre.getOwnType(getEntityTypesOrDefault(target));
-              Collection targetCollection = vre.getCollectionForTypeName(targetEntityType);
-              if (targetEntityType == null) {
-                //this means that the edge is of this VRE, but the
-                // Vertex it points to is of another VRE
-                //In that case we use the admin vre
-                targetEntityType = adminVre.getOwnType(getEntityTypesOrDefault(target));
-                targetCollection = adminVre.getCollectionForTypeName(targetEntityType);
-              }
-
-              String displayName = getDisplayname(traversalSource, target, targetCollection)
-                .orElse("<No displayname found>");
-              String uuid = getProp(target, "tim_id", String.class).orElse("");
-              boolean accepted = getProp(edge, "accepted", Boolean.class).orElse(true);
-              String relationId =
-                getProp(edge, "tim_id", String.class)
-                  .orElse("");
-              int relationRev = getProp(edge, "rev", Integer.class).orElse(1);
-
-              String gender =
-                getProp(target, "wwperson_gender", String.class)
-                  .orElse(null);
-              if (gender != null) {
-                gender = gender.replaceAll("\"", "");
-              }
-
-              List<Tuple<String, String>> authors =
-                getAuthorsForPublication(traversalSource, vre,
-                  target);
-
-              return (RelationRef) new WwRelationRef(uuid, targetCollection.getCollectionName(), targetEntityType,
-                accepted, relationId,
-                relationRev, label, displayName, gender, authors);
-            } catch (Exception e) {
-              LOG.error(databaseInvariant,
-                "Something went wrong while formatting the entity",
-                e);
-              return null;
-            }
-          })
-        )
-        .orElse(EmptyGraph.instance().traversal().V()
-                          .map(x -> null));
-
-      List<RelationRef> relations = stream(realRelations)
-        .filter(x -> x != null).collect(toList());
-
-      return relations;
-    }
-
-    private List<Tuple<String, String>> getAuthorsForPublication(GraphTraversalSource traversalSource, Vre vre,
-                                                                 Vertex vertex) {
-      List<Tuple<String, String>> authors = new ArrayList<>();
-
-      final Iterator<Edge> isCreatedBy = vertex.edges(Direction.OUT, "isCreatedBy");
-
-      while (isCreatedBy.hasNext()) {
-        final Edge next = isCreatedBy.next();
-        final Boolean isAccepted = (Boolean) next.property("wwrelation_accepted").isPresent() ?
-          (Boolean) next.property("wwrelation_accepted").value() : false;
-        final Object isLatest = next.property("isLatest").isPresent() ?
-          (Boolean) next.property("isLatest").value() : false;
-
-        if (isAccepted && (Boolean) isLatest) {
-          final Vertex author = next.inVertex();
-          final Collection personCollection = vre.getCollectionForTypeName("wwperson");
-          final String authorName = getDisplayname(traversalSource, author, personCollection).orElse(null);
-          String authorGender = getProp(author, "wwperson_gender", String.class).orElse(null);
-          if (authorGender != null) {
-            authorGender = authorGender.replaceAll("\"", "");
-          }
-          if (authorName != null) {
-            authors.add(tuple(authorName, authorGender));
-          }
-        }
-      }
-      return authors;
-    }
-
-    private Optional<String> getDisplayname(GraphTraversalSource traversalSource, Vertex vertex,
-                                            Collection targetCollection) {
-      ReadableProperty displayNameProperty = targetCollection.getDisplayName();
-      if (displayNameProperty != null) {
-        GraphTraversal<Vertex, Try<JsonNode>> displayNameGetter = traversalSource.V(vertex.id()).union(
-          targetCollection.getDisplayName().traversalJson()
-        );
-        if (displayNameGetter.hasNext()) {
-          Try<JsonNode> traversalResult = displayNameGetter.next();
-          if (!traversalResult.isSuccess()) {
-            LOG.error(databaseInvariant, "Retrieving displayname failed", traversalResult.getCause());
-          } else {
-            if (traversalResult.get() == null) {
-              LOG.error(databaseInvariant, "Displayname was null");
-            } else {
-              if (!traversalResult.get().isTextual()) {
-                LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
-              } else {
-                return Optional.of(traversalResult.get().asText());
-              }
-            }
-          }
-        } else {
-          LOG.error(databaseInvariant, "Displayname traversal resulted in no results: " + displayNameGetter);
-        }
-      } else {
-        LOG.warn("No displayname configured for " + targetCollection.getEntityTypeName());
-      }
-      return Optional.empty();
-    }
   }
 
 

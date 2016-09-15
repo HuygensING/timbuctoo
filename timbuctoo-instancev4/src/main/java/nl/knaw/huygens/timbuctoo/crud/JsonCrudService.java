@@ -192,7 +192,13 @@ public class JsonCrudService {
     try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
 
       try {
-        ReadEntity entity = dataAccessMethods.getEntity(id, rev, collection);
+        ReadEntity entity = dataAccessMethods.getEntity(id, rev, collection,
+          (entity1, entityVertex) -> {
+
+          },
+          (traversalSource, vre, target, relationRef) -> {
+
+          });
 
         ObjectNode result = entityToJsonMapper.mapEntity(collection, entity, true,
           (readEntity, resultJson) -> {
@@ -217,7 +223,13 @@ public class JsonCrudService {
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
     try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
-      Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start);
+      Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start,
+        (entity1, entityVertex) -> {
+
+        },
+        (traversalSource, vre, target, relationRef) -> {
+
+        });
       List<ObjectNode> result = entities.map(entity -> entityToJsonMapper.mapEntity(collection, entity, withRelations,
         (readEntity, resultJson) -> {
         },

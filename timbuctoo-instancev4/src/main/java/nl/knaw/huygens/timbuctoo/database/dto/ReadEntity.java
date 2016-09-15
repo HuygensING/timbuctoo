@@ -1,9 +1,12 @@
 package nl.knaw.huygens.timbuctoo.database.dto;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public class ReadEntity {
@@ -17,7 +20,11 @@ public class ReadEntity {
   private List<RelationRef> relations;
   private String displayName;
   private UUID id;
+  private final HashMap<String, Object> extraProperties;
 
+  public ReadEntity() {
+    extraProperties = Maps.newHashMap();
+  }
 
   public void setProperties(List<TimProperty<?>> properties) {
     this.properties = properties;
@@ -97,5 +104,13 @@ public class ReadEntity {
 
   public UUID getId() {
     return id;
+  }
+
+  public void addExtraPoperty(String key, Object value) {
+    extraProperties.put(key, value);
+  }
+
+  public Optional<Object> getExtraProperty(String key) {
+    return Optional.ofNullable(extraProperties.get(key));
   }
 }

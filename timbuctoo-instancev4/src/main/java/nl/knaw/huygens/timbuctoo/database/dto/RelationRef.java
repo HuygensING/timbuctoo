@@ -1,5 +1,10 @@
 package nl.knaw.huygens.timbuctoo.database.dto;
 
+import com.google.common.collect.Maps;
+
+import java.util.Map;
+import java.util.Optional;
+
 public class RelationRef {
   private String entityId;
   private String collectionName;
@@ -9,6 +14,8 @@ public class RelationRef {
   private int relationRev;
   private String relationType;
   private String displayName;
+  private final Map<String, Object> extraProperties;
+
 
   public RelationRef(String entityId, String collectionName, String entityType, boolean relationAccepted,
                      String relationId,
@@ -21,6 +28,7 @@ public class RelationRef {
     this.relationRev = relationRev;
     this.relationType = relationType;
     this.displayName = displayName;
+    this.extraProperties = Maps.newHashMap();
   }
 
   public String getEntityId() {
@@ -55,4 +63,11 @@ public class RelationRef {
     return displayName;
   }
 
+  public void addExtraProperty(String key, Object value) {
+    extraProperties.put(key, value);
+  }
+
+  public Optional<Object> getExtraProperty(String key) {
+    return Optional.ofNullable(extraProperties.get(key));
+  }
 }
