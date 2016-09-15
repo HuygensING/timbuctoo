@@ -1,12 +1,10 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.database.dto;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import javaslang.control.Try;
-import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
@@ -39,14 +37,14 @@ import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDef
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
-public class EntityMapper {
+public class TinkerPopToEntityMapper {
 
-  private static final Logger LOG = LoggerFactory.getLogger(EntityMapper.class);
+  private static final Logger LOG = LoggerFactory.getLogger(TinkerPopToEntityMapper.class);
   private final Collection collection;
   private final GraphTraversalSource traversalSource;
   private final Vres mappings;
 
-  public EntityMapper(Collection collection, GraphTraversalSource traversalSource, Vres mappings) {
+  public TinkerPopToEntityMapper(Collection collection, GraphTraversalSource traversalSource, Vres mappings) {
     this.collection = collection;
     this.traversalSource = traversalSource;
     this.mappings = mappings;

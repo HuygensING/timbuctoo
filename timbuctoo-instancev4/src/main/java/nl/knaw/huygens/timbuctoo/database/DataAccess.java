@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
+import nl.knaw.huygens.timbuctoo.database.dto.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.WwReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.WwRelationRef;
@@ -280,7 +281,7 @@ public class DataAccess {
         throw new NotFoundException();
       }
 
-      return new EntityMapper(collection, traversal, mappings).mapEntity(entityT);
+      return new TinkerPopToEntityMapper(collection, traversal, mappings).mapEntity(entityT);
     }
 
     // get entity for the women writers vre
@@ -301,9 +302,9 @@ public class DataAccess {
       GraphTraversal<Vertex, Vertex> entities =
         getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
 
-      EntityMapper entityMapper = new EntityMapper(collection, traversal, mappings);
+      TinkerPopToEntityMapper tinkerPopToEntityMapper = new TinkerPopToEntityMapper(collection, traversal, mappings);
 
-      return entities.toStream().map(entityMapper::mapEntity);
+      return entities.toStream().map(tinkerPopToEntityMapper::mapEntity);
     }
 
     /**
