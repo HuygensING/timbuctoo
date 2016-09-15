@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlType;
@@ -11,7 +11,7 @@ public class UrlItem extends RsItem<UrlItem> {
   private UrlItem() {}
 
   public UrlItem(@Nonnull String loc) {
-    setLoc(loc);
+    withLoc(loc);
   }
 
 }

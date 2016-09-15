@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 
 import com.google.common.base.Preconditions;
@@ -27,7 +27,7 @@ public abstract class RsItem<T extends RsItem> {
     return loc;
   }
 
-  public T setLoc(@Nonnull String loc) {
+  public T withLoc(@Nonnull String loc) {
     this.loc = Preconditions.checkNotNull(loc);
     return (T) this;
   }
@@ -36,7 +36,7 @@ public abstract class RsItem<T extends RsItem> {
     return Optional.ofNullable(lastmod);
   }
 
-  public T setLastmod(ZonedDateTime lastmod) {
+  public T withLastmod(ZonedDateTime lastmod) {
     this.lastmod = lastmod;
     return (T) this;
   }
@@ -45,7 +45,7 @@ public abstract class RsItem<T extends RsItem> {
     return Optional.ofNullable(changefreq);
   }
 
-  public T setChangefreq(String changefreq) {
+  public T withChangefreq(String changefreq) {
     this.changefreq = changefreq;
     return (T) this;
   }
@@ -54,7 +54,7 @@ public abstract class RsItem<T extends RsItem> {
     return Optional.ofNullable(rsMd);
   }
 
-  public T setMetadata(RsMd rsMd) {
+  public T withMetadata(RsMd rsMd) {
     this.rsMd = rsMd;
     return (T) this;
   }
@@ -63,7 +63,7 @@ public abstract class RsItem<T extends RsItem> {
     return rsLnList;
   }
 
-  public T add(RsLn rsLn) {
+  public T withLink(RsLn rsLn) {
     rsLnList.add(rsLn);
     return (T) this;
   }

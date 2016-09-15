@@ -1,7 +1,4 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
-
-
-import com.google.common.base.Preconditions;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -9,8 +6,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
-
 
 @XmlType(name = "ln",
   namespace = "http://www.openarchives.org/rs/terms/",
@@ -33,16 +30,15 @@ public class RsLn {
   private RsLn() {}
 
   public RsLn(@Nonnull String rel, @Nonnull String href) {
-    this.rel = Preconditions.checkNotNull(rel);
-    this.href = Preconditions.checkNotNull(href);
+    withRel(rel).withHref(href);
   }
 
   public String getRel() {
     return rel;
   }
 
-  public RsLn setRel(@Nonnull String rel) {
-    this.rel = Preconditions.checkNotNull(rel);
+  public RsLn withRel(@Nonnull String rel) {
+    this.rel = Objects.requireNonNull(rel);
     return this;
   }
 
@@ -50,8 +46,8 @@ public class RsLn {
     return href;
   }
 
-  public RsLn setHref(@Nonnull String href) {
-    this.href = Preconditions.checkNotNull(href);
+  public RsLn withHref(@Nonnull String href) {
+    this.href = Objects.requireNonNull(href);
     return this;
   }
 
@@ -59,7 +55,7 @@ public class RsLn {
     return Optional.ofNullable(encoding);
   }
 
-  public RsLn setEncoding(String encoding) {
+  public RsLn withEncoding(String encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -68,7 +64,7 @@ public class RsLn {
     return Optional.ofNullable(hash);
   }
 
-  public RsLn setHash(String hash) {
+  public RsLn withHash(String hash) {
     this.hash = hash;
     return this;
   }
@@ -77,7 +73,7 @@ public class RsLn {
     return Optional.ofNullable(length);
   }
 
-  public RsLn setLength(Long length) {
+  public RsLn withLength(Long length) {
     this.length = length;
     return this;
   }
@@ -86,7 +82,7 @@ public class RsLn {
     return Optional.ofNullable(modified);
   }
 
-  public RsLn setModified(ZonedDateTime modified) {
+  public RsLn withModified(ZonedDateTime modified) {
     this.modified = modified;
     return this;
   }
@@ -95,7 +91,7 @@ public class RsLn {
     return Optional.ofNullable(path);
   }
 
-  public RsLn setPath(String path) {
+  public RsLn withPath(String path) {
     this.path = path;
     return this;
   }
@@ -104,7 +100,7 @@ public class RsLn {
     return Optional.ofNullable(pri);
   }
 
-  public RsLn setPri(Integer pri) {
+  public RsLn withPri(Integer pri) {
     this.pri = pri;
     return this;
   }
@@ -113,7 +109,7 @@ public class RsLn {
     return Optional.ofNullable(type);
   }
 
-  public RsLn setType(String type) {
+  public RsLn withType(String type) {
     this.type = type;
     return this;
   }

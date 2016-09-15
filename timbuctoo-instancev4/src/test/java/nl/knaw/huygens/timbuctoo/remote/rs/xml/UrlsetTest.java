@@ -1,5 +1,11 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.ObjectFactory;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsLn;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.UrlItem;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
@@ -84,40 +90,40 @@ public class UrlsetTest {
   private Urlset createUrlset() {
 
     RsMd rsMd = new RsMd("description")
-      .setAt(ZonedDateTime.now(ZoneOffset.UTC))
-      .setCompleted(ZonedDateTime.now(ZoneOffset.UTC))
-      .setFrom(ZonedDateTime.now(ZoneOffset.UTC))
-      .setUntil(ZonedDateTime.now(ZoneOffset.UTC));
+      .withAt(ZonedDateTime.now(ZoneOffset.UTC))
+      .withCompleted(ZonedDateTime.now(ZoneOffset.UTC))
+      .withFrom(ZonedDateTime.now(ZoneOffset.UTC))
+      .withUntil(ZonedDateTime.now(ZoneOffset.UTC));
 
     RsMd urlRsMd = new RsMd("capabilitylist")
-      .setChange("updated")
-      .setEncoding("encoding")
-      .setHash("hash")
-      .setLength(2L)
-      .setPath("another/path")
-      .setType("text/plain");
+      .withChange("updated")
+      .withEncoding("encoding")
+      .withHash("hash")
+      .withLength(2L)
+      .withPath("another/path")
+      .withType("text/plain");
 
     RsLn urlLink1 = new RsLn("describedby", "http://example.com/info_about_set1_of_resources.xml")
-      .setEncoding("UTF-8")
-      .setHash("md5:1584abdf8ebdc9802ac0c6a7402c03b6")
-      .setLength(1000L)
-      .setModified(ZonedDateTime.now(ZoneOffset.UTC))
-      .setPath("foo/bar")
-      .setPri(1)
-      .setType("application/xml");
+      .withEncoding("UTF-8")
+      .withHash("md5:1584abdf8ebdc9802ac0c6a7402c03b6")
+      .withLength(1000L)
+      .withModified(ZonedDateTime.now(ZoneOffset.UTC))
+      .withPath("foo/bar")
+      .withPri(1)
+      .withType("application/xml");
 
     UrlItem url1 = new UrlItem("http://example.com/capabilitylist1.xml")
-      .setMetadata(urlRsMd)
-      .add(urlLink1)
-      .add(new RsLn("duplicate", "http://also.com/capabilitylist1.xml"));
+      .withMetadata(urlRsMd)
+      .withLink(urlLink1)
+      .withLink(new RsLn("duplicate", "http://also.com/capabilitylist1.xml"));
 
     UrlItem url2 = new UrlItem("http://example.com/capabilitylist2.xml");
 
     return new Urlset(rsMd)
-      .add(new RsLn("describedby", "http://example.com/info_about_source.xml"))
-      .add(new RsLn("up", "http://example.com/attic"))
-      .add(url1)
-      .add(url2);
+      .withLink(new RsLn("describedby", "http://example.com/info_about_source.xml"))
+      .withLink(new RsLn("up", "http://example.com/attic"))
+      .withItem(url1)
+      .withItem(url2);
 
   }
 

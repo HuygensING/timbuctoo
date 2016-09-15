@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 
 import javax.annotation.Nonnull;
@@ -22,7 +22,7 @@ public class Urlset extends RsRoot<Urlset, UrlItem> {
   protected Urlset() {}
 
   public Urlset(@Nonnull RsMd rsMd) {
-    setMetadata(rsMd);
+    withMetadata(rsMd);
   }
 
   public List<UrlItem> getItemList() {

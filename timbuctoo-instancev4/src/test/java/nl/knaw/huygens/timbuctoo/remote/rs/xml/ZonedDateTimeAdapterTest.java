@@ -1,6 +1,7 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.ZonedDateTimeAdapter;
 import org.junit.Test;
 
 import java.time.ZoneId;

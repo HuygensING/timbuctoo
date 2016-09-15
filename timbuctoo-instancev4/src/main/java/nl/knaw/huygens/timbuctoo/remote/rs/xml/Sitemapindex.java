@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlElement;
@@ -21,7 +21,7 @@ public class Sitemapindex extends RsRoot<Sitemapindex, SitemapItem> {
   protected Sitemapindex() {}
 
   public Sitemapindex(@Nonnull RsMd rsMd) {
-    setMetadata(rsMd);
+    withMetadata(rsMd);
   }
 
   public List<SitemapItem> getItemList() {

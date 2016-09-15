@@ -1,6 +1,4 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
-
-import com.google.common.base.Preconditions;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlAccessType;
@@ -8,6 +6,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
@@ -21,8 +20,8 @@ public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
     return rsMd;
   }
 
-  public T setMetadata(@Nonnull RsMd rsMd) {
-    this.rsMd = Preconditions.checkNotNull(rsMd);
+  public T withMetadata(@Nonnull RsMd rsMd) {
+    this.rsMd = Objects.requireNonNull(rsMd);
     return (T) this;
   }
 
@@ -32,12 +31,12 @@ public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
 
   public abstract List<C> getItemList();
 
-  public T add(C item) {
+  public T withItem(C item) {
     getItemList().add(item);
     return (T) this;
   }
 
-  public T add(RsLn rsLn) {
+  public T withLink(RsLn rsLn) {
     linkList.add(rsLn);
     return (T) this;
   }

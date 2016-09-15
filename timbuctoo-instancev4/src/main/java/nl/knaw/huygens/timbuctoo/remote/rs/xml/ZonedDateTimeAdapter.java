@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 import javax.xml.bind.annotation.adapters.XmlAdapter;
 import java.time.LocalDateTime;

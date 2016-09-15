@@ -1,14 +1,11 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
-
-import com.google.common.base.Preconditions;
-
-import javax.annotation.Nonnull;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 import java.time.ZonedDateTime;
+import java.util.Objects;
 import java.util.Optional;
 
 @XmlType(name = "md",
@@ -31,18 +28,18 @@ public class RsMd {
   @XmlAttribute() private String path;
   @XmlAttribute() private String type;
 
-  private RsMd() {}
+  public RsMd() {}
 
-  public RsMd(@Nonnull String capability) {
-    this.capability = Preconditions.checkNotNull(capability);
+  public RsMd(String capability) {
+    this.capability = Objects.requireNonNull(capability);
   }
 
-  public String getCapability() {
-    return capability;
+  public Optional<String> getCapability() {
+    return Optional.ofNullable(capability);
   }
 
-  public RsMd setCapability(@Nonnull String capability) {
-    this.capability = Preconditions.checkNotNull(capability);
+  public RsMd withCapability(String capability) {
+    this.capability = capability;
     return this;
   }
 
@@ -50,7 +47,7 @@ public class RsMd {
     return Optional.ofNullable(at);
   }
 
-  public RsMd setAt(ZonedDateTime at) {
+  public RsMd withAt(ZonedDateTime at) {
     this.at = at;
     return this;
   }
@@ -59,7 +56,7 @@ public class RsMd {
     return Optional.ofNullable(completed);
   }
 
-  public RsMd setCompleted(ZonedDateTime completed) {
+  public RsMd withCompleted(ZonedDateTime completed) {
     this.completed = completed;
     return this;
   }
@@ -68,7 +65,7 @@ public class RsMd {
     return Optional.ofNullable(from);
   }
 
-  public RsMd setFrom(ZonedDateTime from) {
+  public RsMd withFrom(ZonedDateTime from) {
     this.from = from;
     return this;
   }
@@ -77,7 +74,7 @@ public class RsMd {
     return Optional.ofNullable(until);
   }
 
-  public RsMd setUntil(ZonedDateTime until) {
+  public RsMd withUntil(ZonedDateTime until) {
     this.until = until;
     return this;
   }
@@ -86,7 +83,7 @@ public class RsMd {
     return Optional.ofNullable(change);
   }
 
-  public RsMd setChange(String change) {
+  public RsMd withChange(String change) {
     this.change = change;
     return this;
   }
@@ -95,7 +92,7 @@ public class RsMd {
     return Optional.ofNullable(encoding);
   }
 
-  public RsMd setEncoding(String encoding) {
+  public RsMd withEncoding(String encoding) {
     this.encoding = encoding;
     return this;
   }
@@ -104,7 +101,7 @@ public class RsMd {
     return Optional.ofNullable(hash);
   }
 
-  public RsMd setHash(String hash) {
+  public RsMd withHash(String hash) {
     this.hash = hash;
     return this;
   }
@@ -113,7 +110,7 @@ public class RsMd {
     return Optional.ofNullable(length);
   }
 
-  public RsMd setLength(Long length) {
+  public RsMd withLength(Long length) {
     this.length = length;
     return this;
   }
@@ -122,7 +119,7 @@ public class RsMd {
     return Optional.ofNullable(path);
   }
 
-  public RsMd setPath(String path) {
+  public RsMd withPath(String path) {
     this.path = path;
     return this;
   }
@@ -131,7 +128,7 @@ public class RsMd {
     return Optional.ofNullable(type);
   }
 
-  public RsMd setType(String type) {
+  public RsMd withType(String type) {
     this.type = type;
     return this;
   }

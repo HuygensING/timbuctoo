@@ -1,9 +1,8 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;
 import javax.xml.bind.annotation.XmlRegistry;
-import javax.xml.namespace.QName;
 
 @XmlRegistry
 public class ObjectFactory {
@@ -11,12 +10,10 @@ public class ObjectFactory {
   public ObjectFactory() {}
 
   public Urlset createUrlset() {
-    System.out.println("createUrlset called");
     return new Urlset();
   }
 
   public Sitemapindex createSitemapIndex() {
-    System.out.println("create Sitemapindex called");
     return new Sitemapindex();
   }
 
