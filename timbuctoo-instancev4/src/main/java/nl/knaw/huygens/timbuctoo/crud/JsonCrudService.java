@@ -1,29 +1,24 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.property.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
-import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.neo4j.helpers.Strings;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -38,14 +33,10 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static java.util.stream.Collectors.groupingBy;
 import static java.util.stream.Collectors.toSet;
-import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
-import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
-import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
 public class JsonCrudService {
 
@@ -59,6 +50,7 @@ public class JsonCrudService {
   private final JsonNodeFactory nodeFactory;
   private final UserStore userStore;
   private final DataAccess dataAccess;
+  private final EntityToJsonMapper entityToJsonMapper;
 
   public JsonCrudService(Vres mappings,
                          HandleAdder handleAdder, UserStore userStore, UrlGenerator handleUrlFor,
@@ -71,6 +63,7 @@ public class JsonCrudService {
     this.clock = clock;
     this.dataAccess = dataAccess;
     nodeFactory = JsonNodeFactory.instance;
+    entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
   }
 
   public UUID create(String collectionName, ObjectNode input, String userId)
@@ -201,7 +194,12 @@ public class JsonCrudService {
       try {
         ReadEntity entity = dataAccessMethods.getEntity(id, rev, collection);
 
-        ObjectNode result = mapEntity(collection, entity, true);
+        ObjectNode result = entityToJsonMapper.mapEntity(collection, entity, true,
+          (readEntity, resultJson) -> {
+          },
+          (relationRef, resultJson) -> {
+          }
+        );
 
         dataAccessMethods.success();
         return result;
@@ -220,96 +218,15 @@ public class JsonCrudService {
 
     try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
       Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start);
-      List<ObjectNode> result = entities.map(entity -> mapEntity(collection, entity, withRelations))
-                                        .collect(Collectors.toList());
+      List<ObjectNode> result = entities.map(entity -> entityToJsonMapper.mapEntity(collection, entity, withRelations,
+        (readEntity, resultJson) -> {
+        },
+        (relationRef, resultJson) -> {
+        }
+      )).collect(Collectors.toList());
       dataAccessMethods.success();
       return result;
     }
-  }
-
-  private ObjectNode mapEntity(Collection collection, ReadEntity entity, boolean withRelations) {
-    final ObjectNode mappedEntity = JsonNodeFactory.instance.objectNode();
-    String id = entity.getId().toString();
-
-    mappedEntity.set("@type", nodeFactory.textNode(collection.getEntityTypeName()));
-    mappedEntity.set("_id", nodeFactory.textNode(id));
-
-    mappedEntity.set("^rev", jsn(entity.getRev()));
-    mappedEntity.set("^deleted", jsn(entity.getDeleted()));
-    mappedEntity.set("^pid", jsn(entity.getPid()));
-
-    JsonNode variationRefs = jsnA(entity.getTypes()
-                                        .stream()
-                                        .map(type -> {
-                                          ObjectNode variationRef = jsnO();
-                                          variationRef.set("id", jsn(id));
-                                          variationRef.set("type", jsn(type));
-                                          return variationRef;
-                                        }));
-    mappedEntity.set("@variationRefs", variationRefs);
-
-    Change modified = entity.getModified();
-    mappedEntity.set("^modified", mapChange(modified));
-    Change created = entity.getCreated();
-    mappedEntity.set("^created", mapChange(created));
-
-    // translate TimProperties to Json
-    JsonPropertyConverter jsonPropertyConverter = new JsonPropertyConverter(collection);
-    entity.getProperties().forEach(prop -> {
-      Tuple<String, JsonNode> convertedProperty = null;
-      try {
-        convertedProperty = prop.convert(jsonPropertyConverter);
-      } catch (IOException e) {
-        LOG.error(
-          databaseInvariant,
-          "Property '" + prop.getName() + "' is not encoded correctly",
-          e.getCause()
-        );
-      }
-      mappedEntity.set(convertedProperty.getLeft(), convertedProperty.getRight());
-    });
-
-    if (!Strings.isBlank(entity.getDisplayName())) {
-      mappedEntity.set("@displayName", jsn(entity.getDisplayName()));
-    }
-
-    if (withRelations) {
-      mappedEntity.set("@relationCount", nodeFactory.numberNode(entity.getRelations().size()));
-      mappedEntity.set("@relations", mapRelations(entity.getRelations()));
-    }
-    return mappedEntity;
-  }
-
-
-  private JsonNode mapRelations(List<RelationRef> relations) {
-    ObjectNode relationsNode = jsnO();
-    relations.stream().map(relationRef -> jsnO(
-      tuple("id", jsn(relationRef.getEntityId())),
-      tuple("path", jsn(relationUrlFor.apply(relationRef.getCollectionName(),
-        UUID.fromString(relationRef.getEntityId()), null).toString())),
-      tuple("relationType", jsn(relationRef.getRelationType())),
-      tuple("type", jsn(relationRef.getEntityType())),
-      tuple("accepted", jsn(relationRef.isRelationAccepted())),
-      tuple("relationId", jsn(relationRef.getRelationId())),
-      tuple("rev", jsn(relationRef.getRelationRev())),
-      tuple("displayName", jsn(relationRef.getDisplayName()))
-    )).collect(groupingBy(x -> x.get("relationType").asText())).entrySet().forEach(relationsType ->
-      relationsNode.set(relationsType.getKey(), jsnA(relationsType.getValue().stream())));
-
-    return relationsNode;
-  }
-
-  private JsonNode mapChange(Change change) {
-    String userId = change.getUserId();
-    ObjectNode changeNode = new ObjectMapper().valueToTree(change);
-
-    try {
-      userStore.userForId(userId).ifPresent(user -> changeNode.set("username", jsn(user.getDisplayName())));
-    } catch (AuthenticationUnavailableException e) {
-      LOG.error("Could not retrieve user store", e);
-    }
-
-    return changeNode;
   }
 
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
