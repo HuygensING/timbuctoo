@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database.dto.property;
+package nl.knaw.huygens.timbuctoo.database.exceptions;
 
 public class UnknownPropertyException extends Exception {
   public UnknownPropertyException(String message) {

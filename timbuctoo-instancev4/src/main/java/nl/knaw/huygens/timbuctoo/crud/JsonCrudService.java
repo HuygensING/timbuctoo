@@ -11,7 +11,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
+import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;

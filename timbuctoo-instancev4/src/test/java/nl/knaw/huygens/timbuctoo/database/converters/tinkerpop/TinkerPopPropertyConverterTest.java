@@ -1,11 +1,10 @@
 package nl.knaw.huygens.timbuctoo.database.converters.tinkerpop;
 
 
-import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayOfLimitedValuesProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
+import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.util.Tuple;

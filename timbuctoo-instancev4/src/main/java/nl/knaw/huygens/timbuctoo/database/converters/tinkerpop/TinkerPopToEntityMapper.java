@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
+import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
