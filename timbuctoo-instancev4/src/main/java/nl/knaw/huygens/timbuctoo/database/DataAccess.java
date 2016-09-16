@@ -22,7 +22,7 @@ import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedEx
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;

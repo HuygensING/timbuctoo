@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

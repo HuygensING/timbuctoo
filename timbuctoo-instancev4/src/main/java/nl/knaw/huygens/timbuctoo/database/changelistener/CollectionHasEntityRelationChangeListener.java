@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;

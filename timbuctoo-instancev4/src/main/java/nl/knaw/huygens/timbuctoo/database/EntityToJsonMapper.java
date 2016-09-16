@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.property.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -49,8 +49,8 @@ public class EntityToJsonMapper {
   }
 
   public ObjectNode mapEntity(Collection collection, ReadEntity entity, boolean withRelations,
-                               ExtraEntityMappingOptions extraEntityMappingOptions,
-                               ExtraRelationMappingOptions relationMappingOptions) {
+                              ExtraEntityMappingOptions extraEntityMappingOptions,
+                              ExtraRelationMappingOptions relationMappingOptions) {
     final ObjectNode mappedEntity = JsonNodeFactory.instance.objectNode();
     String id = entity.getId().toString();
 

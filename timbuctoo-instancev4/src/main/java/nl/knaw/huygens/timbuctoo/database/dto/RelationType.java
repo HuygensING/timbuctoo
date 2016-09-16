@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.dto;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

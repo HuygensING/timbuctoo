@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.io.IOException;

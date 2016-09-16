@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+
 import java.util.Map;
 import java.util.Optional;
 

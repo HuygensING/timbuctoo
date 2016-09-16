@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database.dto.property;
 
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.io.IOException;

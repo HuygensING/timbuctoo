@@ -15,7 +15,7 @@ import nl.knaw.huygens.timbuctoo.database.EntityToJsonMapper.ExtraEntityMappingO
 import nl.knaw.huygens.timbuctoo.database.EntityToJsonMapper.ExtraRelationMappingOptions;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.UserStore;

@@ -1,8 +1,9 @@
-package nl.knaw.huygens.timbuctoo.model.vre;
+package nl.knaw.huygens.timbuctoo.database.dto.dataset;
 
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Element;
@@ -51,7 +52,8 @@ public class Collection {
   private final String collectionLabel;
   private boolean unknown;
 
-  Collection(@NotNull String entityTypeName, @NotNull String abstractType,
+  //FIXME: shouldn't be public
+  public Collection(@NotNull String entityTypeName, @NotNull String abstractType,
              @NotNull ReadableProperty displayName, @NotNull LinkedHashMap<String, ReadableProperty> properties,
              @NotNull String collectionName, @NotNull Vre vre, @NotNull String collectionLabel, boolean unknown,
              boolean isRelationCollection) {

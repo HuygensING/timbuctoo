@@ -1,8 +1,9 @@
-package nl.knaw.huygens.timbuctoo.model.vre;
+package nl.knaw.huygens.timbuctoo.database.dto.dataset;
 
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -26,7 +27,8 @@ public class CollectionBuilder {
     this.defaultPrefix = defaultPrefix;
   }
 
-  static CollectionBuilder timbuctooCollection(String collectionName, String defaultPrefix) {
+  //FIXME: shouldn't be public
+  public static CollectionBuilder timbuctooCollection(String collectionName, String defaultPrefix) {
     return new CollectionBuilder(collectionName, defaultPrefix);
   }
 

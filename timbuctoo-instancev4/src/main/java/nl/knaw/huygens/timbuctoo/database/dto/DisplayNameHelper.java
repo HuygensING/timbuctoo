@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.database.dto;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;

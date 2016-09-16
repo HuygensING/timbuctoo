@@ -5,7 +5,7 @@ import com.google.common.collect.Sets;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

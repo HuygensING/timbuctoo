@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.CompositeValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;

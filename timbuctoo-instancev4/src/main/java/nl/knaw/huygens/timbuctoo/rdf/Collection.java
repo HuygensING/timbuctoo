@@ -17,13 +17,13 @@ import java.util.Objects;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 
 

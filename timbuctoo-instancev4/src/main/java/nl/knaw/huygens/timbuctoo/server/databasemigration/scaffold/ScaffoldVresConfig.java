@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration.scaffold;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 

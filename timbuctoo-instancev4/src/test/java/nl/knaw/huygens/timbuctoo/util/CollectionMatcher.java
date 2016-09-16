@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.util;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 
 public class CollectionMatcher extends CompositeMatcher<Collection> {
 

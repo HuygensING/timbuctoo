@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.exports.excel.description;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.slf4j.Logger;

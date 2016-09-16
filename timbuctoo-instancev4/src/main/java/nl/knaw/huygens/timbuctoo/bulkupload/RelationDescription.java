@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.bulkupload;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;

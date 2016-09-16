@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;

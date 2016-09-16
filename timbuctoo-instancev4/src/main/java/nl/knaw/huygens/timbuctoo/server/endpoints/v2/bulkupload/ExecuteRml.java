@@ -36,8 +36,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.COLLECTION_LABEL_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;

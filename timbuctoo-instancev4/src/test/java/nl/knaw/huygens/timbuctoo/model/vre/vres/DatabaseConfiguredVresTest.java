@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.model.vre.vres;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Graph;

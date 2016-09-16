@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.database.changelistener;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;

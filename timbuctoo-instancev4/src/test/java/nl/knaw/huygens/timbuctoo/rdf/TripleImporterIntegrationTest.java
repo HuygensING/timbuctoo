@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.graph.Triple;
@@ -17,11 +17,11 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.DATABASE_LABEL;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ARCHETYPE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_NODE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.DATABASE_LABEL;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createSingleTriple;
 import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createTripleIterator;

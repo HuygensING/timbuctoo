@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;

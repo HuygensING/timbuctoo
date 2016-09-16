@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Collection;
-import nl.knaw.huygens.timbuctoo.model.vre.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
