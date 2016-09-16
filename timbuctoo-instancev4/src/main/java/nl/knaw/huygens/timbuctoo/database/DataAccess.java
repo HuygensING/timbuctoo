@@ -107,6 +107,7 @@ public class DataAccess {
     private final Vres mappings;
     private final GraphTraversalSource traversal;
     private final GraphTraversalSource latestState;
+    private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
     private Optional<Boolean> isSuccess = Optional.empty();
 
     DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
@@ -139,13 +140,14 @@ public class DataAccess {
         } else {
           transaction.rollback();
         }
-        transaction.close();
       } else {
         transaction.rollback();
-        transaction.close();
-        LOG.error("Transaction was not closed, rolling back. Please add an explicit rollback so that we know this " +
-          "was not a missing success()");
+        if (requireCommit) {
+          LOG.error("Transaction was not closed, rolling back. Please add an explicit rollback so that we know this " +
+            "was not a missing success()");
+        }
       }
+      transaction.close();
     }
 
     /**
@@ -168,7 +170,7 @@ public class DataAccess {
       AuthorizationException {
 
       checkIfAllowedToWrite(authorizer, userId, collection);
-
+      requireCommit = true;
       RelationType descs = getRelationDescription(traversal, typeId)
         .orElseThrow(notPossible("Relation type " + typeId + " does not exist"));
       Vertex sourceV = getEntityByFullIteration(traversal, sourceId).orElseThrow(notPossible("source is not present"));
@@ -204,6 +206,7 @@ public class DataAccess {
       throws IOException, AuthorizationUnavailableException, AuthorizationException {
 
       checkIfAllowedToWrite(authorizer, userId, col);
+      requireCommit = true;
 
       Map<String, LocalProperty> mapping = col.getWriteableProperties();
       TinkerPopPropertyConverter colConverter = new TinkerPopPropertyConverter(col);
@@ -309,6 +312,7 @@ public class DataAccess {
       AuthorizationException {
 
       checkIfAllowedToWrite(authorizer, userId, collection);
+      requireCommit = true;
 
       GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(
         this.traversal,
@@ -380,6 +384,7 @@ public class DataAccess {
       throws NotFoundException, AuthorizationUnavailableException, AuthorizationException {
 
       checkIfAllowedToWrite(authorizer, userId, collection);
+      requireCommit = true;
 
       // FIXME: string concatenating methods like this should be delegated to a configuration class
       final String acceptedPropName = collection.getEntityTypeName() + "_accepted";
@@ -409,6 +414,7 @@ public class DataAccess {
       throws AuthorizationException, AuthorizationUnavailableException, NotFoundException {
 
       checkIfAllowedToWrite(authorizer, userId, collection);
+      requireCommit = true;
 
       GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(traversal, id, null,
         collection.getCollectionName());
