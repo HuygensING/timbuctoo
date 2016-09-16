@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.dto.property;
 
+import nl.knaw.huygens.timbuctoo.database.converters.PropertyConverter;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 

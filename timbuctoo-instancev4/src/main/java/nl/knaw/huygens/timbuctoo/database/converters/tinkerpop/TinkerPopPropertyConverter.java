@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultLocationNameProper
 import nl.knaw.huygens.timbuctoo.database.dto.property.EncodedStringOfLimitedValuesProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.HyperLinksProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.PersonNamesProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.PropertyConverter;
+import nl.knaw.huygens.timbuctoo.database.converters.PropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringOfLimitedValuesProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
@@ -101,52 +101,52 @@ public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
 
 
   @Override
-  protected Tuple<String, Object> to(AltNamesProperty property) throws IOException {
+  public Tuple<String, Object> to(AltNamesProperty property) throws IOException {
     return tuple(property.getName(), objectMapper.valueToTree(property.getValue().list));
   }
 
   @Override
-  protected Tuple<String, Object> to(DatableProperty property) throws IOException {
+  public Tuple<String, Object> to(DatableProperty property) throws IOException {
     return tuple(property.getName(), property.getValue());
   }
 
   @Override
-  protected Tuple<String, Object> to(DefaultFullPersonNameProperty property) throws IOException {
+  public Tuple<String, Object> to(DefaultFullPersonNameProperty property) throws IOException {
     throw readOnlyProperty(property.getName(), property.getClass());
   }
 
   @Override
-  protected Tuple<String, Object> to(DefaultLocationNameProperty property) throws IOException {
+  public Tuple<String, Object> to(DefaultLocationNameProperty property) throws IOException {
     throw readOnlyProperty(property.getName(), property.getClass());
   }
 
   @Override
-  protected Tuple<String, Object> to(HyperLinksProperty property) throws IOException {
+  public Tuple<String, Object> to(HyperLinksProperty property) throws IOException {
     return tuple(property.getName(), property.getValue());
   }
 
   @Override
-  protected Tuple<String, Object> to(PersonNamesProperty property) throws IOException {
+  public Tuple<String, Object> to(PersonNamesProperty property) throws IOException {
     return tuple(property.getName(), objectMapper.writeValueAsString(property.getValue()));
   }
 
   @Override
-  protected Tuple<String, Object> to(ArrayOfLimitedValuesProperty property) throws IOException {
+  public Tuple<String, Object> to(ArrayOfLimitedValuesProperty property) throws IOException {
     return tuple(property.getName(), property.getValue());
   }
 
   @Override
-  protected Tuple<String, Object> to(EncodedStringOfLimitedValuesProperty property) throws IOException {
+  public Tuple<String, Object> to(EncodedStringOfLimitedValuesProperty property) throws IOException {
     return tuple(property.getName(), property.getValue());
   }
 
   @Override
-  protected Tuple<String, Object> to(StringProperty property) throws IOException {
+  public Tuple<String, Object> to(StringProperty property) throws IOException {
     return tuple(property.getName(), property.getValue());
   }
 
   @Override
-  protected Tuple<String, Object> to(StringOfLimitedValuesProperty property) throws IOException {
+  public Tuple<String, Object> to(StringOfLimitedValuesProperty property) throws IOException {
     return tuple(property.getName(), property.getValue());
   }
 

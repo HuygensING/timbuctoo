@@ -1,5 +1,17 @@
-package nl.knaw.huygens.timbuctoo.database.dto.property;
+package nl.knaw.huygens.timbuctoo.database.converters;
 
+import nl.knaw.huygens.timbuctoo.database.dto.property.AltNamesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.DatableProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultFullPersonNameProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultLocationNameProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.EncodedStringOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.HyperLinksProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.PersonNamesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.StringOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -82,26 +94,26 @@ public abstract class PropertyConverter<TypeT> {
   protected abstract StringOfLimitedValuesProperty createStringOfLimitedValues(String propertyName, TypeT value)
     throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(AltNamesProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(AltNamesProperty property) throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(DatableProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(DatableProperty property) throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(DefaultFullPersonNameProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(DefaultFullPersonNameProperty property) throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(DefaultLocationNameProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(DefaultLocationNameProperty property) throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(HyperLinksProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(HyperLinksProperty property) throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(PersonNamesProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(PersonNamesProperty property) throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(ArrayOfLimitedValuesProperty property)
+  public abstract Tuple<String, TypeT> to(ArrayOfLimitedValuesProperty property)
     throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(EncodedStringOfLimitedValuesProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(EncodedStringOfLimitedValuesProperty property) throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(StringProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(StringProperty property) throws IOException;
 
-  protected abstract Tuple<String, TypeT> to(StringOfLimitedValuesProperty property) throws IOException;
+  public abstract Tuple<String, TypeT> to(StringOfLimitedValuesProperty property) throws IOException;
 
   protected IOException readOnlyProperty(String propertyName, Class<? extends TimProperty> propertyType) {
     return new IOException(String.format(

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.dto.property;
 
+import nl.knaw.huygens.timbuctoo.database.converters.PropertyConverter;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ public abstract class TimProperty<ValueT> {
     this.value = value;
   }
 
+  //Convenience method that allows you to convert a whole list of properties whose exact type you don't know
   public abstract <TypeT> Tuple<String, TypeT> convert(PropertyConverter<TypeT> propertyConverter) throws IOException;
 
   public String getName() {

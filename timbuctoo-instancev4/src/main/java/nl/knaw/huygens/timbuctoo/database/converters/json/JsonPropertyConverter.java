@@ -12,7 +12,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultLocationNameProper
 import nl.knaw.huygens.timbuctoo.database.dto.property.EncodedStringOfLimitedValuesProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.HyperLinksProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.PersonNamesProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.PropertyConverter;
+import nl.knaw.huygens.timbuctoo.database.converters.PropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringOfLimitedValuesProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
@@ -120,7 +120,7 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(AltNamesProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(AltNamesProperty property) throws IOException {
     try {
       return new Tuple<>(property.getName(), objectMapper.valueToTree(property.getValue().list));
     } catch (Exception e) {
@@ -129,47 +129,47 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(DatableProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(DatableProperty property) throws IOException {
     return new Tuple<>(property.getName(), objectMapper.readTree(property.getValue()));
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(DefaultFullPersonNameProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(DefaultFullPersonNameProperty property) throws IOException {
     return new Tuple<>(property.getName(), jsn(property.getValue().defaultName().getFullName()));
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(DefaultLocationNameProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(DefaultLocationNameProperty property) throws IOException {
     return new Tuple<>(property.getName(), jsn(property.getValue().getDefaultName()));
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(HyperLinksProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(HyperLinksProperty property) throws IOException {
     return new Tuple<>(property.getName(), objectMapper.readTree(property.getValue()));
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(PersonNamesProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(PersonNamesProperty property) throws IOException {
     return new Tuple<>(property.getName(), objectMapper.valueToTree(property.getValue().list));
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(ArrayOfLimitedValuesProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(ArrayOfLimitedValuesProperty property) throws IOException {
     return new Tuple<>(property.getName(), objectMapper.readTree(property.getValue()));
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(EncodedStringOfLimitedValuesProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(EncodedStringOfLimitedValuesProperty property) throws IOException {
     return new Tuple<>(property.getName(), objectMapper.readTree(property.getValue()));
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(StringProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(StringProperty property) throws IOException {
     return new Tuple<>(property.getName(), jsn(property.getValue()));
   }
 
   @Override
-  protected Tuple<String, JsonNode> to(StringOfLimitedValuesProperty property) throws IOException {
+  public Tuple<String, JsonNode> to(StringOfLimitedValuesProperty property) throws IOException {
     return new Tuple<>(property.getName(), jsn(property.getValue()));
   }
 
