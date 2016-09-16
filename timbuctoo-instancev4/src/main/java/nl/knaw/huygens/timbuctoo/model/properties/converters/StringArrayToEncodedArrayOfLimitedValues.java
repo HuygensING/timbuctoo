@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ListOfStringsExcelDescription;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -66,11 +64,6 @@ public class StringArrayToEncodedArrayOfLimitedValues implements Converter, HasO
   @Override
   public Collection<String> getOptions() {
     return this.allowedValues;
-  }
-
-  @Override
-  public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
-    return new ListOfStringsExcelDescription(tinkerpopToJson(value), typeId);
   }
 
   @Override

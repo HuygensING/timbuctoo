@@ -16,17 +16,16 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
-import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -68,7 +67,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.VresEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
@@ -218,7 +216,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriWithoutRev,
       vres
     );
-    final ExcelExportService excelExportService = new ExcelExportService(vres, graphManager);
 
     final WomenWritersJsonCrudService womenWritersJsonCrudService = new WomenWritersJsonCrudService(
       vres,
@@ -241,7 +238,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RootEndpoint());
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
-    register(environment, new Search(configuration, graphManager, excelExportService));
+    register(environment, new Search(configuration, graphManager));
     register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(crudService, loggedInUserStore));
     register(environment, new SingleEntity(crudService, loggedInUserStore));
@@ -268,7 +265,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
-    register(environment, new VresEndpoint(jsonMetadata, excelExportService));
     register(environment, new MyVres(loggedInUserStore, authorizer, vres, bulkUploadVre));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();

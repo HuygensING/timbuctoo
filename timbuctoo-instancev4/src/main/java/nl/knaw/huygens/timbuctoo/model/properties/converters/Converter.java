@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model.properties.converters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 
 import java.io.IOException;
 
@@ -13,8 +12,6 @@ public interface Converter {
   String getGuiTypeId();
 
   String getUniqueTypeIdentifier();
-
-  ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException;
 
   default void validate(Object value) throws IOException{
     // no validation needed by default.

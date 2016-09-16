@@ -4,10 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import javaslang.control.Try;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.Converter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.HasOptions;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -17,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
-import java.util.function.Supplier;
 
 public class LocalProperty extends ReadableProperty {
   private static final Logger LOG = LoggerFactory.getLogger(ReadableProperty.class);
@@ -69,13 +66,6 @@ public class LocalProperty extends ReadableProperty {
     } else {
       vertex.property(propName, value);
     }
-  }
-
-  public GraphTraversal<?, Try<ExcelDescription>> getExcelDescription() {
-    Supplier<GraphTraversal<?, Try<ExcelDescription>>> supplier =
-      () -> __.<Object, String>values(propName).map(prop -> Try.of(() ->
-        converter.tinkerPopToExcel(prop.get(), getTypeId())));
-    return supplier.get();
   }
 
   @Override

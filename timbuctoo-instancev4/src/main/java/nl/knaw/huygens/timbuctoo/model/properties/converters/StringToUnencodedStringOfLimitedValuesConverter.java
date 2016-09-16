@@ -3,8 +3,6 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.StringExcelDescription;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,11 +42,6 @@ public class StringToUnencodedStringOfLimitedValuesConverter implements Converte
   @Override
   public String getUniqueTypeIdentifier() {
     return TYPE;
-  }
-
-  @Override
-  public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
-    return new StringExcelDescription(tinkerpopToJson(value).asText(), typeId);
   }
 
   @Override

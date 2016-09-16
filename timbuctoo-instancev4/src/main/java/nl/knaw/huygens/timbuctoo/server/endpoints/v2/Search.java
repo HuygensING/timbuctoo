@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 import com.codahale.metrics.annotation.Timed;
 import com.google.common.base.Stopwatch;
 import io.dropwizard.jersey.params.UUIDParam;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.ExcelExportService;
 import nl.knaw.huygens.timbuctoo.search.SearchDescription;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.SearchStore;
@@ -12,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.SearchConfig;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchResponseV2_1Factory;
-import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,12 +21,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -43,12 +38,10 @@ public class Search {
   private final SearchDescriptionFactory searchDescriptionFactory;
   private final GraphWrapper graphWrapper;
   private SearchStore searchStore;
-  private final ExcelExportService excelExportService;
 
-  public Search(SearchConfig searchConfig, GraphWrapper graphWrapper, ExcelExportService excelExportService) {
+  public Search(SearchConfig searchConfig, GraphWrapper graphWrapper) {
     this.searchStore = new SearchStore(searchConfig.getSearchResultAvailabilityTimeout());
     this.graphWrapper = graphWrapper;
-    this.excelExportService = excelExportService;
     this.searchResponseFactory = new SearchResponseV2_1Factory(searchConfig);
     searchDescriptionFactory = new SearchDescriptionFactory();
 
@@ -122,27 +115,6 @@ public class Search {
     return Response
       .status(Response.Status.NOT_FOUND)
       .entity(new NotFoundMessage(id))
-      .build();
-  }
-
-  @GET
-  @Path("{id}/xls")
-  @Produces("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-  public Response get(@PathParam("id") UUIDParam id, @QueryParam("depth") @DefaultValue("1") int depth,
-                      @QueryParam("types") List<String> relationNames) {
-
-    Optional<SearchResult> searchResult = searchStore.getSearchResult(id.get());
-    if (searchResult.isPresent()) {
-      final SearchResult result = searchResult.get();
-      SXSSFWorkbook workbook = excelExportService
-        .searchResultToExcel(result.getSearchResult(), result.getSearchDescription().getType(), depth, relationNames);
-
-      return Response.ok((StreamingOutput) workbook::write)
-                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"result.xlsx\"")
-                     .build();
-    }
-    return Response
-      .status(Response.Status.NOT_FOUND)
       .build();
   }
 

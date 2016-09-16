@@ -3,8 +3,6 @@ package nl.knaw.huygens.timbuctoo.model.properties.converters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ExcelDescription;
-import nl.knaw.huygens.timbuctoo.experimental.exports.excel.description.ListOfStringsExcelDescription;
 
 import java.io.IOException;
 
@@ -54,10 +52,5 @@ public class ArrayToEncodedArrayConverter implements Converter {
   @Override
   public String getUniqueTypeIdentifier() {
     return TYPE;
-  }
-
-  @Override
-  public ExcelDescription tinkerPopToExcel(Object value, String typeId) throws IOException {
-    return new ListOfStringsExcelDescription(tinkerpopToJson(value), typeId);
   }
 }
