@@ -22,7 +22,7 @@ public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCreator 
 
   @Override
   public Authorization authorizationFor(Collection collection, String userId) throws AuthorizationUnavailableException {
-    return authorizationFor(collection.getVre().getVreName(), userId);
+    return authorizationFor(collection.getVreName(), userId);
   }
 
   @Override

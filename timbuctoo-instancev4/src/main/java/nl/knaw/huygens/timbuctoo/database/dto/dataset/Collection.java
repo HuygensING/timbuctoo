@@ -114,6 +114,11 @@ public class Collection {
     return vre;
   }
 
+  //A Vre implies a transitive closure to all other collections.
+  public String getVreName() {
+    return vre.getVreName();
+  }
+
   public boolean isRelationCollection() {
     return isRelationCollection;
   }

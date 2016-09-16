@@ -47,7 +47,7 @@ public class GraphReadUtils {
     final List<Collection> filteredTypes = Arrays.asList(getEntityTypesOrDefault(element))
       .stream()
       .map(type -> mappings.getCollectionForType(type).get())
-      .filter(collection -> collection.getVre().getVreName().equals(vreId))
+      .filter(collection -> collection.getVreName().equals(vreId))
       .collect(toList());
 
     return Optional.ofNullable(filteredTypes.size() > 0 ? filteredTypes.get(0) : null);

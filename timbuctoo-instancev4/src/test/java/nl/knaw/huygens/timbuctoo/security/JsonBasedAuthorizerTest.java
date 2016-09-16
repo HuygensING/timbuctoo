@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,10 +48,8 @@ public class JsonBasedAuthorizerTest {
   }
 
   private Collection collectionOfVreWithId(String vreId) {
-    Vre vre = mock(Vre.class);
-    when(vre.getVreName()).thenReturn(vreId);
     Collection collection = mock(Collection.class);
-    when(collection.getVre()).thenReturn(vre);
+    when(collection.getVreName()).thenReturn(vreId);
     return collection;
   }
 
