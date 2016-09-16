@@ -1,9 +1,20 @@
-package nl.knaw.huygens.timbuctoo.database.dto.property;
+package nl.knaw.huygens.timbuctoo.database.converters.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import nl.knaw.huygens.timbuctoo.database.dto.property.AltNamesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.DatableProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultFullPersonNameProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultLocationNameProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.EncodedStringOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.HyperLinksProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.PersonNamesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.PropertyConverter;
+import nl.knaw.huygens.timbuctoo.database.dto.property.StringOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
