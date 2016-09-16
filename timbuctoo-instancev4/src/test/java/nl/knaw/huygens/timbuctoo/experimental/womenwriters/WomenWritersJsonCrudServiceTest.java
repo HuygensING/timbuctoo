@@ -116,17 +116,7 @@ public class WomenWritersJsonCrudServiceTest {
       )
       .wrap();
     final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
-      vres,
-      userStore,
-      (collection, id, rev) -> URI.create("http://example.com/"),
-      new DataAccess(graphWrapper,
-      entityFetcher,
-        null, // no Authorizer needed for get
-        null, //no ChangeListener needed for get
-      vres
-      )
-    );
+    WomenWritersJsonCrudService instance = createInstance(graphWrapper, entityFetcher);
 
     JsonNode result = instance.get("wwdocuments", workId);
 
@@ -136,6 +126,20 @@ public class WomenWritersJsonCrudServiceTest {
         jsnO("displayName", jsn("author2"), "gender", jsn("FEMALE"))
       ))).toString()
       ).allowingAnyArrayOrdering().allowingExtraUnexpectedFields()
+    );
+  }
+
+  private WomenWritersJsonCrudService createInstance(GraphWrapper graphWrapper, GremlinEntityFetcher entityFetcher) {
+    return new WomenWritersJsonCrudService(
+      vres,
+      userStore,
+      (collection, id, rev) -> URI.create("http://example.com/"),
+      new DataAccess(graphWrapper,
+        entityFetcher,
+        null, // no Authorizer needed for get
+        null, //no ChangeListener needed for get
+        vres
+      )
     );
   }
 
@@ -188,17 +192,7 @@ public class WomenWritersJsonCrudServiceTest {
       )
       .wrap();
     final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
-      vres,
-      userStore,
-      (collection, id, rev) -> URI.create("http://example.com/"),
-      new DataAccess(graphWrapper,
-      entityFetcher,
-        null, // no Authorizer needed for get
-        null, //no ChangeListener needed for get
-      vres
-      )
-    );
+    WomenWritersJsonCrudService instance = createInstance(graphWrapper, entityFetcher);
 
     JsonNode result = instance.get("wwpersons", pers1Id);
 
@@ -278,17 +272,7 @@ public class WomenWritersJsonCrudServiceTest {
       )
       .wrap();
     final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    WomenWritersJsonCrudService instance = new WomenWritersJsonCrudService(
-      vres,
-      userStore,
-      (collection, id, rev) -> URI.create("http://example.com/"),
-      new DataAccess(graphWrapper,
-      entityFetcher,
-        null, // no Authorizer needed for get
-        null, //no ChangeListener needed for get
-      vres
-      )
-    );
+    WomenWritersJsonCrudService instance = createInstance(graphWrapper, entityFetcher);
 
     JsonNode result = instance.get("wwpersons", pers1Id);
 
