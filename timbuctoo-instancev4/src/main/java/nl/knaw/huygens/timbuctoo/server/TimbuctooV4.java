@@ -184,7 +184,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
-    final Vres vres = new DatabaseConfiguredVres(graphManager);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
@@ -200,7 +199,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
-    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners, vres);
+    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners);
+    final Vres vres = new DatabaseConfiguredVres(dataAccess);
     final JsonCrudService crudService = new JsonCrudService(
       vres,
       handleAdder,

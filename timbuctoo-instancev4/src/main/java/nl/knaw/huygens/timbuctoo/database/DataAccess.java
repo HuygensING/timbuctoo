@@ -8,21 +8,22 @@ import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
+import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
-import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.ImmutableVresDto;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -76,7 +77,12 @@ public class DataAccess {
   private final EntityFetcher entityFetcher;
   private final Authorizer authorizer;
   private final ChangeListener listener;
-  private Vres mappings;
+  private final Vres mappings;
+
+  public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, Authorizer authorizer,
+                    ChangeListener listener) {
+    this(graphwrapper, entityFetcher, authorizer, listener, null);
+  }
 
   public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, Authorizer authorizer,
                     ChangeListener listener, Vres mappings) {
@@ -104,9 +110,9 @@ public class DataAccess {
     private final Authorizer authorizer;
     private final ChangeListener listener;
     private final EntityFetcher entityFetcher;
-    private final Vres mappings;
     private final GraphTraversalSource traversal;
     private final GraphTraversalSource latestState;
+    private final Vres mappings;
     private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
     private Optional<Boolean> isSuccess = Optional.empty();
 
@@ -116,12 +122,13 @@ public class DataAccess {
       this.authorizer = authorizer;
       this.listener = listener;
       this.entityFetcher = entityFetcher;
-      this.mappings = mappings;
+
       if (!transaction.isOpen()) {
         transaction.open();
       }
       this.traversal = graphWrapper.getGraph().traversal();
       this.latestState = graphWrapper.getLatestState();
+      this.mappings = mappings == null ? loadVres() : mappings;
     }
 
     public void success() {
@@ -462,6 +469,17 @@ public class DataAccess {
       duplicateVertex(traversal, entity);
 
       return newRev;
+    }
+
+    public Vres loadVres() {
+      ImmutableVresDto.Builder builder = ImmutableVresDto.builder();
+
+      traversal.V().hasLabel(Vre.DATABASE_LABEL).forEachRemaining(vreVertex -> {
+        final Vre vre = Vre.load(vreVertex);
+        builder.putVres(vre.getVreName(), vre);
+      });
+
+      return builder.build();
     }
 
     /*******************************************************************************************************************

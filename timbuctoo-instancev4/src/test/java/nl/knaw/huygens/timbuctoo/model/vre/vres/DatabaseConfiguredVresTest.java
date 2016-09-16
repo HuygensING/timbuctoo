@@ -2,13 +2,17 @@ package nl.knaw.huygens.timbuctoo.model.vre.vres;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import org.mockito.stubbing.OngoingStubbing;
 
 import java.util.HashMap;
 
@@ -17,7 +21,6 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 
 public class DatabaseConfiguredVresTest {
@@ -47,7 +50,7 @@ public class DatabaseConfiguredVresTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     given(graphWrapper.getGraph()).willReturn(graph);
 
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(graphWrapper);
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new DataAccess(graphWrapper, null, null, null));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getCollection("documents").get(), instanceOf(Collection.class));
@@ -64,10 +67,10 @@ public class DatabaseConfiguredVresTest {
       })
       .build();
 
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    final OngoingStubbing<Graph> graphOngoingStubbing = when(graphWrapper.getGraph()).thenReturn(graph);
+    MockWrapper graphWrapper = new MockWrapper();
+    graphWrapper.graph = graph;
 
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(graphWrapper);
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new DataAccess(graphWrapper, null, null, null));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));
@@ -78,7 +81,7 @@ public class DatabaseConfiguredVresTest {
           .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreB");
       })
       .build();
-    graphOngoingStubbing.thenReturn(graph);
+    graphWrapper.graph = graph;
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));
@@ -87,5 +90,25 @@ public class DatabaseConfiguredVresTest {
 
     assertThat(instance.getVre("VreB"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreA"), CoreMatchers.equalTo(null));
+  }
+
+
+  private class MockWrapper implements GraphWrapper {
+    private Graph graph;
+
+    @Override
+    public Graph getGraph() {
+      return graph;
+    }
+
+    @Override
+    public GraphTraversalSource getLatestState() {
+      return graph.traversal();
+    }
+
+    @Override
+    public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
+      throw new NotImplementedException();
+    }
   }
 }

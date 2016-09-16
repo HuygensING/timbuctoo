@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.riot.Lang;
 import org.junit.Test;
@@ -74,7 +75,7 @@ public class RdfImporterTest {
     ImportPreparer importPreparer = mock(ImportPreparer.class);
     GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter tripleImporter = mock(TripleImporter.class);
-    final Vres vres = mock(Vres.class);
+    final Vres vres = mock(DatabaseConfiguredVres.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, tripleImporter, importPreparer);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
