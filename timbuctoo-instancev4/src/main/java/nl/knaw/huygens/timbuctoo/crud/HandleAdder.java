@@ -8,16 +8,21 @@ import nl.knaw.huygens.timbuctoo.queued.ActiveMqExecutor;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.slf4j.Logger;
 
+import java.util.UUID;
+
 public class HandleAdder {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleAdder.class);
 
   private final ActiveMqExecutor<HandleAdderParameters> activeMqExecutor;
   private final GraphWrapper wrapper;
   private final PersistenceManager manager;
+  private final UrlGenerator handleUri;
 
-  public HandleAdder(ActiveMQBundle mq, String queuename, GraphWrapper wrapper, PersistenceManager manager) {
+  public HandleAdder(ActiveMQBundle mq, String queuename, GraphWrapper wrapper, PersistenceManager manager,
+                     UrlGenerator handleUri) {
     this.wrapper = wrapper;
     this.manager = manager;
+    this.handleUri = handleUri;
     this.activeMqExecutor = new ActiveMqExecutor<>(mq, queuename, this::create, HandleAdderParameters.class);
   }
 
@@ -41,6 +46,10 @@ public class HandleAdder {
         add(new HandleAdderParameters(params.getVertexId(), params.getRev(), params.getUrl(), params.getRetries() + 1));
       }
     }
+  }
+
+  public void add(String collectionName, UUID id, int rev) {
+    this.add(new HandleAdderParameters(id, rev, handleUri.apply(collectionName, id, rev)));
   }
 
   public void add(HandleAdderParameters params) {
@@ -72,4 +81,7 @@ public class HandleAdder {
         return "th";
     }
   }
+
+
+
 }

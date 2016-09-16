@@ -160,7 +160,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
-    final HandleAdder handleAdder = new HandleAdder(activeMqBundle, HANDLE_QUEUE, graphManager, persistenceManager);
+    UrlGenerator handleUri = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
+    final HandleAdder handleAdder = new HandleAdder(
+      activeMqBundle,
+      HANDLE_QUEUE,
+      graphManager,
+      persistenceManager,
+      handleUri);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
       new AddLabelChangeListener(),
@@ -168,7 +174,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new CollectionHasEntityRelationChangeListener(graphManager)
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
-    UrlGenerator uriWithRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
+
     UrlGenerator pathWithoutVersionAndRevision =
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, null).toString().replaceFirst("^/v2.1/", ""));
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
@@ -182,7 +188,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       vres,
       handleAdder,
       userStore,
-      uriWithRev,
       pathWithoutVersionAndRevision,
       Clock.systemDefaultZone(),
       dataAccess);

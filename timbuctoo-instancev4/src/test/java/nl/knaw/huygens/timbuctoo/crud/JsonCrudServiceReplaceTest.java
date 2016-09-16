@@ -350,11 +350,11 @@ public class JsonCrudServiceReplaceTest {
 
   @Test
   public void addsPersistentId() throws Exception {
-    String uuid = UUID.randomUUID().toString();
+    UUID uuid = UUID.randomUUID();
     int oldRev = 3;
     Graph graph = newGraph()
       .withVertex(v -> v
-        .withTimId(uuid)
+        .withTimId(uuid.toString())
         .withVre("ww")
         .withType("person")
         .withProperty("isLatest", true)
@@ -367,25 +367,19 @@ public class JsonCrudServiceReplaceTest {
     JsonCrudService instance =
       newJsonCrudService().withHandleAdder(urlGen, handleAdder).forGraph(graph);
 
-    instance.replace("wwpersons", UUID.fromString(uuid), jsnO("^rev", jsn(oldRev)), "");
+    instance.replace("wwpersons", uuid, jsnO("^rev", jsn(oldRev)), "");
 
-    verify(handleAdder, times(1)).add(
-      new HandleAdderParameters(
-        UUID.fromString(uuid),
-        oldRev + 1,
-        URI.create("http://example.com/" + uuid + "?r=" + (oldRev + 1))
-      )
-    );
+    verify(handleAdder, times(1)).add("wwpersons", uuid, oldRev + 1);
   }
 
   @Test
   public void sendsAPidlessVertexToTheChangeListener() throws Exception {
-    String uuid = UUID.randomUUID().toString();
+    UUID uuid = UUID.randomUUID();
     int oldRev = 1;
     String oldPid = "oldPid";
     Graph graph = newGraph()
       .withVertex("v1", v -> v
-        .withTimId(uuid)
+        .withTimId(uuid.toString())
         .withVre("ww")
         .withType("person")
         .withProperty("isLatest", true)
@@ -393,7 +387,7 @@ public class JsonCrudServiceReplaceTest {
         .withProperty("pid", oldPid)
       )
       .withVertex("v2", v -> v
-        .withTimId(uuid)
+        .withTimId(uuid.toString())
         .withVre("ww")
         .withType("person")
         .withProperty("isLatest", true)
@@ -410,7 +404,7 @@ public class JsonCrudServiceReplaceTest {
       .withChangeListener(changeListener)
       .forGraph(graph);
 
-    instance.replace("wwpersons", UUID.fromString(uuid), jsnO("^rev", jsn(oldRev)), "");
+    instance.replace("wwpersons", uuid, jsnO("^rev", jsn(oldRev)), "");
 
     verify(changeListener).onUpdate(any(), argThat(likeVertex().withoutProperty("pid")));
   }

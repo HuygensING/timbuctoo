@@ -23,7 +23,6 @@ import java.util.UUID;
 import static nl.knaw.huygens.timbuctoo.crud.JsonCrudServiceBuilder.newJsonCrudService;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.authorizerThrowsAuthorizationUnavailableException;
 import static nl.knaw.huygens.timbuctoo.util.AuthorizerHelper.userIsNotAllowedToWriteTheCollection;
-import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
@@ -110,15 +109,15 @@ public class JsonCrudServiceDeleteTest {
 
     // Type should also be removed from the Neo4j labels
     assertThat(graph.traversal().V()
-            .has("tim_id", id)
-            .has("isLatest", true)
-            .has(T.label, LabelP.of("wwperson")).hasNext(), is(false));
+                    .has("tim_id", id)
+                    .has("isLatest", true)
+                    .has(T.label, LabelP.of("wwperson")).hasNext(), is(false));
 
     // Other type should not be removed from the Neo4j labels
     assertThat(graph.traversal().V()
-            .has("tim_id", id)
-            .has("isLatest", true)
-            .has(T.label, LabelP.of("ckccperson")).hasNext(), is(true));
+                    .has("tim_id", id)
+                    .has("isLatest", true)
+                    .has(T.label, LabelP.of("ckccperson")).hasNext(), is(true));
   }
 
   @Test
@@ -247,11 +246,11 @@ public class JsonCrudServiceDeleteTest {
 
   @Test
   public void addsPersistentId() throws Exception {
-    String uuid = UUID.randomUUID().toString();
+    UUID uuid = UUID.randomUUID();
     int oldRev = 3;
     Graph graph = newGraph()
       .withVertex(v -> v
-        .withTimId(uuid)
+        .withTimId(uuid.toString())
         .withVre("ww")
         .withType("person")
         .withProperty("isLatest", true)
@@ -264,15 +263,10 @@ public class JsonCrudServiceDeleteTest {
     JsonCrudService instance =
       newJsonCrudService().withHandleAdder(urlGen, handleAdder).forGraph(graph);
 
-    instance.delete("wwpersons", UUID.fromString(uuid), "");
+    instance.delete("wwpersons", uuid, "");
 
-    verify(handleAdder, times(1)).add(
-      new HandleAdderParameters(
-        UUID.fromString(uuid),
-        oldRev + 1,
-        URI.create("http://example.com/" + uuid + "?r=" + (oldRev + 1))
-      )
-    );
+
+    verify(handleAdder, times(1)).add("wwpersons", uuid, oldRev + 1);
   }
 
   @Test

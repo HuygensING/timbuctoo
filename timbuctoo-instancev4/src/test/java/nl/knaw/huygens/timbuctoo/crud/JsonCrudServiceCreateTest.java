@@ -269,9 +269,7 @@ public class JsonCrudServiceCreateTest {
 
     UUID uuid = instance.create("wwpersons", JsonBuilder.jsnO(), "");
 
-    verify(handleAdder, times(1)).add(
-      new HandleAdderParameters(uuid, 1, URI.create("http://example.com?id=" + uuid + "&rev=1"))
-    );
+    verify(handleAdder, times(1)).add("wwpersons", uuid, 1);
   }
 
   // Security tests

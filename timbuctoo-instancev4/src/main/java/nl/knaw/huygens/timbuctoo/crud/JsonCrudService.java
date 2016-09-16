@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
@@ -9,12 +8,12 @@ import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -44,25 +43,17 @@ public class JsonCrudService {
 
   private final Vres mappings;
   private final HandleAdder handleAdder;
-  private final UrlGenerator handleUrlFor;
-  private final UrlGenerator relationUrlFor;
   private final Clock clock;
-  private final JsonNodeFactory nodeFactory;
-  private final UserStore userStore;
   private final DataAccess dataAccess;
   private final EntityToJsonMapper entityToJsonMapper;
 
   public JsonCrudService(Vres mappings,
-                         HandleAdder handleAdder, UserStore userStore, UrlGenerator handleUrlFor,
+                         HandleAdder handleAdder, UserStore userStore,
                          UrlGenerator relationUrlFor, Clock clock, DataAccess dataAccess) {
     this.mappings = mappings;
     this.handleAdder = handleAdder;
-    this.handleUrlFor = handleUrlFor;
-    this.relationUrlFor = relationUrlFor;
-    this.userStore = userStore;
     this.clock = clock;
     this.dataAccess = dataAccess;
-    nodeFactory = JsonNodeFactory.instance;
     entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
   }
 
@@ -140,7 +131,7 @@ public class JsonCrudService {
     }
 
     // The handle can only be added after the changes are committed.
-    handleAdder.add(new HandleAdderParameters(id, 1, handleUrlFor.apply(collection.getCollectionName(), id, 1)));
+    handleAdder.add(collection.getCollectionName(), id, 1);
     return id;
   }
 
@@ -323,11 +314,7 @@ public class JsonCrudService {
     }
 
     // The handle can only be added after the changes are committed.
-    handleAdder.add(new HandleAdderParameters(
-      id,
-      newRev,
-      handleUrlFor.apply(collection.getCollectionName(), id, newRev)
-    ));
+    handleAdder.add(collection.getCollectionName(), id, newRev);
   }
 
   private Set<String> getDataFields(ObjectNode data) {
@@ -346,7 +333,7 @@ public class JsonCrudService {
     try (DataAccess.DataAccessMethods db = dataAccess.start()) {
       try {
         int newRev = db.deleteEntity(collection, id, userId, clock.instant());
-        handleAdder.add(new HandleAdderParameters(id, newRev, handleUrlFor.apply(collectionName, id, newRev)));
+        handleAdder.add(collection.getCollectionName(), id, newRev);
 
         //Make sure this is the last line of the method. We don't want to commit half our changes
         //this also means checking each function that we call to see if they don't call commit()

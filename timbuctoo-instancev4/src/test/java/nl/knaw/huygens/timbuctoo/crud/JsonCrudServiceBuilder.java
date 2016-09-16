@@ -99,7 +99,7 @@ public class JsonCrudServiceBuilder {
   }
 
   public JsonCrudService build() {
-    return new JsonCrudService(vres, handleAdder, userStore, handleUrlGenerator,
+    return new JsonCrudService(vres, handleAdder, userStore,
       relationUrlGenerator, clock,
       new DataAccess(graphWrapper, entityFetcher, authorizer, changeListener, vres));
   }
