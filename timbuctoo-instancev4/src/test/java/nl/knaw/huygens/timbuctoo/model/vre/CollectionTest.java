@@ -45,6 +45,10 @@ public class CollectionTest {
     return collection.save(graph, collection.getVreName());
   }
 
+  private Collection load(Vertex vertex) {
+    return Collection.load(vertex, new Vre("dummy"));
+  }
+
   @Test
   public void saveCreatesAVertexForTheCollection() {
     final Vre vre = new Vre(vreName);
@@ -263,7 +267,7 @@ public class CollectionTest {
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName);
     collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
 
-    final Collection instance = Collection.load(collectionVertex, new Vre("dummy"));
+    final Collection instance = load(collectionVertex);
 
     assertThat(instance.getEntityTypeName(), equalTo(entityTypeName));
     assertThat(instance.getCollectionName(), equalTo(collectionName));
@@ -286,7 +290,7 @@ public class CollectionTest {
     abstractCollectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, abstractEntityTypeName);
     collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, abstractCollectionVertex);
 
-    final Collection instance = Collection.load(collectionVertex, new Vre("dummy"));
+    final Collection instance = load(collectionVertex);
 
     assertThat(instance.getAbstractType(), equalTo(abstractEntityTypeName));
   }
@@ -318,7 +322,7 @@ public class CollectionTest {
     prop1Vertex.addEdge(LocalProperty.HAS_NEXT_PROPERTY_RELATION_NAME, prop2Vertex);
     prop2Vertex.addEdge(LocalProperty.HAS_NEXT_PROPERTY_RELATION_NAME, prop3Vertex);
 
-    final Collection instance = Collection.load(collectionVertex, new Vre("dummy"));
+    final Collection instance = load(collectionVertex);
 
 
     assertThat(instance.getWriteableProperties().keySet(), contains(
@@ -348,7 +352,7 @@ public class CollectionTest {
 
     collectionVertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayNameVertex);
 
-    final Collection instance = Collection.load(collectionVertex, new Vre("dummy"));
+    final Collection instance = load(collectionVertex);
 
     assertThat(instance.getDisplayName(), instanceOf(ReadableProperty.class));
   }
