@@ -16,7 +16,8 @@ import java.util.UUID;
 
 public class DatabaseMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(DatabaseMigrator.class);
-  protected static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
+  //FIXME: move migrator to database package and make this private again
+  public static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
   private final GraphWrapper graphWrapper;
   private final Map<String, DatabaseMigration> migrations;
 

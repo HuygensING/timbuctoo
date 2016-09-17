@@ -74,7 +74,7 @@ public class RelationType {
       return result;
     }
 
-    private DirectionalRelationType(String regularName, String inverseName, String sourceType, String targetType,
+    public DirectionalRelationType(String regularName, String inverseName, String sourceType, String targetType,
                                     boolean reflexive, boolean symmetric, boolean derived, boolean inverse,
                                     String timId) {
       this.timId = timId;
@@ -120,5 +120,16 @@ public class RelationType {
       return timId;
     }
 
+    public boolean isReflexive() {
+      return reflexive;
+    }
+
+    public boolean isSymmetric() {
+      return symmetric;
+    }
+
+    public boolean isDerived() {
+      return derived;
+    }
   }
 }

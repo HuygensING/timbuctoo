@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -40,6 +41,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -115,10 +117,12 @@ public class DataAccess {
     private final Vres mappings;
     private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
     private Optional<Boolean> isSuccess = Optional.empty();
+    private final Graph graph;
 
     DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
                       EntityFetcher entityFetcher, Vres mappings) {
-      this.transaction = graphWrapper.getGraph().tx();
+      graph = graphWrapper.getGraph();
+      this.transaction = graph.tx();
       this.authorizer = authorizer;
       this.listener = listener;
       this.entityFetcher = entityFetcher;
@@ -126,7 +130,7 @@ public class DataAccess {
       if (!transaction.isOpen()) {
         transaction.open();
       }
-      this.traversal = graphWrapper.getGraph().traversal();
+      this.traversal = graph.traversal();
       this.latestState = graphWrapper.getLatestState();
       this.mappings = mappings == null ? loadVres() : mappings;
     }
@@ -482,6 +486,21 @@ public class DataAccess {
       return builder.build();
     }
 
+    public boolean databaseIsEmptyExceptForMigrations() {
+      return traversal.V()
+        .not(__.has("type", DatabaseMigrator.EXECUTED_MIGRATIONS_TYPE))
+        .hasNext();
+    }
+
+    public void initDb(Vres mappings, RelationType.DirectionalRelationType... relationTypes) {
+      requireCommit = true;
+      //FIXME: add security
+      saveVres(mappings);
+      for (RelationType.DirectionalRelationType relationType : relationTypes) {
+        saveRelationType(relationType);
+      }
+    }
+
     /*******************************************************************************************************************
      * Support methods:
      ******************************************************************************************************************/
@@ -691,7 +710,41 @@ public class DataAccess {
       listener.onUpdate(old, entity);
     }
 
-  }
+    private void saveVres(Vres mappings) {
+      //Save admin VRE first, the rest will link to it
+      Optional.ofNullable(mappings.getVre("Admin")).ifPresent(this::saveVre);
 
+      mappings
+        .getVres()
+        .values()
+        .stream()
+        .filter(vre -> !vre.getVreName().equals("Admin"))
+        .forEach(this::saveVre);
+    }
+
+    private void saveVre(Vre vre) {
+      vre.save(graph);
+    }
+
+
+    private void saveRelationType(RelationType.DirectionalRelationType relationType) {
+      graph.addVertex(
+        T.label, "relationtype",
+        "rev", 1,
+        "types", jsnA(jsn("relationtype")).toString(),
+        "isLatest", true,
+        "tim_id", relationType.getTimId(),
+
+        "relationtype_regularName", relationType.getDbName(),
+        "relationtype_inverseName", relationType.getName(),
+        "relationtype_sourceTypeName", relationType.getSourceTypeName(),
+        "relationtype_targetTypeName", relationType.getTargetTypeName(),
+
+        "relationtype_reflexive", relationType.isReflexive(),
+        "relationtype_symmetric", relationType.isSymmetric(),
+        "relationtype_derived", relationType.isDerived()
+      );
+    }
+  }
 
 }

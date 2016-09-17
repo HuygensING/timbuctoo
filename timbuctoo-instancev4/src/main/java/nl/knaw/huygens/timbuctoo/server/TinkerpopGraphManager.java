@@ -59,8 +59,6 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
     synchronized (graphWaitList) {
       this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
       new DatabaseMigrator(this, migrations).execute();
-      new ScaffoldMigrator(this).execute();
-
       graphWaitList.forEach(consumer -> {
         try {
           consumer.accept(graph);

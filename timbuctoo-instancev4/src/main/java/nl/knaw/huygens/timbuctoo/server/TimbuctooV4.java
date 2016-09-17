@@ -42,6 +42,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyApiRedirects;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
@@ -174,6 +175,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
     DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners);
+    new ScaffoldMigrator(dataAccess).execute();
+
     final Vres vres = new DatabaseConfiguredVres(dataAccess);
     final JsonCrudService crudService = new JsonCrudService(
       vres,
