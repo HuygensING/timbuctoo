@@ -41,15 +41,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.AutocompleteLuceneIndexDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.HuygensIngConfigToDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.InvariantsFix;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.LabelDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.LocationNamesToLocationNameDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.NorwegianNynorskToNorwegianDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.WwDocumentSortIndexesDatabaseMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.WwPersonSortIndexesDatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyApiRedirects;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
@@ -162,24 +154,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Database migrations
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
-    migrations.put(LabelDatabaseMigration.class.getName(), new LabelDatabaseMigration());
-    migrations.put(WwPersonSortIndexesDatabaseMigration.class.getName(), new WwPersonSortIndexesDatabaseMigration());
-    migrations
-      .put(WwDocumentSortIndexesDatabaseMigration.class.getName(), new WwDocumentSortIndexesDatabaseMigration());
-    migrations.put(InvariantsFix.class.getName(), new InvariantsFix(HuygensIng.mappings));
-    migrations
-      .put(AutocompleteLuceneIndexDatabaseMigration.class.getName(), new AutocompleteLuceneIndexDatabaseMigration());
-    migrations.put(LocationNamesToLocationNameDatabaseMigration.class.getName(),
-      new LocationNamesToLocationNameDatabaseMigration());
-    // Persist HuygensIng mappings in database
-    migrations.put("config-to-database-migration-patched-version",
-      new HuygensIngConfigToDatabaseMigration(HuygensIng.mappings));
-    migrations.put(NorwegianNynorskToNorwegianDatabaseMigration.class.getName(),
-      new NorwegianNynorskToNorwegianDatabaseMigration());
-    // Force reindex by renaming the migration in order to get the full default name as displayname in the
-    // autocomplete index of wwpersons
-    migrations.put(AutocompleteLuceneIndexDatabaseMigration.class.getName() + "-reindex",
-      new AutocompleteLuceneIndexDatabaseMigration());
 
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
