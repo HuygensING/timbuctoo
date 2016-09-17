@@ -36,12 +36,19 @@ public class VreTest {
     graph = newGraph().build();
   }
 
+  private Vertex save(Vre vre) {
+    return vre.save(graph);
+  }
+
+  private Vre load(Vertex vertex) {
+    return Vre.load(vertex);
+  }
 
   @Test
   public void saveCreatesAVertexForTheVre() {
     final Vre vre = new Vre("VreName");
 
-    final Vertex result = vre.save(graph);
+    final Vertex result = save(vre);
 
     assertThat(result, likeVertex()
       .withLabel(DATABASE_LABEL)
@@ -55,7 +62,7 @@ public class VreTest {
     existingVertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
     final Vre vre = new Vre("VreName");
 
-    final Vertex result = vre.save(graph);
+    final Vertex result = save(vre);
 
     assertThat(result, equalTo(existingVertex));
   }
@@ -67,7 +74,7 @@ public class VreTest {
     keyWordTypes.put("typeB", "valueB");
     final Vre vre = new Vre("VreName", keyWordTypes);
 
-    final Vertex result = vre.save(graph);
+    final Vertex result = save(vre);
 
     assertThat(result.property(KEYWORD_TYPES_PROPERTY_NAME).value(),
       equalTo(new ObjectMapper().writeValueAsString(keyWordTypes))
@@ -81,7 +88,7 @@ public class VreTest {
       .withCollection("prefixdocuments")
       .build();
 
-    final Vertex savedVertex = vre.save(graph);
+    final Vertex savedVertex = save(vre);
     final List<Vertex> result = Lists.newArrayList(savedVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME));
 
     assertThat(result, containsInAnyOrder(
@@ -102,7 +109,7 @@ public class VreTest {
     keyWordTypes.put("keyword", "type");
     vertex.property(VRE_NAME_PROPERTY_NAME, "VreName");
     vertex.property(KEYWORD_TYPES_PROPERTY_NAME, new ObjectMapper().writeValueAsString(keyWordTypes));
-    final Vre instance = Vre.load(vertex);
+    final Vre instance = load(vertex);
 
     assertThat(instance.getVreName(), equalTo("VreName"));
     assertThat(instance.getKeywordTypes().get("keyword"), equalTo("type"));
@@ -123,7 +130,7 @@ public class VreTest {
     collectionVertex.property(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, false);
     vertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
 
-    final Vre instance = Vre.load(vertex);
+    final Vre instance = load(vertex);
     final Collection collectionByName = instance.getCollectionForCollectionName(collectionName).get();
 
     assertThat(instance.getKeywordTypes().get("keyword"), equalTo("type"));
@@ -155,7 +162,7 @@ public class VreTest {
     vertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
     collectionVertex.addEdge(Collection.HAS_ARCHETYPE_RELATION_NAME, archetypeVertex);
 
-    final Vre instance = Vre.load(vertex);
+    final Vre instance = load(vertex);
 
     assertThat(instance.getImplementerOf("person").get().getEntityTypeName(), equalTo(entityTypeName));
   }
@@ -172,7 +179,7 @@ public class VreTest {
     collectionVertex.property(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true);
     vertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
 
-    final Vre instance = Vre.load(vertex);
+    final Vre instance = load(vertex);
     final Collection collectionByName = instance.getCollectionForCollectionName(collectionName).get();
 
     assertThat(instance.getRelationCollection().get(), equalTo(collectionByName));
