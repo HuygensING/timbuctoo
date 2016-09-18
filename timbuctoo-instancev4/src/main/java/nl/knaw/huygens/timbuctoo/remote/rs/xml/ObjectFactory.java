@@ -13,13 +13,13 @@ public class ObjectFactory {
     return new Urlset();
   }
 
-  public Sitemapindex createSitemapIndex() {
-    return new Sitemapindex();
-  }
-
   @XmlElementDecl(namespace = "http://www.sitemaps.org/schemas/sitemap/0.9", name = "urlset")
   public JAXBElement<Urlset> createUrlset(Urlset value) {
     return new JAXBElement<Urlset>(Urlset.QNAME, Urlset.class, null, value);
+  }
+
+  public Sitemapindex createSitemapIndex() {
+    return new Sitemapindex();
   }
 
   @XmlElementDecl(namespace = "http://www.sitemaps.org/schemas/sitemap/0.9", name = "sitemapindex")

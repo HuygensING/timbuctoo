@@ -11,13 +11,12 @@ import java.time.temporal.ChronoField;
 
 /**
  * Adapter for conversion between a {@link ZonedDateTime} and an ISO 8601 profile know as W3C Datetime format.
- *
+ * <p>
  * The unmarshal proces will convert given datetime strings to UTC (Coordinated Universal Time).
- *
  * If a datetime string has no timezone info, we assume that the datetime is in the timezone
  * that is returned by the static {@link ZonedDateTimeAdapter#getZoneId()}. This timezone will default to
  * {@link ZoneId#systemDefault()}, and can be set with {@link ZonedDateTimeAdapter#setZoneId(ZoneId)}.
- *
+ *  </p>
  * The following examples illustrate the conversion of several valid W3C Datetime strings (unmarshal -> marshal).
  * Datetimes without timezone info were calculated with an offset of UTC+10:00.
  * <pre>
