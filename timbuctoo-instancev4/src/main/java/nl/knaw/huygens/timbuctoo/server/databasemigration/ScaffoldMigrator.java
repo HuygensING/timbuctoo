@@ -34,7 +34,7 @@ public class ScaffoldMigrator {
             false,
             false,
             false,
-            true,
+            false,
             UUID.randomUUID().toString()
           ),
           new RelationType.DirectionalRelationType(
@@ -45,7 +45,7 @@ public class ScaffoldMigrator {
             false,
             false,
             false,
-            true,
+            false,
             UUID.randomUUID().toString()
           )
         );
