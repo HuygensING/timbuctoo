@@ -88,7 +88,7 @@ public class RdfImporter {
 
     private void flushBatch(int size) {
       if (size < 0 || batch.size() >= size) {
-        batch.forEach((triple) -> processor.process(vreName, triple));
+        batch.forEach((triple) -> processor.process(vreName, true, triple));
         graphWrapper.getGraph().tx().commit();
         count += batch.size();
         LOG.debug("Currently loaded {} triples", count);

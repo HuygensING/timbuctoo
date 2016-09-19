@@ -42,7 +42,7 @@ public class TripleProcessorImpl implements TripleProcessor {
   }
 
   @Override
-  public void process(String vreName, Triple triple) {
+  public void process(String vreName, boolean isAssertion, Triple triple) {
     if (predicateIsType(triple)) {
       collectionMembership.process(vreName, triple);
     } else if (subclassOfKnownArchetype(triple)) {

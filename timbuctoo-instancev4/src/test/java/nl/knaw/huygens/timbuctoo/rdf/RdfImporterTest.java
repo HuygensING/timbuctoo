@@ -42,7 +42,7 @@ public class RdfImporterTest {
 
     InOrder inOrder = inOrder(db, processor);
     inOrder.verify(db).ensureVreExists(VRE_NAME);
-    inOrder.verify(processor).process(eq(VRE_NAME), any());
+    inOrder.verify(processor).process(eq(VRE_NAME), eq(true), any());
   }
 
   @Test
@@ -56,7 +56,7 @@ public class RdfImporterTest {
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
     InOrder inOrder = inOrder(processor, vres);
-    inOrder.verify(processor).process(eq(VRE_NAME), any());
+    inOrder.verify(processor).process(eq(VRE_NAME), eq(true), any());
     inOrder.verify(vres).reload();
   }
 

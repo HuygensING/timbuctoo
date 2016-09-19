@@ -145,14 +145,14 @@ public class ExecuteRml {
       });
 
       //first save the mapping, which also contains the archetypes for the collections
-      model.listStatements().forEachRemaining(statement -> processor.process(vreName, new Triple(
+      model.listStatements().forEachRemaining(statement -> processor.process(vreName, true, new Triple(
         statement.getSubject().asNode(),
         statement.getPredicate().asNode(),
         statement.getObject().asNode()
       )));
 
       rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
-        (triple) -> processor.process(vreName, triple));
+        (triple) -> processor.process(vreName, true, triple));
 
       //Give the collections a proper name
       graphWrapper

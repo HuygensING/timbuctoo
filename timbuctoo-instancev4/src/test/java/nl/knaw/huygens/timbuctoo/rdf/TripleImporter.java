@@ -15,6 +15,6 @@ public class TripleImporter {
   }
 
   public void importTriple(Triple triple) {
-    processor.process(vreName, triple);
+    processor.process(vreName, true, triple);
   }
 }
