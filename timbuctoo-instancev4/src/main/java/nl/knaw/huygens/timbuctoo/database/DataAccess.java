@@ -528,6 +528,27 @@ public class DataAccess {
       return vre;
     }
 
+    public void removeCollectionsAndEntities(String vreName) {
+      traversal
+        .V()
+        .hasLabel(Vre.DATABASE_LABEL)
+        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+        .out("hasCollection")
+        .union(
+          __.out("hasDisplayName"),
+          __.out("hasProperty"),
+          __.out("hasEntityNode")
+            .union(
+              __.out("hasEntity"), //the entities
+              __.identity() //the entityNodes container
+            ),
+          __.identity() //the collection
+        )
+        .drop()
+        .toList();//force traversal and thus side-effects
+    }
+
+
     /*******************************************************************************************************************
      * Support methods:
      ******************************************************************************************************************/
@@ -767,6 +788,7 @@ public class DataAccess {
         "relationtype_derived", relationType.isDerived()
       );
     }
+
   }
 
 }

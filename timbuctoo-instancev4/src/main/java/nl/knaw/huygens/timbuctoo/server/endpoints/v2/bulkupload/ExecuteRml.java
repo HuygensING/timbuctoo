@@ -14,7 +14,6 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -139,28 +138,9 @@ public class ExecuteRml {
     final TripleImporter tripleImporter = new TripleImporter(graphWrapper, vreName);
 
     try (Transaction tx = graphWrapper.getGraph().tx()) {
-
-      graphWrapper
-        .getGraph()
-        .traversal()
-        .V()
-        .hasLabel(Vre.DATABASE_LABEL)
-        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-        .out("hasCollection")
-        .union(
-          __.out("hasDisplayName"),
-          __.out("hasProperty"),
-          __.out("hasEntityNode")
-            .union(
-              __.out("hasEntity"), //the entities
-              __.identity() //the entityNodes container
-            ),
-          __.identity() //the collection
-        )
-        .drop()
-        .toList();//force traversal and thus side-effects
       dataAccess.execute(db -> {
         db.ensureVreExists(vreName);
+        db.removeCollectionsAndEntities(vreName);
       });
 
       //first save the mapping, which also contains the archetypes for the collections
