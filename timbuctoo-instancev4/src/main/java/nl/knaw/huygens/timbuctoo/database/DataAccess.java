@@ -487,7 +487,7 @@ public class DataAccess {
     }
 
     public boolean databaseIsEmptyExceptForMigrations() {
-      return traversal.V()
+      return !traversal.V()
         .not(__.has("type", DatabaseMigrator.EXECUTED_MIGRATIONS_TYPE))
         .hasNext();
     }
