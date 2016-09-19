@@ -34,12 +34,12 @@ public class Vre {
   private Map<String, String> keywordTypes = Maps.newHashMap();
   private final LinkedHashMap<String, Collection> collections = Maps.newLinkedHashMap();
 
-  Vre(String vreName, Map<String, String> keywordTypes) {
+  public Vre(String vreName, Map<String, String> keywordTypes) {
     this.vreName = vreName;
     this.keywordTypes = keywordTypes;
   }
 
-  Vre(String vreName) {
+  public Vre(String vreName) {
     this.vreName = vreName;
   }
 
