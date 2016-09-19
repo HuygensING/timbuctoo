@@ -1,14 +1,9 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import nl.knaw.huygens.timbuctoo.server.TestableTinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.test.TestGraphDatabaseFactory;
@@ -44,7 +39,7 @@ public class TestGraphBuilder {
     return new TestGraphBuilder();
   }
 
-  public Graph build() {
+  public Neo4jGraph build() {
     //When creating a new database you have to close the previous one, because
     //each database will create a new thread. This fills up the available
     //threads when running thousands of tests.
@@ -85,34 +80,9 @@ public class TestGraphBuilder {
     return neo4jGraph;
   }
 
-  public GraphWrapper wrap() {
-    final Graph graph = build();
-    return new GraphWrapper() {
-      @Override
-      public Graph getGraph() {
-        return graph;
-      }
-
-      @Override
-      public GraphTraversalSource getLatestState() {
-        return GraphTraversalSource.build().with(LATEST_ELEMENTS).create(graph);
-      }
-
-      @Override
-      public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
-        if (entityTypeNames.length == 1) {
-          String type = entityTypeNames[0];
-          return getLatestState().V().has(T.label, LabelP.of(type));
-        } else {
-          P<String> labels = LabelP.of(entityTypeNames[0]);
-          for (int i = 1; i < entityTypeNames.length; i++) {
-            labels = labels.or(LabelP.of(entityTypeNames[i]));
-          }
-
-          return getLatestState().V().has(T.label, labels);
-        }
-      }
-    };
+  public TinkerpopGraphManager wrap() {
+    final Neo4jGraph graph = build();
+    return new TestableTinkerpopGraphManager(neo4jDb, graph);
   }
 
   public TestGraphBuilder withVertex(String id, Consumer<VertexBuilder> vertexBuilderConfig) {

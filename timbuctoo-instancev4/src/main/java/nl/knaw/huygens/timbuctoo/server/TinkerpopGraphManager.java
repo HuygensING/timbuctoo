@@ -5,7 +5,6 @@ import com.google.common.collect.Lists;
 import io.dropwizard.lifecycle.Managed;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.process.traversal.P;
@@ -33,30 +32,29 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   private static final SubgraphStrategy LATEST_ELEMENTS =
           SubgraphStrategy.build().edgeCriterion(has("isLatest", true)).vertexCriterion(has("isLatest", true)).create();
 
-  final TimbuctooConfiguration configuration;
-  private final LinkedHashMap<String, DatabaseMigration> migrations;
-  private Neo4jGraph graph;
-  private File databasePath;
-  private GraphDatabaseService graphDatabase;
-  private final List<Consumer<Graph>> graphWaitList;
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
+
+  private final TimbuctooConfiguration configuration;
+  private final LinkedHashMap<String, DatabaseMigration> migrations;
+  protected final List<Consumer<Graph>> graphWaitList;
+
+  private File databasePath;
+
+  protected Neo4jGraph graph;
+  protected GraphDatabaseService graphDatabase;
 
   public TinkerpopGraphManager(TimbuctooConfiguration configuration,
                                LinkedHashMap<String, DatabaseMigration> migrations) {
     this.configuration = configuration;
     graphWaitList = Lists.newArrayList();
 
-    databasePath = new File(configuration.getDatabasePath());
-    graphDatabase = new GraphDatabaseFactory()
-            .newEmbeddedDatabaseBuilder(databasePath)
-            .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
-            .newGraphDatabase();
     this.migrations = migrations;
   }
 
   @Override
   public void start() throws Exception {
     synchronized (graphWaitList) {
+      initGraphDatabaseService();
       this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
       new DatabaseMigrator(this, migrations).execute();
       graphWaitList.forEach(consumer -> {
@@ -66,6 +64,18 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
           LOG.error(e.getMessage(), e);
         }
       });
+    }
+  }
+
+  protected void initGraphDatabaseService() {
+    if (databasePath == null) {
+      databasePath = new File(configuration.getDatabasePath());
+    }
+    if (graphDatabase == null) {
+      graphDatabase = new GraphDatabaseFactory()
+        .newEmbeddedDatabaseBuilder(databasePath)
+        .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
+        .newGraphDatabase();
     }
   }
 
@@ -131,6 +141,7 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
   }
 
   public GraphDatabaseService getGraphDatabase() {
+    initGraphDatabaseService();
     return graphDatabase;
   }
 }
