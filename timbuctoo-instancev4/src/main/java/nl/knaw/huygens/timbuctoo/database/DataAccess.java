@@ -89,6 +89,10 @@ public class DataAccess {
     this(graphwrapper, entityFetcher, authorizer, listener, null);
   }
 
+  /**
+   * @deprecated Use the constructor without the mappings.
+   */
+  @Deprecated
   public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, Authorizer authorizer,
                     ChangeListener listener, Vres mappings) {
     this.graphwrapper = graphwrapper;
