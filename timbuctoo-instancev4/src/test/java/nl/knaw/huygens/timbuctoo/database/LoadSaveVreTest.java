@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -17,6 +18,7 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
@@ -111,17 +113,25 @@ public class LoadSaveVreTest {
       .withCollection("prefixdocuments")
       .build();
 
-    final Vertex savedVertex = save(vre, initGraph()).get(0);
-    final List<Vertex> result = Lists.newArrayList(savedVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME));
+    Optional<Vertex> vreVertex = save(vre, initGraph())
+      .stream()
+      .filter(x -> ((Neo4jVertex) x).labels().contains(Vre.DATABASE_LABEL))
+      .findAny();
 
-    assertThat(result, containsInAnyOrder(
-      likeVertex()
-        .withLabel(Collection.DATABASE_LABEL)
-        .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "prefixpersons"),
-      likeVertex()
-        .withLabel(Collection.DATABASE_LABEL)
-        .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "prefixdocuments")
-    ));
+    if (!vreVertex.isPresent()) {
+      throw new RuntimeException("No Vre vertex found!");
+    } else {
+      List<Vertex> edges = Lists.newArrayList(vreVertex.get().vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME));
+
+      assertThat(edges, containsInAnyOrder(
+        likeVertex()
+          .withLabel(Collection.DATABASE_LABEL)
+          .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "prefixpersons"),
+        likeVertex()
+          .withLabel(Collection.DATABASE_LABEL)
+          .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "prefixdocuments")
+      ));
+    }
   }
 
   @Test
