@@ -231,7 +231,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
-      new DataSourceFactory(graphManager));
+      new DataSourceFactory(graphManager), dataAccess);
     register(environment, executeRml);
     BulkUploadVre bulkUploadVre =
       new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker);
@@ -245,7 +245,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new MyVres(loggedInUserStore, authorizer, vres, bulkUploadVre));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
-    register(environment, new ImportRdf(graphManager, vres, rfdExecutorService));
+    register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, dataAccess));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));

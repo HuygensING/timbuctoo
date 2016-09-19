@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.ImmutableVresDto;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
@@ -25,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleExceptio
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -56,6 +58,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -97,6 +100,18 @@ public class DataAccess {
 
   public DataAccessMethods start() {
     return new DataAccessMethods(graphwrapper, authorizer, listener, entityFetcher, mappings);
+  }
+
+  public void execute(Consumer<DataAccessMethods> actions) {
+    try (DataAccessMethods db = start()) {
+      try {
+        actions.accept(db);
+      } catch (RuntimeException e) {
+        db.rollback();
+        throw e;
+      }
+      db.success();
+    }
   }
 
   public interface CustomEntityProperties {
@@ -503,6 +518,14 @@ public class DataAccess {
 
     public void saveVre(Vre vre) {
       vre.save(graph);
+    }
+
+    public Vre ensureVreExists(String vreName) {
+      Vre vre = VreBuilder.vre(vreName, vreName)
+                          .withCollection(vreName + "relations", CollectionBuilder::isRelationCollection)
+                          .build();
+      saveVre(vre);
+      return vre;
     }
 
     /*******************************************************************************************************************

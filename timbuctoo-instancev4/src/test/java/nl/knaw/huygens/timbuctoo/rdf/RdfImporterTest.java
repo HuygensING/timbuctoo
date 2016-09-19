@@ -1,12 +1,16 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.riot.Lang;
+import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 import org.mockito.InOrder;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -15,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -27,56 +32,29 @@ public class RdfImporterTest {
       "\"30.35\"^^<http://www.w3.org/2001/XMLSchema#float> .";
 
   @Test
-  public void importRdfCreatesAVreVertex() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class));
-
-    instance.importRdf(getTripleStream(""), Lang.NQUADS);
-
-    assertThat(
-      graphWrapper.getGraph().traversal().V()
-                  .hasLabel(Vre.DATABASE_LABEL)
-                  .has(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME)
-                  .hasNext(),
-      is(true)
-    );
-  }
-
-  @Test
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
     GraphWrapper graphWrapper = newGraph().wrap();
+    DataAccess dataAccess = mock(DataAccess.class);
+    DataAccess.DataAccessMethods db = mock(DataAccess.DataAccessMethods.class);
+    given(dataAccess.start()).willReturn(db);
+    Mockito.doCallRealMethod().when(dataAccess).execute(org.mockito.Matchers.any());
     TripleImporter tripleImporter = mock(TripleImporter.class);
-    ImportPreparer importPreparer = mock(ImportPreparer.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), tripleImporter, importPreparer);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), dataAccess, tripleImporter);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
-    InOrder inOrder = inOrder(importPreparer, tripleImporter);
-    inOrder.verify(importPreparer).setupVre(VRE_NAME);
-    inOrder.verify(tripleImporter).importTriple(any());
-  }
-
-  @Test
-  public void importRdfCreatesAnAdminVreAndConceptCollectionBeforeImportingTriples() {
-    ImportPreparer importPreparer = mock(ImportPreparer.class);
-    GraphWrapper graphWrapper = newGraph().wrap();
-    TripleImporter tripleImporter = mock(TripleImporter.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), tripleImporter, importPreparer);
-
-    instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
-
-    InOrder inOrder = inOrder(importPreparer, tripleImporter);
-    inOrder.verify(importPreparer).setUpAdminVre();
+    InOrder inOrder = inOrder(db, tripleImporter);
+    inOrder.verify(db).ensureVreExists(VRE_NAME);
     inOrder.verify(tripleImporter).importTriple(any());
   }
 
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
-    ImportPreparer importPreparer = mock(ImportPreparer.class);
+    DataAccess dataAccess = mock(DataAccess.class);
     GraphWrapper graphWrapper = newGraph().wrap();
     TripleImporter tripleImporter = mock(TripleImporter.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, tripleImporter, importPreparer);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, dataAccess, tripleImporter);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 

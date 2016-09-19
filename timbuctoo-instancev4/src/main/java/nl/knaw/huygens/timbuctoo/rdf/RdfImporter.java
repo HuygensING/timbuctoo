@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -22,20 +23,20 @@ public class RdfImporter {
   public static final Logger LOG = LoggerFactory.getLogger(RdfImporter.class);
   private final GraphWrapper graphWrapper;
   private final String vreName;
+  private final DataAccess dataAccess;
   private final TripleImporter tripleImporter;
-  private final ImportPreparer importPreparer;
   private Vres vres;
 
-  public RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres) {
-    this(graphWrapper, vreName, vres, new TripleImporter(graphWrapper, vreName), new ImportPreparer(graphWrapper));
+  public RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres, DataAccess dataAccess) {
+    this(graphWrapper, vreName, vres, dataAccess, new TripleImporter(graphWrapper, vreName));
   }
 
-  RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres, TripleImporter tripleImporter,
-              ImportPreparer importPreparer) {
+  RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres, DataAccess dataAccess,
+              TripleImporter tripleImporter) {
     this.graphWrapper = graphWrapper;
     this.vreName = vreName;
     this.tripleImporter = tripleImporter;
-    this.importPreparer = importPreparer;
+    this.dataAccess = dataAccess;
     this.vres = vres;
   }
 
@@ -55,11 +56,11 @@ public class RdfImporter {
   }
 
   private void prepare() {
-    importPreparer.setupVre(vreName);
-    importPreparer.setUpAdminVre();
+    dataAccess.execute(db -> {
+      db.ensureVreExists(vreName);
+    });
     LOG.info("Starting import...");
   }
-
 
   private final class RdfStreamReader implements StreamRDF {
     private final List<Triple> batch = Lists.newArrayList();

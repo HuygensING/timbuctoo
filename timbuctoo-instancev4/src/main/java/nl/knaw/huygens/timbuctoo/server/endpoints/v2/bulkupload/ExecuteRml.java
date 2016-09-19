@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
+import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.rdf.ImportPreparer;
 import nl.knaw.huygens.timbuctoo.rdf.TripleImporter;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
@@ -49,21 +49,22 @@ public class ExecuteRml {
   public static final Logger LOG = LoggerFactory.getLogger(ExecuteRml.class);
   private final UriHelper uriHelper;
   private final GraphWrapper graphWrapper;
-  private final ImportPreparer importPreparer;
   private final Vres vres;
   private final UserPermissionChecker permissionChecker;
   private final JenaBasedReader rmlBuilder;
   private final DataSourceFactory dataSourceFactory;
+  private final DataAccess dataAccess;
 
   public ExecuteRml(UriHelper uriHelper, GraphWrapper graphWrapper, Vres vres, JenaBasedReader rmlBuilder,
-                    UserPermissionChecker permissionChecker, DataSourceFactory dataSourceFactory) {
+                    UserPermissionChecker permissionChecker, DataSourceFactory dataSourceFactory,
+                    DataAccess dataAccess) {
     this.uriHelper = uriHelper;
     this.graphWrapper = graphWrapper;
-    importPreparer = new ImportPreparer(graphWrapper);
     this.vres = vres;
     this.permissionChecker = permissionChecker;
     this.rmlBuilder = rmlBuilder;
     this.dataSourceFactory = dataSourceFactory;
+    this.dataAccess = dataAccess;
   }
 
   public URI makeUri(String vreName) {
@@ -138,7 +139,6 @@ public class ExecuteRml {
     final TripleImporter tripleImporter = new TripleImporter(graphWrapper, vreName);
 
     try (Transaction tx = graphWrapper.getGraph().tx()) {
-      importPreparer.setUpAdminVre();
 
       graphWrapper
         .getGraph()
@@ -159,8 +159,10 @@ public class ExecuteRml {
         )
         .drop()
         .toList();//force traversal and thus side-effects
+      dataAccess.execute(db -> {
+        db.ensureVreExists(vreName);
+      });
 
-      importPreparer.setupVre(vreName);
       //first save the mapping, which also contains the archetypes for the collections
       model.listStatements().forEachRemaining(statement -> tripleImporter.importTriple(new Triple(
         statement.getSubject().asNode(),

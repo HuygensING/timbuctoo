@@ -31,6 +31,7 @@ public class ScaffoldVresConfig {
             .withProperty("name", localProperty("location_name"))
             .withProperty("country", localProperty("location_country"))
         )
+        .withCollection("concepts")
         .withCollection("relations", CollectionBuilder::isRelationCollection))
     .build();
 }
