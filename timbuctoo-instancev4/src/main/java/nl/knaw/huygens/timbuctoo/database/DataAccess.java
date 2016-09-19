@@ -778,8 +778,8 @@ public class DataAccess {
         "isLatest", true,
         "tim_id", relationType.getTimId(),
 
-        "relationtype_regularName", relationType.getDbName(),
-        "relationtype_inverseName", relationType.getName(),
+        "relationtype_regularName", relationType.getName(),
+        "relationtype_inverseName", relationType.getInverseName(),
         "relationtype_sourceTypeName", relationType.getSourceTypeName(),
         "relationtype_targetTypeName", relationType.getTargetTypeName(),
 

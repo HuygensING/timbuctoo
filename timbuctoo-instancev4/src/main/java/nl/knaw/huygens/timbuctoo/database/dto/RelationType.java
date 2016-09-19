@@ -33,6 +33,7 @@ public class RelationType {
     public static final Logger LOG = LoggerFactory.getLogger(DirectionalRelationType.class);
     private final boolean inverse;
     private final String timId;
+    private final String inverseName;
 
     private String regularName;
     private String dbName;
@@ -79,6 +80,7 @@ public class RelationType {
                                     String timId) {
       this.timId = timId;
       this.inverse = inverse;
+      this.inverseName = inverseName;
       if (inverse) {
         this.regularName = inverseName;
         this.sourceTypeName = targetType;
@@ -130,6 +132,11 @@ public class RelationType {
 
     public boolean isDerived() {
       return derived;
+    }
+
+    //FIXME find a way to expose this only to the dataAccess class
+    public String getInverseName() {
+      return inverseName;
     }
   }
 }
