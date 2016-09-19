@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.riot.Lang;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -30,7 +30,7 @@ public class RdfImporterTest {
 
   @Test
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
-    GraphWrapper graphWrapper = newGraph().wrap();
+    TinkerpopGraphManager graphWrapper = newGraph().wrap();
     DataAccess dataAccess = mock(DataAccess.class);
     DataAccess.DataAccessMethods db = mock(DataAccess.DataAccessMethods.class);
     given(dataAccess.start()).willReturn(db);
@@ -48,7 +48,7 @@ public class RdfImporterTest {
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
     DataAccess dataAccess = mock(DataAccess.class);
-    GraphWrapper graphWrapper = newGraph().wrap();
+    TinkerpopGraphManager graphWrapper = newGraph().wrap();
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, dataAccess, processor);

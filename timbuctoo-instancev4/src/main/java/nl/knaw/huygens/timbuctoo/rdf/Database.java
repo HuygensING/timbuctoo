@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -31,15 +31,15 @@ import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.IS_RELAT
 public class Database {
   static final String RDF_URI_PROP = "rdfUri";
   private static final int ENTITY_CACHE_SIZE = 1024 * 1024;
-  private final GraphWrapper graphWrapper;
+  private final TinkerpopGraphManager graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
   private Cache<String, Long> entityCache = CacheBuilder.newBuilder().maximumSize(ENTITY_CACHE_SIZE).build();
 
-  public Database(GraphWrapper graphWrapper) {
+  public Database(TinkerpopGraphManager graphWrapper) {
     this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()));
   }
 
-  Database(GraphWrapper graphWrapper, SystemPropertyModifier systemPropertyModifier) {
+  Database(TinkerpopGraphManager graphWrapper, SystemPropertyModifier systemPropertyModifier) {
     this.graphWrapper = graphWrapper;
     this.systemPropertyModifier = systemPropertyModifier;
   }

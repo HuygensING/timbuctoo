@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
@@ -22,17 +22,17 @@ import java.util.List;
 
 public class RdfImporter {
   public static final Logger LOG = LoggerFactory.getLogger(RdfImporter.class);
-  private final GraphWrapper graphWrapper;
+  private final TinkerpopGraphManager graphWrapper;
   private final String vreName;
   private final DataAccess dataAccess;
   private final TripleProcessorImpl processor;
   private Vres vres;
 
-  public RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres, DataAccess dataAccess) {
+  public RdfImporter(TinkerpopGraphManager graphWrapper, String vreName, Vres vres, DataAccess dataAccess) {
     this(graphWrapper, vreName, vres, dataAccess, new TripleProcessorImpl(new Database(graphWrapper)));
   }
 
-  RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres, DataAccess dataAccess,
+  RdfImporter(TinkerpopGraphManager graphWrapper, String vreName, Vres vres, DataAccess dataAccess,
               TripleProcessorImpl tripleImporter) {
     this.graphWrapper = graphWrapper;
     this.vreName = vreName;
