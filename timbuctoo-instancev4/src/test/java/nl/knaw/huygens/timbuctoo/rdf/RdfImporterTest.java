@@ -1,13 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
+import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.riot.Lang;
-import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mockito;
@@ -17,10 +15,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
@@ -38,28 +35,28 @@ public class RdfImporterTest {
     DataAccess.DataAccessMethods db = mock(DataAccess.DataAccessMethods.class);
     given(dataAccess.start()).willReturn(db);
     Mockito.doCallRealMethod().when(dataAccess).execute(org.mockito.Matchers.any());
-    TripleImporter tripleImporter = mock(TripleImporter.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), dataAccess, tripleImporter);
+    TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), dataAccess, processor);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
-    InOrder inOrder = inOrder(db, tripleImporter);
+    InOrder inOrder = inOrder(db, processor);
     inOrder.verify(db).ensureVreExists(VRE_NAME);
-    inOrder.verify(tripleImporter).importTriple(any());
+    inOrder.verify(processor).process(eq(VRE_NAME), any());
   }
 
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
     DataAccess dataAccess = mock(DataAccess.class);
     GraphWrapper graphWrapper = newGraph().wrap();
-    TripleImporter tripleImporter = mock(TripleImporter.class);
+    TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, dataAccess, tripleImporter);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, dataAccess, processor);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
-    InOrder inOrder = inOrder(tripleImporter, vres);
-    inOrder.verify(tripleImporter).importTriple(any());
+    InOrder inOrder = inOrder(processor, vres);
+    inOrder.verify(processor).process(eq(VRE_NAME), any());
     inOrder.verify(vres).reload();
   }
 

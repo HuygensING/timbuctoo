@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.graph.Triple;
@@ -24,18 +25,18 @@ public class RdfImporter {
   private final GraphWrapper graphWrapper;
   private final String vreName;
   private final DataAccess dataAccess;
-  private final TripleImporter tripleImporter;
+  private final TripleProcessorImpl processor;
   private Vres vres;
 
   public RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres, DataAccess dataAccess) {
-    this(graphWrapper, vreName, vres, dataAccess, new TripleImporter(graphWrapper, vreName));
+    this(graphWrapper, vreName, vres, dataAccess, new TripleProcessorImpl(new Database(graphWrapper)));
   }
 
   RdfImporter(GraphWrapper graphWrapper, String vreName, Vres vres, DataAccess dataAccess,
-              TripleImporter tripleImporter) {
+              TripleProcessorImpl tripleImporter) {
     this.graphWrapper = graphWrapper;
     this.vreName = vreName;
-    this.tripleImporter = tripleImporter;
+    this.processor = tripleImporter;
     this.dataAccess = dataAccess;
     this.vres = vres;
   }
@@ -87,7 +88,7 @@ public class RdfImporter {
 
     private void flushBatch(int size) {
       if (size < 0 || batch.size() >= size) {
-        batch.forEach(tripleImporter::importTriple);
+        batch.forEach((triple) -> processor.process(vreName, triple));
         graphWrapper.getGraph().tx().commit();
         count += batch.size();
         LOG.debug("Currently loaded {} triples", count);

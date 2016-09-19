@@ -3,7 +3,8 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.rdf.TripleImporter;
+import nl.knaw.huygens.timbuctoo.rdf.Database;
+import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -135,7 +136,7 @@ public class ExecuteRml {
                      .build();
     }
 
-    final TripleImporter tripleImporter = new TripleImporter(graphWrapper, vreName);
+    final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper));
 
     try (Transaction tx = graphWrapper.getGraph().tx()) {
       dataAccess.execute(db -> {
@@ -144,13 +145,14 @@ public class ExecuteRml {
       });
 
       //first save the mapping, which also contains the archetypes for the collections
-      model.listStatements().forEachRemaining(statement -> tripleImporter.importTriple(new Triple(
+      model.listStatements().forEachRemaining(statement -> processor.process(vreName, new Triple(
         statement.getSubject().asNode(),
         statement.getPredicate().asNode(),
         statement.getObject().asNode()
       )));
 
-      rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(tripleImporter::importTriple);
+      rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
+        (triple) -> processor.process(vreName, triple));
 
       //Give the collections a proper name
       graphWrapper
