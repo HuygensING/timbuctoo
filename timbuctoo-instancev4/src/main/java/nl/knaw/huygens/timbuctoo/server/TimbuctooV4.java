@@ -175,7 +175,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
     DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners);
-    new ScaffoldMigrator(dataAccess).execute();
+    graphManager.onGraph(g -> new ScaffoldMigrator(dataAccess).execute());
 
     final Vres vres = new DatabaseConfiguredVres(dataAccess);
     final JsonCrudService crudService = new JsonCrudService(
