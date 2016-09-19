@@ -20,11 +20,7 @@ public class RsBuilderTest {
     RsBuilder rsBuilder = new RsBuilder(new ResourceSyncContext());
 
     String sitemapindexXml = rsBuilder.toXml(createSitemapIndex(), true);
-    String urlsetXml = rsBuilder.toXml(createUrlset(), true);
-
     //System.out.println(sitemapindexXml);
-    //System.out.println(urlsetXml);
-
     InputStream sitemapindexIs = IOUtils.toInputStream(sitemapindexXml);
     RsRoot root = rsBuilder.setInputStream(sitemapindexIs).build().get();
     IOUtils.closeQuietly(sitemapindexIs);
@@ -35,6 +31,8 @@ public class RsBuilderTest {
     assertThat(rsBuilder.getUrlset().isPresent(), is(false));
 
     // RsBuilder can be reused
+    String urlsetXml = rsBuilder.toXml(createUrlset(), true);
+    //System.out.println(urlsetXml);
     InputStream urlsetIs = IOUtils.toInputStream(urlsetXml);
     root = rsBuilder.setInputStream(urlsetIs).build().get();
     IOUtils.closeQuietly(urlsetIs);

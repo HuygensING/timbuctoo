@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -14,8 +15,8 @@ public class Result<T> implements Consumer<T> {
   private T content;
   private Throwable error;
 
-  private Result parent;
-  private Map<URI, Result> children = new HashMap<>();
+  private Map<URI, Result<?>> parents = new HashMap<>();
+  private Map<URI, Result<?>> children = new HashMap<>();
 
   public Result(URI uri) {
     this.uri = uri;
@@ -50,22 +51,34 @@ public class Result<T> implements Consumer<T> {
     this.content = content;
   }
 
-  void setParent(Result parent) {
-    this.parent = parent;
+  public Map<URI, Result> getParents() {
+    return Collections.unmodifiableMap(parents);
   }
 
-  public Result getParent() {
-    return parent;
+  public Map<URI, Result> getChildren() {
+    return Collections.unmodifiableMap(children);
   }
 
-  void addChild(Result child) {
-    children.put(child.getUri(), child);
-  }
-
-  public <R> Result<R> shallowCopy(Result<R> copy) {
+  public <R> Result<R> shallowCopyTo(Result<R> copy) {
     copy.statusCode = this.statusCode;
     copy.error = this.error;
     return copy;
   }
+
+  void addParent(Result<?> parent) {
+    if (!parents.containsKey(parent.getUri())) {
+      parents.put(parent.getUri(), parent);
+      parent.addChild(this);
+    }
+  }
+
+  void addChild(Result<?> child) {
+    if (!children.containsKey(child.getUri())) {
+      children.put(child.getUri(), child);
+      child.addParent(this);
+    }
+  }
+
+
 
 }

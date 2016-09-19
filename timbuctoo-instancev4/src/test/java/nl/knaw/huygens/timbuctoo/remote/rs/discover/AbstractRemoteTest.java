@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.remote.rs;
+package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
 
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
@@ -22,7 +22,7 @@ public class AbstractRemoteTest {
   private static CloseableHttpClient httpclient;
 
   @BeforeClass
-  public static void initializeStatics() throws Exception {
+  public static void initialize() throws Exception {
     port = PortFactory.findFreePort();
     mockServer = startClientAndServer(port);
     rsContext = new ResourceSyncContext();
@@ -30,7 +30,7 @@ public class AbstractRemoteTest {
   }
 
   @AfterClass
-  public static void tearDownStatics() {
+  public static void tearDown() {
     mockServer.stop();
   }
 

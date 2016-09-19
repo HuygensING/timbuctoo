@@ -78,7 +78,7 @@ public class LinkExplorer extends AbstractUriExplorer {
   }
 
   private Result<LinkList> convert(URI uri, Result<List<String>> stringResult) {
-    Result<LinkList> result = stringResult.shallowCopy(new Result<LinkList>(uri));
+    Result<LinkList> result = stringResult.shallowCopyTo(new Result<LinkList>(uri));
     LinkList linkList = new LinkList();
     linkList.resolve(uri, stringResult.getContent().orElse(Collections.emptyList()));
     result.accept(linkList);
