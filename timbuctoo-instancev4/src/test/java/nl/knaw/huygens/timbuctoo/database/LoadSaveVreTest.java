@@ -6,11 +6,11 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
-import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -25,6 +25,7 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Vre.KEYWORD_TYPES_PROPERTY_NAM
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.VreBuilder.vre;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -35,37 +36,38 @@ import static org.hamcrest.core.Is.is;
 
 public class LoadSaveVreTest {
 
-  private Graph initGraph() {
+  private Tuple<DataAccess, Graph> initGraph() {
     return initGraph(c -> {
     });
   }
 
-  private Graph initGraph(Consumer<TestGraphBuilder> init) {
+  private Tuple<DataAccess, Graph> initGraph(Consumer<TestGraphBuilder> init) {
     TestGraphBuilder testGraphBuilder = newGraph();
     init.accept(testGraphBuilder);
-    return testGraphBuilder.build();
+    GraphWrapper wrap = testGraphBuilder.wrap();
+    return tuple(new DataAccess(wrap, null, null, null), wrap.getGraph());
   }
 
-  private Vertex save(Vre vre, Graph graph) {
-    return vre.save(graph);
+  private List<Vertex> save(Vre vre, Tuple<DataAccess, Graph> dataAccess) {
+    try (DataAccess.DataAccessMethods db = dataAccess.getLeft().start()) {
+      db.saveVre(vre);
+      db.success();
+
+      return dataAccess.getRight().traversal().V().toList();
+    }
   }
 
-  private Vre load(Vertex vertex) {
-    return Vre.load(vertex);
-  }
-
-  private Vertex makeVreVertex(Consumer<TestGraphBuilder> testGraphBuilderConsumer) {
-    return initGraph(testGraphBuilderConsumer)
-      .traversal().V()
-      .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
-      .next();
+  private Vre load(Tuple<DataAccess, Graph> dataAccess) {
+    try (DataAccess.DataAccessMethods db = dataAccess.getLeft().start()) {
+      return db.loadVres().getVre("VreName");
+    }
   }
 
   @Test
   public void saveCreatesAVertexForTheVre() {
     final Vre vre = new Vre("VreName");
 
-    final Vertex result = save(vre, initGraph());
+    final Vertex result = save(vre, initGraph()).get(0);
 
     assertThat(result, likeVertex()
       .withLabel(Vre.DATABASE_LABEL)
@@ -75,18 +77,17 @@ public class LoadSaveVreTest {
 
   @Test
   public void saveReplacesAnExistingVertexForTheVre() {
-    Graph graph = initGraph(b -> b.withVertex(
+    final Vre vre = new Vre("VreName");
+
+    final List<Vertex> result = save(vre, initGraph(b -> b.withVertex(
       v -> v
         .withLabel(Vre.DATABASE_LABEL)
         .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
-    ));
-    final Vre vre = new Vre("VreName");
+    )));
 
-    final Vertex result = save(vre, graph);
-
-    assertThat(result.label(), is(Vre.DATABASE_LABEL));
-    assertThat(result.value(VRE_NAME_PROPERTY_NAME), is("VreName"));
-    assertThat(graph.traversal().V().count().next(), is(1L));
+    assertThat(result.get(0).label(), is(Vre.DATABASE_LABEL));
+    assertThat(result.get(0).value(VRE_NAME_PROPERTY_NAME), is("VreName"));
+    assertThat(result.size(), is(1));
   }
 
   @Test
@@ -96,7 +97,7 @@ public class LoadSaveVreTest {
     keyWordTypes.put("typeB", "valueB");
     final Vre vre = new Vre("VreName", keyWordTypes);
 
-    final Vertex result = save(vre, initGraph());
+    final Vertex result = save(vre, initGraph()).get(0);
 
     assertThat(result.property(KEYWORD_TYPES_PROPERTY_NAME).value(),
       equalTo(new ObjectMapper().writeValueAsString(keyWordTypes))
@@ -110,7 +111,7 @@ public class LoadSaveVreTest {
       .withCollection("prefixdocuments")
       .build();
 
-    final Vertex savedVertex = save(vre, initGraph());
+    final Vertex savedVertex = save(vre, initGraph()).get(0);
     final List<Vertex> result = Lists.newArrayList(savedVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME));
 
     assertThat(result, containsInAnyOrder(
@@ -129,13 +130,12 @@ public class LoadSaveVreTest {
     keyWordTypes.put("keyword", "type");
     String stringifiedKeyWordTypes = new ObjectMapper().writeValueAsString(keyWordTypes);
 
-    Vertex source = makeVreVertex(g ->
+    final Vre instance = load(initGraph(g ->
       g.withVertex(v ->
         v.withLabel(Vre.DATABASE_LABEL)
           .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
           .withProperty(KEYWORD_TYPES_PROPERTY_NAME, stringifiedKeyWordTypes)
-      ));
-    final Vre instance = load(source);
+      )));
 
     assertThat(instance.getVreName(), equalTo("VreName"));
     assertThat(instance.getKeywordTypes().get("keyword"), equalTo("type"));
@@ -149,7 +149,8 @@ public class LoadSaveVreTest {
     keywordTypes.put("keyword", "type");
     String stringifiedKeyWordTypes = new ObjectMapper().writeValueAsString(keywordTypes);
 
-    Vertex source = makeVreVertex(g -> g
+
+    final Vre instance = load(initGraph(g -> g
       .withVertex("vre", v -> v
         .withLabel(Vre.DATABASE_LABEL)
         .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
@@ -161,10 +162,7 @@ public class LoadSaveVreTest {
         .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName)
         .withProperty(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, false)
         .withIncomingRelation(HAS_COLLECTION_RELATION_NAME, "vre")
-      ));
-
-
-    final Vre instance = load(source);
+      )));
     final Collection collectionByName = instance.getCollectionForCollectionName(collectionName).get();
 
     assertThat(instance.getKeywordTypes().get("keyword"), equalTo("type"));
@@ -185,7 +183,7 @@ public class LoadSaveVreTest {
     final String archetypeName = "person";
     final String archetypeCollectionName = "persons";
 
-    Vertex vertex = makeVreVertex(g -> g
+    final Vre instance = load(initGraph(g -> g
       .withVertex("vre", v -> v
         .withLabel(Vre.DATABASE_LABEL)
         .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
@@ -202,9 +200,7 @@ public class LoadSaveVreTest {
         .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, archetypeCollectionName)
         .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, archetypeName)
         .withIncomingRelation(HAS_ARCHETYPE_RELATION_NAME, "collection")
-      ));
-
-    final Vre instance = load(vertex);
+      )));
 
     assertThat(instance.getImplementerOf("person").get().getEntityTypeName(), equalTo(entityTypeName));
   }
@@ -214,7 +210,8 @@ public class LoadSaveVreTest {
     final String entityTypeName = "relation";
     final String collectionName = "relations";
 
-    Vertex vertex = makeVreVertex(g -> g
+
+    final Vre instance = load(initGraph(g -> g
       .withVertex("vre", v -> v
         .withLabel(Vre.DATABASE_LABEL)
         .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
@@ -225,10 +222,7 @@ public class LoadSaveVreTest {
         .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, entityTypeName)
         .withProperty(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true)
         .withIncomingRelation(HAS_COLLECTION_RELATION_NAME, "vre")
-      ));
-
-
-    final Vre instance = load(vertex);
+      )));
     final Collection collectionByName = instance.getCollectionForCollectionName(collectionName).get();
 
     assertThat(instance.getRelationCollection().get(), equalTo(collectionByName));

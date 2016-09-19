@@ -478,7 +478,7 @@ public class DataAccess {
     public Vres loadVres() {
       ImmutableVresDto.Builder builder = ImmutableVresDto.builder();
 
-      traversal.V().hasLabel(Vre.DATABASE_LABEL).forEachRemaining(vreVertex -> {
+      traversal.V().has(T.label, LabelP.of(Vre.DATABASE_LABEL)).forEachRemaining(vreVertex -> {
         final Vre vre = Vre.load(vreVertex);
         builder.putVres(vre.getVreName(), vre);
       });
@@ -499,6 +499,10 @@ public class DataAccess {
       for (RelationType.DirectionalRelationType relationType : relationTypes) {
         saveRelationType(relationType);
       }
+    }
+
+    public void saveVre(Vre vre) {
+      vre.save(graph);
     }
 
     /*******************************************************************************************************************
@@ -721,11 +725,6 @@ public class DataAccess {
         .filter(vre -> !vre.getVreName().equals("Admin"))
         .forEach(this::saveVre);
     }
-
-    private void saveVre(Vre vre) {
-      vre.save(graph);
-    }
-
 
     private void saveRelationType(RelationType.DirectionalRelationType relationType) {
       graph.addVertex(
