@@ -806,7 +806,9 @@ public class DataAccess {
 
         "relationtype_reflexive", relationType.isReflexive(),
         "relationtype_symmetric", relationType.isSymmetric(),
-        "relationtype_derived", relationType.isDerived()
+        "relationtype_derived", relationType.isDerived(),
+
+        "rdfUri", "http://timbuctoo.com/" + relationType.getName()
       );
     }
 
