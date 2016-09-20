@@ -555,6 +555,7 @@ public class DataAccess {
         .hasLabel(Vre.DATABASE_LABEL)
         .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
         .out("hasCollection")
+        .not(__.has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true))
         .union(
           __.out("hasDisplayName"),
           __.out("hasProperty"),
