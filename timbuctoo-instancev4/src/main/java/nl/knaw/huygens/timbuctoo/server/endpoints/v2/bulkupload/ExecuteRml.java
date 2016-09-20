@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -34,6 +35,8 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
@@ -136,13 +139,26 @@ public class ExecuteRml {
                      .build();
     }
 
-    final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper));
-
+    dataAccess.execute(db -> {
+      db.ensureVreExists(vreName);
+      db.removeCollectionsAndEntities(vreName);
+    });
     try (Transaction tx = graphWrapper.getGraph().tx()) {
-      dataAccess.execute(db -> {
-        db.ensureVreExists(vreName);
-        db.removeCollectionsAndEntities(vreName);
-      });
+      if (!tx.isOpen()) {
+        tx.open();
+      }
+      Map<String, String> vreMappings = new HashMap<>();
+      Property collectionRefProp = model.getProperty("http://timbuctoo.com/mapping/existingTimbuctooVre");
+      Property predicatProp = model.getProperty("http://www.w3.org/ns/r2rml#predicate");
+      model.listResourcesWithProperty(collectionRefProp)
+           .forEachRemaining(resource -> {
+             vreMappings.put(
+               resource.getProperty(predicatProp).getObject().asResource().getURI(),
+               resource.getProperty(collectionRefProp).getObject().asLiteral().toString()
+             );
+           });
+
+      final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper), vreMappings);
 
       //first save the mapping, which also contains the archetypes for the collections
       model.listStatements().forEachRemaining(statement -> processor.process(vreName, true, new Triple(

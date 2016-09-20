@@ -68,6 +68,10 @@ public class Database {
       .orElseGet(() -> createEntity(vreName, nodeUri));
   }
 
+  public Optional<Entity> findEntity(String vreName, Node node) {
+    return findEntity(vreName, getNodeUri(node, vreName));
+  }
+
   private Optional<Entity> findEntity(String vreName, String nodeUri) {
     IndexHits<org.neo4j.graphdb.Node> rdfurls = rdfIndex.get(vreName, nodeUri);
     if (rdfurls.hasNext()) {
