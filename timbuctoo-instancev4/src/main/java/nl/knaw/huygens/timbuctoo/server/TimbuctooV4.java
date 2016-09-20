@@ -180,13 +180,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
-    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners);
+    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners, handleAdder);
     graphManager.onGraph(g -> new ScaffoldMigrator(dataAccess).execute());
 
     final Vres vres = new DatabaseConfiguredVres(dataAccess);
     final JsonCrudService crudService = new JsonCrudService(
       vres,
-      handleAdder,
       userStore,
       pathWithoutVersionAndRevision,
       Clock.systemDefaultZone(),

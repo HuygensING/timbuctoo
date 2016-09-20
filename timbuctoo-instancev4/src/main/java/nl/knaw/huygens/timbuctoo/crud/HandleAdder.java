@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.queued.ActiveMqExecutor;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.slf4j.Logger;
 
+import java.net.URI;
 import java.util.UUID;
 
 public class HandleAdder {
@@ -28,28 +29,30 @@ public class HandleAdder {
 
   public void create(HandleAdderParameters params) {
     try {
+      URI uri = handleUri.apply(params.getCollectionName(), params.getVertexId(), params.getRev());
       LOG.info(String.format("Retrieving persistent url for '%s' '%s' '%s'",
-        params.getVertexId(), params.getRev(), params.getUrl()));
-      String persistentUrl = manager.getPersistentURL(manager.persistURL(params.getUrl().toString()));
+        params.getVertexId(), params.getRev(), uri));
+      String persistentUrl = manager.getPersistentURL(manager.persistURL(uri.toString()));
       wrapper.getGraph().traversal().V()
-        .has("tim_id", params.getVertexId().toString())
-        .has("rev", params.getRev())
-        .forEachRemaining(vertex -> {
-          LOG.info("Setting pid for " + vertex.id() + " to " + persistentUrl);
-          vertex.property("pid", persistentUrl);
-        });
+             .has("tim_id", params.getVertexId().toString())
+             .has("rev", params.getRev())
+             .forEachRemaining(vertex -> {
+               LOG.info("Setting pid for " + vertex.id() + " to " + persistentUrl);
+               vertex.property("pid", persistentUrl);
+             });
       wrapper.getGraph().tx().commit();
       LOG.info("committed pid");
     } catch (PersistenceException e) {
       LOG.error(Logmarkers.serviceUnavailable, "Could not create handle", e);
       if (params.getRetries() < 5) {
-        add(new HandleAdderParameters(params.getVertexId(), params.getRev(), params.getUrl(), params.getRetries() + 1));
+        add(new HandleAdderParameters(params.getCollectionName(), params.getVertexId(), params.getRev(),
+          params.getRetries() + 1));
       }
     }
   }
 
   public void add(String collectionName, UUID id, int rev) {
-    this.add(new HandleAdderParameters(id, rev, handleUri.apply(collectionName, id, rev)));
+    this.add(new HandleAdderParameters(collectionName, id, rev));
   }
 
   public void add(HandleAdderParameters params) {
@@ -57,20 +60,20 @@ public class HandleAdder {
       params.getRetries() + 1, getOrdinalSuffix(params.getRetries() + 1),
       params.getVertexId(),
       params.getRev(),
-      params.getUrl())
-    );
+      handleUri.apply(params.getCollectionName(), params.getVertexId(), params.getRev())
+    ));
     activeMqExecutor.add(params);
   }
 
   // gogo gadgetstackoverflow
-  private static String getOrdinalSuffix( int value ) {
+  private static String getOrdinalSuffix(int value) {
     int hunRem = value % 100;
     int tenRem = value % 10;
 
-    if ( hunRem - tenRem == 10 ) {
+    if (hunRem - tenRem == 10) {
       return "th";
     }
-    switch ( tenRem ) {
+    switch (tenRem) {
       case 1:
         return "st";
       case 2:
@@ -81,7 +84,6 @@ public class HandleAdder {
         return "th";
     }
   }
-
 
 
 }

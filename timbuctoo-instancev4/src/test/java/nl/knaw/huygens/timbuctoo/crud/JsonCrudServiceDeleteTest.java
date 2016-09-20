@@ -266,7 +266,7 @@ public class JsonCrudServiceDeleteTest {
     instance.delete("wwpersons", uuid, "");
 
 
-    verify(handleAdder, times(1)).add("wwpersons", uuid, oldRev + 1);
+    verify(handleAdder, times(1)).add(new HandleAdderParameters("wwpersons", uuid, oldRev + 1));
   }
 
   @Test

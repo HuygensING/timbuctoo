@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -35,6 +36,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
 
 public class LoadSaveVreTest {
 
@@ -47,7 +49,7 @@ public class LoadSaveVreTest {
     TestGraphBuilder testGraphBuilder = newGraph();
     init.accept(testGraphBuilder);
     GraphWrapper wrap = testGraphBuilder.wrap();
-    return tuple(new DataAccess(wrap, null, null, null), wrap.getGraph());
+    return tuple(new DataAccess(wrap, null, null, null, mock(HandleAdder.class)), wrap.getGraph());
   }
 
   private List<Vertex> save(Vre vre, Tuple<DataAccess, Graph> dataAccess) {

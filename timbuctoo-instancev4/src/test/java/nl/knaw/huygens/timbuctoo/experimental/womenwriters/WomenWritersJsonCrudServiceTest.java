@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.experimental.womenwriters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
+import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
@@ -138,7 +139,8 @@ public class WomenWritersJsonCrudServiceTest {
         entityFetcher,
         null, // no Authorizer needed for get
         null, //no ChangeListener needed for get
-        vres
+        vres,
+        mock(HandleAdder.class)
       )
     );
   }

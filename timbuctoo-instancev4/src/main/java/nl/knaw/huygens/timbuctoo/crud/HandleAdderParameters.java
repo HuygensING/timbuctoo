@@ -6,38 +6,34 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import java.net.URI;
 import java.util.UUID;
 
 public class HandleAdderParameters {
   private final UUID vertexId;
   private final int rev;
-  private final URI url;
+  private final String collectionName;
   private final int retries;
 
 
-  public HandleAdderParameters(UUID vertexId, int rev, URI url) {
+  public HandleAdderParameters(String collectionName, UUID vertexId, int rev) {
     this.vertexId = vertexId;
     this.rev = rev;
-    this.url = url;
+    this.collectionName = collectionName;
     this.retries = 0;
   }
 
   @JsonCreator
-  public HandleAdderParameters(@JsonProperty("vertexId") UUID vertexId, @JsonProperty("rev") int rev,
-                               @JsonProperty("url") URI url, @JsonProperty("retries") int retries) {
+  public HandleAdderParameters(String collectionName, @JsonProperty("vertexId") UUID vertexId,
+                               @JsonProperty("rev") int rev,
+                               @JsonProperty("retries") int retries) {
     this.vertexId = vertexId;
-    this.url = url;
+    this.collectionName = collectionName;
     this.retries = retries;
     this.rev = rev;
   }
 
   public UUID getVertexId() {
     return vertexId;
-  }
-
-  public URI getUrl() {
-    return url;
   }
 
   public int getRetries() {
@@ -61,5 +57,9 @@ public class HandleAdderParameters {
 
   public int getRev() {
     return rev;
+  }
+
+  public String getCollectionName() {
+    return collectionName;
   }
 }

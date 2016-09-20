@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
@@ -50,7 +51,8 @@ public class LoadSaveVresTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     given(graphWrapper.getGraph()).willReturn(graph);
 
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new DataAccess(graphWrapper, null, null, null));
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new DataAccess(graphWrapper, null, null, null,
+      mock(HandleAdder.class)));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getCollection("documents").get(), instanceOf(Collection.class));
@@ -70,7 +72,8 @@ public class LoadSaveVresTest {
     MockWrapper graphWrapper = new MockWrapper();
     graphWrapper.graph = graph;
 
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new DataAccess(graphWrapper, null, null, null));
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new DataAccess(graphWrapper, null, null, null,
+      mock(HandleAdder.class)));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));

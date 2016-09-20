@@ -42,16 +42,13 @@ public class JsonCrudService {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(JsonCrudService.class);
 
   private final Vres mappings;
-  private final HandleAdder handleAdder;
   private final Clock clock;
   private final DataAccess dataAccess;
   private final EntityToJsonMapper entityToJsonMapper;
 
-  public JsonCrudService(Vres mappings,
-                         HandleAdder handleAdder, UserStore userStore,
-                         UrlGenerator relationUrlFor, Clock clock, DataAccess dataAccess) {
+  public JsonCrudService(Vres mappings, UserStore userStore, UrlGenerator relationUrlFor, Clock clock,
+                         DataAccess dataAccess) {
     this.mappings = mappings;
-    this.handleAdder = handleAdder;
     this.clock = clock;
     this.dataAccess = dataAccess;
     entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
@@ -130,8 +127,6 @@ public class JsonCrudService {
       }
     }
 
-    // The handle can only be added after the changes are committed.
-    handleAdder.add(collection.getCollectionName(), id, 1);
     return id;
   }
 
@@ -301,10 +296,9 @@ public class JsonCrudService {
         throw new IOException(name + " is not a valid property");
       }
     }
-    int newRev;
     try (DataAccess.DataAccessMethods db = dataAccess.start()) {
       try {
-        newRev = db.replaceEntity(collection, userId, updateEntity);
+        db.replaceEntity(collection, userId, updateEntity);
         db.success();
       } catch (NotFoundException | IOException | AlreadyUpdatedException | AuthorizationUnavailableException |
         AuthorizationException e) {
@@ -312,9 +306,6 @@ public class JsonCrudService {
         throw e;
       }
     }
-
-    // The handle can only be added after the changes are committed.
-    handleAdder.add(collection.getCollectionName(), id, newRev);
   }
 
   private Set<String> getDataFields(ObjectNode data) {
@@ -332,8 +323,7 @@ public class JsonCrudService {
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     try (DataAccess.DataAccessMethods db = dataAccess.start()) {
       try {
-        int newRev = db.deleteEntity(collection, id, userId, clock.instant());
-        handleAdder.add(collection.getCollectionName(), id, newRev);
+        db.deleteEntity(collection, id, userId, clock.instant());
 
         //Make sure this is the last line of the method. We don't want to commit half our changes
         //this also means checking each function that we call to see if they don't call commit()

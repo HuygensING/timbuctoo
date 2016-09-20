@@ -2,11 +2,14 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
+import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
+import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;
@@ -53,6 +56,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -83,10 +87,11 @@ public class DataAccess {
   private final Authorizer authorizer;
   private final ChangeListener listener;
   private final Vres mappings;
+  private final HandleAdder handleAdder;
 
   public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, Authorizer authorizer,
-                    ChangeListener listener) {
-    this(graphwrapper, entityFetcher, authorizer, listener, null);
+                    ChangeListener listener, HandleAdder handleAdder) {
+    this(graphwrapper, entityFetcher, authorizer, listener, null, handleAdder);
   }
 
   /**
@@ -94,16 +99,17 @@ public class DataAccess {
    */
   @Deprecated
   public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, Authorizer authorizer,
-                    ChangeListener listener, Vres mappings) {
+                    ChangeListener listener, Vres mappings, HandleAdder handleAdder) {
     this.graphwrapper = graphwrapper;
     this.entityFetcher = entityFetcher;
     this.authorizer = authorizer;
     this.listener = listener;
     this.mappings = mappings;
+    this.handleAdder = handleAdder;
   }
 
   public DataAccessMethods start() {
-    return new DataAccessMethods(graphwrapper, authorizer, listener, entityFetcher, mappings);
+    return new DataAccessMethods(graphwrapper, authorizer, listener, entityFetcher, mappings, handleAdder);
   }
 
   public void execute(Consumer<DataAccessMethods> actions) {
@@ -137,10 +143,13 @@ public class DataAccess {
     private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
     private Optional<Boolean> isSuccess = Optional.empty();
     private final Graph graph;
+    private final HandleAdder handleAdder;
+    private final List<HandleAdderParameters> handlesToAdd;
 
     DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
-                      EntityFetcher entityFetcher, Vres mappings) {
+                      EntityFetcher entityFetcher, Vres mappings, HandleAdder handleAdder) {
       graph = graphWrapper.getGraph();
+      this.handleAdder = handleAdder;
       this.transaction = graph.tx();
       this.authorizer = authorizer;
       this.listener = listener;
@@ -152,6 +161,7 @@ public class DataAccess {
       this.traversal = graph.traversal();
       this.latestState = graphWrapper.getLatestState();
       this.mappings = mappings == null ? loadVres() : mappings;
+      handlesToAdd = Lists.newArrayList();
     }
 
     public void success() {
@@ -166,6 +176,7 @@ public class DataAccess {
     public void close() {
       if (isSuccess.isPresent()) {
         if (isSuccess.get()) {
+          handlesToAdd.forEach(handleAdder::add);
           transaction.commit();
         } else {
           transaction.rollback();
@@ -284,7 +295,13 @@ public class DataAccess {
       listener.onCreate(vertex);
 
       duplicateVertex(traversal, vertex);
+
+      addHandle(col, id, 1);
       return id;
+    }
+
+    private void addHandle(Collection col, UUID id, int rev) {
+      handlesToAdd.add(new HandleAdderParameters(col.getCollectionName(), id, rev));
     }
 
     public ReadEntity getEntity(UUID id, Integer rev, Collection collection,
@@ -337,7 +354,7 @@ public class DataAccess {
      * @throws NotFoundException       when the entity does not exist in the database
      * @throws AlreadyUpdatedException when the entity is updated in between the read and this update
      */
-    public int replaceEntity(Collection collection, String userId, UpdateEntity updateEntity)
+    public void replaceEntity(Collection collection, String userId, UpdateEntity updateEntity)
       throws NotFoundException, AlreadyUpdatedException, IOException, AuthorizationUnavailableException,
       AuthorizationException {
 
@@ -406,7 +423,7 @@ public class DataAccess {
       callUpdateListener(entityVertex);
 
       duplicateVertex(traversal, entityVertex);
-      return newRev;
+      addHandle(collection, updateEntity.getId(), newRev);
     }
 
     public void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
@@ -440,7 +457,7 @@ public class DataAccess {
       setModified(edge, userId, instant);
     }
 
-    public int deleteEntity(Collection collection, UUID id, String userId, Instant deleteTime)
+    public void deleteEntity(Collection collection, UUID id, String userId, Instant deleteTime)
       throws AuthorizationException, AuthorizationUnavailableException, NotFoundException {
 
       checkIfAllowedToWrite(authorizer, userId, collection);
@@ -491,7 +508,7 @@ public class DataAccess {
       callUpdateListener(entity);
       duplicateVertex(traversal, entity);
 
-      return newRev;
+      handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, newRev));
     }
 
     public Vres loadVres() {

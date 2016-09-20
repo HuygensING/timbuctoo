@@ -99,9 +99,9 @@ public class JsonCrudServiceBuilder {
   }
 
   public JsonCrudService build() {
-    return new JsonCrudService(vres, handleAdder, userStore,
+    return new JsonCrudService(vres, userStore,
       relationUrlGenerator, clock,
-      new DataAccess(graphWrapper, entityFetcher, authorizer, changeListener, vres));
+      new DataAccess(graphWrapper, entityFetcher, authorizer, changeListener, vres, handleAdder));
   }
 
   public JsonCrudService forGraph(Graph graph) {
@@ -127,11 +127,6 @@ public class JsonCrudServiceBuilder {
 
   public JsonCrudServiceBuilder withRelationUrlGenerator(UrlGenerator generator) {
     this.relationUrlGenerator = generator;
-    return this;
-  }
-
-  public JsonCrudServiceBuilder withAutocompletenUrlGenerator(UrlGenerator generator) {
-    this.autoCompleteUrlGenerator = generator;
     return this;
   }
 

@@ -369,7 +369,7 @@ public class JsonCrudServiceReplaceTest {
 
     instance.replace("wwpersons", uuid, jsnO("^rev", jsn(oldRev)), "");
 
-    verify(handleAdder, times(1)).add("wwpersons", uuid, oldRev + 1);
+    verify(handleAdder, times(1)).add(new HandleAdderParameters("wwpersons", uuid, oldRev + 1));
   }
 
   @Test
