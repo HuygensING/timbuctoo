@@ -1,17 +1,20 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.index.Index;
+import org.neo4j.graphdb.index.IndexHits;
+import org.slf4j.Logger;
 
 import java.time.Clock;
 import java.util.Optional;
@@ -27,13 +30,18 @@ import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCH
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class Database {
+  private static final Logger LOG = getLogger(Database.class);
+
   static final String RDF_URI_PROP = "rdfUri";
-  private static final int ENTITY_CACHE_SIZE = 1024 * 1024;
+  public static final String RDFINDEX_NAME = "rdfUrls";
   private final TinkerpopGraphManager graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
-  private Cache<String, Long> entityCache = CacheBuilder.newBuilder().maximumSize(ENTITY_CACHE_SIZE).build();
+  private GraphTraversalSource traversal;
+  private Index<org.neo4j.graphdb.Node> rdfIndex;
+  private GraphDatabaseService graphDatabase;
 
   public Database(TinkerpopGraphManager graphWrapper) {
     this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()));
@@ -42,6 +50,8 @@ public class Database {
   Database(TinkerpopGraphManager graphWrapper, SystemPropertyModifier systemPropertyModifier) {
     this.graphWrapper = graphWrapper;
     this.systemPropertyModifier = systemPropertyModifier;
+    graphDatabase = graphWrapper.getGraphDatabase();
+    rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
   }
 
   private String getNodeUri(Node node, String vreName) {
@@ -54,37 +64,35 @@ public class Database {
   public Entity findOrCreateEntity(String vreName, Node node) {
     String nodeUri = getNodeUri(node, vreName);
 
-    Entity entity = findEntity(vreName, nodeUri);
-    if (entity == null) {
-      entity = createEntity(vreName, nodeUri);
-    }
-    return entity;
+    return findEntity(vreName, nodeUri)
+      .orElseGet(() -> createEntity(vreName, nodeUri));
   }
 
-  private Entity findEntity(String vreName, String nodeUri) {
-    Graph graph = graphWrapper.getGraph();
-    Long vertexId = entityCache.getIfPresent(nodeUri);
-    if (vertexId != null) {
-      final Vertex vertex = graph.traversal().V(vertexId).next();
-      return new Entity(vertex, getCollections(vertex, vreName));
-    } else {
-      final GraphTraversal<Vertex, Vertex> existingT = graph.traversal().V()
-                                                            .hasLabel(Vre.DATABASE_LABEL)
-                                                            .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-                                                            .out(Vre.HAS_COLLECTION_RELATION_NAME)
-                                                            .out(HAS_ENTITY_NODE_RELATION_NAME)
-                                                            .out(HAS_ENTITY_RELATION_NAME)
-                                                            .has(RDF_URI_PROP, nodeUri);
-
-      if (existingT.hasNext()) {
-        Vertex vertex = existingT.next();
-        vertexId = (Long) vertex.id();
-        entityCache.put(nodeUri, vertexId);
-
-        return new Entity(vertex, getCollections(vertex, vreName));
+  private Optional<Entity> findEntity(String vreName, String nodeUri) {
+    IndexHits<org.neo4j.graphdb.Node> rdfurls = rdfIndex.get(vreName, nodeUri);
+    if (rdfurls.hasNext()) {
+      long vertexId = rdfurls.next().getId();
+      if (rdfurls.hasNext()) {
+        StringBuilder errorMessage = new StringBuilder().append("There is more then one node in ")
+                             .append(vreName)
+                             .append(" for the rdfUrl ")
+                             .append(nodeUri)
+                             .append(" ")
+                             .append("namely ")
+                             .append(vertexId);
+        rdfurls.forEachRemaining(x -> errorMessage.append(", ").append(x.getId()));
+        LOG.error(errorMessage.toString());
+      }
+      GraphTraversal<Vertex, Vertex> entityLookup = traversal.V(vertexId);
+      if (entityLookup.hasNext()) {
+        Vertex entityV = entityLookup.next();
+        return Optional.of(new Entity(entityV, getCollections(entityV, vreName)));
+      } else {
+        LOG.error("Index returned a Node for " + vreName + " - " + nodeUri + " but the node id " + vertexId + " could" +
+          " not be found using Tinkerpop.");
       }
     }
-    return null;
+    return Optional.empty();
   }
 
   private Entity createEntity(String vreName, String nodeUri) {
@@ -98,8 +106,6 @@ public class Database {
     systemPropertyModifier.setIsLatest(vertex, true);
     systemPropertyModifier.setIsDeleted(vertex, false);
 
-    entityCache.put(nodeUri, (Long) vertex.id());
-
     Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
     Entity entity = new Entity(vertex, getCollections(vertex, vreName));
     entity.addToCollection(collection);
@@ -108,12 +114,16 @@ public class Database {
       entity.addToCollection(archetype.get());
     }
 
+    org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
+    rdfIndex.add(neo4jNode, vreName, nodeUri);
+
     return entity;
   }
 
   private Set<Collection> getCollections(Vertex foundVertex, String vreName) {
-    return graphWrapper
-      .getGraph().traversal()
+    traversal = graphWrapper
+      .getGraph().traversal();
+    return traversal
       .V(foundVertex.id())
       .in(HAS_ENTITY_RELATION_NAME)
       .in(HAS_ENTITY_NODE_RELATION_NAME)
