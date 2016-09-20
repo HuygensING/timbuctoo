@@ -23,9 +23,12 @@ public class HandleAdderParameters {
   }
 
   @JsonCreator
-  public HandleAdderParameters(String collectionName, @JsonProperty("vertexId") UUID vertexId,
-                               @JsonProperty("rev") int rev,
-                               @JsonProperty("retries") int retries) {
+  public HandleAdderParameters(
+    @JsonProperty("collectionName") String collectionName,
+    @JsonProperty("vertexId") UUID vertexId,
+    @JsonProperty("rev") int rev,
+    @JsonProperty("retries") int retries
+  ) {
     this.vertexId = vertexId;
     this.collectionName = collectionName;
     this.retries = retries;
