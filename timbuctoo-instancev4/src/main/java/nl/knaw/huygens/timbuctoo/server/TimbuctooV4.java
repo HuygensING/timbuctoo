@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
@@ -182,6 +183,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
     DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners, handleAdder);
+    TimbuctooDbAccess timDbAccess = new TimbuctooDbAccess(
+      authorizer,
+      dataAccess,
+      Clock.systemDefaultZone(),
+      handleAdder
+    );
     graphManager.onGraph(g -> new ScaffoldMigrator(dataAccess).execute());
 
     final Vres vres = new DatabaseConfiguredVres(dataAccess);
@@ -190,7 +197,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       userStore,
       pathWithoutVersionAndRevision,
       Clock.systemDefaultZone(),
-      dataAccess);
+      dataAccess, timDbAccess);
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(

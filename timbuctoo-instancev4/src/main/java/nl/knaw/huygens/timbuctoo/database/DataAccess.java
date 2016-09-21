@@ -276,9 +276,8 @@ public class DataAccess {
 
     public UUID createEntity(Collection col, Optional<Collection> baseCollection, CreateEntity input, String userId,
                              Instant creationTime)
-      throws IOException, AuthorizationUnavailableException, AuthorizationException {
+      throws IOException {
 
-      checkIfAllowedToWrite(authorizer, userId, col);
       requireCommit = true;
 
       Map<String, LocalProperty> mapping = col.getWriteableProperties();
@@ -328,7 +327,6 @@ public class DataAccess {
 
       duplicateVertex(traversal, vertex);
 
-      addHandle(col, id, 1);
       return id;
     }
 

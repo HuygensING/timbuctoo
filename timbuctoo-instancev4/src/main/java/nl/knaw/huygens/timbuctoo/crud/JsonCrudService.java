@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
@@ -44,13 +45,15 @@ public class JsonCrudService {
   private final Vres mappings;
   private final Clock clock;
   private final DataAccess dataAccess;
+  private final TimbuctooDbAccess timDbAccess;
   private final EntityToJsonMapper entityToJsonMapper;
 
   public JsonCrudService(Vres mappings, UserStore userStore, UrlGenerator relationUrlFor, Clock clock,
-                         DataAccess dataAccess) {
+                         DataAccess dataAccess, TimbuctooDbAccess timDbAccess) {
     this.mappings = mappings;
     this.clock = clock;
     this.dataAccess = dataAccess;
+    this.timDbAccess = timDbAccess;
     entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
   }
 
@@ -116,16 +119,16 @@ public class JsonCrudService {
 
     Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
 
-    UUID id;
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
-      try {
-        id = db.createEntity(collection, baseCollection, createEntity, userId, clock.instant());
-        db.success();
-      } catch (IOException | AuthorizationException | AuthorizationUnavailableException e) {
-        db.rollback();
-        throw e;
-      }
-    }
+    UUID id = timDbAccess.createEntity(collection, baseCollection, createEntity, userId);
+    // try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    //   try {
+    //     id = db.createEntity(collection, baseCollection, createEntity, userId, clock.instant());
+    //     db.success();
+    //   } catch (IOException | AuthorizationException | AuthorizationUnavailableException e) {
+    //     db.rollback();
+    //     throw e;
+    //   }
+    // }
 
     return id;
   }
