@@ -274,8 +274,8 @@ public class DataAccess {
       }
     }
 
-    public UUID createEntity(Collection col, Optional<Collection> baseCollection, CreateEntity input, String userId,
-                             Instant creationTime)
+    public void createEntity(Collection col, Optional<Collection> baseCollection, CreateEntity input, String userId,
+                             Instant creationTime, UUID id)
       throws IOException {
 
       requireCommit = true;
@@ -286,8 +286,6 @@ public class DataAccess {
         baseCollection.get().getWriteableProperties() : Maps.newHashMap();
       TinkerPopPropertyConverter baseColConverter = baseCollection.isPresent() ? // converter not needed without mapping
         new TinkerPopPropertyConverter(baseCollection.get()) : null;
-
-      UUID id = UUID.randomUUID();
 
       GraphTraversal<Vertex, Vertex> traversalWithVertex = traversal.addV();
 
@@ -326,8 +324,6 @@ public class DataAccess {
       listener.onCreate(vertex);
 
       duplicateVertex(traversal, vertex);
-
-      return id;
     }
 
     private void addHandle(Collection col, UUID id, int rev) {

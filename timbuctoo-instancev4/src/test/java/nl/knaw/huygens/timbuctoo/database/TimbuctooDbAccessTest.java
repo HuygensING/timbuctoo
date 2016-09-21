@@ -27,6 +27,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -50,7 +52,6 @@ public class TimbuctooDbAccessTest {
     dataAccess = mock(DataAccess.class);
     dataAccessMethods = mock(DataAccessMethods.class);
     when(dataAccess.start()).thenReturn(dataAccessMethods);
-    when(dataAccessMethods.createEntity(any(), any(), any(), any(), any())).thenReturn(UUID.randomUUID());
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
@@ -75,10 +76,10 @@ public class TimbuctooDbAccessTest {
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
-    instance.createEntity(collection, baseCollection, entity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
 
     InOrder inOrder = inOrder(dataAccess, dataAccessMethods);
-    inOrder.verify(dataAccessMethods).createEntity(collection, baseCollection, entity, userId, instant);
+    inOrder.verify(dataAccessMethods).createEntity(collection, baseCollection, this.entity, userId, instant, id);
     inOrder.verify(dataAccessMethods).success();
     inOrder.verify(dataAccessMethods).close();
   }
@@ -101,19 +102,26 @@ public class TimbuctooDbAccessTest {
   @Test(expected = IOException.class)
   public void createEntityRollsbackTheChangesWhenAnExceptionIsThrown() throws Exception {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
-    when(dataAccessMethods.createEntity(
+    doThrow(new IOException()).when(dataAccessMethods).createEntity(
       any(Collection.class),
       any(Optional.class),
       any(CreateEntity.class),
       anyString(),
-      any(Instant.class)
-    )).thenThrow(new IOException());
+      any(Instant.class),
+      any(UUID.class)
+    );
 
     try {
       instance.createEntity(collection, baseCollection, entity, userId);
     } finally {
       InOrder inOrder = inOrder(dataAccess, dataAccessMethods);
-      inOrder.verify(dataAccessMethods).createEntity(collection, baseCollection, entity, userId, instant);
+      inOrder.verify(dataAccessMethods).createEntity(
+        argThat(is(collection)),
+        argThat(is(baseCollection)),
+        argThat(is(entity)),
+        argThat(is(userId)),
+        argThat(is(instant)),
+        any(UUID.class));
       inOrder.verify(dataAccessMethods).rollback();
       inOrder.verify(dataAccessMethods).close();
     }
@@ -123,10 +131,8 @@ public class TimbuctooDbAccessTest {
   @Test
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
-    UUID id = UUID.randomUUID();
-    when(dataAccessMethods.createEntity(any(), any(), any(), any(), any())).thenReturn(id);
 
-    instance.createEntity(collection, baseCollection, entity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
 
     verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, id, 1));
   }

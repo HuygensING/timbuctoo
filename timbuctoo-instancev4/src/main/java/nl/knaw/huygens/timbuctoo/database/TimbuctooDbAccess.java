@@ -34,10 +34,10 @@ public class TimbuctooDbAccess {
                            String userId)
     throws AuthorizationUnavailableException, AuthorizationException, IOException {
     checkIfAllowedToWrite(userId, collection);
-    UUID id;
+    UUID id = UUID.randomUUID();
     try (DataAccess.DataAccessMethods db = dataAccess.start()) {
       try {
-        id = db.createEntity(collection, baseCollection, createEntity, userId, clock.instant());
+        db.createEntity(collection, baseCollection, createEntity, userId, clock.instant(), id);
         db.success();
       } catch (IOException e) {
         db.rollback();
