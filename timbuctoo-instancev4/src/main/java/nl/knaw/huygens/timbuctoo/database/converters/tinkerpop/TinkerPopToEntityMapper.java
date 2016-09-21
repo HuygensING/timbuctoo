@@ -6,6 +6,7 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.DisplayNameHelper;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntityImpl;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
@@ -101,7 +102,7 @@ public class TinkerPopToEntityMapper {
       //Force side effects to happen
     });
 
-    ReadEntity entity = new ReadEntity();
+    ReadEntityImpl entity = new ReadEntityImpl();
     entity.setProperties(properties);
 
     Vertex entityVertex = entityT.asAdmin().clone().next();

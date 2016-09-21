@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntityImpl;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
@@ -125,7 +126,7 @@ public class DataAccess {
   }
 
   public interface CustomEntityProperties {
-    void execute(ReadEntity entity, Vertex entityVertex);
+    void execute(ReadEntityImpl entity, Vertex entityVertex);
   }
 
   public interface CustomRelationProperties {
