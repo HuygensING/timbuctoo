@@ -9,20 +9,20 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.test.TestGraphDatabaseFactory;
 import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static java.util.UUID.randomUUID;
 import static nl.knaw.huygens.timbuctoo.util.Neo4jHelper.cleanDb;
 
 //FIXME should become a rule
 public class TestGraphBuilder {
 
   private static GraphDatabaseService neo4jDb = new TestGraphDatabaseFactory().newImpermanentDatabase();
-  private final List<VertexBuilder> vertexBuilders = new ArrayList<>();
-  private final Map<String, VertexBuilder> identifiableVertexBuilders = new HashMap<>();
+  private final List<GraphFragmentBuilder> graphFragmentBuilders = new LinkedList<>();
   private static Transaction trans;
 
   // FIXME do use the label to map the relations
@@ -51,31 +51,18 @@ public class TestGraphBuilder {
     Neo4jGraph neo4jGraph = Neo4jGraph.open(neo4jGraphApi);
 
     try (org.apache.tinkerpop.gremlin.structure.Transaction tx = neo4jGraph.tx()) {
+      final List<RelationData> requestedRelations = new LinkedList<>();
       final Map<String, Vertex> identifiableVertices = new HashMap<>();
       //Create all identifiable vertices
-      identifiableVertexBuilders.forEach(
-        (key, builder) -> identifiableVertices.put(key, builder.build(neo4jGraph.addVertex()))
-      );
-      //now we can add the links
-      identifiableVertexBuilders.forEach(
-        (key, builder) -> builder.setRelations(identifiableVertices.get(key), identifiableVertices)
-      );
-      //finally add all the non-identifiable vertices
-      vertexBuilders.forEach(
-        (builder) -> {
-
-          Vertex vertex;
-          if (builder.getLabels().size() == 1) {
-            // If there is exactly one label, it is still a valid tinkerpop vertex and needs to be passed to the
-            // addVertex method
-            vertex = neo4jGraph.addVertex(builder.getLabels().get(0));
-          } else {
-            vertex = neo4jGraph.addVertex();
-          }
-
-          builder.build(vertex);
-          builder.setRelations(vertex, identifiableVertices);
+      graphFragmentBuilders.forEach(
+        builder -> {
+          Tuple<Vertex, String> result = builder.build(neo4jGraph, requestedRelations::add);
+          identifiableVertices.put(result.getRight(), result.getLeft());
         }
+      );
+      //then we can create the relations between them
+      requestedRelations.forEach(
+        relationData -> relationData.makeRelation(identifiableVertices)
       );
       tx.commit();
     }
@@ -90,19 +77,14 @@ public class TestGraphBuilder {
   }
 
   public TestGraphBuilder withVertex(String id, Consumer<VertexBuilder> vertexBuilderConfig) {
-    if (identifiableVertexBuilders.containsKey(id)) {
-      throw new RuntimeException("Key " + id + " is used twice");
-    }
-    VertexBuilder vb = new VertexBuilder();
+    VertexBuilder vb = new VertexBuilder(id);
     vertexBuilderConfig.accept(vb);
-    identifiableVertexBuilders.put(id, vb);
+    graphFragmentBuilders.add(vb);
     return this;
   }
 
   public TestGraphBuilder withVertex(Consumer<VertexBuilder> vertexBuilderConfig) {
-    VertexBuilder vb = new VertexBuilder();
-    vertexBuilderConfig.accept(vb);
-    vertexBuilders.add(vb);
-    return this;
+    return withVertex(randomUUID().toString(), vertexBuilderConfig);
   }
+
 }

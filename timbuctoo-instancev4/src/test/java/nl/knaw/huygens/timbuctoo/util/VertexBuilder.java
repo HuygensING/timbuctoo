@@ -5,37 +5,49 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
-import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static nl.knaw.huygens.timbuctoo.util.RelationData.RelationDataBuilder.makeRelationData;
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
-public class VertexBuilder {
+public class VertexBuilder implements GraphFragmentBuilder {
 
   private final HashMap<String, Object> properties;
-  private final HashMap<String, List<RelationData>> outGoingRelationMap;
+  private final List<RelationData.RelationDataBuilder> relationList;
   private String type;
   private List<String> vres;
   private String id;
   private final ObjectMapper objectMapper;
   private boolean isLatest;
-  private final HashMap<String, List<RelationData>> incomingRelationMap;
   private List<String> labels;
+  private String timId;
 
-  VertexBuilder() {
+  VertexBuilder(String id) {
+    this.id = id;
     objectMapper = new ObjectMapper();
     properties = Maps.newHashMap();
-    outGoingRelationMap = Maps.newHashMap();
-    incomingRelationMap = Maps.newHashMap();
+    relationList = Lists.newArrayList();
     labels = Lists.newArrayList();
   }
 
-  public Vertex build(Vertex vertex) {
+  @Override
+  public Tuple<Vertex, String> build(Graph graph, Consumer<RelationData> relationRequestor) {
+    Vertex vertex;
+    if (labels.size() == 1) {
+      // If there is exactly one label, it is still a valid tinkerpop vertex and needs to be passed to the
+      // addVertex method. Otherwise the vertex also gets the label "vertex" and hasLabel will stop working
+      vertex = graph.addVertex(labels.get(0));
+    } else {
+      vertex = graph.addVertex();
+    }
+
     try {
       if (vres == null) {
         vres = Lists.newArrayList("");
@@ -46,8 +58,8 @@ public class VertexBuilder {
       vertex.property("types", objectMapper.writeValueAsString(
         Lists.newArrayList(vres.stream().map(vre -> vre + type).iterator()))
       );
-      if (id != null) {
-        vertex.property("tim_id", id);
+      if (timId != null) {
+        vertex.property("tim_id", timId);
       }
       vertex.property("isLatest", isLatest);
 
@@ -55,44 +67,20 @@ public class VertexBuilder {
         vertex.property(entry.getKey(), entry.getValue());
       }
 
-      for (String label : labels) {
-        ((Neo4jVertex) vertex).addLabel(label);
+      if (labels.size() > 1) {
+        for (String label : labels.subList(1, labels.size())) {
+          ((Neo4jVertex) vertex).addLabel(label);
+        }
       }
+      relationList.forEach(relationDataBuilder -> {
+        //can't be done earlier because vres might not be complete
+        RelationData relationData = relationDataBuilder.build(vres);
+        relationRequestor.accept(relationData);
+      });
 
-      return vertex;
+      return tuple(vertex, id);
     } catch (JsonProcessingException e) {
       throw new RuntimeException(e);
-    }
-  }
-
-  public void setRelations(Vertex self, Map<String, Vertex> others) {
-    for (Map.Entry<String, List<RelationData>> entry : outGoingRelationMap.entrySet()) {
-      for (RelationData data : entry.getValue()) {
-        Vertex other = others.get(data.getOtherKey());
-        if (other == null) {
-          throw new RuntimeException(
-            data.getOtherKey() +
-              " is not available as a named vertex. (Available vertices are: " +
-              String.join(", ", others.keySet())
-          );
-        }
-        Edge edge = self.addEdge(entry.getKey(), other);
-        data.setProperties(edge, vres);
-      }
-    }
-    for (Map.Entry<String, List<RelationData>> entry : incomingRelationMap.entrySet()) {
-      for (RelationData data : entry.getValue()) {
-        Vertex other = others.get(data.getOtherKey());
-        if (other == null) {
-          throw new RuntimeException(
-            data.getOtherKey() +
-              " is not available as a named vertex. (Available vertices are: " +
-              String.join(", ", others.keySet())
-          );
-        }
-        Edge edge = other.addEdge(entry.getKey(), self);
-        data.setProperties(edge, vres);
-      }
     }
   }
 
@@ -110,7 +98,7 @@ public class VertexBuilder {
   }
 
   public VertexBuilder withTimId(String id) {
-    this.id = id;
+    this.timId = id;
     return this;
   }
 
@@ -211,48 +199,26 @@ public class VertexBuilder {
   }
 
   public VertexBuilder withOutgoingRelation(String relationName, String otherVertex) {
-    if (!outGoingRelationMap.containsKey(relationName)) {
-      outGoingRelationMap.put(relationName, Lists.newArrayList());
-    }
-
-    outGoingRelationMap.get(relationName).add(new RelationData(otherVertex));
-
+    relationList.add(makeRelationData(relationName, id, otherVertex));
     return this;
   }
-
 
   public VertexBuilder withOutgoingRelation(String relationName, String otherVertex,
                                             Function<RelationData.RelationDataBuilder,
                                               RelationData.RelationDataBuilder> relationBuilder) {
-    if (!outGoingRelationMap.containsKey(relationName)) {
-      outGoingRelationMap.put(relationName, Lists.newArrayList());
-    }
-
-    outGoingRelationMap.get(relationName).add(relationBuilder.apply(makeRelationData(otherVertex)).build());
-
+    relationList.add(relationBuilder.apply(makeRelationData(relationName, id, otherVertex)));
     return this;
   }
 
   public VertexBuilder withIncomingRelation(String relationName, String otherVertex) {
-    if (!incomingRelationMap.containsKey(relationName)) {
-      incomingRelationMap.put(relationName, Lists.newArrayList());
-    }
-
-    incomingRelationMap.get(relationName).add(new RelationData(otherVertex));
-
+    relationList.add(makeRelationData(relationName, otherVertex, id));
     return this;
   }
-
 
   public VertexBuilder withIncomingRelation(String relationName, String otherVertex,
                                             Function<RelationData.RelationDataBuilder,
                                               RelationData.RelationDataBuilder> relationBuilder) {
-    if (!incomingRelationMap.containsKey(relationName)) {
-      incomingRelationMap.put(relationName, Lists.newArrayList());
-    }
-
-    incomingRelationMap.get(relationName).add(relationBuilder.apply(makeRelationData(otherVertex)).build());
-
+    relationList.add(relationBuilder.apply(makeRelationData(relationName, otherVertex, id)));
     return this;
   }
 

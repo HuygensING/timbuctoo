@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +18,9 @@ import java.util.UUID;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class RelationData {
+  private final String label;
+  private final String from;
+  private final String to;
   private Integer rev = null;
   private UUID timId = null;
   private Boolean isLatest = null;
@@ -24,13 +28,15 @@ public class RelationData {
   private Map<String, Boolean> accepted = null;
   private Boolean deleted = null;
   private UUID typeId = null;
-  private String otherKey = null;
   private List<String> typesToRemove = new ArrayList<>();
   private Change modfied;
   private Change created;
+  private List<String> vertexVres;
 
-  public RelationData(String otherKey) {
-    this.setOtherKey(otherKey);
+  RelationData(String label, String from, String to) {
+    this.label = label;
+    this.from = from;
+    this.to = to;
   }
 
   public void setRev(Integer rev) {
@@ -61,15 +67,10 @@ public class RelationData {
     this.typeId = typeId;
   }
 
-  public String getOtherKey() {
-    return otherKey;
-  }
-
-  public void setOtherKey(String otherKey) {
-    this.otherKey = otherKey;
-  }
-
-  public void setProperties(Edge edge, List<String> vertexVres) {
+  public void makeRelation(Map<String, Vertex> vertexLookup) {
+    Vertex source = vertexLookup.get(from);
+    Vertex target = vertexLookup.get(to);
+    Edge edge = source.addEdge(label, target);
     if (rev != null) {
       edge.property("rev", rev);
     } else {
@@ -141,8 +142,14 @@ public class RelationData {
     this.created = created;
   }
 
+  private void setVertexVres(List<String> vertexVres) {
+    this.vertexVres = vertexVres;
+  }
+
   public static class RelationDataBuilder {
-    private String otherKey;
+    private final String label;
+    private final String from;
+    private final String to;
     private Integer rev;
     private UUID timId;
     private List<String> types = Lists.newArrayList();
@@ -153,13 +160,16 @@ public class RelationData {
     private Boolean isLatest;
     private Change created;
     private Change modified;
+    private List<String> vres;
 
-    private RelationDataBuilder(String otherKey) {
-      this.otherKey = otherKey;
+    private RelationDataBuilder(String label, String from, String to) {
+      this.label = label;
+      this.from = from;
+      this.to = to;
     }
 
-    public static RelationDataBuilder makeRelationData(String otherKey) {
-      return new RelationDataBuilder(otherKey);
+    static RelationDataBuilder makeRelationData(String label, String from, String to) {
+      return new RelationDataBuilder(label, from, to);
     }
 
     public RelationDataBuilder withRev(Integer rev) {
@@ -212,8 +222,8 @@ public class RelationData {
       return this;
     }
 
-    RelationData build() {
-      RelationData relationData = new RelationData(otherKey);
+    RelationData build(List<String> vertexVres) {
+      RelationData relationData = new RelationData(label, from, to);
       relationData.setRev(rev);
       relationData.setTimId(timId);
       if (types.size() > 0) {
@@ -226,6 +236,7 @@ public class RelationData {
       relationData.setTypesToRemove(typesToRemove);
       relationData.setCreated(created);
       relationData.setModfied(modified);
+      relationData.setVertexVres(vertexVres);
       return relationData;
     }
 
