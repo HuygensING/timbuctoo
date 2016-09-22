@@ -5288,6 +5288,7 @@ var FacetedSearch = (function (_React$Component) {
       var onCollectionSelect = _props2.onCollectionSelect;
       var onSearchFieldChange = _props2.onSearchFieldChange;
       var onNewSearch = _props2.onNewSearch;
+      var onCsvExport = _props2.onCsvExport;
       var onPageChange = _props2.onPageChange;
       var onSortFieldChange = _props2.onSortFieldChange;
       var onSetCollapse = _props2.onSetCollapse;
@@ -5335,6 +5336,11 @@ var FacetedSearch = (function (_React$Component) {
               "div",
               { className: "col-sm-8 col-md-8" },
               _react2["default"].createElement(_sortMenu2["default"], { onChange: onSortFieldChange, sortFields: activeCollection.query.sortFields }),
+              _react2["default"].createElement(
+                "button",
+                { className: "btn btn-default pull-right", style: { position: "relative", zIndex: "100" }, onClick: onCsvExport },
+                "Download excel"
+              ),
               _react2["default"].createElement(
                 "div",
                 { className: "basic-margin" },
