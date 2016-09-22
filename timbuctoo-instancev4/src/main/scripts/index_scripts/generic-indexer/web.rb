@@ -26,6 +26,11 @@ class Web < Sinatra::Base
     File.read(File.join('static', "#{params['splat'].first}.js"))
   end
 
+  get '/*.svg' do
+    response['Content-type'] = 'image/svg+xml'
+    File.read(File.join('static', "#{params['splat'].first}.svg"))
+  end
+
   get '/fonts/*' do
     File.read(File.join('static', params['splat'].first))
   end

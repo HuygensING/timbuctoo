@@ -4966,11 +4966,11 @@ Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
 var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
 
@@ -4984,31 +4984,13 @@ var _react2 = _interopRequireDefault(_react);
 
 var _actionsSolr = require("../actions/solr");
 
-var _solrFacetedSearchReact = require("solr-faceted-search-react");
+var _facetedSearchFacetedSearch = require("./faceted-search/faceted-search");
 
-var _solrFacetedSearchReact2 = _interopRequireDefault(_solrFacetedSearchReact);
+var _facetedSearchFacetedSearch2 = _interopRequireDefault(_facetedSearchFacetedSearch);
 
-var _classnames = require("classnames");
+var _pageJsx = require("./page.jsx");
 
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var customComponents = function customComponents(collectionName) {
-	return _extends({}, _solrFacetedSearchReact.defaultComponentPack, {
-		results: _extends({}, _solrFacetedSearchReact.defaultComponentPack.results, {
-			result: function result(props) {
-				console.log(props);return _react2["default"].createElement(
-					"li",
-					{ className: "list-group-item" },
-					_react2["default"].createElement(
-						"a",
-						{ target: "_blank", href: globals.env.SERVER + "/v2.1/domain/" + collectionName + "/" + props.doc.id },
-						props.doc.displayName_s
-					)
-				);
-			}
-		})
-	});
-};
+var _pageJsx2 = _interopRequireDefault(_pageJsx);
 
 var App = (function (_React$Component) {
 	_inherits(App, _React$Component);
@@ -5039,77 +5021,54 @@ var App = (function (_React$Component) {
 
 			var searchClients = (0, _actionsSolr.getSearchClients)();
 
-			var visibleClient = !activeClient && searchClients.length > 0 ? searchClients[0].name : activeClient;
+			var visibleClient = !activeClient && searchClients.length > 0 ? searchClients[0] : searchClients.find(function (client) {
+				return client.name === activeClient;
+			});
 
-			return solr.indexPresent ? _react2["default"].createElement(
-				"div",
+			var visibleClientName = visibleClient ? visibleClient.name : null;
+
+			var facetedSearchProps = visibleClient ? _extends({
+				collections: searchClients.map(function (searchClient) {
+					return {
+						label: searchClient.label,
+						name: searchClient.name,
+						selected: searchClient.name === visibleClientName,
+						query: solr.searchStates[searchClient.name] ? solr.searchStates[searchClient.name].query : {},
+						results: solr.searchStates[searchClient.name] ? solr.searchStates[searchClient.name].results : {
+							docs: [],
+							numFound: 0,
+							facets: {}
+						}
+					};
+				}),
+				onCollectionSelect: function onCollectionSelect(collectionName) {
+					return _this.setActiveClient(collectionName);
+				}
+			}, visibleClient.client.getHandlers(), {
+				truncateFacetListsAt: 5
+			}) : null;
+
+			return solr.indexPresent ? _react2["default"].createElement(_facetedSearchFacetedSearch2["default"], facetedSearchProps) : _react2["default"].createElement(
+				_pageJsx2["default"],
 				null,
 				_react2["default"].createElement(
-					"header",
-					null,
+					"div",
+					{ className: "container" },
 					_react2["default"].createElement(
-						"nav",
-						{ className: "navbar navbar-default" },
-						_react2["default"].createElement(
-							"div",
-							{ className: "navbar-header" },
-							_react2["default"].createElement("img", { style: { height: "44px", margin: "3px" },
-								src: "https://www.huygens.knaw.nl/wp-content/bestanden/2011/03/LOGO-huygens-ing.gif" })
-						),
-						_react2["default"].createElement(
-							"ul",
-							{ className: "nav navbar-nav" },
-							searchClients.map(function (searchClient) {
-								return _react2["default"].createElement(
-									"li",
-									{ className: (0, _classnames2["default"])({ active: searchClient.name === visibleClient }), key: searchClient.name },
-									_react2["default"].createElement(
-										"a",
-										{ onClick: function () {
-												return _this.setActiveClient(searchClient.name);
-											} },
-										searchClient.label
-									)
-								);
-							})
-						)
-					)
-				),
-				searchClients.map(function (searchClient) {
-					return _react2["default"].createElement(
 						"div",
-						{ key: searchClient.name, style: { display: searchClient.name == visibleClient ? "block" : "none" } },
-						_react2["default"].createElement(_solrFacetedSearchReact2["default"], _extends({}, solr.searchStates[searchClient.name], searchClient.client.getHandlers(), {
-							onSelectDoc: function () {
-								for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
-									args[_key] = arguments[_key];
-								}
-
-								return console.log(args);
-							},
-							customComponents: customComponents(searchClient.name),
-							truncateFacetListsAt: 20,
-							showCsvExport: true
-						}))
-					);
-				})
-			) : _react2["default"].createElement(
-				"div",
-				{ className: "row" },
-				_react2["default"].createElement(
-					"div",
-					{ className: "col-md-3" },
-					"Your dataset does not appear to have indexes yet."
-				),
-				_react2["default"].createElement(
-					"div",
-					{ className: "col-md-3" },
+						{ className: "col-md-6" },
+						"Your dataset does not appear to have indexes yet."
+					),
 					_react2["default"].createElement(
-						"button",
-						{ className: "btn btn-success",
-							onClick: onCreateIndexes,
-							disabled: solr.indexesPending },
-						solr.indexesPending ? "Creating search index, please wait" : "Create search index"
+						"div",
+						{ className: "col-md-6" },
+						_react2["default"].createElement(
+							"button",
+							{ className: "btn btn-success",
+								onClick: onCreateIndexes,
+								disabled: solr.indexesPending },
+							solr.indexesPending ? "Creating search index, please wait" : "Create search index"
+						)
 					)
 				)
 			);
@@ -5122,7 +5081,1685 @@ var App = (function (_React$Component) {
 exports["default"] = App;
 module.exports = exports["default"];
 
-},{"../actions/solr":28,"classnames":"classnames","react":"react","solr-faceted-search-react":18}],30:[function(require,module,exports){
+},{"../actions/solr":28,"./faceted-search/faceted-search":31,"./page.jsx":41,"react":"react"}],30:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var CurrentQuery = (function (_React$Component) {
+  _inherits(CurrentQuery, _React$Component);
+
+  function CurrentQuery() {
+    _classCallCheck(this, CurrentQuery);
+
+    _get(Object.getPrototypeOf(CurrentQuery.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(CurrentQuery, [{
+    key: "removeListFacetValue",
+    value: function removeListFacetValue(field, values, value) {
+      var foundIdx = values.indexOf(value);
+      if (foundIdx > -1) {
+        this.props.onChange(field, values.filter(function (v, i) {
+          return i !== foundIdx;
+        }));
+      }
+    }
+  }, {
+    key: "removeRangeFacetValue",
+    value: function removeRangeFacetValue(field) {
+      this.props.onChange(field, []);
+    }
+  }, {
+    key: "removeTextValue",
+    value: function removeTextValue(field) {
+      this.props.onChange(field, "");
+    }
+  }, {
+    key: "renderFieldValues",
+    value: function renderFieldValues(searchField) {
+      var _this = this;
+
+      switch (searchField.type) {
+        case "list-facet":
+          return searchField.value.map(function (val, i) {
+            return _react2["default"].createElement(
+              "span",
+              { key: searchField.field + "-" + i },
+              _react2["default"].createElement(
+                "span",
+                { className: "btn btn-primary btn-sm downcase-then-capitalize", onClick: function () {
+                    return _this.removeListFacetValue(searchField.field, searchField.value, val);
+                  },
+                  title: searchField.label + ": " + val },
+                val,
+                " ",
+                _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove-sign hi-half-transp" })
+              ),
+              " "
+            );
+          });
+
+        case "range-facet":
+          return _react2["default"].createElement(
+            "span",
+            { key: "" + searchField.field },
+            _react2["default"].createElement(
+              "span",
+              { className: "btn btn-primary btn-sm downcase-then-capitalize", onClick: function () {
+                  return _this.removeRangeFacetValue(searchField.field);
+                },
+                title: searchField.label + ": " + searchField.value[0] + " - " + searchField.value[1] },
+              searchField.value[0],
+              " - ",
+              searchField.value[1],
+              " ",
+              _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove-sign hi-half-transp" })
+            ),
+            " "
+          );
+
+        case "text":
+          return _react2["default"].createElement(
+            "span",
+            { key: "" + searchField.field },
+            _react2["default"].createElement(
+              "span",
+              { className: "btn btn-primary btn-sm downcase-then-capitalize", onClick: function () {
+                  return _this.removeTextValue(searchField.field);
+                },
+                title: searchField.label + ": " + searchField.value },
+              searchField.value,
+              " ",
+              _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove-sign hi-half-transp" })
+            ),
+            " "
+          );
+      }
+      return null;
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this2 = this;
+
+      var searchFields = this.props.searchFields;
+
+      return _react2["default"].createElement(
+        "div",
+        null,
+        searchFields.filter(function (searchField) {
+          return searchField.value && searchField.value.length > 0;
+        }).map(function (searchField) {
+          return _this2.renderFieldValues(searchField);
+        })
+      );
+    }
+  }]);
+
+  return CurrentQuery;
+})(_react2["default"].Component);
+
+CurrentQuery.propTypes = {
+  onChange: _react2["default"].PropTypes.func,
+  searchFields: _react2["default"].PropTypes.array
+};
+
+exports["default"] = CurrentQuery;
+module.exports = exports["default"];
+
+},{"react":"react"}],31:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _fieldsSelectField = require("../fields/select-field");
+
+var _fieldsSelectField2 = _interopRequireDefault(_fieldsSelectField);
+
+var _searchFields = require("./search-fields");
+
+var _searchFields2 = _interopRequireDefault(_searchFields);
+
+var _pageJsx = require("../page.jsx");
+
+var _pageJsx2 = _interopRequireDefault(_pageJsx);
+
+var _currentQuery = require("./current-query");
+
+var _currentQuery2 = _interopRequireDefault(_currentQuery);
+
+var _resultsPagination = require("./results/pagination");
+
+var _resultsPagination2 = _interopRequireDefault(_resultsPagination);
+
+var _sortMenu = require("./sort-menu");
+
+var _sortMenu2 = _interopRequireDefault(_sortMenu);
+
+var FacetedSearch = (function (_React$Component) {
+  _inherits(FacetedSearch, _React$Component);
+
+  function FacetedSearch() {
+    _classCallCheck(this, FacetedSearch);
+
+    _get(Object.getPrototypeOf(FacetedSearch.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(FacetedSearch, [{
+    key: "render",
+    value: function render() {
+      var _props = this.props;
+      var collections = _props.collections;
+      var truncateFacetListsAt = _props.truncateFacetListsAt;
+      var _props2 = this.props;
+      var onCollectionSelect = _props2.onCollectionSelect;
+      var onSearchFieldChange = _props2.onSearchFieldChange;
+      var onNewSearch = _props2.onNewSearch;
+      var onPageChange = _props2.onPageChange;
+      var onSortFieldChange = _props2.onSortFieldChange;
+      var onSetCollapse = _props2.onSetCollapse;
+      var onFacetSortChange = _props2.onFacetSortChange;
+
+      var activeCollection = collections.find(function (collection) {
+        return collection.selected;
+      });
+
+      return _react2["default"].createElement(
+        _pageJsx2["default"],
+        null,
+        _react2["default"].createElement(
+          "div",
+          { className: "container big-margin" },
+          _react2["default"].createElement(
+            "div",
+            { className: "row" },
+            _react2["default"].createElement(
+              "div",
+              { className: "col-sm-4 col-md-3" },
+              _react2["default"].createElement(
+                "div",
+                { className: "basic-margin" },
+                _react2["default"].createElement(
+                  _fieldsSelectField2["default"],
+                  { btnClass: "btn-default", onChange: onCollectionSelect, noClear: true, value: activeCollection.name },
+                  collections.map(function (collection) {
+                    return _react2["default"].createElement(
+                      "span",
+                      { key: collection.name, value: collection.name },
+                      collection.label
+                    );
+                  })
+                )
+              ),
+              _react2["default"].createElement(_searchFields2["default"], { fields: activeCollection.query.searchFields, query: activeCollection.query,
+                truncateFacetListsAt: truncateFacetListsAt,
+                onSetCollapse: onSetCollapse,
+                onFacetSortChange: onFacetSortChange,
+                results: activeCollection.results, onSearchFieldChange: onSearchFieldChange })
+            ),
+            _react2["default"].createElement("div", { className: ".hidden-sm col-md-1" }),
+            _react2["default"].createElement(
+              "div",
+              { className: "col-sm-8 col-md-8" },
+              _react2["default"].createElement(_sortMenu2["default"], { onChange: onSortFieldChange, sortFields: activeCollection.query.sortFields }),
+              _react2["default"].createElement(
+                "div",
+                { className: "basic-margin" },
+                _react2["default"].createElement(
+                  "strong",
+                  null,
+                  "Found ",
+                  activeCollection.results.numFound,
+                  " ",
+                  activeCollection.results.numFound === 1 ? activeCollection.label.replace(/s$/, "") : activeCollection.label
+                )
+              ),
+              _react2["default"].createElement(
+                "div",
+                { className: "result-list big-margin" },
+                _react2["default"].createElement(
+                  "ol",
+                  { start: activeCollection.query.start + 1, style: { counterReset: "step-counter " + activeCollection.query.start } },
+                  activeCollection.results.docs.map(function (doc, i) {
+                    return _react2["default"].createElement(
+                      "li",
+                      { key: i + activeCollection.query.start },
+                      _react2["default"].createElement(
+                        "a",
+                        { target: "_blank", href: globals.env.SERVER + "/v2.1/domain/" + activeCollection.name + "/" + doc.id },
+                        doc.displayName_s,
+                        doc.birthDate_i ? _react2["default"].createElement(
+                          "span",
+                          { className: "hi-light-grey pull-right" },
+                          doc.birthDate_i,
+                          " - ",
+                          doc.deathDate_i
+                        ) : null,
+                        doc.country_s ? _react2["default"].createElement(
+                          "span",
+                          { className: "hi-light-grey pull-right" },
+                          doc.country_s
+                        ) : null
+                      )
+                    );
+                  })
+                )
+              )
+            )
+          )
+        ),
+        _react2["default"].createElement(
+          "span",
+          { type: "footer-body" },
+          _react2["default"].createElement(
+            "span",
+            { className: "col-sm-2 col-md-2" },
+            _react2["default"].createElement(
+              "button",
+              { className: "btn btn-default", onClick: onNewSearch },
+              "New Search"
+            )
+          ),
+          _react2["default"].createElement(
+            "div",
+            { className: "col-sm-10 col-md-10 text-right" },
+            _react2["default"].createElement(_currentQuery2["default"], { onChange: onSearchFieldChange, searchFields: activeCollection.query.searchFields })
+          )
+        ),
+        _react2["default"].createElement(
+          "span",
+          { type: "footer-body" },
+          _react2["default"].createElement(_resultsPagination2["default"], { onChange: onPageChange,
+            numFound: activeCollection.results.numFound,
+            start: activeCollection.query.start || 0,
+            rows: activeCollection.query.rows })
+        )
+      );
+    }
+  }]);
+
+  return FacetedSearch;
+})(_react2["default"].Component);
+
+exports["default"] = FacetedSearch;
+module.exports = exports["default"];
+
+},{"../fields/select-field":39,"../page.jsx":41,"./current-query":30,"./results/pagination":32,"./search-fields":33,"./sort-menu":38,"react":"react"}],32:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var Pagination = (function (_React$Component) {
+  _inherits(Pagination, _React$Component);
+
+  function Pagination() {
+    _classCallCheck(this, Pagination);
+
+    _get(Object.getPrototypeOf(Pagination.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(Pagination, [{
+    key: "onPageChange",
+    value: function onPageChange(page, pageAmt) {
+      if (page >= pageAmt || page < 0) {
+        return;
+      }
+      this.props.onChange(page);
+    }
+  }, {
+    key: "renderPage",
+    value: function renderPage(page, currentPage, key) {
+      return _react2["default"].createElement(
+        "li",
+        { className: (0, _classnames2["default"])({ "active": page === currentPage }), key: key },
+        _react2["default"].createElement(
+          "a",
+          { onClick: this.onPageChange.bind(this, page) },
+          page + 1
+        )
+      );
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this = this;
+
+      var _props = this.props;
+      var numFound = _props.numFound;
+      var start = _props.start;
+      var rows = _props.rows;
+
+      var pageAmt = Math.ceil(numFound / rows);
+      var currentPage = start / rows;
+
+      var rangeStart = currentPage - 2 < 0 ? 0 : currentPage - 2;
+      var rangeEnd = rangeStart + 5 > pageAmt ? pageAmt : rangeStart + 5;
+
+      if (rangeEnd - rangeStart < 5 && rangeStart > 0) {
+        rangeStart = rangeEnd - 5;
+        if (rangeStart < 0) {
+          rangeStart = 0;
+        }
+      }
+
+      var pages = [];
+      for (var page = rangeStart; page < rangeEnd; page++) {
+        if (pages.indexOf(page) < 0) {
+          pages.push(page);
+        }
+      }
+
+      return _react2["default"].createElement(
+        "nav",
+        null,
+        _react2["default"].createElement(
+          "ul",
+          { className: "pagination pagination-sm" },
+          _react2["default"].createElement(
+            "li",
+            { className: (0, _classnames2["default"])({ "disabled": currentPage === 0 }), key: "start" },
+            _react2["default"].createElement(
+              "a",
+              { onClick: this.onPageChange.bind(this, 0) },
+              "«"
+            )
+          ),
+          pages.map(function (page, idx) {
+            return _this.renderPage(page, currentPage, idx);
+          }),
+          _react2["default"].createElement(
+            "li",
+            { className: (0, _classnames2["default"])({ "disabled": currentPage === pageAmt - 1 }), key: "end" },
+            _react2["default"].createElement(
+              "a",
+              { onClick: this.onPageChange.bind(this, pageAmt - 1) },
+              "»"
+            )
+          )
+        )
+      )
+      /*      <div className={cx({"panel-body": bootstrapCss, "text-center": bootstrapCss})}>
+              <ul className={cx("pagination", {"pagination-sm": bootstrapCss})}>
+                <li className={cx({"disabled": currentPage === 0})} key="start">
+                  <a onClick={this.onPageChange.bind(this, 0)}>&lt;&lt;</a>
+                </li>
+                <li className={cx({"disabled": currentPage - 1 < 0})} key="prev">
+                  <a onClick={this.onPageChange.bind(this, currentPage - 1)}>&lt;</a>
+                </li>
+                {pages.map((page, idx) => this.renderPage(page, currentPage, idx))}
+                <li className={cx({"disabled": currentPage + 1 >= pageAmt})} key="next">
+                  <a onClick={this.onPageChange.bind(this, currentPage + 1, pageAmt)}>&gt;</a>
+                </li>
+                <li className={cx({"disabled": currentPage === pageAmt - 1})} key="end">
+                  <a onClick={this.onPageChange.bind(this, pageAmt - 1)}>&gt;&gt;</a>
+                </li>
+              </ul>
+            </div>*/
+      ;
+    }
+  }]);
+
+  return Pagination;
+})(_react2["default"].Component);
+
+Pagination.propTypes = {
+  onChange: _react2["default"].PropTypes.func.isRequired,
+  numFound: _react2["default"].PropTypes.number.isRequired,
+  start: _react2["default"].PropTypes.number.isRequired,
+  rows: _react2["default"].PropTypes.number.isRequired
+};
+
+exports["default"] = Pagination;
+module.exports = exports["default"];
+
+},{"classnames":"classnames","react":"react"}],33:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _searchFieldsTextSearch = require("./search-fields/text-search");
+
+var _searchFieldsTextSearch2 = _interopRequireDefault(_searchFieldsTextSearch);
+
+var _searchFieldsListFacet = require("./search-fields/list-facet");
+
+var _searchFieldsListFacet2 = _interopRequireDefault(_searchFieldsListFacet);
+
+var _searchFieldsRangeFacet = require("./search-fields/range-facet");
+
+var _searchFieldsRangeFacet2 = _interopRequireDefault(_searchFieldsRangeFacet);
+
+var components = {
+  text: _searchFieldsTextSearch2["default"],
+  "list-facet": _searchFieldsListFacet2["default"],
+  "range-facet": _searchFieldsRangeFacet2["default"]
+};
+
+var SearchFields = (function (_React$Component) {
+  _inherits(SearchFields, _React$Component);
+
+  function SearchFields() {
+    _classCallCheck(this, SearchFields);
+
+    _get(Object.getPrototypeOf(SearchFields.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(SearchFields, [{
+    key: "render",
+    value: function render() {
+      var _props = this.props;
+      var onSetCollapse = _props.onSetCollapse;
+      var onFacetSortChange = _props.onFacetSortChange;
+      var onSearchFieldChange = _props.onSearchFieldChange;
+      var _props2 = this.props;
+      var fields = _props2.fields;
+      var results = _props2.results;
+      var query = _props2.query;
+      var truncateFacetListsAt = _props2.truncateFacetListsAt;
+
+      return _react2["default"].createElement(
+        "div",
+        { className: "facet-group" },
+        fields.map(function (searchField, i) {
+          var type = searchField.type;
+          var field = searchField.field;
+
+          var SearchComponent = components[type];
+          var facets = type === "list-facet" || type === "range-facet" ? results.facets[field] || [] : null;
+          return _react2["default"].createElement(SearchComponent, { key: i + "_" + field, facets: facets, onChange: onSearchFieldChange,
+            collapse: searchField.collapse,
+            onFacetSortChange: onFacetSortChange, onSetCollapse: onSetCollapse,
+            query: query, truncateFacetListsAt: truncateFacetListsAt,
+            field: searchField.field, label: searchField.label, value: searchField.value });
+        })
+      );
+    }
+  }]);
+
+  return SearchFields;
+})(_react2["default"].Component);
+
+exports["default"] = SearchFields;
+module.exports = exports["default"];
+
+},{"./search-fields/list-facet":34,"./search-fields/range-facet":35,"./search-fields/text-search":37,"react":"react"}],34:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var ListFacet = (function (_React$Component) {
+  _inherits(ListFacet, _React$Component);
+
+  function ListFacet(props) {
+    _classCallCheck(this, ListFacet);
+
+    _get(Object.getPrototypeOf(ListFacet.prototype), "constructor", this).call(this, props);
+
+    this.state = {
+      filter: "",
+      truncateFacetListsAt: props.truncateFacetListsAt
+    };
+  }
+
+  _createClass(ListFacet, [{
+    key: "handleClick",
+    value: function handleClick(value) {
+      var foundIdx = this.props.value.indexOf(value);
+      if (foundIdx < 0) {
+        this.props.onChange(this.props.field, this.props.value.concat(value));
+      } else {
+        this.props.onChange(this.props.field, this.props.value.filter(function (v, i) {
+          return i !== foundIdx;
+        }));
+      }
+    }
+  }, {
+    key: "toggleExpand",
+    value: function toggleExpand() {
+      this.props.onSetCollapse(this.props.field, !(this.props.collapse || false));
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this = this;
+
+      var _props = this.props;
+      var query = _props.query;
+      var label = _props.label;
+      var facets = _props.facets;
+      var field = _props.field;
+      var value = _props.value;
+      var facetSort = _props.facetSort;
+      var collapse = _props.collapse;
+      var truncateFacetListsAt = this.state.truncateFacetListsAt;
+
+      var facetCounts = facets.filter(function (facet, i) {
+        return i % 2 === 1;
+      });
+      var facetValues = facets.filter(function (facet, i) {
+        return i % 2 === 0;
+      });
+
+      var facetSortValue = facetSort ? facetSort : query.facetSort ? query.facetSort : query.facetLimit && query.facetLimit > -1 ? "count" : "index";
+
+      var expanded = !(collapse || false);
+
+      var showMoreLink = truncateFacetListsAt > -1 && truncateFacetListsAt < facetValues.length ? _react2["default"].createElement(
+        "a",
+        { onClick: function () {
+            return _this.setState({ truncateFacetListsAt: -1 });
+          } },
+        "Show all ",
+        facetValues.length,
+        " items"
+      ) : null;
+
+      return _react2["default"].createElement(
+        "div",
+        { className: "facet basic-facet" },
+        _react2["default"].createElement("span", { onClick: this.toggleExpand.bind(this), style: { cursor: "pointer" },
+          className: (0, _classnames2["default"])("glyphicon", "pull-right", "facet-extra", "hi-light-grey", { "glyphicon-collapse-up": !collapse, "glyphicon-collapse-down": collapse }) }),
+        _react2["default"].createElement(
+          "h2",
+          { onClick: this.toggleExpand.bind(this), style: { cursor: "pointer" } },
+          label
+        ),
+        expanded ? _react2["default"].createElement(
+          "div",
+          null,
+          _react2["default"].createElement(
+            "div",
+            { className: "facet-items-box" },
+            facetValues.filter(function (facetValue, i) {
+              return truncateFacetListsAt < 0 || i < truncateFacetListsAt;
+            }).map(function (facetValue, i) {
+              return _this.state.filter.length === 0 || facetValue.toLowerCase().indexOf(_this.state.filter.toLowerCase()) > -1 ? _react2["default"].createElement(
+                "div",
+                { className: "facet-item downcase-then-capitalize", key: facetValue + "_" + facetCounts[i], onClick: function () {
+                    return _this.handleClick(facetValue);
+                  } },
+                facetValue,
+                _react2["default"].createElement(
+                  "span",
+                  { className: "facet-item-amount" },
+                  facetCounts[i]
+                ),
+                _react2["default"].createElement(
+                  "svg",
+                  { className: (0, _classnames2["default"])("facet-check-box", { checked: value.indexOf(facetValue) > -1 }), viewBox: "0 0 15 15" },
+                  _react2["default"].createElement("circle", { cx: "7.5", cy: "7.5", r: "7" })
+                )
+              ) : null;
+            }),
+            showMoreLink
+          ),
+          facetValues.length > 4 ? _react2["default"].createElement(
+            "div",
+            { className: "facet-extra-space" },
+            _react2["default"].createElement(
+              "div",
+              { className: "facet-extra" },
+              _react2["default"].createElement("span", { style: { cursor: "pointer" }, onClick: function () {
+                  return _this.props.onChange(field, []);
+                },
+                className: "glyphicon glyphicon-remove-sign pull-right hi-light-grey" }),
+              _react2["default"].createElement("input", { className: "input-xs", onChange: function (ev) {
+                  return _this.setState({ filter: ev.target.value });
+                }, placeholder: "Filter in " + label, type: "text", value: this.state.filter }),
+              _react2["default"].createElement(
+                "span",
+                { className: "btn-group" },
+                _react2["default"].createElement(
+                  "button",
+                  { className: (0, _classnames2["default"])("btn", "btn-default", "btn-xs", { "active": facetSortValue === "index" }),
+                    onClick: function () {
+                      return _this.props.onFacetSortChange(field, "index");
+                    } },
+                  "a-z"
+                ),
+                _react2["default"].createElement(
+                  "button",
+                  { className: (0, _classnames2["default"])("btn", "btn-default", "btn-xs", { "active": facetSortValue === "count" }),
+                    onClick: function () {
+                      return _this.props.onFacetSortChange(field, "count");
+                    } },
+                  "0-9"
+                )
+              )
+            )
+          ) : null
+        ) : null
+      );
+    }
+  }]);
+
+  return ListFacet;
+})(_react2["default"].Component);
+
+ListFacet.defaultProps = {
+  value: [],
+  truncateFacetListsAt: -1
+};
+
+ListFacet.propTypes = {
+  bootstrapCss: _react2["default"].PropTypes.bool,
+  children: _react2["default"].PropTypes.array,
+  collapse: _react2["default"].PropTypes.bool,
+  facetSort: _react2["default"].PropTypes.string,
+  facets: _react2["default"].PropTypes.array.isRequired,
+  field: _react2["default"].PropTypes.string.isRequired,
+  label: _react2["default"].PropTypes.string,
+  onChange: _react2["default"].PropTypes.func,
+  onFacetSortChange: _react2["default"].PropTypes.func,
+  onSetCollapse: _react2["default"].PropTypes.func,
+  query: _react2["default"].PropTypes.object.isRequired,
+  truncateFacetListsAt: _react2["default"].PropTypes.number,
+  value: _react2["default"].PropTypes.array
+};
+
+exports["default"] = ListFacet;
+module.exports = exports["default"];
+
+},{"classnames":"classnames","react":"react"}],35:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var _rangeSlider = require("./range-slider");
+
+var _rangeSlider2 = _interopRequireDefault(_rangeSlider);
+
+var RangeFacet = (function (_React$Component) {
+  _inherits(RangeFacet, _React$Component);
+
+  function RangeFacet(props) {
+    _classCallCheck(this, RangeFacet);
+
+    _get(Object.getPrototypeOf(RangeFacet.prototype), "constructor", this).call(this, props);
+
+    this.state = {
+      value: props.value
+    };
+  }
+
+  _createClass(RangeFacet, [{
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(nextProps) {
+      this.setState({ value: nextProps.value });
+    }
+  }, {
+    key: "facetsToRange",
+    value: function facetsToRange() {
+      var facets = this.props.facets;
+
+      return facets.filter(function (facet, i) {
+        return i % 2 === 0;
+      }).map(function (v) {
+        return parseInt(v);
+      }).sort(function (a, b) {
+        return a > b ? 1 : -1;
+      }).filter(function (a, i, me) {
+        return i === 0 || i === me.length - 1;
+      });
+    }
+  }, {
+    key: "onRangeChange",
+    value: function onRangeChange(range) {
+      var bounds = this.facetsToRange();
+      var lowerBound = bounds[0];
+      var upperBound = bounds[1];
+      var realRange = upperBound - lowerBound;
+
+      var newState = {
+        value: [Math.floor(range.lowerLimit * realRange) + lowerBound, Math.ceil(range.upperLimit * realRange) + lowerBound]
+      };
+
+      if (range.refresh) {
+        this.props.onChange(this.props.field, newState.value);
+      } else {
+        this.setState(newState);
+      }
+    }
+  }, {
+    key: "getPercentage",
+    value: function getPercentage(range, value) {
+      var lowerBound = range[0];
+      var upperBound = range[1];
+      var realRange = upperBound - lowerBound;
+
+      var atRange = value - lowerBound;
+      return atRange / realRange;
+    }
+  }, {
+    key: "toggleExpand",
+    value: function toggleExpand(ev) {
+      if (ev.target.className.indexOf("clear-button") < 0) {
+        this.props.onSetCollapse(this.props.field, !(this.props.collapse || false));
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _props = this.props;
+      var label = _props.label;
+      var collapse = _props.collapse;
+      var value = this.state.value;
+
+      var range = this.facetsToRange();
+
+      var filterRange = value.length > 0 ? value : range;
+
+      return _react2["default"].createElement(
+        "div",
+        { className: "facet basic-facet" },
+        _react2["default"].createElement("span", { onClick: this.toggleExpand.bind(this), style: { cursor: "pointer" },
+          className: (0, _classnames2["default"])("glyphicon", "pull-right", "facet-extra", "hi-light-grey", { "glyphicon-collapse-up": !collapse, "glyphicon-collapse-down": collapse }) }),
+        _react2["default"].createElement(
+          "h2",
+          { onClick: this.toggleExpand.bind(this), style: { cursor: "pointer" } },
+          label
+        ),
+        _react2["default"].createElement(
+          "div",
+          { style: { display: collapse ? "none" : "block" } },
+          _react2["default"].createElement(_rangeSlider2["default"], { lowerLimit: this.getPercentage(range, filterRange[0]), onChange: this.onRangeChange.bind(this), upperLimit: this.getPercentage(range, filterRange[1]) }),
+          _react2["default"].createElement(
+            "span",
+            null,
+            filterRange[0]
+          ),
+          _react2["default"].createElement(
+            "span",
+            { className: "pull-right" },
+            filterRange[1]
+          )
+        )
+      );
+    }
+  }]);
+
+  return RangeFacet;
+})(_react2["default"].Component);
+
+RangeFacet.defaultProps = {
+  value: []
+};
+
+RangeFacet.propTypes = {
+  collapse: _react2["default"].PropTypes.bool,
+  facets: _react2["default"].PropTypes.array.isRequired,
+  field: _react2["default"].PropTypes.string.isRequired,
+  label: _react2["default"].PropTypes.string,
+  onChange: _react2["default"].PropTypes.func,
+  onSetCollapse: _react2["default"].PropTypes.func,
+  value: _react2["default"].PropTypes.array
+};
+
+exports["default"] = RangeFacet;
+module.exports = exports["default"];
+
+},{"./range-slider":36,"classnames":"classnames","react":"react"}],36:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactDom = require("react-dom");
+
+var _reactDom2 = _interopRequireDefault(_reactDom);
+
+var MOUSE_DOWN = 0;
+var MOUSE_UP = 1;
+
+var styles = {
+  slider: {
+    "MozUserSelect": "none",
+    "WebkitUserSelect": "none",
+    "MsUserSelect": "none",
+    "UserSelect": "none",
+    "WebkitUserDrag": "none",
+    "userDrag": "none",
+    "cursor": "pointer",
+    width: "100%",
+    stroke: "#f1ebe6",
+    fill: "#f1ebe6"
+  }
+};
+
+var RangeSlider = (function (_React$Component) {
+  _inherits(RangeSlider, _React$Component);
+
+  function RangeSlider(props) {
+    _classCallCheck(this, RangeSlider);
+
+    _get(Object.getPrototypeOf(RangeSlider.prototype), "constructor", this).call(this, props);
+    this.mouseState = MOUSE_UP;
+    this.mouseUpListener = this.onMouseUp.bind(this);
+    this.mouseMoveListener = this.onMouseMove.bind(this);
+    this.touchMoveListener = this.onTouchMove.bind(this);
+
+    this.state = _extends({}, this.propsToState(this.props), { hoverState: null });
+  }
+
+  _createClass(RangeSlider, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      window.addEventListener("mouseup", this.mouseUpListener);
+      window.addEventListener("mousemove", this.mouseMoveListener);
+      window.addEventListener("touchend", this.mouseUpListener);
+      window.addEventListener("touchmove", this.touchMoveListener);
+    }
+  }, {
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(nextProps) {
+      this.setState(this.propsToState(nextProps));
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      window.removeEventListener("mouseup", this.mouseUpListener);
+      window.removeEventListener("mousemove", this.mouseMoveListener);
+      window.removeEventListener("touchend", this.mouseUpListener);
+      window.removeEventListener("touchmove", this.touchMoveListener);
+    }
+  }, {
+    key: "propsToState",
+    value: function propsToState(props) {
+      var lowerLimit = props.lowerLimit || 0;
+      var upperLimit = props.upperLimit || 1;
+      return {
+        lowerLimit: lowerLimit,
+        upperLimit: upperLimit
+      };
+    }
+  }, {
+    key: "getPositionForLimit",
+    value: function getPositionForLimit(pageX) {
+      var rect = _reactDom2["default"].findDOMNode(this).getBoundingClientRect();
+      if (rect.width > 0) {
+        var percentage = (pageX - rect.left) / rect.width;
+        if (percentage > 1) {
+          percentage = 1;
+        } else if (percentage < 0) {
+          percentage = 0;
+        }
+
+        if (this.state.hoverState === "lowerLimit") {
+          if (percentage >= this.state.upperLimit) {
+            percentage = this.state.upperLimit;
+          }
+          return { lowerLimit: percentage };
+        } else if (this.state.hoverState === "upperLimit") {
+          if (percentage <= this.state.lowerLimit) {
+            percentage = this.state.lowerLimit;
+          }
+          return { upperLimit: percentage };
+        }
+      }
+      return null;
+    }
+  }, {
+    key: "setRange",
+    value: function setRange(pageX) {
+      var posForLim = this.getPositionForLimit(pageX);
+      if (posForLim !== null) {
+        this.setState(posForLim);
+        this.props.onChange(_extends({}, this.state, { refresh: false }));
+      }
+    }
+  }, {
+    key: "onMouseDown",
+    value: function onMouseDown(target, ev) {
+      this.mouseState = MOUSE_DOWN;
+      this.setState({ hoverState: target });
+      return ev.preventDefault();
+    }
+  }, {
+    key: "onMouseMove",
+    value: function onMouseMove(ev) {
+      if (this.mouseState === MOUSE_DOWN) {
+        this.setRange(ev.pageX);
+        return ev.preventDefault();
+      }
+    }
+  }, {
+    key: "onTouchMove",
+    value: function onTouchMove(ev) {
+      if (this.mouseState === MOUSE_DOWN) {
+        this.setRange(ev.touches[0].pageX);
+        return ev.preventDefault();
+      }
+    }
+  }, {
+    key: "onMouseUp",
+    value: function onMouseUp() {
+      if (this.mouseState === MOUSE_DOWN) {
+        this.props.onChange(_extends({}, this.state, { refresh: true }));
+      }
+      this.setState({ hoverState: null });
+      this.mouseState = MOUSE_UP;
+    }
+  }, {
+    key: "getRangePath",
+    value: function getRangePath() {
+      return "M" + (8 + Math.floor(this.state.lowerLimit * 400)) + " 13 L " + (Math.ceil(this.state.upperLimit * 400) - 8) + " 13 Z";
+    }
+  }, {
+    key: "getRangeCircle",
+    value: function getRangeCircle(key) {
+      var percentage = this.state[key];
+      return _react2["default"].createElement("circle", {
+        className: this.state.hoverState === key ? "hovering" : "",
+        cx: percentage * 400, cy: "13",
+        onMouseDown: this.onMouseDown.bind(this, key),
+        onTouchStart: this.onMouseDown.bind(this, key),
+        r: "13" });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var keys = this.state.hoverState === "lowerLimit" ? ["upperLimit", "lowerLimit"] : ["lowerLimit", "upperLimit"];
+      return _react2["default"].createElement(
+        "svg",
+        { className: "facet-range-slider", viewBox: "0 0 400 26" },
+        _react2["default"].createElement("path", { d: "M0 0 L 0 26 Z", fill: "transparent" }),
+        _react2["default"].createElement("path", { d: "M400 0 L 400 26 Z", fill: "transparent" }),
+        _react2["default"].createElement("path", { d: "M0 13 L 400 13 Z", fill: "transparent" }),
+        _react2["default"].createElement(
+          "g",
+          { className: "range-line" },
+          _react2["default"].createElement("path", {
+            className: this.state.hoverState === "bar" ? "hovering" : "",
+            d: this.getRangePath()
+          }),
+          this.getRangeCircle(keys[0]),
+          this.getRangeCircle(keys[1])
+        )
+      );
+    }
+  }]);
+
+  return RangeSlider;
+})(_react2["default"].Component);
+
+RangeSlider.propTypes = {
+  lowerLimit: _react2["default"].PropTypes.number,
+  onChange: _react2["default"].PropTypes.func.isRequired,
+  upperLimit: _react2["default"].PropTypes.number
+};
+
+exports["default"] = RangeSlider;
+module.exports = exports["default"];
+
+},{"react":"react","react-dom":"react-dom"}],37:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var TextSearch = (function (_React$Component) {
+  _inherits(TextSearch, _React$Component);
+
+  function TextSearch(props) {
+    _classCallCheck(this, TextSearch);
+
+    _get(Object.getPrototypeOf(TextSearch.prototype), "constructor", this).call(this, props);
+
+    this.state = {
+      value: props.value || ""
+    };
+  }
+
+  _createClass(TextSearch, [{
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(nextProps) {
+      this.setState({
+        value: nextProps.value
+      });
+    }
+  }, {
+    key: "handleInputChange",
+    value: function handleInputChange(ev) {
+      this.setState({
+        value: ev.target.value
+      });
+    }
+  }, {
+    key: "handleInputKeyDown",
+    value: function handleInputKeyDown(ev) {
+      if (ev.keyCode === 13) {
+        this.handleSubmit();
+      }
+    }
+  }, {
+    key: "handleSubmit",
+    value: function handleSubmit() {
+      this.props.onChange(this.props.field, this.state.value);
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var label = this.props.label;
+
+      return _react2["default"].createElement(
+        "div",
+        { className: "facet" },
+        _react2["default"].createElement(
+          "div",
+          { className: "input-group" },
+          _react2["default"].createElement("input", { className: "form-control",
+            placeholder: label || "",
+            onChange: this.handleInputChange.bind(this),
+            onKeyDown: this.handleInputKeyDown.bind(this),
+            value: this.state.value || "" }),
+          _react2["default"].createElement(
+            "span",
+            { className: "input-group-btn" },
+            _react2["default"].createElement(
+              "button",
+              { className: "btn btn-default", type: "button", onClick: this.handleSubmit.bind(this) },
+              _react2["default"].createElement("span", { className: "glyphicon glyphicon-search" })
+            )
+          )
+        )
+      );
+    }
+  }]);
+
+  return TextSearch;
+})(_react2["default"].Component);
+
+TextSearch.defaultProps = {
+  field: null
+};
+
+TextSearch.propTypes = {
+  field: _react2["default"].PropTypes.string.isRequired,
+  label: _react2["default"].PropTypes.string,
+  onChange: _react2["default"].PropTypes.func
+};
+
+exports["default"] = TextSearch;
+module.exports = exports["default"];
+
+},{"react":"react"}],38:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var _fieldsSelectField = require("../fields/select-field");
+
+var _fieldsSelectField2 = _interopRequireDefault(_fieldsSelectField);
+
+var SortMenu = (function (_React$Component) {
+  _inherits(SortMenu, _React$Component);
+
+  function SortMenu() {
+    _classCallCheck(this, SortMenu);
+
+    _get(Object.getPrototypeOf(SortMenu.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(SortMenu, [{
+    key: "render",
+    value: function render() {
+      var _this = this;
+
+      var _props = this.props;
+      var sortFields = _props.sortFields;
+      var onChange = _props.onChange;
+
+      if (sortFields.length === 0) {
+        return null;
+      }
+
+      var value = sortFields.find(function (sf) {
+        return sf.value;
+      });
+
+      return _react2["default"].createElement(
+        "div",
+        { className: "pull-right" },
+        value ? _react2["default"].createElement(
+          "span",
+          { className: "pull-right btn-group" },
+          _react2["default"].createElement(
+            "button",
+            { className: (0, _classnames2["default"])("btn", "btn-default", { active: value.value === "asc" }),
+              onClick: function () {
+                return _this.props.onChange(value.field, "asc");
+              } },
+            "asc"
+          ),
+          _react2["default"].createElement(
+            "button",
+            { className: (0, _classnames2["default"])("btn", "btn-default", { active: value.value === "desc" }),
+              onClick: function () {
+                return _this.props.onChange(value.field, "desc");
+              } },
+            "desc"
+          )
+        ) : null,
+        _react2["default"].createElement(
+          "span",
+          { className: "pull-right" },
+          _react2["default"].createElement(
+            _fieldsSelectField2["default"],
+            { btnClass: "btn-blank", onChange: function (sortField) {
+                return onChange(sortField, "asc");
+              },
+              onClear: function () {
+                return onChange(value.field, null);
+              }, value: value ? value.field : null },
+            _react2["default"].createElement(
+              "span",
+              { type: "placeholder" },
+              "Order"
+            ),
+            sortFields.map(function (sortField) {
+              return _react2["default"].createElement(
+                "span",
+                { key: sortField.field, value: sortField.field },
+                sortField.label
+              );
+            })
+          )
+        )
+      );
+    }
+  }]);
+
+  return SortMenu;
+})(_react2["default"].Component);
+
+SortMenu.defaultProps = {
+  sortFields: []
+};
+
+SortMenu.propTypes = {
+  onChange: _react2["default"].PropTypes.func,
+  sortFields: _react2["default"].PropTypes.array
+};
+
+exports["default"] = SortMenu;
+module.exports = exports["default"];
+
+},{"../fields/select-field":39,"classnames":"classnames","react":"react"}],39:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactDom = require("react-dom");
+
+var _reactDom2 = _interopRequireDefault(_reactDom);
+
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var SelectField = (function (_React$Component) {
+  _inherits(SelectField, _React$Component);
+
+  function SelectField(props) {
+    _classCallCheck(this, SelectField);
+
+    _get(Object.getPrototypeOf(SelectField.prototype), "constructor", this).call(this, props);
+
+    this.state = {
+      isOpen: false
+    };
+    this.documentClickListener = this.handleDocumentClick.bind(this);
+  }
+
+  _createClass(SelectField, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      document.addEventListener("click", this.documentClickListener, false);
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      document.removeEventListener("click", this.documentClickListener, false);
+    }
+  }, {
+    key: "toggleSelect",
+    value: function toggleSelect() {
+      if (this.state.isOpen) {
+        this.setState({ isOpen: false });
+      } else {
+        this.setState({ isOpen: true });
+      }
+    }
+  }, {
+    key: "handleDocumentClick",
+    value: function handleDocumentClick(ev) {
+      var isOpen = this.state.isOpen;
+
+      if (isOpen && !_reactDom2["default"].findDOMNode(this).contains(ev.target)) {
+        this.setState({
+          isOpen: false
+        });
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this = this;
+
+      var _props = this.props;
+      var onChange = _props.onChange;
+      var onClear = _props.onClear;
+      var value = _props.value;
+      var btnClass = _props.btnClass;
+      var noClear = _props.noClear;
+
+      var selectedOption = _react2["default"].Children.toArray(this.props.children).filter(function (opt) {
+        return opt.props.value === value;
+      });
+      var placeholder = _react2["default"].Children.toArray(this.props.children).filter(function (opt) {
+        return opt.props.type === "placeholder";
+      });
+      var otherOptions = _react2["default"].Children.toArray(this.props.children).filter(function (opt) {
+        return opt.props.value && opt.props.value !== value;
+      });
+
+      return _react2["default"].createElement(
+        "div",
+        { className: (0, _classnames2["default"])("dropdown", { open: this.state.isOpen }) },
+        _react2["default"].createElement(
+          "button",
+          { className: (0, _classnames2["default"])("btn", "dropdown-toggle", btnClass || "btn-blank"), onClick: this.toggleSelect.bind(this) },
+          selectedOption.length ? selectedOption : placeholder,
+          " ",
+          _react2["default"].createElement("span", { className: "caret" })
+        ),
+        _react2["default"].createElement(
+          "ul",
+          { className: "dropdown-menu" },
+          value && !noClear ? _react2["default"].createElement(
+            "li",
+            null,
+            _react2["default"].createElement(
+              "a",
+              { onClick: function () {
+                  onClear();_this.toggleSelect();
+                } },
+              "- clear -"
+            )
+          ) : null,
+          otherOptions.map(function (option, i) {
+            return _react2["default"].createElement(
+              "li",
+              { key: i },
+              _react2["default"].createElement(
+                "a",
+                { style: { cursor: "pointer" }, onClick: function () {
+                    onChange(option.props.value);_this.toggleSelect();
+                  } },
+                option
+              )
+            );
+          })
+        )
+      );
+    }
+  }]);
+
+  return SelectField;
+})(_react2["default"].Component);
+
+SelectField.propTypes = {
+  onChange: _react2["default"].PropTypes.func,
+  onClear: _react2["default"].PropTypes.func,
+  value: _react2["default"].PropTypes.any,
+  btnClass: _react2["default"].PropTypes.string,
+  noClear: _react2["default"].PropTypes.bool
+};
+
+exports["default"] = SelectField;
+module.exports = exports["default"];
+
+},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],40:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+function Footer(props) {
+  var hiLogo = _react2["default"].createElement(
+    "div",
+    { className: "col-sm-1 col-md-1" },
+    _react2["default"].createElement("img", { className: "hi-logo", src: "/logo-huygens-ing.svg" })
+  );
+
+  var clariahLogo = _react2["default"].createElement(
+    "div",
+    { className: "col-sm-1 col-md-1" },
+    _react2["default"].createElement("img", { className: "logo", src: "/logo-clariah.svg" })
+  );
+
+  var footerBody = _react2["default"].Children.count(props.children) > 0 ? _react2["default"].Children.map(props.children, function (child, i) {
+    return _react2["default"].createElement(
+      "div",
+      { className: "white-bar" },
+      _react2["default"].createElement(
+        "div",
+        { className: "container" },
+        i === _react2["default"].Children.count(props.children) - 1 ? _react2["default"].createElement(
+          "div",
+          { className: "row" },
+          hiLogo,
+          _react2["default"].createElement(
+            "div",
+            { className: "col-sm-10 col-md-10 text-center" },
+            child
+          ),
+          clariahLogo
+        ) : _react2["default"].createElement(
+          "div",
+          { className: "row" },
+          child
+        )
+      )
+    );
+  }) : _react2["default"].createElement(
+    "div",
+    { className: "white-bar" },
+    _react2["default"].createElement(
+      "div",
+      { className: "container" },
+      _react2["default"].createElement(
+        "div",
+        { className: "row" },
+        hiLogo,
+        _react2["default"].createElement("div", { className: "col-sm-10 col-md-10 text-center" }),
+        clariahLogo
+      )
+    )
+  );
+
+  return _react2["default"].createElement(
+    "footer",
+    { className: "footer" },
+    footerBody
+  );
+}
+
+exports["default"] = Footer;
+module.exports = exports["default"];
+
+},{"react":"react"}],41:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _footer = require("./footer");
+
+var _footer2 = _interopRequireDefault(_footer);
+
+var FOOTER_HEIGHT = 81;
+
+function Page(props) {
+  var footers = _react2["default"].Children.toArray(props.children).filter(function (child) {
+    return child.props.type === "footer-body";
+  });
+
+  return _react2["default"].createElement(
+    "div",
+    { className: "page" },
+    _react2["default"].createElement(
+      "div",
+      { className: "basic-margin hi-Green container-fluid" },
+      _react2["default"].createElement(
+        "nav",
+        { className: "navbar " },
+        _react2["default"].createElement(
+          "div",
+          { className: "container" },
+          _react2["default"].createElement(
+            "div",
+            { className: "navbar-header" },
+            " ",
+            _react2["default"].createElement(
+              "a",
+              { className: "navbar-brand", href: "#" },
+              _react2["default"].createElement("img", { src: "/logo-timbuctoo.svg", className: "logo", alt: "timbuctoo" })
+            ),
+            " "
+          ),
+          _react2["default"].createElement(
+            "div",
+            { id: "navbar", className: "navbar-collapse collapse" },
+            _react2["default"].createElement(
+              "ul",
+              { className: "nav navbar-nav navbar-right" },
+              props.username ? _react2["default"].createElement(
+                "li",
+                null,
+                _react2["default"].createElement(
+                  "a",
+                  { href: props.userlocation || '#' },
+                  _react2["default"].createElement("span", { className: "glyphicon glyphicon-user" }),
+                  " ",
+                  props.username
+                )
+              ) : null
+            )
+          )
+        )
+      )
+    ),
+    _react2["default"].createElement(
+      "div",
+      { style: { marginBottom: FOOTER_HEIGHT * footers.length + "px" } },
+      _react2["default"].Children.toArray(props.children).filter(function (child) {
+        return child.props.type !== "footer-body";
+      })
+    ),
+    _react2["default"].createElement(
+      _footer2["default"],
+      null,
+      footers
+    )
+  );
+}
+
+exports["default"] = Page;
+module.exports = exports["default"];
+
+},{"./footer":40,"react":"react"}],42:[function(require,module,exports){
 "use strict";
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
@@ -5173,7 +6810,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_storeStore2["default"].dispatch((0, _actionsMetadata.setVre)(getVreId(), checkForIndex));
 });
 
-},{"./actions/metadata":27,"./actions/solr":28,"./router":31,"./store/store":34,"react-dom":"react-dom"}],31:[function(require,module,exports){
+},{"./actions/metadata":27,"./actions/solr":28,"./router":43,"./store/store":46,"react-dom":"react-dom"}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5233,7 +6870,7 @@ var router = _react2["default"].createElement(
 
 exports["default"] = router;
 
-},{"./actions":26,"./components/app":29,"./store/store":34,"react":"react","react-redux":"react-redux","react-router":"react-router"}],32:[function(require,module,exports){
+},{"./actions":26,"./components/app":29,"./store/store":46,"react":"react","react-redux":"react-redux","react-router":"react-router"}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5272,7 +6909,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],33:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5312,7 +6949,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],34:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5349,5 +6986,5 @@ var store = (0, _redux.createStore)(data, {}, (0, _redux.applyMiddleware)(_redux
 exports["default"] = store;
 module.exports = exports["default"];
 
-},{"./metadata-reducer":32,"./solr-reducer":33,"redux":16,"redux-thunk":10}]},{},[30])(30)
+},{"./metadata-reducer":44,"./solr-reducer":45,"redux":16,"redux-thunk":10}]},{},[42])(42)
 });
