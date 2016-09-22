@@ -16,8 +16,8 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 class ScaffoldPersonDisplayName extends ReadableProperty {
   private static final List<String> NAME_PARTS = Lists.newArrayList(
     "preposition",
-    "intraposition",
     "givenName",
+    "intraposition",
     "familyName",
     "postposition"
   );
