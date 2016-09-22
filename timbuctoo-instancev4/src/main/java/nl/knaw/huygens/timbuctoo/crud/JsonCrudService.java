@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
@@ -89,7 +90,7 @@ public class JsonCrudService {
     UUID targetId = asUuid(input, "^targetId");
     UUID typeId = asUuid(input, "^typeId");
 
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       try {
         UUID relationId = db.acceptRelation(
           sourceId,
@@ -178,7 +179,7 @@ public class JsonCrudService {
   }
 
   private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
-    try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
+    try (DataAccessMethods dataAccessMethods = dataAccess.start()) {
 
       try {
         ReadEntity entity = dataAccessMethods.getEntity(id, rev, collection,
@@ -211,7 +212,7 @@ public class JsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
+    try (DataAccessMethods dataAccessMethods = dataAccess.start()) {
       Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start, withRelations,
         (entity1, entityVertex) -> {
 
@@ -264,7 +265,7 @@ public class JsonCrudService {
       }
     }
 
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       try {
         db.replaceRelation(collection, id, rev.asInt(), accepted.asBoolean(), userId, clock.instant());
         db.success();
@@ -300,7 +301,7 @@ public class JsonCrudService {
         throw new IOException(name + " is not a valid property");
       }
     }
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       try {
         db.replaceEntity(collection, userId, updateEntity);
         db.success();
@@ -325,7 +326,7 @@ public class JsonCrudService {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       try {
         db.deleteEntity(collection, id, userId, clock.instant());
 

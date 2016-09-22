@@ -35,7 +35,7 @@ public class TimbuctooDbAccess {
     throws AuthorizationUnavailableException, AuthorizationException, IOException {
     checkIfAllowedToWrite(userId, collection);
     UUID id = UUID.randomUUID();
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       try {
         db.createEntity(collection, baseCollection, createEntity, userId, clock.instant(), id);
         db.success();

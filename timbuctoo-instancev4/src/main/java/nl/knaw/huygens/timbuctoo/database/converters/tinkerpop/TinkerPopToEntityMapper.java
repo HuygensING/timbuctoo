@@ -3,7 +3,8 @@ package nl.knaw.huygens.timbuctoo.database.converters.tinkerpop;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.CustomEntityProperties;
+import nl.knaw.huygens.timbuctoo.database.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.database.dto.DisplayNameHelper;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntityImpl;
@@ -47,12 +48,12 @@ public class TinkerPopToEntityMapper {
   private final Collection collection;
   private final GraphTraversalSource traversalSource;
   private final Vres mappings;
-  private final DataAccess.CustomEntityProperties customEntityProperties;
-  private final DataAccess.CustomRelationProperties customRelationProperties;
+  private final CustomEntityProperties customEntityProperties;
+  private final CustomRelationProperties customRelationProperties;
 
   public TinkerPopToEntityMapper(Collection collection, GraphTraversalSource traversalSource, Vres mappings,
-                                 DataAccess.CustomEntityProperties customEntityProperties,
-                                 DataAccess.CustomRelationProperties customRelationProperties) {
+                                 CustomEntityProperties customEntityProperties,
+                                 CustomRelationProperties customRelationProperties) {
     this.collection = collection;
     this.traversalSource = traversalSource;
     this.mappings = mappings;

@@ -53,7 +53,7 @@ public class LoadSaveVreTest {
   }
 
   private List<Vertex> save(Vre vre, Tuple<DataAccess, Graph> dataAccess) {
-    try (DataAccess.DataAccessMethods db = dataAccess.getLeft().start()) {
+    try (DataAccessMethods db = dataAccess.getLeft().start()) {
       db.saveVre(vre);
       db.success();
 
@@ -62,7 +62,7 @@ public class LoadSaveVreTest {
   }
 
   private Vre load(Tuple<DataAccess, Graph> dataAccess) {
-    try (DataAccess.DataAccessMethods db = dataAccess.getLeft().start()) {
+    try (DataAccessMethods db = dataAccess.getLeft().start()) {
       return db.loadVres().getVre("VreName");
     }
   }

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
@@ -32,7 +33,7 @@ public class RdfImporterTest {
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
     TinkerpopGraphManager graphWrapper = newGraph().wrap();
     DataAccess dataAccess = mock(DataAccess.class);
-    DataAccess.DataAccessMethods db = mock(DataAccess.DataAccessMethods.class);
+    DataAccessMethods db = mock(DataAccessMethods.class);
     given(dataAccess.start()).willReturn(db);
     Mockito.doCallRealMethod().when(dataAccess).execute(org.mockito.Matchers.any());
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);

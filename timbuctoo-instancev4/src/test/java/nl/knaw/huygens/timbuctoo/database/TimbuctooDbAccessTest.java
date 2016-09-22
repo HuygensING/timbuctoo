@@ -4,7 +4,6 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
-import nl.knaw.huygens.timbuctoo.database.DataAccess.DataAccessMethods;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import org.slf4j.Logger;
@@ -26,7 +26,7 @@ public class ScaffoldMigrator {
   public void execute() {
     //The migrations are executed first, so those vertices _will_ be present, even on a new empty database
     //The code below will add vertices, so a second launch will not run this code
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       if (db.databaseIsEmptyExceptForMigrations()) {
         LOG.info("Setting up a new scaffold for empty database");
         Vres mappings = new VresBuilder()
