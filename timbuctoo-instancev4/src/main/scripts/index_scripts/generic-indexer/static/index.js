@@ -5639,6 +5639,7 @@ var SearchFields = (function (_React$Component) {
             collapse: searchField.collapse,
             onFacetSortChange: onFacetSortChange, onSetCollapse: onSetCollapse,
             query: query, truncateFacetListsAt: truncateFacetListsAt,
+            facetSort: searchField.facetSort,
             field: searchField.field, label: searchField.label, value: searchField.value });
         })
       );
