@@ -6,7 +6,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Map;
 
 public interface Saver {
-  Vertex addEntity(Vertex collection, Map<String, Object> currentProperties);
+  Vertex addEntity(Vertex collection, Map<String, ?> currentProperties);
 
   Vertex addCollection(String collectionName);
 
