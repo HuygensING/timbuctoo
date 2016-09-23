@@ -109,10 +109,6 @@ public class Database {
     Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
     Entity entity = new Entity(vertex, getCollections(vertex, vreName));
     entity.addToCollection(collection);
-    Optional<Collection> archetype = collection.getArchetype();
-    if (archetype.isPresent()) {
-      entity.addToCollection(archetype.get());
-    }
 
     org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
     rdfIndex.add(neo4jNode, vreName, nodeUri);
