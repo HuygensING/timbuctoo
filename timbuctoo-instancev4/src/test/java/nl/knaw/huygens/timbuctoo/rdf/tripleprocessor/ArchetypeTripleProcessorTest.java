@@ -58,19 +58,11 @@ public class ArchetypeTripleProcessorTest {
   }
 
   @Test
-  public void processAddsTheEntitiesOfTheCollectionToTheNewArchetype() {
+  public void processMovesTheEntitiesOfTheCollectionToTheNewArchetype() {
     instance.process(VRE_NAME, true, triple);
 
-    verify(entity1).addToCollection(archetypeCollection);
-    verify(entity2).addToCollection(archetypeCollection);
-  }
-
-  @Test
-  public void processRemovesThePreviousArchetypeOfTheCollectionFromTheEntities() {
-    instance.process(VRE_NAME, true, triple);
-
-    verify(entity1).removeFromCollection(previousArchetype);
-    verify(entity2).removeFromCollection(previousArchetype);
+    verify(entity1).moveToCollection(previousArchetype, archetypeCollection);
+    verify(entity2).moveToCollection(previousArchetype, archetypeCollection);
   }
 
 }

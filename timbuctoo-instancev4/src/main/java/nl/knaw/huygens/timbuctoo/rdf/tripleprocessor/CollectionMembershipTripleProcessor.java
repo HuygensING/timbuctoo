@@ -25,7 +25,6 @@ class CollectionMembershipTripleProcessor {
       collection = database.getDefaultCollection(vreName);
     }
 
-    entity.addToCollection(collection);
-    entity.removeFromCollection(prevCollection);
+    entity.moveToCollection(prevCollection, collection);
   }
 }

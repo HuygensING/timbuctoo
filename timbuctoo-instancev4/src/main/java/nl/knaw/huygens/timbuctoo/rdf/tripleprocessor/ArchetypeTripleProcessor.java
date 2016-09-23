@@ -38,8 +38,7 @@ class ArchetypeTripleProcessor {
 
     Set<Entity> entities = database.findEntitiesByCollection(collection);
     entities.forEach(entity -> {
-      entity.addToCollection(archetypeCollection);
-      entity.removeFromCollection(previousArchetype);
+      entity.moveToCollection(previousArchetype, archetypeCollection);
     });
   }
 }

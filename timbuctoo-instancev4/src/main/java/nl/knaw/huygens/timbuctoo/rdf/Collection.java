@@ -222,4 +222,12 @@ public class Collection {
     String collectionPropertyName = getDescription().createPropertyName(propertyName);
     vertex.property(collectionPropertyName).remove();
   }
+
+  public Optional<String> getUnprefixedProperty(String propertyName) {
+    if (propertyName.startsWith(collectionDescription.getPrefix() + "_")) {
+      return Optional.of(propertyName.replaceFirst("^" + collectionDescription.getPrefix() + "_", ""));
+    } else {
+      return Optional.empty();
+    }
+  }
 }

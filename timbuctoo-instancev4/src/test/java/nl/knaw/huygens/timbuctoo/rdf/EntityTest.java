@@ -57,20 +57,22 @@ public class EntityTest {
   }
 
   @Test
-  public void addToCollectionAddsTheCurrentPropertiesOfTheEntityToTheNewCollection() {
+  public void moveToCollectionAddsTheCurrentPropertiesOfTheEntityToTheNewCollection() {
     Vertex vertex = mock(Vertex.class);
+    Collection oldCollection = mock(Collection.class);
+    when(oldCollection.getArchetype()).thenReturn(Optional.empty());
+
     Collection newCollection = mock(Collection.class);
     Collection archetypeCollection = mock(Collection.class);
     when(newCollection.getArchetype()).thenReturn(Optional.of(archetypeCollection));
-    Collection otherCollection = mock(Collection.class);
-    Set<Collection> collections = Sets.newHashSet(otherCollection);
+    Set<Collection> collections = Sets.newHashSet(oldCollection);
     PropertyHelper propertyHelper = mock(PropertyHelper.class);
     TypesHelper typesHelper = mock(TypesHelper.class);
     Entity instance = new Entity(vertex, collections, typesHelper, propertyHelper);
 
-    instance.addToCollection(newCollection);
+    instance.moveToCollection(oldCollection, newCollection);
 
-    verify(propertyHelper).setPropertiesForNewCollection(vertex, newCollection, collections);
+    verify(propertyHelper).movePropertiesToNewCollection(vertex, oldCollection, newCollection);
   }
 
   @Test
