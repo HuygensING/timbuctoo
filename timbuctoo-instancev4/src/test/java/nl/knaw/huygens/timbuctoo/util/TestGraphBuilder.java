@@ -1,40 +1,29 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import nl.knaw.huygens.timbuctoo.server.TestableTinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
-import org.apache.tinkerpop.gremlin.process.traversal.P;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.process.traversal.strategy.decoration.SubgraphStrategy;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Transaction;
 import org.neo4j.test.TestGraphDatabaseFactory;
 import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static java.util.UUID.randomUUID;
 import static nl.knaw.huygens.timbuctoo.util.Neo4jHelper.cleanDb;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
+//FIXME should become a rule
 public class TestGraphBuilder {
 
-  private static final SubgraphStrategy LATEST_ELEMENTS =
-    SubgraphStrategy.build().edgeCriterion(has("isLatest", true)).vertexCriterion(has("isLatest", true)).create();
-
   private static GraphDatabaseService neo4jDb = new TestGraphDatabaseFactory().newImpermanentDatabase();
-  private final List<VertexBuilder> vertexBuilders = new ArrayList<>();
-  private final Map<String, VertexBuilder> identifiableVertexBuilders = new HashMap<>();
-
-  {
-    neo4jDb.beginTx();
-  }
+  private final List<GraphFragmentBuilder> graphFragmentBuilders = new LinkedList<>();
+  private static Transaction trans;
 
   // FIXME do use the label to map the relations
   private TestGraphBuilder() {
@@ -44,7 +33,7 @@ public class TestGraphBuilder {
     return new TestGraphBuilder();
   }
 
-  public Graph build() {
+  public Neo4jGraph build() {
     //When creating a new database you have to close the previous one, because
     //each database will create a new thread. This fills up the available
     //threads when running thousands of tests.
@@ -53,82 +42,49 @@ public class TestGraphBuilder {
     //second to 3 minutes on a machine with an SSD) so instead we now re-use
     //the same neo4j database that we clear when the function to create a new
     //one is called.
+    if (trans != null) {
+      trans.close();
+    }
     cleanDb(neo4jDb);
+
     Neo4jGraphAPIImpl neo4jGraphApi = new Neo4jGraphAPIImpl(neo4jDb);
     Neo4jGraph neo4jGraph = Neo4jGraph.open(neo4jGraphApi);
-    Map<String, Vertex> identifiableVertices = new HashMap<>();
-    //Create all identifiable vertices
-    identifiableVertexBuilders.forEach(
-      (key, builder) -> identifiableVertices.put(key, builder.build(neo4jGraph.addVertex()))
-    );
-    //now we can add the links
-    identifiableVertexBuilders.forEach(
-      (key, builder) -> builder.setRelations(identifiableVertices.get(key), identifiableVertices)
-    );
-    //finally add all the non-identifiable vertices
-    vertexBuilders.forEach(
-      (builder) -> {
 
-        Vertex vertex;
-        if (builder.getLabels().size() == 1) {
-          // If there is exactly one label, it is still a valid tinkerpop vertex and needs to be passed to the
-          // addVertex method
-          vertex = neo4jGraph.addVertex(builder.getLabels().get(0));
-        } else {
-          vertex = neo4jGraph.addVertex();
+    try (org.apache.tinkerpop.gremlin.structure.Transaction tx = neo4jGraph.tx()) {
+      final List<RelationData> requestedRelations = new LinkedList<>();
+      final Map<String, Vertex> identifiableVertices = new HashMap<>();
+      //Create all identifiable vertices
+      graphFragmentBuilders.forEach(
+        builder -> {
+          Tuple<Vertex, String> result = builder.build(neo4jGraph, requestedRelations::add);
+          identifiableVertices.put(result.getRight(), result.getLeft());
         }
+      );
+      //then we can create the relations between them
+      requestedRelations.forEach(
+        relationData -> relationData.makeRelation(identifiableVertices)
+      );
+      tx.commit();
+    }
 
-        builder.build(vertex);
-        builder.setRelations(vertex, identifiableVertices);
-      }
-    );
+    trans = neo4jDb.beginTx();
     return neo4jGraph;
   }
 
-  public GraphWrapper wrap() {
-    final Graph graph = build();
-    return new GraphWrapper() {
-      @Override
-      public Graph getGraph() {
-        return graph;
-      }
-
-      @Override
-      public GraphTraversalSource getLatestState() {
-        return GraphTraversalSource.build().with(LATEST_ELEMENTS).create(graph);
-      }
-
-      @Override
-      public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
-        if (entityTypeNames.length == 1) {
-          String type = entityTypeNames[0];
-          return getLatestState().V().has(T.label, LabelP.of(type));
-        } else {
-          P<String> labels = LabelP.of(entityTypeNames[0]);
-          for (int i = 1; i < entityTypeNames.length; i++) {
-            labels = labels.or(LabelP.of(entityTypeNames[i]));
-          }
-
-          return getLatestState().V().has(T.label, labels);
-        }
-      }
-    };
+  public TinkerpopGraphManager wrap() {
+    final Neo4jGraph graph = build();
+    return new TestableTinkerpopGraphManager(neo4jDb, graph);
   }
 
   public TestGraphBuilder withVertex(String id, Consumer<VertexBuilder> vertexBuilderConfig) {
-    if (identifiableVertexBuilders.containsKey(id)) {
-      throw new RuntimeException("Key " + id + " is used twice");
-    }
-    VertexBuilder vb = new VertexBuilder();
+    VertexBuilder vb = new VertexBuilder(id);
     vertexBuilderConfig.accept(vb);
-    identifiableVertexBuilders.put(id, vb);
+    graphFragmentBuilders.add(vb);
     return this;
   }
 
   public TestGraphBuilder withVertex(Consumer<VertexBuilder> vertexBuilderConfig) {
-    VertexBuilder vb = new VertexBuilder();
-    vertexBuilderConfig.accept(vb);
-    vertexBuilders.add(vb);
-    return this;
+    return withVertex(randomUUID().toString(), vertexBuilderConfig);
   }
+
 }

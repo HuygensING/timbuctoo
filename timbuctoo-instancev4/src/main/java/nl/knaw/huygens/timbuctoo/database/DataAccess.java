@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntityImpl;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
@@ -125,7 +126,7 @@ public class DataAccess {
   }
 
   public interface CustomEntityProperties {
-    void execute(ReadEntity entity, Vertex entityVertex);
+    void execute(ReadEntityImpl entity, Vertex entityVertex);
   }
 
   public interface CustomRelationProperties {
@@ -555,6 +556,7 @@ public class DataAccess {
         .hasLabel(Vre.DATABASE_LABEL)
         .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
         .out("hasCollection")
+        .not(__.has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true))
         .union(
           __.out("hasDisplayName"),
           __.out("hasProperty"),
@@ -806,7 +808,9 @@ public class DataAccess {
 
         "relationtype_reflexive", relationType.isReflexive(),
         "relationtype_symmetric", relationType.isSymmetric(),
-        "relationtype_derived", relationType.isDerived()
+        "relationtype_derived", relationType.isDerived(),
+
+        "rdfUri", "http://timbuctoo.com/" + relationType.getName()
       );
     }
 

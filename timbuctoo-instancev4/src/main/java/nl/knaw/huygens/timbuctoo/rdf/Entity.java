@@ -7,7 +7,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Set;
 
 public class Entity {
-  private final Vertex vertex;
+  public final Vertex vertex;
   private final Set<Collection> collections;
   private final TypesHelper typesHelper;
   private final PropertyHelper propertyHelper;
@@ -36,12 +36,22 @@ public class Entity {
     newCollection.getArchetype().ifPresent(this::handleCollectionAdd);
   }
 
+  public void moveToCollection(Collection oldCollection, Collection newCollection) {
+    addToCollection(newCollection);
+    propertyHelper.movePropertiesToNewCollection(vertex, oldCollection, newCollection);
+    newCollection.getArchetype().ifPresent(newArchetype -> {
+      oldCollection.getArchetype().ifPresent(oldArchetype -> {
+        propertyHelper.movePropertiesToNewCollection(vertex, oldArchetype, newArchetype);
+      });
+    });
+    removeFromCollection(oldCollection);
+  }
+
   private void handleCollectionAdd(Collection newCollection) {
     collections.add(newCollection);
     newCollection.add(vertex);
 
     typesHelper.updateTypeInformation(vertex, collections);
-    propertyHelper.setPropertiesForNewCollection(vertex, newCollection, collections);
   }
 
   public Relation addRelation(RelationType relationType, Entity other) {

@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -57,9 +56,8 @@ public class CollectionHasEntityRelationChangeListenerTest {
         .withProperty("types", typesJson)
         .withTimId(createThisVertexName)
       );
-    final Graph graph = builder.build();
     final GraphWrapper graphWrapper = builder.wrap();
-    Vertex createdVertex = graph.traversal().V().has("tim_id", createThisVertexName).next();
+    Vertex createdVertex = graphWrapper.getGraph().traversal().V().has("tim_id", createThisVertexName).next();
 
     new CollectionHasEntityRelationChangeListener(graphWrapper).onCreate(createdVertex);
 
@@ -112,10 +110,9 @@ public class CollectionHasEntityRelationChangeListenerTest {
         .withIncomingRelation(Collection.HAS_ENTITY_RELATION_NAME, linkingNodePersonsName)
         .withIncomingRelation(Collection.HAS_ENTITY_RELATION_NAME, linkingNodeWwPersonsName)
       );
-    final Graph graph = builder.build();
     final GraphWrapper graphWrapper = builder.wrap();
 
-    Vertex updatedVertex = graph.traversal().V().has("tim_id", updateThisVertexName).next();
+    Vertex updatedVertex = graphWrapper.getGraph().traversal().V().has("tim_id", updateThisVertexName).next();
 
     new CollectionHasEntityRelationChangeListener(graphWrapper)
       .onUpdate(Optional.empty(), updatedVertex);
@@ -168,10 +165,9 @@ public class CollectionHasEntityRelationChangeListenerTest {
         .withTimId(updateThisVertexName)
         .withIncomingRelation(Collection.HAS_ENTITY_RELATION_NAME, linkingNodePersonsName)
       );
-    final Graph graph = builder.build();
     final GraphWrapper graphWrapper = builder.wrap();
 
-    Vertex updatedVertex = graph.traversal().V().has("tim_id", updateThisVertexName).next();
+    Vertex updatedVertex = graphWrapper.getGraph().traversal().V().has("tim_id", updateThisVertexName).next();
 
     new CollectionHasEntityRelationChangeListener(graphWrapper)
       .onUpdate(Optional.empty(), updatedVertex);

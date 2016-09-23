@@ -14,11 +14,13 @@ import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper.ExtraEntityMappingOptions;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper.ExtraRelationMappingOptions;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntityImpl;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
+import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -31,6 +33,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -99,14 +102,15 @@ public class WomenWritersJsonCrudService {
 
     @Override
     public void execute(ReadEntity readEntity, ObjectNode resultJson) {
-      resultJson.set("@authorLanguages",
-        jsnA(((Set<String>) readEntity.getExtraProperty("languages").orElse(Sets.newHashSet())).stream().map(
-          lang -> jsn(lang))));
+      Map<String, Object> extraProperties = readEntity.getExtraProperties();
+      Set<String> languages = (Set<String>) extraProperties.getOrDefault("languages", Sets.<String>newHashSet());
+
+      resultJson.set("@authorLanguages", jsnA(languages.stream().map(JsonBuilder::jsn)));
     }
 
 
     @Override
-    public void execute(ReadEntity entity, Vertex entityVertex) {
+    public void execute(ReadEntityImpl entity, Vertex entityVertex) {
       Set<String> languages = new HashSet<>();
       final Iterator<Edge> isCreatorOf = entityVertex.edges(Direction.IN, "isCreatedBy");
 

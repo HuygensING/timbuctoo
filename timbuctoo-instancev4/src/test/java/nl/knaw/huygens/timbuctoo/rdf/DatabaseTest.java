@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -55,22 +55,23 @@ public class DatabaseTest {
 
   @Test
   public void findOrCreateEntityCreateANewVertexWithTimbuctoosSystemProperties() {
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
-                                                            .withProperty("name", VRE_NAME))
-                                          .withVertex(v -> {
-                                            v.withLabel(Vre.DATABASE_LABEL);
-                                            v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
-                                            v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
-                                              "defaultArchetype");
-                                          })
-                                          .withVertex("defaultArchetype", v -> {
-                                            v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
-                                            v.withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts");
-                                            v.withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "entityCollection");
-                                          })
-                                          .withVertex("entityCollection", v -> {
-                                          })
-                                          .wrap();
+    TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+                                                                     .withProperty("name", VRE_NAME))
+                                                   .withVertex(v -> {
+                                                     v.withLabel(Vre.DATABASE_LABEL);
+                                                     v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
+                                                     v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
+                                                       "defaultArchetype");
+                                                   })
+                                                   .withVertex("defaultArchetype", v -> {
+                                                     v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
+                                                     v.withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts");
+                                                     v.withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME,
+                                                       "entityCollection");
+                                                   })
+                                                   .withVertex("entityCollection", v -> {
+                                                   })
+                                                   .wrap();
     final Database instance = new Database(graphWrapper, modifier);
 
     instance.findOrCreateEntity(VRE_NAME, entityNode);
@@ -88,7 +89,7 @@ public class DatabaseTest {
 
   @Test
   public void findOrCreateEntityAddsANewlyCreatedEntityToTheDefaultCollection() {
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+    TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty("name", VRE_NAME))
                                           .withVertex(v -> {
                                             v.withLabel(Vre.DATABASE_LABEL);
@@ -119,7 +120,7 @@ public class DatabaseTest {
 
   @Test
   public void findOrCreateEntityGivesABlankNodeADefaultUri() {
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+    TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty("name", VRE_NAME))
                                           .withVertex(v -> {
                                             v.withLabel(Vre.DATABASE_LABEL);
@@ -150,7 +151,7 @@ public class DatabaseTest {
     String vreName = "vreName";
     String rdfUri = "http://www.example.com/entity";
     String localName = "entity";
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+    TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty("name", vreName)
                                                             .withOutgoingRelation(
                                                               Vre.HAS_COLLECTION_RELATION_NAME, "collection"))
@@ -185,7 +186,7 @@ public class DatabaseTest {
     String vreName = "vreName";
     String rdfUri = "http://www.example.com/entity";
     String localName = "entity";
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+    TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty("name", vreName))
                                           .withVertex(v -> {
                                             v.withLabel(Vre.DATABASE_LABEL);
@@ -223,7 +224,7 @@ public class DatabaseTest {
   public void findOrCreateCollectionAddsTheCollectionToItsArchetype() {
     String rdfUri = "http://www.example.com/entity";
     String localName = "entity";
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+    TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty("name", VRE_NAME))
                                           .withVertex(v -> {
                                             v.withLabel(Vre.DATABASE_LABEL);
@@ -253,7 +254,7 @@ public class DatabaseTest {
 
   @Test
   public void findOrCreateRelationTypeCreatesANewRelationType() {
-    final GraphWrapper graphWrapper = newGraph().wrap();
+    final TinkerpopGraphManager graphWrapper = newGraph().wrap();
     final Database instance = new Database(graphWrapper);
     final String relationtypePrefix = "relationtype_";
     final Node mockNode = mock(Node.class);
@@ -292,7 +293,7 @@ public class DatabaseTest {
     final String relationtypePrefix = "relationtype_";
     String rdfUriVal = "rdfUriVal";
 
-    final GraphWrapper graphWrapper = newGraph().withVertex(v -> v
+    final TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v
       .withLabel("relationtype")
       .withProperty("rdfUri", rdfUriVal)
       .withProperty("types", "[\"relationtype\"]")
@@ -318,7 +319,7 @@ public class DatabaseTest {
 
   @Test
   public void isKnowArchetypeChecksIfTheCollectionWithTheNameIsAKnowArchetype() {
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+    TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
                                                             .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
                                                               "defaultArchetype")
@@ -341,7 +342,7 @@ public class DatabaseTest {
   @Test
   public void findEntitiesByCollectionReturnsAllTheEntitiesOfTheCollection() {
     CollectionDescription desc = CollectionDescription.createCollectionDescription("collection", VRE_NAME);
-    GraphWrapper graphWrapper = newGraph()
+    TinkerpopGraphManager graphWrapper = newGraph()
       .withVertex("collection", v -> v.withLabel(DATABASE_LABEL)
                                       .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, desc.getEntityTypeName())
                                       .withProperty(COLLECTION_NAME_PROPERTY_NAME, desc.getCollectionName())
@@ -378,7 +379,7 @@ public class DatabaseTest {
 
   @Test
   public void findArchetypeCollectionReturnsTheArchetypeCollectionWrappedInAnOptional() {
-    GraphWrapper graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
+    TinkerpopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
                                                             .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
                                                             .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
                                                               "defaultArchetype")

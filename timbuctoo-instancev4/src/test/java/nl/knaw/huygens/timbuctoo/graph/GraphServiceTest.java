@@ -156,10 +156,24 @@ public class GraphServiceTest {
             new Node(vertices.get(2), "wwperson"),
             new Node(vertices.get(3), "wwperson")
     ));
+    int indexOfRoot = getIndex(result.getNodes(), "077bf0b5-6b7d-45aa-89ff-6ecf2cfc549c");
+    int indexOfPerson1 = getIndex(result.getNodes(), "2");
+    int indexOfPerson2 = getIndex(result.getNodes(), "3");
+    int indexOfPerson3 = getIndex(result.getNodes(), "4");
     assertThat(result.getLinks(), containsInAnyOrder(
-            new Link(mockEdge(RELATION_NAME), 0, 1),
-            new Link(mockEdge(RELATION_NAME_2), 0, 2),
-            new Link(mockEdge(RELATION_NAME), 1, 3)
+            new Link(mockEdge(RELATION_NAME), indexOfRoot, indexOfPerson1),
+            new Link(mockEdge(RELATION_NAME_2), indexOfRoot, indexOfPerson2),
+            new Link(mockEdge(RELATION_NAME), indexOfPerson1, indexOfPerson3)
     ));
+  }
+
+  private int getIndex(List<Node> nodes, String key) {
+    for (int i = 0; i < nodes.size(); i++) {
+      final Node node = nodes.get(i);
+      if (node.getKey().equals("wwpersons/" + key)) {
+        return i;
+      }
+    }
+    return -1;
   }
 }

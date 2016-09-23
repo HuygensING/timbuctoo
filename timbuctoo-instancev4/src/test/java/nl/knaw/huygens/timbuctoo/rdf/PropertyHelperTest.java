@@ -1,74 +1,42 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import java.util.Set;
-
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.hamcrest.core.Is.is;
 
 public class PropertyHelperTest {
 
   @Test
-  public void setCollectionPropertiesDuplicatesTheExistingPropertiesToTheNewCollection() {
-    final String vreName = "vreName";
-    final String entityTypeName = "newCollection";
-    final Collection newCollection = mock(Collection.class);
-    final CollectionDescription newCollectionDescription =
-      CollectionDescription.createCollectionDescription(entityTypeName, vreName);
-    when(newCollection.getDescription()).thenReturn(newCollectionDescription);
-    when(newCollection.getVreName()).thenReturn("vreName");
-    final CollectionDescription existingCollectionDescription1 =
-      CollectionDescription.createCollectionDescription("existingCollection1", vreName);
-    final Collection existingCollection1 = mock(Collection.class);
-    when(existingCollection1.getDescription()).thenReturn(existingCollectionDescription1);
-    final CollectionDescription existingCollectionDescription2 =
-      CollectionDescription.createCollectionDescription("existingCollection2", vreName);
-    final Collection existingCollection2 = mock(Collection.class);
-    when(existingCollection2.getDescription()).thenReturn(existingCollectionDescription2);
-    final Set<Collection> existingCollections =
-      Sets.newHashSet(newCollection, existingCollection1, existingCollection2);
-    final Vertex vertex = newGraph().build().addVertex();
-    vertex.property(existingCollectionDescription1.createPropertyName("existing_1"), "value1");
-    vertex.property(existingCollectionDescription1.createPropertyName("existing_2"), "value2");
-    vertex.property(existingCollectionDescription2.createPropertyName("existing_1"), "value1");
-    vertex.property(existingCollectionDescription2.createPropertyName("existing_2"), "value2");
+  public void movePropertiesMovesThePropertiesToTheNewCollection() {
+    String vreName = "vreName";
 
-    new PropertyHelper().setPropertiesForNewCollection(vertex, newCollection, existingCollections);
+    TinkerpopGraphManager graphManager = newGraph().wrap();
+    Vertex oldColVertex = graphManager.getGraph().addVertex(
+      ENTITY_TYPE_NAME_PROPERTY_NAME, "oldCollection"
+    );
+    Collection oldCollection = new Collection(vreName, oldColVertex, graphManager);
 
-    verify(newCollection, atLeastOnce()).addProperty(vertex, "existing_1", "value1");
-    verify(newCollection, atLeastOnce()).addProperty(vertex, "existing_2", "value2");
+    Vertex newColVertex = graphManager.getGraph().addVertex(
+      ENTITY_TYPE_NAME_PROPERTY_NAME, "newCollection"
+    );
+    Collection newCollection = new Collection(vreName, newColVertex, graphManager);
+
+    Vertex vertex = graphManager.getGraph().addVertex(
+      "vreNameoldCollection_prop", "value1",
+      "vreNameoldCollection2_prop", "value1"
+    );
+
+    new PropertyHelper().movePropertiesToNewCollection(vertex, oldCollection, newCollection);
+
+    assertThat(vertex.value("vreNameoldCollection2_prop"), is("value1"));
+    assertThat(vertex.value("vreNamenewCollection_prop"), is("value1"));
   }
-
-  @Test
-  public void setCollectionPropertiesDuplicatesTheExistingPropertiesFromTheDefaultCollection() {
-    final String vreName = "vreName";
-    final String entityTypeName = "newCollection";
-    final Collection newCollection = mock(Collection.class);
-    final CollectionDescription newCollectionDescription =
-      CollectionDescription.createCollectionDescription(entityTypeName, vreName);
-    when(newCollection.getDescription()).thenReturn(newCollectionDescription);
-    when(newCollection.getVreName()).thenReturn("vreName");
-    final Set<Collection> existingCollections = Sets.newHashSet(newCollection);
-    final Vertex vertex = newGraph().build().addVertex();
-    vertex.property(CollectionDescription.getDefault(vreName).createPropertyName("prop1"), "value1");
-    vertex.property(CollectionDescription.getDefault(vreName).createPropertyName("prop2"), "value2");
-    PropertyHelper propertyHelper = new PropertyHelper();
-
-    propertyHelper.setPropertiesForNewCollection(vertex, newCollection, existingCollections);
-
-    verify(newCollection).addProperty(vertex, "prop1", "value1");
-    verify(newCollection).addProperty(vertex, "prop2", "value2");
-  }
-
-
 
   @Test
   public void removeRemovesAllThePropertiesStartingWithThePrefixOfTheCollectionDescription() {

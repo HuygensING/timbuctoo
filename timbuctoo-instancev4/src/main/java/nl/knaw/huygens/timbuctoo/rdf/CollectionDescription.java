@@ -23,7 +23,12 @@ class CollectionDescription {
   }
 
   public static CollectionDescription getDefault(String vreName) {
-    CollectionDescription result = createCollectionDescription(DEFAULT_COLLECTION_NAME, vreName);
+    CollectionDescription result;
+    if (vreName.equals("Admin")) {
+      result = createCollectionDescription("concept", "");
+    } else {
+      result = createCollectionDescription(DEFAULT_COLLECTION_NAME, vreName);
+    }
     result.unknown = true;
     return result;
   }

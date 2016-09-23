@@ -41,8 +41,7 @@ public class CollectionMembershipTripleProcessorTest {
     instance.process("vreName", true, triple);
 
     InOrder inOrder = inOrder(entity);
-    inOrder.verify(entity).addToCollection(collectionFromTriple);
-    inOrder.verify(entity).removeFromCollection(defaultCollection);
+    inOrder.verify(entity).moveToCollection(defaultCollection, collectionFromTriple);
   }
 
 }
