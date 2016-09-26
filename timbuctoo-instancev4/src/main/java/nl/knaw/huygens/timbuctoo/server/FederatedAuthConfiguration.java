@@ -7,6 +7,7 @@ import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.HuygensAuthenticationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
 import nl.knaw.huygens.timbuctoo.server.federatedauth.HttpCaller;
 import org.apache.http.client.HttpClient;
 
@@ -33,15 +34,24 @@ public class FederatedAuthConfiguration {
 
   public AuthenticationHandler makeHandler(Environment environment) {
     if (enabled) {
-      final HttpClient httpClient = new HttpClientBuilder(environment)
-        .using(httpClientConfig)
-        .build("federated-auth-client");
+      if (authenticationServerUrl.equals("DUMMY")) {
+        return sessionId -> {
+          HuygensSecurityInformation information = new HuygensSecurityInformation();
+          information.setPersistentID("12345677890");
+          information.setDisplayName("TEST");
+          return information;
+        };
+      } else {
+        final HttpClient httpClient = new HttpClientBuilder(environment)
+          .using(httpClientConfig)
+          .build("federated-auth-client");
 
-      return new HuygensAuthenticationHandler(
-        new HttpCaller(httpClient),
-        authenticationServerUrl,
-        authenticationCredentials
-      );
+        return new HuygensAuthenticationHandler(
+          new HttpCaller(httpClient),
+          authenticationServerUrl,
+          authenticationCredentials
+        );
+      }
     } else {
       return sessionId -> {
         throw new UnauthorizedException("No federated authentication configured");
