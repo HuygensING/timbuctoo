@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
 import java.io.InputStream;
+import java.util.function.Consumer;
 
 public class BulkUploadService {
 
@@ -24,12 +25,12 @@ public class BulkUploadService {
     this.authorizer = null;//authorizer;
   }
 
-  public String saveToDb(String vreName, InputStream wb)
+  public void saveToDb(String vreName, InputStream wb, Consumer<String> statusUpdate)
     throws AuthorizationUnavailableException, AuthorizationException, InvalidExcelFileException {
 
     try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, 50_000)) {
       XlsxLoader loader = new AllSheetLoader();
-      return loader.loadData(wb, new Importer(saver));
+      loader.loadData(wb, new Importer(saver), statusUpdate);
     }
   }
 

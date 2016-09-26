@@ -16,11 +16,14 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Consumer;
 
-public abstract class XlsxLoader implements BulkLoader<InputStream, String> {
+public abstract class XlsxLoader implements BulkLoader<InputStream> {
 
   @Override
-  public String loadData(InputStream source, Importer importer) throws InvalidExcelFileException {
+  public void loadData(InputStream source, Importer importer, Consumer<String> statusUpdate)
+    throws InvalidExcelFileException {
+
     try {
       XSSFWorkbook workbook = new XSSFWorkbook(source);/* {
         public void parseSheet(Map<String, XSSFSheet> shIdMap, CTSheet ctSheet) {
@@ -28,7 +31,7 @@ public abstract class XlsxLoader implements BulkLoader<InputStream, String> {
         }
       }*/
       XSSFReader xssfReader = new XSSFReader(workbook.getPackage());
-      ResultHandler handler = new ResultHandler();
+      ResultHandler handler = new ResultHandler(statusUpdate);
 
       SAXParserFactory saxFactory = SAXParserFactory.newInstance();
       saxFactory.setNamespaceAware(true);
@@ -46,7 +49,7 @@ public abstract class XlsxLoader implements BulkLoader<InputStream, String> {
         sheetParser.parse(new InputSource(sheet));
         rowCellHandler.finish();
       }
-      return handler.endImport();
+      handler.endImport();
     } catch (SAXException | IOException | OpenXML4JException | ParserConfigurationException e) {
       throw new InvalidExcelFileException(e);
     }
