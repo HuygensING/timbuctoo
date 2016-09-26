@@ -35,17 +35,14 @@ public class TimbuctooDbAccess {
     throws AuthorizationUnavailableException, AuthorizationException, IOException {
     checkIfAllowedToWrite(userId, collection);
     UUID id = UUID.randomUUID();
-    try (DataAccessMethods db = dataAccess.start()) {
-      try {
-        db.createEntity(collection, baseCollection, createEntity, userId, clock.instant(), id);
-        db.success();
-      } catch (IOException e) {
-        db.rollback();
-        throw e;
-      }
-    }
 
-    handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, 1));
+    DbCreateEntity entity =
+      dataAccess.createEntity(collection, baseCollection, createEntity, userId, clock.instant(), id);
+    TransactionState transactionState = dataAccess.executeAndReturn(entity);
+
+    if (transactionState.wasCommitted()) {
+      handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, 1));
+    }
 
     return id;
   }

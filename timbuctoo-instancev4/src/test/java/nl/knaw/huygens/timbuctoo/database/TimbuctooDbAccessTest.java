@@ -14,7 +14,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 
-import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
@@ -26,10 +25,9 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -37,7 +35,6 @@ public class TimbuctooDbAccessTest {
 
   public static final String COLLECTION_NAME = "collectionName";
   private DataAccess dataAccess;
-  private DataAccessMethods dataAccessMethods;
   private Clock clock;
   private Instant instant;
   private Collection collection;
@@ -45,12 +42,18 @@ public class TimbuctooDbAccessTest {
   private String userId;
   private Optional<Collection> baseCollection;
   private HandleAdder handleAdder;
+  private DbCreateEntity dbCreateEntity;
+  private TransactionState transactionState;
 
   @Before
   public void setUp() throws Exception {
     dataAccess = mock(DataAccess.class);
-    dataAccessMethods = mock(DataAccessMethods.class);
-    when(dataAccess.start()).thenReturn(dataAccessMethods);
+    dbCreateEntity = mock(DbCreateEntity.class);
+    when(dataAccess.createEntity(any(),any(), any(), any(), any(), any())).thenReturn(dbCreateEntity);
+    transactionState = mock(TransactionState.class);
+    when(transactionState.wasCommitted()).thenReturn(false);
+    when(dataAccess.executeAndReturn(dbCreateEntity)).thenReturn(transactionState);
+
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
@@ -77,10 +80,9 @@ public class TimbuctooDbAccessTest {
 
     UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
 
-    InOrder inOrder = inOrder(dataAccess, dataAccessMethods);
-    inOrder.verify(dataAccessMethods).createEntity(collection, baseCollection, this.entity, userId, instant, id);
-    inOrder.verify(dataAccessMethods).success();
-    inOrder.verify(dataAccessMethods).close();
+    InOrder inOrder = inOrder(dataAccess);
+    inOrder.verify(dataAccess).createEntity(collection, baseCollection, this.entity, userId, instant, id);
+    inOrder.verify(dataAccess).executeAndReturn(dbCreateEntity);
   }
 
   @Test
@@ -98,42 +100,24 @@ public class TimbuctooDbAccessTest {
     fail("Yet to be implemented");
   }
 
-  @Test(expected = IOException.class)
-  public void createEntityRollsbackTheChangesWhenAnExceptionIsThrown() throws Exception {
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
-    doThrow(new IOException()).when(dataAccessMethods).createEntity(
-      any(Collection.class),
-      any(Optional.class),
-      any(CreateEntity.class),
-      anyString(),
-      any(Instant.class),
-      any(UUID.class)
-    );
-
-    try {
-      instance.createEntity(collection, baseCollection, entity, userId);
-    } finally {
-      InOrder inOrder = inOrder(dataAccess, dataAccessMethods);
-      inOrder.verify(dataAccessMethods).createEntity(
-        argThat(is(collection)),
-        argThat(is(baseCollection)),
-        argThat(is(entity)),
-        argThat(is(userId)),
-        argThat(is(instant)),
-        any(UUID.class));
-      inOrder.verify(dataAccessMethods).rollback();
-      inOrder.verify(dataAccessMethods).close();
-    }
-  }
-
-
   @Test
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
+    when(transactionState.wasCommitted()).thenReturn(true);
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
     UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
 
     verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, id, 1));
+  }
+
+  @Test
+  public void createEntityDoesNotCallTheHandleAdderWhenTheTransactionIsRolledBack() throws Exception {
+    when(transactionState.wasCommitted()).thenReturn(false);
+    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+
+    UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
+
+    verify(handleAdder, never()).add(new HandleAdderParameters(COLLECTION_NAME, id, 1));
   }
 
 

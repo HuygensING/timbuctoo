@@ -3,11 +3,17 @@ package nl.knaw.huygens.timbuctoo.database;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
+import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntityImpl;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopCreateEntity;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 
+import java.time.Instant;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class DataAccess {
@@ -82,5 +88,10 @@ public class DataAccess {
     } finally {
       db.close();
     }
+  }
+
+  public DbCreateEntity createEntity(Collection collection, Optional<Collection> baseCollection, CreateEntity entity,
+                           String userId, Instant instant, UUID id) {
+    return new TinkerPopCreateEntity(collection, baseCollection, entity, userId, instant, id);
   }
 }
