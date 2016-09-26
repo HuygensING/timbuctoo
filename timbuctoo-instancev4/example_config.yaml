@@ -24,6 +24,7 @@ executeDatabaseInvariantCheckAt: -1
 
 #Public timbuctoo url
 baseUri: http://localhost:8080 # used to generate next and previous links of a search result
+timbuctooSearchUrl: http://localhost:4567/
 
 activeMq:
   #persistent=false means that the broker does not try to store the queue. This is not needed in a debugrun.
@@ -45,6 +46,8 @@ federatedAuthentication:
 
 #Note! disable this for production builds
 allowGremlinEndpoint: true
+
+
 
 server:
   applicationConnectors:

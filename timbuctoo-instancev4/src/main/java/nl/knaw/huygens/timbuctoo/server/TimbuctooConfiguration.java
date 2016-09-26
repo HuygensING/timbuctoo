@@ -37,6 +37,8 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @NotNull
   private String baseUri;
 
+  private String timbuctooSearchUrl;
+
   @JsonProperty
   @NotNull
   @Valid
@@ -135,6 +137,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public boolean isAllowGremlinEndpoint() {
     return allowGremlinEndpoint;
+  }
+
+  public String getTimbuctooSearchUrl() {
+    return timbuctooSearchUrl;
   }
 
   // A class to configure timeouts without compromising the Timeout class.
