@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
@@ -142,6 +143,7 @@ public class ExecuteRml {
     dataAccess.execute(db -> {
       db.ensureVreExists(vreName);
       db.removeCollectionsAndEntities(vreName);
+      return commit();
     });
     try (Transaction tx = graphWrapper.getGraph().tx()) {
       if (!tx.isOpen()) {

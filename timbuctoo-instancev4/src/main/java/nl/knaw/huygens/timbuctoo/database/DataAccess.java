@@ -63,7 +63,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -109,19 +109,49 @@ public class DataAccess {
     this.handleAdder = handleAdder;
   }
 
+  /**
+   * @deprecated Use {@link #executeAndReturn(Function)} or {@link #execute(Function)} method to ensure that the commit
+   *     and rollback methods are always called
+   */
+  @Deprecated
   public DataAccessMethods start() {
     return new DataAccessMethods(graphwrapper, authorizer, listener, entityFetcher, mappings, handleAdder);
   }
 
-  public void execute(Consumer<DataAccessMethods> actions) {
-    try (DataAccessMethods db = start()) {
-      try {
-        actions.accept(db);
-      } catch (RuntimeException e) {
+  public <T> T executeAndReturn(Function<DataAccessMethods, TransactionStateAndResult<T>> actions) {
+    DataAccessMethods db = start();
+
+    try {
+      TransactionStateAndResult<T> result = actions.apply(db);
+      if (result.wasCommitted()) {
+        db.success();
+      } else {
         db.rollback();
-        throw e;
       }
-      db.success();
+      return result.getValue();
+    } catch (RuntimeException e) {
+      db.rollback();
+      throw e;
+    } finally {
+      db.close();
+    }
+  }
+
+  public void execute(Function<DataAccessMethods, TransactionState> actions) {
+    DataAccessMethods db = start();
+
+    try {
+      TransactionState result = actions.apply(db);
+      if (result.wasCommitted()) {
+        db.success();
+      } else {
+        db.rollback();
+      }
+    } catch (RuntimeException e) {
+      db.rollback();
+      throw e;
+    } finally {
+      db.close();
     }
   }
 

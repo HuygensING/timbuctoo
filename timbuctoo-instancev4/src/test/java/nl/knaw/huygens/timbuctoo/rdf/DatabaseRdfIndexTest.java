@@ -1,13 +1,14 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.Test;
 
+import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -22,7 +23,10 @@ public class DatabaseRdfIndexTest {
     final DataAccess dataAccess = new DataAccess(mgr, null, null, mock(ChangeListener.class), mock(HandleAdder.class));
 
     new ScaffoldMigrator(dataAccess).execute();
-    dataAccess.execute(db -> db.ensureVreExists("myVre"));
+    dataAccess.execute(db -> {
+      db.ensureVreExists("myVre");
+      return commit();
+    });
     mgr.getGraph().tx().onClose(
       x -> assertThat("Transaction should not be closed to be able to verify this unittest. It's okay that you close " +
         "a transaction during findOrCreateEntity, but you should find another way to verify that findOrCreateIndex " +

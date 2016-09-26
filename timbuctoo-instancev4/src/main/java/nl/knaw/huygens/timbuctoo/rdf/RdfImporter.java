@@ -20,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.List;
 
+import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
+
 public class RdfImporter {
   public static final Logger LOG = LoggerFactory.getLogger(RdfImporter.class);
   private final TinkerpopGraphManager graphWrapper;
@@ -59,6 +61,7 @@ public class RdfImporter {
   private void prepare() {
     dataAccess.execute(db -> {
       db.ensureVreExists(vreName);
+      return commit();
     });
     LOG.info("Starting import...");
   }
