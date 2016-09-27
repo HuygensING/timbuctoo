@@ -24,6 +24,8 @@ executeDatabaseInvariantCheckAt: -1
 
 #Public timbuctoo url
 baseUri: ${BASE_URI} # used to generate next and previous links of a search result
+timbuctooSearchUrl: ${TIMBUCTOO_SEARCH_URL}
+
 
 activeMq:
   #persistent=false means that the broker does not try to store the queue. This is not needed in a debugrun.
@@ -41,7 +43,9 @@ persistenceManager:
 #  prefix:
 
 federatedAuthentication:
-  enabled: false
+  enabled: true
+  authenticationServerUrl: DUMMY
+  authenticationCredentials: DUMMY
 
 #Note! disable this for production builds
 allowGremlinEndpoint: true

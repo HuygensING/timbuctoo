@@ -5,6 +5,7 @@ services:
     image: huygensing/timbuctoo:latest
     environment:
       BASE_URI: http://localhost:8080
+      TIMBUCTOO_SEARCH_URL: http://localhost:8082
     ports:
       - "8080:80"
       - "8081:81"
