@@ -17,6 +17,7 @@ import org.neo4j.graphdb.index.IndexHits;
 import org.slf4j.Logger;
 
 import java.time.Clock;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -37,6 +38,7 @@ public class Database {
 
   public static final String RDF_URI_PROP = "rdfUri";
   public static final String RDFINDEX_NAME = "rdfUrls";
+  private static final String RDF_SYNONYM_PROP = "rdfAlternatives";
   private final TinkerpopGraphManager graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
   private GraphTraversalSource traversal;
@@ -102,6 +104,7 @@ public class Database {
   private Entity createEntity(String vreName, String nodeUri) {
     Vertex vertex = graphWrapper.getGraph().addVertex();
     vertex.property(RDF_URI_PROP, nodeUri);
+    vertex.property(RDF_SYNONYM_PROP, new String[0]);
 
     systemPropertyModifier.setCreated(vertex, "rdf-importer");
     systemPropertyModifier.setModified(vertex, "rdf-importer");
@@ -283,5 +286,17 @@ public class Database {
 
   }
 
+  public void addRdfSynonym(String vreName, Entity entity, Node alternative) {
+    String synonymUri = getNodeUri(alternative, vreName);
 
+    String[] oldRdfUri = entity.vertex.value(RDF_SYNONYM_PROP);
+    String[] newRdfUri = Arrays.copyOf(oldRdfUri, oldRdfUri.length + 1);
+
+    newRdfUri[newRdfUri.length - 1] = synonymUri;
+
+    entity.vertex.property(RDF_SYNONYM_PROP, newRdfUri);
+
+    org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) entity.vertex.id());
+    rdfIndex.add(neo4jNode, vreName, synonymUri);
+  }
 }

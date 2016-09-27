@@ -39,6 +39,10 @@ public class SystemPropertyModifier {
     element.property("tim_id", UUID.randomUUID().toString());
   }
 
+  public void setTimId(Element element, String timId) {
+    element.property("tim_id", timId);
+  }
+
   public void setRev(Element element, int rev) {
     element.property("rev", rev);
   }
@@ -51,7 +55,4 @@ public class SystemPropertyModifier {
     element.property("deleted", isDeleted);
   }
 
-  public void setTimId(Element element, String timId) {
-    element.property("tim_id", timId);
-  }
 }

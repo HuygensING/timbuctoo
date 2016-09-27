@@ -157,6 +157,58 @@ public class RmlIntegrationTests {
     assertThat(migrant.vertices(Direction.OUT, "hasBirthPlace").next().id(), is(locatie.id()));
   }
 
+  @Test
+  public void handlesSameAsRelations() throws Exception {
+    IntegrationTester tester = new IntegrationTester();
+    tester.executeRawUpload("someVre", "persons", ImmutableList.of(
+      ImmutableMap.of(
+        "id", "2",
+        "naam", "Karel",
+        "geboorteplaats", "Rotterdam"
+      )
+    ));
+    Response response = tester.executeRml("someVre", jsnO(
+      "@context", RML_JSON_LD_CONTEXT,
+      "@graph", jsnA(
+        jsnO(
+          "@id", jsn("http://timbuctoo.com/mapping/someVre/persons"),
+          "http://www.w3.org/2000/01/rdf-schema#subClassOf", jsn("http://timbuctoo.com/person"),
+          "rml:logicalSource", jsnO(
+            "rml:source", jsnO(
+              "tim:vreName", jsn("someVre"),
+              "tim:rawCollection", jsn("persons")
+            )
+          ),
+          "subjectMap", jsnO(
+            "class", jsn("http://timbuctoo.com/mapping/someVre/persons"),
+            "template", jsn("http://timbuctoo.com/mapping/someVre/persons/{tim_id}")
+          ),
+          "predicateObjectMap", jsnA(
+            jsnO(
+              "predicate", jsn("http://timbuctoo.com/hasBirthPlace"),
+              "objectMap", jsnO(
+                "column", jsn("geboorteplaats")
+              )
+            ),
+            jsnO(
+              "predicate", jsn("http://www.w3.org/2002/07/owl#sameAs"),
+              "objectMap", jsnO(
+                "template", jsn("http://timbuctoo.com/mapping/someVre/persons/local/{id}")
+              )
+            )
+          )
+        )
+      )
+    ));
+    assertThat(response.getStatus(), is(200));
+    GraphTraversal<Vertex, Vertex> karel = tester.traversalSource.V().has(T.label, LabelP.of("someVrepersons"));
+    assertThat(karel.asAdmin().clone().count().next(), is(1L));
+    String timId = (String) karel.asAdmin().clone().values("tim_id").next();
+    assertThat(karel.asAdmin().clone().values("rdfUri").next(), is(new String[] {
+      "http://timbuctoo.com/mapping/someVre/persons/" + timId,
+      "http://timbuctoo.com/mapping/someVre/persons/local/2"
+    }));
+  }
 
 
 
