@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
 
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
 import org.junit.Test;
 import org.mockserver.matchers.Times;
@@ -9,46 +10,35 @@ import org.mockserver.model.HttpResponse;
 
 import javax.xml.bind.JAXBException;
 
+import java.net.URI;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 
-public class WellKnownUriExplorerTest extends AbstractRemoteTest {
+public class RsExplorerTest extends AbstractRemoteTest {
 
   @Test
   public void findDescription() throws Exception {
     String path = "/.well-known/resourcesync";
-
-    getMockServer()
-      .when(HttpRequest.request()
-          .withMethod("GET")
-          .withPath(path),
-        Times.exactly(1))
-
-      .respond(HttpResponse.response()
-          .withStatusCode(200)
-          .withBody(createValidDescription())
-      );
-
-    WellKnownUriExplorer explorer = new WellKnownUriExplorer(getHttpclient(), getRsContext());
-    ResultIndex index = new ResultIndex();
-    Result<RsRoot> result = explorer.explore(composeUri(path), index);
-
-    result.getError().ifPresent(Throwable::printStackTrace);
-
-    assertThat(result.getUri(), equalTo(composeUri(path)));
-    assertThat(result.getStatusCode(), equalTo(200));
-    assertThat(result.getError().isPresent(), is(false));
-    assertThat(result.getContent().isPresent(), is(true));
-    assertThat(result.getContent().get().getMetadata().getCapability().get(), equalTo("description"));
+    verifyFindDescription(path);
   }
 
   @Test
-  public void findWrongSitemapDocument() throws Exception {
-    String path = "/.well-known/resourcesync";
+  public void findDescriptionWithoutExplicitUrl() throws Exception {
+    String path = "";
+    verifyFindDescription(path);
+  }
 
+  @Test
+  public void findDescriptionWithoutExplicitUrlVariation() throws Exception {
+    String path = "/";
+    verifyFindDescription(path);
+  }
+
+  private void verifyFindDescription(String path) {
     getMockServer()
       .when(HttpRequest.request()
           .withMethod("GET")
@@ -57,20 +47,79 @@ public class WellKnownUriExplorerTest extends AbstractRemoteTest {
 
       .respond(HttpResponse.response()
         .withStatusCode(200)
-        .withBody(createValidResourceDump())
+        .withBody(createValidDescription())
       );
 
-    WellKnownUriExplorer explorer = new WellKnownUriExplorer(getHttpclient(), getRsContext());
-    ResultIndex index = new ResultIndex();
-    Result<RsRoot> result = explorer.explore(composeUri(path), index);
+    URI uri = composeUri(path);
 
-    assertThat(result.getUri(), equalTo(composeUri(path)));
+    RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
+    ResultIndex index = new ResultIndex();
+    Result<RsRoot> result = explorer.explore(uri, index);
+
+    result.getErrors().forEach(Throwable::printStackTrace);
+
+    assertThat(result.getUri(), equalTo(uri));
     assertThat(result.getStatusCode(), equalTo(200));
-    assertThat(result.getError().isPresent(), is(true));
-    assertThat(result.getError().get().getMessage(), containsString("unexpected capability:"));
+    assertThat(result.getErrors().isEmpty(), is(true));
     assertThat(result.getContent().isPresent(), is(true));
-    assertThat(result.getContent().get().getMetadata().getCapability().get(), equalTo("resourcedump"));
-    //result.getError().get().printStackTrace();
+    assertThat(result.getContent().map(RsRoot::getMetadata).flatMap(RsMd::getCapability).orElse("invalid"),
+      equalTo("description"));
+  }
+
+  @Test
+  public void findWrongParentDocument() throws Exception {
+    String path1 = "/foo/resourcedump.xml";
+    String path2 = "/bla/resourcedump.xml";
+
+    getMockServer()
+      .when(HttpRequest.request()
+          .withMethod("GET")
+          .withPath(path1),
+        Times.exactly(1))
+
+      .respond(HttpResponse.response()
+        .withStatusCode(200)
+        .withBody(createValidResourceDump(path2))
+      );
+
+    getMockServer()
+      .when(HttpRequest.request()
+          .withMethod("GET")
+          .withPath(path2),
+        Times.exactly(1))
+
+      .respond(HttpResponse.response()
+        .withStatusCode(200)
+        .withBody(createValidResourceDump("/bar/whatever.xml"))
+      );
+
+    URI uri = composeUri(path1);
+
+    RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
+    ResultIndex index = new ResultIndex();
+    Result<RsRoot> result = explorer.explore(uri, index);
+
+    //result.getErrors().forEach(Throwable::printStackTrace);
+
+    assertThat(result.getUri(), equalTo(uri));
+    assertThat(result.getStatusCode(), equalTo(200));
+    assertThat(result.getErrors().isEmpty(), is(false));
+    assertThat(result.getErrors().get(0).getMessage(), containsString("invalid up relation:"));
+    assertThat(result.getContent().isPresent(), is(true));
+    assertThat(result.getContent().map(RsRoot::getMetadata).flatMap(RsMd::getCapability).orElse("invalid"),
+      equalTo("resourcedump"));
+
+    URI uri2 = composeUri(path2);
+    Result<RsRoot> parentResult = (Result<RsRoot>) result.getParents().get(uri2);
+
+    parentResult.getErrors().forEach(Throwable::printStackTrace);
+
+    assertThat(parentResult.getUri(), equalTo(uri2));
+    assertThat(parentResult.getStatusCode(), equalTo(200));
+    assertThat(parentResult.getErrors().isEmpty(), is(true));
+    assertThat(parentResult.getContent().isPresent(), is(true));
+    assertThat(parentResult.getContent().map(RsRoot::getMetadata).flatMap(RsMd::getCapability).orElse("invalid"),
+      equalTo("resourcedump"));
   }
 
   @Test
@@ -88,16 +137,16 @@ public class WellKnownUriExplorerTest extends AbstractRemoteTest {
         .withBody(createValidXml())
       );
 
-    WellKnownUriExplorer explorer = new WellKnownUriExplorer(getHttpclient(), getRsContext());
+    RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
     ResultIndex index = new ResultIndex();
     Result<RsRoot> result = explorer.explore(composeUri(path), index);
 
     assertThat(result.getUri(), equalTo(composeUri(path)));
     assertThat(result.getStatusCode(), equalTo(200));
-    assertThat(result.getError().isPresent(), is(true));
-    assertThat(result.getError().get(), instanceOf(JAXBException.class));
+    assertThat(result.getErrors().isEmpty(), is(false));
+    assertThat(result.getErrors().get(0), instanceOf(JAXBException.class));
     assertThat(result.getContent().isPresent(), is(false));
-    //result.getError().get().printStackTrace();
+    //result.getErrors().forEach(Throwable::printStackTrace);
   }
 
   @Test
@@ -115,16 +164,16 @@ public class WellKnownUriExplorerTest extends AbstractRemoteTest {
         .withBody("Document not found")
       );
 
-    WellKnownUriExplorer explorer = new WellKnownUriExplorer(getHttpclient(), getRsContext());
+    RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
     ResultIndex index = new ResultIndex();
     Result<RsRoot> result = explorer.explore(composeUri(path), index);
 
     assertThat(result.getUri(), equalTo(composeUri(path)));
     assertThat(result.getStatusCode(), equalTo(404));
-    assertThat(result.getError().isPresent(), is(true));
-    assertThat(result.getError().get(), instanceOf(RemoteException.class));
+    assertThat(result.getErrors().isEmpty(), is(false));
+    assertThat(result.getErrors().get(0), instanceOf(RemoteException.class));
     assertThat(result.getContent().isPresent(), is(false));
-    //result.getError().get().printStackTrace();
+    //result.getErrors().forEach(Throwable::printStackTrace);
   }
 
   private String createValidDescription() {
@@ -157,12 +206,14 @@ public class WellKnownUriExplorerTest extends AbstractRemoteTest {
         "\n";
   }
 
-  private String createValidResourceDump() {
+  private String createValidResourceDump(String relUpPath) {
     return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
       "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
       "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
       "  <rs:md capability=\"resourcedump\"\n" +
       "         at=\"2013-01-03T09:00:00Z\"/>\n" +
+      "  <rs:ln rel=\"up\"" +
+      "         href=\"" + composePath(relUpPath) + "\"/>" +
       "  <url>\n" +
       "      <loc>http://example.com/resourcedump.zip</loc>\n" +
       "      <lastmod>2013-01-03T09:00:00Z</lastmod>\n" +

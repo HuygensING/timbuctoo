@@ -27,7 +27,7 @@ public class ResultIndexTest {
 
     Result<Urlset> result1 = new Result<>(new URI("doc1"));
     result1.accept(new Urlset(new RsMd((Capability.RESOURCELIST.xmlValue))));
-    result1.setError(new RemoteResourceSyncFrameworkException("Bla1"));
+    result1.addError(new RemoteResourceSyncFrameworkException("Bla1"));
     index.add(result1);
 
     Result<Urlset> result2 = new Result<>(new URI("doc2"));
@@ -39,7 +39,7 @@ public class ResultIndexTest {
     index.add(result3);
 
     Result<Sitemapindex> result4 = new Result<>(new URI("doc4"));
-    result4.setError(new RemoteResourceSyncFrameworkException("Bla4"));
+    result4.addError(new RemoteResourceSyncFrameworkException("Bla4"));
     index.add(result4);
 
     Result<Sitemapindex> result5 = new Result<>(new URI("doc5"));
@@ -55,7 +55,7 @@ public class ResultIndexTest {
     assertThat(errorResultList, containsInAnyOrder(result1, result4));
     assertThat(errorResultList.size(), equalTo(2));
 
-    List<Result<?>> resultList = index.getResults();
+    List<Result<?>> resultList = index.getResultsWithContent();
     assertThat(resultList, containsInAnyOrder(result1, result2, result3, result5));
     assertThat(resultList.size(), equalTo(4));
 

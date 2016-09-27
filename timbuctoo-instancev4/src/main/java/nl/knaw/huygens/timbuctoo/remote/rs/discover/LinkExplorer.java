@@ -15,8 +15,8 @@ import org.jsoup.select.Elements;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,23 +51,25 @@ import java.util.regex.Pattern;
  */
 public class LinkExplorer extends AbstractUriExplorer {
 
+  private final ResourceSyncContext rsContext;
   private Function_WithExceptions<HttpResponse, List<String>, ?> strategy;
 
   public LinkExplorer(CloseableHttpClient httpClient,
                       ResourceSyncContext rsContext,
                       Function_WithExceptions<HttpResponse, List<String>, ?> strategy) {
-    super(httpClient, rsContext);
+    super(httpClient);
+    this.rsContext = rsContext;
     this.strategy = strategy;
   }
 
   @Override
   public Result<LinkList> explore(URI uri, ResultIndex index) {
     Result<List<String>> stringResult = execute(uri, strategy);
-    Result<LinkList> result = convert(uri, stringResult);
+    Result<LinkList> result = stringResult.map(stringListToLinkListConverter);
     index.add(result);
 
     // All valid uris point to ResourceSync documents (at least they should)
-    RsExplorer rsExplorer = new RsExplorer(getHttpClient(), getRsContext());
+    RsExplorer rsExplorer = new RsExplorer(getHttpClient(), rsContext);
     for (URI rsUri : result.getContent().orElse(new LinkList()).getValidUris()) {
       if (!index.contains(rsUri)) {
         Result<RsRoot> child = rsExplorer.explore(rsUri, index);
@@ -77,13 +79,11 @@ public class LinkExplorer extends AbstractUriExplorer {
     return  result;
   }
 
-  private Result<LinkList> convert(URI uri, Result<List<String>> stringResult) {
-    Result<LinkList> result = stringResult.shallowCopyTo(new Result<LinkList>(uri));
+  Function<List<String>, LinkList> stringListToLinkListConverter = (stringList) -> {
     LinkList linkList = new LinkList();
-    linkList.resolve(uri, stringResult.getContent().orElse(Collections.emptyList()));
-    result.accept(linkList);
-    return result;
-  }
+    linkList.resolve(getCurrentUri(), stringList);
+    return linkList;
+  };
 
   static Function_WithExceptions<HttpResponse, List<String>, Exception> linkReader = (response) -> {
 

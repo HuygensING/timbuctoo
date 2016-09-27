@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
 
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import org.junit.Test;
 import org.mockserver.matchers.Times;
@@ -11,11 +10,11 @@ import org.mockserver.model.HttpResponse;
 import java.net.URI;
 import java.util.Set;
 
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.CoreMatchers.instanceOf;
 
 public class LinkExplorerTest extends AbstractRemoteTest {
 
@@ -53,9 +52,9 @@ public class LinkExplorerTest extends AbstractRemoteTest {
     ResultIndex index = new ResultIndex();
     Result<LinkList> result = explorer.explore(uri, index);
 
-    result.getError().ifPresent(Throwable::printStackTrace);
+    result.getErrors().forEach(Throwable::printStackTrace);
 
-    assertThat(result.getError().isPresent(), is(false));
+    assertThat(result.getErrors().isEmpty(), is(true));
     assertThat(result.getContent().isPresent(), is(true));
     LinkList linkList = result.getContent().orElse(new LinkList());
     Set<URI> validUris = linkList.getValidUris();
@@ -75,9 +74,9 @@ public class LinkExplorerTest extends AbstractRemoteTest {
     Result<?> child2 = result.getChildren().get(URI.create("http://www.example.com/dataset2/capabilitylist.xml"));
     assertThat(child2.getParents().containsKey(result.getUri()), is(true));
 
-    assertThat(child1.getError().isPresent(), is(false));
-    assertThat(child2.getError().isPresent(), is(true));
-    //child2.getError().ifPresent(Throwable::printStackTrace); // RemoteException: 404 Not Found
+    assertThat(child1.getErrors().isEmpty(), is(true));
+    assertThat(child2.getErrors().isEmpty(), is(false));
+    //child2.getErrors().forEach(Throwable::printStackTrace); // RemoteException: 404 Not Found
 
     assertThat(child1.getContent().isPresent(), is(true));
     assertThat(child1.getContent().orElse(null), instanceOf(Urlset.class));
@@ -111,9 +110,9 @@ public class LinkExplorerTest extends AbstractRemoteTest {
     ResultIndex index = new ResultIndex();
     Result<LinkList> result = explorer.explore(composeUri(path), index);
 
-    result.getError().ifPresent(Throwable::printStackTrace);
+    result.getErrors().forEach(Throwable::printStackTrace);
 
-    assertThat(result.getError().isPresent(), is(false));
+    assertThat(result.getErrors().isEmpty(), is(true));
     assertThat(result.getContent().isPresent(), is(true));
     LinkList linkList = result.getContent().orElse(new LinkList());
     Set<URI> validUris = linkList.getValidUris();
@@ -145,9 +144,9 @@ public class LinkExplorerTest extends AbstractRemoteTest {
     ResultIndex index = new ResultIndex();
     Result<LinkList> result = explorer.explore(composeUri(path), index);
 
-    result.getError().ifPresent(Throwable::printStackTrace);
+    result.getErrors().forEach(Throwable::printStackTrace);
 
-    assertThat(result.getError().isPresent(), is(false));
+    assertThat(result.getErrors().isEmpty(), is(true));
     assertThat(result.getContent().isPresent(), is(true));
     LinkList linkList = result.getContent().orElse(new LinkList());
     Set<URI> validUris = linkList.getValidUris();

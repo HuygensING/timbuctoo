@@ -39,6 +39,18 @@ public class ResultIndex {
     return present;
   }
 
+  public void merge(ResultIndex other) {
+    // can be done with stream..
+    for (Map.Entry<URI, Result<?>> entry : other.resultMap.entrySet()) {
+      if (!resultMap.containsKey(entry.getKey())) {
+        resultMap.put(entry.getKey(), entry.getValue());
+      } else if (entry.getValue().getContent().isPresent()) {
+        resultMap.put(entry.getKey(), entry.getValue());
+      }
+    }
+    invalidUris.addAll(other.invalidUris);
+  }
+
   public Map<URI, Result<?>> getResultMap() {
     return resultMap;
   }
@@ -49,18 +61,18 @@ public class ResultIndex {
 
   public List<Throwable> getErrors() {
     return resultMap.values().stream()
-      .filter(result -> result.getError().isPresent())
-      .map(result -> result.getError().orElse(null))
+      .filter(result -> !result.getErrors().isEmpty())
+      .flatMap(result -> result.getErrors().stream())
       .collect(Collectors.toList());
   }
 
   public List<Result<?>> getErrorResults() {
     return resultMap.values().stream()
-      .filter(result -> result.getError().isPresent())
+      .filter(result -> !result.getErrors().isEmpty())
       .collect(Collectors.toList());
   }
 
-  public List<Result<?>> getResults() {
+  public List<Result<?>> getResultsWithContent() {
     return resultMap.values().stream()
       .filter(result -> result.getContent().isPresent())
       .collect(Collectors.toList());

@@ -2,18 +2,21 @@ package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public class Result<T> implements Consumer<T> {
 
-  private final URI uri;
+  private URI uri;
   private int statusCode;
   private T content;
-  private Throwable error;
+  private List<Throwable> errors = new ArrayList<>();
 
   private Map<URI, Result<?>> parents = new HashMap<>();
   private Map<URI, Result<?>> children = new HashMap<>();
@@ -38,12 +41,12 @@ public class Result<T> implements Consumer<T> {
     return Optional.ofNullable(content);
   }
 
-  public Optional<Throwable> getError() {
-    return Optional.ofNullable(error);
+  public List<Throwable> getErrors() {
+    return Collections.unmodifiableList(errors);
   }
 
-  public void setError(Throwable error) {
-    this.error = error;
+  public void addError(Throwable error) {
+    errors.add(error);
   }
 
   @Override
@@ -51,17 +54,34 @@ public class Result<T> implements Consumer<T> {
     this.content = content;
   }
 
-  public Map<URI, Result> getParents() {
+  public Map<URI, Result<?>> getParents() {
     return Collections.unmodifiableMap(parents);
   }
 
-  public Map<URI, Result> getChildren() {
+  public Map<URI, Result<?>> getChildren() {
     return Collections.unmodifiableMap(children);
   }
 
-  public <R> Result<R> shallowCopyTo(Result<R> copy) {
-    copy.statusCode = this.statusCode;
-    copy.error = this.error;
+  public <R> Result<R> map(Function<T, R> func) {
+    Result<R> copy = new Result<R>(uri);
+    copy.statusCode = statusCode;
+
+    List<Throwable> copyErrors = new ArrayList<>();
+    copyErrors.addAll(errors);
+    copy.errors = copyErrors;
+
+    Map<URI, Result<?>> copyParents = new HashMap<>();
+    copyParents.putAll(parents);
+    copy.parents = copyParents;
+
+    Map<URI, Result<?>> copyChildren = new HashMap<>();
+    copyChildren.putAll(children);
+    copy.children = copyChildren;
+
+    if (content != null) {
+      copy.accept(func.apply(content));
+    }
+
     return copy;
   }
 
