@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 
@@ -20,11 +19,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -38,7 +40,7 @@ public class TimbuctooDbAccessTest {
   private Clock clock;
   private Instant instant;
   private Collection collection;
-  private CreateEntity entity;
+  private CreateEntity createEntity;
   private String userId;
   private Optional<Collection> baseCollection;
   private HandleAdder handleAdder;
@@ -49,7 +51,7 @@ public class TimbuctooDbAccessTest {
   public void setUp() throws Exception {
     dataAccess = mock(DataAccess.class);
     dbCreateEntity = mock(DbCreateEntity.class);
-    when(dataAccess.createEntity(any(),any(), any(), any(), any(), any())).thenReturn(dbCreateEntity);
+    when(dataAccess.createEntity(any(), any(), any())).thenReturn(dbCreateEntity);
     transactionState = mock(TransactionState.class);
     when(transactionState.wasCommitted()).thenReturn(false);
     when(dataAccess.executeAndReturn(dbCreateEntity)).thenReturn(transactionState);
@@ -59,7 +61,7 @@ public class TimbuctooDbAccessTest {
     when(clock.instant()).thenReturn(instant);
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
-    entity = new CreateEntity(Lists.newArrayList());
+    createEntity = mock(CreateEntity.class);
     userId = "userId";
     baseCollection = Optional.empty();
     handleAdder = mock(HandleAdder.class);
@@ -78,10 +80,16 @@ public class TimbuctooDbAccessTest {
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
-    UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
-    InOrder inOrder = inOrder(dataAccess);
-    inOrder.verify(dataAccess).createEntity(collection, baseCollection, this.entity, userId, instant, id);
+    InOrder inOrder = inOrder(dataAccess, createEntity);
+    inOrder.verify(createEntity).setId(id);
+    inOrder.verify(createEntity).setCreated(argThat(allOf(
+      hasProperty("userId", is(userId)),
+      hasProperty("timeStamp", is(instant.toEpochMilli()))
+      ))
+    );
+    inOrder.verify(dataAccess).createEntity(collection, baseCollection, this.createEntity);
     inOrder.verify(dataAccess).executeAndReturn(dbCreateEntity);
   }
 
@@ -89,15 +97,9 @@ public class TimbuctooDbAccessTest {
   public void createEntityReturnsTheId() throws Exception {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
-    UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
     assertThat(id, is(notNullValue()));
-  }
-
-  @Ignore
-  @Test
-  public void createEntityLetsDataAccessSaveAnAdminVersionOfTheEntity() throws Exception {
-    fail("Yet to be implemented");
   }
 
   @Test
@@ -105,7 +107,7 @@ public class TimbuctooDbAccessTest {
     when(transactionState.wasCommitted()).thenReturn(true);
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
-    UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
     verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, id, 1));
   }
@@ -115,11 +117,10 @@ public class TimbuctooDbAccessTest {
     when(transactionState.wasCommitted()).thenReturn(false);
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
-    UUID id = instance.createEntity(collection, baseCollection, this.entity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
     verify(handleAdder, never()).add(new HandleAdderParameters(COLLECTION_NAME, id, 1));
   }
-
 
   private Authorizer notAllowedToWrite() throws AuthorizationUnavailableException {
     return createAuthorizer(false);

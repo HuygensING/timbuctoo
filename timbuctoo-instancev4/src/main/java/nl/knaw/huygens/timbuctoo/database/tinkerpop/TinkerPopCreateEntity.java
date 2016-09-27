@@ -23,21 +23,20 @@ public class TinkerPopCreateEntity implements DbCreateEntity {
   private final Instant creationTime;
   private final UUID id;
 
-  public TinkerPopCreateEntity(Collection col, Optional<Collection> baseCollection, CreateEntity input, String userId,
-                               Instant creationTime, UUID id) {
+  public TinkerPopCreateEntity(Collection col, Optional<Collection> baseCollection, CreateEntity input) {
 
     this.col = col;
     this.baseCollection = baseCollection;
     this.input = input;
-    this.userId = userId;
-    this.creationTime = creationTime;
-    this.id = id;
+    this.userId = input.getCreated().getUserId();
+    this.creationTime = Instant.ofEpochMilli(input.getCreated().getTimeStamp());
+    this.id = input.getId();
   }
 
   @Override
   public TransactionStateAndResult<TransactionState> apply(DataAccessMethods dataAccessMethods) {
     try {
-      dataAccessMethods.createEntity(col, baseCollection, input, userId, creationTime, id);
+      dataAccessMethods.createEntity(col, baseCollection, input);
       return TransactionStateAndResult.commitAndReturn(TransactionState.commit());
     } catch (IOException e) {
       LOG.error("Failing to create a new entity", e);

@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -35,10 +36,15 @@ public class TimbuctooDbAccess {
     throws AuthorizationUnavailableException, AuthorizationException, IOException {
     checkIfAllowedToWrite(userId, collection);
     UUID id = UUID.randomUUID();
+    createEntity.setId(id);
+    Change created = new Change();
+    created.setUserId(userId);
+    created.setTimeStamp(clock.instant().toEpochMilli());
+    createEntity.setCreated(created);
 
-    DbCreateEntity entity =
-      dataAccess.createEntity(collection, baseCollection, createEntity, userId, clock.instant(), id);
-    TransactionState transactionState = dataAccess.executeAndReturn(entity);
+    DbCreateEntity dbCreateEntity =
+      dataAccess.createEntity(collection, baseCollection, createEntity);
+    TransactionState transactionState = dataAccess.executeAndReturn(dbCreateEntity);
 
     if (transactionState.wasCommitted()) {
       handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, 1));
