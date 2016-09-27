@@ -84,29 +84,7 @@ var getPrototype = overArg(Object.getPrototypeOf, Object);
 
 module.exports = getPrototype;
 
-},{"./_overArg":6}],5:[function(require,module,exports){
-/**
- * Checks if `value` is a host object in IE < 9.
- *
- * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a host object, else `false`.
- */
-function isHostObject(value) {
-  // Many host objects are `Object` objects that can coerce to strings
-  // despite having improperly defined `toString` methods.
-  var result = false;
-  if (value != null && typeof value.toString != 'function') {
-    try {
-      result = !!(value + '');
-    } catch (e) {}
-  }
-  return result;
-}
-
-module.exports = isHostObject;
-
-},{}],6:[function(require,module,exports){
+},{"./_overArg":5}],5:[function(require,module,exports){
 /**
  * Creates a unary function that invokes `func` with its argument transformed.
  *
@@ -123,7 +101,7 @@ function overArg(func, transform) {
 
 module.exports = overArg;
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
  * and has a `typeof` result of "object".
@@ -149,14 +127,13 @@ module.exports = overArg;
  * // => false
  */
 function isObjectLike(value) {
-  return !!value && typeof value == 'object';
+  return value != null && typeof value == 'object';
 }
 
 module.exports = isObjectLike;
 
-},{}],8:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 var getPrototype = require('./_getPrototype'),
-    isHostObject = require('./_isHostObject'),
     isObjectLike = require('./isObjectLike');
 
 /** `Object#toString` result references. */
@@ -211,8 +188,7 @@ var objectToString = objectProto.toString;
  * // => true
  */
 function isPlainObject(value) {
-  if (!isObjectLike(value) ||
-      objectToString.call(value) != objectTag || isHostObject(value)) {
+  if (!isObjectLike(value) || objectToString.call(value) != objectTag) {
     return false;
   }
   var proto = getPrototype(value);
@@ -226,7 +202,7 @@ function isPlainObject(value) {
 
 module.exports = isPlainObject;
 
-},{"./_getPrototype":4,"./_isHostObject":5,"./isObjectLike":7}],9:[function(require,module,exports){
+},{"./_getPrototype":4,"./isObjectLike":6}],8:[function(require,module,exports){
 var trim = require('trim')
   , forEach = require('for-each')
   , isArray = function(arg) {
@@ -258,7 +234,7 @@ module.exports = function (headers) {
 
   return result
 }
-},{"for-each":1,"trim":22}],10:[function(require,module,exports){
+},{"for-each":1,"trim":21}],9:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -282,7 +258,7 @@ var thunk = createThunkMiddleware();
 thunk.withExtraArgument = createThunkMiddleware;
 
 exports['default'] = thunk;
-},{}],11:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -341,7 +317,7 @@ function applyMiddleware() {
     };
   };
 }
-},{"./compose":14}],12:[function(require,module,exports){
+},{"./compose":13}],11:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -393,7 +369,7 @@ function bindActionCreators(actionCreators, dispatch) {
   }
   return boundActionCreators;
 }
-},{}],13:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -538,7 +514,7 @@ function combineReducers(reducers) {
   };
 }
 }).call(this,require('_process'))
-},{"./createStore":15,"./utils/warning":17,"_process":23,"lodash/isPlainObject":8}],14:[function(require,module,exports){
+},{"./createStore":14,"./utils/warning":16,"_process":22,"lodash/isPlainObject":7}],13:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -577,7 +553,7 @@ function compose() {
     }, last.apply(undefined, arguments));
   };
 }
-},{}],15:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -839,7 +815,7 @@ function createStore(reducer, preloadedState, enhancer) {
     replaceReducer: replaceReducer
   }, _ref2[_symbolObservable2['default']] = observable, _ref2;
 }
-},{"lodash/isPlainObject":8,"symbol-observable":19}],16:[function(require,module,exports){
+},{"lodash/isPlainObject":7,"symbol-observable":18}],15:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -888,7 +864,7 @@ exports.bindActionCreators = _bindActionCreators2['default'];
 exports.applyMiddleware = _applyMiddleware2['default'];
 exports.compose = _compose2['default'];
 }).call(this,require('_process'))
-},{"./applyMiddleware":11,"./bindActionCreators":12,"./combineReducers":13,"./compose":14,"./createStore":15,"./utils/warning":17,"_process":23}],17:[function(require,module,exports){
+},{"./applyMiddleware":10,"./bindActionCreators":11,"./combineReducers":12,"./compose":13,"./createStore":14,"./utils/warning":16,"_process":22}],16:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -914,7 +890,7 @@ function warning(message) {
   } catch (e) {}
   /* eslint-enable no-empty */
 }
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function (global){
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SolrFacetedSearch = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 /*!
@@ -4239,10 +4215,10 @@ module.exports = exports["default"];
 },{}]},{},[34])(34)
 });
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 module.exports = require('./lib/index');
 
-},{"./lib/index":20}],20:[function(require,module,exports){
+},{"./lib/index":19}],19:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -4267,7 +4243,7 @@ if (typeof global !== 'undefined') {
 var result = (0, _ponyfill2['default'])(root);
 exports['default'] = result;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./ponyfill":21}],21:[function(require,module,exports){
+},{"./ponyfill":20}],20:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4291,7 +4267,7 @@ function symbolObservablePonyfill(root) {
 
 	return result;
 };
-},{}],22:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 
 exports = module.exports = trim;
 
@@ -4307,7 +4283,7 @@ exports.right = function(str){
   return str.replace(/\s*$/, '');
 };
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4489,7 +4465,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],24:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 "use strict";
 var window = require("global/window")
 var isFunction = require("is-function")
@@ -4726,7 +4702,7 @@ function getXml(xhr) {
 
 function noop() {}
 
-},{"global/window":2,"is-function":3,"parse-headers":9,"xtend":25}],25:[function(require,module,exports){
+},{"global/window":2,"is-function":3,"parse-headers":8,"xtend":24}],24:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -4747,7 +4723,7 @@ function extend() {
     return target
 }
 
-},{}],26:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4769,7 +4745,7 @@ function actionsMaker(navigateTo, dispatch) {
 ;
 module.exports = exports["default"];
 
-},{"./actions/solr":28}],27:[function(require,module,exports){
+},{"./actions/solr":27}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4820,7 +4796,7 @@ var setVre = function setVre(vreId, afterInit) {
 
 exports.setVre = setVre;
 
-},{"xhr":24}],28:[function(require,module,exports){
+},{"xhr":23}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4898,17 +4874,25 @@ var configureSearchClients = function configureSearchClients() {
 					url: "/solr/" + collection.collectionName + "/select",
 					searchFields: [{ label: "Search", field: "displayName_t", type: "text" }].concat(archetypes.find(function (archetype) {
 						return archetype.archetypeName === collection.archetypeName;
-					}).properties.map(function (prop) {
+					}).properties.filter(function (prop) {
+						return collection.properties.map(function (prop1) {
+							return prop1.name;
+						}).indexOf(prop.name) > 0;
+					}).map(function (prop) {
 						return {
 							label: prop.name,
 							field: prop.name + "_" + getPropSuffix(prop.type),
 							type: getFacetType(prop.type),
-							collapse: true
+							collapse: false
 						};
 					})),
 					sortFields: archetypes.find(function (archetype) {
 						return archetype.archetypeName === collection.archetypeName;
-					}).properties.map(function (prop) {
+					}).properties.filter(function (prop) {
+						return collection.properties.map(function (prop1) {
+							return prop1.name;
+						}).indexOf(prop.name) > 0;
+					}).map(function (prop) {
 						return {
 							label: prop.name,
 							field: prop.name + "_" + getPropSuffix(prop.type)
@@ -4959,7 +4943,7 @@ var createIndexes = function createIndexes() {
 exports["default"] = { checkIndex: checkIndex, createIndexes: createIndexes, getSearchClients: getSearchClients };
 module.exports = exports["default"];
 
-},{"solr-faceted-search-react":18,"xhr":24}],29:[function(require,module,exports){
+},{"solr-faceted-search-react":17,"xhr":23}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5081,7 +5065,7 @@ var App = (function (_React$Component) {
 exports["default"] = App;
 module.exports = exports["default"];
 
-},{"../actions/solr":28,"./faceted-search/faceted-search":31,"./page.jsx":41,"react":"react"}],30:[function(require,module,exports){
+},{"../actions/solr":27,"./faceted-search/faceted-search":30,"./page.jsx":40,"react":"react"}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5224,7 +5208,7 @@ CurrentQuery.propTypes = {
 exports["default"] = CurrentQuery;
 module.exports = exports["default"];
 
-},{"react":"react"}],31:[function(require,module,exports){
+},{"react":"react"}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5423,7 +5407,7 @@ var FacetedSearch = (function (_React$Component) {
 exports["default"] = FacetedSearch;
 module.exports = exports["default"];
 
-},{"../fields/select-field":39,"../page.jsx":41,"./current-query":30,"./results/pagination":32,"./search-fields":33,"./sort-menu":38,"react":"react"}],32:[function(require,module,exports){
+},{"../fields/select-field":38,"../page.jsx":40,"./current-query":29,"./results/pagination":31,"./search-fields":32,"./sort-menu":37,"react":"react"}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5571,7 +5555,7 @@ Pagination.propTypes = {
 exports["default"] = Pagination;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react"}],33:[function(require,module,exports){
+},{"classnames":"classnames","react":"react"}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5658,7 +5642,7 @@ var SearchFields = (function (_React$Component) {
 exports["default"] = SearchFields;
 module.exports = exports["default"];
 
-},{"./search-fields/list-facet":34,"./search-fields/range-facet":35,"./search-fields/text-search":37,"react":"react"}],34:[function(require,module,exports){
+},{"./search-fields/list-facet":33,"./search-fields/range-facet":34,"./search-fields/text-search":36,"react":"react"}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5856,7 +5840,7 @@ ListFacet.propTypes = {
 exports["default"] = ListFacet;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react"}],35:[function(require,module,exports){
+},{"classnames":"classnames","react":"react"}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6014,7 +5998,7 @@ RangeFacet.propTypes = {
 exports["default"] = RangeFacet;
 module.exports = exports["default"];
 
-},{"./range-slider":36,"classnames":"classnames","react":"react"}],36:[function(require,module,exports){
+},{"./range-slider":35,"classnames":"classnames","react":"react"}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6224,7 +6208,7 @@ RangeSlider.propTypes = {
 exports["default"] = RangeSlider;
 module.exports = exports["default"];
 
-},{"react":"react","react-dom":"react-dom"}],37:[function(require,module,exports){
+},{"react":"react","react-dom":"react-dom"}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6330,7 +6314,7 @@ TextSearch.propTypes = {
 exports["default"] = TextSearch;
 module.exports = exports["default"];
 
-},{"react":"react"}],38:[function(require,module,exports){
+},{"react":"react"}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6452,7 +6436,7 @@ SortMenu.propTypes = {
 exports["default"] = SortMenu;
 module.exports = exports["default"];
 
-},{"../fields/select-field":39,"classnames":"classnames","react":"react"}],39:[function(require,module,exports){
+},{"../fields/select-field":38,"classnames":"classnames","react":"react"}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6603,7 +6587,7 @@ SelectField.propTypes = {
 exports["default"] = SelectField;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],40:[function(require,module,exports){
+},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6679,7 +6663,7 @@ function Footer(props) {
 exports["default"] = Footer;
 module.exports = exports["default"];
 
-},{"react":"react"}],41:[function(require,module,exports){
+},{"react":"react"}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6766,7 +6750,7 @@ function Page(props) {
 exports["default"] = Page;
 module.exports = exports["default"];
 
-},{"./footer":40,"react":"react"}],42:[function(require,module,exports){
+},{"./footer":39,"react":"react"}],41:[function(require,module,exports){
 "use strict";
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
@@ -6817,7 +6801,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_storeStore2["default"].dispatch((0, _actionsMetadata.setVre)(getVreId(), checkForIndex));
 });
 
-},{"./actions/metadata":27,"./actions/solr":28,"./router":43,"./store/store":46,"react-dom":"react-dom"}],43:[function(require,module,exports){
+},{"./actions/metadata":26,"./actions/solr":27,"./router":42,"./store/store":45,"react-dom":"react-dom"}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6877,7 +6861,7 @@ var router = _react2["default"].createElement(
 
 exports["default"] = router;
 
-},{"./actions":26,"./components/app":29,"./store/store":46,"react":"react","react-redux":"react-redux","react-router":"react-router"}],44:[function(require,module,exports){
+},{"./actions":25,"./components/app":28,"./store/store":45,"react":"react","react-redux":"react-redux","react-router":"react-router"}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6916,7 +6900,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],45:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6956,7 +6940,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],46:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6993,5 +6977,5 @@ var store = (0, _redux.createStore)(data, {}, (0, _redux.applyMiddleware)(_redux
 exports["default"] = store;
 module.exports = exports["default"];
 
-},{"./metadata-reducer":44,"./solr-reducer":45,"redux":16,"redux-thunk":10}]},{},[42])(42)
+},{"./metadata-reducer":43,"./solr-reducer":44,"redux":15,"redux-thunk":9}]},{},[41])(41)
 });
