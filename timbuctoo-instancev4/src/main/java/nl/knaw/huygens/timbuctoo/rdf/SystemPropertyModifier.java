@@ -50,4 +50,8 @@ public class SystemPropertyModifier {
   public void setIsDeleted(Element element, boolean isDeleted) {
     element.property("deleted", isDeleted);
   }
+
+  public void setTimId(Element element, String timId) {
+    element.property("tim_id", timId);
+  }
 }

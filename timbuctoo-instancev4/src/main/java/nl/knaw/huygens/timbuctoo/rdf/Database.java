@@ -105,7 +105,12 @@ public class Database {
 
     systemPropertyModifier.setCreated(vertex, "rdf-importer");
     systemPropertyModifier.setModified(vertex, "rdf-importer");
-    systemPropertyModifier.setTimId(vertex);
+    if (nodeUri.startsWith("http://timbuctoo.com/mapping/" + vreName)) {
+      String timId = nodeUri.substring(nodeUri.lastIndexOf("/") + 1);
+      systemPropertyModifier.setTimId(vertex, timId);
+    } else {
+      systemPropertyModifier.setTimId(vertex);
+    }
     systemPropertyModifier.setRev(vertex, 1);
     systemPropertyModifier.setIsLatest(vertex, true);
     systemPropertyModifier.setIsDeleted(vertex, false);
