@@ -162,12 +162,20 @@ public class ExecuteRml {
 
       final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper), vreMappings);
 
-      //first save the mapping, which also contains the archetypes for the collections
-      model.listStatements().forEachRemaining(statement -> processor.process(vreName, true, new Triple(
-        statement.getSubject().asNode(),
-        statement.getPredicate().asNode(),
-        statement.getObject().asNode()
-      )));
+      //first save the archetype mappings
+      model
+        .listStatements(
+          null,
+          model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
+          (String) null
+        )
+        .forEachRemaining(statement ->
+          processor.process(vreName, true, new Triple(
+            statement.getSubject().asNode(),
+            statement.getPredicate().asNode(),
+            statement.getObject().asNode()
+          ))
+        );
 
       rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
         (triple) -> processor.process(vreName, true, triple));
