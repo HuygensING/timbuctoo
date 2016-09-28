@@ -59,6 +59,9 @@ public class EntityToJsonMapper {
     mappedEntity.set("^rev", jsn(entity.getRev()));
     mappedEntity.set("^deleted", jsn(entity.getDeleted()));
     mappedEntity.set("^pid", jsn(entity.getPid()));
+    if (entity.getRdfUri() != null) {
+      mappedEntity.set("^rdfUri", jsn(entity.getRdfUri().toString()));
+    }
 
     JsonNode variationRefs = jsnA(entity.getTypes()
                                         .stream()

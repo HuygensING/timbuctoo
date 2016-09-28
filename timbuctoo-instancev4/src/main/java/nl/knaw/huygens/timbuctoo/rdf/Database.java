@@ -35,7 +35,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class Database {
   private static final Logger LOG = getLogger(Database.class);
 
-  static final String RDF_URI_PROP = "rdfUri";
+  public static final String RDF_URI_PROP = "rdfUri";
   public static final String RDFINDEX_NAME = "rdfUrls";
   private final TinkerpopGraphManager graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;

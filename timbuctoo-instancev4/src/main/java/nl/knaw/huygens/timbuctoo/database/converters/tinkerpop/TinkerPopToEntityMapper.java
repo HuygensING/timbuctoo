@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,6 +38,7 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
 public class TinkerPopToEntityMapper {
@@ -110,7 +113,16 @@ public class TinkerPopToEntityMapper {
     entity.setRev(getProp(entityVertex, "rev", Integer.class).orElse(-1));
     entity.setDeleted(getProp(entityVertex, "deleted", Boolean.class).orElse(false));
     entity.setPid(getProp(entityVertex, "pid", String.class).orElse(null));
-
+    URI rdfUri = getProp(entityVertex, RDF_URI_PROP, String.class)
+      .map(x -> {
+        try {
+          return new URI(x);
+        } catch (URISyntaxException e) {
+          return null;
+        }
+      })
+      .orElse(null);
+    entity.setRdfUri(rdfUri);
 
     Optional<String> typesOptional = getProp(entityVertex, "types", String.class);
     if (typesOptional.isPresent()) {

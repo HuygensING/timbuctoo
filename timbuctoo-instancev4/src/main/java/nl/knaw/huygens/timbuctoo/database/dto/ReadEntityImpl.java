@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
 
+import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ public class ReadEntityImpl implements ReadEntity {
   private String displayName;
   private UUID id;
   private final HashMap<String, Object> extraProperties;
+  private URI rdfUri;
 
   public ReadEntityImpl() {
     extraProperties = Maps.newHashMap();
@@ -60,6 +62,15 @@ public class ReadEntityImpl implements ReadEntity {
   @Override
   public String getPid() {
     return pid;
+  }
+
+  @Override
+  public URI getRdfUri() {
+    return rdfUri;
+  }
+
+  public void setRdfUri(URI rdfUri) {
+    this.rdfUri = rdfUri;
   }
 
   public void setTypes(List<String> types) {
