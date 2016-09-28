@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
-import nl.knaw.huygens.timbuctoo.database.DbCreateEntity;
 import nl.knaw.huygens.timbuctoo.database.TransactionState;
 import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
@@ -13,8 +12,9 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 
-public class TinkerPopCreateEntity implements DbCreateEntity {
+public class TinkerPopCreateEntity implements Function<DataAccessMethods, TransactionStateAndResult<TransactionState>> {
   public static final Logger LOG = LoggerFactory.getLogger(TinkerPopCreateEntity.class);
   private final Collection col;
   private final Optional<Collection> baseCollection;

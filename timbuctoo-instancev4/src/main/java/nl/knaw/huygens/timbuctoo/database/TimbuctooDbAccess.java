@@ -43,9 +43,7 @@ public class TimbuctooDbAccess {
     Change created = createChange(userId);
     createEntity.setCreated(created);
 
-    DbCreateEntity dbCreateEntity =
-      dataAccess.createEntity(collection, baseCollection, createEntity);
-    TransactionState transactionState = dataAccess.executeAndReturn(dbCreateEntity);
+    TransactionState transactionState = dataAccess.createEntity(collection, baseCollection, createEntity);
 
     if (transactionState.wasCommitted()) {
       handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, 1));
@@ -60,8 +58,7 @@ public class TimbuctooDbAccess {
 
     updateEntity.setModified(createChange(userId));
 
-    DbUpdateEntity dbUpdateEntity = dataAccess.updateEntity(collection, updateEntity);
-    UpdateReturnMessage updateReturnMessage = dataAccess.executeAndReturn(dbUpdateEntity);
+    UpdateReturnMessage updateReturnMessage = dataAccess.updateEntity(collection, updateEntity);
 
     switch (updateReturnMessage.getStatus()) {
       case SUCCESS:

@@ -3,15 +3,16 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
-import nl.knaw.huygens.timbuctoo.database.DbUpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.database.UpdateReturnMessage;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 
 import java.io.IOException;
+import java.util.function.Function;
 
-public class TinkerPopUpdateEntity implements DbUpdateEntity {
+public class TinkerPopUpdateEntity implements
+  Function<DataAccessMethods, TransactionStateAndResult<UpdateReturnMessage>> {
   private final UpdateEntity updateEntity;
   private final Collection collection;
 

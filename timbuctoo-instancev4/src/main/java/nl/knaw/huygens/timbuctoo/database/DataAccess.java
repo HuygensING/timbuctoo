@@ -89,11 +89,13 @@ public class DataAccess {
     }
   }
 
-  public DbCreateEntity createEntity(Collection collection, Optional<Collection> baseCollection, CreateEntity entity) {
-    return new TinkerPopCreateEntity(collection, baseCollection, entity);
+  public TransactionState createEntity(Collection collection,
+                                       Optional<Collection> baseCollection,
+                                       CreateEntity entity) {
+    return executeAndReturn(new TinkerPopCreateEntity(collection, baseCollection, entity));
   }
 
-  public DbUpdateEntity updateEntity(Collection collection, UpdateEntity updateEntity) {
-    return new TinkerPopUpdateEntity(collection, updateEntity);
+  public UpdateReturnMessage updateEntity(Collection collection, UpdateEntity updateEntity) {
+    return executeAndReturn(new TinkerPopUpdateEntity(collection, updateEntity));
   }
 }

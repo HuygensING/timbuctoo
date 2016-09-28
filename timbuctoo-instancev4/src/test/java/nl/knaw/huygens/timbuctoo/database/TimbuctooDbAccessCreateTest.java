@@ -43,17 +43,14 @@ public class TimbuctooDbAccessCreateTest {
   private String userId;
   private Optional<Collection> baseCollection;
   private HandleAdder handleAdder;
-  private DbCreateEntity dbCreateEntity;
   private TransactionState transactionState;
 
   @Before
   public void setUp() throws Exception {
     dataAccess = mock(DataAccess.class);
-    dbCreateEntity = mock(DbCreateEntity.class);
-    when(dataAccess.createEntity(any(), any(), any())).thenReturn(dbCreateEntity);
     transactionState = mock(TransactionState.class);
+    when(dataAccess.createEntity(any(), any(), any())).thenReturn(transactionState);
     when(transactionState.wasCommitted()).thenReturn(false);
-    when(dataAccess.executeAndReturn(dbCreateEntity)).thenReturn(transactionState);
 
     clock = mock(Clock.class);
     instant = Instant.now();
@@ -89,7 +86,6 @@ public class TimbuctooDbAccessCreateTest {
       ))
     );
     inOrder.verify(dataAccess).createEntity(collection, baseCollection, this.createEntity);
-    inOrder.verify(dataAccess).executeAndReturn(dbCreateEntity);
   }
 
   @Test

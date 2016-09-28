@@ -20,7 +20,6 @@ import static nl.knaw.huygens.timbuctoo.database.AuthorizerBuilder.notAllowedToW
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -33,7 +32,6 @@ public class TimbuctooDbAccessReplaceTest {
   public static final UUID ID = UUID.randomUUID();
   private static final String USER_ID = "userId";
   private DataAccess dataAccess;
-  private DbUpdateEntity dbUpdateEntity;
   private Clock clock;
   private HandleAdder handleAdder;
   private UpdateEntity updateEntity;
@@ -43,8 +41,6 @@ public class TimbuctooDbAccessReplaceTest {
   @Before
   public void setUp() throws Exception {
     dataAccess = mock(DataAccess.class);
-    dbUpdateEntity = mock(DbUpdateEntity.class);
-    when(dataAccess.updateEntity(any(Collection.class), any(UpdateEntity.class))).thenReturn(dbUpdateEntity);
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
@@ -64,21 +60,20 @@ public class TimbuctooDbAccessReplaceTest {
 
   @Test
   public void replaceEntityAddsAHandleAfterASuccessfulUpdate() throws Exception {
-    when(dataAccess.executeAndReturn(dbUpdateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
+    when(dataAccess.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
     InOrder inOrder = inOrder(dataAccess, handleAdder);
     inOrder.verify(dataAccess).updateEntity(collection, updateEntity);
-    inOrder.verify(dataAccess).executeAndReturn(dbUpdateEntity);
     inOrder.verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV));
 
   }
 
   @Test
   public void replaceEntityAddsTheModifiedPropertyToUpdateEntityBeforeExecutingTheUpdate() throws Exception {
-    when(dataAccess.executeAndReturn(dbUpdateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
+    when(dataAccess.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
@@ -94,7 +89,7 @@ public class TimbuctooDbAccessReplaceTest {
   @Test(expected = NotFoundException.class)
   public void replaceEntityThrowsANotFoundExceptionWhenExecuteAndReturnReturnsAnUpdateStatusNotFound()
     throws Exception {
-    when(dataAccess.executeAndReturn(dbUpdateEntity)).thenReturn(UpdateReturnMessage.notFound());
+    when(dataAccess.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.notFound());
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
@@ -103,7 +98,7 @@ public class TimbuctooDbAccessReplaceTest {
   @Test(expected = AlreadyUpdatedException.class)
   public void replaceEntityThrowsAnAlreadyUpdatedExceptionWhenExecuteAndReturnReturnsAnUpdateStatusAlreadyUpdated()
     throws Exception {
-    when(dataAccess.executeAndReturn(dbUpdateEntity)).thenReturn(UpdateReturnMessage.allreadyUpdated());
+    when(dataAccess.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.allreadyUpdated());
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
