@@ -1,6 +1,14 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
+import nl.knaw.huygens.timbuctoo.remote.rs.sync.ResourceSet;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsItem;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.SitemapItem;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.Sitemapindex;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.UrlItem;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 import java.net.URI;
@@ -13,7 +21,9 @@ import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 /**
- * Explore a ResourceSync source.
+ * Explore a ResourceSync source. ResourceSync documents form a network with 'up' and 'index' links to
+ * parent documents and 'url/loc' or 'sitemap/loc' links to child documents.
+ * This class enables exploration of, and navigation through such a network.
  *
  * <q>
  * ResourceSync provides three ways for a Destination to discover whether and how a Source supports ResourceSync.
@@ -23,6 +33,13 @@ import java.util.stream.Collectors;
  *  <li>6.3.4 robots.txt</li>
  * </ul>
  * </q>
+ *
+ * <ol>
+ *  <li>The <i>Well-Known URI</i> points to a document with capability 'description'.</li>
+ *  <li>The links in headers point to documents with capability 'capabilitylist'.</li>
+ *  <li>The links in <i>robots.txt</i> point to documents with capability 'resourcelist'.</li>
+ * </ol>
+ * We will add forth way: a url that points to a document of whatever capability.
  *
  * @see <a href="http://www.openarchives.org/rs/1.0/resourcesync#Discovery">
  *   http://www.openarchives.org/rs/1.0/resourcesync#Discovery</a>
@@ -58,11 +75,12 @@ public class Expedition {
   }
 
   /**
-   * Gather ResourceSync Framework documents from a source in a ResultIndex.
+   * Gather ResourceSync Framework documents from a source in ResultIndexes.
    *
    * @param url the starting url to explore
-   * @return the resultIndex of the exploration
+   * @return List of resultIndexes of the exploration
    * @throws URISyntaxException if the url could not be converted to a URI.
+   * @throws InterruptedException at Executor interrupts.
    */
   public List<ResultIndex> explore(String url) throws URISyntaxException, InterruptedException {
     URI uri = new URI(url);
@@ -75,7 +93,7 @@ public class Expedition {
     callables.add(() -> exploreRobotsTxt(uri));
     callables.add(() -> exploreRsDocumentUri(uri));
 
-    List<ResultIndex> indexes = executor.invokeAll(callables)
+    return executor.invokeAll(callables)
       .stream()
       .map(future -> {
         try {
@@ -85,8 +103,72 @@ public class Expedition {
         }
       })
       .collect(Collectors.toList());
+  }
 
-    return indexes;
+  /**
+   * List the values of the &lt;loc&gt; element of &lt;url&gt; elements of documents of type urlset with
+   * the given capability.
+   * @param url the url to explore
+   * @param capability the capability of the documents from which locations will be extracted
+   * @return List of values of the &lt;loc&gt; elements
+   * @throws URISyntaxException if the url could not be converted to a URI.
+   * @throws InterruptedException at Executor interrupts.
+   */
+  public List<String> listUrlLocations(String url, Capability capability)
+      throws URISyntaxException, InterruptedException {
+
+    List<ResultIndex> indexes = explore(url);
+
+    return indexes.stream()
+      .map(resultIndex -> resultIndex.getUrlsetResults(capability))
+      .flatMap(List::stream)
+      .map(urlsetResult -> urlsetResult.getContent().orElse(null))
+      .map(Urlset::getItemList)
+      .flatMap(List::stream)
+      .map(UrlItem::getLoc)
+      .collect(Collectors.toList());
+  }
+
+  /**
+   * List the values of the &lt;loc&gt; element of &lt;sitemap&gt; elements of documents of type sitemapindex with
+   * the given capability.
+   * @param url the url to explore
+   * @param capability the capability of the documents from which locations will be extracted
+   * @return List of values of the &lt;loc&gt; elements
+   * @throws URISyntaxException if the url could not be converted to a URI.
+   * @throws InterruptedException at Executor interrupts.
+   */
+  public List<String> listSitemapLocations(String url, Capability capability)
+      throws URISyntaxException, InterruptedException {
+
+    List<ResultIndex> indexes = explore(url);
+
+    return indexes.stream()
+      .map(resultIndex -> resultIndex.getSitemapindexResults(capability))
+      .flatMap(List::stream)
+      .map(sitemapindexResult -> sitemapindexResult.getContent().orElse(null))
+      .map(Sitemapindex::getItemList)
+      .flatMap(List::stream)
+      .map(SitemapItem::getLoc)
+      .collect(Collectors.toList());
+  }
+
+  public List<ResourceSet> listGraphs(String url) throws URISyntaxException, InterruptedException {
+    // the loc values in description have the graph names in base64:
+    // http://192.168.99.100:8085/aHR0cDovL2V4YW1wbGUuY29tL2NsYXJpYWgK/capability-list.xml
+    List<ResultIndex> indexes = explore(url);
+
+    List<Result<Urlset>> results = indexes.stream()
+      .map(resultIndex -> resultIndex.getUrlsetResults(Capability.DESCRIPTION))
+      .flatMap(List::stream)
+      .collect(Collectors.toList());
+
+    List<ResourceSet> sets = new ArrayList<>();
+    for (Result<Urlset> result : results) {
+      ResourceSet set = new ResourceSet(result.getUri());
+      sets.add(set);
+    }
+    return sets;
   }
 
   private ResultIndex exploreWellKnown(URI uri) {

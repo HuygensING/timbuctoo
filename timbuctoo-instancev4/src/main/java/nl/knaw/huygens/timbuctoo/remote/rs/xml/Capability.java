@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
-import java.util.function.Predicate;
-
 /**
  * A mandatory attribute in all ResourceSync documents.
  * <q>Defined values are resourcelist, changelist, resourcedump, changedump, resourcedump-manifest,
@@ -125,22 +123,5 @@ public enum Capability {
     }
     return allowed;
   }
-
-
-  /*  public Direction directionForTarget(Capability target) {
-    if (target == null) {
-      return Direction.UNKNOWN;
-    }
-    Capability upRelation = getUpRelation();
-    if (upRelation == target) {
-      return Direction.UP;
-    } else if (upRelation != null && upRelation.getUpRelation() == target) {
-      return Direction.UP;
-    }
-
-    return Direction.UNKNOWN;
-  }
-
-  public enum Direction { UP, DOWN, UNKNOWN }*/
 
 }

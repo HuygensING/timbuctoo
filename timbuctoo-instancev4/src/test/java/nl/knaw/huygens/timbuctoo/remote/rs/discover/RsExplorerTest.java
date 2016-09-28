@@ -9,7 +9,6 @@ import org.mockserver.model.HttpRequest;
 import org.mockserver.model.HttpResponse;
 
 import javax.xml.bind.JAXBException;
-
 import java.net.URI;
 
 import static org.hamcrest.MatcherAssert.assertThat;
