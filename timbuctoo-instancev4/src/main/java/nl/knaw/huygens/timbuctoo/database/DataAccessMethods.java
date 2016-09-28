@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
@@ -388,11 +389,9 @@ public class DataAccessMethods implements AutoCloseable {
    * @throws NotFoundException       when the entity does not exist in the database
    * @throws AlreadyUpdatedException when the entity is updated in between the read and this update
    */
-  public void replaceEntity(Collection collection, String userId, UpdateEntity updateEntity)
-    throws NotFoundException, AlreadyUpdatedException, IOException, AuthorizationUnavailableException,
-    AuthorizationException {
+  public int replaceEntity(Collection collection, UpdateEntity updateEntity)
+    throws NotFoundException, AlreadyUpdatedException, IOException {
 
-    checkIfAllowedToWrite(authorizer, userId, collection);
     requireCommit = true;
 
     GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(
@@ -451,13 +450,13 @@ public class DataAccessMethods implements AutoCloseable {
       }
     }
 
-    setModified(entityVertex, userId, updateEntity.getUpdateInstant());
+    setModified(entityVertex, updateEntity.getModified());
     entityVertex.property("pid").remove();
 
     callUpdateListener(entityVertex);
 
     duplicateVertex(traversal, entityVertex);
-    addHandle(collection, updateEntity.getId(), newRev);
+    return newRev;
   }
 
   public void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
@@ -690,6 +689,14 @@ public class DataAccessMethods implements AutoCloseable {
     final String value = jsnO(
       "timeStamp", jsn(instant.toEpochMilli()),
       "userId", jsn(userId)
+    ).toString();
+    element.property("modified", value);
+  }
+
+  private void setModified(Element element, Change modified) {
+    final String value = jsnO(
+      "timeStamp", jsn(modified.getTimeStamp()),
+      "userId", jsn(modified.getUserId())
     ).toString();
     element.property("modified", value);
   }

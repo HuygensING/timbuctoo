@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
@@ -18,14 +17,14 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.database.AuthorizerBuilder.allowedToWrite;
+import static nl.knaw.huygens.timbuctoo.database.AuthorizerBuilder.notAllowedToWrite;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
@@ -33,7 +32,7 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class TimbuctooDbAccessTest {
+public class TimbuctooDbAccessCreateTest {
 
   public static final String COLLECTION_NAME = "collectionName";
   private DataAccess dataAccess;
@@ -120,22 +119,6 @@ public class TimbuctooDbAccessTest {
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
     verify(handleAdder, never()).add(new HandleAdderParameters(COLLECTION_NAME, id, 1));
-  }
-
-  private Authorizer notAllowedToWrite() throws AuthorizationUnavailableException {
-    return createAuthorizer(false);
-  }
-
-  private Authorizer allowedToWrite() throws AuthorizationUnavailableException {
-    return createAuthorizer(true);
-  }
-
-  private Authorizer createAuthorizer(boolean allowedToWrite) throws AuthorizationUnavailableException {
-    Authorizer authorizer = mock(Authorizer.class);
-    Authorization authorization = mock(Authorization.class);
-    when(authorization.isAllowedToWrite()).thenReturn(allowedToWrite);
-    when(authorizer.authorizationFor(any(Collection.class), anyString())).thenReturn(authorization);
-    return authorizer;
   }
 
 }

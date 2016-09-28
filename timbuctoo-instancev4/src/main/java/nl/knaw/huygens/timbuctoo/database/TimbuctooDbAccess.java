@@ -1,8 +1,11 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
+import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -37,9 +40,7 @@ public class TimbuctooDbAccess {
     checkIfAllowedToWrite(userId, collection);
     UUID id = UUID.randomUUID();
     createEntity.setId(id);
-    Change created = new Change();
-    created.setUserId(userId);
-    created.setTimeStamp(clock.instant().toEpochMilli());
+    Change created = createChange(userId);
     createEntity.setCreated(created);
 
     DbCreateEntity dbCreateEntity =
@@ -51,6 +52,38 @@ public class TimbuctooDbAccess {
     }
 
     return id;
+  }
+
+  public void replaceEntity(Collection collection, UpdateEntity updateEntity, String userId)
+    throws AuthorizationUnavailableException, AuthorizationException, NotFoundException, AlreadyUpdatedException {
+    checkIfAllowedToWrite(userId, collection);
+
+    updateEntity.setModified(createChange(userId));
+
+    DbUpdateEntity dbUpdateEntity = dataAccess.updateEntity(collection, updateEntity);
+    UpdateReturnMessage updateReturnMessage = dataAccess.executeAndReturn(dbUpdateEntity);
+
+    switch (updateReturnMessage.getStatus()) {
+      case SUCCESS:
+        Integer rev = updateReturnMessage.getNewRev().get();
+        HandleAdderParameters params = new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(),
+          rev);
+        handleAdder.add(params);
+        break;
+      case NOT_FOUND:
+        throw new NotFoundException();
+      case ALREADY_UPDATED:
+        throw new AlreadyUpdatedException();
+      default:
+        throw new IllegalStateException("Update status '" + updateReturnMessage.getStatus() + "' is unknown.");
+    }
+  }
+
+  private Change createChange(String userId) {
+    Change change = new Change();
+    change.setUserId(userId);
+    change.setTimeStamp(clock.instant().toEpochMilli());
+    return change;
   }
 
   private void checkIfAllowedToWrite(String userId, Collection collection) throws

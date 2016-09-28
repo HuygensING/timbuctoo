@@ -121,15 +121,6 @@ public class JsonCrudService {
     Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
 
     UUID id = timDbAccess.createEntity(collection, baseCollection, createEntity, userId);
-    // try (DataAccess.DataAccessMethods db = dataAccess.start()) {
-    //   try {
-    //     id = db.createEntity(collection, baseCollection, createEntity, userId, clock.instant());
-    //     db.success();
-    //   } catch (IOException | AuthorizationException | AuthorizationUnavailableException e) {
-    //     db.rollback();
-    //     throw e;
-    //   }
-    // }
 
     return id;
   }
@@ -290,7 +281,6 @@ public class JsonCrudService {
 
     UpdateEntity updateEntity = new UpdateEntity(id, properties, rev, clock.instant());
 
-
     final Map<String, LocalProperty> collectionProperties = collection.getWriteableProperties();
 
     Set<String> propertyNames =
@@ -301,16 +291,8 @@ public class JsonCrudService {
         throw new IOException(name + " is not a valid property");
       }
     }
-    try (DataAccessMethods db = dataAccess.start()) {
-      try {
-        db.replaceEntity(collection, userId, updateEntity);
-        db.success();
-      } catch (NotFoundException | IOException | AlreadyUpdatedException | AuthorizationUnavailableException |
-        AuthorizationException e) {
-        db.rollback();
-        throw e;
-      }
-    }
+
+    timDbAccess.replaceEntity(collection, updateEntity, userId);
   }
 
   private Set<String> getDataFields(ObjectNode data) {
