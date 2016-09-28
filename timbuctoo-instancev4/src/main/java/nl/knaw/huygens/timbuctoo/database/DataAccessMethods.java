@@ -336,10 +336,6 @@ public class DataAccessMethods implements AutoCloseable {
     duplicateVertex(traversal, vertex);
   }
 
-  private void addHandle(Collection col, UUID id, int rev) {
-    handlesToAdd.add(new HandleAdderParameters(col.getCollectionName(), id, rev));
-  }
-
   public ReadEntity getEntity(UUID id, Integer rev, Collection collection,
                               CustomEntityProperties customEntityProperties,
                               CustomRelationProperties customRelationProperties) throws NotFoundException {
