@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -72,7 +73,7 @@ public class TimbuctooDbAccess {
       case ALREADY_UPDATED:
         throw new AlreadyUpdatedException();
       default:
-        throw new IllegalStateException("Update status '" + updateReturnMessage.getStatus() + "' is unknown.");
+        throw new IllegalStateException("UpdateStatus '" + updateReturnMessage.getStatus() + "' is unknown.");
     }
   }
 
@@ -87,6 +88,21 @@ public class TimbuctooDbAccess {
     AuthorizationException, AuthorizationUnavailableException {
     if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
       throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
+    }
+  }
+
+  public ReadEntity getEntity(Collection collection, UUID id, Integer rev,
+                              CustomEntityProperties customEntityPros,
+                              CustomRelationProperties customRelationProps) throws NotFoundException {
+    GetMessage getMessage = dataAccess.getEntity(collection, id, rev, customEntityPros, customRelationProps);
+
+    switch (getMessage.getStatus()) {
+      case SUCCESS:
+        return getMessage.getReadEntity().get();
+      case NOT_FOUND:
+        throw new NotFoundException();
+      default:
+        throw new IllegalStateException("GetStatus '" + getMessage.getStatus() + "' is unknown.");
     }
   }
 }

@@ -7,12 +7,14 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopCreateEntity;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopUpdateEntity;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class DataAccess {
@@ -97,5 +99,12 @@ public class DataAccess {
 
   public UpdateReturnMessage updateEntity(Collection collection, UpdateEntity updateEntity) {
     return executeAndReturn(new TinkerPopUpdateEntity(collection, updateEntity));
+  }
+
+  public GetMessage getEntity(Collection collection, UUID id,
+                              Integer rev,
+                              CustomEntityProperties entityProps,
+                              CustomRelationProperties relationProps) {
+    return executeAndReturn(new TinkerPopGetEntity(collection, id, rev, entityProps, relationProps));
   }
 }

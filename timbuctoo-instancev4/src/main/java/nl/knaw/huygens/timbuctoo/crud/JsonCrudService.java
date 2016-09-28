@@ -170,32 +170,23 @@ public class JsonCrudService {
   }
 
   private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
-    try (DataAccessMethods dataAccessMethods = dataAccess.start()) {
 
-      try {
-        ReadEntity entity = dataAccessMethods.getEntity(id, rev, collection,
-          (entity1, entityVertex) -> {
+    ReadEntity entity = timDbAccess.getEntity(collection, id, rev,
+      (entity1, entityVertex) -> {
 
-          },
-          (traversalSource, vre, target, relationRef) -> {
+      },
+      (traversalSource, vre, target, relationRef) -> {
 
-          });
+      });
 
-        ObjectNode result = entityToJsonMapper.mapEntity(collection, entity, true,
-          (readEntity, resultJson) -> {
-          },
-          (relationRef, resultJson) -> {
-          }
-        );
-
-        dataAccessMethods.success();
-        return result;
-      } catch (NotFoundException e) {
-        dataAccessMethods.rollback();
-        throw e;
+    ObjectNode result = entityToJsonMapper.mapEntity(collection, entity, true,
+      (readEntity, resultJson) -> {
+      },
+      (relationRef, resultJson) -> {
       }
-    }
+    );
 
+    return result;
   }
 
   public List<ObjectNode> getCollection(String collectionName, int rows, int start, boolean withRelations)
