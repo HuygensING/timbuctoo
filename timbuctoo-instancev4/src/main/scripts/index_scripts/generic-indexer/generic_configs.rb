@@ -34,7 +34,8 @@ class GenericConfigs
                   : { :name => prop['name'], :converted_name => "#{prop['name']}_s" }
               } <<  { :name => '@displayName', :converted_name => 'displayName_s' }  <<
                     { :name => '_id', :converted_name => 'id' } <<
-                    { :name => '@displayName', :converted_name => 'displayName_t' },
+                    { :name => '@displayName', :converted_name => 'displayName_t' } <<
+                    { :name => "^rdfUri", :converted_name => 'rdfUri_s' },
           :relations => archetype_mapping['properties']
               .select {|prop| prop['type'].eql?("relation") }
               .map {|rel| {
