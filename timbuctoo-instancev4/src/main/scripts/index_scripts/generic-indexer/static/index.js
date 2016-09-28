@@ -4877,7 +4877,7 @@ var configureSearchClients = function configureSearchClients() {
 					}).properties.filter(function (prop) {
 						return collection.properties.map(function (prop1) {
 							return prop1.name;
-						}).indexOf(prop.name) > 0;
+						}).indexOf(prop.name) > -1;
 					}).map(function (prop) {
 						return {
 							label: prop.name,
@@ -4891,7 +4891,7 @@ var configureSearchClients = function configureSearchClients() {
 					}).properties.filter(function (prop) {
 						return collection.properties.map(function (prop1) {
 							return prop1.name;
-						}).indexOf(prop.name) > 0;
+						}).indexOf(prop.name) > -1;
 					}).map(function (prop) {
 						return {
 							label: prop.name,
