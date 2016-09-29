@@ -5473,7 +5473,7 @@ var Detail = (function (_React$Component) {
             { className: "col-sm-4 text-right" },
             _react2["default"].createElement(
               "button",
-              { type: "button", className: "btn btn-default" },
+              { type: "button", disabled: true, className: "btn btn-default" },
               _react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
             )
           ),
@@ -5491,7 +5491,7 @@ var Detail = (function (_React$Component) {
             { className: "col-sm-4 text-left" },
             _react2["default"].createElement(
               "button",
-              { type: "button", className: "btn btn-default" },
+              { type: "button", disabled: true, className: "btn btn-default" },
               _react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
             )
           )
