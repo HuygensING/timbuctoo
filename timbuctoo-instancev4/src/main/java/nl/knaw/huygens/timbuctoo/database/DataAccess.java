@@ -4,10 +4,12 @@ import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopCreateEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopDeleteEntity;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetCollection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopUpdateEntity;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -18,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public class DataAccess {
 
@@ -113,4 +116,13 @@ public class DataAccess {
   public DeleteMessage deleteEntity(Collection collection, UUID id, Change modified) {
     return executeAndReturn(new TinkerPopDeleteEntity(collection, id, modified));
   }
+
+  public Stream<ReadEntity> getCollection(Collection collection, int start, int rows,
+                                          boolean withRelations, CustomEntityProperties entityProps,
+                                          CustomRelationProperties relationProps) {
+    return executeAndReturn(
+      new TinkerPopGetCollection(collection, start, rows, withRelations, entityProps, relationProps));
+  }
+
+
 }

@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.database.DeleteMessage.DeleteStatus.NOT_FOUND;
 
@@ -116,6 +117,12 @@ public class TimbuctooDbAccess {
       default:
         throw new IllegalStateException("GetStatus '" + getMessage.getStatus() + "' is unknown.");
     }
+  }
+
+  public Stream<ReadEntity> getCollection(Collection collection, int start, int rows,
+                                          boolean withRelations, CustomEntityProperties entityProps,
+                                          CustomRelationProperties relationProps) {
+    return dataAccess.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 }
 

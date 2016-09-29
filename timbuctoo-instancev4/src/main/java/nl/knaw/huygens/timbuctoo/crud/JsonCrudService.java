@@ -194,24 +194,23 @@ public class JsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    try (DataAccessMethods dataAccessMethods = dataAccess.start()) {
-      Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start, withRelations,
-        (entity1, entityVertex) -> {
+    Stream<ReadEntity> entities = timDbAccess.getCollection(collection, rows, start, withRelations,
+      (traversalSource, vre) -> {
 
-        },
-        (traversalSource, vre, target, relationRef) -> {
+      },
+      (entity1, entityVertex, target, relationRef) -> {
 
-        });
-      List<ObjectNode> result = entities.map(entity -> entityToJsonMapper.mapEntity(collection, entity, withRelations,
-        (readEntity, resultJson) -> {
-        },
-        (relationRef, resultJson) -> {
-        }
-      )).collect(Collectors.toList());
-      dataAccessMethods.success();
-      return result;
-    }
+      }
+    );
+    List<ObjectNode> result = entities.map(entity -> entityToJsonMapper.mapEntity(collection, entity, withRelations,
+      (readEntity, resultJson) -> {
+      },
+      (relationRef, resultJson) -> {
+      }
+    )).collect(Collectors.toList());
+    return result;
   }
+
 
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
     throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException, AuthorizationException,
