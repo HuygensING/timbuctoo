@@ -5274,6 +5274,10 @@ var _reactRouter = require("react-router");
 
 var _router = require("../../router");
 
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
 var ts2date = function ts2date(ts) {
   var date = new Date(ts);
   return date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
@@ -5321,6 +5325,8 @@ var Detail = (function (_React$Component) {
       var entity = _props2.entity;
       var collectionMetadata = _props2.collectionMetadata;
       var vreId = _props2.vreId;
+      var nextId = _props2.nextId;
+      var prevId = _props2.prevId;
 
       if (!entity._id) {
         return _react2["default"].createElement(_pageJsx2["default"], null);
@@ -5472,8 +5478,8 @@ var Detail = (function (_React$Component) {
             "div",
             { className: "col-sm-4 text-right" },
             _react2["default"].createElement(
-              "button",
-              { type: "button", disabled: true, className: "btn btn-default" },
+              _reactRouter.Link,
+              { to: _router.urls.entity(collectionMetadata.collectionName, prevId, vreId), className: (0, _classnames2["default"])("btn", "btn-default", { "disabled": !prevId }) },
               _react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
             )
           ),
@@ -5490,8 +5496,8 @@ var Detail = (function (_React$Component) {
             "div",
             { className: "col-sm-4 text-left" },
             _react2["default"].createElement(
-              "button",
-              { type: "button", disabled: true, className: "btn btn-default" },
+              _reactRouter.Link,
+              { to: _router.urls.entity(collectionMetadata.collectionName, nextId, vreId), className: (0, _classnames2["default"])("btn", "btn-default", { "disabled": !nextId }) },
               _react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
             )
           )
@@ -5506,7 +5512,7 @@ var Detail = (function (_React$Component) {
 exports["default"] = Detail;
 module.exports = exports["default"];
 
-},{"../../router":44,"../page.jsx":42,"./camel2label":29,"react":"react","react-router":"react-router"}],32:[function(require,module,exports){
+},{"../../router":44,"../page.jsx":42,"./camel2label":29,"classnames":"classnames","react":"react","react-router":"react-router"}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7160,11 +7166,20 @@ var makeContainerComponent = (0, _reactRedux.connect)(function (state) {
 });
 
 var makeDetailComponent = (0, _reactRedux.connect)(function (state, route) {
+	var solr = state.solr;
+	var collections = state.metadata.collections;
+
+	var resultIds = solr.searchStates[route.params.collectionName].results.docs.map(function (doc) {
+		return doc.id;
+	});
+
 	return {
 		collectionMetadata: state.metadata.collections[route.params.collectionName],
 		entity: state.entity && state.entity.data ? state.entity.data : {},
 		params: route.params,
-		vreId: state.metadata.vreId
+		vreId: state.metadata.vreId,
+		nextId: resultIds[resultIds.indexOf(route.params.id) + 1],
+		prevId: resultIds[resultIds.indexOf(route.params.id) - 1]
 	};
 }, function (dispatch) {
 	return (0, _actions2["default"])(navigateTo, dispatch);
