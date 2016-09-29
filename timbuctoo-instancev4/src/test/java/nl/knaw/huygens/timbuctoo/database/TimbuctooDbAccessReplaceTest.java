@@ -23,6 +23,7 @@ import static org.hamcrest.Matchers.is;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class TimbuctooDbAccessReplaceTest {
@@ -55,7 +56,11 @@ public class TimbuctooDbAccessReplaceTest {
   public void replaceEntityThrowsAnUnauthorizedExceptionWhenTheUserIsNotAllowedToWrite() throws Exception {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(notAllowedToWrite(), dataAccess, clock, handleAdder);
 
-    instance.replaceEntity(collection, updateEntity, USER_ID);
+    try {
+      instance.replaceEntity(collection, updateEntity, USER_ID);
+    } finally {
+      verifyZeroInteractions(dataAccess);
+    }
   }
 
   @Test

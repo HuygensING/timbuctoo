@@ -6,8 +6,6 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -30,6 +28,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class TimbuctooDbAccessCreateTest {
@@ -68,7 +67,11 @@ public class TimbuctooDbAccessCreateTest {
     throws Exception {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(notAllowedToWrite(), dataAccess, clock, handleAdder);
 
-    instance.createEntity(mock(Collection.class), baseCollection, new CreateEntity(Lists.newArrayList()), "userId");
+    try {
+      instance.createEntity(mock(Collection.class), baseCollection, new CreateEntity(Lists.newArrayList()), "userId");
+    } finally {
+      verifyZeroInteractions(dataAccess);
+    }
   }
 
 
