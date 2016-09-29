@@ -7,9 +7,7 @@ require './generic_indexer'
 class Web < Sinatra::Base
 
 
-  get '/' do
-    File.read(File.join('static', 'index.html'))
-  end
+
 
   get '/*.css' do
     response['Content-type'] = 'text/css'
@@ -33,6 +31,10 @@ class Web < Sinatra::Base
 
   get '/fonts/*' do
     File.read(File.join('static', params['splat'].first))
+  end
+
+  get '/*' do
+    File.read(File.join('static', 'index.html'))
   end
 
   post '/:vre_id' do

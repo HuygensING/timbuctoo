@@ -5001,6 +5001,7 @@ var App = (function (_React$Component) {
 			var _props = this.props;
 			var solr = _props.solr;
 			var onCreateIndexes = _props.onCreateIndexes;
+			var vreId = _props.metadata.vreId;
 			var activeClient = this.state.activeClient;
 
 			var searchClients = (0, _actionsSolr.getSearchClients)();
@@ -5029,7 +5030,8 @@ var App = (function (_React$Component) {
 					return _this.setActiveClient(collectionName);
 				}
 			}, visibleClient.client.getHandlers(), {
-				truncateFacetListsAt: 5
+				truncateFacetListsAt: 5,
+				vreId: vreId
 			}) : null;
 
 			return solr.indexPresent ? _react2["default"].createElement(_facetedSearchFacetedSearch2["default"], facetedSearchProps) : _react2["default"].createElement(
@@ -5253,6 +5255,10 @@ var _sortMenu = require("./sort-menu");
 
 var _sortMenu2 = _interopRequireDefault(_sortMenu);
 
+var _router = require("../../router");
+
+var _reactRouter = require("react-router");
+
 var FacetedSearch = (function (_React$Component) {
   _inherits(FacetedSearch, _React$Component);
 
@@ -5268,6 +5274,7 @@ var FacetedSearch = (function (_React$Component) {
       var _props = this.props;
       var collections = _props.collections;
       var truncateFacetListsAt = _props.truncateFacetListsAt;
+      var vreId = _props.vreId;
       var _props2 = this.props;
       var onCollectionSelect = _props2.onCollectionSelect;
       var onSearchFieldChange = _props2.onSearchFieldChange;
@@ -5348,8 +5355,8 @@ var FacetedSearch = (function (_React$Component) {
                       "li",
                       { key: i + activeCollection.query.start },
                       _react2["default"].createElement(
-                        "a",
-                        { target: "_blank", href: globals.env.SERVER + "/v2.1/domain/" + activeCollection.name + "/" + doc.id },
+                        _reactRouter.Link,
+                        { to: _router.urls.entity(activeCollection.name, doc.id, vreId) },
                         doc.displayName_s,
                         doc.birthDate_i ? _react2["default"].createElement(
                           "span",
@@ -5407,7 +5414,7 @@ var FacetedSearch = (function (_React$Component) {
 exports["default"] = FacetedSearch;
 module.exports = exports["default"];
 
-},{"../fields/select-field":38,"../page.jsx":40,"./current-query":29,"./results/pagination":31,"./search-fields":32,"./sort-menu":37,"react":"react"}],31:[function(require,module,exports){
+},{"../../router":42,"../fields/select-field":38,"../page.jsx":40,"./current-query":29,"./results/pagination":31,"./search-fields":32,"./sort-menu":37,"react":"react","react-router":"react-router"}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6832,8 +6839,11 @@ var _actions = require("./actions");
 var _actions2 = _interopRequireDefault(_actions);
 
 var urls = {
-	root: function root() {
-		return "/";
+	root: function root(vreId) {
+		return vreId ? "/?vreId=" + vreId : "/";
+	},
+	entity: function entity(collectionName, id, vreId) {
+		return collectionName && id && vreId ? collectionName + "/" + id + "?vreId=" + vreId : ":collectionName/:id";
 	}
 };
 
@@ -6849,13 +6859,22 @@ var makeContainerComponent = (0, _reactRedux.connect)(function (state) {
 	return (0, _actions2["default"])(navigateTo, dispatch);
 });
 
+var Detail = function Detail() {
+	return _react2["default"].createElement(
+		"div",
+		null,
+		"detailPage"
+	);
+};
+
 var router = _react2["default"].createElement(
 	_reactRedux.Provider,
 	{ store: _storeStore2["default"] },
 	_react2["default"].createElement(
 		_reactRouter.Router,
 		{ history: _reactRouter.browserHistory },
-		_react2["default"].createElement(_reactRouter.Route, { path: urls.root(true), component: makeContainerComponent(_componentsApp2["default"]) })
+		_react2["default"].createElement(_reactRouter.Route, { path: urls.root(), component: makeContainerComponent(_componentsApp2["default"]) }),
+		_react2["default"].createElement(_reactRouter.Route, { path: urls.entity(), component: makeContainerComponent(Detail) })
 	)
 );
 
