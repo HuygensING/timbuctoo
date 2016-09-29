@@ -18,6 +18,8 @@ import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.database.DeleteMessage.DeleteStatus.NOT_FOUND;
+
 /**
  * This class is performs all the steps needed to save entities relations, etc.
  */
@@ -74,6 +76,16 @@ public class TimbuctooDbAccess {
         throw new AlreadyUpdatedException();
       default:
         throw new IllegalStateException("UpdateStatus '" + updateReturnMessage.getStatus() + "' is unknown.");
+    }
+  }
+
+  public void deleteEntity(Collection collection, UUID uuid, String userId)
+    throws AuthorizationUnavailableException, AuthorizationException, NotFoundException {
+    checkIfAllowedToWrite(userId, collection);
+
+    DeleteMessage deleteMessage = dataAccess.deleteEntity(collection, uuid, createChange(userId));
+    if (deleteMessage.getStatus() == NOT_FOUND) {
+      throw new NotFoundException();
     }
   }
 

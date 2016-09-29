@@ -486,10 +486,9 @@ public class DataAccessMethods implements AutoCloseable {
     setModified(edge, userId, instant);
   }
 
-  public void deleteEntity(Collection collection, UUID id, String userId, Instant deleteTime)
-    throws AuthorizationException, AuthorizationUnavailableException, NotFoundException {
+  public void deleteEntity(Collection collection, UUID id, Change modified)
+    throws NotFoundException {
 
-    checkIfAllowedToWrite(authorizer, userId, collection);
     requireCommit = true;
 
     GraphTraversal<Vertex, Vertex> entityTraversal = entityFetcher.getEntity(traversal, id, null,
@@ -532,7 +531,7 @@ public class DataAccessMethods implements AutoCloseable {
       }
     });
 
-    setModified(entity, userId, deleteTime);
+    setModified(entity, modified);
     entity.property("pid").remove();
     callUpdateListener(entity);
     duplicateVertex(traversal, entity);

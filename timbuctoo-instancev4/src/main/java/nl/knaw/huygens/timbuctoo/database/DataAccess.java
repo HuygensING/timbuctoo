@@ -7,8 +7,10 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopCreateEntity;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopDeleteEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopUpdateEntity;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -106,5 +108,9 @@ public class DataAccess {
                               CustomEntityProperties entityProps,
                               CustomRelationProperties relationProps) {
     return executeAndReturn(new TinkerPopGetEntity(collection, id, rev, entityProps, relationProps));
+  }
+
+  public DeleteMessage deleteEntity(Collection collection, UUID id, Change modified) {
+    return executeAndReturn(new TinkerPopDeleteEntity(collection, id, modified));
   }
 }

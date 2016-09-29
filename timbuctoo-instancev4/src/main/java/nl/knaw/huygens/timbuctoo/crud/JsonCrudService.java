@@ -299,20 +299,10 @@ public class JsonCrudService {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
-    try (DataAccessMethods db = dataAccess.start()) {
-      try {
-        db.deleteEntity(collection, id, userId, clock.instant());
-
-        //Make sure this is the last line of the method. We don't want to commit half our changes
-        //this also means checking each function that we call to see if they don't call commit()
-        db.success();
-      } catch (NotFoundException | AuthorizationException e) {
-        db.rollback();
-        throw e;
-      } catch (AuthorizationUnavailableException e) {
-        db.rollback();
-        throw new IOException(e.getMessage());
-      }
+    try {
+      timDbAccess.deleteEntity(collection, id, userId);
+    } catch (AuthorizationUnavailableException e) {
+      throw new IOException(e.getMessage());
     }
 
   }
