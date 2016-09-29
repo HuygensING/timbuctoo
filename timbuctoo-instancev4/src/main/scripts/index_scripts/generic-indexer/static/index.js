@@ -4731,12 +4731,26 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports["default"] = actionsMaker;
 
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
 var _actionsSolr = require("./actions/solr");
+
+var _xhr = require("xhr");
+
+var _xhr2 = _interopRequireDefault(_xhr);
 
 function actionsMaker(navigateTo, dispatch) {
 	var actions = {
 		onCreateIndexes: function onCreateIndexes() {
 			dispatch((0, _actionsSolr.createIndexes)());
+		},
+		onFetchEntity: function onFetchEntity(collectionName, id) {
+			dispatch(function (redispatch) {
+				redispatch({ type: "START_ENTITY_FETCH" });
+				(0, _xhr2["default"])(globals.env.SERVER + "/v2.1/domain/" + collectionName + "/" + id, function (err, resp, body) {
+					redispatch({ type: "RECEIVE_ENTITY", entity: JSON.parse(body) });
+				});
+			});
 		}
 	};
 	return actions;
@@ -4745,7 +4759,7 @@ function actionsMaker(navigateTo, dispatch) {
 ;
 module.exports = exports["default"];
 
-},{"./actions/solr":27}],26:[function(require,module,exports){
+},{"./actions/solr":27,"xhr":23}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5067,7 +5081,24 @@ var App = (function (_React$Component) {
 exports["default"] = App;
 module.exports = exports["default"];
 
-},{"../actions/solr":27,"./faceted-search/faceted-search":30,"./page.jsx":40,"react":"react"}],29:[function(require,module,exports){
+},{"../actions/solr":27,"./faceted-search/faceted-search":32,"./page.jsx":42,"react":"react"}],29:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports["default"] = function (camelCase) {
+  return camelCase.replace(/([A-Z0-9])/g, function (match) {
+    return " " + match.toLowerCase();
+  }).replace(/^./, function (match) {
+    return match.toUpperCase();
+  });
+};
+
+module.exports = exports["default"];
+
+},{}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5210,7 +5241,272 @@ CurrentQuery.propTypes = {
 exports["default"] = CurrentQuery;
 module.exports = exports["default"];
 
-},{"react":"react"}],30:[function(require,module,exports){
+},{"react":"react"}],31:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _pageJsx = require("../page.jsx");
+
+var _pageJsx2 = _interopRequireDefault(_pageJsx);
+
+var _camel2label = require("./camel2label");
+
+var _camel2label2 = _interopRequireDefault(_camel2label);
+
+var _reactRouter = require("react-router");
+
+var _router = require("../../router");
+
+var ts2date = function ts2date(ts) {
+  var date = new Date(ts);
+  return date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
+};
+
+var Detail = (function (_React$Component) {
+  _inherits(Detail, _React$Component);
+
+  function Detail() {
+    _classCallCheck(this, Detail);
+
+    _get(Object.getPrototypeOf(Detail.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(Detail, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      var _props = this.props;
+      var entity = _props.entity;
+      var onFetchEntity = _props.onFetchEntity;
+      var _props$params = _props.params;
+      var id = _props$params.id;
+      var collectionName = _props$params.collectionName;
+
+      // If the requested id from the route does not match the data, or if there is no data
+      if (!entity._id && id || id && entity._id !== id) {
+        // Fetch the correct author based on the id.
+        onFetchEntity(collectionName, id);
+      }
+    }
+  }, {
+    key: "componentWillReceiveProps",
+    value: function componentWillReceiveProps(nextProps) {
+      var onFetchEntity = this.props.onFetchEntity;
+
+      // Triggers fetch data from server based on id from route.
+      if (this.props.params.id !== nextProps.params.id) {
+        onFetchEntity(nextProps.params.collectionName, nextProps.params.id);
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _props2 = this.props;
+      var entity = _props2.entity;
+      var collectionMetadata = _props2.collectionMetadata;
+      var vreId = _props2.vreId;
+
+      if (!entity._id) {
+        return _react2["default"].createElement(_pageJsx2["default"], null);
+      }
+
+      var birthDeathBlock = collectionMetadata.archetypeName === "person" ? _react2["default"].createElement(
+        "div",
+        { className: "row small-marigin text-center" },
+        _react2["default"].createElement("div", { className: "col-xs-3 text-right" }),
+        _react2["default"].createElement(
+          "div",
+          { className: "col-xs-6" },
+          _react2["default"].createElement(
+            "div",
+            { className: "row" },
+            _react2["default"].createElement(
+              "div",
+              { className: "col-xs-5 text-right" },
+              entity["birthDate"],
+              _react2["default"].createElement("br", null),
+              entity["@relations"].hasBirthPlace ? entity["@relations"].hasBirthPlace[0].displayName : null
+            ),
+            _react2["default"].createElement(
+              "div",
+              { className: "col-xs-2 text-center" },
+              _react2["default"].createElement("img", { id: "born-died", src: "/lived-center.svg" })
+            ),
+            _react2["default"].createElement(
+              "div",
+              { className: "col-xs-5 text-left" },
+              entity["deathDate"],
+              _react2["default"].createElement("br", null),
+              entity["@relations"].hasDeathPlace ? entity["@relations"].hasDeathPlace[0].displayName : null
+            )
+          )
+        )
+      ) : null;
+
+      return _react2["default"].createElement(
+        _pageJsx2["default"],
+        null,
+        _react2["default"].createElement(
+          "div",
+          { className: "container basic-margin" },
+          _react2["default"].createElement(
+            "div",
+            { className: "row" },
+            _react2["default"].createElement(
+              "div",
+              { className: "col-xs-12 text-center" },
+              _react2["default"].createElement(
+                "span",
+                { className: "img-portrait img-circle", style: {
+                    display: "inline-block", width: "150px", backgroundColor: "#aaa",
+                    paddingTop: "40px", fontSize: "3em", color: "#666"
+                  } },
+                entity["@displayName"].charAt(0)
+              ),
+              _react2["default"].createElement(
+                "h1",
+                null,
+                entity["@displayName"]
+              )
+            )
+          ),
+          birthDeathBlock
+        ),
+        _react2["default"].createElement(
+          "div",
+          { className: "container basic-margin" },
+          collectionMetadata.properties.filter(function (property) {
+            return entity[property.name] || entity["@relations"][property.name];
+          }).map(function (property) {
+            return _react2["default"].createElement(
+              "div",
+              { key: property.name, className: "row small-margin" },
+              _react2["default"].createElement(
+                "div",
+                { className: "col-xs-6 text-right hi-light-grey" },
+                (0, _camel2label2["default"])(property.name)
+              ),
+              _react2["default"].createElement(
+                "div",
+                { className: "col-xs-6" },
+                entity[property.name] || entity["@relations"][property.name].filter(function (rel) {
+                  return rel.displayName.length > 0;
+                }).map(function (rel) {
+                  return rel.displayName;
+                }).join(", ")
+              )
+            );
+          })
+        ),
+        _react2["default"].createElement(
+          "div",
+          { className: "hi-light-grey-bg" },
+          _react2["default"].createElement(
+            "div",
+            { className: "container big-margin" },
+            _react2["default"].createElement(
+              "div",
+              { className: "row small-margin" },
+              _react2["default"].createElement(
+                "div",
+                { className: "col-xs-12 text-center" },
+                _react2["default"].createElement(
+                  "h4",
+                  null,
+                  "Provenance"
+                )
+              ),
+              _react2["default"].createElement(
+                "div",
+                { className: "row small-margin" },
+                _react2["default"].createElement(
+                  "div",
+                  { className: "col-xs-6 text-right hi-light-grey" },
+                  "Modified ",
+                  ts2date(entity["^modified"].timeStamp)
+                ),
+                _react2["default"].createElement(
+                  "div",
+                  { className: "col-xs-6" },
+                  entity["^modified"].username || entity["^modified"].userId
+                )
+              ),
+              _react2["default"].createElement(
+                "div",
+                { className: "row small-margin" },
+                _react2["default"].createElement(
+                  "div",
+                  { className: "col-xs-6 text-right hi-light-grey" },
+                  "Created ",
+                  ts2date(entity["^created"].timeStamp)
+                ),
+                _react2["default"].createElement(
+                  "div",
+                  { className: "col-xs-6" },
+                  entity["^created"].username || entity["^created"].userId
+                )
+              )
+            )
+          )
+        ),
+        _react2["default"].createElement(
+          "div",
+          { type: "footer-body" },
+          _react2["default"].createElement(
+            "div",
+            { className: "col-sm-4 text-right" },
+            _react2["default"].createElement(
+              "button",
+              { type: "button", className: "btn btn-default" },
+              _react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
+            )
+          ),
+          _react2["default"].createElement(
+            "div",
+            { className: "col-sm-4 text-center" },
+            _react2["default"].createElement(
+              _reactRouter.Link,
+              { to: _router.urls.root(vreId), className: "btn btn-default" },
+              "Back to results"
+            )
+          ),
+          _react2["default"].createElement(
+            "div",
+            { className: "col-sm-4 text-left" },
+            _react2["default"].createElement(
+              "button",
+              { type: "button", className: "btn btn-default" },
+              _react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
+            )
+          )
+        )
+      );
+    }
+  }]);
+
+  return Detail;
+})(_react2["default"].Component);
+
+exports["default"] = Detail;
+module.exports = exports["default"];
+
+},{"../../router":44,"../page.jsx":42,"./camel2label":29,"react":"react","react-router":"react-router"}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5414,7 +5710,7 @@ var FacetedSearch = (function (_React$Component) {
 exports["default"] = FacetedSearch;
 module.exports = exports["default"];
 
-},{"../../router":42,"../fields/select-field":38,"../page.jsx":40,"./current-query":29,"./results/pagination":31,"./search-fields":32,"./sort-menu":37,"react":"react","react-router":"react-router"}],31:[function(require,module,exports){
+},{"../../router":44,"../fields/select-field":40,"../page.jsx":42,"./current-query":30,"./results/pagination":33,"./search-fields":34,"./sort-menu":39,"react":"react","react-router":"react-router"}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5562,7 +5858,7 @@ Pagination.propTypes = {
 exports["default"] = Pagination;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react"}],32:[function(require,module,exports){
+},{"classnames":"classnames","react":"react"}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5649,7 +5945,7 @@ var SearchFields = (function (_React$Component) {
 exports["default"] = SearchFields;
 module.exports = exports["default"];
 
-},{"./search-fields/list-facet":33,"./search-fields/range-facet":34,"./search-fields/text-search":36,"react":"react"}],33:[function(require,module,exports){
+},{"./search-fields/list-facet":35,"./search-fields/range-facet":36,"./search-fields/text-search":38,"react":"react"}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5847,7 +6143,7 @@ ListFacet.propTypes = {
 exports["default"] = ListFacet;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react"}],34:[function(require,module,exports){
+},{"classnames":"classnames","react":"react"}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6005,7 +6301,7 @@ RangeFacet.propTypes = {
 exports["default"] = RangeFacet;
 module.exports = exports["default"];
 
-},{"./range-slider":35,"classnames":"classnames","react":"react"}],35:[function(require,module,exports){
+},{"./range-slider":37,"classnames":"classnames","react":"react"}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6215,7 +6511,7 @@ RangeSlider.propTypes = {
 exports["default"] = RangeSlider;
 module.exports = exports["default"];
 
-},{"react":"react","react-dom":"react-dom"}],36:[function(require,module,exports){
+},{"react":"react","react-dom":"react-dom"}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6321,7 +6617,7 @@ TextSearch.propTypes = {
 exports["default"] = TextSearch;
 module.exports = exports["default"];
 
-},{"react":"react"}],37:[function(require,module,exports){
+},{"react":"react"}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6443,7 +6739,7 @@ SortMenu.propTypes = {
 exports["default"] = SortMenu;
 module.exports = exports["default"];
 
-},{"../fields/select-field":38,"classnames":"classnames","react":"react"}],38:[function(require,module,exports){
+},{"../fields/select-field":40,"classnames":"classnames","react":"react"}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6594,7 +6890,7 @@ SelectField.propTypes = {
 exports["default"] = SelectField;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],39:[function(require,module,exports){
+},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6670,7 +6966,7 @@ function Footer(props) {
 exports["default"] = Footer;
 module.exports = exports["default"];
 
-},{"react":"react"}],40:[function(require,module,exports){
+},{"react":"react"}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6757,7 +7053,7 @@ function Page(props) {
 exports["default"] = Page;
 module.exports = exports["default"];
 
-},{"./footer":39,"react":"react"}],41:[function(require,module,exports){
+},{"./footer":41,"react":"react"}],43:[function(require,module,exports){
 "use strict";
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
@@ -6808,7 +7104,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_storeStore2["default"].dispatch((0, _actionsMetadata.setVre)(getVreId(), checkForIndex));
 });
 
-},{"./actions/metadata":26,"./actions/solr":27,"./router":42,"./store/store":45,"react-dom":"react-dom"}],42:[function(require,module,exports){
+},{"./actions/metadata":26,"./actions/solr":27,"./router":44,"./store/store":48,"react-dom":"react-dom"}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6833,6 +7129,10 @@ var _reactRedux = require("react-redux");
 var _componentsApp = require("./components/app");
 
 var _componentsApp2 = _interopRequireDefault(_componentsApp);
+
+var _componentsFacetedSearchDetail = require("./components/faceted-search/detail");
+
+var _componentsFacetedSearchDetail2 = _interopRequireDefault(_componentsFacetedSearchDetail);
 
 var _actions = require("./actions");
 
@@ -6859,14 +7159,16 @@ var makeContainerComponent = (0, _reactRedux.connect)(function (state) {
 	return (0, _actions2["default"])(navigateTo, dispatch);
 });
 
-var Detail = function Detail() {
-	return _react2["default"].createElement(
-		"div",
-		null,
-		"detailPage"
-	);
-};
-
+var makeDetailComponent = (0, _reactRedux.connect)(function (state, route) {
+	return {
+		collectionMetadata: state.metadata.collections[route.params.collectionName],
+		entity: state.entity && state.entity.data ? state.entity.data : {},
+		params: route.params,
+		vreId: state.metadata.vreId
+	};
+}, function (dispatch) {
+	return (0, _actions2["default"])(navigateTo, dispatch);
+});
 var router = _react2["default"].createElement(
 	_reactRedux.Provider,
 	{ store: _storeStore2["default"] },
@@ -6874,13 +7176,42 @@ var router = _react2["default"].createElement(
 		_reactRouter.Router,
 		{ history: _reactRouter.browserHistory },
 		_react2["default"].createElement(_reactRouter.Route, { path: urls.root(), component: makeContainerComponent(_componentsApp2["default"]) }),
-		_react2["default"].createElement(_reactRouter.Route, { path: urls.entity(), component: makeContainerComponent(Detail) })
+		_react2["default"].createElement(_reactRouter.Route, { path: urls.entity(), component: makeDetailComponent(_componentsFacetedSearchDetail2["default"]) })
 	)
 );
 
 exports["default"] = router;
 
-},{"./actions":25,"./components/app":28,"./store/store":45,"react":"react","react-redux":"react-redux","react-router":"react-router"}],43:[function(require,module,exports){
+},{"./actions":25,"./components/app":28,"./components/faceted-search/detail":31,"./store/store":48,"react":"react","react-redux":"react-redux","react-router":"react-router"}],45:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var initialState = {
+	data: null
+};
+
+exports["default"] = function (state, action) {
+	if (state === undefined) state = initialState;
+
+	switch (action.type) {
+		case "RECEIVE_ENTITY":
+			return _extends({}, state, {
+				data: action.entity
+			});
+
+		default:
+			return state;
+	}
+};
+
+module.exports = exports["default"];
+
+},{}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6919,7 +7250,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],44:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6959,7 +7290,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],45:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6982,8 +7313,13 @@ var _solrReducer = require("./solr-reducer");
 
 var _solrReducer2 = _interopRequireDefault(_solrReducer);
 
+var _entityReducer = require("./entity-reducer");
+
+var _entityReducer2 = _interopRequireDefault(_entityReducer);
+
 var reducers = {
 	metadata: _metadataReducer2["default"],
+	entity: _entityReducer2["default"],
 	solr: _solrReducer2["default"]
 };
 
@@ -6996,5 +7332,5 @@ var store = (0, _redux.createStore)(data, {}, (0, _redux.applyMiddleware)(_redux
 exports["default"] = store;
 module.exports = exports["default"];
 
-},{"./metadata-reducer":43,"./solr-reducer":44,"redux":15,"redux-thunk":9}]},{},[41])(41)
+},{"./entity-reducer":45,"./metadata-reducer":46,"./solr-reducer":47,"redux":15,"redux-thunk":9}]},{},[43])(43)
 });
