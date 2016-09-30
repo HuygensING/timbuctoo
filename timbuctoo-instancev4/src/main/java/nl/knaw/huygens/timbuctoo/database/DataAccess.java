@@ -362,11 +362,11 @@ public class DataAccess {
       }
 
       return new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties,
-        customRelationProperties).mapEntity(entityT);
+        customRelationProperties).mapEntity(entityT, true);
     }
 
 
-    public Stream<ReadEntity> getCollection(Collection collection, int rows, int start,
+    public Stream<ReadEntity> getCollection(Collection collection, int rows, int start, boolean withRelations,
                                             CustomEntityProperties customEntityProperties,
                                             CustomRelationProperties customRelationProperties) {
       GraphTraversal<Vertex, Vertex> entities =
@@ -375,7 +375,7 @@ public class DataAccess {
       TinkerPopToEntityMapper tinkerPopToEntityMapper =
         new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties, customRelationProperties);
 
-      return entities.toStream().map(tinkerPopToEntityMapper::mapEntity);
+      return entities.toStream().map((next) -> tinkerPopToEntityMapper.mapEntity(next, withRelations));
     }
 
     /**

@@ -5,14 +5,14 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
+import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -209,7 +209,7 @@ public class JsonCrudService {
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
     try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
-      Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start,
+      Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start, withRelations,
         (entity1, entityVertex) -> {
 
         },
