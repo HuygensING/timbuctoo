@@ -79,9 +79,9 @@ public class Importer {
       propertyValues.put(property.getName(), property.getValue());
       results.put(property.getId(), Result.success());
     });
-
-    saver.addEntity(currentCollection, propertyValues);
-
+    if (!propertyValues.isEmpty()) {
+      saver.addEntity(currentCollection, propertyValues);
+    }
     return results;
   }
 
