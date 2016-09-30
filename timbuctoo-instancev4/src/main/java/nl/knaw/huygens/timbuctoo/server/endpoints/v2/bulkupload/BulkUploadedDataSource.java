@@ -126,7 +126,7 @@ public class BulkUploadedDataSource implements DataSource {
                                    .next();
           collection.addEdge(HAS_NEXT_ERROR, currentVertex);
         } else {
-          lastError.addEdge(HAS_NEXT_ERROR, lastError);
+          lastError.addEdge(HAS_NEXT_ERROR, currentVertex);
         }
         lastError = currentVertex;
       }

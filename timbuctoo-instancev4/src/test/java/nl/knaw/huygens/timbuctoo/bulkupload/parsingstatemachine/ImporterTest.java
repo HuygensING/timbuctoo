@@ -42,9 +42,12 @@ public class ImporterTest {
     Importer instance = new Importer(saver);
 
     instance.startCollection(COLLECTION_NAME);
+    instance.registerPropertyName(1, "name");
     instance.startEntity();
+    instance.setValue(1, "a");
     instance.finishEntity();
     instance.startEntity();
+    instance.setValue(1, "a");
     instance.finishEntity();
     instance.finishCollection();
 

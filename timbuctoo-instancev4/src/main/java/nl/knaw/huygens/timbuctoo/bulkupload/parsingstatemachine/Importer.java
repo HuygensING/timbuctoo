@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.Saver;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -63,7 +64,7 @@ public class Importer {
       return Result.ignored();
     }
     Optional<ImportPropertyDescription> propOpt = propertyDescriptions.get(id);
-    if (propOpt.isPresent()) {
+    if (propOpt.isPresent() && !Strings.isNullOrEmpty(value)) {
       ImportPropertyDescription prop = propOpt.get();
       currentProperties.add(new ImportProperty(prop, value));
       return Result.ignored();//actual validation will happen during finishEntity
@@ -79,9 +80,9 @@ public class Importer {
       propertyValues.put(property.getName(), property.getValue());
       results.put(property.getId(), Result.success());
     });
-
-    saver.addEntity(currentCollection, propertyValues);
-
+    if (!propertyValues.isEmpty()) {
+      saver.addEntity(currentCollection, propertyValues);
+    }
     return results;
   }
 

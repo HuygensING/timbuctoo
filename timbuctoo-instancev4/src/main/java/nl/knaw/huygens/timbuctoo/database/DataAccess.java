@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
@@ -263,9 +264,9 @@ public class DataAccess {
           .orElseThrow(notPossible("Source vertex is not part of the VRE of " + collection.getCollectionName()));
         Collection targetCollection = getOwnCollectionOfElement(collection.getVre(), targetV)
           .orElseThrow(notPossible("Target vertex is not part of the VRE of " + collection.getCollectionName()));
-        RelationType.DirectionalRelationType desc = descs.getForDirection(sourceCollection, targetCollection)
-                                                         .orElseThrow(notPossible(
-                                                           "You can't have a " + descs.getName() + " from " +
+        DirectionalRelationType desc = descs.getForDirection(sourceCollection, targetCollection)
+                                            .orElseThrow(notPossible(
+                                                           "You can't have a " + descs.getOutName() + " from " +
                                                              sourceCollection.getEntityTypeName() + " to " +
                                                              targetCollection.getEntityTypeName() + " or vice versa"));
 
@@ -559,11 +560,11 @@ public class DataAccess {
         .hasNext();
     }
 
-    public void initDb(Vres mappings, RelationType.DirectionalRelationType... relationTypes) {
+    public void initDb(Vres mappings, RelationType... relationTypes) {
       requireCommit = true;
       //FIXME: add security
       saveVres(mappings);
-      for (RelationType.DirectionalRelationType relationType : relationTypes) {
+      for (RelationType relationType : relationTypes) {
         saveRelationType(relationType);
       }
     }
@@ -679,7 +680,7 @@ public class DataAccess {
         //.has(T.label, LabelP.of("relationtype"))
         .has("tim_id", typeId.toString())
       )
-        .map(RelationType::new);
+        .map(RelationType::relationType);
     }
 
     private static void checkIfAllowedToWrite(Authorizer authorizer, String userId, Collection collection) throws
@@ -735,7 +736,7 @@ public class DataAccess {
       setModified(newEdge, userId, time);
     }
 
-    private UUID createRelation(Vertex source, Vertex target, RelationType.DirectionalRelationType relationType,
+    private UUID createRelation(Vertex source, Vertex target, DirectionalRelationType relationType,
                                 String userId, Collection collection, boolean accepted, Instant time) throws
       AuthorizationException, AuthorizationUnavailableException {
       UUID id = UUID.randomUUID();
@@ -823,15 +824,15 @@ public class DataAccess {
         .forEach(this::saveVre);
     }
 
-    private void saveRelationType(RelationType.DirectionalRelationType relationType) {
+    private void saveRelationType(RelationType relationType) {
       graph.addVertex(
         T.label, "relationtype",
         "rev", 1,
         "types", jsnA(jsn("relationtype")).toString(),
         "isLatest", true,
-        "tim_id", relationType.getTimId(),
+        "tim_id", relationType.getTimId().toString(),
 
-        "relationtype_regularName", relationType.getName(),
+        "relationtype_regularName", relationType.getOutName(),
         "relationtype_inverseName", relationType.getInverseName(),
         "relationtype_sourceTypeName", relationType.getSourceTypeName(),
         "relationtype_targetTypeName", relationType.getTargetTypeName(),
@@ -840,7 +841,7 @@ public class DataAccess {
         "relationtype_symmetric", relationType.isSymmetric(),
         "relationtype_derived", relationType.isDerived(),
 
-        "rdfUri", "http://timbuctoo.com/" + relationType.getName()
+        "rdfUri", "http://timbuctoo.com/" + relationType.getOutName()
       );
     }
 
