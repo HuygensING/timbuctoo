@@ -26,7 +26,7 @@ public abstract class RelationType {
       .build();
   }
 
-  public static RelationType relationType(String outName, String inName, String sourceType, String targetType,
+  public static RelationType relationType(String sourceType, String outName, String targetType, String inName,
                                           boolean isReflexive, boolean isSymmetric, boolean isDerived, UUID timId) {
     return ImmutableRelationType
       .builder()

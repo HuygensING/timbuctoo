@@ -28,26 +28,8 @@ public class ScaffoldMigrator {
         Vres mappings = ScaffoldVresConfig.mappings;
         db.initDb(
           mappings,
-          relationType(
-            "hasBirthPlace",
-            "isBirthPlaceOf",
-            "person",
-            "location",
-            false,
-            false,
-            false,
-            UUID.randomUUID()
-          ),
-          relationType(
-            "hasDeathPlace",
-            "isDeathPlaceOf",
-            "person",
-            "location",
-            false,
-            false,
-            false,
-            UUID.randomUUID()
-          )
+          relationType("person", "hasBirthPlace", "location", "isBirthPlaceOf", false, false, false, UUID.randomUUID()),
+          relationType("person", "hasDeathPlace", "location", "isDeathPlaceOf", false, false, false, UUID.randomUUID())
         );
         db.success();
       }
