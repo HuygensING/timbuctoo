@@ -1422,7 +1422,7 @@ exports["default"] = function (path, query, done) {
 
 module.exports = exports["default"];
 
-},{"../config":50,"./server":30}],25:[function(require,module,exports){
+},{"../config":53,"./server":30}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1502,7 +1502,7 @@ exports.fetchEntity = fetchEntity;
 exports.fetchEntityList = fetchEntityList;
 exports.crud = crud;
 
-},{"../config":50,"./server":30}],26:[function(require,module,exports){
+},{"../config":53,"./server":30}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1737,7 +1737,7 @@ exports.paginateRight = paginateRight;
 exports.paginateLeft = paginateLeft;
 exports.sendQuickSearch = sendQuickSearch;
 
-},{"../config":50,"../util/clone-deep":59,"./autocomplete":24,"./crud":25,"./relation-savers":28}],27:[function(require,module,exports){
+},{"../config":53,"../util/clone-deep":62,"./autocomplete":24,"./crud":25,"./relation-savers":28}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1804,7 +1804,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":58,"./entity":26,"./vre":32}],28:[function(require,module,exports){
+},{"../store":61,"./entity":26,"./vre":32}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1981,7 +1981,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":58,"xhr":22}],31:[function(require,module,exports){
+},{"../store":61,"xhr":22}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2170,7 +2170,7 @@ var setVre = function setVre(vreId) {
 exports.listVres = listVres;
 exports.setVre = setVre;
 
-},{"../config":50,"./index":27,"./server":30}],33:[function(require,module,exports){
+},{"../config":53,"./index":27,"./server":30}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2413,7 +2413,7 @@ var EditGui = (function (_React$Component) {
 exports["default"] = EditGui;
 module.exports = exports["default"];
 
-},{"../page.jsx":49,"./collection-tabs":33,"./entity-form/form":40,"./entity-form/save-footer":41,"./entity-index/list":42,"./entity-index/paginate":43,"./entity-index/quicksearch":44,"./messages/list":45,"react":"react"}],35:[function(require,module,exports){
+},{"../page.jsx":52,"./collection-tabs":33,"./entity-form/form":43,"./entity-form/save-footer":44,"./entity-index/list":45,"./entity-index/paginate":46,"./entity-index/quicksearch":47,"./messages/list":48,"react":"react"}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2455,6 +2455,297 @@ var _camel2label = require("./camel2label");
 
 var _camel2label2 = _interopRequireDefault(_camel2label);
 
+var Field = (function (_React$Component) {
+	_inherits(Field, _React$Component);
+
+	function Field(props) {
+		_classCallCheck(this, Field);
+
+		_get(Object.getPrototypeOf(Field.prototype), "constructor", this).call(this, props);
+
+		this.state = { newLabel: "", newUrl: "" };
+	}
+
+	_createClass(Field, [{
+		key: "componentWillReceiveProps",
+		value: function componentWillReceiveProps(nextProps) {
+			if (nextProps.entity.data._id !== this.props.entity.data._id) {
+				this.setState({ newLabel: "", newUrl: "" });
+			}
+		}
+	}, {
+		key: "onAdd",
+		value: function onAdd() {
+			var _props = this.props;
+			var name = _props.name;
+			var entity = _props.entity;
+			var onChange = _props.onChange;
+
+			if (this.state.newLabel.length > 0 && this.state.newUrl.length > 0) {
+				onChange([name], (entity.data[name] || []).concat({
+					label: this.state.newLabel,
+					url: this.state.newUrl
+				}));
+				this.setState({ newLabel: "", newUrl: "" });
+			}
+		}
+	}, {
+		key: "onRemove",
+		value: function onRemove(value) {
+			var _props2 = this.props;
+			var name = _props2.name;
+			var entity = _props2.entity;
+			var onChange = _props2.onChange;
+
+			onChange([name], entity.data[name].filter(function (val) {
+				return val.url !== value.url;
+			}));
+		}
+	}, {
+		key: "render",
+		value: function render() {
+			var _this = this;
+
+			var _props3 = this.props;
+			var name = _props3.name;
+			var entity = _props3.entity;
+			var onChange = _props3.onChange;
+
+			var label = (0, _camel2label2["default"])(name);
+			var values = entity.data[name] || [];
+			var itemElements = values.map(function (value) {
+				return _react2["default"].createElement(
+					"div",
+					{ key: value.url, className: "item-element" },
+					_react2["default"].createElement(
+						"strong",
+						null,
+						_react2["default"].createElement(
+							"a",
+							{ href: value.url, target: "_blank" },
+							value.label
+						)
+					),
+					_react2["default"].createElement(
+						"button",
+						{ className: "btn btn-blank btn-xs pull-right",
+							onClick: function () {
+								return _this.onRemove(value);
+							} },
+						_react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+					)
+				);
+			});
+
+			return _react2["default"].createElement(
+				"div",
+				{ className: "basic-margin" },
+				_react2["default"].createElement(
+					"h4",
+					null,
+					label
+				),
+				itemElements,
+				_react2["default"].createElement(
+					"div",
+					{ style: { width: "100%" } },
+					_react2["default"].createElement("input", { type: "text", className: "form-control pull-left", value: this.state.newLabel,
+						onChange: function (ev) {
+							return _this.setState({ newLabel: ev.target.value });
+						},
+						placeholder: "Label for url...",
+						style: { display: "inline-block", maxWidth: "50%" } }),
+					_react2["default"].createElement("input", { type: "text", className: "form-control pull-left", value: this.state.newUrl,
+						onChange: function (ev) {
+							return _this.setState({ newUrl: ev.target.value });
+						},
+						onKeyPress: function (ev) {
+							return ev.key === "Enter" ? _this.onAdd() : false;
+						},
+						placeholder: "Url...",
+						style: { display: "inline-block", maxWidth: "calc(50% - 80px)" } }),
+					_react2["default"].createElement(
+						"span",
+						{ className: "input-group-btn pull-left" },
+						_react2["default"].createElement(
+							"button",
+							{ className: "btn btn-default", onClick: this.onAdd.bind(this) },
+							"Add link"
+						)
+					)
+				),
+				_react2["default"].createElement("div", { style: { width: "100%", clear: "left" } })
+			);
+		}
+	}]);
+
+	return Field;
+})(_react2["default"].Component);
+
+Field.propTypes = {
+	entity: _react2["default"].PropTypes.object,
+	name: _react2["default"].PropTypes.string,
+	onChange: _react2["default"].PropTypes.func
+};
+
+exports["default"] = Field;
+module.exports = exports["default"];
+
+},{"./camel2label":35,"react":"react"}],37:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _camel2label = require("./camel2label");
+
+var _camel2label2 = _interopRequireDefault(_camel2label);
+
+var Field = (function (_React$Component) {
+	_inherits(Field, _React$Component);
+
+	function Field(props) {
+		_classCallCheck(this, Field);
+
+		_get(Object.getPrototypeOf(Field.prototype), "constructor", this).call(this, props);
+
+		this.state = { newValue: "" };
+	}
+
+	_createClass(Field, [{
+		key: "componentWillReceiveProps",
+		value: function componentWillReceiveProps(nextProps) {
+			if (nextProps.entity.data._id !== this.props.entity.data._id) {
+				this.setState({ newValue: "" });
+			}
+		}
+	}, {
+		key: "onAdd",
+		value: function onAdd(value) {
+			var _props = this.props;
+			var name = _props.name;
+			var entity = _props.entity;
+			var onChange = _props.onChange;
+
+			onChange([name], (entity.data[name] || []).concat(value));
+		}
+	}, {
+		key: "onRemove",
+		value: function onRemove(value) {
+			var _props2 = this.props;
+			var name = _props2.name;
+			var entity = _props2.entity;
+			var onChange = _props2.onChange;
+
+			onChange([name], entity.data[name].filter(function (val) {
+				return val !== value;
+			}));
+		}
+	}, {
+		key: "render",
+		value: function render() {
+			var _this = this;
+
+			var _props3 = this.props;
+			var name = _props3.name;
+			var entity = _props3.entity;
+			var onChange = _props3.onChange;
+
+			var label = (0, _camel2label2["default"])(name);
+			var values = entity.data[name] || [];
+			var itemElements = values.map(function (value) {
+				return _react2["default"].createElement(
+					"div",
+					{ key: value, className: "item-element" },
+					_react2["default"].createElement(
+						"strong",
+						null,
+						value
+					),
+					_react2["default"].createElement(
+						"button",
+						{ className: "btn btn-blank btn-xs pull-right",
+							onClick: function () {
+								return _this.onRemove(value);
+							} },
+						_react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+					)
+				);
+			});
+
+			return _react2["default"].createElement(
+				"div",
+				{ className: "basic-margin" },
+				_react2["default"].createElement(
+					"h4",
+					null,
+					label
+				),
+				itemElements,
+				_react2["default"].createElement("input", { type: "text", className: "form-control", value: this.state.newValue,
+					onChange: function (ev) {
+						return _this.setState({ newValue: ev.target.value });
+					},
+					onKeyPress: function (ev) {
+						return ev.key === "Enter" ? _this.onAdd(ev.target.value) : false;
+					},
+					placeholder: "Add a value..." })
+			);
+		}
+	}]);
+
+	return Field;
+})(_react2["default"].Component);
+
+Field.propTypes = {
+	entity: _react2["default"].PropTypes.object,
+	name: _react2["default"].PropTypes.string,
+	onChange: _react2["default"].PropTypes.func
+};
+
+exports["default"] = Field;
+module.exports = exports["default"];
+
+},{"./camel2label":35,"react":"react"}],38:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _camel2label = require("./camel2label");
+
+var _camel2label2 = _interopRequireDefault(_camel2label);
+
 var _fieldsSelectField = require("../../../fields/select-field");
 
 var _fieldsSelectField2 = _interopRequireDefault(_fieldsSelectField);
@@ -2469,13 +2760,6 @@ var Field = (function (_React$Component) {
 	}
 
 	_createClass(Field, [{
-		key: "onChange",
-		value: function onChange(values) {
-			this.props.onChange([this.props.name], values.filter(function (val, idx, me) {
-				return me.indexOf(val) === idx;
-			}));
-		}
-	}, {
 		key: "onAdd",
 		value: function onAdd(value) {
 			var _props = this.props;
@@ -2541,9 +2825,7 @@ var Field = (function (_React$Component) {
 				itemElements,
 				_react2["default"].createElement(
 					_fieldsSelectField2["default"],
-					{
-						onChange: this.onAdd.bind(this),
-						noClear: true, btnClass: "btn-default" },
+					{ onChange: this.onAdd.bind(this), noClear: true, btnClass: "btn-default" },
 					_react2["default"].createElement(
 						"span",
 						{ type: "placeholder" },
@@ -2577,7 +2859,251 @@ Field.propTypes = {
 exports["default"] = Field;
 module.exports = exports["default"];
 
-},{"../../../fields/select-field":46,"./camel2label":35,"react":"react"}],37:[function(require,module,exports){
+},{"../../../fields/select-field":49,"./camel2label":35,"react":"react"}],39:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _camel2label = require("./camel2label");
+
+var _camel2label2 = _interopRequireDefault(_camel2label);
+
+var _fieldsSelectField = require("../../../fields/select-field");
+
+var _fieldsSelectField2 = _interopRequireDefault(_fieldsSelectField);
+
+var Field = (function (_React$Component) {
+  _inherits(Field, _React$Component);
+
+  function Field() {
+    _classCallCheck(this, Field);
+
+    _get(Object.getPrototypeOf(Field.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(Field, [{
+    key: "onAdd",
+    value: function onAdd() {
+      var _props = this.props;
+      var entity = _props.entity;
+      var name = _props.name;
+      var onChange = _props.onChange;
+      var options = _props.options;
+
+      onChange([name], (entity.data[name] || []).concat({
+        components: [{ type: options[0], value: "" }]
+      }));
+    }
+  }, {
+    key: "onAddComponent",
+    value: function onAddComponent(itemIndex) {
+      var _props2 = this.props;
+      var entity = _props2.entity;
+      var name = _props2.name;
+      var onChange = _props2.onChange;
+      var options = _props2.options;
+
+      var currentComponents = entity.data[name][itemIndex].components;
+      onChange([name, itemIndex, "components"], currentComponents.concat({ type: options[0], value: "" }));
+    }
+  }, {
+    key: "onRemoveComponent",
+    value: function onRemoveComponent(itemIndex, componentIndex) {
+      var _props3 = this.props;
+      var entity = _props3.entity;
+      var name = _props3.name;
+      var onChange = _props3.onChange;
+
+      var currentComponents = entity.data[name][itemIndex].components;
+      onChange([name, itemIndex, "components"], currentComponents.filter(function (component, idx) {
+        return idx !== componentIndex;
+      }));
+    }
+  }, {
+    key: "onChangeComponentValue",
+    value: function onChangeComponentValue(itemIndex, componentIndex, value) {
+      var _props4 = this.props;
+      var entity = _props4.entity;
+      var name = _props4.name;
+      var onChange = _props4.onChange;
+
+      var currentComponents = entity.data[name][itemIndex].components;
+      onChange([name, itemIndex, "components"], currentComponents.map(function (component, idx) {
+        return idx === componentIndex ? _extends({}, component, { value: value }) : component;
+      }));
+    }
+  }, {
+    key: "onChangeComponentType",
+    value: function onChangeComponentType(itemIndex, componentIndex, type) {
+      var _props5 = this.props;
+      var entity = _props5.entity;
+      var name = _props5.name;
+      var onChange = _props5.onChange;
+
+      var currentComponents = entity.data[name][itemIndex].components;
+      onChange([name, itemIndex, "components"], currentComponents.map(function (component, idx) {
+        return idx === componentIndex ? _extends({}, component, { type: type }) : component;
+      }));
+    }
+  }, {
+    key: "onRemove",
+    value: function onRemove(itemIndex) {
+      var _props6 = this.props;
+      var entity = _props6.entity;
+      var name = _props6.name;
+      var onChange = _props6.onChange;
+
+      onChange([name], entity.data[name].filter(function (name, idx) {
+        return idx !== itemIndex;
+      }));
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this = this;
+
+      var _props7 = this.props;
+      var name = _props7.name;
+      var entity = _props7.entity;
+      var options = _props7.options;
+
+      var label = (0, _camel2label2["default"])(name);
+      var values = entity.data[name] || [];
+
+      var nameElements = values.map(function (name, i) {
+        return _react2["default"].createElement(
+          "div",
+          { key: name + "-" + i, className: "names-form item-element" },
+          _react2["default"].createElement(
+            "div",
+            { className: "small-margin" },
+            _react2["default"].createElement(
+              "button",
+              { className: "btn btn-blank btn-xs pull-right",
+                onClick: function () {
+                  return _this.onRemove(i);
+                },
+                type: "button" },
+              _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+            ),
+            _react2["default"].createElement(
+              "strong",
+              null,
+              name.components.map(function (component) {
+                return component.value;
+              }).join(" ")
+            )
+          ),
+          _react2["default"].createElement(
+            "ul",
+            { key: "component-list" },
+            name.components.map(function (component, j) {
+              return _react2["default"].createElement(
+                "li",
+                { key: i + "-" + j + "-component" },
+                _react2["default"].createElement(
+                  "div",
+                  { className: "input-group", key: "component-values" },
+                  _react2["default"].createElement(
+                    "div",
+                    { className: "input-group-btn" },
+                    _react2["default"].createElement(
+                      _fieldsSelectField2["default"],
+                      { value: component.type, noClear: true,
+                        onChange: function (val) {
+                          return _this.onChangeComponentType(i, j, val);
+                        },
+                        btnClass: "btn-default" },
+                      options.map(function (option) {
+                        return _react2["default"].createElement(
+                          "span",
+                          { value: option, key: option },
+                          option
+                        );
+                      })
+                    )
+                  ),
+                  _react2["default"].createElement("input", { type: "text", className: "form-control", key: "input-" + i + "-" + j,
+                    onChange: function (ev) {
+                      return _this.onChangeComponentValue(i, j, ev.target.value);
+                    },
+                    placeholder: component.type, value: component.value }),
+                  _react2["default"].createElement(
+                    "span",
+                    { className: "input-group-btn" },
+                    _react2["default"].createElement(
+                      "button",
+                      { className: "btn btn-default", onClick: function () {
+                          return _this.onRemoveComponent(i, j);
+                        } },
+                      _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+                    )
+                  )
+                )
+              );
+            })
+          ),
+          _react2["default"].createElement(
+            "button",
+            { onClick: function () {
+                return _this.onAddComponent(i);
+              },
+              className: "btn btn-default btn-xs pull-right", type: "button" },
+            "Add component"
+          ),
+          _react2["default"].createElement("div", { style: { width: "100%", height: "6px", clear: "right" } })
+        );
+      });
+      return _react2["default"].createElement(
+        "div",
+        { className: "basic-margin" },
+        _react2["default"].createElement(
+          "h4",
+          null,
+          label
+        ),
+        nameElements,
+        _react2["default"].createElement(
+          "button",
+          { className: "btn btn-default", onClick: this.onAdd.bind(this) },
+          "Add name"
+        )
+      );
+    }
+  }]);
+
+  return Field;
+})(_react2["default"].Component);
+
+Field.propTypes = {
+  entity: _react2["default"].PropTypes.object,
+  name: _react2["default"].PropTypes.string,
+  options: _react2["default"].PropTypes.array,
+  onChange: _react2["default"].PropTypes.func
+};
+
+exports["default"] = Field;
+module.exports = exports["default"];
+
+},{"../../../fields/select-field":49,"./camel2label":35,"react":"react"}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2722,11 +3248,11 @@ var RelationField = (function (_React$Component) {
 exports["default"] = RelationField;
 module.exports = exports["default"];
 
-},{"./camel2label":35,"react":"react"}],38:[function(require,module,exports){
+},{"./camel2label":35,"react":"react"}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-  value: true
+	value: true
 });
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
@@ -2752,90 +3278,90 @@ var _fieldsSelectField = require("../../../fields/select-field");
 var _fieldsSelectField2 = _interopRequireDefault(_fieldsSelectField);
 
 var Field = (function (_React$Component) {
-  _inherits(Field, _React$Component);
+	_inherits(Field, _React$Component);
 
-  function Field() {
-    _classCallCheck(this, Field);
+	function Field() {
+		_classCallCheck(this, Field);
 
-    _get(Object.getPrototypeOf(Field.prototype), "constructor", this).apply(this, arguments);
-  }
+		_get(Object.getPrototypeOf(Field.prototype), "constructor", this).apply(this, arguments);
+	}
 
-  _createClass(Field, [{
-    key: "render",
-    value: function render() {
-      var _props = this.props;
-      var name = _props.name;
-      var entity = _props.entity;
-      var onChange = _props.onChange;
-      var options = _props.options;
+	_createClass(Field, [{
+		key: "render",
+		value: function render() {
+			var _props = this.props;
+			var name = _props.name;
+			var entity = _props.entity;
+			var onChange = _props.onChange;
+			var options = _props.options;
 
-      var label = (0, _camel2label2["default"])(name);
-      var itemElement = entity.data[name] && entity.data[name].length > 0 ? _react2["default"].createElement(
-        "div",
-        { className: "item-element" },
-        _react2["default"].createElement(
-          "strong",
-          null,
-          entity.data[name]
-        ),
-        _react2["default"].createElement(
-          "button",
-          { className: "btn btn-blank btn-xs pull-right",
-            onClick: function () {
-              return onChange([name], "");
-            } },
-          _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
-        )
-      ) : null;
+			var label = (0, _camel2label2["default"])(name);
+			var itemElement = entity.data[name] && entity.data[name].length > 0 ? _react2["default"].createElement(
+				"div",
+				{ className: "item-element" },
+				_react2["default"].createElement(
+					"strong",
+					null,
+					entity.data[name]
+				),
+				_react2["default"].createElement(
+					"button",
+					{ className: "btn btn-blank btn-xs pull-right",
+						onClick: function () {
+							return onChange([name], "");
+						} },
+					_react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+				)
+			) : null;
 
-      return _react2["default"].createElement(
-        "div",
-        { className: "basic-margin" },
-        _react2["default"].createElement(
-          "h4",
-          null,
-          label
-        ),
-        itemElement,
-        _react2["default"].createElement(
-          _fieldsSelectField2["default"],
-          {
-            onChange: function (value) {
-              return onChange([name], value);
-            },
-            noClear: true, btnClass: "btn-default" },
-          _react2["default"].createElement(
-            "span",
-            { type: "placeholder" },
-            "Select ",
-            label.toLowerCase()
-          ),
-          options.map(function (option) {
-            return _react2["default"].createElement(
-              "span",
-              { key: option, value: option },
-              option
-            );
-          })
-        )
-      );
-    }
-  }]);
+			return _react2["default"].createElement(
+				"div",
+				{ className: "basic-margin" },
+				_react2["default"].createElement(
+					"h4",
+					null,
+					label
+				),
+				itemElement,
+				_react2["default"].createElement(
+					_fieldsSelectField2["default"],
+					{
+						onChange: function (value) {
+							return onChange([name], value);
+						},
+						noClear: true, btnClass: "btn-default" },
+					_react2["default"].createElement(
+						"span",
+						{ type: "placeholder" },
+						"Select ",
+						label.toLowerCase()
+					),
+					options.map(function (option) {
+						return _react2["default"].createElement(
+							"span",
+							{ key: option, value: option },
+							option
+						);
+					})
+				)
+			);
+		}
+	}]);
 
-  return Field;
+	return Field;
 })(_react2["default"].Component);
 
 Field.propTypes = {
-  entity: _react2["default"].PropTypes.object,
-  name: _react2["default"].PropTypes.string,
-  onChange: _react2["default"].PropTypes.func,
-  options: _react2["default"].PropTypes.array
+	entity: _react2["default"].PropTypes.object,
+	name: _react2["default"].PropTypes.string,
+	onChange: _react2["default"].PropTypes.func,
+	options: _react2["default"].PropTypes.array
 };
 
 exports["default"] = Field;
 module.exports = exports["default"];
 
-},{"../../../fields/select-field":46,"./camel2label":35,"react":"react"}],39:[function(require,module,exports){
+},{"../../../fields/select-field":49,"./camel2label":35,"react":"react"}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2910,7 +3436,7 @@ StringField.propTypes = {
 exports["default"] = StringField;
 module.exports = exports["default"];
 
-},{"./camel2label":35,"react":"react"}],40:[function(require,module,exports){
+},{"./camel2label":35,"react":"react"}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2949,6 +3475,18 @@ var _fieldsRelation = require("./fields/relation");
 
 var _fieldsRelation2 = _interopRequireDefault(_fieldsRelation);
 
+var _fieldsListOfStrings = require("./fields/list-of-strings");
+
+var _fieldsListOfStrings2 = _interopRequireDefault(_fieldsListOfStrings);
+
+var _fieldsLinks = require("./fields/links");
+
+var _fieldsLinks2 = _interopRequireDefault(_fieldsLinks);
+
+var _fieldsNames = require("./fields/names");
+
+var _fieldsNames2 = _interopRequireDefault(_fieldsNames);
+
 var fieldMap = {
   "string": function string(fieldDef, props) {
     return _react2["default"].createElement(_fieldsStringField2["default"], _extends({}, props, { name: fieldDef.name }));
@@ -2967,6 +3505,15 @@ var fieldMap = {
   },
   "relation": function relation(fieldDef, props) {
     return _react2["default"].createElement(_fieldsRelation2["default"], _extends({}, props, { name: fieldDef.name, path: fieldDef.quicksearch }));
+  },
+  "list-of-strings": function listOfStrings(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsListOfStrings2["default"], _extends({}, props, { name: fieldDef.name }));
+  },
+  "links": function links(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsLinks2["default"], _extends({}, props, { name: fieldDef.name }));
+  },
+  "names": function names(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsNames2["default"], _extends({}, props, { name: fieldDef.name, options: fieldDef.options }));
   }
 };
 
@@ -3017,7 +3564,7 @@ var EntityForm = (function (_React$Component) {
             _react2["default"].createElement(
               "strong",
               null,
-              "Field type not supported ",
+              "Field type not supported: ",
               fieldDef.type
             )
           );
@@ -3057,7 +3604,7 @@ var EntityForm = (function (_React$Component) {
 exports["default"] = EntityForm;
 module.exports = exports["default"];
 
-},{"./fields/multi-select":36,"./fields/relation":37,"./fields/select":38,"./fields/string-field":39,"react":"react"}],41:[function(require,module,exports){
+},{"./fields/links":36,"./fields/list-of-strings":37,"./fields/multi-select":38,"./fields/names":39,"./fields/relation":40,"./fields/select":41,"./fields/string-field":42,"react":"react"}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3095,7 +3642,7 @@ exports["default"] = function (props) {
 
 module.exports = exports["default"];
 
-},{"react":"react"}],42:[function(require,module,exports){
+},{"react":"react"}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3123,12 +3670,12 @@ exports["default"] = function (props) {
       list.map(function (entry, i) {
         return _react2["default"].createElement(
           "li",
-          { key: entry._id },
+          { key: entry._id, onClick: function () {
+              return onSelect({ domain: domain, id: entry._id });
+            } },
           _react2["default"].createElement(
             "a",
-            { onClick: function () {
-                return onSelect({ domain: domain, id: entry._id });
-              } },
+            null,
             entry["@displayName"]
           )
         );
@@ -3139,7 +3686,7 @@ exports["default"] = function (props) {
 
 module.exports = exports["default"];
 
-},{"react":"react"}],43:[function(require,module,exports){
+},{"react":"react"}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3182,7 +3729,7 @@ exports["default"] = function (props) {
 
 module.exports = exports["default"];
 
-},{"react":"react"}],44:[function(require,module,exports){
+},{"react":"react"}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3233,7 +3780,7 @@ exports["default"] = function (props) {
 
 module.exports = exports["default"];
 
-},{"react":"react"}],45:[function(require,module,exports){
+},{"react":"react"}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3341,7 +3888,7 @@ Messages.propTypes = {
 exports["default"] = Messages;
 module.exports = exports["default"];
 
-},{"../../message":48,"classnames":"classnames","react":"react"}],46:[function(require,module,exports){
+},{"../../message":51,"classnames":"classnames","react":"react"}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3492,7 +4039,7 @@ SelectField.propTypes = {
 exports["default"] = SelectField;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],47:[function(require,module,exports){
+},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3568,7 +4115,7 @@ function Footer(props) {
 exports["default"] = Footer;
 module.exports = exports["default"];
 
-},{"react":"react"}],48:[function(require,module,exports){
+},{"react":"react"}],51:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3611,7 +4158,7 @@ exports["default"] = function (props) {
 ;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react"}],49:[function(require,module,exports){
+},{"classnames":"classnames","react":"react"}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3698,7 +4245,7 @@ function Page(props) {
 exports["default"] = Page;
 module.exports = exports["default"];
 
-},{"./footer":47,"react":"react"}],50:[function(require,module,exports){
+},{"./footer":50,"react":"react"}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3714,7 +4261,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{}],51:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 "use strict";
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
@@ -3796,7 +4343,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_actions2["default"].onLoginChange(getLogin());
 });
 
-},{"./actions":27,"./actions/autocomplete":24,"./actions/vre":32,"./components/edit-gui/edit-gui":34,"./store":58,"react":"react","react-dom":"react-dom"}],52:[function(require,module,exports){
+},{"./actions":27,"./actions/autocomplete":24,"./actions/vre":32,"./components/edit-gui/edit-gui":34,"./store":61,"react":"react","react-dom":"react-dom"}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3851,7 +4398,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":60}],53:[function(require,module,exports){
+},{"../util/set-in":63}],56:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3889,7 +4436,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"./entity":52,"./messages":54,"./quick-search":55,"./user":56,"./vre":57}],54:[function(require,module,exports){
+},{"./entity":55,"./messages":57,"./quick-search":58,"./user":59,"./vre":60}],57:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3932,7 +4479,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":60}],55:[function(require,module,exports){
+},{"../util/set-in":63}],58:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3971,7 +4518,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],56:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -3997,7 +4544,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],57:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4041,7 +4588,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],58:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4065,7 +4612,7 @@ exports["default"] = (0, _redux.createStore)((0, _redux.combineReducers)(_reduce
 }));
 module.exports = exports["default"];
 
-},{"../reducers":53,"redux":16,"redux-thunk":10}],59:[function(require,module,exports){
+},{"../reducers":56,"redux":16,"redux-thunk":10}],62:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4098,7 +4645,7 @@ function deepClone9(obj) {
 exports["default"] = deepClone9;
 module.exports = exports["default"];
 
-},{}],60:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4149,5 +4696,5 @@ var setIn = function setIn(path, value, data) {
 exports["default"] = setIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":59}]},{},[51])(51)
+},{"./clone-deep":62}]},{},[54])(54)
 });
