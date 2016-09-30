@@ -61,7 +61,9 @@ public class ScaffoldMigrator {
         db.initDb(
           mappings,
           relationType("person", "hasBirthPlace", "location", "isBirthPlaceOf", false, false, false, UUID.randomUUID()),
-          relationType("person", "hasDeathPlace", "location", "isDeathPlaceOf", false, false, false, UUID.randomUUID())
+          relationType("person", "hasDeathPlace", "location", "isDeathPlaceOf", false, false, false, UUID.randomUUID()),
+          relationType("collective", "hasMember", "person", "isMemberOf", false, false, false, UUID.randomUUID()),
+          relationType("collective", "locatedAt", "location", "isHomeOf", false, false, false, UUID.randomUUID())
         );
         db.success();
       }
