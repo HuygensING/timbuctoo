@@ -1,13 +1,14 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.scaffold.ScaffoldVresConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
+
+import static nl.knaw.huygens.timbuctoo.database.dto.RelationType.relationType;
 
 public class ScaffoldMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(ScaffoldMigrator.class);
@@ -27,7 +28,7 @@ public class ScaffoldMigrator {
         Vres mappings = ScaffoldVresConfig.mappings;
         db.initDb(
           mappings,
-          new RelationType.DirectionalRelationType(
+          relationType(
             "hasBirthPlace",
             "isBirthPlaceOf",
             "person",
@@ -35,10 +36,9 @@ public class ScaffoldMigrator {
             false,
             false,
             false,
-            false,
-            UUID.randomUUID().toString()
+            UUID.randomUUID()
           ),
-          new RelationType.DirectionalRelationType(
+          relationType(
             "hasDeathPlace",
             "isDeathPlaceOf",
             "person",
@@ -46,12 +46,13 @@ public class ScaffoldMigrator {
             false,
             false,
             false,
-            false,
-            UUID.randomUUID().toString()
+            UUID.randomUUID()
           )
         );
         db.success();
       }
     }
   }
+
+
 }

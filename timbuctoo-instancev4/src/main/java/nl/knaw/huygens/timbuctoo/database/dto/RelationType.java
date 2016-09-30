@@ -2,141 +2,100 @@ package nl.knaw.huygens.timbuctoo.database.dto;
 
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.immutables.value.Value;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 
-public class RelationType {
-  private final Map<String, DirectionalRelationType> bothWays;
-  private final String name;
+@Value.Immutable
+public abstract class RelationType {
 
-  public RelationType(Vertex source) {
-    name = getProp(source, "relationtype_regularName", String.class).orElse("<no name>");
-    bothWays = DirectionalRelationType.bothWays(source);
+  public static RelationType relationType(Vertex vertex) {
+    return ImmutableRelationType
+      .builder()
+      .outName(getProp(vertex, "relationtype_regularName", String.class).orElse("<no name>"))
+      .inverseName(getProp(vertex, "relationtype_inverseName", String.class).orElse("<no name>"))
+      .sourceTypeName(getProp(vertex, "relationtype_sourceTypeName", String.class).orElse(""))
+      .targetTypeName(getProp(vertex, "relationtype_targetTypeName", String.class).orElse(""))
+      .isReflexive(getProp(vertex, "relationtype_reflexive", Boolean.class).orElse(false))
+      .isSymmetric(getProp(vertex, "relationtype_symmetric", Boolean.class).orElse(false))
+      .isDerived(getProp(vertex, "relationtype_derived", Boolean.class).orElse(false))
+      .timId(UUID.fromString(getProp(vertex, "tim_id", String.class).orElse("")))
+      .build();
   }
 
-  public Optional<DirectionalRelationType> getForDirection(Collection source, Collection target) {
-    return bothWays.values().stream().filter(type -> type.isValid(source, target)).findAny();
+  public static RelationType relationType(String outName, String inName, String sourceType, String targetType,
+                                          boolean isReflexive, boolean isSymmetric, boolean isDerived, UUID timId) {
+    return ImmutableRelationType
+      .builder()
+      .outName(outName)
+      .inverseName(inName)
+      .sourceTypeName(sourceType)
+      .targetTypeName(targetType)
+      .isReflexive(isReflexive)
+      .isSymmetric(isSymmetric)
+      .isDerived(isDerived)
+      .timId(timId)
+      .build();
   }
 
-  public String getName() {
-    return name;
+  public Optional<DirectionalRelationType> getForDirection(Collection collA, Collection collB) {
+    boolean sourceIsCollA = getSourceTypeName().equals(collA.getAbstractType());
+    boolean sourceIsEmpty = getSourceTypeName().equals("");
+    boolean sourceIsCollB = getSourceTypeName().equals(collB.getAbstractType());
+
+    boolean targetIsCollA = getTargetTypeName().equals(collA.getAbstractType());
+    boolean targetIsEmpty = getTargetTypeName().equals("");
+    boolean targetIsCollB = getTargetTypeName().equals(collB.getAbstractType());
+
+
+    //FIXME: complex evaluation is needed to as a workaround for unittests. In reality source and target are never empty
+    if ((sourceIsCollA && targetIsCollB) || (sourceIsEmpty && targetIsCollB) || (sourceIsCollA && targetIsEmpty) ||
+      (sourceIsEmpty && targetIsEmpty)) {
+      return Optional.of(new DirectionalRelationType(
+        getOutName(),
+        getInverseName(),
+        getSourceTypeName(),
+        getTargetTypeName(),
+        isReflexive(),
+        isSymmetric(),
+        isDerived(),
+        false,
+        getTimId().toString()
+      ));
+    }
+    if ((sourceIsCollB && targetIsCollA) || (sourceIsEmpty && targetIsCollA) || (sourceIsCollB && targetIsEmpty)) {
+      return Optional.of(new DirectionalRelationType(
+        getOutName(),
+        getInverseName(),
+        getSourceTypeName(),
+        getTargetTypeName(),
+        isReflexive(),
+        isSymmetric(),
+        isDerived(),
+        true,
+        getTimId().toString()
+      ));
+    }
+    return Optional.empty();
   }
 
-  public static class DirectionalRelationType {
+  public abstract UUID getTimId();
 
-    public static final Logger LOG = LoggerFactory.getLogger(DirectionalRelationType.class);
-    private final boolean inverse;
-    private final String timId;
-    private final String inverseName;
+  public abstract String getOutName();
 
-    private String regularName;
-    private String dbName;
-    private String sourceTypeName;
-    private String targetTypeName;
+  public abstract String getInverseName();
 
-    private boolean reflexive;
-    private boolean symmetric;
-    private boolean derived;
+  public abstract String getSourceTypeName();
 
-    private static Map<String, DirectionalRelationType> bothWays(Vertex vertex) {
-      return bothWays(
-        getProp(vertex, "relationtype_regularName", String.class).orElse("<no name>"),
-        getProp(vertex, "relationtype_inverseName", String.class).orElse("<no name>"),
-        getProp(vertex, "relationtype_sourceTypeName", String.class).orElse(""),
-        getProp(vertex, "relationtype_targetTypeName", String.class).orElse(""),
-        getProp(vertex, "relationtype_reflexive", Boolean.class).orElse(false),
-        getProp(vertex, "relationtype_symmetric", Boolean.class).orElse(false),
-        getProp(vertex, "relationtype_derived", Boolean.class).orElse(false),
-        getProp(vertex, "tim_id", String.class).orElse("")
-      );
-    }
+  public abstract String getTargetTypeName();
 
-    private static Map<String, DirectionalRelationType> bothWays(String regularName, String inverseName,
-                                                                 String sourceType, String targetType,
-                                                                 boolean reflexive, boolean symmetric, boolean derived,
-                                                                 String timid) {
-      Map<String, DirectionalRelationType> result = new HashMap<>();
-      result.put(
-        regularName,
-        new DirectionalRelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric, derived,
-          false, timid)
-      );
-      result.put(
-        inverseName,
-        new DirectionalRelationType(regularName, inverseName, sourceType, targetType, reflexive, symmetric, derived,
-          true, timid)
-      );
-      return result;
-    }
+  public abstract boolean isReflexive();
 
-    public DirectionalRelationType(String regularName, String inverseName, String sourceType, String targetType,
-                                    boolean reflexive, boolean symmetric, boolean derived, boolean inverse,
-                                    String timId) {
-      this.timId = timId;
-      this.inverse = inverse;
-      this.inverseName = inverseName;
-      if (inverse) {
-        this.regularName = inverseName;
-        this.sourceTypeName = targetType;
-        this.targetTypeName = sourceType;
-        dbName = regularName;
-      } else {
-        this.regularName = regularName;
-        this.sourceTypeName = sourceType;
-        this.targetTypeName = targetType;
-        dbName = this.regularName;
-      }
-      this.reflexive = reflexive;
-      this.symmetric = symmetric;
-      this.derived = derived;
-    }
+  public abstract boolean isSymmetric();
 
-    public boolean isValid(Collection sourceCollection, Collection targetCollection) {
-      return (this.sourceTypeName.equals("") || this.sourceTypeName.equals(sourceCollection.getAbstractType())) &&
-        (this.targetTypeName.equals("") || this.targetTypeName.equals(targetCollection.getAbstractType()));
-    }
+  public abstract boolean isDerived();
 
-    public String getSourceTypeName() {
-      return sourceTypeName;
-    }
-
-    public String getTargetTypeName() {
-      return targetTypeName;
-    }
-
-    public String getName() {
-      return regularName;
-    }
-
-    public String getDbName() {
-      return dbName;
-    }
-
-    public String getTimId() {
-      return timId;
-    }
-
-    public boolean isReflexive() {
-      return reflexive;
-    }
-
-    public boolean isSymmetric() {
-      return symmetric;
-    }
-
-    public boolean isDerived() {
-      return derived;
-    }
-
-    //FIXME find a way to expose this only to the dataAccess class
-    public String getInverseName() {
-      return inverseName;
-    }
-  }
 }
