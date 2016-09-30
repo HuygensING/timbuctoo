@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.concordion.extensions.ActualResult;
 import nl.knaw.huygens.concordion.extensions.HttpRequest;
@@ -10,7 +9,6 @@ import nl.knaw.huygens.contractdiff.diffresults.MissingPropertyDiffResult;
 import nl.knaw.huygens.contractdiff.jsondiff.ArrayDiffResult;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
-import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.matchers.NumericDateWithoutDashes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.matchers.RelativeUrlWithoutLeadingSlash;
 import org.apache.commons.lang3.StringUtils;
@@ -25,17 +23,14 @@ import javax.ws.rs.client.WebTarget;
 import static nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer.jsonDiffer;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+import static nl.knaw.huygens.util.DropwizardMaker.makeTimbuctoo;
 
 @FullOGNL
 @RunWith(ConcordionRunner.class)
 public class RelationSearchV2_1EndpointFixture extends AbstractV2_1EndpointFixture {
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION;
 
-  static {
-    APPLICATION = new DropwizardAppRule<>(TimbuctooV4.class,
-            ResourceHelpers.resourceFilePath("acceptance_test_config.yaml"));
-  }
+  @ClassRule
+  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
 
   public String getPersonSearchId() {
     HttpRequest postRequest = new HttpRequest("POST", "/v2.1/search/wwpersons", "{}")

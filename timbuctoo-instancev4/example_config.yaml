@@ -2,14 +2,17 @@
 #it also explains the options that you need to configure a production-worthy version
 
 
-#database files
-databasePath: "./docker/database" #do not refer to a soft link
-# JSON files
-# This directory Timbuctoo reads and writes the authorizations a file for each vre.
-authorizationsPath: "./docker/authorizations"
-#These files contain 1 user with username="user" and password="password"
-loginsFilePath: "./docker/logins.json"
-usersFilePath: "./docker/users.json"
+#these paths are commented out because you need to be aware where timbuctoo stores it's data and this forces you to
+#specifiy the paths yourself.
+
+#databasePath:        # specify where you want the database to be stored. If no database is found a new database will
+                      # be created
+#authorizationsPath:  # This directory is used to store authorization files. Timbuctoo stores one for each vre. It
+                      # needs to exist before launching timbuctoo.
+#loginsFilePath:      # here the login information for local users is stored. This needs to be created and filled
+                      # with an empty array `[]` before launching timbuctoo for the first time
+#usersFilePath:       # here the local and remote users are mapped to local timbuctoo users. This also needs to be
+                      # created and filled with an empty array before launching timbuctoo for the first time
 
 # Timeouts
 # the 'duration' is a number
@@ -23,7 +26,7 @@ searchResultAvailabilityTimeout:
 executeDatabaseInvariantCheckAt: -1
 
 #Public timbuctoo url
-baseUri: http://localhost:8080 # used to generate next and previous links of a search result
+baseUri: http://localhost:8080 # timbuctoo generates absolute urls using the server/path that is defined here
 timbuctooSearchUrl: http://localhost:4567/
 
 activeMq:
@@ -42,12 +45,12 @@ persistenceManager:
 #  prefix:
 
 federatedAuthentication:
-  enabled: false
+  enabled: true
+  authenticationServerUrl: DUMMY
+  authenticationCredentials: DUMMY
 
 #Note! disable this for production builds
 allowGremlinEndpoint: true
-
-
 
 server:
   applicationConnectors:

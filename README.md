@@ -69,12 +69,24 @@ To build your own version, you can either have 'java 8' and 'maven 3' installed 
 
 ### 3. Running it
 
-* **run** using `./timbuctoo-instancev4/target/appassembler/bin/timbuctoo server timbuctoo-instancev4/example-config.yaml`
-* **install** by copying the target/appassembler folder wherever you like (i.e. `mv timbuctoo-instancev4/target/appassembler/ my-install-location`
+ * Do a quick **debug run** using `./timbuctoo-instancev4/debugrun.sh` or  `docker-compose up`.
+ If you do not use docker the external services, such as solr won't be started. 
+ Timbuctoo will still run and the API will run fine, but some urls in the web GUI won't work.
 
-1. After launching it you should be greated by a login page.
-2. After logging in you should be able to upload an excel file (or download the default excel file). The wizard will guide you onwards.
-3. When a dataset is uploaded you can edit it, and query it.
+to run a real version you'd run all services mentioned in the docker-compose.yml file yourself and start timbuctoo using
+
+ * Run the timbuctoo service itself using `./timbuctoo-instancev4/target/appassembler/bin/timbuctoo server <your config>.yaml`. 
+   You can use example_config.yaml for inspiration.
+   To get search capabilities you also need to run the timbuctoo-query-gui and a solr instance.
+
+ 1. After launching it you should be greated by a login page.
+ 2. After logging in you should be able to upload an excel file (or download the default excel file). The wizard will guide you onwards.
+ 3. When a dataset is uploaded you can edit it, and query it.
+
+finally
+
+ * **install/package timbuctoo** by copying the target/appassembler folder wherever you like (i.e. `mv timbuctoo-instancev4/target/appassembler/ my-install-location`
+
 
 ### 4. And now...
 

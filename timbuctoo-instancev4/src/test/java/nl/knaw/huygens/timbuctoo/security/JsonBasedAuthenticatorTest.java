@@ -22,7 +22,9 @@ import static org.hamcrest.core.Is.is;
 public class JsonBasedAuthenticatorTest {
 
   public static final String KNOWN_USER = "knownUser";
-  public static final Path LOGINS_FILE = Paths.get("src", "test", "resources", "logins.json");
+  public static final Path LOGINS_FILE = Paths.get(
+    "src", "test", "resources", "nl", "knaw", "huygens", "timbuctoo", "security", "logins.json"
+  );
   public static final String CORRECT_PASSWORD = "correctPassword";
   @Rule
   public ExpectedException expectedException = ExpectedException.none();

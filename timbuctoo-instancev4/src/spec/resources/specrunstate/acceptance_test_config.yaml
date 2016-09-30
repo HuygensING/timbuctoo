@@ -1,12 +1,4 @@
 #config used while running acceptance tests
-#refers to fixtures (database, json) needed for those tests
-
-#database files
-databasePath: "./src/spec/resources/database" #do not refer to a soft link
-# JSON files
-authorizationsPath: "./src/spec/resources/"
-loginsFilePath: "./src/spec/resources/logins.json"
-usersFilePath: "./src/spec/resources/users.json"
 
 # Timeouts
 # the 'duration' is a number

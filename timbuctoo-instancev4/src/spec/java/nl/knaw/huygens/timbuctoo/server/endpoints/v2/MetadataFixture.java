@@ -3,11 +3,9 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import io.dropwizard.testing.ResourceHelpers;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
-import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import org.concordion.integration.junit4.ConcordionRunner;
 import org.junit.ClassRule;
 import org.junit.runner.RunWith;
@@ -21,17 +19,13 @@ import static nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer.assertThat;
 import static nl.knaw.huygens.contractdiff.jsondiff.JsonDiffer.jsonDiffer;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+import static nl.knaw.huygens.util.DropwizardMaker.makeTimbuctoo;
 
 @RunWith(ConcordionRunner.class)
 public class MetadataFixture extends AbstractV2_1EndpointFixture {
 
   @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION;
-
-  static {
-    APPLICATION = new DropwizardAppRule<>(TimbuctooV4.class,
-      ResourceHelpers.resourceFilePath("acceptance_test_config.yaml"));
-  }
+  public static final DropwizardAppRule<TimbuctooConfiguration> APPLICATION = makeTimbuctoo();
 
   private static ArrayList<String> validNameComponents;
 

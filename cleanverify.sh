@@ -18,13 +18,15 @@ maventarget=${2:-test}
 
 if [ ${maventarget} = verify ]; then
   if [ -e ../timbuctoo-db.zip ]; then
-     verifyparam="-v"
      verifydb="$PWD/../timbuctoo-db.zip"
      verifytarget=":/root/timbuctoo-db.zip"
    else
      echo "The verify will fail because you have no prod database available in ../timbuctoo-db.zip"
      exit 1
   fi
+else
+  verifydb="$PWD"
+  verifytarget=":/no-op-target"
 fi
 if git rev-parse --verify "$1" 2> /dev/null; then
   local_ref=`git rev-parse --abbrev-ref "$1"`
@@ -33,7 +35,7 @@ if git rev-parse --verify "$1" 2> /dev/null; then
     -it \
     ${mavencache} \
     -v "$(git rev-parse --show-toplevel)":/root/timbuctoo \
-    $verifyparam "$verifydb"$verifytarget \
+    -v "$verifydb"$verifytarget \
     maven:3.3-jdk-8 \
     bash -c "git clone -b ${local_ref} /root/timbuctoo /root/build && \
     cd /root/build/timbuctoo-instancev4/src/spec/resources && \
