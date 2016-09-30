@@ -60,11 +60,12 @@ public class TinkerPopToEntityMapper {
     this.customRelationProperties = customRelationProperties;
   }
 
-  public ReadEntity mapEntity(Vertex next) {
-    return mapEntity(traversalSource.V(next.id()));
+  public ReadEntity mapEntity(Vertex next, boolean withRelations) {
+    ReadEntity readEntity = mapEntity(traversalSource.V(next.id()), withRelations);
+    return readEntity;
   }
 
-  public ReadEntity mapEntity(GraphTraversal<Vertex, Vertex> entityT) {
+  public ReadEntity mapEntity(GraphTraversal<Vertex, Vertex> entityT, boolean withRelations) {
     final List<TimProperty<?>> properties = Lists.newArrayList();
     TinkerPopPropertyConverter dbPropertyConverter = new TinkerPopPropertyConverter(collection);
     String entityTypeName = collection.getEntityTypeName();
@@ -165,7 +166,9 @@ public class TinkerPopToEntityMapper {
     entity.setDisplayName(DisplayNameHelper.getDisplayname(traversalSource, entityVertex, collection).orElse(""));
     entity.setId(UUID.fromString(entityVertex.value("tim_id")));
 
-    entity.setRelations(getRelations(entityVertex, traversalSource, collection));
+    if (withRelations) {
+      entity.setRelations(getRelations(entityVertex, traversalSource, collection));
+    }
 
     customEntityProperties.execute(entity, entityVertex);
 
