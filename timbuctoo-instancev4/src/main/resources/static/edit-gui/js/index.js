@@ -1,139 +1,102 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.TimbuctooEdit = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-var lookup = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-
-;(function (exports) {
-	'use strict';
-
-  var Arr = (typeof Uint8Array !== 'undefined')
-    ? Uint8Array
-    : Array
-
-	var PLUS   = '+'.charCodeAt(0)
-	var SLASH  = '/'.charCodeAt(0)
-	var NUMBER = '0'.charCodeAt(0)
-	var LOWER  = 'a'.charCodeAt(0)
-	var UPPER  = 'A'.charCodeAt(0)
-	var PLUS_URL_SAFE = '-'.charCodeAt(0)
-	var SLASH_URL_SAFE = '_'.charCodeAt(0)
-
-	function decode (elt) {
-		var code = elt.charCodeAt(0)
-		if (code === PLUS ||
-		    code === PLUS_URL_SAFE)
-			return 62 // '+'
-		if (code === SLASH ||
-		    code === SLASH_URL_SAFE)
-			return 63 // '/'
-		if (code < NUMBER)
-			return -1 //no match
-		if (code < NUMBER + 10)
-			return code - NUMBER + 26 + 26
-		if (code < UPPER + 26)
-			return code - UPPER
-		if (code < LOWER + 26)
-			return code - LOWER + 26
-	}
-
-	function b64ToByteArray (b64) {
-		var i, j, l, tmp, placeHolders, arr
-
-		if (b64.length % 4 > 0) {
-			throw new Error('Invalid string. Length must be a multiple of 4')
-		}
-
-		// the number of equal signs (place holders)
-		// if there are two placeholders, than the two characters before it
-		// represent one byte
-		// if there is only one, then the three characters before it represent 2 bytes
-		// this is just a cheap hack to not do indexOf twice
-		var len = b64.length
-		placeHolders = '=' === b64.charAt(len - 2) ? 2 : '=' === b64.charAt(len - 1) ? 1 : 0
-
-		// base64 is 4/3 + up to two characters of the original data
-		arr = new Arr(b64.length * 3 / 4 - placeHolders)
-
-		// if there are placeholders, only get up to the last complete 4 chars
-		l = placeHolders > 0 ? b64.length - 4 : b64.length
-
-		var L = 0
-
-		function push (v) {
-			arr[L++] = v
-		}
-
-		for (i = 0, j = 0; i < l; i += 4, j += 3) {
-			tmp = (decode(b64.charAt(i)) << 18) | (decode(b64.charAt(i + 1)) << 12) | (decode(b64.charAt(i + 2)) << 6) | decode(b64.charAt(i + 3))
-			push((tmp & 0xFF0000) >> 16)
-			push((tmp & 0xFF00) >> 8)
-			push(tmp & 0xFF)
-		}
-
-		if (placeHolders === 2) {
-			tmp = (decode(b64.charAt(i)) << 2) | (decode(b64.charAt(i + 1)) >> 4)
-			push(tmp & 0xFF)
-		} else if (placeHolders === 1) {
-			tmp = (decode(b64.charAt(i)) << 10) | (decode(b64.charAt(i + 1)) << 4) | (decode(b64.charAt(i + 2)) >> 2)
-			push((tmp >> 8) & 0xFF)
-			push(tmp & 0xFF)
-		}
-
-		return arr
-	}
-
-	function uint8ToBase64 (uint8) {
-		var i,
-			extraBytes = uint8.length % 3, // if we have 1 byte left, pad 2 bytes
-			output = "",
-			temp, length
-
-		function encode (num) {
-			return lookup.charAt(num)
-		}
-
-		function tripletToBase64 (num) {
-			return encode(num >> 18 & 0x3F) + encode(num >> 12 & 0x3F) + encode(num >> 6 & 0x3F) + encode(num & 0x3F)
-		}
-
-		// go through the array every three bytes, we'll deal with trailing stuff later
-		for (i = 0, length = uint8.length - extraBytes; i < length; i += 3) {
-			temp = (uint8[i] << 16) + (uint8[i + 1] << 8) + (uint8[i + 2])
-			output += tripletToBase64(temp)
-		}
-
-		// pad the end with zeros, but make sure to not forget the extra bytes
-		switch (extraBytes) {
-			case 1:
-				temp = uint8[uint8.length - 1]
-				output += encode(temp >> 2)
-				output += encode((temp << 4) & 0x3F)
-				output += '=='
-				break
-			case 2:
-				temp = (uint8[uint8.length - 2] << 8) + (uint8[uint8.length - 1])
-				output += encode(temp >> 10)
-				output += encode((temp >> 4) & 0x3F)
-				output += encode((temp << 2) & 0x3F)
-				output += '='
-				break
-		}
-
-		return output
-	}
-
-	exports.toByteArray = b64ToByteArray
-	exports.fromByteArray = uint8ToBase64
-}(typeof exports === 'undefined' ? (this.base64js = {}) : exports))
-
-},{}],2:[function(require,module,exports){
 // shim for using process in browser
-
 var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
 var queue = [];
 var draining = false;
 var currentQueue;
 var queueIndex = -1;
 
 function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
     draining = false;
     if (currentQueue.length) {
         queue = currentQueue.concat(queue);
@@ -149,7 +112,7 @@ function drainQueue() {
     if (draining) {
         return;
     }
-    var timeout = setTimeout(cleanUpNextTick);
+    var timeout = runTimeout(cleanUpNextTick);
     draining = true;
 
     var len = queue.length;
@@ -166,7 +129,7 @@ function drainQueue() {
     }
     currentQueue = null;
     draining = false;
-    clearTimeout(timeout);
+    runClearTimeout(timeout);
 }
 
 process.nextTick = function (fun) {
@@ -178,7 +141,7 @@ process.nextTick = function (fun) {
     }
     queue.push(new Item(fun, args));
     if (queue.length === 1 && !draining) {
-        setTimeout(drainQueue, 0);
+        runTimeout(drainQueue);
     }
 };
 
@@ -217,1566 +180,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],3:[function(require,module,exports){
-(function (global){
-/*!
- * The buffer module from node.js, for the browser.
- *
- * @author   Feross Aboukhadijeh <feross@feross.org> <http://feross.org>
- * @license  MIT
- */
-/* eslint-disable no-proto */
-
-'use strict'
-
-var base64 = require('base64-js')
-var ieee754 = require('ieee754')
-var isArray = require('isarray')
-
-exports.Buffer = Buffer
-exports.SlowBuffer = SlowBuffer
-exports.INSPECT_MAX_BYTES = 50
-Buffer.poolSize = 8192 // not used by this implementation
-
-var rootParent = {}
-
-/**
- * If `Buffer.TYPED_ARRAY_SUPPORT`:
- *   === true    Use Uint8Array implementation (fastest)
- *   === false   Use Object implementation (most compatible, even IE6)
- *
- * Browsers that support typed arrays are IE 10+, Firefox 4+, Chrome 7+, Safari 5.1+,
- * Opera 11.6+, iOS 4.2+.
- *
- * Due to various browser bugs, sometimes the Object implementation will be used even
- * when the browser supports typed arrays.
- *
- * Note:
- *
- *   - Firefox 4-29 lacks support for adding new properties to `Uint8Array` instances,
- *     See: https://bugzilla.mozilla.org/show_bug.cgi?id=695438.
- *
- *   - Safari 5-7 lacks support for changing the `Object.prototype.constructor` property
- *     on objects.
- *
- *   - Chrome 9-10 is missing the `TypedArray.prototype.subarray` function.
- *
- *   - IE10 has a broken `TypedArray.prototype.subarray` function which returns arrays of
- *     incorrect length in some situations.
-
- * We detect these buggy browsers and set `Buffer.TYPED_ARRAY_SUPPORT` to `false` so they
- * get the Object implementation, which is slower but behaves correctly.
- */
-Buffer.TYPED_ARRAY_SUPPORT = global.TYPED_ARRAY_SUPPORT !== undefined
-  ? global.TYPED_ARRAY_SUPPORT
-  : typedArraySupport()
-
-function typedArraySupport () {
-  function Bar () {}
-  try {
-    var arr = new Uint8Array(1)
-    arr.foo = function () { return 42 }
-    arr.constructor = Bar
-    return arr.foo() === 42 && // typed array instances can be augmented
-        arr.constructor === Bar && // constructor can be set
-        typeof arr.subarray === 'function' && // chrome 9-10 lack `subarray`
-        arr.subarray(1, 1).byteLength === 0 // ie10 has broken `subarray`
-  } catch (e) {
-    return false
-  }
-}
-
-function kMaxLength () {
-  return Buffer.TYPED_ARRAY_SUPPORT
-    ? 0x7fffffff
-    : 0x3fffffff
-}
-
-/**
- * Class: Buffer
- * =============
- *
- * The Buffer constructor returns instances of `Uint8Array` that are augmented
- * with function properties for all the node `Buffer` API functions. We use
- * `Uint8Array` so that square bracket notation works as expected -- it returns
- * a single octet.
- *
- * By augmenting the instances, we can avoid modifying the `Uint8Array`
- * prototype.
- */
-function Buffer (arg) {
-  if (!(this instanceof Buffer)) {
-    // Avoid going through an ArgumentsAdaptorTrampoline in the common case.
-    if (arguments.length > 1) return new Buffer(arg, arguments[1])
-    return new Buffer(arg)
-  }
-
-  if (!Buffer.TYPED_ARRAY_SUPPORT) {
-    this.length = 0
-    this.parent = undefined
-  }
-
-  // Common case.
-  if (typeof arg === 'number') {
-    return fromNumber(this, arg)
-  }
-
-  // Slightly less common case.
-  if (typeof arg === 'string') {
-    return fromString(this, arg, arguments.length > 1 ? arguments[1] : 'utf8')
-  }
-
-  // Unusual.
-  return fromObject(this, arg)
-}
-
-function fromNumber (that, length) {
-  that = allocate(that, length < 0 ? 0 : checked(length) | 0)
-  if (!Buffer.TYPED_ARRAY_SUPPORT) {
-    for (var i = 0; i < length; i++) {
-      that[i] = 0
-    }
-  }
-  return that
-}
-
-function fromString (that, string, encoding) {
-  if (typeof encoding !== 'string' || encoding === '') encoding = 'utf8'
-
-  // Assumption: byteLength() return value is always < kMaxLength.
-  var length = byteLength(string, encoding) | 0
-  that = allocate(that, length)
-
-  that.write(string, encoding)
-  return that
-}
-
-function fromObject (that, object) {
-  if (Buffer.isBuffer(object)) return fromBuffer(that, object)
-
-  if (isArray(object)) return fromArray(that, object)
-
-  if (object == null) {
-    throw new TypeError('must start with number, buffer, array or string')
-  }
-
-  if (typeof ArrayBuffer !== 'undefined') {
-    if (object.buffer instanceof ArrayBuffer) {
-      return fromTypedArray(that, object)
-    }
-    if (object instanceof ArrayBuffer) {
-      return fromArrayBuffer(that, object)
-    }
-  }
-
-  if (object.length) return fromArrayLike(that, object)
-
-  return fromJsonObject(that, object)
-}
-
-function fromBuffer (that, buffer) {
-  var length = checked(buffer.length) | 0
-  that = allocate(that, length)
-  buffer.copy(that, 0, 0, length)
-  return that
-}
-
-function fromArray (that, array) {
-  var length = checked(array.length) | 0
-  that = allocate(that, length)
-  for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255
-  }
-  return that
-}
-
-// Duplicate of fromArray() to keep fromArray() monomorphic.
-function fromTypedArray (that, array) {
-  var length = checked(array.length) | 0
-  that = allocate(that, length)
-  // Truncating the elements is probably not what people expect from typed
-  // arrays with BYTES_PER_ELEMENT > 1 but it's compatible with the behavior
-  // of the old Buffer constructor.
-  for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255
-  }
-  return that
-}
-
-function fromArrayBuffer (that, array) {
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    array.byteLength
-    that = Buffer._augment(new Uint8Array(array))
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    that = fromTypedArray(that, new Uint8Array(array))
-  }
-  return that
-}
-
-function fromArrayLike (that, array) {
-  var length = checked(array.length) | 0
-  that = allocate(that, length)
-  for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255
-  }
-  return that
-}
-
-// Deserialize { type: 'Buffer', data: [1,2,3,...] } into a Buffer object.
-// Returns a zero-length buffer for inputs that don't conform to the spec.
-function fromJsonObject (that, object) {
-  var array
-  var length = 0
-
-  if (object.type === 'Buffer' && isArray(object.data)) {
-    array = object.data
-    length = checked(array.length) | 0
-  }
-  that = allocate(that, length)
-
-  for (var i = 0; i < length; i += 1) {
-    that[i] = array[i] & 255
-  }
-  return that
-}
-
-if (Buffer.TYPED_ARRAY_SUPPORT) {
-  Buffer.prototype.__proto__ = Uint8Array.prototype
-  Buffer.__proto__ = Uint8Array
-} else {
-  // pre-set for values that may exist in the future
-  Buffer.prototype.length = undefined
-  Buffer.prototype.parent = undefined
-}
-
-function allocate (that, length) {
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    // Return an augmented `Uint8Array` instance, for best performance
-    that = Buffer._augment(new Uint8Array(length))
-    that.__proto__ = Buffer.prototype
-  } else {
-    // Fallback: Return an object instance of the Buffer class
-    that.length = length
-    that._isBuffer = true
-  }
-
-  var fromPool = length !== 0 && length <= Buffer.poolSize >>> 1
-  if (fromPool) that.parent = rootParent
-
-  return that
-}
-
-function checked (length) {
-  // Note: cannot use `length < kMaxLength` here because that fails when
-  // length is NaN (which is otherwise coerced to zero.)
-  if (length >= kMaxLength()) {
-    throw new RangeError('Attempt to allocate Buffer larger than maximum ' +
-                         'size: 0x' + kMaxLength().toString(16) + ' bytes')
-  }
-  return length | 0
-}
-
-function SlowBuffer (subject, encoding) {
-  if (!(this instanceof SlowBuffer)) return new SlowBuffer(subject, encoding)
-
-  var buf = new Buffer(subject, encoding)
-  delete buf.parent
-  return buf
-}
-
-Buffer.isBuffer = function isBuffer (b) {
-  return !!(b != null && b._isBuffer)
-}
-
-Buffer.compare = function compare (a, b) {
-  if (!Buffer.isBuffer(a) || !Buffer.isBuffer(b)) {
-    throw new TypeError('Arguments must be Buffers')
-  }
-
-  if (a === b) return 0
-
-  var x = a.length
-  var y = b.length
-
-  var i = 0
-  var len = Math.min(x, y)
-  while (i < len) {
-    if (a[i] !== b[i]) break
-
-    ++i
-  }
-
-  if (i !== len) {
-    x = a[i]
-    y = b[i]
-  }
-
-  if (x < y) return -1
-  if (y < x) return 1
-  return 0
-}
-
-Buffer.isEncoding = function isEncoding (encoding) {
-  switch (String(encoding).toLowerCase()) {
-    case 'hex':
-    case 'utf8':
-    case 'utf-8':
-    case 'ascii':
-    case 'binary':
-    case 'base64':
-    case 'raw':
-    case 'ucs2':
-    case 'ucs-2':
-    case 'utf16le':
-    case 'utf-16le':
-      return true
-    default:
-      return false
-  }
-}
-
-Buffer.concat = function concat (list, length) {
-  if (!isArray(list)) throw new TypeError('list argument must be an Array of Buffers.')
-
-  if (list.length === 0) {
-    return new Buffer(0)
-  }
-
-  var i
-  if (length === undefined) {
-    length = 0
-    for (i = 0; i < list.length; i++) {
-      length += list[i].length
-    }
-  }
-
-  var buf = new Buffer(length)
-  var pos = 0
-  for (i = 0; i < list.length; i++) {
-    var item = list[i]
-    item.copy(buf, pos)
-    pos += item.length
-  }
-  return buf
-}
-
-function byteLength (string, encoding) {
-  if (typeof string !== 'string') string = '' + string
-
-  var len = string.length
-  if (len === 0) return 0
-
-  // Use a for loop to avoid recursion
-  var loweredCase = false
-  for (;;) {
-    switch (encoding) {
-      case 'ascii':
-      case 'binary':
-      // Deprecated
-      case 'raw':
-      case 'raws':
-        return len
-      case 'utf8':
-      case 'utf-8':
-        return utf8ToBytes(string).length
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return len * 2
-      case 'hex':
-        return len >>> 1
-      case 'base64':
-        return base64ToBytes(string).length
-      default:
-        if (loweredCase) return utf8ToBytes(string).length // assume utf8
-        encoding = ('' + encoding).toLowerCase()
-        loweredCase = true
-    }
-  }
-}
-Buffer.byteLength = byteLength
-
-function slowToString (encoding, start, end) {
-  var loweredCase = false
-
-  start = start | 0
-  end = end === undefined || end === Infinity ? this.length : end | 0
-
-  if (!encoding) encoding = 'utf8'
-  if (start < 0) start = 0
-  if (end > this.length) end = this.length
-  if (end <= start) return ''
-
-  while (true) {
-    switch (encoding) {
-      case 'hex':
-        return hexSlice(this, start, end)
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Slice(this, start, end)
-
-      case 'ascii':
-        return asciiSlice(this, start, end)
-
-      case 'binary':
-        return binarySlice(this, start, end)
-
-      case 'base64':
-        return base64Slice(this, start, end)
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return utf16leSlice(this, start, end)
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-        encoding = (encoding + '').toLowerCase()
-        loweredCase = true
-    }
-  }
-}
-
-Buffer.prototype.toString = function toString () {
-  var length = this.length | 0
-  if (length === 0) return ''
-  if (arguments.length === 0) return utf8Slice(this, 0, length)
-  return slowToString.apply(this, arguments)
-}
-
-Buffer.prototype.equals = function equals (b) {
-  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return true
-  return Buffer.compare(this, b) === 0
-}
-
-Buffer.prototype.inspect = function inspect () {
-  var str = ''
-  var max = exports.INSPECT_MAX_BYTES
-  if (this.length > 0) {
-    str = this.toString('hex', 0, max).match(/.{2}/g).join(' ')
-    if (this.length > max) str += ' ... '
-  }
-  return '<Buffer ' + str + '>'
-}
-
-Buffer.prototype.compare = function compare (b) {
-  if (!Buffer.isBuffer(b)) throw new TypeError('Argument must be a Buffer')
-  if (this === b) return 0
-  return Buffer.compare(this, b)
-}
-
-Buffer.prototype.indexOf = function indexOf (val, byteOffset) {
-  if (byteOffset > 0x7fffffff) byteOffset = 0x7fffffff
-  else if (byteOffset < -0x80000000) byteOffset = -0x80000000
-  byteOffset >>= 0
-
-  if (this.length === 0) return -1
-  if (byteOffset >= this.length) return -1
-
-  // Negative offsets start from the end of the buffer
-  if (byteOffset < 0) byteOffset = Math.max(this.length + byteOffset, 0)
-
-  if (typeof val === 'string') {
-    if (val.length === 0) return -1 // special case: looking for empty string always fails
-    return String.prototype.indexOf.call(this, val, byteOffset)
-  }
-  if (Buffer.isBuffer(val)) {
-    return arrayIndexOf(this, val, byteOffset)
-  }
-  if (typeof val === 'number') {
-    if (Buffer.TYPED_ARRAY_SUPPORT && Uint8Array.prototype.indexOf === 'function') {
-      return Uint8Array.prototype.indexOf.call(this, val, byteOffset)
-    }
-    return arrayIndexOf(this, [ val ], byteOffset)
-  }
-
-  function arrayIndexOf (arr, val, byteOffset) {
-    var foundIndex = -1
-    for (var i = 0; byteOffset + i < arr.length; i++) {
-      if (arr[byteOffset + i] === val[foundIndex === -1 ? 0 : i - foundIndex]) {
-        if (foundIndex === -1) foundIndex = i
-        if (i - foundIndex + 1 === val.length) return byteOffset + foundIndex
-      } else {
-        foundIndex = -1
-      }
-    }
-    return -1
-  }
-
-  throw new TypeError('val must be string, number or Buffer')
-}
-
-// `get` is deprecated
-Buffer.prototype.get = function get (offset) {
-  console.log('.get() is deprecated. Access using array indexes instead.')
-  return this.readUInt8(offset)
-}
-
-// `set` is deprecated
-Buffer.prototype.set = function set (v, offset) {
-  console.log('.set() is deprecated. Access using array indexes instead.')
-  return this.writeUInt8(v, offset)
-}
-
-function hexWrite (buf, string, offset, length) {
-  offset = Number(offset) || 0
-  var remaining = buf.length - offset
-  if (!length) {
-    length = remaining
-  } else {
-    length = Number(length)
-    if (length > remaining) {
-      length = remaining
-    }
-  }
-
-  // must be an even number of digits
-  var strLen = string.length
-  if (strLen % 2 !== 0) throw new Error('Invalid hex string')
-
-  if (length > strLen / 2) {
-    length = strLen / 2
-  }
-  for (var i = 0; i < length; i++) {
-    var parsed = parseInt(string.substr(i * 2, 2), 16)
-    if (isNaN(parsed)) throw new Error('Invalid hex string')
-    buf[offset + i] = parsed
-  }
-  return i
-}
-
-function utf8Write (buf, string, offset, length) {
-  return blitBuffer(utf8ToBytes(string, buf.length - offset), buf, offset, length)
-}
-
-function asciiWrite (buf, string, offset, length) {
-  return blitBuffer(asciiToBytes(string), buf, offset, length)
-}
-
-function binaryWrite (buf, string, offset, length) {
-  return asciiWrite(buf, string, offset, length)
-}
-
-function base64Write (buf, string, offset, length) {
-  return blitBuffer(base64ToBytes(string), buf, offset, length)
-}
-
-function ucs2Write (buf, string, offset, length) {
-  return blitBuffer(utf16leToBytes(string, buf.length - offset), buf, offset, length)
-}
-
-Buffer.prototype.write = function write (string, offset, length, encoding) {
-  // Buffer#write(string)
-  if (offset === undefined) {
-    encoding = 'utf8'
-    length = this.length
-    offset = 0
-  // Buffer#write(string, encoding)
-  } else if (length === undefined && typeof offset === 'string') {
-    encoding = offset
-    length = this.length
-    offset = 0
-  // Buffer#write(string, offset[, length][, encoding])
-  } else if (isFinite(offset)) {
-    offset = offset | 0
-    if (isFinite(length)) {
-      length = length | 0
-      if (encoding === undefined) encoding = 'utf8'
-    } else {
-      encoding = length
-      length = undefined
-    }
-  // legacy write(string, encoding, offset, length) - remove in v0.13
-  } else {
-    var swap = encoding
-    encoding = offset
-    offset = length | 0
-    length = swap
-  }
-
-  var remaining = this.length - offset
-  if (length === undefined || length > remaining) length = remaining
-
-  if ((string.length > 0 && (length < 0 || offset < 0)) || offset > this.length) {
-    throw new RangeError('attempt to write outside buffer bounds')
-  }
-
-  if (!encoding) encoding = 'utf8'
-
-  var loweredCase = false
-  for (;;) {
-    switch (encoding) {
-      case 'hex':
-        return hexWrite(this, string, offset, length)
-
-      case 'utf8':
-      case 'utf-8':
-        return utf8Write(this, string, offset, length)
-
-      case 'ascii':
-        return asciiWrite(this, string, offset, length)
-
-      case 'binary':
-        return binaryWrite(this, string, offset, length)
-
-      case 'base64':
-        // Warning: maxLength not taken into account in base64Write
-        return base64Write(this, string, offset, length)
-
-      case 'ucs2':
-      case 'ucs-2':
-      case 'utf16le':
-      case 'utf-16le':
-        return ucs2Write(this, string, offset, length)
-
-      default:
-        if (loweredCase) throw new TypeError('Unknown encoding: ' + encoding)
-        encoding = ('' + encoding).toLowerCase()
-        loweredCase = true
-    }
-  }
-}
-
-Buffer.prototype.toJSON = function toJSON () {
-  return {
-    type: 'Buffer',
-    data: Array.prototype.slice.call(this._arr || this, 0)
-  }
-}
-
-function base64Slice (buf, start, end) {
-  if (start === 0 && end === buf.length) {
-    return base64.fromByteArray(buf)
-  } else {
-    return base64.fromByteArray(buf.slice(start, end))
-  }
-}
-
-function utf8Slice (buf, start, end) {
-  end = Math.min(buf.length, end)
-  var res = []
-
-  var i = start
-  while (i < end) {
-    var firstByte = buf[i]
-    var codePoint = null
-    var bytesPerSequence = (firstByte > 0xEF) ? 4
-      : (firstByte > 0xDF) ? 3
-      : (firstByte > 0xBF) ? 2
-      : 1
-
-    if (i + bytesPerSequence <= end) {
-      var secondByte, thirdByte, fourthByte, tempCodePoint
-
-      switch (bytesPerSequence) {
-        case 1:
-          if (firstByte < 0x80) {
-            codePoint = firstByte
-          }
-          break
-        case 2:
-          secondByte = buf[i + 1]
-          if ((secondByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0x1F) << 0x6 | (secondByte & 0x3F)
-            if (tempCodePoint > 0x7F) {
-              codePoint = tempCodePoint
-            }
-          }
-          break
-        case 3:
-          secondByte = buf[i + 1]
-          thirdByte = buf[i + 2]
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0xC | (secondByte & 0x3F) << 0x6 | (thirdByte & 0x3F)
-            if (tempCodePoint > 0x7FF && (tempCodePoint < 0xD800 || tempCodePoint > 0xDFFF)) {
-              codePoint = tempCodePoint
-            }
-          }
-          break
-        case 4:
-          secondByte = buf[i + 1]
-          thirdByte = buf[i + 2]
-          fourthByte = buf[i + 3]
-          if ((secondByte & 0xC0) === 0x80 && (thirdByte & 0xC0) === 0x80 && (fourthByte & 0xC0) === 0x80) {
-            tempCodePoint = (firstByte & 0xF) << 0x12 | (secondByte & 0x3F) << 0xC | (thirdByte & 0x3F) << 0x6 | (fourthByte & 0x3F)
-            if (tempCodePoint > 0xFFFF && tempCodePoint < 0x110000) {
-              codePoint = tempCodePoint
-            }
-          }
-      }
-    }
-
-    if (codePoint === null) {
-      // we did not generate a valid codePoint so insert a
-      // replacement char (U+FFFD) and advance only 1 byte
-      codePoint = 0xFFFD
-      bytesPerSequence = 1
-    } else if (codePoint > 0xFFFF) {
-      // encode to utf16 (surrogate pair dance)
-      codePoint -= 0x10000
-      res.push(codePoint >>> 10 & 0x3FF | 0xD800)
-      codePoint = 0xDC00 | codePoint & 0x3FF
-    }
-
-    res.push(codePoint)
-    i += bytesPerSequence
-  }
-
-  return decodeCodePointsArray(res)
-}
-
-// Based on http://stackoverflow.com/a/22747272/680742, the browser with
-// the lowest limit is Chrome, with 0x10000 args.
-// We go 1 magnitude less, for safety
-var MAX_ARGUMENTS_LENGTH = 0x1000
-
-function decodeCodePointsArray (codePoints) {
-  var len = codePoints.length
-  if (len <= MAX_ARGUMENTS_LENGTH) {
-    return String.fromCharCode.apply(String, codePoints) // avoid extra slice()
-  }
-
-  // Decode in chunks to avoid "call stack size exceeded".
-  var res = ''
-  var i = 0
-  while (i < len) {
-    res += String.fromCharCode.apply(
-      String,
-      codePoints.slice(i, i += MAX_ARGUMENTS_LENGTH)
-    )
-  }
-  return res
-}
-
-function asciiSlice (buf, start, end) {
-  var ret = ''
-  end = Math.min(buf.length, end)
-
-  for (var i = start; i < end; i++) {
-    ret += String.fromCharCode(buf[i] & 0x7F)
-  }
-  return ret
-}
-
-function binarySlice (buf, start, end) {
-  var ret = ''
-  end = Math.min(buf.length, end)
-
-  for (var i = start; i < end; i++) {
-    ret += String.fromCharCode(buf[i])
-  }
-  return ret
-}
-
-function hexSlice (buf, start, end) {
-  var len = buf.length
-
-  if (!start || start < 0) start = 0
-  if (!end || end < 0 || end > len) end = len
-
-  var out = ''
-  for (var i = start; i < end; i++) {
-    out += toHex(buf[i])
-  }
-  return out
-}
-
-function utf16leSlice (buf, start, end) {
-  var bytes = buf.slice(start, end)
-  var res = ''
-  for (var i = 0; i < bytes.length; i += 2) {
-    res += String.fromCharCode(bytes[i] + bytes[i + 1] * 256)
-  }
-  return res
-}
-
-Buffer.prototype.slice = function slice (start, end) {
-  var len = this.length
-  start = ~~start
-  end = end === undefined ? len : ~~end
-
-  if (start < 0) {
-    start += len
-    if (start < 0) start = 0
-  } else if (start > len) {
-    start = len
-  }
-
-  if (end < 0) {
-    end += len
-    if (end < 0) end = 0
-  } else if (end > len) {
-    end = len
-  }
-
-  if (end < start) end = start
-
-  var newBuf
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    newBuf = Buffer._augment(this.subarray(start, end))
-  } else {
-    var sliceLen = end - start
-    newBuf = new Buffer(sliceLen, undefined)
-    for (var i = 0; i < sliceLen; i++) {
-      newBuf[i] = this[i + start]
-    }
-  }
-
-  if (newBuf.length) newBuf.parent = this.parent || this
-
-  return newBuf
-}
-
-/*
- * Need to make sure that buffer isn't trying to write out of bounds.
- */
-function checkOffset (offset, ext, length) {
-  if ((offset % 1) !== 0 || offset < 0) throw new RangeError('offset is not uint')
-  if (offset + ext > length) throw new RangeError('Trying to access beyond buffer length')
-}
-
-Buffer.prototype.readUIntLE = function readUIntLE (offset, byteLength, noAssert) {
-  offset = offset | 0
-  byteLength = byteLength | 0
-  if (!noAssert) checkOffset(offset, byteLength, this.length)
-
-  var val = this[offset]
-  var mul = 1
-  var i = 0
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul
-  }
-
-  return val
-}
-
-Buffer.prototype.readUIntBE = function readUIntBE (offset, byteLength, noAssert) {
-  offset = offset | 0
-  byteLength = byteLength | 0
-  if (!noAssert) {
-    checkOffset(offset, byteLength, this.length)
-  }
-
-  var val = this[offset + --byteLength]
-  var mul = 1
-  while (byteLength > 0 && (mul *= 0x100)) {
-    val += this[offset + --byteLength] * mul
-  }
-
-  return val
-}
-
-Buffer.prototype.readUInt8 = function readUInt8 (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 1, this.length)
-  return this[offset]
-}
-
-Buffer.prototype.readUInt16LE = function readUInt16LE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 2, this.length)
-  return this[offset] | (this[offset + 1] << 8)
-}
-
-Buffer.prototype.readUInt16BE = function readUInt16BE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 2, this.length)
-  return (this[offset] << 8) | this[offset + 1]
-}
-
-Buffer.prototype.readUInt32LE = function readUInt32LE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length)
-
-  return ((this[offset]) |
-      (this[offset + 1] << 8) |
-      (this[offset + 2] << 16)) +
-      (this[offset + 3] * 0x1000000)
-}
-
-Buffer.prototype.readUInt32BE = function readUInt32BE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length)
-
-  return (this[offset] * 0x1000000) +
-    ((this[offset + 1] << 16) |
-    (this[offset + 2] << 8) |
-    this[offset + 3])
-}
-
-Buffer.prototype.readIntLE = function readIntLE (offset, byteLength, noAssert) {
-  offset = offset | 0
-  byteLength = byteLength | 0
-  if (!noAssert) checkOffset(offset, byteLength, this.length)
-
-  var val = this[offset]
-  var mul = 1
-  var i = 0
-  while (++i < byteLength && (mul *= 0x100)) {
-    val += this[offset + i] * mul
-  }
-  mul *= 0x80
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
-
-  return val
-}
-
-Buffer.prototype.readIntBE = function readIntBE (offset, byteLength, noAssert) {
-  offset = offset | 0
-  byteLength = byteLength | 0
-  if (!noAssert) checkOffset(offset, byteLength, this.length)
-
-  var i = byteLength
-  var mul = 1
-  var val = this[offset + --i]
-  while (i > 0 && (mul *= 0x100)) {
-    val += this[offset + --i] * mul
-  }
-  mul *= 0x80
-
-  if (val >= mul) val -= Math.pow(2, 8 * byteLength)
-
-  return val
-}
-
-Buffer.prototype.readInt8 = function readInt8 (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 1, this.length)
-  if (!(this[offset] & 0x80)) return (this[offset])
-  return ((0xff - this[offset] + 1) * -1)
-}
-
-Buffer.prototype.readInt16LE = function readInt16LE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 2, this.length)
-  var val = this[offset] | (this[offset + 1] << 8)
-  return (val & 0x8000) ? val | 0xFFFF0000 : val
-}
-
-Buffer.prototype.readInt16BE = function readInt16BE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 2, this.length)
-  var val = this[offset + 1] | (this[offset] << 8)
-  return (val & 0x8000) ? val | 0xFFFF0000 : val
-}
-
-Buffer.prototype.readInt32LE = function readInt32LE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length)
-
-  return (this[offset]) |
-    (this[offset + 1] << 8) |
-    (this[offset + 2] << 16) |
-    (this[offset + 3] << 24)
-}
-
-Buffer.prototype.readInt32BE = function readInt32BE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length)
-
-  return (this[offset] << 24) |
-    (this[offset + 1] << 16) |
-    (this[offset + 2] << 8) |
-    (this[offset + 3])
-}
-
-Buffer.prototype.readFloatLE = function readFloatLE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length)
-  return ieee754.read(this, offset, true, 23, 4)
-}
-
-Buffer.prototype.readFloatBE = function readFloatBE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 4, this.length)
-  return ieee754.read(this, offset, false, 23, 4)
-}
-
-Buffer.prototype.readDoubleLE = function readDoubleLE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 8, this.length)
-  return ieee754.read(this, offset, true, 52, 8)
-}
-
-Buffer.prototype.readDoubleBE = function readDoubleBE (offset, noAssert) {
-  if (!noAssert) checkOffset(offset, 8, this.length)
-  return ieee754.read(this, offset, false, 52, 8)
-}
-
-function checkInt (buf, value, offset, ext, max, min) {
-  if (!Buffer.isBuffer(buf)) throw new TypeError('buffer must be a Buffer instance')
-  if (value > max || value < min) throw new RangeError('value is out of bounds')
-  if (offset + ext > buf.length) throw new RangeError('index out of range')
-}
-
-Buffer.prototype.writeUIntLE = function writeUIntLE (value, offset, byteLength, noAssert) {
-  value = +value
-  offset = offset | 0
-  byteLength = byteLength | 0
-  if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
-
-  var mul = 1
-  var i = 0
-  this[offset] = value & 0xFF
-  while (++i < byteLength && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) & 0xFF
-  }
-
-  return offset + byteLength
-}
-
-Buffer.prototype.writeUIntBE = function writeUIntBE (value, offset, byteLength, noAssert) {
-  value = +value
-  offset = offset | 0
-  byteLength = byteLength | 0
-  if (!noAssert) checkInt(this, value, offset, byteLength, Math.pow(2, 8 * byteLength), 0)
-
-  var i = byteLength - 1
-  var mul = 1
-  this[offset + i] = value & 0xFF
-  while (--i >= 0 && (mul *= 0x100)) {
-    this[offset + i] = (value / mul) & 0xFF
-  }
-
-  return offset + byteLength
-}
-
-Buffer.prototype.writeUInt8 = function writeUInt8 (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 1, 0xff, 0)
-  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-  this[offset] = (value & 0xff)
-  return offset + 1
-}
-
-function objectWriteUInt16 (buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffff + value + 1
-  for (var i = 0, j = Math.min(buf.length - offset, 2); i < j; i++) {
-    buf[offset + i] = (value & (0xff << (8 * (littleEndian ? i : 1 - i)))) >>>
-      (littleEndian ? i : 1 - i) * 8
-  }
-}
-
-Buffer.prototype.writeUInt16LE = function writeUInt16LE (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff)
-    this[offset + 1] = (value >>> 8)
-  } else {
-    objectWriteUInt16(this, value, offset, true)
-  }
-  return offset + 2
-}
-
-Buffer.prototype.writeUInt16BE = function writeUInt16BE (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 2, 0xffff, 0)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 8)
-    this[offset + 1] = (value & 0xff)
-  } else {
-    objectWriteUInt16(this, value, offset, false)
-  }
-  return offset + 2
-}
-
-function objectWriteUInt32 (buf, value, offset, littleEndian) {
-  if (value < 0) value = 0xffffffff + value + 1
-  for (var i = 0, j = Math.min(buf.length - offset, 4); i < j; i++) {
-    buf[offset + i] = (value >>> (littleEndian ? i : 3 - i) * 8) & 0xff
-  }
-}
-
-Buffer.prototype.writeUInt32LE = function writeUInt32LE (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset + 3] = (value >>> 24)
-    this[offset + 2] = (value >>> 16)
-    this[offset + 1] = (value >>> 8)
-    this[offset] = (value & 0xff)
-  } else {
-    objectWriteUInt32(this, value, offset, true)
-  }
-  return offset + 4
-}
-
-Buffer.prototype.writeUInt32BE = function writeUInt32BE (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 4, 0xffffffff, 0)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 24)
-    this[offset + 1] = (value >>> 16)
-    this[offset + 2] = (value >>> 8)
-    this[offset + 3] = (value & 0xff)
-  } else {
-    objectWriteUInt32(this, value, offset, false)
-  }
-  return offset + 4
-}
-
-Buffer.prototype.writeIntLE = function writeIntLE (value, offset, byteLength, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1)
-
-    checkInt(this, value, offset, byteLength, limit - 1, -limit)
-  }
-
-  var i = 0
-  var mul = 1
-  var sub = value < 0 ? 1 : 0
-  this[offset] = value & 0xFF
-  while (++i < byteLength && (mul *= 0x100)) {
-    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
-  }
-
-  return offset + byteLength
-}
-
-Buffer.prototype.writeIntBE = function writeIntBE (value, offset, byteLength, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) {
-    var limit = Math.pow(2, 8 * byteLength - 1)
-
-    checkInt(this, value, offset, byteLength, limit - 1, -limit)
-  }
-
-  var i = byteLength - 1
-  var mul = 1
-  var sub = value < 0 ? 1 : 0
-  this[offset + i] = value & 0xFF
-  while (--i >= 0 && (mul *= 0x100)) {
-    this[offset + i] = ((value / mul) >> 0) - sub & 0xFF
-  }
-
-  return offset + byteLength
-}
-
-Buffer.prototype.writeInt8 = function writeInt8 (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 1, 0x7f, -0x80)
-  if (!Buffer.TYPED_ARRAY_SUPPORT) value = Math.floor(value)
-  if (value < 0) value = 0xff + value + 1
-  this[offset] = (value & 0xff)
-  return offset + 1
-}
-
-Buffer.prototype.writeInt16LE = function writeInt16LE (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff)
-    this[offset + 1] = (value >>> 8)
-  } else {
-    objectWriteUInt16(this, value, offset, true)
-  }
-  return offset + 2
-}
-
-Buffer.prototype.writeInt16BE = function writeInt16BE (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 2, 0x7fff, -0x8000)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 8)
-    this[offset + 1] = (value & 0xff)
-  } else {
-    objectWriteUInt16(this, value, offset, false)
-  }
-  return offset + 2
-}
-
-Buffer.prototype.writeInt32LE = function writeInt32LE (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value & 0xff)
-    this[offset + 1] = (value >>> 8)
-    this[offset + 2] = (value >>> 16)
-    this[offset + 3] = (value >>> 24)
-  } else {
-    objectWriteUInt32(this, value, offset, true)
-  }
-  return offset + 4
-}
-
-Buffer.prototype.writeInt32BE = function writeInt32BE (value, offset, noAssert) {
-  value = +value
-  offset = offset | 0
-  if (!noAssert) checkInt(this, value, offset, 4, 0x7fffffff, -0x80000000)
-  if (value < 0) value = 0xffffffff + value + 1
-  if (Buffer.TYPED_ARRAY_SUPPORT) {
-    this[offset] = (value >>> 24)
-    this[offset + 1] = (value >>> 16)
-    this[offset + 2] = (value >>> 8)
-    this[offset + 3] = (value & 0xff)
-  } else {
-    objectWriteUInt32(this, value, offset, false)
-  }
-  return offset + 4
-}
-
-function checkIEEE754 (buf, value, offset, ext, max, min) {
-  if (value > max || value < min) throw new RangeError('value is out of bounds')
-  if (offset + ext > buf.length) throw new RangeError('index out of range')
-  if (offset < 0) throw new RangeError('index out of range')
-}
-
-function writeFloat (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754(buf, value, offset, 4, 3.4028234663852886e+38, -3.4028234663852886e+38)
-  }
-  ieee754.write(buf, value, offset, littleEndian, 23, 4)
-  return offset + 4
-}
-
-Buffer.prototype.writeFloatLE = function writeFloatLE (value, offset, noAssert) {
-  return writeFloat(this, value, offset, true, noAssert)
-}
-
-Buffer.prototype.writeFloatBE = function writeFloatBE (value, offset, noAssert) {
-  return writeFloat(this, value, offset, false, noAssert)
-}
-
-function writeDouble (buf, value, offset, littleEndian, noAssert) {
-  if (!noAssert) {
-    checkIEEE754(buf, value, offset, 8, 1.7976931348623157E+308, -1.7976931348623157E+308)
-  }
-  ieee754.write(buf, value, offset, littleEndian, 52, 8)
-  return offset + 8
-}
-
-Buffer.prototype.writeDoubleLE = function writeDoubleLE (value, offset, noAssert) {
-  return writeDouble(this, value, offset, true, noAssert)
-}
-
-Buffer.prototype.writeDoubleBE = function writeDoubleBE (value, offset, noAssert) {
-  return writeDouble(this, value, offset, false, noAssert)
-}
-
-// copy(targetBuffer, targetStart=0, sourceStart=0, sourceEnd=buffer.length)
-Buffer.prototype.copy = function copy (target, targetStart, start, end) {
-  if (!start) start = 0
-  if (!end && end !== 0) end = this.length
-  if (targetStart >= target.length) targetStart = target.length
-  if (!targetStart) targetStart = 0
-  if (end > 0 && end < start) end = start
-
-  // Copy 0 bytes; we're done
-  if (end === start) return 0
-  if (target.length === 0 || this.length === 0) return 0
-
-  // Fatal error conditions
-  if (targetStart < 0) {
-    throw new RangeError('targetStart out of bounds')
-  }
-  if (start < 0 || start >= this.length) throw new RangeError('sourceStart out of bounds')
-  if (end < 0) throw new RangeError('sourceEnd out of bounds')
-
-  // Are we oob?
-  if (end > this.length) end = this.length
-  if (target.length - targetStart < end - start) {
-    end = target.length - targetStart + start
-  }
-
-  var len = end - start
-  var i
-
-  if (this === target && start < targetStart && targetStart < end) {
-    // descending copy from end
-    for (i = len - 1; i >= 0; i--) {
-      target[i + targetStart] = this[i + start]
-    }
-  } else if (len < 1000 || !Buffer.TYPED_ARRAY_SUPPORT) {
-    // ascending copy from start
-    for (i = 0; i < len; i++) {
-      target[i + targetStart] = this[i + start]
-    }
-  } else {
-    target._set(this.subarray(start, start + len), targetStart)
-  }
-
-  return len
-}
-
-// fill(value, start=0, end=buffer.length)
-Buffer.prototype.fill = function fill (value, start, end) {
-  if (!value) value = 0
-  if (!start) start = 0
-  if (!end) end = this.length
-
-  if (end < start) throw new RangeError('end < start')
-
-  // Fill 0 bytes; we're done
-  if (end === start) return
-  if (this.length === 0) return
-
-  if (start < 0 || start >= this.length) throw new RangeError('start out of bounds')
-  if (end < 0 || end > this.length) throw new RangeError('end out of bounds')
-
-  var i
-  if (typeof value === 'number') {
-    for (i = start; i < end; i++) {
-      this[i] = value
-    }
-  } else {
-    var bytes = utf8ToBytes(value.toString())
-    var len = bytes.length
-    for (i = start; i < end; i++) {
-      this[i] = bytes[i % len]
-    }
-  }
-
-  return this
-}
-
-/**
- * Creates a new `ArrayBuffer` with the *copied* memory of the buffer instance.
- * Added in Node 0.12. Only available in browsers that support ArrayBuffer.
- */
-Buffer.prototype.toArrayBuffer = function toArrayBuffer () {
-  if (typeof Uint8Array !== 'undefined') {
-    if (Buffer.TYPED_ARRAY_SUPPORT) {
-      return (new Buffer(this)).buffer
-    } else {
-      var buf = new Uint8Array(this.length)
-      for (var i = 0, len = buf.length; i < len; i += 1) {
-        buf[i] = this[i]
-      }
-      return buf.buffer
-    }
-  } else {
-    throw new TypeError('Buffer.toArrayBuffer not supported in this browser')
-  }
-}
-
-// HELPER FUNCTIONS
-// ================
-
-var BP = Buffer.prototype
-
-/**
- * Augment a Uint8Array *instance* (not the Uint8Array class!) with Buffer methods
- */
-Buffer._augment = function _augment (arr) {
-  arr.constructor = Buffer
-  arr._isBuffer = true
-
-  // save reference to original Uint8Array set method before overwriting
-  arr._set = arr.set
-
-  // deprecated
-  arr.get = BP.get
-  arr.set = BP.set
-
-  arr.write = BP.write
-  arr.toString = BP.toString
-  arr.toLocaleString = BP.toString
-  arr.toJSON = BP.toJSON
-  arr.equals = BP.equals
-  arr.compare = BP.compare
-  arr.indexOf = BP.indexOf
-  arr.copy = BP.copy
-  arr.slice = BP.slice
-  arr.readUIntLE = BP.readUIntLE
-  arr.readUIntBE = BP.readUIntBE
-  arr.readUInt8 = BP.readUInt8
-  arr.readUInt16LE = BP.readUInt16LE
-  arr.readUInt16BE = BP.readUInt16BE
-  arr.readUInt32LE = BP.readUInt32LE
-  arr.readUInt32BE = BP.readUInt32BE
-  arr.readIntLE = BP.readIntLE
-  arr.readIntBE = BP.readIntBE
-  arr.readInt8 = BP.readInt8
-  arr.readInt16LE = BP.readInt16LE
-  arr.readInt16BE = BP.readInt16BE
-  arr.readInt32LE = BP.readInt32LE
-  arr.readInt32BE = BP.readInt32BE
-  arr.readFloatLE = BP.readFloatLE
-  arr.readFloatBE = BP.readFloatBE
-  arr.readDoubleLE = BP.readDoubleLE
-  arr.readDoubleBE = BP.readDoubleBE
-  arr.writeUInt8 = BP.writeUInt8
-  arr.writeUIntLE = BP.writeUIntLE
-  arr.writeUIntBE = BP.writeUIntBE
-  arr.writeUInt16LE = BP.writeUInt16LE
-  arr.writeUInt16BE = BP.writeUInt16BE
-  arr.writeUInt32LE = BP.writeUInt32LE
-  arr.writeUInt32BE = BP.writeUInt32BE
-  arr.writeIntLE = BP.writeIntLE
-  arr.writeIntBE = BP.writeIntBE
-  arr.writeInt8 = BP.writeInt8
-  arr.writeInt16LE = BP.writeInt16LE
-  arr.writeInt16BE = BP.writeInt16BE
-  arr.writeInt32LE = BP.writeInt32LE
-  arr.writeInt32BE = BP.writeInt32BE
-  arr.writeFloatLE = BP.writeFloatLE
-  arr.writeFloatBE = BP.writeFloatBE
-  arr.writeDoubleLE = BP.writeDoubleLE
-  arr.writeDoubleBE = BP.writeDoubleBE
-  arr.fill = BP.fill
-  arr.inspect = BP.inspect
-  arr.toArrayBuffer = BP.toArrayBuffer
-
-  return arr
-}
-
-var INVALID_BASE64_RE = /[^+\/0-9A-Za-z-_]/g
-
-function base64clean (str) {
-  // Node strips out invalid characters like \n and \t from the string, base64-js does not
-  str = stringtrim(str).replace(INVALID_BASE64_RE, '')
-  // Node converts strings with length < 2 to ''
-  if (str.length < 2) return ''
-  // Node allows for non-padded base64 strings (missing trailing ===), base64-js does not
-  while (str.length % 4 !== 0) {
-    str = str + '='
-  }
-  return str
-}
-
-function stringtrim (str) {
-  if (str.trim) return str.trim()
-  return str.replace(/^\s+|\s+$/g, '')
-}
-
-function toHex (n) {
-  if (n < 16) return '0' + n.toString(16)
-  return n.toString(16)
-}
-
-function utf8ToBytes (string, units) {
-  units = units || Infinity
-  var codePoint
-  var length = string.length
-  var leadSurrogate = null
-  var bytes = []
-
-  for (var i = 0; i < length; i++) {
-    codePoint = string.charCodeAt(i)
-
-    // is surrogate component
-    if (codePoint > 0xD7FF && codePoint < 0xE000) {
-      // last char was a lead
-      if (!leadSurrogate) {
-        // no lead yet
-        if (codePoint > 0xDBFF) {
-          // unexpected trail
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-          continue
-        } else if (i + 1 === length) {
-          // unpaired lead
-          if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-          continue
-        }
-
-        // valid lead
-        leadSurrogate = codePoint
-
-        continue
-      }
-
-      // 2 leads in a row
-      if (codePoint < 0xDC00) {
-        if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-        leadSurrogate = codePoint
-        continue
-      }
-
-      // valid surrogate pair
-      codePoint = (leadSurrogate - 0xD800 << 10 | codePoint - 0xDC00) + 0x10000
-    } else if (leadSurrogate) {
-      // valid bmp char, but last char was a lead
-      if ((units -= 3) > -1) bytes.push(0xEF, 0xBF, 0xBD)
-    }
-
-    leadSurrogate = null
-
-    // encode utf8
-    if (codePoint < 0x80) {
-      if ((units -= 1) < 0) break
-      bytes.push(codePoint)
-    } else if (codePoint < 0x800) {
-      if ((units -= 2) < 0) break
-      bytes.push(
-        codePoint >> 0x6 | 0xC0,
-        codePoint & 0x3F | 0x80
-      )
-    } else if (codePoint < 0x10000) {
-      if ((units -= 3) < 0) break
-      bytes.push(
-        codePoint >> 0xC | 0xE0,
-        codePoint >> 0x6 & 0x3F | 0x80,
-        codePoint & 0x3F | 0x80
-      )
-    } else if (codePoint < 0x110000) {
-      if ((units -= 4) < 0) break
-      bytes.push(
-        codePoint >> 0x12 | 0xF0,
-        codePoint >> 0xC & 0x3F | 0x80,
-        codePoint >> 0x6 & 0x3F | 0x80,
-        codePoint & 0x3F | 0x80
-      )
-    } else {
-      throw new Error('Invalid code point')
-    }
-  }
-
-  return bytes
-}
-
-function asciiToBytes (str) {
-  var byteArray = []
-  for (var i = 0; i < str.length; i++) {
-    // Node's code seems to be doing this and not & 0x7F..
-    byteArray.push(str.charCodeAt(i) & 0xFF)
-  }
-  return byteArray
-}
-
-function utf16leToBytes (str, units) {
-  var c, hi, lo
-  var byteArray = []
-  for (var i = 0; i < str.length; i++) {
-    if ((units -= 2) < 0) break
-
-    c = str.charCodeAt(i)
-    hi = c >> 8
-    lo = c % 256
-    byteArray.push(lo)
-    byteArray.push(hi)
-  }
-
-  return byteArray
-}
-
-function base64ToBytes (str) {
-  return base64.toByteArray(base64clean(str))
-}
-
-function blitBuffer (src, dst, offset, length) {
-  for (var i = 0; i < length; i++) {
-    if ((i + offset >= dst.length) || (i >= src.length)) break
-    dst[i + offset] = src[i]
-  }
-  return i
-}
-
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"base64-js":1,"ieee754":16,"isarray":4}],4:[function(require,module,exports){
-var toString = {}.toString;
-
-module.exports = Array.isArray || function (arr) {
-  return toString.call(arr) == '[object Array]';
-};
-
-},{}],5:[function(require,module,exports){
+},{}],2:[function(require,module,exports){
 var isFunction = require('is-function')
 
 module.exports = forEach
@@ -1824,7 +228,7 @@ function forEachObject(object, iterator, context) {
     }
 }
 
-},{"is-function":17}],6:[function(require,module,exports){
+},{"is-function":4}],3:[function(require,module,exports){
 (function (global){
 if (typeof window !== "undefined") {
     module.exports = window;
@@ -1837,5910 +241,7 @@ if (typeof window !== "undefined") {
 }
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],7:[function(require,module,exports){
-(function (global){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsAutocompleteList = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsAutocomplete = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsInput = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var Input = (function (_React$Component) {
-	_inherits(Input, _React$Component);
-
-	function Input(props) {
-		_classCallCheck(this, Input);
-
-		_get(Object.getPrototypeOf(Input.prototype), "constructor", this).call(this, props);
-
-		this.state = {
-			valid: true,
-			invalidMessage: null
-		};
-	}
-
-	_createClass(Input, [{
-		key: "componentWillReceiveProps",
-		value: function componentWillReceiveProps(nextProps) {
-			if (this.props.value === nextProps.value) {
-				return;
-			}
-
-			if (nextProps.value === "") {
-				if (!this.state.valid) {
-					this.setState({
-						valid: true,
-						invalidMessage: null
-					});
-				}
-
-				return;
-			} else if (this.props.validate) {
-				var validator = this.props.validate(nextProps.value);
-
-				this.setState({
-					valid: validator.isValid,
-					invalidMessage: validator.message
-				});
-
-				if (!validator.isValid && this.props.onInvalid) {
-					this.props.onInvalid(validator.message, nextProps.value);
-				}
-			}
-		}
-	}, {
-		key: "shouldComponentUpdate",
-		value: function shouldComponentUpdate(nextProps, nextState) {
-			return this.props.value !== nextProps.value;
-		}
-	}, {
-		key: "handleChange",
-		value: function handleChange(ev) {
-			this.props.onChange(ev.currentTarget.value, ev);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var invalidMessage = this.state.invalidMessage ? _react2["default"].createElement(
-				"div",
-				{ className: "hire-forms-invalid-message" },
-				this.state.invalidMessage
-			) : null;
-
-			return _react2["default"].createElement(
-				"div",
-				{
-					className: (0, _classnames2["default"])("hire-input", { invalid: !this.state.valid }) },
-				_react2["default"].createElement("input", {
-					onBlur: this.props.onBlur,
-					onChange: this.handleChange.bind(this),
-					onFocus: this.props.onFocus,
-					onKeyDown: this.props.onKeyDown,
-					onKeyUp: this.props.onKeyUp,
-					placeholder: this.props.placeholder,
-					style: this.props.style,
-					value: this.props.value }),
-				invalidMessage
-			);
-		}
-	}]);
-
-	return Input;
-})(_react2["default"].Component);
-
-Input.propTypes = {
-	onBlur: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	onFocus: _react2["default"].PropTypes.func,
-	onInvalid: _react2["default"].PropTypes.func,
-	onKeyDown: _react2["default"].PropTypes.func,
-	onKeyUp: _react2["default"].PropTypes.func,
-	placeholder: _react2["default"].PropTypes.string,
-	style: _react2["default"].PropTypes.object,
-	valid: _react2["default"].PropTypes.bool,
-	validate: _react2["default"].PropTypes.func,
-	value: _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.number])
-};
-
-Input.defaultProps = {
-	value: ""
-};
-
-exports["default"] = Input;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","react":"react"}]},{},[1])(1)
-});
-},{}],2:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],2:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],3:[function(_dereq_,module,exports){
-// TODO move listitem to seperate component (so we don't have to store data-key and data-value as attributes)
-// Move util functions to seperate module
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var hasKeyValue = function hasKeyValue(list, item) {
-	return list.filter(function (li) {
-		return li.key === item.key;
-	}).length > 0;
-};
-
-/**
- * Options are rendered beneath the autocomplete and select components.
- *
- * @class
- * @extends React.Component
- */
-
-var Options = (function (_React$Component) {
-	_inherits(Options, _React$Component);
-
-	function Options() {
-		_classCallCheck(this, Options);
-
-		_get(Object.getPrototypeOf(Options.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(Options, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			var node = _reactDom2["default"].findDOMNode(this);
-
-			if (node) {
-				node.style.zIndex = 1000;
-			}
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			var node = _reactDom2["default"].findDOMNode(this);
-			node.style.zIndex = 0;
-		}
-
-		/**
-   * Sort values on relevance. A result is more relevant when the search
-   * query is more at the beginning of the string. In other words:
-   * String.indexOf(props.query): lower is better.
-   * @param {Array<Object>} value An array of key/value maps
-   * @param {String} query A search query
-   * @returns {Array<Object>} Sorted values on relevance
-   */
-	}, {
-		key: "sortRelevance",
-		value: function sortRelevance(values, query) {
-			return values.sort(function (a, b) {
-				a = a.value.toLowerCase();
-				b = b.value.toLowerCase();
-
-				var indexA = a.indexOf(query);
-				var indexB = b.indexOf(query);
-
-				if (indexA > indexB) {
-					return 1;
-				}
-
-				if (indexA < indexB) {
-					return -1;
-				}
-
-				if (indexA === indexB) {
-					if (a > b) {
-						return 1;
-					}
-
-					if (a < b) {
-						return -1;
-					}
-				}
-
-				return 0;
-			});
-		}
-
-		/*
-   * highlight the currently highlighted option.
-   *
-   * @param {Object} target An HTMLElement or event object
-   * @param {String} className Name of the highlight class
-   */
-	}, {
-		key: "highlight",
-		value: function highlight(target, className) {
-			// Check if target is an event object.
-			if (target.hasOwnProperty("currentTarget")) {
-				target = target.currentTarget;
-			}
-
-			target.classList.add(className);
-		}
-
-		/**
-   * Unhighlight the currently highlighted option.
-   *
-   * @param {String} className Name of the highlight class
-   * @return {Object} The unhighlighted HTMLElement
-   */
-	}, {
-		key: "unhighlight",
-		value: function unhighlight(className) {
-			var el = undefined;
-			var node = _reactDom2["default"].findDOMNode(this);
-
-			if (node) {
-				el = node.querySelector("li." + className);
-
-				if (el) {
-					el.classList.remove(className);
-				}
-			}
-
-			return el;
-		}
-	}, {
-		key: "handleClick",
-		value: function handleClick(ev) {
-			this.props.onChange(this.getOptionData(ev.currentTarget));
-		}
-	}, {
-		key: "highlightPrev",
-		value: function highlightPrev() {
-			var prev = undefined;
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				prev = current.previousElementSibling;
-			}
-
-			// If current and prev aren't found, start at the top.
-			// Current is not found if there is no list item highlighted.
-			// Prev is not found if the first list item is highlighted.
-			if (!prev) {
-				prev = _reactDom2["default"].findDOMNode(this).lastChild;
-			}
-
-			this.highlight(prev, this.props.highlightClass);
-		}
-	}, {
-		key: "highlightNext",
-		value: function highlightNext() {
-			var next = undefined;
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				next = current.nextElementSibling;
-			}
-
-			// If current and next aren't found, start at the top.
-			// Current is not found if there is no list item highlighted.
-			// Next is not found if the last list item is highlighted.
-			if (!next) {
-				next = _reactDom2["default"].findDOMNode(this).firstChild;
-			}
-
-			this.highlight(next, this.props.highlightClass);
-		}
-	}, {
-		key: "select",
-		value: function select() {
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				this.props.onChange(this.getOptionData(current));
-			}
-		}
-
-		/**
-   * Get the key (id) and value (display name) of an option DOM element.
-   *
-   * @param {Object} el - Option DOM element
-   * @returns {Object}
-   */
-	}, {
-		key: "getOptionData",
-		value: function getOptionData(el) {
-			return {
-				key: el.getAttribute("data-key"),
-				value: el.getAttribute("data-value")
-			};
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			if (this.props.values.length === 0) {
-				return null;
-			}
-
-			var values = this.props.sort || this.props.sortRelevance && this.props.query !== "" ? this.sortRelevance(this.props.values, this.props.querySelector) : this.props.values;
-
-			var listitems = values.map(function (data, index) {
-				var displayValue = data.value;
-
-				if (_this.props.query.length) {
-					var re = new RegExp(_this.props.query, "ig");
-					displayValue = data.value.replace(re, "<span class=\"highlight\">$&</span>");
-				}
-
-				return _react2["default"].createElement("li", {
-					className: (0, _classnames2["default"])({
-						"hire-forms-option": true,
-						selected: hasKeyValue((0, _hireFormsUtils.castArray)(_this.props.value), data)
-					}),
-					dangerouslySetInnerHTML: { __html: displayValue },
-					"data-key": data.key,
-					"data-value": data.value,
-					key: index,
-					onClick: _this.handleClick.bind(_this) });
-			});
-
-			return _react2["default"].createElement(
-				"ul",
-				{
-					className: "hire-options" },
-				listitems
-			);
-		}
-	}]);
-
-	return Options;
-})(_react2["default"].Component);
-
-Options.defaultProps = {
-	highlightClass: "highlight",
-	query: "",
-	sort: false,
-	sortRelevance: true,
-	value: { key: "", value: "" },
-	values: []
-};
-
-Options.propTypes = {
-	highlightClass: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	query: _react2["default"].PropTypes.string,
-	sort: _react2["default"].PropTypes.bool,
-	sortRelevance: _react2["default"].PropTypes.bool,
-	value: _hireFormsPropTypes.keyValueMapOrArrayOfKeyValueMaps,
-	values: _hireFormsPropTypes.arrayOfKeyValueMaps
-};
-
-exports["default"] = Options;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-prop-types":1,"hire-forms-utils":2,"react":"react","react-dom":"react-dom"}]},{},[3])(3)
-});
-},{"classnames":"classnames","hire-forms-prop-types":3,"hire-forms-utils":4,"react":"react","react-dom":"react-dom"}],3:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],4:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],5:[function(_dereq_,module,exports){
-// Rebuild build
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsInput = _dereq_("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var _hireFormsOptions = _dereq_("hire-forms-options");
-
-var _hireFormsOptions2 = _interopRequireDefault(_hireFormsOptions);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var Autocomplete = (function (_React$Component) {
-	_inherits(Autocomplete, _React$Component);
-
-	_createClass(Autocomplete, [{
-		key: "componentWillReceiveProps",
-		value: function componentWillReceiveProps(nextProps) {
-			this.setState({
-				query: nextProps.value.value,
-				options: []
-			});
-		}
-	}]);
-
-	function Autocomplete(props) {
-		_classCallCheck(this, Autocomplete);
-
-		_get(Object.getPrototypeOf(Autocomplete.prototype), "constructor", this).call(this, props);
-
-		this.cache = {};
-
-		this.state = {
-			options: [],
-			query: props.value.value
-		};
-	}
-
-	_createClass(Autocomplete, [{
-		key: "handleInputChange",
-		value: function handleInputChange(inputValue) {
-			// Return empty options if inputValue length is beneath a treshold.
-			if (inputValue.length < this.props.minLength) {
-				return this.setState({
-					query: inputValue,
-					options: []
-				});
-			}
-
-			// Return cache if inputValue is found in the cache.
-			if (this.cache.hasOwnProperty(inputValue)) {
-				return this.setState({
-					query: inputValue,
-					options: this.cache[inputValue]
-				});
-			}
-
-			if (this.props.async == null) {
-				this.filter(inputValue);
-			} else {
-				this.filterAsync(inputValue);
-			}
-		}
-	}, {
-		key: "filterAsync",
-		value: function filterAsync(inputValue) {
-			this.setState({ "query": inputValue });
-
-			var done = function done(response) {
-				// Add the options to the cache.
-				this.cache[inputValue] = response;
-
-				// Get the cache from the current (!!!) inputValue. The results trail behind
-				// the user typing, so we have to pass the options of the current inputValue,
-				// not the options of the inputValue of the fetch.
-				var state = this.cache.hasOwnProperty(this.state.query) ? { options: this.cache[this.state.query] } : { options: [] };
-
-				this.setState(state);
-			};
-
-			this.props.async(inputValue, done.bind(this));
-		}
-	}, {
-		key: "filter",
-		value: function filter(inputValue) {
-			this.cache[inputValue] = inputValue === "" ? [] : this.props.options.filter(function (value) {
-				if ((0, _hireFormsUtils.isKeyValueMap)(value)) {
-					value = value.value;
-				}
-
-				return value.toLowerCase().indexOf(inputValue.toLowerCase()) > -1;
-			});
-
-			this.setState({
-				query: inputValue,
-				options: this.cache[inputValue]
-			});
-		}
-	}, {
-		key: "handleInputKeyDown",
-		value: function handleInputKeyDown(ev) {
-			// Escape
-			if (ev.keyCode === 27) {
-				this.setState({
-					options: [],
-					query: ""
-				});
-			}
-
-			if (this.refs.options == null) {
-				return;
-			}
-
-			// Up
-			if (ev.keyCode === 38) {
-				this.refs.options.highlightPrev();
-			}
-
-			// Down
-			if (ev.keyCode === 40) {
-				this.refs.options.highlightNext();
-			}
-
-			// Enter
-			if (ev.keyCode === 13) {
-				this.refs.options.select();
-			}
-		}
-
-		/*
-   * @param {Object} value Key/value map, ie: {key: "A", value: "A"}
-   */
-	}, {
-		key: "handleOptionsChange",
-		value: function handleOptionsChange(value) {
-			this.props.onChange(value);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var options = this.state.options.length !== 0 ? _react2["default"].createElement(_hireFormsOptions2["default"], {
-				onChange: this.handleOptionsChange.bind(this),
-				query: this.state.query,
-				ref: "options",
-				value: this.props.value,
-				values: (0, _hireFormsUtils.castKeyValueArray)(this.state.options) }) : null;
-
-			return _react2["default"].createElement(
-				"div",
-				{
-					className: "hire-forms-autocomplete",
-					style: { position: "relative" } },
-				_react2["default"].createElement(_hireFormsInput2["default"], {
-					onChange: this.handleInputChange.bind(this),
-					onKeyDown: this.handleInputKeyDown.bind(this),
-					placeholder: this.props.placeholder,
-					ref: "input",
-					value: this.state.query }),
-				this.props.children,
-				options
-			);
-		}
-	}]);
-
-	return Autocomplete;
-})(_react2["default"].Component);
-
-Autocomplete.propTypes = {
-	async: _react2["default"].PropTypes.func,
-	children: _react2["default"].PropTypes.element,
-	minLength: _react2["default"].PropTypes.number,
-	onChange: _react2["default"].PropTypes.func,
-	options: _hireFormsPropTypes.arrayOfKeyValueMaps,
-	placeholder: _react2["default"].PropTypes.string,
-	value: _hireFormsPropTypes.keyValueMap
-};
-
-Autocomplete.defaultProps = {
-	minLength: 1,
-	value: {
-		key: "",
-		value: ""
-	}
-};
-
-exports["default"] = Autocomplete;
-module.exports = exports["default"];
-
-},{"hire-forms-input":1,"hire-forms-options":2,"hire-forms-prop-types":3,"hire-forms-utils":4,"react":"react"}]},{},[5])(5)
-});
-},{}],2:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsMutableList = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsInput = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var Input = (function (_React$Component) {
-	_inherits(Input, _React$Component);
-
-	function Input(props) {
-		_classCallCheck(this, Input);
-
-		_get(Object.getPrototypeOf(Input.prototype), "constructor", this).call(this, props);
-
-		this.state = {
-			valid: true,
-			invalidMessage: null
-		};
-	}
-
-	_createClass(Input, [{
-		key: "componentWillReceiveProps",
-		value: function componentWillReceiveProps(nextProps) {
-			if (this.props.value === nextProps.value) {
-				return;
-			}
-
-			if (nextProps.value === "") {
-				if (!this.state.valid) {
-					this.setState({
-						valid: true,
-						invalidMessage: null
-					});
-				}
-
-				return;
-			} else if (this.props.validate) {
-				var validator = this.props.validate(nextProps.value);
-
-				this.setState({
-					valid: validator.isValid,
-					invalidMessage: validator.message
-				});
-
-				if (!validator.isValid && this.props.onInvalid) {
-					this.props.onInvalid(validator.message, nextProps.value);
-				}
-			}
-		}
-	}, {
-		key: "shouldComponentUpdate",
-		value: function shouldComponentUpdate(nextProps, nextState) {
-			return this.props.value !== nextProps.value;
-		}
-	}, {
-		key: "handleChange",
-		value: function handleChange(ev) {
-			this.props.onChange(ev.currentTarget.value, ev);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var invalidMessage = this.state.invalidMessage ? _react2["default"].createElement(
-				"div",
-				{ className: "hire-forms-invalid-message" },
-				this.state.invalidMessage
-			) : null;
-
-			return _react2["default"].createElement(
-				"div",
-				{
-					className: (0, _classnames2["default"])("hire-input", { invalid: !this.state.valid }) },
-				_react2["default"].createElement("input", {
-					onBlur: this.props.onBlur,
-					onChange: this.handleChange.bind(this),
-					onFocus: this.props.onFocus,
-					onKeyDown: this.props.onKeyDown,
-					onKeyUp: this.props.onKeyUp,
-					placeholder: this.props.placeholder,
-					style: this.props.style,
-					value: this.props.value }),
-				invalidMessage
-			);
-		}
-	}]);
-
-	return Input;
-})(_react2["default"].Component);
-
-Input.propTypes = {
-	onBlur: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	onFocus: _react2["default"].PropTypes.func,
-	onInvalid: _react2["default"].PropTypes.func,
-	onKeyDown: _react2["default"].PropTypes.func,
-	onKeyUp: _react2["default"].PropTypes.func,
-	placeholder: _react2["default"].PropTypes.string,
-	style: _react2["default"].PropTypes.object,
-	valid: _react2["default"].PropTypes.bool,
-	validate: _react2["default"].PropTypes.func,
-	value: _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.number])
-};
-
-Input.defaultProps = {
-	value: ""
-};
-
-exports["default"] = Input;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","react":"react"}]},{},[1])(1)
-});
-},{}],2:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],3:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],4:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _listItem = _dereq_("./list-item");
-
-var _listItem2 = _interopRequireDefault(_listItem);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var List = (function (_React$Component) {
-	_inherits(List, _React$Component);
-
-	function List(props) {
-		_classCallCheck(this, List);
-
-		_get(Object.getPrototypeOf(List.prototype), "constructor", this).call(this, props);
-
-		this.state = { editItemIndex: null };
-	}
-
-	_createClass(List, [{
-		key: "handleListItemClick",
-		value: function handleListItemClick(index, ev) {
-			this.setState({ editItemIndex: index });
-
-			if (this.props.onClick) {
-				this.props.onClick(index, ev);
-			}
-		}
-	}, {
-		key: "handleListItemCancel",
-		value: function handleListItemCancel() {
-			this.setState({ editItemIndex: null });
-		}
-	}, {
-		key: "handleListItemChange",
-		value: function handleListItemChange(index, newValue) {
-			this.setState({ editItemIndex: null });
-
-			this.props.values[index] = newValue;
-			this.props.onChange(this.props.values);
-		}
-	}, {
-		key: "handleListItemRemove",
-		value: function handleListItemRemove(index) {
-			this.setState({ editItemIndex: null });
-
-			this.props.values.splice(index, 1);
-			this.props.onChange(this.props.values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			var list = this.props.values.map(function (item, index) {
-				return _react2["default"].createElement(_listItem2["default"], {
-					active: _this.state.editItemIndex === index,
-					editable: _this.props.editable,
-					key: index,
-					onCancel: _this.handleListItemCancel.bind(_this, index),
-					onChange: _this.handleListItemChange.bind(_this, index),
-					onClick: _this.handleListItemClick.bind(_this, index),
-					onRemove: _this.handleListItemRemove.bind(_this, index),
-					removable: _this.props.removable,
-					value: (0, _hireFormsUtils.castKeyValue)(item) });
-			});
-
-			list = list.length ? this.props.ordered ? _react2["default"].createElement(
-				"ol",
-				null,
-				list
-			) : _react2["default"].createElement(
-				"ul",
-				null,
-				list
-			) : _react2["default"].createElement(
-				"span",
-				{ className: "hire-empty-list" },
-				"The list is empty"
-			);
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-list" },
-				list
-			);
-		}
-	}]);
-
-	return List;
-})(_react2["default"].Component);
-
-List.defaultProps = {
-	editable: false,
-	ordered: false,
-	removable: true,
-	values: []
-};
-
-List.propTypes = {
-	editable: _react2["default"].PropTypes.bool,
-	onChange: _react2["default"].PropTypes.func,
-	onClick: _react2["default"].PropTypes.func,
-	options: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps,
-	ordered: _react2["default"].PropTypes.bool,
-	removable: _react2["default"].PropTypes.bool,
-	values: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps
-};
-
-exports["default"] = List;
-module.exports = exports["default"];
-
-},{"./list-item":5,"hire-forms-prop-types":2,"hire-forms-utils":3,"react":"react"}],5:[function(_dereq_,module,exports){
-// TODO merge with static-list/list-item?
-// TODO move css to default css file
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsInput = _dereq_("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var ext = function ext() {
-	for (var _len = arguments.length, styles = Array(_len), _key = 0; _key < _len; _key++) {
-		styles[_key] = arguments[_key];
-	}
-
-	return _extends.apply(undefined, [{}].concat(styles));
-};
-
-var liStyle = {
-	cursor: "pointer"
-};
-
-var inputStyle = {
-	width: "90%"
-};
-
-var buttonStyle = {
-	width: "10%"
-};
-
-var spanStyle = {
-	width: "90%"
-};
-
-var inlineBlockStyle = {
-	display: "inline-block",
-	boxSizing: "border-box",
-	verticalAlign: "top"
-};
-
-var ListItem = (function (_React$Component) {
-	_inherits(ListItem, _React$Component);
-
-	_createClass(ListItem, [{
-		key: "componentWillUpdate",
-		value: function componentWillUpdate(nextProps, nextState) {
-			if (!nextProps.active) {
-				nextState.value = nextProps.value.value;
-			}
-		}
-	}, {
-		key: "componentDidUpdate",
-		value: function componentDidUpdate() {
-			if (this.props.active && this.props.editable) {
-				var node = _reactDom2["default"].findDOMNode(this.refs.input);
-				node.focus();
-				node.value = node.value;
-			}
-		}
-	}]);
-
-	function ListItem(props) {
-		_classCallCheck(this, ListItem);
-
-		_get(Object.getPrototypeOf(ListItem.prototype), "constructor", this).call(this, props);
-
-		this.state = { value: props.value.value };
-	}
-
-	_createClass(ListItem, [{
-		key: "onInputChange",
-		value: function onInputChange(value) {
-			this.setState({ value: value });
-		}
-	}, {
-		key: "onInputKeyDown",
-		value: function onInputKeyDown(ev) {
-			// if keyCode is "enter" or "tab"
-			if (ev.keyCode === 13 || ev.keyCode === 9) {
-				if (this.state.value === this.props.value.value) {
-					this.props.onCancel();
-				} else {
-					this.props.onChange(this.state.value);
-				}
-			}
-
-			// if keyCode is "escape"
-			if (ev.keyCode === 27) {
-				this.props.onCancel();
-			}
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var remove = undefined;
-
-			var el = this.props.active && this.props.editable ? _react2["default"].createElement(_hireFormsInput2["default"], {
-				onChange: this.onInputChange.bind(this),
-				onKeyDown: this.onInputKeyDown.bind(this),
-				ref: "input",
-				style: ext(inlineBlockStyle, inputStyle),
-				value: this.state.value }) : _react2["default"].createElement(
-				"span",
-				{
-					className: "value",
-					onClick: this.props.onClick.bind(this),
-					style: ext(inlineBlockStyle, spanStyle) },
-				this.props.value.value
-			);
-
-			if (this.props.active && this.props.removable) {
-				remove = _react2["default"].createElement(
-					"button",
-					{
-						className: "remove",
-						onClick: this.props.onRemove,
-						style: ext(inlineBlockStyle, buttonStyle) },
-					"x"
-				);
-			}
-
-			return _react2["default"].createElement(
-				"li",
-				{
-					className: (0, _classnames2["default"])("hire-list-item", { active: this.props.active }),
-					style: liStyle },
-				el,
-				remove
-			);
-		}
-	}]);
-
-	return ListItem;
-})(_react2["default"].Component);
-
-ListItem.defaultProps = {
-	active: false,
-	editable: false,
-	removable: true
-};
-
-ListItem.propTypes = {
-	active: _react2["default"].PropTypes.bool,
-	editable: _react2["default"].PropTypes.bool,
-	onCancel: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func,
-	onClick: _react2["default"].PropTypes.func,
-	onRemove: _react2["default"].PropTypes.func,
-	removable: _react2["default"].PropTypes.bool,
-	value: _hireFormsPropTypes.keyValueMap
-};
-
-exports["default"] = ListItem;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-input":1,"hire-forms-prop-types":2,"react":"react","react-dom":"react-dom"}]},{},[4])(4)
-});
-},{}],3:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],4:[function(_dereq_,module,exports){
-// TODO Fix filter options (remove values from options). Doesn't work, because AutoComplete has a cache for the async.
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsList = _dereq_("hire-forms-list");
-
-var _hireFormsList2 = _interopRequireDefault(_hireFormsList);
-
-var _hireFormsAutocomplete = _dereq_("hire-forms-autocomplete");
-
-var _hireFormsAutocomplete2 = _interopRequireDefault(_hireFormsAutocomplete);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var AutocompleteList = (function (_React$Component) {
-	_inherits(AutocompleteList, _React$Component);
-
-	function AutocompleteList() {
-		_classCallCheck(this, AutocompleteList);
-
-		_get(Object.getPrototypeOf(AutocompleteList.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(AutocompleteList, [{
-		key: "handleEditableListChange",
-		value: function handleEditableListChange(values) {
-			this.props.onChange(values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-forms-autocomplete-list" },
-				_react2["default"].createElement(_hireFormsList2["default"], {
-					mutable: true,
-					onChange: this.handleEditableListChange.bind(this),
-					ordered: this.props.ordered,
-					values: this.props.values }),
-				_react2["default"].createElement(_hireFormsAutocomplete2["default"], {
-					async: this.props.async,
-					onChange: function (value) {
-						return _this.props.onChange(_this.props.values.concat(value));
-					},
-					options: this.props.options,
-					placeholder: this.props.placeholder,
-					ref: "autocomplete" })
-			);
-		}
-	}]);
-
-	return AutocompleteList;
-})(_react2["default"].Component);
-
-AutocompleteList.defaultProps = {
-	options: [],
-	ordered: false,
-	values: []
-};
-AutocompleteList.propTypes = {
-	async: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	options: _hireFormsPropTypes.arrayOfKeyValueMaps,
-	ordered: _react2["default"].PropTypes.bool,
-	placeholder: _react2["default"].PropTypes.string,
-	values: _hireFormsPropTypes.arrayOfKeyValueMaps
-};
-
-exports["default"] = AutocompleteList;
-module.exports = exports["default"];
-
-},{"hire-forms-autocomplete":1,"hire-forms-list":2,"hire-forms-prop-types":3,"react":"react"}]},{},[4])(4)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],8:[function(require,module,exports){
-(function (global){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsForm = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],2:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],3:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x2, _x3, _x4) { var _again = true; _function: while (_again) { var object = _x2, property = _x3, receiver = _x4; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x2 = parent; _x3 = property; _x4 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-exports["default"] = function (ComposedComponent) {
-	var classNames = arguments.length <= 1 || arguments[1] === undefined ? [] : arguments[1];
-
-	var Form = (function (_React$Component) {
-		_inherits(Form, _React$Component);
-
-		function Form() {
-			_classCallCheck(this, Form);
-
-			_get(Object.getPrototypeOf(Form.prototype), "constructor", this).apply(this, arguments);
-		}
-
-		_createClass(Form, [{
-			key: "handleChange",
-			value: function handleChange(key, value) {
-				var attr = (0, _hireFormsUtils.castArray)(this.props.attr);
-
-				this.props.onChange(attr.concat(key), value);
-			}
-		}, {
-			key: "handleDelete",
-			value: function handleDelete(key) {
-				var attr = (0, _hireFormsUtils.castArray)(this.props.attr);
-
-				this.props.onDelete(attr.concat(key));
-			}
-		}, {
-			key: "handleInvalid",
-			value: function handleInvalid(key) {
-				var attr = (0, _hireFormsUtils.castArray)(this.props.attr);
-
-				this.props.onInvalid(attr.concat(key));
-			}
-		}, {
-			key: "render",
-			value: function render() {
-				return _react2["default"].createElement(
-					"div",
-					{ className: (0, _classnames2["default"])("hire-forms-form", classNames) },
-					_react2["default"].createElement(ComposedComponent, _extends({}, this.props, {
-						handleChange: this.handleChange.bind(this),
-						handleDelete: this.handleDelete.bind(this),
-						handleInvalid: this.handleInvalid.bind(this) }))
-				);
-			}
-		}]);
-
-		return Form;
-	})(_react2["default"].Component);
-
-	Form.propTypes = {
-		// The array can consist of strings and numbers.
-		attr: _hireFormsPropTypes.stringOrArray,
-		onChange: _react2["default"].PropTypes.func.isRequired,
-		onDelete: _react2["default"].PropTypes.func,
-		onInvalid: _react2["default"].PropTypes.func,
-		value: _react2["default"].PropTypes.object
-	};
-
-	Form.defaultProps = {
-		attr: []
-	};
-
-	return Form;
-};
-
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-prop-types":1,"hire-forms-utils":2,"react":"react"}]},{},[3])(3)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],9:[function(require,module,exports){
-(function (global){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsInput = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var Input = (function (_React$Component) {
-	_inherits(Input, _React$Component);
-
-	function Input(props) {
-		_classCallCheck(this, Input);
-
-		_get(Object.getPrototypeOf(Input.prototype), "constructor", this).call(this, props);
-
-		this.state = {
-			valid: true,
-			invalidMessage: null
-		};
-	}
-
-	_createClass(Input, [{
-		key: "componentWillReceiveProps",
-		value: function componentWillReceiveProps(nextProps) {
-			if (this.props.value === nextProps.value) {
-				return;
-			}
-
-			if (nextProps.value === "") {
-				if (!this.state.valid) {
-					this.setState({
-						valid: true,
-						invalidMessage: null
-					});
-				}
-
-				return;
-			} else if (this.props.validate) {
-				var validator = this.props.validate(nextProps.value);
-
-				this.setState({
-					valid: validator.isValid,
-					invalidMessage: validator.message
-				});
-
-				if (!validator.isValid && this.props.onInvalid) {
-					this.props.onInvalid(validator.message, nextProps.value);
-				}
-			}
-		}
-	}, {
-		key: "shouldComponentUpdate",
-		value: function shouldComponentUpdate(nextProps, nextState) {
-			return this.props.value !== nextProps.value;
-		}
-	}, {
-		key: "handleChange",
-		value: function handleChange(ev) {
-			this.props.onChange(ev.currentTarget.value, ev);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var invalidMessage = this.state.invalidMessage ? _react2["default"].createElement(
-				"div",
-				{ className: "hire-forms-invalid-message" },
-				this.state.invalidMessage
-			) : null;
-
-			return _react2["default"].createElement(
-				"div",
-				{
-					className: (0, _classnames2["default"])("hire-input", { invalid: !this.state.valid }) },
-				_react2["default"].createElement("input", {
-					onBlur: this.props.onBlur,
-					onChange: this.handleChange.bind(this),
-					onFocus: this.props.onFocus,
-					onKeyDown: this.props.onKeyDown,
-					onKeyUp: this.props.onKeyUp,
-					placeholder: this.props.placeholder,
-					style: this.props.style,
-					value: this.props.value }),
-				invalidMessage
-			);
-		}
-	}]);
-
-	return Input;
-})(_react2["default"].Component);
-
-Input.propTypes = {
-	onBlur: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	onFocus: _react2["default"].PropTypes.func,
-	onInvalid: _react2["default"].PropTypes.func,
-	onKeyDown: _react2["default"].PropTypes.func,
-	onKeyUp: _react2["default"].PropTypes.func,
-	placeholder: _react2["default"].PropTypes.string,
-	style: _react2["default"].PropTypes.object,
-	valid: _react2["default"].PropTypes.bool,
-	validate: _react2["default"].PropTypes.func,
-	value: _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.number])
-};
-
-Input.defaultProps = {
-	value: ""
-};
-
-exports["default"] = Input;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","react":"react"}]},{},[1])(1)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],10:[function(require,module,exports){
-(function (global){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsMutableList = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsInput = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var Input = (function (_React$Component) {
-	_inherits(Input, _React$Component);
-
-	function Input(props) {
-		_classCallCheck(this, Input);
-
-		_get(Object.getPrototypeOf(Input.prototype), "constructor", this).call(this, props);
-
-		this.state = {
-			valid: true,
-			invalidMessage: null
-		};
-	}
-
-	_createClass(Input, [{
-		key: "componentWillReceiveProps",
-		value: function componentWillReceiveProps(nextProps) {
-			if (this.props.value === nextProps.value) {
-				return;
-			}
-
-			if (nextProps.value === "") {
-				if (!this.state.valid) {
-					this.setState({
-						valid: true,
-						invalidMessage: null
-					});
-				}
-
-				return;
-			} else if (this.props.validate) {
-				var validator = this.props.validate(nextProps.value);
-
-				this.setState({
-					valid: validator.isValid,
-					invalidMessage: validator.message
-				});
-
-				if (!validator.isValid && this.props.onInvalid) {
-					this.props.onInvalid(validator.message, nextProps.value);
-				}
-			}
-		}
-	}, {
-		key: "shouldComponentUpdate",
-		value: function shouldComponentUpdate(nextProps, nextState) {
-			return this.props.value !== nextProps.value;
-		}
-	}, {
-		key: "handleChange",
-		value: function handleChange(ev) {
-			this.props.onChange(ev.currentTarget.value, ev);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var invalidMessage = this.state.invalidMessage ? _react2["default"].createElement(
-				"div",
-				{ className: "hire-forms-invalid-message" },
-				this.state.invalidMessage
-			) : null;
-
-			return _react2["default"].createElement(
-				"div",
-				{
-					className: (0, _classnames2["default"])("hire-input", { invalid: !this.state.valid }) },
-				_react2["default"].createElement("input", {
-					onBlur: this.props.onBlur,
-					onChange: this.handleChange.bind(this),
-					onFocus: this.props.onFocus,
-					onKeyDown: this.props.onKeyDown,
-					onKeyUp: this.props.onKeyUp,
-					placeholder: this.props.placeholder,
-					style: this.props.style,
-					value: this.props.value }),
-				invalidMessage
-			);
-		}
-	}]);
-
-	return Input;
-})(_react2["default"].Component);
-
-Input.propTypes = {
-	onBlur: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	onFocus: _react2["default"].PropTypes.func,
-	onInvalid: _react2["default"].PropTypes.func,
-	onKeyDown: _react2["default"].PropTypes.func,
-	onKeyUp: _react2["default"].PropTypes.func,
-	placeholder: _react2["default"].PropTypes.string,
-	style: _react2["default"].PropTypes.object,
-	valid: _react2["default"].PropTypes.bool,
-	validate: _react2["default"].PropTypes.func,
-	value: _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.number])
-};
-
-Input.defaultProps = {
-	value: ""
-};
-
-exports["default"] = Input;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","react":"react"}]},{},[1])(1)
-});
-},{}],2:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],3:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],4:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _listItem = _dereq_("./list-item");
-
-var _listItem2 = _interopRequireDefault(_listItem);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var List = (function (_React$Component) {
-	_inherits(List, _React$Component);
-
-	function List(props) {
-		_classCallCheck(this, List);
-
-		_get(Object.getPrototypeOf(List.prototype), "constructor", this).call(this, props);
-
-		this.state = { editItemIndex: null };
-	}
-
-	_createClass(List, [{
-		key: "handleListItemClick",
-		value: function handleListItemClick(index, ev) {
-			this.setState({ editItemIndex: index });
-
-			if (this.props.onClick) {
-				this.props.onClick(index, ev);
-			}
-		}
-	}, {
-		key: "handleListItemCancel",
-		value: function handleListItemCancel() {
-			this.setState({ editItemIndex: null });
-		}
-	}, {
-		key: "handleListItemChange",
-		value: function handleListItemChange(index, newValue) {
-			this.setState({ editItemIndex: null });
-
-			this.props.values[index] = newValue;
-			this.props.onChange(this.props.values);
-		}
-	}, {
-		key: "handleListItemRemove",
-		value: function handleListItemRemove(index) {
-			this.setState({ editItemIndex: null });
-
-			this.props.values.splice(index, 1);
-			this.props.onChange(this.props.values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			var list = this.props.values.map(function (item, index) {
-				return _react2["default"].createElement(_listItem2["default"], {
-					active: _this.state.editItemIndex === index,
-					editable: _this.props.editable,
-					key: index,
-					onCancel: _this.handleListItemCancel.bind(_this, index),
-					onChange: _this.handleListItemChange.bind(_this, index),
-					onClick: _this.handleListItemClick.bind(_this, index),
-					onRemove: _this.handleListItemRemove.bind(_this, index),
-					removable: _this.props.removable,
-					value: (0, _hireFormsUtils.castKeyValue)(item) });
-			});
-
-			list = list.length ? this.props.ordered ? _react2["default"].createElement(
-				"ol",
-				null,
-				list
-			) : _react2["default"].createElement(
-				"ul",
-				null,
-				list
-			) : _react2["default"].createElement(
-				"span",
-				{ className: "hire-empty-list" },
-				"The list is empty"
-			);
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-list" },
-				list
-			);
-		}
-	}]);
-
-	return List;
-})(_react2["default"].Component);
-
-List.defaultProps = {
-	editable: false,
-	ordered: false,
-	removable: true,
-	values: []
-};
-
-List.propTypes = {
-	editable: _react2["default"].PropTypes.bool,
-	onChange: _react2["default"].PropTypes.func,
-	onClick: _react2["default"].PropTypes.func,
-	options: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps,
-	ordered: _react2["default"].PropTypes.bool,
-	removable: _react2["default"].PropTypes.bool,
-	values: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps
-};
-
-exports["default"] = List;
-module.exports = exports["default"];
-
-},{"./list-item":5,"hire-forms-prop-types":2,"hire-forms-utils":3,"react":"react"}],5:[function(_dereq_,module,exports){
-// TODO merge with static-list/list-item?
-// TODO move css to default css file
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsInput = _dereq_("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var ext = function ext() {
-	for (var _len = arguments.length, styles = Array(_len), _key = 0; _key < _len; _key++) {
-		styles[_key] = arguments[_key];
-	}
-
-	return _extends.apply(undefined, [{}].concat(styles));
-};
-
-var liStyle = {
-	cursor: "pointer"
-};
-
-var inputStyle = {
-	width: "90%"
-};
-
-var buttonStyle = {
-	width: "10%"
-};
-
-var spanStyle = {
-	width: "90%"
-};
-
-var inlineBlockStyle = {
-	display: "inline-block",
-	boxSizing: "border-box",
-	verticalAlign: "top"
-};
-
-var ListItem = (function (_React$Component) {
-	_inherits(ListItem, _React$Component);
-
-	_createClass(ListItem, [{
-		key: "componentWillUpdate",
-		value: function componentWillUpdate(nextProps, nextState) {
-			if (!nextProps.active) {
-				nextState.value = nextProps.value.value;
-			}
-		}
-	}, {
-		key: "componentDidUpdate",
-		value: function componentDidUpdate() {
-			if (this.props.active && this.props.editable) {
-				var node = _reactDom2["default"].findDOMNode(this.refs.input);
-				node.focus();
-				node.value = node.value;
-			}
-		}
-	}]);
-
-	function ListItem(props) {
-		_classCallCheck(this, ListItem);
-
-		_get(Object.getPrototypeOf(ListItem.prototype), "constructor", this).call(this, props);
-
-		this.state = { value: props.value.value };
-	}
-
-	_createClass(ListItem, [{
-		key: "onInputChange",
-		value: function onInputChange(value) {
-			this.setState({ value: value });
-		}
-	}, {
-		key: "onInputKeyDown",
-		value: function onInputKeyDown(ev) {
-			// if keyCode is "enter" or "tab"
-			if (ev.keyCode === 13 || ev.keyCode === 9) {
-				if (this.state.value === this.props.value.value) {
-					this.props.onCancel();
-				} else {
-					this.props.onChange(this.state.value);
-				}
-			}
-
-			// if keyCode is "escape"
-			if (ev.keyCode === 27) {
-				this.props.onCancel();
-			}
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var remove = undefined;
-
-			var el = this.props.active && this.props.editable ? _react2["default"].createElement(_hireFormsInput2["default"], {
-				onChange: this.onInputChange.bind(this),
-				onKeyDown: this.onInputKeyDown.bind(this),
-				ref: "input",
-				style: ext(inlineBlockStyle, inputStyle),
-				value: this.state.value }) : _react2["default"].createElement(
-				"span",
-				{
-					className: "value",
-					onClick: this.props.onClick.bind(this),
-					style: ext(inlineBlockStyle, spanStyle) },
-				this.props.value.value
-			);
-
-			if (this.props.active && this.props.removable) {
-				remove = _react2["default"].createElement(
-					"button",
-					{
-						className: "remove",
-						onClick: this.props.onRemove,
-						style: ext(inlineBlockStyle, buttonStyle) },
-					"x"
-				);
-			}
-
-			return _react2["default"].createElement(
-				"li",
-				{
-					className: (0, _classnames2["default"])("hire-list-item", { active: this.props.active }),
-					style: liStyle },
-				el,
-				remove
-			);
-		}
-	}]);
-
-	return ListItem;
-})(_react2["default"].Component);
-
-ListItem.defaultProps = {
-	active: false,
-	editable: false,
-	removable: true
-};
-
-ListItem.propTypes = {
-	active: _react2["default"].PropTypes.bool,
-	editable: _react2["default"].PropTypes.bool,
-	onCancel: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func,
-	onClick: _react2["default"].PropTypes.func,
-	onRemove: _react2["default"].PropTypes.func,
-	removable: _react2["default"].PropTypes.bool,
-	value: _hireFormsPropTypes.keyValueMap
-};
-
-exports["default"] = ListItem;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-input":1,"hire-forms-prop-types":2,"react":"react","react-dom":"react-dom"}]},{},[4])(4)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],11:[function(require,module,exports){
-(function (global){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsMultiForm = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],2:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],3:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _removeButton = _dereq_("./remove-button");
-
-var _removeButton2 = _interopRequireDefault(_removeButton);
-
-// <DateAndLocalityForm
-// 	attr={"origin"}
-// 	onChange={this.props.handleChange}
-// 	onInvalid={this.props.handleInvalid}
-// 	formData={model.origin} />
-
-//TODO fix propType for this.props.component
-
-var MultiForm = (function (_React$Component) {
-	_inherits(MultiForm, _React$Component);
-
-	function MultiForm() {
-		_classCallCheck(this, MultiForm);
-
-		_get(Object.getPrototypeOf(MultiForm.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(MultiForm, [{
-		key: "handleRemoveForm",
-		value: function handleRemoveForm(index) {
-			var attr = (0, _hireFormsUtils.castArray)(this.props.attr);
-			var key = attr.concat(index);
-
-			this.props.onDelete(key);
-		}
-	}, {
-		key: "handleInvalid",
-		value: function handleInvalid(key) {
-			if (this.props.onInvalid != null) {
-				this.props.onInvalid(key);
-			}
-		}
-	}, {
-		key: "handleAdd",
-		value: function handleAdd() {
-			var values = (0, _hireFormsUtils.castArray)(this.props.model).concat(this.props.values);
-			// let key = castArray(this.props.attr).concat(this.props.values.length);
-			this.props.onChange(this.props.attr, values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			var attr = (0, _hireFormsUtils.castArray)(this.props.attr);
-
-			var formList = this.props.values.length ? _react2["default"].createElement(
-				"ul",
-				{ className: "form-list" },
-				this.props.values.map(function (listItem, index) {
-					return _react2["default"].createElement(
-						"li",
-						{ className: (0, _classnames2["default"])("form", { "new": listItem === _this.props.model }),
-							key: index },
-						_react2["default"].createElement(_this.props.component, _extends({}, _this.props, {
-							attr: attr.concat(index),
-							formData: listItem,
-							onInvalid: _this.handleInvalid.bind(_this) })),
-						_react2["default"].createElement(_removeButton2["default"], _extends({}, _this.props, {
-							attr: attr.concat(index) }))
-					);
-				})
-			) : null;
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-multi-form" },
-				_react2["default"].createElement(
-					"button",
-					{ onClick: this.handleAdd.bind(this) },
-					"Add new"
-				),
-				formList
-			);
-		}
-	}]);
-
-	return MultiForm;
-})(_react2["default"].Component);
-
-MultiForm.defaultProps = {
-	addButtonValue: "Add",
-	removeButtonValue: "✕",
-	values: []
-};
-
-MultiForm.propTypes = {
-	addButtonValue: _react2["default"].PropTypes.string,
-	attr: _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]),
-	component: _react2["default"].PropTypes.func.isRequired,
-	model: _react2["default"].PropTypes.object.isRequired,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	onDelete: _react2["default"].PropTypes.func.isRequired,
-	onInvalid: _react2["default"].PropTypes.func,
-	removeButtonValue: _react2["default"].PropTypes.string,
-	values: _react2["default"].PropTypes.array
-};
-
-exports["default"] = MultiForm;
-module.exports = exports["default"];
-/*<AddForm
-{...this.props}
-attr={attr.concat(this.props.values.length)}/>*/
-
-},{"./remove-button":4,"classnames":"classnames","hire-forms-prop-types":1,"hire-forms-utils":2,"react":"react"}],4:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var RemoveButton = (function (_React$Component) {
-	_inherits(RemoveButton, _React$Component);
-
-	function RemoveButton() {
-		_classCallCheck(this, RemoveButton);
-
-		_get(Object.getPrototypeOf(RemoveButton.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(RemoveButton, [{
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			return _react2["default"].createElement(
-				"button",
-				{
-					className: "hire-remove-form",
-					onClick: function () {
-						return _this.props.onDelete(_this.props.attr);
-					},
-					title: "Remove" },
-				this.props.removeButtonValue
-			);
-		}
-	}]);
-
-	return RemoveButton;
-})(_react2["default"].Component);
-
-exports["default"] = RemoveButton;
-module.exports = exports["default"];
-
-},{"react":"react"}]},{},[3])(3)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],12:[function(require,module,exports){
-(function (global){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"react":"react"}],13:[function(require,module,exports){
-(function (global){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsSelectList = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsMutableList = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsInput = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var Input = (function (_React$Component) {
-	_inherits(Input, _React$Component);
-
-	function Input(props) {
-		_classCallCheck(this, Input);
-
-		_get(Object.getPrototypeOf(Input.prototype), "constructor", this).call(this, props);
-
-		this.state = {
-			valid: true,
-			invalidMessage: null
-		};
-	}
-
-	_createClass(Input, [{
-		key: "componentWillReceiveProps",
-		value: function componentWillReceiveProps(nextProps) {
-			if (this.props.value === nextProps.value) {
-				return;
-			}
-
-			if (nextProps.value === "") {
-				if (!this.state.valid) {
-					this.setState({
-						valid: true,
-						invalidMessage: null
-					});
-				}
-
-				return;
-			} else if (this.props.validate) {
-				var validator = this.props.validate(nextProps.value);
-
-				this.setState({
-					valid: validator.isValid,
-					invalidMessage: validator.message
-				});
-
-				if (!validator.isValid && this.props.onInvalid) {
-					this.props.onInvalid(validator.message, nextProps.value);
-				}
-			}
-		}
-	}, {
-		key: "shouldComponentUpdate",
-		value: function shouldComponentUpdate(nextProps, nextState) {
-			return this.props.value !== nextProps.value;
-		}
-	}, {
-		key: "handleChange",
-		value: function handleChange(ev) {
-			this.props.onChange(ev.currentTarget.value, ev);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var invalidMessage = this.state.invalidMessage ? _react2["default"].createElement(
-				"div",
-				{ className: "hire-forms-invalid-message" },
-				this.state.invalidMessage
-			) : null;
-
-			return _react2["default"].createElement(
-				"div",
-				{
-					className: (0, _classnames2["default"])("hire-input", { invalid: !this.state.valid }) },
-				_react2["default"].createElement("input", {
-					onBlur: this.props.onBlur,
-					onChange: this.handleChange.bind(this),
-					onFocus: this.props.onFocus,
-					onKeyDown: this.props.onKeyDown,
-					onKeyUp: this.props.onKeyUp,
-					placeholder: this.props.placeholder,
-					style: this.props.style,
-					value: this.props.value }),
-				invalidMessage
-			);
-		}
-	}]);
-
-	return Input;
-})(_react2["default"].Component);
-
-Input.propTypes = {
-	onBlur: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	onFocus: _react2["default"].PropTypes.func,
-	onInvalid: _react2["default"].PropTypes.func,
-	onKeyDown: _react2["default"].PropTypes.func,
-	onKeyUp: _react2["default"].PropTypes.func,
-	placeholder: _react2["default"].PropTypes.string,
-	style: _react2["default"].PropTypes.object,
-	valid: _react2["default"].PropTypes.bool,
-	validate: _react2["default"].PropTypes.func,
-	value: _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.number])
-};
-
-Input.defaultProps = {
-	value: ""
-};
-
-exports["default"] = Input;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","react":"react"}]},{},[1])(1)
-});
-},{}],2:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],3:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],4:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _listItem = _dereq_("./list-item");
-
-var _listItem2 = _interopRequireDefault(_listItem);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var List = (function (_React$Component) {
-	_inherits(List, _React$Component);
-
-	function List(props) {
-		_classCallCheck(this, List);
-
-		_get(Object.getPrototypeOf(List.prototype), "constructor", this).call(this, props);
-
-		this.state = { editItemIndex: null };
-	}
-
-	_createClass(List, [{
-		key: "handleListItemClick",
-		value: function handleListItemClick(index, ev) {
-			this.setState({ editItemIndex: index });
-
-			if (this.props.onClick) {
-				this.props.onClick(index, ev);
-			}
-		}
-	}, {
-		key: "handleListItemCancel",
-		value: function handleListItemCancel() {
-			this.setState({ editItemIndex: null });
-		}
-	}, {
-		key: "handleListItemChange",
-		value: function handleListItemChange(index, newValue) {
-			this.setState({ editItemIndex: null });
-
-			this.props.values[index] = newValue;
-			this.props.onChange(this.props.values);
-		}
-	}, {
-		key: "handleListItemRemove",
-		value: function handleListItemRemove(index) {
-			this.setState({ editItemIndex: null });
-
-			this.props.values.splice(index, 1);
-			this.props.onChange(this.props.values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			var list = this.props.values.map(function (item, index) {
-				return _react2["default"].createElement(_listItem2["default"], {
-					active: _this.state.editItemIndex === index,
-					editable: _this.props.editable,
-					key: index,
-					onCancel: _this.handleListItemCancel.bind(_this, index),
-					onChange: _this.handleListItemChange.bind(_this, index),
-					onClick: _this.handleListItemClick.bind(_this, index),
-					onRemove: _this.handleListItemRemove.bind(_this, index),
-					removable: _this.props.removable,
-					value: (0, _hireFormsUtils.castKeyValue)(item) });
-			});
-
-			list = list.length ? this.props.ordered ? _react2["default"].createElement(
-				"ol",
-				null,
-				list
-			) : _react2["default"].createElement(
-				"ul",
-				null,
-				list
-			) : _react2["default"].createElement(
-				"span",
-				{ className: "hire-empty-list" },
-				"The list is empty"
-			);
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-list" },
-				list
-			);
-		}
-	}]);
-
-	return List;
-})(_react2["default"].Component);
-
-List.defaultProps = {
-	editable: false,
-	ordered: false,
-	removable: true,
-	values: []
-};
-
-List.propTypes = {
-	editable: _react2["default"].PropTypes.bool,
-	onChange: _react2["default"].PropTypes.func,
-	onClick: _react2["default"].PropTypes.func,
-	options: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps,
-	ordered: _react2["default"].PropTypes.bool,
-	removable: _react2["default"].PropTypes.bool,
-	values: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps
-};
-
-exports["default"] = List;
-module.exports = exports["default"];
-
-},{"./list-item":5,"hire-forms-prop-types":2,"hire-forms-utils":3,"react":"react"}],5:[function(_dereq_,module,exports){
-// TODO merge with static-list/list-item?
-// TODO move css to default css file
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsInput = _dereq_("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var ext = function ext() {
-	for (var _len = arguments.length, styles = Array(_len), _key = 0; _key < _len; _key++) {
-		styles[_key] = arguments[_key];
-	}
-
-	return _extends.apply(undefined, [{}].concat(styles));
-};
-
-var liStyle = {
-	cursor: "pointer"
-};
-
-var inputStyle = {
-	width: "90%"
-};
-
-var buttonStyle = {
-	width: "10%"
-};
-
-var spanStyle = {
-	width: "90%"
-};
-
-var inlineBlockStyle = {
-	display: "inline-block",
-	boxSizing: "border-box",
-	verticalAlign: "top"
-};
-
-var ListItem = (function (_React$Component) {
-	_inherits(ListItem, _React$Component);
-
-	_createClass(ListItem, [{
-		key: "componentWillUpdate",
-		value: function componentWillUpdate(nextProps, nextState) {
-			if (!nextProps.active) {
-				nextState.value = nextProps.value.value;
-			}
-		}
-	}, {
-		key: "componentDidUpdate",
-		value: function componentDidUpdate() {
-			if (this.props.active && this.props.editable) {
-				var node = _reactDom2["default"].findDOMNode(this.refs.input);
-				node.focus();
-				node.value = node.value;
-			}
-		}
-	}]);
-
-	function ListItem(props) {
-		_classCallCheck(this, ListItem);
-
-		_get(Object.getPrototypeOf(ListItem.prototype), "constructor", this).call(this, props);
-
-		this.state = { value: props.value.value };
-	}
-
-	_createClass(ListItem, [{
-		key: "onInputChange",
-		value: function onInputChange(value) {
-			this.setState({ value: value });
-		}
-	}, {
-		key: "onInputKeyDown",
-		value: function onInputKeyDown(ev) {
-			// if keyCode is "enter" or "tab"
-			if (ev.keyCode === 13 || ev.keyCode === 9) {
-				if (this.state.value === this.props.value.value) {
-					this.props.onCancel();
-				} else {
-					this.props.onChange(this.state.value);
-				}
-			}
-
-			// if keyCode is "escape"
-			if (ev.keyCode === 27) {
-				this.props.onCancel();
-			}
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var remove = undefined;
-
-			var el = this.props.active && this.props.editable ? _react2["default"].createElement(_hireFormsInput2["default"], {
-				onChange: this.onInputChange.bind(this),
-				onKeyDown: this.onInputKeyDown.bind(this),
-				ref: "input",
-				style: ext(inlineBlockStyle, inputStyle),
-				value: this.state.value }) : _react2["default"].createElement(
-				"span",
-				{
-					className: "value",
-					onClick: this.props.onClick.bind(this),
-					style: ext(inlineBlockStyle, spanStyle) },
-				this.props.value.value
-			);
-
-			if (this.props.active && this.props.removable) {
-				remove = _react2["default"].createElement(
-					"button",
-					{
-						className: "remove",
-						onClick: this.props.onRemove,
-						style: ext(inlineBlockStyle, buttonStyle) },
-					"x"
-				);
-			}
-
-			return _react2["default"].createElement(
-				"li",
-				{
-					className: (0, _classnames2["default"])("hire-list-item", { active: this.props.active }),
-					style: liStyle },
-				el,
-				remove
-			);
-		}
-	}]);
-
-	return ListItem;
-})(_react2["default"].Component);
-
-ListItem.defaultProps = {
-	active: false,
-	editable: false,
-	removable: true
-};
-
-ListItem.propTypes = {
-	active: _react2["default"].PropTypes.bool,
-	editable: _react2["default"].PropTypes.bool,
-	onCancel: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func,
-	onClick: _react2["default"].PropTypes.func,
-	onRemove: _react2["default"].PropTypes.func,
-	removable: _react2["default"].PropTypes.bool,
-	value: _hireFormsPropTypes.keyValueMap
-};
-
-exports["default"] = ListItem;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-input":1,"hire-forms-prop-types":2,"react":"react","react-dom":"react-dom"}]},{},[4])(4)
-});
-},{}],2:[function(require,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],3:[function(require,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsSelect = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],2:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],3:[function(_dereq_,module,exports){
-// TODO move listitem to seperate component (so we don't have to store data-key and data-value as attributes)
-// Move util functions to seperate module
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var hasKeyValue = function hasKeyValue(list, item) {
-	return list.filter(function (li) {
-		return li.key === item.key;
-	}).length > 0;
-};
-
-/**
- * Options are rendered beneath the autocomplete and select components.
- *
- * @class
- * @extends React.Component
- */
-
-var Options = (function (_React$Component) {
-	_inherits(Options, _React$Component);
-
-	function Options() {
-		_classCallCheck(this, Options);
-
-		_get(Object.getPrototypeOf(Options.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(Options, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			var node = _reactDom2["default"].findDOMNode(this);
-
-			if (node) {
-				node.style.zIndex = 1000;
-			}
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			var node = _reactDom2["default"].findDOMNode(this);
-			node.style.zIndex = 0;
-		}
-
-		/**
-   * Sort values on relevance. A result is more relevant when the search
-   * query is more at the beginning of the string. In other words:
-   * String.indexOf(props.query): lower is better.
-   * @param {Array<Object>} value An array of key/value maps
-   * @param {String} query A search query
-   * @returns {Array<Object>} Sorted values on relevance
-   */
-	}, {
-		key: "sortRelevance",
-		value: function sortRelevance(values, query) {
-			return values.sort(function (a, b) {
-				a = a.value.toLowerCase();
-				b = b.value.toLowerCase();
-
-				var indexA = a.indexOf(query);
-				var indexB = b.indexOf(query);
-
-				if (indexA > indexB) {
-					return 1;
-				}
-
-				if (indexA < indexB) {
-					return -1;
-				}
-
-				if (indexA === indexB) {
-					if (a > b) {
-						return 1;
-					}
-
-					if (a < b) {
-						return -1;
-					}
-				}
-
-				return 0;
-			});
-		}
-
-		/*
-   * highlight the currently highlighted option.
-   *
-   * @param {Object} target An HTMLElement or event object
-   * @param {String} className Name of the highlight class
-   */
-	}, {
-		key: "highlight",
-		value: function highlight(target, className) {
-			// Check if target is an event object.
-			if (target.hasOwnProperty("currentTarget")) {
-				target = target.currentTarget;
-			}
-
-			target.classList.add(className);
-		}
-
-		/**
-   * Unhighlight the currently highlighted option.
-   *
-   * @param {String} className Name of the highlight class
-   * @return {Object} The unhighlighted HTMLElement
-   */
-	}, {
-		key: "unhighlight",
-		value: function unhighlight(className) {
-			var el = undefined;
-			var node = _reactDom2["default"].findDOMNode(this);
-
-			if (node) {
-				el = node.querySelector("li." + className);
-
-				if (el) {
-					el.classList.remove(className);
-				}
-			}
-
-			return el;
-		}
-	}, {
-		key: "handleClick",
-		value: function handleClick(ev) {
-			this.props.onChange(this.getOptionData(ev.currentTarget));
-		}
-	}, {
-		key: "highlightPrev",
-		value: function highlightPrev() {
-			var prev = undefined;
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				prev = current.previousElementSibling;
-			}
-
-			// If current and prev aren't found, start at the top.
-			// Current is not found if there is no list item highlighted.
-			// Prev is not found if the first list item is highlighted.
-			if (!prev) {
-				prev = _reactDom2["default"].findDOMNode(this).lastChild;
-			}
-
-			this.highlight(prev, this.props.highlightClass);
-		}
-	}, {
-		key: "highlightNext",
-		value: function highlightNext() {
-			var next = undefined;
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				next = current.nextElementSibling;
-			}
-
-			// If current and next aren't found, start at the top.
-			// Current is not found if there is no list item highlighted.
-			// Next is not found if the last list item is highlighted.
-			if (!next) {
-				next = _reactDom2["default"].findDOMNode(this).firstChild;
-			}
-
-			this.highlight(next, this.props.highlightClass);
-		}
-	}, {
-		key: "select",
-		value: function select() {
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				this.props.onChange(this.getOptionData(current));
-			}
-		}
-
-		/**
-   * Get the key (id) and value (display name) of an option DOM element.
-   *
-   * @param {Object} el - Option DOM element
-   * @returns {Object}
-   */
-	}, {
-		key: "getOptionData",
-		value: function getOptionData(el) {
-			return {
-				key: el.getAttribute("data-key"),
-				value: el.getAttribute("data-value")
-			};
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			if (this.props.values.length === 0) {
-				return null;
-			}
-
-			var values = this.props.sort || this.props.sortRelevance && this.props.query !== "" ? this.sortRelevance(this.props.values, this.props.querySelector) : this.props.values;
-
-			var listitems = values.map(function (data, index) {
-				var displayValue = data.value;
-
-				if (_this.props.query.length) {
-					var re = new RegExp(_this.props.query, "ig");
-					displayValue = data.value.replace(re, "<span class=\"highlight\">$&</span>");
-				}
-
-				return _react2["default"].createElement("li", {
-					className: (0, _classnames2["default"])({
-						"hire-forms-option": true,
-						selected: hasKeyValue((0, _hireFormsUtils.castArray)(_this.props.value), data)
-					}),
-					dangerouslySetInnerHTML: { __html: displayValue },
-					"data-key": data.key,
-					"data-value": data.value,
-					key: index,
-					onClick: _this.handleClick.bind(_this) });
-			});
-
-			return _react2["default"].createElement(
-				"ul",
-				{
-					className: "hire-options" },
-				listitems
-			);
-		}
-	}]);
-
-	return Options;
-})(_react2["default"].Component);
-
-Options.defaultProps = {
-	highlightClass: "highlight",
-	query: "",
-	sort: false,
-	sortRelevance: true,
-	value: { key: "", value: "" },
-	values: []
-};
-
-Options.propTypes = {
-	highlightClass: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	query: _react2["default"].PropTypes.string,
-	sort: _react2["default"].PropTypes.bool,
-	sortRelevance: _react2["default"].PropTypes.bool,
-	value: _hireFormsPropTypes.keyValueMapOrArrayOfKeyValueMaps,
-	values: _hireFormsPropTypes.arrayOfKeyValueMaps
-};
-
-exports["default"] = Options;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-prop-types":1,"hire-forms-utils":2,"react":"react","react-dom":"react-dom"}]},{},[3])(3)
-});
-},{"classnames":"classnames","hire-forms-prop-types":2,"hire-forms-utils":3,"react":"react","react-dom":"react-dom"}],2:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],3:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],4:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsOptions = _dereq_("hire-forms-options");
-
-var _hireFormsOptions2 = _interopRequireDefault(_hireFormsOptions);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var Select = (function (_React$Component) {
-	_inherits(Select, _React$Component);
-
-	function Select(props) {
-		_classCallCheck(this, Select);
-
-		_get(Object.getPrototypeOf(Select.prototype), "constructor", this).call(this, props);
-
-		this.handleDocumentClick = this.handleDocumentClick.bind(this);
-
-		this.state = {
-			options: props.options,
-			visible: false
-		};
-	}
-
-	_createClass(Select, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			var _this = this;
-
-			document.addEventListener("click", this.handleDocumentClick, false);
-
-			if (this.props.async != null) {
-				this.props.async(function (response) {
-					_this.setState({
-						options: response
-					});
-				});
-			}
-		}
-	}, {
-		key: "componentWillReceiveProps",
-		value: function componentWillReceiveProps(nextProps) {
-			if (nextProps.options && nextProps.options.length) {
-				this.setState({
-					options: nextProps.options
-				});
-			}
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			document.removeEventListener("click", this.handleDocumentClick, false);
-		}
-	}, {
-		key: "handleDocumentClick",
-		value: function handleDocumentClick(ev) {
-			if (this.state.visible && !_reactDom2["default"].findDOMNode(this).contains(ev.target)) {
-				this.setState({
-					visible: false
-				});
-			}
-		}
-	}, {
-		key: "handleInputClick",
-		value: function handleInputClick(ev) {
-			// Visible state shouldn't change when there are no options.
-			if (this.state.options.length > 0) {
-				this.setState({ visible: !this.state.visible });
-			}
-		}
-
-		/**
-   * @method
-   * @param {object} value Map of key and value: {key: "somekey", value: "somevalue"}
-   */
-	}, {
-		key: "handleOptionsChange",
-		value: function handleOptionsChange(value) {
-			this.setState({ visible: false });
-
-			// If the options prop is an array of strings, return a string.
-			if ((0, _hireFormsUtils.isListOfStrings)(this.state.options)) {
-				value = value.value;
-			}
-
-			this.props.onChange(value);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var optionValues = undefined,
-			    options = undefined;
-
-			if (this.state.visible) {
-				options = _react2["default"].createElement(_hireFormsOptions2["default"], {
-					onChange: this.handleOptionsChange.bind(this),
-					sort: this.props.sort,
-					sortRelevance: this.props.sortRelevance,
-					value: (0, _hireFormsUtils.castKeyValue)(this.props.value),
-					values: (0, _hireFormsUtils.castKeyValueArray)(this.state.options) });
-			}
-
-			// If value prop is a key/value map, extract the value.
-			var value = (0, _hireFormsUtils.isKeyValueMap)(this.props.value) ? this.props.value.value : this.props.value;
-
-			// Create new var so we can check value in cx()
-			var inputValue = value === "" ? this.props.placeholder : value;
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-select" },
-				_react2["default"].createElement(
-					"div",
-					{
-						className: "input-container",
-						onClick: this.handleInputClick.bind(this) },
-					_react2["default"].createElement(
-						"div",
-						{ className: (0, _classnames2["default"])({
-								"input": true,
-								"placeholder": value === "" }) },
-						inputValue
-					),
-					_react2["default"].createElement(
-						"button",
-						null,
-						"▾"
-					)
-				),
-				options
-			);
-		}
-	}]);
-
-	return Select;
-})(_react2["default"].Component);
-
-Select.defaultProps = {
-	options: [],
-	value: ""
-};
-
-Select.propTypes = {
-	async: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	options: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps,
-	placeholder: _react2["default"].PropTypes.string,
-	sort: _react2["default"].PropTypes.bool,
-	sortRelevance: _react2["default"].PropTypes.bool,
-	value: _hireFormsPropTypes.stringOrKeyValueMap
-};
-
-exports["default"] = Select;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-options":1,"hire-forms-prop-types":2,"hire-forms-utils":3,"react":"react","react-dom":"react-dom"}]},{},[4])(4)
-});
 },{}],4:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsList = require("hire-forms-list");
-
-var _hireFormsList2 = _interopRequireDefault(_hireFormsList);
-
-var _hireFormsSelect = require("hire-forms-select");
-
-var _hireFormsSelect2 = _interopRequireDefault(_hireFormsSelect);
-
-var _hireFormsPropTypes = require("hire-forms-prop-types");
-
-var SelectList = (function (_React$Component) {
-	_inherits(SelectList, _React$Component);
-
-	function SelectList() {
-		_classCallCheck(this, SelectList);
-
-		_get(Object.getPrototypeOf(SelectList.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(SelectList, [{
-		key: "handleListChange",
-		value: function handleListChange(values) {
-			this.props.onChange(values);
-		}
-	}, {
-		key: "handleSelectChange",
-		value: function handleSelectChange(value) {
-			// Use concat instead of push so we don't alter the this.props.
-			var values = this.props.values.concat([value]);
-
-			this.props.onChange(values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-select-list" },
-				_react2["default"].createElement(_hireFormsList2["default"], {
-					onChange: this.handleListChange.bind(this),
-					values: this.props.values }),
-				_react2["default"].createElement(_hireFormsSelect2["default"], {
-					async: this.props.async,
-					onChange: this.handleSelectChange.bind(this),
-					options: this.props.options,
-					placeholder: this.props.placeholder })
-			);
-		}
-	}]);
-
-	return SelectList;
-})(_react2["default"].Component);
-
-SelectList.defaultProps = {
-	values: [],
-	options: [],
-	ordered: false
-};
-
-SelectList.propTypes = {
-	async: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	options: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps,
-	ordered: _react2["default"].PropTypes.bool,
-	placeholder: _react2["default"].PropTypes.string,
-	values: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps
-};
-
-exports["default"] = SelectList;
-module.exports = exports["default"];
-
-},{"hire-forms-list":1,"hire-forms-prop-types":2,"hire-forms-select":3,"react":"react"}]},{},[4])(4)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"hire-forms-list":10,"hire-forms-prop-types":12,"hire-forms-select":14,"react":"react"}],14:[function(require,module,exports){
-(function (global){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsSelect = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],2:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],3:[function(_dereq_,module,exports){
-// TODO move listitem to seperate component (so we don't have to store data-key and data-value as attributes)
-// Move util functions to seperate module
-
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var hasKeyValue = function hasKeyValue(list, item) {
-	return list.filter(function (li) {
-		return li.key === item.key;
-	}).length > 0;
-};
-
-/**
- * Options are rendered beneath the autocomplete and select components.
- *
- * @class
- * @extends React.Component
- */
-
-var Options = (function (_React$Component) {
-	_inherits(Options, _React$Component);
-
-	function Options() {
-		_classCallCheck(this, Options);
-
-		_get(Object.getPrototypeOf(Options.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(Options, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			var node = _reactDom2["default"].findDOMNode(this);
-
-			if (node) {
-				node.style.zIndex = 1000;
-			}
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			var node = _reactDom2["default"].findDOMNode(this);
-			node.style.zIndex = 0;
-		}
-
-		/**
-   * Sort values on relevance. A result is more relevant when the search
-   * query is more at the beginning of the string. In other words:
-   * String.indexOf(props.query): lower is better.
-   * @param {Array<Object>} value An array of key/value maps
-   * @param {String} query A search query
-   * @returns {Array<Object>} Sorted values on relevance
-   */
-	}, {
-		key: "sortRelevance",
-		value: function sortRelevance(values, query) {
-			return values.sort(function (a, b) {
-				a = a.value.toLowerCase();
-				b = b.value.toLowerCase();
-
-				var indexA = a.indexOf(query);
-				var indexB = b.indexOf(query);
-
-				if (indexA > indexB) {
-					return 1;
-				}
-
-				if (indexA < indexB) {
-					return -1;
-				}
-
-				if (indexA === indexB) {
-					if (a > b) {
-						return 1;
-					}
-
-					if (a < b) {
-						return -1;
-					}
-				}
-
-				return 0;
-			});
-		}
-
-		/*
-   * highlight the currently highlighted option.
-   *
-   * @param {Object} target An HTMLElement or event object
-   * @param {String} className Name of the highlight class
-   */
-	}, {
-		key: "highlight",
-		value: function highlight(target, className) {
-			// Check if target is an event object.
-			if (target.hasOwnProperty("currentTarget")) {
-				target = target.currentTarget;
-			}
-
-			target.classList.add(className);
-		}
-
-		/**
-   * Unhighlight the currently highlighted option.
-   *
-   * @param {String} className Name of the highlight class
-   * @return {Object} The unhighlighted HTMLElement
-   */
-	}, {
-		key: "unhighlight",
-		value: function unhighlight(className) {
-			var el = undefined;
-			var node = _reactDom2["default"].findDOMNode(this);
-
-			if (node) {
-				el = node.querySelector("li." + className);
-
-				if (el) {
-					el.classList.remove(className);
-				}
-			}
-
-			return el;
-		}
-	}, {
-		key: "handleClick",
-		value: function handleClick(ev) {
-			this.props.onChange(this.getOptionData(ev.currentTarget));
-		}
-	}, {
-		key: "highlightPrev",
-		value: function highlightPrev() {
-			var prev = undefined;
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				prev = current.previousElementSibling;
-			}
-
-			// If current and prev aren't found, start at the top.
-			// Current is not found if there is no list item highlighted.
-			// Prev is not found if the first list item is highlighted.
-			if (!prev) {
-				prev = _reactDom2["default"].findDOMNode(this).lastChild;
-			}
-
-			this.highlight(prev, this.props.highlightClass);
-		}
-	}, {
-		key: "highlightNext",
-		value: function highlightNext() {
-			var next = undefined;
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				next = current.nextElementSibling;
-			}
-
-			// If current and next aren't found, start at the top.
-			// Current is not found if there is no list item highlighted.
-			// Next is not found if the last list item is highlighted.
-			if (!next) {
-				next = _reactDom2["default"].findDOMNode(this).firstChild;
-			}
-
-			this.highlight(next, this.props.highlightClass);
-		}
-	}, {
-		key: "select",
-		value: function select() {
-			var current = this.unhighlight(this.props.highlightClass);
-
-			if (current) {
-				this.props.onChange(this.getOptionData(current));
-			}
-		}
-
-		/**
-   * Get the key (id) and value (display name) of an option DOM element.
-   *
-   * @param {Object} el - Option DOM element
-   * @returns {Object}
-   */
-	}, {
-		key: "getOptionData",
-		value: function getOptionData(el) {
-			return {
-				key: el.getAttribute("data-key"),
-				value: el.getAttribute("data-value")
-			};
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			if (this.props.values.length === 0) {
-				return null;
-			}
-
-			var values = this.props.sort || this.props.sortRelevance && this.props.query !== "" ? this.sortRelevance(this.props.values, this.props.querySelector) : this.props.values;
-
-			var listitems = values.map(function (data, index) {
-				var displayValue = data.value;
-
-				if (_this.props.query.length) {
-					var re = new RegExp(_this.props.query, "ig");
-					displayValue = data.value.replace(re, "<span class=\"highlight\">$&</span>");
-				}
-
-				return _react2["default"].createElement("li", {
-					className: (0, _classnames2["default"])({
-						"hire-forms-option": true,
-						selected: hasKeyValue((0, _hireFormsUtils.castArray)(_this.props.value), data)
-					}),
-					dangerouslySetInnerHTML: { __html: displayValue },
-					"data-key": data.key,
-					"data-value": data.value,
-					key: index,
-					onClick: _this.handleClick.bind(_this) });
-			});
-
-			return _react2["default"].createElement(
-				"ul",
-				{
-					className: "hire-options" },
-				listitems
-			);
-		}
-	}]);
-
-	return Options;
-})(_react2["default"].Component);
-
-Options.defaultProps = {
-	highlightClass: "highlight",
-	query: "",
-	sort: false,
-	sortRelevance: true,
-	value: { key: "", value: "" },
-	values: []
-};
-
-Options.propTypes = {
-	highlightClass: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	query: _react2["default"].PropTypes.string,
-	sort: _react2["default"].PropTypes.bool,
-	sortRelevance: _react2["default"].PropTypes.bool,
-	value: _hireFormsPropTypes.keyValueMapOrArrayOfKeyValueMaps,
-	values: _hireFormsPropTypes.arrayOfKeyValueMaps
-};
-
-exports["default"] = Options;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-prop-types":1,"hire-forms-utils":2,"react":"react","react-dom":"react-dom"}]},{},[3])(3)
-});
-},{"classnames":"classnames","hire-forms-prop-types":2,"hire-forms-utils":3,"react":"react","react-dom":"react-dom"}],2:[function(_dereq_,module,exports){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsOptions = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof _dereq_=="function"&&_dereq_;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof _dereq_=="function"&&_dereq_;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var keyValueMap = _react2["default"].PropTypes.shape({
-	key: _react2["default"].PropTypes.string.isRequired,
-	value: _react2["default"].PropTypes.string.isRequired
-});
-
-exports.keyValueMap = keyValueMap;
-// ARRAY OF
-
-var arrayOfKeyValueMaps = _react2["default"].PropTypes.arrayOf(keyValueMap);
-
-exports.arrayOfKeyValueMaps = arrayOfKeyValueMaps;
-var arrayOfStrings = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.string);
-
-exports.arrayOfStrings = arrayOfStrings;
-var arrayOfElements = _react2["default"].PropTypes.arrayOf(_react2["default"].PropTypes.element);
-
-exports.arrayOfElements = arrayOfElements;
-// OR
-
-var stringOrArray = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.array]);
-
-exports.stringOrArray = stringOrArray;
-var stringOrKeyValueMap = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, keyValueMap]);
-
-exports.stringOrKeyValueMap = stringOrKeyValueMap;
-var stringOrArrayOfStrings = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, arrayOfStrings]);
-
-exports.stringOrArrayOfStrings = stringOrArrayOfStrings;
-var elementOrArrayOfElement = _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.element, arrayOfElements]);
-
-exports.elementOrArrayOfElement = elementOrArrayOfElement;
-var arrayOfStringsOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([arrayOfStrings, arrayOfKeyValueMaps]);
-
-exports.arrayOfStringsOrArrayOfKeyValueMaps = arrayOfStringsOrArrayOfKeyValueMaps;
-var keyValueMapOrArrayOfKeyValueMaps = _react2["default"].PropTypes.oneOfType([keyValueMap, arrayOfKeyValueMaps]);
-exports.keyValueMapOrArrayOfKeyValueMaps = keyValueMapOrArrayOfKeyValueMaps;
-
-},{"react":"react"}]},{},[1])(1)
-});
-},{"react":"react"}],3:[function(_dereq_,module,exports){
-
-/*
- * @param {Array} list
- * @returns {Boolean}
- */
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.isListOfStrings = isListOfStrings;
-exports.isKeyValueMap = isKeyValueMap;
-exports.castArray = castArray;
-exports.castKeyValue = castKeyValue;
-exports.castKeyValueArray = castKeyValueArray;
-
-function isListOfStrings(list) {
-  if (!Array.isArray(list) || !list.length) {
-    return false;
-  }
-
-  return list.every(function (item) {
-    return typeof item === "string";
-  });
-}
-
-/*
- * @param {Object} map
- * @returns {Boolean}
- */
-
-function isKeyValueMap(map) {
-  if (map == null) {
-    return false;
-  }
-
-  return map.hasOwnProperty("key") && map.hasOwnProperty("value");
-}
-
-/*
- * Always return an array.
- *
- * @param {String|Array} arr
- * @returns {Array}
- */
-
-function castArray(arr) {
-  return Array.isArray(arr) ? arr : [arr];
-}
-
-;
-
-/*
- * Always return a key/value map.
- *
- * @param {Number|String|Boolean|Object} item
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValue(item) {
-  return isKeyValueMap(item) ? item : {
-    key: item,
-    value: item
-  };
-}
-
-/*
- * Always return an array of key/value maps.
- *
- * @param {Number|String|Boolean|Array|Object} list
- * @returns {Array} Array of key value maps, ie: [{key: "A", value: "A"}, {key: "B", value: "B"}, ...]
- */
-
-function castKeyValueArray(list) {
-  list = castArray(list);
-
-  return list.map(castKeyValue);
-}
-
-},{}],4:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _classnames = _dereq_("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireFormsOptions = _dereq_("hire-forms-options");
-
-var _hireFormsOptions2 = _interopRequireDefault(_hireFormsOptions);
-
-var _hireFormsPropTypes = _dereq_("hire-forms-prop-types");
-
-var _hireFormsUtils = _dereq_("hire-forms-utils");
-
-var Select = (function (_React$Component) {
-	_inherits(Select, _React$Component);
-
-	function Select(props) {
-		_classCallCheck(this, Select);
-
-		_get(Object.getPrototypeOf(Select.prototype), "constructor", this).call(this, props);
-
-		this.handleDocumentClick = this.handleDocumentClick.bind(this);
-
-		this.state = {
-			options: props.options,
-			visible: false
-		};
-	}
-
-	_createClass(Select, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			var _this = this;
-
-			document.addEventListener("click", this.handleDocumentClick, false);
-
-			if (this.props.async != null) {
-				this.props.async(function (response) {
-					_this.setState({
-						options: response
-					});
-				});
-			}
-		}
-	}, {
-		key: "componentWillReceiveProps",
-		value: function componentWillReceiveProps(nextProps) {
-			if (nextProps.options && nextProps.options.length) {
-				this.setState({
-					options: nextProps.options
-				});
-			}
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			document.removeEventListener("click", this.handleDocumentClick, false);
-		}
-	}, {
-		key: "handleDocumentClick",
-		value: function handleDocumentClick(ev) {
-			if (this.state.visible && !_reactDom2["default"].findDOMNode(this).contains(ev.target)) {
-				this.setState({
-					visible: false
-				});
-			}
-		}
-	}, {
-		key: "handleInputClick",
-		value: function handleInputClick(ev) {
-			// Visible state shouldn't change when there are no options.
-			if (this.state.options.length > 0) {
-				this.setState({ visible: !this.state.visible });
-			}
-		}
-
-		/**
-   * @method
-   * @param {object} value Map of key and value: {key: "somekey", value: "somevalue"}
-   */
-	}, {
-		key: "handleOptionsChange",
-		value: function handleOptionsChange(value) {
-			this.setState({ visible: false });
-
-			// If the options prop is an array of strings, return a string.
-			if ((0, _hireFormsUtils.isListOfStrings)(this.state.options)) {
-				value = value.value;
-			}
-
-			this.props.onChange(value);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var optionValues = undefined,
-			    options = undefined;
-
-			if (this.state.visible) {
-				options = _react2["default"].createElement(_hireFormsOptions2["default"], {
-					onChange: this.handleOptionsChange.bind(this),
-					sort: this.props.sort,
-					sortRelevance: this.props.sortRelevance,
-					value: (0, _hireFormsUtils.castKeyValue)(this.props.value),
-					values: (0, _hireFormsUtils.castKeyValueArray)(this.state.options) });
-			}
-
-			// If value prop is a key/value map, extract the value.
-			var value = (0, _hireFormsUtils.isKeyValueMap)(this.props.value) ? this.props.value.value : this.props.value;
-
-			// Create new var so we can check value in cx()
-			var inputValue = value === "" ? this.props.placeholder : value;
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-select" },
-				_react2["default"].createElement(
-					"div",
-					{
-						className: "input-container",
-						onClick: this.handleInputClick.bind(this) },
-					_react2["default"].createElement(
-						"div",
-						{ className: (0, _classnames2["default"])({
-								"input": true,
-								"placeholder": value === "" }) },
-						inputValue
-					),
-					_react2["default"].createElement(
-						"button",
-						null,
-						"▾"
-					)
-				),
-				options
-			);
-		}
-	}]);
-
-	return Select;
-})(_react2["default"].Component);
-
-Select.defaultProps = {
-	options: [],
-	value: ""
-};
-
-Select.propTypes = {
-	async: _react2["default"].PropTypes.func,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	options: _hireFormsPropTypes.arrayOfStringsOrArrayOfKeyValueMaps,
-	placeholder: _react2["default"].PropTypes.string,
-	sort: _react2["default"].PropTypes.bool,
-	sortRelevance: _react2["default"].PropTypes.bool,
-	value: _hireFormsPropTypes.stringOrKeyValueMap
-};
-
-exports["default"] = Select;
-module.exports = exports["default"];
-
-},{"classnames":"classnames","hire-forms-options":1,"hire-forms-prop-types":2,"hire-forms-utils":3,"react":"react","react-dom":"react-dom"}]},{},[4])(4)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],15:[function(require,module,exports){
-(function (global,Buffer){
-(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.HireFormsLogin = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
-// Copyright Joyent, Inc. and other Node contributors.
-//
-// Permission is hereby granted, free of charge, to any person obtaining a
-// copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to permit
-// persons to whom the Software is furnished to do so, subject to the
-// following conditions:
-//
-// The above copyright notice and this permission notice shall be included
-// in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
-// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
-// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-// USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-function EventEmitter() {
-  this._events = this._events || {};
-  this._maxListeners = this._maxListeners || undefined;
-}
-module.exports = EventEmitter;
-
-// Backwards-compat with node 0.10.x
-EventEmitter.EventEmitter = EventEmitter;
-
-EventEmitter.prototype._events = undefined;
-EventEmitter.prototype._maxListeners = undefined;
-
-// By default EventEmitters will print a warning if more than 10 listeners are
-// added to it. This is a useful default which helps finding memory leaks.
-EventEmitter.defaultMaxListeners = 10;
-
-// Obviously not all Emitters should be limited to 10. This function allows
-// that to be increased. Set to zero for unlimited.
-EventEmitter.prototype.setMaxListeners = function(n) {
-  if (!isNumber(n) || n < 0 || isNaN(n))
-    throw TypeError('n must be a positive number');
-  this._maxListeners = n;
-  return this;
-};
-
-EventEmitter.prototype.emit = function(type) {
-  var er, handler, len, args, i, listeners;
-
-  if (!this._events)
-    this._events = {};
-
-  // If there is no 'error' event listener then throw.
-  if (type === 'error') {
-    if (!this._events.error ||
-        (isObject(this._events.error) && !this._events.error.length)) {
-      er = arguments[1];
-      if (er instanceof Error) {
-        throw er; // Unhandled 'error' event
-      }
-      throw TypeError('Uncaught, unspecified "error" event.');
-    }
-  }
-
-  handler = this._events[type];
-
-  if (isUndefined(handler))
-    return false;
-
-  if (isFunction(handler)) {
-    switch (arguments.length) {
-      // fast cases
-      case 1:
-        handler.call(this);
-        break;
-      case 2:
-        handler.call(this, arguments[1]);
-        break;
-      case 3:
-        handler.call(this, arguments[1], arguments[2]);
-        break;
-      // slower
-      default:
-        args = Array.prototype.slice.call(arguments, 1);
-        handler.apply(this, args);
-    }
-  } else if (isObject(handler)) {
-    args = Array.prototype.slice.call(arguments, 1);
-    listeners = handler.slice();
-    len = listeners.length;
-    for (i = 0; i < len; i++)
-      listeners[i].apply(this, args);
-  }
-
-  return true;
-};
-
-EventEmitter.prototype.addListener = function(type, listener) {
-  var m;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events)
-    this._events = {};
-
-  // To avoid recursion in the case that type === "newListener"! Before
-  // adding it to the listeners, first emit "newListener".
-  if (this._events.newListener)
-    this.emit('newListener', type,
-              isFunction(listener.listener) ?
-              listener.listener : listener);
-
-  if (!this._events[type])
-    // Optimize the case of one listener. Don't need the extra array object.
-    this._events[type] = listener;
-  else if (isObject(this._events[type]))
-    // If we've already got an array, just append.
-    this._events[type].push(listener);
-  else
-    // Adding the second element, need to change to array.
-    this._events[type] = [this._events[type], listener];
-
-  // Check for listener leak
-  if (isObject(this._events[type]) && !this._events[type].warned) {
-    if (!isUndefined(this._maxListeners)) {
-      m = this._maxListeners;
-    } else {
-      m = EventEmitter.defaultMaxListeners;
-    }
-
-    if (m && m > 0 && this._events[type].length > m) {
-      this._events[type].warned = true;
-      console.error('(node) warning: possible EventEmitter memory ' +
-                    'leak detected. %d listeners added. ' +
-                    'Use emitter.setMaxListeners() to increase limit.',
-                    this._events[type].length);
-      if (typeof console.trace === 'function') {
-        // not supported in IE 10
-        console.trace();
-      }
-    }
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.on = EventEmitter.prototype.addListener;
-
-EventEmitter.prototype.once = function(type, listener) {
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  var fired = false;
-
-  function g() {
-    this.removeListener(type, g);
-
-    if (!fired) {
-      fired = true;
-      listener.apply(this, arguments);
-    }
-  }
-
-  g.listener = listener;
-  this.on(type, g);
-
-  return this;
-};
-
-// emits a 'removeListener' event iff the listener was removed
-EventEmitter.prototype.removeListener = function(type, listener) {
-  var list, position, length, i;
-
-  if (!isFunction(listener))
-    throw TypeError('listener must be a function');
-
-  if (!this._events || !this._events[type])
-    return this;
-
-  list = this._events[type];
-  length = list.length;
-  position = -1;
-
-  if (list === listener ||
-      (isFunction(list.listener) && list.listener === listener)) {
-    delete this._events[type];
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-
-  } else if (isObject(list)) {
-    for (i = length; i-- > 0;) {
-      if (list[i] === listener ||
-          (list[i].listener && list[i].listener === listener)) {
-        position = i;
-        break;
-      }
-    }
-
-    if (position < 0)
-      return this;
-
-    if (list.length === 1) {
-      list.length = 0;
-      delete this._events[type];
-    } else {
-      list.splice(position, 1);
-    }
-
-    if (this._events.removeListener)
-      this.emit('removeListener', type, listener);
-  }
-
-  return this;
-};
-
-EventEmitter.prototype.removeAllListeners = function(type) {
-  var key, listeners;
-
-  if (!this._events)
-    return this;
-
-  // not listening for removeListener, no need to emit
-  if (!this._events.removeListener) {
-    if (arguments.length === 0)
-      this._events = {};
-    else if (this._events[type])
-      delete this._events[type];
-    return this;
-  }
-
-  // emit removeListener for all listeners on all events
-  if (arguments.length === 0) {
-    for (key in this._events) {
-      if (key === 'removeListener') continue;
-      this.removeAllListeners(key);
-    }
-    this.removeAllListeners('removeListener');
-    this._events = {};
-    return this;
-  }
-
-  listeners = this._events[type];
-
-  if (isFunction(listeners)) {
-    this.removeListener(type, listeners);
-  } else if (listeners) {
-    // LIFO order
-    while (listeners.length)
-      this.removeListener(type, listeners[listeners.length - 1]);
-  }
-  delete this._events[type];
-
-  return this;
-};
-
-EventEmitter.prototype.listeners = function(type) {
-  var ret;
-  if (!this._events || !this._events[type])
-    ret = [];
-  else if (isFunction(this._events[type]))
-    ret = [this._events[type]];
-  else
-    ret = this._events[type].slice();
-  return ret;
-};
-
-EventEmitter.prototype.listenerCount = function(type) {
-  if (this._events) {
-    var evlistener = this._events[type];
-
-    if (isFunction(evlistener))
-      return 1;
-    else if (evlistener)
-      return evlistener.length;
-  }
-  return 0;
-};
-
-EventEmitter.listenerCount = function(emitter, type) {
-  return emitter.listenerCount(type);
-};
-
-function isFunction(arg) {
-  return typeof arg === 'function';
-}
-
-function isNumber(arg) {
-  return typeof arg === 'number';
-}
-
-function isObject(arg) {
-  return typeof arg === 'object' && arg !== null;
-}
-
-function isUndefined(arg) {
-  return arg === void 0;
-}
-
-},{}],2:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014-2015, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- */
-
-module.exports.Dispatcher = _dereq_('./lib/Dispatcher')
-
-},{"./lib/Dispatcher":3}],3:[function(_dereq_,module,exports){
-/*
- * Copyright (c) 2014, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule Dispatcher
- * @typechecks
- */
-
-"use strict";
-
-var invariant = _dereq_('./invariant');
-
-var _lastID = 1;
-var _prefix = 'ID_';
-
-/**
- * Dispatcher is used to broadcast payloads to registered callbacks. This is
- * different from generic pub-sub systems in two ways:
- *
- *   1) Callbacks are not subscribed to particular events. Every payload is
- *      dispatched to every registered callback.
- *   2) Callbacks can be deferred in whole or part until other callbacks have
- *      been executed.
- *
- * For example, consider this hypothetical flight destination form, which
- * selects a default city when a country is selected:
- *
- *   var flightDispatcher = new Dispatcher();
- *
- *   // Keeps track of which country is selected
- *   var CountryStore = {country: null};
- *
- *   // Keeps track of which city is selected
- *   var CityStore = {city: null};
- *
- *   // Keeps track of the base flight price of the selected city
- *   var FlightPriceStore = {price: null}
- *
- * When a user changes the selected city, we dispatch the payload:
- *
- *   flightDispatcher.dispatch({
- *     actionType: 'city-update',
- *     selectedCity: 'paris'
- *   });
- *
- * This payload is digested by `CityStore`:
- *
- *   flightDispatcher.register(function(payload) {
- *     if (payload.actionType === 'city-update') {
- *       CityStore.city = payload.selectedCity;
- *     }
- *   });
- *
- * When the user selects a country, we dispatch the payload:
- *
- *   flightDispatcher.dispatch({
- *     actionType: 'country-update',
- *     selectedCountry: 'australia'
- *   });
- *
- * This payload is digested by both stores:
- *
- *    CountryStore.dispatchToken = flightDispatcher.register(function(payload) {
- *     if (payload.actionType === 'country-update') {
- *       CountryStore.country = payload.selectedCountry;
- *     }
- *   });
- *
- * When the callback to update `CountryStore` is registered, we save a reference
- * to the returned token. Using this token with `waitFor()`, we can guarantee
- * that `CountryStore` is updated before the callback that updates `CityStore`
- * needs to query its data.
- *
- *   CityStore.dispatchToken = flightDispatcher.register(function(payload) {
- *     if (payload.actionType === 'country-update') {
- *       // `CountryStore.country` may not be updated.
- *       flightDispatcher.waitFor([CountryStore.dispatchToken]);
- *       // `CountryStore.country` is now guaranteed to be updated.
- *
- *       // Select the default city for the new country
- *       CityStore.city = getDefaultCityForCountry(CountryStore.country);
- *     }
- *   });
- *
- * The usage of `waitFor()` can be chained, for example:
- *
- *   FlightPriceStore.dispatchToken =
- *     flightDispatcher.register(function(payload) {
- *       switch (payload.actionType) {
- *         case 'country-update':
- *           flightDispatcher.waitFor([CityStore.dispatchToken]);
- *           FlightPriceStore.price =
- *             getFlightPriceStore(CountryStore.country, CityStore.city);
- *           break;
- *
- *         case 'city-update':
- *           FlightPriceStore.price =
- *             FlightPriceStore(CountryStore.country, CityStore.city);
- *           break;
- *     }
- *   });
- *
- * The `country-update` payload will be guaranteed to invoke the stores'
- * registered callbacks in order: `CountryStore`, `CityStore`, then
- * `FlightPriceStore`.
- */
-
-  function Dispatcher() {
-    this.$Dispatcher_callbacks = {};
-    this.$Dispatcher_isPending = {};
-    this.$Dispatcher_isHandled = {};
-    this.$Dispatcher_isDispatching = false;
-    this.$Dispatcher_pendingPayload = null;
-  }
-
-  /**
-   * Registers a callback to be invoked with every dispatched payload. Returns
-   * a token that can be used with `waitFor()`.
-   *
-   * @param {function} callback
-   * @return {string}
-   */
-  Dispatcher.prototype.register=function(callback) {
-    var id = _prefix + _lastID++;
-    this.$Dispatcher_callbacks[id] = callback;
-    return id;
-  };
-
-  /**
-   * Removes a callback based on its token.
-   *
-   * @param {string} id
-   */
-  Dispatcher.prototype.unregister=function(id) {
-    invariant(
-      this.$Dispatcher_callbacks[id],
-      'Dispatcher.unregister(...): `%s` does not map to a registered callback.',
-      id
-    );
-    delete this.$Dispatcher_callbacks[id];
-  };
-
-  /**
-   * Waits for the callbacks specified to be invoked before continuing execution
-   * of the current callback. This method should only be used by a callback in
-   * response to a dispatched payload.
-   *
-   * @param {array<string>} ids
-   */
-  Dispatcher.prototype.waitFor=function(ids) {
-    invariant(
-      this.$Dispatcher_isDispatching,
-      'Dispatcher.waitFor(...): Must be invoked while dispatching.'
-    );
-    for (var ii = 0; ii < ids.length; ii++) {
-      var id = ids[ii];
-      if (this.$Dispatcher_isPending[id]) {
-        invariant(
-          this.$Dispatcher_isHandled[id],
-          'Dispatcher.waitFor(...): Circular dependency detected while ' +
-          'waiting for `%s`.',
-          id
-        );
-        continue;
-      }
-      invariant(
-        this.$Dispatcher_callbacks[id],
-        'Dispatcher.waitFor(...): `%s` does not map to a registered callback.',
-        id
-      );
-      this.$Dispatcher_invokeCallback(id);
-    }
-  };
-
-  /**
-   * Dispatches a payload to all registered callbacks.
-   *
-   * @param {object} payload
-   */
-  Dispatcher.prototype.dispatch=function(payload) {
-    invariant(
-      !this.$Dispatcher_isDispatching,
-      'Dispatch.dispatch(...): Cannot dispatch in the middle of a dispatch.'
-    );
-    this.$Dispatcher_startDispatching(payload);
-    try {
-      for (var id in this.$Dispatcher_callbacks) {
-        if (this.$Dispatcher_isPending[id]) {
-          continue;
-        }
-        this.$Dispatcher_invokeCallback(id);
-      }
-    } finally {
-      this.$Dispatcher_stopDispatching();
-    }
-  };
-
-  /**
-   * Is this Dispatcher currently dispatching.
-   *
-   * @return {boolean}
-   */
-  Dispatcher.prototype.isDispatching=function() {
-    return this.$Dispatcher_isDispatching;
-  };
-
-  /**
-   * Call the callback stored with the given id. Also do some internal
-   * bookkeeping.
-   *
-   * @param {string} id
-   * @internal
-   */
-  Dispatcher.prototype.$Dispatcher_invokeCallback=function(id) {
-    this.$Dispatcher_isPending[id] = true;
-    this.$Dispatcher_callbacks[id](this.$Dispatcher_pendingPayload);
-    this.$Dispatcher_isHandled[id] = true;
-  };
-
-  /**
-   * Set up bookkeeping needed when dispatching.
-   *
-   * @param {object} payload
-   * @internal
-   */
-  Dispatcher.prototype.$Dispatcher_startDispatching=function(payload) {
-    for (var id in this.$Dispatcher_callbacks) {
-      this.$Dispatcher_isPending[id] = false;
-      this.$Dispatcher_isHandled[id] = false;
-    }
-    this.$Dispatcher_pendingPayload = payload;
-    this.$Dispatcher_isDispatching = true;
-  };
-
-  /**
-   * Clear bookkeeping used for dispatching.
-   *
-   * @internal
-   */
-  Dispatcher.prototype.$Dispatcher_stopDispatching=function() {
-    this.$Dispatcher_pendingPayload = null;
-    this.$Dispatcher_isDispatching = false;
-  };
-
-
-module.exports = Dispatcher;
-
-},{"./invariant":4}],4:[function(_dereq_,module,exports){
-/**
- * Copyright (c) 2014, Facebook, Inc.
- * All rights reserved.
- *
- * This source code is licensed under the BSD-style license found in the
- * LICENSE file in the root directory of this source tree. An additional grant
- * of patent rights can be found in the PATENTS file in the same directory.
- *
- * @providesModule invariant
- */
-
-"use strict";
-
-/**
- * Use invariant() to assert state which your program assumes to be true.
- *
- * Provide sprintf-style format (only %s is supported) and arguments
- * to provide information about what broke and what you were
- * expecting.
- *
- * The invariant message will be stripped in production, but the invariant
- * will remain to ensure logic does not differ in production.
- */
-
-var invariant = function(condition, format, a, b, c, d, e, f) {
-  if (false) {
-    if (format === undefined) {
-      throw new Error('invariant requires an error message argument');
-    }
-  }
-
-  if (!condition) {
-    var error;
-    if (format === undefined) {
-      error = new Error(
-        'Minified exception occurred; use the non-minified dev environment ' +
-        'for the full error message and additional helpful warnings.'
-      );
-    } else {
-      var args = [a, b, c, d, e, f];
-      var argIndex = 0;
-      error = new Error(
-        'Invariant Violation: ' +
-        format.replace(/%s/g, function() { return args[argIndex++]; })
-      );
-    }
-
-    error.framesToPop = 1; // we don't care about invariant's own frame
-    throw error;
-  }
-};
-
-module.exports = invariant;
-
-},{}],5:[function(_dereq_,module,exports){
-var isFunction = _dereq_('is-function')
-
-module.exports = forEach
-
-var toString = Object.prototype.toString
-var hasOwnProperty = Object.prototype.hasOwnProperty
-
-function forEach(list, iterator, context) {
-    if (!isFunction(iterator)) {
-        throw new TypeError('iterator must be a function')
-    }
-
-    if (arguments.length < 3) {
-        context = this
-    }
-    
-    if (toString.call(list) === '[object Array]')
-        forEachArray(list, iterator, context)
-    else if (typeof list === 'string')
-        forEachString(list, iterator, context)
-    else
-        forEachObject(list, iterator, context)
-}
-
-function forEachArray(array, iterator, context) {
-    for (var i = 0, len = array.length; i < len; i++) {
-        if (hasOwnProperty.call(array, i)) {
-            iterator.call(context, array[i], i, array)
-        }
-    }
-}
-
-function forEachString(string, iterator, context) {
-    for (var i = 0, len = string.length; i < len; i++) {
-        // no such thing as a sparse string.
-        iterator.call(context, string.charAt(i), i, string)
-    }
-}
-
-function forEachObject(object, iterator, context) {
-    for (var k in object) {
-        if (hasOwnProperty.call(object, k)) {
-            iterator.call(context, object[k], k, object)
-        }
-    }
-}
-
-},{"is-function":8}],6:[function(_dereq_,module,exports){
-if (typeof window !== "undefined") {
-    module.exports = window;
-} else if (typeof global !== "undefined") {
-    module.exports = global;
-} else if (typeof self !== "undefined"){
-    module.exports = self;
-} else {
-    module.exports = {};
-}
-
-},{}],7:[function(_dereq_,module,exports){
-var inserted = {};
-
-module.exports = function (css, options) {
-    if (inserted[css]) return;
-    inserted[css] = true;
-    
-    var elem = document.createElement('style');
-    elem.setAttribute('type', 'text/css');
-
-    if ('textContent' in elem) {
-      elem.textContent = css;
-    } else {
-      elem.styleSheet.cssText = css;
-    }
-    
-    var head = document.getElementsByTagName('head')[0];
-    if (options && options.prepend) {
-        head.insertBefore(elem, head.childNodes[0]);
-    } else {
-        head.appendChild(elem);
-    }
-};
-
-},{}],8:[function(_dereq_,module,exports){
 module.exports = isFunction
 
 var toString = Object.prototype.toString
@@ -7757,1175 +258,39 @@ function isFunction (fn) {
       fn === window.prompt))
 };
 
-},{}],9:[function(_dereq_,module,exports){
-var trim = _dereq_('trim')
-  , forEach = _dereq_('for-each')
-  , isArray = function(arg) {
-      return Object.prototype.toString.call(arg) === '[object Array]';
-    }
+},{}],5:[function(require,module,exports){
+var overArg = require('./_overArg');
 
-module.exports = function (headers) {
-  if (!headers)
-    return {}
+/** Built-in value references. */
+var getPrototype = overArg(Object.getPrototypeOf, Object);
 
-  var result = {}
+module.exports = getPrototype;
 
-  forEach(
-      trim(headers).split('\n')
-    , function (row) {
-        var index = row.indexOf(':')
-          , key = trim(row.slice(0, index)).toLowerCase()
-          , value = trim(row.slice(index + 1))
-
-        if (typeof(result[key]) === 'undefined') {
-          result[key] = value
-        } else if (isArray(result[key])) {
-          result[key].push(value)
-        } else {
-          result[key] = [ result[key], value ]
-        }
-      }
-  )
-
-  return result
-}
-},{"for-each":5,"trim":10}],10:[function(_dereq_,module,exports){
-
-exports = module.exports = trim;
-
-function trim(str){
-  return str.replace(/^\s*|\s*$/g, '');
-}
-
-exports.left = function(str){
-  return str.replace(/^\s*/, '');
-};
-
-exports.right = function(str){
-  return str.replace(/\s*$/, '');
-};
-
-},{}],11:[function(_dereq_,module,exports){
-"use strict";
-var window = _dereq_("global/window")
-var once = _dereq_("once")
-var parseHeaders = _dereq_("parse-headers")
-
-
-
-module.exports = createXHR
-createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
-createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
-
-
-function isEmpty(obj){
-    for(var i in obj){
-        if(obj.hasOwnProperty(i)) return false
-    }
-    return true
-}
-
-function createXHR(options, callback) {
-    function readystatechange() {
-        if (xhr.readyState === 4) {
-            loadFunc()
-        }
-    }
-
-    function getBody() {
-        // Chrome with requestType=blob throws errors arround when even testing access to responseText
-        var body = undefined
-
-        if (xhr.response) {
-            body = xhr.response
-        } else if (xhr.responseType === "text" || !xhr.responseType) {
-            body = xhr.responseText || xhr.responseXML
-        }
-
-        if (isJson) {
-            try {
-                body = JSON.parse(body)
-            } catch (e) {}
-        }
-
-        return body
-    }
-
-    var failureResponse = {
-                body: undefined,
-                headers: {},
-                statusCode: 0,
-                method: method,
-                url: uri,
-                rawRequest: xhr
-            }
-
-    function errorFunc(evt) {
-        clearTimeout(timeoutTimer)
-        if(!(evt instanceof Error)){
-            evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
-        }
-        evt.statusCode = 0
-        callback(evt, failureResponse)
-    }
-
-    // will load the data & process the response in a special response object
-    function loadFunc() {
-        if (aborted) return
-        var status
-        clearTimeout(timeoutTimer)
-        if(options.useXDR && xhr.status===undefined) {
-            //IE8 CORS GET successful response doesn't have a status field, but body is fine
-            status = 200
-        } else {
-            status = (xhr.status === 1223 ? 204 : xhr.status)
-        }
-        var response = failureResponse
-        var err = null
-
-        if (status !== 0){
-            response = {
-                body: getBody(),
-                statusCode: status,
-                method: method,
-                headers: {},
-                url: uri,
-                rawRequest: xhr
-            }
-            if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE
-                response.headers = parseHeaders(xhr.getAllResponseHeaders())
-            }
-        } else {
-            err = new Error("Internal XMLHttpRequest Error")
-        }
-        callback(err, response, response.body)
-
-    }
-
-    if (typeof options === "string") {
-        options = { uri: options }
-    }
-
-    options = options || {}
-    if(typeof callback === "undefined"){
-        throw new Error("callback argument missing")
-    }
-    callback = once(callback)
-
-    var xhr = options.xhr || null
-
-    if (!xhr) {
-        if (options.cors || options.useXDR) {
-            xhr = new createXHR.XDomainRequest()
-        }else{
-            xhr = new createXHR.XMLHttpRequest()
-        }
-    }
-
-    var key
-    var aborted
-    var uri = xhr.url = options.uri || options.url
-    var method = xhr.method = options.method || "GET"
-    var body = options.body || options.data || null
-    var headers = xhr.headers = options.headers || {}
-    var sync = !!options.sync
-    var isJson = false
-    var timeoutTimer
-
-    if ("json" in options) {
-        isJson = true
-        headers["accept"] || headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
-        if (method !== "GET" && method !== "HEAD") {
-            headers["content-type"] || headers["Content-Type"] || (headers["Content-Type"] = "application/json") //Don't override existing accept header declared by user
-            body = JSON.stringify(options.json)
-        }
-    }
-
-    xhr.onreadystatechange = readystatechange
-    xhr.onload = loadFunc
-    xhr.onerror = errorFunc
-    // IE9 must have onprogress be set to a unique function.
-    xhr.onprogress = function () {
-        // IE must die
-    }
-    xhr.ontimeout = errorFunc
-    xhr.open(method, uri, !sync, options.username, options.password)
-    //has to be after open
-    if(!sync) {
-        xhr.withCredentials = !!options.withCredentials
-    }
-    // Cannot set timeout with sync request
-    // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
-    // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
-    if (!sync && options.timeout > 0 ) {
-        timeoutTimer = setTimeout(function(){
-            aborted=true//IE9 may still call readystatechange
-            xhr.abort("timeout")
-            var e = new Error("XMLHttpRequest timeout")
-            e.code = "ETIMEDOUT"
-            errorFunc(e)
-        }, options.timeout )
-    }
-
-    if (xhr.setRequestHeader) {
-        for(key in headers){
-            if(headers.hasOwnProperty(key)){
-                xhr.setRequestHeader(key, headers[key])
-            }
-        }
-    } else if (options.headers && !isEmpty(options.headers)) {
-        throw new Error("Headers cannot be set on an XDomainRequest object")
-    }
-
-    if ("responseType" in options) {
-        xhr.responseType = options.responseType
-    }
-
-    if ("beforeSend" in options &&
-        typeof options.beforeSend === "function"
-    ) {
-        options.beforeSend(xhr)
-    }
-
-    xhr.send(body)
-
-    return xhr
-
-
-}
-
-function noop() {}
-
-},{"global/window":6,"once":12,"parse-headers":9}],12:[function(_dereq_,module,exports){
-module.exports = once
-
-once.proto = once(function () {
-  Object.defineProperty(Function.prototype, 'once', {
-    value: function () {
-      return once(this)
-    },
-    configurable: true
-  })
-})
-
-function once (fn) {
-  var called = false
-  return function () {
-    if (called) return
-    called = true
-    return fn.apply(this, arguments)
-  }
-}
-
-},{}],13:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _dispatcher = _dereq_("./dispatcher");
-
-var _dispatcher2 = _interopRequireDefault(_dispatcher);
-
-exports["default"] = {
-	logout: function logout() {
-		_dispatcher2["default"].handleViewAction({ actionType: "LOGOUT" });
-	},
-
-	receiveBasicLogin: function receiveBasicLogin(err, resp, body) {
-		if (resp.statusCode >= 400) {
-			_dispatcher2["default"].handleServerAction({
-				actionType: "BASIC_LOGIN_FAILURE",
-				data: resp
-			});
-		} else if (resp.statusCode >= 200 && resp.statusCode < 300) {
-			_dispatcher2["default"].handleServerAction({
-				actionType: "BASIC_LOGIN_SUCCESS",
-				data: resp
-			});
-		}
-	},
-
-	receiveUserData: function receiveUserData(err, resp, body) {
-		if (resp.statusCode >= 400) {
-			_dispatcher2["default"].handleServerAction({
-				actionType: "USER_DATA_FAILURE",
-				data: resp
-			});
-		} else if (resp.statusCode >= 200 && resp.statusCode < 300) {
-			_dispatcher2["default"].handleServerAction({
-				actionType: "USER_DATA_SUCCESS",
-				data: resp
-			});
-		}
-	}
-};
-module.exports = exports["default"];
-
-},{"./dispatcher":16}],14:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _xhr = _dereq_("xhr");
-
-var _xhr2 = _interopRequireDefault(_xhr);
-
-var _dispatcher = _dereq_("./dispatcher");
-
-var _dispatcher2 = _interopRequireDefault(_dispatcher);
-
-var _actions = _dereq_("./actions");
-
-var _actions2 = _interopRequireDefault(_actions);
-
-exports["default"] = {
-	performXhr: function performXhr(opts, callback) {
-		(0, _xhr2["default"])(opts, callback);
-	},
-
-	basicLogin: function basicLogin(url, username, password) {
-		this.performXhr({
-			method: 'POST',
-			uri: url,
-			headers: {
-				Accept: "application/json",
-				Authorization: 'Basic ' + btoa(username + ':' + password)
-			}
-		}, _actions2["default"].receiveBasicLogin);
-	},
-
-	fetchUserData: function fetchUserData(url, token, optHeaders) {
-		var headers = optHeaders || {};
-		_extends(headers, {
-			Accept: "application/json",
-			Authorization: token
-		});
-
-		this.performXhr({
-			method: 'GET',
-			uri: url,
-			headers: headers
-		}, _actions2["default"].receiveUserData);
-	}
-};
-module.exports = exports["default"];
-
-},{"./actions":13,"./dispatcher":16,"xhr":11}],15:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _loginStore = _dereq_("./login-store");
-
-var _loginStore2 = _interopRequireDefault(_loginStore);
-
-var _api = _dereq_("./api");
-
-var _api2 = _interopRequireDefault(_api);
-
-var Basic = (function (_React$Component) {
-	_inherits(Basic, _React$Component);
-
-	function Basic(props) {
-		_classCallCheck(this, Basic);
-
-		_get(Object.getPrototypeOf(Basic.prototype), "constructor", this).call(this, props);
-		this.state = {
-			username: "",
-			password: ""
-		};
-	}
-
-	_createClass(Basic, [{
-		key: "onUserChange",
-		value: function onUserChange(ev) {
-			this.setState({ username: ev.target.value });
-		}
-	}, {
-		key: "onPasswordChange",
-		value: function onPasswordChange(ev) {
-			this.setState({ password: ev.target.value });
-		}
-	}, {
-		key: "onBasicLoginClick",
-		value: function onBasicLoginClick(ev) {
-			_api2["default"].basicLogin(this.props.url, this.state.username, this.state.password);
-		}
-	}, {
-		key: "onKeyDown",
-		value: function onKeyDown(ev) {
-			if (ev.keyCode === 13) {
-				this.onBasicLoginClick();
-			}
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"div",
-				{ className: "login-sub-component" },
-				_react2["default"].createElement("input", {
-					onChange: this.onUserChange.bind(this),
-					onKeyDown: this.onKeyDown.bind(this),
-					placeholder: this.props.userPlaceholder,
-					type: "text",
-					value: this.state.username }),
-				_react2["default"].createElement("input", { onChange: this.onPasswordChange.bind(this),
-					onKeyDown: this.onKeyDown.bind(this),
-					placeholder: this.props.passwordPlaceholder,
-					type: "password",
-					value: this.state.password }),
-				_react2["default"].createElement(
-					"button",
-					{ onClick: this.onBasicLoginClick.bind(this) },
-					this.props.label
-				)
-			);
-		}
-	}]);
-
-	return Basic;
-})(_react2["default"].Component);
-
-Basic.propTypes = {
-	label: _react2["default"].PropTypes.string,
-	passwordPlaceholder: _react2["default"].PropTypes.string,
-	url: _react2["default"].PropTypes.string.isRequired,
-	userPlaceholder: _react2["default"].PropTypes.string
-};
-
-Basic.defaultProps = {
-	label: "Basic Login",
-	userPlaceholder: "Username or email address",
-	passwordPlaceholder: "Password"
-};
-
-exports["default"] = Basic;
-module.exports = exports["default"];
-
-},{"./api":14,"./login-store":19,"react":"react"}],16:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _flux = _dereq_("flux");
-
-var LoginDispatcher = (function (_Dispatcher) {
-	_inherits(LoginDispatcher, _Dispatcher);
-
-	function LoginDispatcher() {
-		_classCallCheck(this, LoginDispatcher);
-
-		_get(Object.getPrototypeOf(LoginDispatcher.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(LoginDispatcher, [{
-		key: "handleServerAction",
-		value: function handleServerAction(action) {
-			return this.dispatch({
-				source: "SERVER_ACTION",
-				action: action
-			});
-		}
-	}, {
-		key: "handleViewAction",
-		value: function handleViewAction(action) {
-			return this.dispatch({
-				source: "VIEW_ACTION",
-				action: action
-			});
-		}
-	}]);
-
-	return LoginDispatcher;
-})(_flux.Dispatcher);
-
-exports["default"] = new LoginDispatcher();
-module.exports = exports["default"];
-
-},{"flux":2}],17:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _loginStore = _dereq_("./login-store");
-
-var _loginStore2 = _interopRequireDefault(_loginStore);
-
-var Federated = (function (_React$Component) {
-	_inherits(Federated, _React$Component);
-
-	function Federated(props) {
-		_classCallCheck(this, Federated);
-
-		_get(Object.getPrototypeOf(Federated.prototype), "constructor", this).call(this, props);
-	}
-
-	_createClass(Federated, [{
-		key: "render",
-		value: function render() {
-			var hsURL = window.location.href;
-
-			return _react2["default"].createElement(
-				"form",
-				{ className: "login-sub-component",
-					action: this.props.url,
-					method: "POST" },
-				_react2["default"].createElement("input", { name: "hsurl", type: "hidden", value: hsURL }),
-				_react2["default"].createElement(
-					"button",
-					{ type: "submit" },
-					this.props.label
-				)
-			);
-		}
-	}]);
-
-	return Federated;
-})(_react2["default"].Component);
-
-Federated.propTypes = {
-	label: _react2["default"].PropTypes.string,
-	url: _react2["default"].PropTypes.string.isRequired
-};
-
-Federated.defaultProps = {
-	label: "Federated Login"
-};
-
-exports["default"] = Federated;
-module.exports = exports["default"];
-
-},{"./login-store":19,"react":"react"}],18:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _login = _dereq_("./login");
-
-var _login2 = _interopRequireDefault(_login);
-
-var _federated = _dereq_("./federated");
-
-var _federated2 = _interopRequireDefault(_federated);
-
-var _basic = _dereq_("./basic");
-
-var _basic2 = _interopRequireDefault(_basic);
-
-var _insertCss = _dereq_("insert-css");
-
-var _insertCss2 = _interopRequireDefault(_insertCss);
-
-
-var css = Buffer("LmhpcmUtbG9naW57dGV4dC1hbGlnbjpsZWZ0fS5oaXJlLWxvZ2luIC5sb2dpbi1mb3Jte3Bvc2l0aW9uOmFic29sdXRlO3otaW5kZXg6MTAwMDA7YmFja2dyb3VuZC1jb2xvcjojZmZmfS5oaXJlLWxvZ2luIGlucHV0e2Rpc3BsYXk6YmxvY2t9LmhpcmUtbG9naW4gLmxvZ2luLWZvcm0gYnV0dG9ue3dpZHRoOjc1JX0uaGlyZS1sb2dpbiAubG9naW4tc3ViLWNvbXBvbmVudHtwYWRkaW5nOjEycHh9LmhpcmUtbG9naW4gLmhpcmUtbG9naW4tZXJyb3J7Y29sb3I6I2YwMDtmb250LXdlaWdodDpib2xkfQ==","base64");
-
-(0, _insertCss2["default"])(css, { prepend: true });
-
-exports.Login = _login2["default"];
-exports.Federated = _federated2["default"];
-exports.Basic = _basic2["default"];
-
-},{"./basic":15,"./federated":17,"./login":20,"insert-css":7}],19:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _events = _dereq_("events");
-
-var _dispatcher = _dereq_("./dispatcher");
-
-var _dispatcher2 = _interopRequireDefault(_dispatcher);
-
-var CHANGE_EVENT = "change";
-
-var LoginStore = (function (_EventEmitter) {
-	_inherits(LoginStore, _EventEmitter);
-
-	function LoginStore() {
-		_classCallCheck(this, LoginStore);
-
-		_get(Object.getPrototypeOf(LoginStore.prototype), "constructor", this).call(this);
-
-		this.errorMessage = null;
-		this.userData = null;
-		this.tokenPropertyName = null;
-		this.tokenPrefix = null;
-	}
-
-	_createClass(LoginStore, [{
-		key: "setTokenPrefix",
-		value: function setTokenPrefix(prefix) {
-			this.tokenPrefix = prefix;
-		}
-	}, {
-		key: "setTokenPropertyName",
-		value: function setTokenPropertyName(id) {
-			this.tokenPropertyName = id + "-auth-token";
-			this.checkTokenInUrl();
-		}
-	}, {
-		key: "checkTokenInUrl",
-		value: function checkTokenInUrl() {
-			var path = window.location.search.substr(1);
-			var params = path.split('&');
-
-			for (var i in params) {
-				var _params$i$split = params[i].split('=');
-
-				var _params$i$split2 = _slicedToArray(_params$i$split, 2);
-
-				var key = _params$i$split2[0];
-				var value = _params$i$split2[1];
-
-				if (key === 'hsid') {
-					var newLocation = window.location.href.replace(params[i], "").replace(/[\?\&]$/, "");
-					this.setToken(value);
-					this.setSupportLogout(false);
-					history.replaceState(history.state, 'tokened', newLocation);
-					break;
-				}
-			}
-		}
-	}, {
-		key: "getState",
-		value: function getState() {
-			return {
-				token: this.getToken(),
-				errorMessage: this.errorMessage,
-				authenticated: this.getToken() !== null && this.userData !== null,
-				userData: this.userData,
-				supportLogout: this.supportsLogout()
-			};
-		}
-
-		// GB: Is a warning enough? What happens when tokenPropertyName is missing?
-		// GB: "call initializeVre" is Timbuctoo specific whereas hire-login should be generic.
-	}, {
-		key: "onMissingTokenPropertyName",
-		value: function onMissingTokenPropertyName() {
-			console.warn("WARNING: missing tokenPropertyName, call initializeVre before attempting authentication");
-		}
-	}, {
-		key: "setToken",
-		value: function setToken(token) {
-			if (this.tokenPropertyName === null) {
-				return this.onMissingTokenPropertyName();
-			}
-
-			if (this.tokenPrefix != null) {
-				token = "" + this.tokenPrefix + token;
-			}
-
-			localStorage.setItem(this.tokenPropertyName, token);
-		}
-	}, {
-		key: "setSupportLogout",
-		value: function setSupportLogout(supportsLogout) {
-			if (supportsLogout) {
-				localStorage.setItem("hi-support-auth-logout", "yes");
-			} else {
-				localStorage.removeItem("hi-support-auth-logout");
-			}
-		}
-	}, {
-		key: "supportsLogout",
-		value: function supportsLogout() {
-			return localStorage.getItem("hi-support-auth-logout") === "yes";
-		}
-	}, {
-		key: "getToken",
-		value: function getToken() {
-			if (this.tokenPropertyName === null) {
-				return this.onMissingTokenPropertyName();
-			}
-			return localStorage.getItem(this.tokenPropertyName);
-		}
-	}, {
-		key: "removeToken",
-		value: function removeToken() {
-			if (this.tokenPropertyName === null) {
-				return this.onMissingTokenPropertyName();
-			}
-			localStorage.removeItem(this.tokenPropertyName);
-		}
-	}, {
-		key: "receiveBasicAuth",
-		value: function receiveBasicAuth(data) {
-			this.setSupportLogout(true);
-			this.setToken(data.headers.x_auth_token);
-			this.errorMessage = null;
-		}
-	}, {
-		key: "receiveBasicAuthFailure",
-		value: function receiveBasicAuthFailure(data) {
-			var body = JSON.parse(data.body);
-			this.errorMessage = body.message;
-			this.removeToken();
-		}
-	}, {
-		key: "receiveUserData",
-		value: function receiveUserData(data) {
-			this.userData = JSON.parse(data.body);
-		}
-	}, {
-		key: "receiveUserDataFailure",
-		value: function receiveUserDataFailure(data) {
-			this.removeToken();
-			this.errorMessage = "Unauthorized";
-		}
-	}, {
-		key: "receiveLogout",
-		value: function receiveLogout() {
-			this.removeToken();
-			this.setSupportLogout(false);
-			this.errorMessage = null;
-			this.userData = null;
-		}
-	}, {
-		key: "stopListening",
-		value: function stopListening(callback) {
-			this.removeListener(CHANGE_EVENT, callback);
-		}
-	}, {
-		key: "listen",
-		value: function listen(callback) {
-			this.addListener(CHANGE_EVENT, callback);
-		}
-	}]);
-
-	return LoginStore;
-})(_events.EventEmitter);
-
-var loginStore = new LoginStore();
-
-var dispatcherCallback = function dispatcherCallback(payload) {
-	switch (payload.action.actionType) {
-		case "BASIC_LOGIN_SUCCESS":
-			loginStore.receiveBasicAuth(payload.action.data);
-			break;
-		case "BASIC_LOGIN_FAILURE":
-			loginStore.receiveBasicAuthFailure(payload.action.data);
-			break;
-		case "USER_DATA_SUCCESS":
-			loginStore.receiveUserData(payload.action.data);
-			break;
-		case "USER_DATA_FAILURE":
-			loginStore.receiveUserDataFailure(payload.action.data);
-			break;
-		case "LOGOUT":
-			loginStore.receiveLogout(payload.action.data);
-			break;
-
-		default:
-			return;
-	}
-
-	loginStore.emit(CHANGE_EVENT);
-};
-
-loginStore.dispatcherIndex = _dispatcher2["default"].register(dispatcherCallback);
-
-exports["default"] = loginStore;
-module.exports = exports["default"];
-
-},{"./dispatcher":16,"events":1}],20:[function(_dereq_,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = _dereq_("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _reactDom = _dereq_("react-dom");
-
-var _reactDom2 = _interopRequireDefault(_reactDom);
-
-var _loginStore = _dereq_("./login-store");
-
-var _loginStore2 = _interopRequireDefault(_loginStore);
-
-var _federated = _dereq_("./federated");
-
-var _federated2 = _interopRequireDefault(_federated);
-
-var _api = _dereq_("./api");
-
-var _api2 = _interopRequireDefault(_api);
-
-var _actions = _dereq_("./actions");
-
-var _actions2 = _interopRequireDefault(_actions);
-
-var LoginComponent = (function (_React$Component) {
-	_inherits(LoginComponent, _React$Component);
-
-	function LoginComponent(props) {
-		_classCallCheck(this, LoginComponent);
-
-		_get(Object.getPrototypeOf(LoginComponent.prototype), "constructor", this).call(this, props);
-
-		_loginStore2["default"].setTokenPrefix(this.props.tokenPrefix);
-		_loginStore2["default"].setTokenPropertyName(this.props.appId);
-
-		this.state = _loginStore2["default"].getState();
-		this.state.opened = false;
-
-		if (!this.state.initialized) {
-			this.state.initialized = _loginStore2["default"].getToken() === null;
-		}
-	}
-
-	_createClass(LoginComponent, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			_loginStore2["default"].listen(this.onStoreChange.bind(this));
-
-			if (this.state.token != null) {
-				_api2["default"].fetchUserData(this.props.userUrl, this.state.token, this.props.headers);
-			}
-
-			document.addEventListener("click", this.handleDocumentClick.bind(this), false);
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			_loginStore2["default"].stopListening(this.onStoreChange.bind(this));
-
-			document.removeEventListener("click", this.handleDocumentClick.bind(this), false);
-		}
-	}, {
-		key: "onStoreChange",
-		value: function onStoreChange() {
-			this.setState(_loginStore2["default"].getState());
-
-			if (this.state.token != null && !this.state.authenticated) {
-				_api2["default"].fetchUserData(this.props.userUrl, this.state.token, this.props.headers);
-			} else {
-				this.props.onChange(_loginStore2["default"].getState());
-			}
-			this.setState({ initialized: true });
-		}
-	}, {
-		key: "toggleLogin",
-		value: function toggleLogin(ev) {
-			this.setState({ opened: !this.state.opened });
-		}
-	}, {
-		key: "onLogoutClick",
-		value: function onLogoutClick(ev) {
-			_actions2["default"].logout();
-		}
-	}, {
-		key: "handleDocumentClick",
-		value: function handleDocumentClick(ev) {
-			if (this.state.opened && !_reactDom2["default"].findDOMNode(this).contains(ev.target)) {
-				this.setState({
-					opened: false
-				});
-			}
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			if (!this.state.initialized) {
-				return _react2["default"].createElement("div", null);
-			}
-
-			if (this.state.authenticated) {
-				var logoutButton = this.state.supportLogout ? _react2["default"].createElement(
-					"button",
-					{ onClick: this.onLogoutClick.bind(this) },
-					this.props.logoutLabel
-				) : null;
-
-				return _react2["default"].createElement(
-					"div",
-					{ className: "hire-login" },
-					_react2["default"].createElement(
-						"span",
-						{ className: "login-status" },
-						this.props.loggedInLabel ? this.props.loggedInLabel + " " : "",
-						this.state.userData.displayName
-					),
-					logoutButton
-				);
-			}
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "hire-login" },
-				_react2["default"].createElement(
-					"button",
-					{ className: this.state.opened ? 'toggle-opened' : 'toggle-closed',
-						onClick: this.toggleLogin.bind(this) },
-					this.props.buttonLabel
-				),
-				_react2["default"].createElement(
-					"div",
-					{ className: "login-form", id: "hire-login-form", style: this.state.opened ? { display: "block" } : { display: "none" } },
-					_react2["default"].Children.map(this.props.children, function (child) {
-						return _react2["default"].createElement(
-							"div",
-							null,
-							child
-						);
-					}),
-					_react2["default"].createElement(
-						"div",
-						{ className: "hire-login-error" },
-						this.state.errorMessage
-					)
-				)
-			);
-		}
-	}]);
-
-	return LoginComponent;
-})(_react2["default"].Component);
-
-LoginComponent.propTypes = {
-	appId: _react2["default"].PropTypes.string,
-	buttonLabel: _react2["default"].PropTypes.string,
-	children: _react2["default"].PropTypes.node,
-	headers: _react2["default"].PropTypes.object,
-	loggedInLabel: _react2["default"].PropTypes.string,
-	logoutLabel: _react2["default"].PropTypes.string,
-	tokenPrefix: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func.isRequired,
-	userUrl: _react2["default"].PropTypes.string.isRequired
-};
-
-LoginComponent.defaultProps = {
-	buttonLabel: "Login",
-	loggedInLabel: "Logged in as",
-	logoutLabel: "Logout",
-	appId: "default-login",
-	headers: {}
-};
-
-exports["default"] = LoginComponent;
-module.exports = exports["default"];
-/* GB: Why are children wrapped in a div? Could this.props.children just be passed as is? */
-
-},{"./actions":13,"./api":14,"./federated":17,"./login-store":19,"react":"react","react-dom":"react-dom"}]},{},[18])(18)
-});
-}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"buffer":3}],16:[function(require,module,exports){
-exports.read = function (buffer, offset, isLE, mLen, nBytes) {
-  var e, m
-  var eLen = nBytes * 8 - mLen - 1
-  var eMax = (1 << eLen) - 1
-  var eBias = eMax >> 1
-  var nBits = -7
-  var i = isLE ? (nBytes - 1) : 0
-  var d = isLE ? -1 : 1
-  var s = buffer[offset + i]
-
-  i += d
-
-  e = s & ((1 << (-nBits)) - 1)
-  s >>= (-nBits)
-  nBits += eLen
-  for (; nBits > 0; e = e * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  m = e & ((1 << (-nBits)) - 1)
-  e >>= (-nBits)
-  nBits += mLen
-  for (; nBits > 0; m = m * 256 + buffer[offset + i], i += d, nBits -= 8) {}
-
-  if (e === 0) {
-    e = 1 - eBias
-  } else if (e === eMax) {
-    return m ? NaN : ((s ? -1 : 1) * Infinity)
-  } else {
-    m = m + Math.pow(2, mLen)
-    e = e - eBias
-  }
-  return (s ? -1 : 1) * m * Math.pow(2, e - mLen)
-}
-
-exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
-  var e, m, c
-  var eLen = nBytes * 8 - mLen - 1
-  var eMax = (1 << eLen) - 1
-  var eBias = eMax >> 1
-  var rt = (mLen === 23 ? Math.pow(2, -24) - Math.pow(2, -77) : 0)
-  var i = isLE ? 0 : (nBytes - 1)
-  var d = isLE ? 1 : -1
-  var s = value < 0 || (value === 0 && 1 / value < 0) ? 1 : 0
-
-  value = Math.abs(value)
-
-  if (isNaN(value) || value === Infinity) {
-    m = isNaN(value) ? 1 : 0
-    e = eMax
-  } else {
-    e = Math.floor(Math.log(value) / Math.LN2)
-    if (value * (c = Math.pow(2, -e)) < 1) {
-      e--
-      c *= 2
-    }
-    if (e + eBias >= 1) {
-      value += rt / c
-    } else {
-      value += rt * Math.pow(2, 1 - eBias)
-    }
-    if (value * c >= 2) {
-      e++
-      c /= 2
-    }
-
-    if (e + eBias >= eMax) {
-      m = 0
-      e = eMax
-    } else if (e + eBias >= 1) {
-      m = (value * c - 1) * Math.pow(2, mLen)
-      e = e + eBias
-    } else {
-      m = value * Math.pow(2, eBias - 1) * Math.pow(2, mLen)
-      e = 0
-    }
-  }
-
-  for (; mLen >= 8; buffer[offset + i] = m & 0xff, i += d, m /= 256, mLen -= 8) {}
-
-  e = (e << mLen) | m
-  eLen += mLen
-  for (; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8) {}
-
-  buffer[offset + i - d] |= s * 128
-}
-
-},{}],17:[function(require,module,exports){
-module.exports = isFunction
-
-var toString = Object.prototype.toString
-
-function isFunction (fn) {
-  var string = toString.call(fn)
-  return string === '[object Function]' ||
-    (typeof fn === 'function' && string !== '[object RegExp]') ||
-    (typeof window !== 'undefined' &&
-     // IE8 and below
-     (fn === window.setTimeout ||
-      fn === window.alert ||
-      fn === window.confirm ||
-      fn === window.prompt))
-};
-
-},{}],18:[function(require,module,exports){
+},{"./_overArg":6}],6:[function(require,module,exports){
 /**
- * Checks if `value` is a host object in IE < 9.
+ * Creates a unary function that invokes `func` with its argument transformed.
  *
  * @private
- * @param {*} value The value to check.
- * @returns {boolean} Returns `true` if `value` is a host object, else `false`.
+ * @param {Function} func The function to wrap.
+ * @param {Function} transform The argument transform.
+ * @returns {Function} Returns the new function.
  */
-function isHostObject(value) {
-  // Many host objects are `Object` objects that can coerce to strings
-  // despite having improperly defined `toString` methods.
-  var result = false;
-  if (value != null && typeof value.toString != 'function') {
-    try {
-      result = !!(value + '');
-    } catch (e) {}
-  }
-  return result;
+function overArg(func, transform) {
+  return function(arg) {
+    return func(transform(arg));
+  };
 }
 
-module.exports = isHostObject;
+module.exports = overArg;
 
-},{}],19:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
  * and has a `typeof` result of "object".
  *
  * @static
  * @memberOf _
+ * @since 4.0.0
  * @category Lang
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is object-like, else `false`.
@@ -8944,35 +309,37 @@ module.exports = isHostObject;
  * // => false
  */
 function isObjectLike(value) {
-  return !!value && typeof value == 'object';
+  return value != null && typeof value == 'object';
 }
 
 module.exports = isObjectLike;
 
-},{}],20:[function(require,module,exports){
-var isHostObject = require('./_isHostObject'),
+},{}],8:[function(require,module,exports){
+var getPrototype = require('./_getPrototype'),
     isObjectLike = require('./isObjectLike');
 
 /** `Object#toString` result references. */
 var objectTag = '[object Object]';
 
 /** Used for built-in method references. */
-var objectProto = Object.prototype;
+var funcProto = Function.prototype,
+    objectProto = Object.prototype;
 
 /** Used to resolve the decompiled source of functions. */
-var funcToString = Function.prototype.toString;
+var funcToString = funcProto.toString;
+
+/** Used to check objects for own properties. */
+var hasOwnProperty = objectProto.hasOwnProperty;
 
 /** Used to infer the `Object` constructor. */
 var objectCtorString = funcToString.call(Object);
 
 /**
- * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * Used to resolve the
+ * [`toStringTag`](http://ecma-international.org/ecma-262/7.0/#sec-object.prototype.tostring)
  * of values.
  */
 var objectToString = objectProto.toString;
-
-/** Built-in value references. */
-var getPrototypeOf = Object.getPrototypeOf;
 
 /**
  * Checks if `value` is a plain object, that is, an object created by the
@@ -8980,6 +347,7 @@ var getPrototypeOf = Object.getPrototypeOf;
  *
  * @static
  * @memberOf _
+ * @since 0.8.0
  * @category Lang
  * @param {*} value The value to check.
  * @returns {boolean} Returns `true` if `value` is a plain object, else `false`.
@@ -9002,45 +370,21 @@ var getPrototypeOf = Object.getPrototypeOf;
  * // => true
  */
 function isPlainObject(value) {
-  if (!isObjectLike(value) || objectToString.call(value) != objectTag || isHostObject(value)) {
+  if (!isObjectLike(value) || objectToString.call(value) != objectTag) {
     return false;
   }
-  var proto = objectProto;
-  if (typeof value.constructor == 'function') {
-    proto = getPrototypeOf(value);
-  }
+  var proto = getPrototype(value);
   if (proto === null) {
     return true;
   }
-  var Ctor = proto.constructor;
+  var Ctor = hasOwnProperty.call(proto, 'constructor') && proto.constructor;
   return (typeof Ctor == 'function' &&
     Ctor instanceof Ctor && funcToString.call(Ctor) == objectCtorString);
 }
 
 module.exports = isPlainObject;
 
-},{"./_isHostObject":18,"./isObjectLike":19}],21:[function(require,module,exports){
-module.exports = once
-
-once.proto = once(function () {
-  Object.defineProperty(Function.prototype, 'once', {
-    value: function () {
-      return once(this)
-    },
-    configurable: true
-  })
-})
-
-function once (fn) {
-  var called = false
-  return function () {
-    if (called) return
-    called = true
-    return fn.apply(this, arguments)
-  }
-}
-
-},{}],22:[function(require,module,exports){
+},{"./_getPrototype":5,"./isObjectLike":7}],9:[function(require,module,exports){
 var trim = require('trim')
   , forEach = require('for-each')
   , isArray = function(arg) {
@@ -9072,7 +416,7 @@ module.exports = function (headers) {
 
   return result
 }
-},{"for-each":5,"trim":31}],23:[function(require,module,exports){
+},{"for-each":2,"trim":21}],10:[function(require,module,exports){
 'use strict';
 
 function thunkMiddleware(_ref) {
@@ -9087,19 +431,20 @@ function thunkMiddleware(_ref) {
 }
 
 module.exports = thunkMiddleware;
-},{}],24:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
+
+exports.__esModule = true;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-exports.__esModule = true;
-exports["default"] = applyMiddleware;
+exports['default'] = applyMiddleware;
 
 var _compose = require('./compose');
 
 var _compose2 = _interopRequireDefault(_compose);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
  * Creates a store enhancer that applies middleware to the dispatch method
@@ -9123,8 +468,8 @@ function applyMiddleware() {
   }
 
   return function (createStore) {
-    return function (reducer, initialState, enhancer) {
-      var store = createStore(reducer, initialState, enhancer);
+    return function (reducer, preloadedState, enhancer) {
+      var store = createStore(reducer, preloadedState, enhancer);
       var _dispatch = store.dispatch;
       var chain = [];
 
@@ -9137,7 +482,7 @@ function applyMiddleware() {
       chain = middlewares.map(function (middleware) {
         return middleware(middlewareAPI);
       });
-      _dispatch = _compose2["default"].apply(undefined, chain)(store.dispatch);
+      _dispatch = _compose2['default'].apply(undefined, chain)(store.dispatch);
 
       return _extends({}, store, {
         dispatch: _dispatch
@@ -9145,11 +490,11 @@ function applyMiddleware() {
     };
   };
 }
-},{"./compose":27}],25:[function(require,module,exports){
+},{"./compose":14}],12:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
-exports["default"] = bindActionCreators;
+exports['default'] = bindActionCreators;
 function bindActionCreator(actionCreator, dispatch) {
   return function () {
     return dispatch(actionCreator.apply(undefined, arguments));
@@ -9197,12 +542,12 @@ function bindActionCreators(actionCreators, dispatch) {
   }
   return boundActionCreators;
 }
-},{}],26:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function (process){
 'use strict';
 
 exports.__esModule = true;
-exports["default"] = combineReducers;
+exports['default'] = combineReducers;
 
 var _createStore = require('./createStore');
 
@@ -9214,29 +559,33 @@ var _warning = require('./utils/warning');
 
 var _warning2 = _interopRequireDefault(_warning);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 function getUndefinedStateErrorMessage(key, action) {
   var actionType = action && action.type;
   var actionName = actionType && '"' + actionType.toString() + '"' || 'an action';
 
-  return 'Reducer "' + key + '" returned undefined handling ' + actionName + '. ' + 'To ignore an action, you must explicitly return the previous state.';
+  return 'Given action ' + actionName + ', reducer "' + key + '" returned undefined. ' + 'To ignore an action, you must explicitly return the previous state.';
 }
 
-function getUnexpectedStateShapeWarningMessage(inputState, reducers, action) {
+function getUnexpectedStateShapeWarningMessage(inputState, reducers, action, unexpectedKeyCache) {
   var reducerKeys = Object.keys(reducers);
-  var argumentName = action && action.type === _createStore.ActionTypes.INIT ? 'initialState argument passed to createStore' : 'previous state received by the reducer';
+  var argumentName = action && action.type === _createStore.ActionTypes.INIT ? 'preloadedState argument passed to createStore' : 'previous state received by the reducer';
 
   if (reducerKeys.length === 0) {
     return 'Store does not have a valid reducer. Make sure the argument passed ' + 'to combineReducers is an object whose values are reducers.';
   }
 
-  if (!(0, _isPlainObject2["default"])(inputState)) {
+  if (!(0, _isPlainObject2['default'])(inputState)) {
     return 'The ' + argumentName + ' has unexpected type of "' + {}.toString.call(inputState).match(/\s([a-z|A-Z]+)/)[1] + '". Expected argument to be an object with the following ' + ('keys: "' + reducerKeys.join('", "') + '"');
   }
 
   var unexpectedKeys = Object.keys(inputState).filter(function (key) {
-    return !reducers.hasOwnProperty(key);
+    return !reducers.hasOwnProperty(key) && !unexpectedKeyCache[key];
+  });
+
+  unexpectedKeys.forEach(function (key) {
+    unexpectedKeyCache[key] = true;
   });
 
   if (unexpectedKeys.length > 0) {
@@ -9281,11 +630,22 @@ function combineReducers(reducers) {
   var finalReducers = {};
   for (var i = 0; i < reducerKeys.length; i++) {
     var key = reducerKeys[i];
+
+    if (process.env.NODE_ENV !== 'production') {
+      if (typeof reducers[key] === 'undefined') {
+        (0, _warning2['default'])('No reducer provided for key "' + key + '"');
+      }
+    }
+
     if (typeof reducers[key] === 'function') {
       finalReducers[key] = reducers[key];
     }
   }
   var finalReducerKeys = Object.keys(finalReducers);
+
+  if (process.env.NODE_ENV !== 'production') {
+    var unexpectedKeyCache = {};
+  }
 
   var sanityError;
   try {
@@ -9303,9 +663,9 @@ function combineReducers(reducers) {
     }
 
     if (process.env.NODE_ENV !== 'production') {
-      var warningMessage = getUnexpectedStateShapeWarningMessage(state, finalReducers, action);
+      var warningMessage = getUnexpectedStateShapeWarningMessage(state, finalReducers, action, unexpectedKeyCache);
       if (warningMessage) {
-        (0, _warning2["default"])(warningMessage);
+        (0, _warning2['default'])(warningMessage);
       }
     }
 
@@ -9327,48 +687,61 @@ function combineReducers(reducers) {
   };
 }
 }).call(this,require('_process'))
-},{"./createStore":28,"./utils/warning":30,"_process":2,"lodash/isPlainObject":20}],27:[function(require,module,exports){
+},{"./createStore":15,"./utils/warning":17,"_process":1,"lodash/isPlainObject":8}],14:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
 exports["default"] = compose;
 /**
- * Composes single-argument functions from right to left.
+ * Composes single-argument functions from right to left. The rightmost
+ * function can take multiple arguments as it provides the signature for
+ * the resulting composite function.
  *
  * @param {...Function} funcs The functions to compose.
- * @returns {Function} A function obtained by composing functions from right to
- * left. For example, compose(f, g, h) is identical to arg => f(g(h(arg))).
+ * @returns {Function} A function obtained by composing the argument functions
+ * from right to left. For example, compose(f, g, h) is identical to doing
+ * (...args) => f(g(h(...args))).
  */
+
 function compose() {
   for (var _len = arguments.length, funcs = Array(_len), _key = 0; _key < _len; _key++) {
     funcs[_key] = arguments[_key];
   }
 
+  if (funcs.length === 0) {
+    return function (arg) {
+      return arg;
+    };
+  }
+
+  if (funcs.length === 1) {
+    return funcs[0];
+  }
+
+  var last = funcs[funcs.length - 1];
+  var rest = funcs.slice(0, -1);
   return function () {
-    if (funcs.length === 0) {
-      return arguments.length <= 0 ? undefined : arguments[0];
-    }
-
-    var last = funcs[funcs.length - 1];
-    var rest = funcs.slice(0, -1);
-
     return rest.reduceRight(function (composed, f) {
       return f(composed);
     }, last.apply(undefined, arguments));
   };
 }
-},{}],28:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
 exports.ActionTypes = undefined;
-exports["default"] = createStore;
+exports['default'] = createStore;
 
 var _isPlainObject = require('lodash/isPlainObject');
 
 var _isPlainObject2 = _interopRequireDefault(_isPlainObject);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+var _symbolObservable = require('symbol-observable');
+
+var _symbolObservable2 = _interopRequireDefault(_symbolObservable);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /**
  * These are private action types reserved by Redux.
@@ -9391,7 +764,7 @@ var ActionTypes = exports.ActionTypes = {
  * @param {Function} reducer A function that returns the next state tree, given
  * the current state tree and the action to handle.
  *
- * @param {any} [initialState] The initial state. You may optionally specify it
+ * @param {any} [preloadedState] The initial state. You may optionally specify it
  * to hydrate the state from the server in universal apps, or to restore a
  * previously serialized user session.
  * If you use `combineReducers` to produce the root reducer function, this must be
@@ -9405,10 +778,12 @@ var ActionTypes = exports.ActionTypes = {
  * @returns {Store} A Redux store that lets you read the state, dispatch actions
  * and subscribe to changes.
  */
-function createStore(reducer, initialState, enhancer) {
-  if (typeof initialState === 'function' && typeof enhancer === 'undefined') {
-    enhancer = initialState;
-    initialState = undefined;
+function createStore(reducer, preloadedState, enhancer) {
+  var _ref2;
+
+  if (typeof preloadedState === 'function' && typeof enhancer === 'undefined') {
+    enhancer = preloadedState;
+    preloadedState = undefined;
   }
 
   if (typeof enhancer !== 'undefined') {
@@ -9416,7 +791,7 @@ function createStore(reducer, initialState, enhancer) {
       throw new Error('Expected the enhancer to be a function.');
     }
 
-    return enhancer(createStore)(reducer, initialState);
+    return enhancer(createStore)(reducer, preloadedState);
   }
 
   if (typeof reducer !== 'function') {
@@ -9424,7 +799,7 @@ function createStore(reducer, initialState, enhancer) {
   }
 
   var currentReducer = reducer;
-  var currentState = initialState;
+  var currentState = preloadedState;
   var currentListeners = [];
   var nextListeners = currentListeners;
   var isDispatching = false;
@@ -9458,7 +833,7 @@ function createStore(reducer, initialState, enhancer) {
    * However, the next `dispatch()` call, whether nested or not, will use a more
    * recent snapshot of the subscription list.
    *
-   * 2. The listener should not expect to see all states changes, as the state
+   * 2. The listener should not expect to see all state changes, as the state
    * might have been updated multiple times during a nested `dispatch()` before
    * the listener is called. It is, however, guaranteed that all subscribers
    * registered before the `dispatch()` started will be called with the latest
@@ -9516,7 +891,7 @@ function createStore(reducer, initialState, enhancer) {
    * return something else (for example, a Promise you can await).
    */
   function dispatch(action) {
-    if (!(0, _isPlainObject2["default"])(action)) {
+    if (!(0, _isPlainObject2['default'])(action)) {
       throw new Error('Actions must be plain objects. ' + 'Use custom middleware for async actions.');
     }
 
@@ -9562,19 +937,58 @@ function createStore(reducer, initialState, enhancer) {
     dispatch({ type: ActionTypes.INIT });
   }
 
+  /**
+   * Interoperability point for observable/reactive libraries.
+   * @returns {observable} A minimal observable of state changes.
+   * For more information, see the observable proposal:
+   * https://github.com/zenparsing/es-observable
+   */
+  function observable() {
+    var _ref;
+
+    var outerSubscribe = subscribe;
+    return _ref = {
+      /**
+       * The minimal observable subscription method.
+       * @param {Object} observer Any object that can be used as an observer.
+       * The observer object should have a `next` method.
+       * @returns {subscription} An object with an `unsubscribe` method that can
+       * be used to unsubscribe the observable from the store, and prevent further
+       * emission of values from the observable.
+       */
+      subscribe: function subscribe(observer) {
+        if (typeof observer !== 'object') {
+          throw new TypeError('Expected the observer to be an object.');
+        }
+
+        function observeState() {
+          if (observer.next) {
+            observer.next(getState());
+          }
+        }
+
+        observeState();
+        var unsubscribe = outerSubscribe(observeState);
+        return { unsubscribe: unsubscribe };
+      }
+    }, _ref[_symbolObservable2['default']] = function () {
+      return this;
+    }, _ref;
+  }
+
   // When a store is created, an "INIT" action is dispatched so that every
   // reducer returns their initial state. This effectively populates
   // the initial state tree.
   dispatch({ type: ActionTypes.INIT });
 
-  return {
+  return _ref2 = {
     dispatch: dispatch,
     subscribe: subscribe,
     getState: getState,
     replaceReducer: replaceReducer
-  };
+  }, _ref2[_symbolObservable2['default']] = observable, _ref2;
 }
-},{"lodash/isPlainObject":20}],29:[function(require,module,exports){
+},{"lodash/isPlainObject":8,"symbol-observable":18}],16:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -9605,7 +1019,7 @@ var _warning = require('./utils/warning');
 
 var _warning2 = _interopRequireDefault(_warning);
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
 
 /*
 * This is a dummy function to check if the function name has been altered by minification.
@@ -9614,20 +1028,20 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "d
 function isCrushed() {}
 
 if (process.env.NODE_ENV !== 'production' && typeof isCrushed.name === 'string' && isCrushed.name !== 'isCrushed') {
-  (0, _warning2["default"])('You are currently using minified code outside of NODE_ENV === \'production\'. ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' + 'to ensure you have the correct code for your production build.');
+  (0, _warning2['default'])('You are currently using minified code outside of NODE_ENV === \'production\'. ' + 'This means that you are running a slower development build of Redux. ' + 'You can use loose-envify (https://github.com/zertosh/loose-envify) for browserify ' + 'or DefinePlugin for webpack (http://stackoverflow.com/questions/30030031) ' + 'to ensure you have the correct code for your production build.');
 }
 
-exports.createStore = _createStore2["default"];
-exports.combineReducers = _combineReducers2["default"];
-exports.bindActionCreators = _bindActionCreators2["default"];
-exports.applyMiddleware = _applyMiddleware2["default"];
-exports.compose = _compose2["default"];
+exports.createStore = _createStore2['default'];
+exports.combineReducers = _combineReducers2['default'];
+exports.bindActionCreators = _bindActionCreators2['default'];
+exports.applyMiddleware = _applyMiddleware2['default'];
+exports.compose = _compose2['default'];
 }).call(this,require('_process'))
-},{"./applyMiddleware":24,"./bindActionCreators":25,"./combineReducers":26,"./compose":27,"./createStore":28,"./utils/warning":30,"_process":2}],30:[function(require,module,exports){
+},{"./applyMiddleware":11,"./bindActionCreators":12,"./combineReducers":13,"./compose":14,"./createStore":15,"./utils/warning":17,"_process":1}],17:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
-exports["default"] = warning;
+exports['default'] = warning;
 /**
  * Prints a warning in the console if it exists.
  *
@@ -9641,14 +1055,67 @@ function warning(message) {
   }
   /* eslint-enable no-console */
   try {
-    // This error was thrown as a convenience so that you can use this stack
-    // to find the callsite that caused this warning to fire.
+    // This error was thrown as a convenience so that if you enable
+    // "break on all exceptions" in your console,
+    // it would pause the execution at this line.
     throw new Error(message);
     /* eslint-disable no-empty */
   } catch (e) {}
   /* eslint-enable no-empty */
 }
-},{}],31:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
+module.exports = require('./lib/index');
+
+},{"./lib/index":19}],19:[function(require,module,exports){
+(function (global){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _ponyfill = require('./ponyfill');
+
+var _ponyfill2 = _interopRequireDefault(_ponyfill);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { 'default': obj }; }
+
+var root = undefined; /* global window */
+
+if (typeof global !== 'undefined') {
+	root = global;
+} else if (typeof window !== 'undefined') {
+	root = window;
+}
+
+var result = (0, _ponyfill2['default'])(root);
+exports['default'] = result;
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./ponyfill":20}],20:[function(require,module,exports){
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+exports['default'] = symbolObservablePonyfill;
+function symbolObservablePonyfill(root) {
+	var result;
+	var _Symbol = root.Symbol;
+
+	if (typeof _Symbol === 'function') {
+		if (_Symbol.observable) {
+			result = _Symbol.observable;
+		} else {
+			result = _Symbol('observable');
+			_Symbol.observable = result;
+		}
+	} else {
+		result = '@@observable';
+	}
+
+	return result;
+};
+},{}],21:[function(require,module,exports){
 
 exports = module.exports = trim;
 
@@ -9664,10 +1131,9 @@ exports.right = function(str){
   return str.replace(/\s*$/, '');
 };
 
-},{}],32:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 "use strict";
 var window = require("global/window")
-var once = require("once")
 var isFunction = require("is-function")
 var parseHeaders = require("parse-headers")
 var xtend = require("xtend")
@@ -9719,11 +1185,17 @@ function createXHR(uri, options, callback) {
 }
 
 function _createXHR(options) {
-    var callback = options.callback
-    if(typeof callback === "undefined"){
+    if(typeof options.callback === "undefined"){
         throw new Error("callback argument missing")
     }
-    callback = once(callback)
+
+    var called = false
+    var callback = function cbOnce(err, response, body){
+        if(!called){
+            called = true
+            options.callback(err, response, body)
+        }
+    }
 
     function readystatechange() {
         if (xhr.readyState === 4) {
@@ -9737,8 +1209,8 @@ function _createXHR(options) {
 
         if (xhr.response) {
             body = xhr.response
-        } else if (xhr.responseType === "text" || !xhr.responseType) {
-            body = xhr.responseText || xhr.responseXML
+        } else {
+            body = xhr.responseText || getXml(xhr)
         }
 
         if (isJson) {
@@ -9765,7 +1237,7 @@ function _createXHR(options) {
             evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
         }
         evt.statusCode = 0
-        callback(evt, failureResponse)
+        return callback(evt, failureResponse)
     }
 
     // will load the data & process the response in a special response object
@@ -9797,8 +1269,7 @@ function _createXHR(options) {
         } else {
             err = new Error("Internal XMLHttpRequest Error")
         }
-        callback(err, response, response.body)
-
+        return callback(err, response, response.body)
     }
 
     var xhr = options.xhr || null
@@ -9883,9 +1354,21 @@ function _createXHR(options) {
 
 }
 
+function getXml(xhr) {
+    if (xhr.responseType === "document") {
+        return xhr.responseXML
+    }
+    var firefoxBugTakenEffect = xhr.status === 204 && xhr.responseXML && xhr.responseXML.documentElement.nodeName === "parsererror"
+    if (xhr.responseType === "" && !firefoxBugTakenEffect) {
+        return xhr.responseXML
+    }
+
+    return null
+}
+
 function noop() {}
 
-},{"global/window":6,"is-function":17,"once":21,"parse-headers":22,"xtend":33}],33:[function(require,module,exports){
+},{"global/window":3,"is-function":4,"parse-headers":9,"xtend":23}],23:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -9906,7 +1389,7 @@ function extend() {
     return target
 }
 
-},{}],34:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9923,9 +1406,8 @@ var _config = require("../config");
 
 var _config2 = _interopRequireDefault(_config);
 
-exports["default"] = function (path, query, vreId, done) {
+exports["default"] = function (path, query, done) {
 	var options = {
-		headers: { "Accept": "application/json", "VRE_ID": vreId },
 		url: _config2["default"].apiUrl[_config2["default"].apiVersion] + "/" + path.replace(/^\/v[^/]+\//, "") + "?query=" + query + "*"
 	};
 
@@ -9940,7 +1422,7 @@ exports["default"] = function (path, query, vreId, done) {
 
 module.exports = exports["default"];
 
-},{"../config":66,"./server":40}],35:[function(require,module,exports){
+},{"../config":50,"./server":30}],25:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10020,7 +1502,7 @@ exports.fetchEntity = fetchEntity;
 exports.fetchEntityList = fetchEntityList;
 exports.crud = crud;
 
-},{"../config":66,"./server":40}],36:[function(require,module,exports){
+},{"../config":50,"./server":30}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10130,7 +1612,7 @@ var sendQuickSearch = function sendQuickSearch() {
 						};
 					}) });
 			};
-			(0, _autocomplete2["default"])("domain/" + entity.domain + "/autocomplete", quickSearch.query, vre.vreId, callback);
+			(0, _autocomplete2["default"])("domain/" + entity.domain + "/autocomplete", quickSearch.query, callback);
 		} else {
 			dispatch(fetchEntityList(entity.domain));
 		}
@@ -10255,7 +1737,7 @@ exports.paginateRight = paginateRight;
 exports.paginateLeft = paginateLeft;
 exports.sendQuickSearch = sendQuickSearch;
 
-},{"../config":66,"../util/clone-deep":75,"./autocomplete":34,"./crud":35,"./relation-savers":38}],37:[function(require,module,exports){
+},{"../config":50,"../util/clone-deep":59,"./autocomplete":24,"./crud":25,"./relation-savers":28}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10322,7 +1804,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":74,"./entity":36,"./vre":42}],38:[function(require,module,exports){
+},{"../store":58,"./entity":26,"./vre":32}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10345,7 +1827,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"./save-relations":39,"./v2.1/save-relations":41}],39:[function(require,module,exports){
+},{"./save-relations":29,"./v2.1/save-relations":31}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10449,7 +1931,7 @@ var saveRelations = function saveRelations(data, relationData, fieldDefs, token,
 exports["default"] = saveRelations;
 module.exports = exports["default"];
 
-},{"./crud":35}],40:[function(require,module,exports){
+},{"./crud":25}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10499,7 +1981,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"../store":74,"xhr":32}],41:[function(require,module,exports){
+},{"../store":58,"xhr":22}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10627,7 +2109,7 @@ var saveRelationsV21 = function saveRelationsV21(data, relationData, fieldDefs, 
 exports["default"] = saveRelationsV21;
 module.exports = exports["default"];
 
-},{"../crud":35}],42:[function(require,module,exports){
+},{"../crud":25}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10688,7 +2170,7 @@ var setVre = function setVre(vreId) {
 exports.listVres = listVres;
 exports.setVre = setVre;
 
-},{"../config":66,"./index":37,"./server":40}],43:[function(require,module,exports){
+},{"../config":50,"./index":27,"./server":30}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10709,1170 +2191,246 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var EntityList = (function (_React$Component) {
-	_inherits(EntityList, _React$Component);
+var _classnames = require("classnames");
 
-	function EntityList() {
-		_classCallCheck(this, EntityList);
+var _classnames2 = _interopRequireDefault(_classnames);
 
-		_get(Object.getPrototypeOf(EntityList.prototype), "constructor", this).apply(this, arguments);
+var CollectionTabs = (function (_React$Component) {
+	_inherits(CollectionTabs, _React$Component);
+
+	function CollectionTabs() {
+		_classCallCheck(this, CollectionTabs);
+
+		_get(Object.getPrototypeOf(CollectionTabs.prototype), "constructor", this).apply(this, arguments);
 	}
 
-	_createClass(EntityList, [{
+	_createClass(CollectionTabs, [{
+		key: "onDomainSelect",
+		value: function onDomainSelect(domain) {
+			this.props.onNew(domain);
+			this.props.onSelectDomain(domain);
+		}
+	}, {
 		key: "render",
 		value: function render() {
 			var _this = this;
 
 			var _props = this.props;
-			var entity = _props.entity;
-			var quickSearch = _props.quickSearch;
-			var onPaginateLeft = _props.onPaginateLeft;
-			var onPaginateRight = _props.onPaginateRight;
-			var onQuickSearchQueryChange = _props.onQuickSearchQueryChange;
-			var onQuickSearch = _props.onQuickSearch;
+			var collections = _props.collections;
+			var activeDomain = _props.activeDomain;
 
-			var leftButton = quickSearch.start > 0 ? _react2["default"].createElement(
-				"button",
-				{ onClick: onPaginateLeft },
-				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
-			) : _react2["default"].createElement(
-				"button",
-				{ disabled: true },
-				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
-			);
-
-			var rightButton = quickSearch.list.length < quickSearch.rows ? _react2["default"].createElement(
-				"button",
-				{ disabled: true },
-				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
-			) : _react2["default"].createElement(
-				"button",
-				{ onClick: onPaginateRight },
-				_react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
-			);
+			var domains = Object.keys(collections || {});
 
 			return _react2["default"].createElement(
 				"div",
-				{ className: "col-sm-6" },
+				{ className: "container basic-margin" },
+				_react2["default"].createElement(
+					"ul",
+					{ className: "nav nav-tabs" },
+					domains.filter(function (d) {
+						return !(collections[d].unknown || collections[d].relationCollection);
+					}).map(function (domain) {
+						return _react2["default"].createElement(
+							"li",
+							{ className: (0, _classnames2["default"])({ active: domain === activeDomain }), key: domain },
+							_react2["default"].createElement(
+								"a",
+								{ onClick: domain === activeDomain ? function () {} : function () {
+										return _this.onDomainSelect(domain);
+									} },
+								collections[domain].collectionLabel
+							)
+						);
+					})
+				)
+			);
+		}
+	}]);
+
+	return CollectionTabs;
+})(_react2["default"].Component);
+
+CollectionTabs.propTypes = {
+	onNew: _react2["default"].PropTypes.func,
+	onSelectDomain: _react2["default"].PropTypes.func,
+	collections: _react2["default"].PropTypes.object,
+	activeDomain: _react2["default"].PropTypes.string
+};
+
+exports["default"] = CollectionTabs;
+module.exports = exports["default"];
+
+},{"classnames":"classnames","react":"react"}],34:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _pageJsx = require("../page.jsx");
+
+var _pageJsx2 = _interopRequireDefault(_pageJsx);
+
+var _entityIndexPaginate = require("./entity-index/paginate");
+
+var _entityIndexPaginate2 = _interopRequireDefault(_entityIndexPaginate);
+
+var _entityIndexQuicksearch = require("./entity-index/quicksearch");
+
+var _entityIndexQuicksearch2 = _interopRequireDefault(_entityIndexQuicksearch);
+
+var _entityIndexList = require("./entity-index/list");
+
+var _entityIndexList2 = _interopRequireDefault(_entityIndexList);
+
+var _entityFormSaveFooter = require("./entity-form/save-footer");
+
+var _entityFormSaveFooter2 = _interopRequireDefault(_entityFormSaveFooter);
+
+var _entityFormForm = require("./entity-form/form");
+
+var _entityFormForm2 = _interopRequireDefault(_entityFormForm);
+
+var _collectionTabs = require("./collection-tabs");
+
+var _collectionTabs2 = _interopRequireDefault(_collectionTabs);
+
+var _messagesList = require("./messages/list");
+
+var _messagesList2 = _interopRequireDefault(_messagesList);
+
+var EditGui = (function (_React$Component) {
+	_inherits(EditGui, _React$Component);
+
+	function EditGui() {
+		_classCallCheck(this, EditGui);
+
+		_get(Object.getPrototypeOf(EditGui.prototype), "constructor", this).apply(this, arguments);
+	}
+
+	_createClass(EditGui, [{
+		key: "render",
+		value: function render() {
+			var _props = this.props;
+			var onSelect = _props.onSelect;
+			var onNew = _props.onNew;
+			var onSave = _props.onSave;
+			var onDelete = _props.onDelete;
+			var onSelectDomain = _props.onSelectDomain;
+			var onDismissMessage = _props.onDismissMessage;
+			var onChange = _props.onChange;
+			var _props2 = this.props;
+			var onQuickSearchQueryChange = _props2.onQuickSearchQueryChange;
+			var onQuickSearch = _props2.onQuickSearch;
+			var onPaginateLeft = _props2.onPaginateLeft;
+			var onPaginateRight = _props2.onPaginateRight;
+			var getAutocompleteValues = this.props.getAutocompleteValues;
+			var _props3 = this.props;
+			var quickSearch = _props3.quickSearch;
+			var entity = _props3.entity;
+			var vre = _props3.vre;
+			var messages = _props3.messages;
+
+			var currentMode = entity.domain && entity.data._id ? "edit" : "new";
+
+			return _react2["default"].createElement(
+				_pageJsx2["default"],
+				null,
+				_react2["default"].createElement(_collectionTabs2["default"], { collections: vre.collections, onNew: onNew, onSelectDomain: onSelectDomain,
+					activeDomain: entity.domain }),
 				_react2["default"].createElement(
 					"div",
-					{ className: "panel panel-default entity-list" },
+					{ className: "container" },
+					_react2["default"].createElement(_messagesList2["default"], {
+						types: ["SUCCESS_MESSAGE", "ERROR_MESSAGE"],
+						messages: messages,
+						onDismissMessage: onDismissMessage }),
 					_react2["default"].createElement(
 						"div",
-						{ className: "panel-heading" },
+						{ className: "row" },
 						_react2["default"].createElement(
-							"h3",
-							{ className: "panel-title" },
-							"List of: ",
-							entity.domain
-						)
-					),
-					_react2["default"].createElement(
-						"div",
-						{ className: "panel-body" },
-						leftButton,
-						_react2["default"].createElement(
-							"span",
-							{ style: { margin: "10px" } },
-							quickSearch.start + 1,
-							" - ",
-							quickSearch.start + quickSearch.rows
+							"div",
+							{ className: "col-sm-6 col-md-4" },
+							_react2["default"].createElement(_entityIndexQuicksearch2["default"], {
+								onQuickSearchQueryChange: onQuickSearchQueryChange,
+								onQuickSearch: onQuickSearch,
+								query: quickSearch.query }),
+							_react2["default"].createElement(_entityIndexList2["default"], {
+								start: quickSearch.start,
+								list: quickSearch.list,
+								onSelect: onSelect,
+								domain: entity.domain })
 						),
-						rightButton,
-						_react2["default"].createElement("input", { onChange: function (ev) {
-								return onQuickSearchQueryChange(ev.target.value);
-							},
-							onKeyPress: function (ev) {
-								return ev.key === "Enter" ? onQuickSearch() : false;
-							},
-							placeholder: "Quick search...",
-							value: quickSearch.query }),
-						_react2["default"].createElement(
-							"button",
-							{ onClick: onQuickSearch },
-							_react2["default"].createElement("span", { className: "glyphicon glyphicon-search" })
-						),
-						_react2["default"].createElement(
-							"button",
-							{ onClick: function () {
-									onQuickSearchQueryChange("");onQuickSearch();
-								} },
-							_react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
-						)
-					),
-					_react2["default"].createElement(
-						"ul",
-						{ className: "list-group" },
-						quickSearch.list.map(function (entry, i) {
-							return _react2["default"].createElement(
-								"li",
-								{ className: "list-group-item", key: i },
-								_react2["default"].createElement(
-									"span",
-									{ style: { marginRight: "20px" } },
-									i + quickSearch.start + 1,
-									"."
-								),
-								_react2["default"].createElement(
-									"a",
-									{ onClick: function () {
-											return _this.props.onSelect({ domain: entity.domain, id: entry._id });
-										} },
-									entry["@displayName"]
-								)
-							);
-						})
+						entity.domain ? _react2["default"].createElement(_entityFormForm2["default"], { currentMode: currentMode, getAutocompleteValues: getAutocompleteValues,
+							entity: entity, onNew: onNew, onDelete: onDelete, onChange: onChange,
+							properties: vre.collections[entity.domain].properties,
+							entityLabel: vre.collections[entity.domain].collectionLabel.replace(/s$/, "") }) : null
 					)
-				)
-			);
-		}
-	}]);
-
-	return EntityList;
-})(_react2["default"].Component);
-
-EntityList.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	onPaginateLeft: _react2["default"].PropTypes.func,
-	onPaginateRight: _react2["default"].PropTypes.func,
-	onQuickSearch: _react2["default"].PropTypes.func,
-	onQuickSearchQueryChange: _react2["default"].PropTypes.func,
-	onSelect: _react2["default"].PropTypes.func,
-	quickSearch: _react2["default"].PropTypes.object
-};
-
-exports["default"] = EntityList;
-module.exports = exports["default"];
-
-},{"react":"react"}],44:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsMultiForm = require("hire-forms-multi-form");
-
-var _hireFormsMultiForm2 = _interopRequireDefault(_hireFormsMultiForm);
-
-var _multiformAltname = require("./multiform/altname");
-
-var _multiformAltname2 = _interopRequireDefault(_multiformAltname);
-
-var AltNames = (function (_React$Component) {
-	_inherits(AltNames, _React$Component);
-
-	function AltNames() {
-		_classCallCheck(this, AltNames);
-
-		_get(Object.getPrototypeOf(AltNames.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(AltNames, [{
-		key: "onChange",
-		value: function onChange(inPath, data) {
-			var path = typeof inPath === "string" ? [inPath] : inPath;
-			this.props.onChange(path, data);
-		}
-	}, {
-		key: "onDelete",
-		value: function onDelete(path) {
-			var values = this.props.entity.data[this.props.name];
-			values.splice(path[1], 1);
-			this.props.onChange([path[0]], values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"label",
-					null,
-					this.props.name
-				),
-				_react2["default"].createElement(_hireFormsMultiForm2["default"], {
-					attr: this.props.name,
-					component: _multiformAltname2["default"],
-					model: { nametype: "", displayName: "" },
-					onChange: this.onChange.bind(this),
-					onDelete: this.onDelete.bind(this),
-					values: this.props.entity.data[this.props.name] })
-			);
-		}
-	}]);
-
-	return AltNames;
-})(_react2["default"].Component);
-
-AltNames.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	name: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func
-};
-
-exports["default"] = AltNames;
-module.exports = exports["default"];
-
-},{"./multiform/altname":50,"hire-forms-multi-form":11,"react":"react"}],45:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsInput = require("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var _validations = require("../validations");
-
-var DatableField = (function (_React$Component) {
-	_inherits(DatableField, _React$Component);
-
-	function DatableField() {
-		_classCallCheck(this, DatableField);
-
-		_get(Object.getPrototypeOf(DatableField.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(DatableField, [{
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"label",
-					null,
-					this.props.name
-				),
-				_react2["default"].createElement(_hireFormsInput2["default"], {
-					onChange: this.props.onChange.bind(this, [this.props.name]),
-					validate: _validations.validateDate,
-					value: this.props.entity.data[this.props.name]
-				})
-			);
-		}
-	}]);
-
-	return DatableField;
-})(_react2["default"].Component);
-
-DatableField.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	name: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func
-};
-
-exports["default"] = DatableField;
-module.exports = exports["default"];
-
-},{"../validations":60,"hire-forms-input":9,"react":"react"}],46:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsSelectList = require("hire-forms-select-list");
-
-var _hireFormsSelectList2 = _interopRequireDefault(_hireFormsSelectList);
-
-var KeywordField = (function (_React$Component) {
-	_inherits(KeywordField, _React$Component);
-
-	function KeywordField() {
-		_classCallCheck(this, KeywordField);
-
-		_get(Object.getPrototypeOf(KeywordField.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(KeywordField, [{
-		key: "onChange",
-		value: function onChange(values) {
-			var currentValues = this.props.entity.data["@relations"][this.props.name] || [];
-			this.props.onChange(["@relations", this.props.name], values.map(function (val) {
-				return _extends({
-					"id": val.key,
-					"displayName": val.value
-				}, currentValues.find(function (curVal) {
-					return curVal.id === val.key;
-				}) || {}, {
-					accepted: true
-				});
-			}));
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var values = this.props.entity.data["@relations"][this.props.name] || [];
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"label",
-					null,
-					this.props.name
-				),
-				_react2["default"].createElement(_hireFormsSelectList2["default"], {
-					onChange: this.onChange.bind(this),
-					options: this.props.fieldDefinition.options,
-					values: values.filter(function (val) {
-						return val.accepted;
-					}).map(function (val) {
-						return { value: val.displayName, key: val.id };
-					})
-				})
-			);
-		}
-	}]);
-
-	return KeywordField;
-})(_react2["default"].Component);
-
-KeywordField.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	fieldDefinition: _react2["default"].PropTypes.object,
-	name: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func
-};
-
-exports["default"] = KeywordField;
-module.exports = exports["default"];
-
-},{"hire-forms-select-list":13,"react":"react"}],47:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsMultiForm = require("hire-forms-multi-form");
-
-var _hireFormsMultiForm2 = _interopRequireDefault(_hireFormsMultiForm);
-
-var _multiformLinkJs = require("./multiform/link.js");
-
-var _multiformLinkJs2 = _interopRequireDefault(_multiformLinkJs);
-
-var Links = (function (_React$Component) {
-	_inherits(Links, _React$Component);
-
-	function Links() {
-		_classCallCheck(this, Links);
-
-		_get(Object.getPrototypeOf(Links.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(Links, [{
-		key: "onChange",
-		value: function onChange(inPath, data) {
-			var path = typeof inPath === "string" ? [inPath] : inPath;
-			this.props.onChange(path, data);
-		}
-	}, {
-		key: "onDelete",
-		value: function onDelete(path) {
-			var values = this.props.entity.data[this.props.name];
-			values.splice(path[1], 1);
-			this.props.onChange([path[0]], values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"label",
-					null,
-					this.props.name
-				),
-				_react2["default"].createElement(_hireFormsMultiForm2["default"], {
-					attr: this.props.name,
-					component: _multiformLinkJs2["default"],
-					model: { label: "", url: "" },
-					onChange: this.onChange.bind(this),
-					onDelete: this.onDelete.bind(this),
-					values: this.props.entity.data[this.props.name] })
-			);
-		}
-	}]);
-
-	return Links;
-})(_react2["default"].Component);
-
-Links.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	name: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func
-};
-
-exports["default"] = Links;
-module.exports = exports["default"];
-
-},{"./multiform/link.js":51,"hire-forms-multi-form":11,"react":"react"}],48:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _multiformListInput = require("./multiform/list-input");
-
-var _multiformListInput2 = _interopRequireDefault(_multiformListInput);
-
-var _hireFormsMultiForm = require("hire-forms-multi-form");
-
-var _hireFormsMultiForm2 = _interopRequireDefault(_hireFormsMultiForm);
-
-var List = (function (_React$Component) {
-	_inherits(List, _React$Component);
-
-	function List() {
-		_classCallCheck(this, List);
-
-		_get(Object.getPrototypeOf(List.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(List, [{
-		key: "onChange",
-		value: function onChange(inPath, data) {
-			var path = typeof inPath === "string" ? [inPath] : inPath;
-			this.props.onChange(path, data);
-		}
-	}, {
-		key: "onDelete",
-		value: function onDelete(path) {
-			var values = this.props.entity.data[this.props.name];
-			values.splice(path[1], 1);
-			this.props.onChange([path[0]], values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"label",
-					null,
-					this.props.name
-				),
-				_react2["default"].createElement(_hireFormsMultiForm2["default"], {
-					attr: this.props.name,
-					component: _multiformListInput2["default"],
-					model: {},
-					onChange: this.onChange.bind(this),
-					onDelete: this.onDelete.bind(this),
-					values: this.props.entity.data[this.props.name] })
-			);
-		}
-	}]);
-
-	return List;
-})(_react2["default"].Component);
-
-List.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	name: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func
-};
-
-exports["default"] = List;
-module.exports = exports["default"];
-
-},{"./multiform/list-input":52,"hire-forms-multi-form":11,"react":"react"}],49:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsSelectList = require("hire-forms-select-list");
-
-var _hireFormsSelectList2 = _interopRequireDefault(_hireFormsSelectList);
-
-var MultiSelect = (function (_React$Component) {
-	_inherits(MultiSelect, _React$Component);
-
-	function MultiSelect() {
-		_classCallCheck(this, MultiSelect);
-
-		_get(Object.getPrototypeOf(MultiSelect.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(MultiSelect, [{
-		key: "onChange",
-		value: function onChange(values) {
-			this.props.onChange([this.props.name], values.filter(function (val, idx, me) {
-				return me.indexOf(val) === idx;
-			}));
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"label",
-					null,
-					this.props.name
-				),
-				_react2["default"].createElement(_hireFormsSelectList2["default"], {
-					onChange: this.onChange.bind(this),
-					options: this.props.options,
-					values: this.props.entity.data[this.props.name]
-				})
-			);
-		}
-	}]);
-
-	return MultiSelect;
-})(_react2["default"].Component);
-
-MultiSelect.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	name: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func,
-	options: _react2["default"].PropTypes.array
-};
-
-exports["default"] = MultiSelect;
-module.exports = exports["default"];
-
-},{"hire-forms-select-list":13,"react":"react"}],50:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsForm = require("hire-forms-form");
-
-var _hireFormsForm2 = _interopRequireDefault(_hireFormsForm);
-
-var _hireFormsInput = require("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var AltName = (function (_React$Component) {
-	_inherits(AltName, _React$Component);
-
-	function AltName() {
-		_classCallCheck(this, AltName);
-
-		_get(Object.getPrototypeOf(AltName.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(AltName, [{
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"ul",
-				null,
-				_react2["default"].createElement(
-					"li",
-					null,
-					_react2["default"].createElement(_hireFormsInput2["default"], {
-						onChange: this.props.handleChange.bind(this, "nametype"),
-						placeholder: "Name type",
-						value: this.props.formData.nametype })
 				),
 				_react2["default"].createElement(
-					"li",
-					null,
-					_react2["default"].createElement(_hireFormsInput2["default"], {
-						onChange: this.props.handleChange.bind(this, "displayName"),
-						placeholder: "Display name",
-						value: this.props.formData.displayName })
-				)
-			);
-		}
-	}]);
-
-	return AltName;
-})(_react2["default"].Component);
-
-AltName.propTypes = {
-	formData: _react2["default"].PropTypes.object,
-	handleChange: _react2["default"].PropTypes.func,
-	onInvalid: _react2["default"].PropTypes.func,
-	value: _react2["default"].PropTypes.object
-};
-
-exports["default"] = (0, _hireFormsForm2["default"])(AltName, "hire-forms-link-form");
-module.exports = exports["default"];
-
-},{"hire-forms-form":8,"hire-forms-input":9,"react":"react"}],51:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsForm = require("hire-forms-form");
-
-var _hireFormsForm2 = _interopRequireDefault(_hireFormsForm);
-
-var _hireFormsInput = require("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var _validations = require("../../validations");
-
-var LinkForm = (function (_React$Component) {
-	_inherits(LinkForm, _React$Component);
-
-	function LinkForm() {
-		_classCallCheck(this, LinkForm);
-
-		_get(Object.getPrototypeOf(LinkForm.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(LinkForm, [{
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"ul",
-				null,
-				_react2["default"].createElement(
-					"li",
-					null,
-					_react2["default"].createElement(_hireFormsInput2["default"], {
-						onChange: this.props.handleChange.bind(this, "label"),
-						placeholder: "Label",
-						value: this.props.formData.label })
-				),
-				_react2["default"].createElement(
-					"li",
-					null,
-					_react2["default"].createElement(_hireFormsInput2["default"], {
-						onChange: this.props.handleChange.bind(this, "url"),
-						onInvalid: this.props.onInvalid,
-						placeholder: "http://",
-						validate: _validations.validateURL,
-						value: this.props.formData.url })
-				)
-			);
-		}
-	}]);
-
-	return LinkForm;
-})(_react2["default"].Component);
-
-LinkForm.propTypes = {
-	formData: _react2["default"].PropTypes.object,
-	handleChange: _react2["default"].PropTypes.func,
-	onInvalid: _react2["default"].PropTypes.func,
-	value: _react2["default"].PropTypes.object
-};
-
-exports["default"] = (0, _hireFormsForm2["default"])(LinkForm, "hire-forms-link-form");
-module.exports = exports["default"];
-
-},{"../../validations":60,"hire-forms-form":8,"hire-forms-input":9,"react":"react"}],52:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsForm = require("hire-forms-form");
-
-var _hireFormsForm2 = _interopRequireDefault(_hireFormsForm);
-
-var _hireFormsInput = require("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var ListInput = (function (_React$Component) {
-	_inherits(ListInput, _React$Component);
-
-	function ListInput() {
-		_classCallCheck(this, ListInput);
-
-		_get(Object.getPrototypeOf(ListInput.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(ListInput, [{
-		key: "render",
-		value: function render() {
-			var value = typeof this.props.formData === "object" ? "" : this.props.formData;
-			return _react2["default"].createElement(_hireFormsInput2["default"], { onChange: this.props.handleChange.bind(this, []), value: value });
-		}
-	}]);
-
-	return ListInput;
-})(_react2["default"].Component);
-
-ListInput.propTypes = {
-	formData: _react2["default"].PropTypes.oneOfType([_react2["default"].PropTypes.string, _react2["default"].PropTypes.object]),
-	handleChange: _react2["default"].PropTypes.func
-};
-
-exports["default"] = (0, _hireFormsForm2["default"])(ListInput, "hire-forms-link-form");
-module.exports = exports["default"];
-
-},{"hire-forms-form":8,"hire-forms-input":9,"react":"react"}],53:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsForm = require("hire-forms-form");
-
-var _hireFormsForm2 = _interopRequireDefault(_hireFormsForm);
-
-var _hireFormsInput = require("hire-forms-input");
-
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
-
-var _hireFormsSelect = require("hire-forms-select");
-
-var _hireFormsSelect2 = _interopRequireDefault(_hireFormsSelect);
-
-var NameForm = (function (_React$Component) {
-	_inherits(NameForm, _React$Component);
-
-	function NameForm() {
-		_classCallCheck(this, NameForm);
-
-		_get(Object.getPrototypeOf(NameForm.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(NameForm, [{
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			var components = this.props.formData.components;
-			var inputs = components.map(function (component, i) {
-				return _react2["default"].createElement(
-					"li",
-					{ key: i },
+					"div",
+					{ type: "footer-body" },
 					_react2["default"].createElement(
 						"div",
-						null,
-						_react2["default"].createElement(
-							"button",
-							{ className: "hire-remove-form", onClick: _this.props.handleChange.bind(_this, ["components", i, "REMOVE"]) },
-							"✕"
-						),
-						component.type
+						{ className: "col-sm-6 col-md-4" },
+						_react2["default"].createElement(_entityIndexPaginate2["default"], {
+							start: quickSearch.start,
+							listLength: quickSearch.list.length,
+							rows: 50,
+							onPaginateLeft: onPaginateLeft,
+							onPaginateRight: onPaginateRight })
 					),
-					_react2["default"].createElement(_hireFormsInput2["default"], {
-						onChange: _this.props.handleChange.bind(_this, ["components", i, component.type]),
-						placeholder: component.type,
-						value: component.value })
-				);
-			});
-
-			if (components.length) {
-				inputs.push(_react2["default"].createElement(
-					"li",
-					{ key: components.length },
 					_react2["default"].createElement(
 						"div",
-						null,
-						"ADD COMPONENT",
-						_react2["default"].createElement(_hireFormsSelect2["default"], { onChange: this.props.handleChange.bind(this, ["components", components.length]), options: this.props.options })
+						{ className: "col-sm-6 col-md-8" },
+						_react2["default"].createElement(_entityFormSaveFooter2["default"], { onSave: onSave, onCancel: function () {
+								return currentMode === "edit" ? onSelect({ domain: entity.domain, id: entity.data._id }) : onNew(entity.domain);
+							} })
 					)
-				));
-			}
-
-			return _react2["default"].createElement(
-				"ul",
-				null,
-				inputs
-			);
-		}
-	}]);
-
-	return NameForm;
-})(_react2["default"].Component);
-
-NameForm.propTypes = {
-	formData: _react2["default"].PropTypes.object,
-	handleChange: _react2["default"].PropTypes.func,
-	options: _react2["default"].PropTypes.array,
-	value: _react2["default"].PropTypes.object
-};
-
-exports["default"] = (0, _hireFormsForm2["default"])(NameForm, "names-form");
-module.exports = exports["default"];
-
-},{"hire-forms-form":8,"hire-forms-input":9,"hire-forms-select":14,"react":"react"}],54:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsMultiForm = require("hire-forms-multi-form");
-
-var _hireFormsMultiForm2 = _interopRequireDefault(_hireFormsMultiForm);
-
-var _multiformNameJs = require("./multiform/name.js");
-
-var _multiformNameJs2 = _interopRequireDefault(_multiformNameJs);
-
-var Names = (function (_React$Component) {
-	_inherits(Names, _React$Component);
-
-	function Names() {
-		_classCallCheck(this, Names);
-
-		_get(Object.getPrototypeOf(Names.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(Names, [{
-		key: "addName",
-		value: function addName() {
-			this.props.onChange([this.props.name], this.props.entity.data[this.props.name].concat([{ components: [{ type: "FORENAME", value: "" }] }]));
-		}
-	}, {
-		key: "addNameComponent",
-		value: function addNameComponent(key, value) {
-			this.props.onChange(key, { type: value, value: "" });
-		}
-	}, {
-		key: "removeNameComponent",
-		value: function removeNameComponent(key) {
-			this.props.onChange(key.slice(0, 3), this.props.entity.data[this.props.name][key[1]].components.filter(function (v, i) {
-				return i !== key[3];
-			}));
-		}
-	}, {
-		key: "setNameComponentValue",
-		value: function setNameComponentValue(key, value) {
-			this.props.onChange(key.slice(0, 4), { type: key[4], value: value });
-		}
-	}, {
-		key: "onChange",
-		value: function onChange(key, value) {
-			if (key === this.props.name) {
-				return this.addName();
-			}
-			if (key.length === 4) {
-				return this.addNameComponent(key, value);
-			}
-			if (key[4] === "REMOVE") {
-				return this.removeNameComponent(key);
-			}
-			return this.setNameComponentValue(key, value);
-		}
-	}, {
-		key: "onDelete",
-		value: function onDelete(path) {
-			var values = this.props.entity.data[this.props.name];
-			values.splice(path[1], 1);
-			this.props.onChange([path[0]], values);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"label",
-					null,
-					this.props.name
 				),
-				_react2["default"].createElement(_hireFormsMultiForm2["default"], {
-					attr: this.props.name,
-					component: _multiformNameJs2["default"],
-					model: {
-						FORENAME: "",
-						SURNAME: "",
-						components: []
-					},
-					onChange: this.onChange.bind(this),
-					onDelete: this.onDelete.bind(this),
-					options: this.props.options,
-					values: this.props.entity.data[this.props.name] })
+				_react2["default"].createElement("div", { type: "footer-body" })
 			);
 		}
 	}]);
 
-	return Names;
+	return EditGui;
 })(_react2["default"].Component);
 
-Names.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	name: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func,
-	options: _react2["default"].PropTypes.array
-};
-
-exports["default"] = Names;
+exports["default"] = EditGui;
 module.exports = exports["default"];
 
-},{"./multiform/name.js":53,"hire-forms-multi-form":11,"react":"react"}],55:[function(require,module,exports){
+},{"../page.jsx":49,"./collection-tabs":33,"./entity-form/form":40,"./entity-form/save-footer":41,"./entity-index/list":42,"./entity-index/paginate":43,"./entity-index/quicksearch":44,"./messages/list":45,"react":"react"}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _hireFormsAutocompleteList = require("hire-forms-autocomplete-list");
-
-var _hireFormsAutocompleteList2 = _interopRequireDefault(_hireFormsAutocompleteList);
-
-var _actionsAutocomplete = require("../../../../actions/autocomplete");
-
-var _actionsAutocomplete2 = _interopRequireDefault(_actionsAutocomplete);
-
-var RelationField = (function (_React$Component) {
-	_inherits(RelationField, _React$Component);
-
-	function RelationField() {
-		_classCallCheck(this, RelationField);
-
-		_get(Object.getPrototypeOf(RelationField.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(RelationField, [{
-		key: "onChange",
-		value: function onChange(values) {
-			var currentValues = this.props.entity.data["@relations"][this.props.name] || [];
-			this.props.onChange(["@relations", this.props.name], values.map(function (val) {
-				return _extends({
-					"id": val.key,
-					"displayName": val.value
-				}, currentValues.find(function (curVal) {
-					return curVal.id === val.key;
-				}) || {}, {
-					accepted: true
-				});
-			}));
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			var values = this.props.entity.data["@relations"][this.props.name] ||
-			// TODO: this is a temporary hack to enable showing RDF imported data that could not be mapped to a known archetype, i.e.:
-			// concept --> (inverse:regularName) --> concept
-			this.props.entity.data["@relations"]["inverse:" + this.props.name] || [];
-
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"label",
-					null,
-					this.props.name
-				),
-				_react2["default"].createElement(_hireFormsAutocompleteList2["default"], {
-					async: function (query, done) {
-						return (0, _actionsAutocomplete2["default"])(_this.props.path, query, _this.props.vre.vreId, done);
-					},
-					onChange: this.onChange.bind(this),
-					values: values.filter(function (val) {
-						return val.accepted;
-					}).map(function (val) {
-						return { value: val.displayName, key: val.id };
-					}) })
-			);
-		}
-	}]);
-
-	return RelationField;
-})(_react2["default"].Component);
-
-RelationField.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	fieldDefinition: _react2["default"].PropTypes.object,
-	name: _react2["default"].PropTypes.string,
-	onChange: _react2["default"].PropTypes.func,
-	path: _react2["default"].PropTypes.string,
-	vre: _react2["default"].PropTypes.object
+exports["default"] = function (camelCase) {
+  return camelCase.replace(/([A-Z0-9])/g, function (match) {
+    return " " + match.toLowerCase();
+  }).replace(/^./, function (match) {
+    return match.toUpperCase();
+  });
 };
 
-exports["default"] = RelationField;
 module.exports = exports["default"];
 
-},{"../../../../actions/autocomplete":34,"hire-forms-autocomplete-list":7,"react":"react"}],56:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11893,9 +2451,13 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _hireFormsSelect = require("hire-forms-select");
+var _camel2label = require("./camel2label");
 
-var _hireFormsSelect2 = _interopRequireDefault(_hireFormsSelect);
+var _camel2label2 = _interopRequireDefault(_camel2label);
+
+var _fieldsSelectField = require("../../../fields/select-field");
+
+var _fieldsSelectField2 = _interopRequireDefault(_fieldsSelectField);
 
 var Field = (function (_React$Component) {
 	_inherits(Field, _React$Component);
@@ -11907,21 +2469,97 @@ var Field = (function (_React$Component) {
 	}
 
 	_createClass(Field, [{
+		key: "onChange",
+		value: function onChange(values) {
+			this.props.onChange([this.props.name], values.filter(function (val, idx, me) {
+				return me.indexOf(val) === idx;
+			}));
+		}
+	}, {
+		key: "onAdd",
+		value: function onAdd(value) {
+			var _props = this.props;
+			var name = _props.name;
+			var entity = _props.entity;
+			var onChange = _props.onChange;
+
+			onChange([name], (entity.data[name] || []).concat(value));
+		}
+	}, {
+		key: "onRemove",
+		value: function onRemove(value) {
+			var _props2 = this.props;
+			var name = _props2.name;
+			var entity = _props2.entity;
+			var onChange = _props2.onChange;
+
+			onChange([name], entity.data[name].filter(function (val) {
+				return val !== value;
+			}));
+		}
+	}, {
 		key: "render",
 		value: function render() {
+			var _this = this;
+
+			var _props3 = this.props;
+			var name = _props3.name;
+			var entity = _props3.entity;
+			var onChange = _props3.onChange;
+			var options = _props3.options;
+
+			var label = (0, _camel2label2["default"])(name);
+			var values = entity.data[name] || [];
+			var itemElements = values.map(function (value) {
+				return _react2["default"].createElement(
+					"div",
+					{ key: value, className: "item-element" },
+					_react2["default"].createElement(
+						"strong",
+						null,
+						value
+					),
+					_react2["default"].createElement(
+						"button",
+						{ className: "btn btn-blank btn-xs pull-right",
+							onClick: function () {
+								return _this.onRemove(value);
+							} },
+						_react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+					)
+				);
+			});
+
 			return _react2["default"].createElement(
 				"div",
-				null,
+				{ className: "basic-margin" },
 				_react2["default"].createElement(
-					"label",
+					"h4",
 					null,
-					this.props.name
+					label
 				),
-				_react2["default"].createElement(_hireFormsSelect2["default"], {
-					onChange: this.props.onChange.bind(this, [this.props.name]),
-					options: this.props.options,
-					value: this.props.entity.data[this.props.name]
-				})
+				itemElements,
+				_react2["default"].createElement(
+					_fieldsSelectField2["default"],
+					{
+						onChange: this.onAdd.bind(this),
+						noClear: true, btnClass: "btn-default" },
+					_react2["default"].createElement(
+						"span",
+						{ type: "placeholder" },
+						"Select ",
+						label.toLowerCase()
+					),
+					options.filter(function (opt) {
+						return values.indexOf(opt) < 0;
+					}).map(function (option) {
+						return _react2["default"].createElement(
+							"span",
+							{ key: option, value: option },
+							option
+						);
+					})
+				)
 			);
 		}
 	}]);
@@ -11939,7 +2577,265 @@ Field.propTypes = {
 exports["default"] = Field;
 module.exports = exports["default"];
 
-},{"hire-forms-select":14,"react":"react"}],57:[function(require,module,exports){
+},{"../../../fields/select-field":46,"./camel2label":35,"react":"react"}],37:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _camel2label = require("./camel2label");
+
+var _camel2label2 = _interopRequireDefault(_camel2label);
+
+var RelationField = (function (_React$Component) {
+  _inherits(RelationField, _React$Component);
+
+  function RelationField(props) {
+    _classCallCheck(this, RelationField);
+
+    _get(Object.getPrototypeOf(RelationField.prototype), "constructor", this).call(this, props);
+
+    this.state = {
+      query: "",
+      suggestions: []
+    };
+  }
+
+  _createClass(RelationField, [{
+    key: "onRemove",
+    value: function onRemove(value) {
+      var currentValues = this.props.entity.data["@relations"][this.props.name] || [];
+
+      this.props.onChange(["@relations", this.props.name], currentValues.filter(function (curVal) {
+        return curVal.id !== value.id;
+      }));
+    }
+  }, {
+    key: "onAdd",
+    value: function onAdd(suggestion) {
+      var currentValues = this.props.entity.data["@relations"][this.props.name] || [];
+      if (currentValues.map(function (val) {
+        return val.id;
+      }).indexOf(suggestion.key) > -1) {
+        return;
+      }
+      this.props.onChange(["@relations", this.props.name], currentValues.concat({
+        id: suggestion.key,
+        displayName: suggestion.value,
+        accepted: true
+      }));
+    }
+  }, {
+    key: "onQueryChange",
+    value: function onQueryChange(ev) {
+      var _this = this;
+
+      var _props = this.props;
+      var getAutocompleteValues = _props.getAutocompleteValues;
+      var path = _props.path;
+
+      this.setState({ query: ev.target.value });
+      getAutocompleteValues(path, ev.target.value, function (results) {
+        _this.setState({ suggestions: results });
+      });
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this2 = this;
+
+      var _props2 = this.props;
+      var name = _props2.name;
+      var entity = _props2.entity;
+      var onChange = _props2.onChange;
+
+      var values = entity.data["@relations"][this.props.name] || [];
+      var itemElements = values.filter(function (val) {
+        return val.accepted;
+      }).map(function (value, i) {
+        return _react2["default"].createElement(
+          "div",
+          { key: i + "-" + value.id, className: "item-element" },
+          _react2["default"].createElement(
+            "strong",
+            null,
+            value.displayName
+          ),
+          _react2["default"].createElement(
+            "button",
+            { className: "btn btn-blank btn-xs pull-right",
+              onClick: function () {
+                return _this2.onRemove(value);
+              } },
+            _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+          )
+        );
+      });
+
+      return _react2["default"].createElement(
+        "div",
+        { className: "basic-margin" },
+        _react2["default"].createElement(
+          "h4",
+          null,
+          (0, _camel2label2["default"])(name)
+        ),
+        itemElements,
+        _react2["default"].createElement("input", { className: "form-control", onChange: this.onQueryChange.bind(this),
+          value: this.state.query, placeholder: "Search..." }),
+        _react2["default"].createElement(
+          "div",
+          { style: { overflowY: "auto", maxHeight: "300px" } },
+          this.state.suggestions.map(function (suggestion) {
+            return _react2["default"].createElement(
+              "a",
+              { key: suggestion.key, className: "item-element",
+                onClick: function () {
+                  return _this2.onAdd(suggestion);
+                } },
+              suggestion.value
+            );
+          })
+        )
+      );
+    }
+  }]);
+
+  return RelationField;
+})(_react2["default"].Component);
+
+exports["default"] = RelationField;
+module.exports = exports["default"];
+
+},{"./camel2label":35,"react":"react"}],38:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _camel2label = require("./camel2label");
+
+var _camel2label2 = _interopRequireDefault(_camel2label);
+
+var _fieldsSelectField = require("../../../fields/select-field");
+
+var _fieldsSelectField2 = _interopRequireDefault(_fieldsSelectField);
+
+var Field = (function (_React$Component) {
+  _inherits(Field, _React$Component);
+
+  function Field() {
+    _classCallCheck(this, Field);
+
+    _get(Object.getPrototypeOf(Field.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(Field, [{
+    key: "render",
+    value: function render() {
+      var _props = this.props;
+      var name = _props.name;
+      var entity = _props.entity;
+      var onChange = _props.onChange;
+      var options = _props.options;
+
+      var label = (0, _camel2label2["default"])(name);
+      var itemElement = entity.data[name] && entity.data[name].length > 0 ? _react2["default"].createElement(
+        "div",
+        { className: "item-element" },
+        _react2["default"].createElement(
+          "strong",
+          null,
+          entity.data[name]
+        ),
+        _react2["default"].createElement(
+          "button",
+          { className: "btn btn-blank btn-xs pull-right",
+            onClick: function () {
+              return onChange([name], "");
+            } },
+          _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+        )
+      ) : null;
+
+      return _react2["default"].createElement(
+        "div",
+        { className: "basic-margin" },
+        _react2["default"].createElement(
+          "h4",
+          null,
+          label
+        ),
+        itemElement,
+        _react2["default"].createElement(
+          _fieldsSelectField2["default"],
+          {
+            onChange: function (value) {
+              return onChange([name], value);
+            },
+            noClear: true, btnClass: "btn-default" },
+          _react2["default"].createElement(
+            "span",
+            { type: "placeholder" },
+            "Select ",
+            label.toLowerCase()
+          ),
+          options.map(function (option) {
+            return _react2["default"].createElement(
+              "span",
+              { key: option, value: option },
+              option
+            );
+          })
+        )
+      );
+    }
+  }]);
+
+  return Field;
+})(_react2["default"].Component);
+
+Field.propTypes = {
+  entity: _react2["default"].PropTypes.object,
+  name: _react2["default"].PropTypes.string,
+  onChange: _react2["default"].PropTypes.func,
+  options: _react2["default"].PropTypes.array
+};
+
+exports["default"] = Field;
+module.exports = exports["default"];
+
+},{"../../../fields/select-field":46,"./camel2label":35,"react":"react"}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11960,9 +2856,9 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _hireFormsInput = require("hire-forms-input");
+var _camel2label = require("./camel2label");
 
-var _hireFormsInput2 = _interopRequireDefault(_hireFormsInput);
+var _camel2label2 = _interopRequireDefault(_camel2label);
 
 var StringField = (function (_React$Component) {
 	_inherits(StringField, _React$Component);
@@ -11976,17 +2872,27 @@ var StringField = (function (_React$Component) {
 	_createClass(StringField, [{
 		key: "render",
 		value: function render() {
+			var _props = this.props;
+			var name = _props.name;
+			var entity = _props.entity;
+			var onChange = _props.onChange;
+
+			var label = (0, _camel2label2["default"])(name);
+
 			return _react2["default"].createElement(
 				"div",
-				null,
+				{ className: "basic-margin" },
 				_react2["default"].createElement(
-					"label",
+					"h4",
 					null,
-					this.props.name
+					label
 				),
-				_react2["default"].createElement(_hireFormsInput2["default"], {
-					onChange: this.props.onChange.bind(this, [this.props.name]),
-					value: this.props.entity.data[this.props.name] || ""
+				_react2["default"].createElement("input", { className: "form-control",
+					onChange: function (ev) {
+						return onChange([name], ev.target.value);
+					},
+					value: entity.data[name] || "",
+					placeholder: "Enter " + label.toLowerCase()
 				})
 			);
 		}
@@ -12004,12 +2910,14 @@ StringField.propTypes = {
 exports["default"] = StringField;
 module.exports = exports["default"];
 
-},{"hire-forms-input":9,"react":"react"}],58:[function(require,module,exports){
+},{"./camel2label":35,"react":"react"}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
@@ -12025,636 +2933,307 @@ var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _mapField = require("./map-field");
+var _fieldsStringField = require("./fields/string-field");
 
-var _mapField2 = _interopRequireDefault(_mapField);
-
-var MODE_LABELS = {
-	edit: "Editing",
-	"new": "Adding new"
-};
-
-var Form = (function (_React$Component) {
-	_inherits(Form, _React$Component);
-
-	function Form() {
-		_classCallCheck(this, Form);
-
-		_get(Object.getPrototypeOf(Form.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(Form, [{
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			var _props = this.props;
-			var entity = _props.entity;
-			var user = _props.user;
-			var vre = _props.vre;
-			var onSave = _props.onSave;
-			var onDelete = _props.onDelete;
-			var onNew = _props.onNew;
-
-			if (!entity.data) {
-				return null;
-			}
-
-			var disabled = !(user && user.token);
-
-			var currentMode = entity.domain && entity.data._id ? "edit" : "new";
-
-			var saveButton = _react2["default"].createElement(
-				"button",
-				{ className: "pull-right", disabled: disabled, onClick: onSave },
-				"Save"
-			);
-
-			var deleteButton = entity.data._id ? _react2["default"].createElement(
-				"button",
-				{ className: "pull-right", disabled: disabled, onClick: onDelete },
-				"Delete"
-			) : null;
-
-			var addNewButton = vre.vreId && entity.domain && entity.data._id ? _react2["default"].createElement(
-				"button",
-				{ className: "pull-right", disabled: disabled, onClick: function () {
-						return onNew(entity.domain);
-					} },
-				"Add new"
-			) : null;
-
-			var formFields = vre.collections[entity.domain].properties.map(function (fieldDef, i) {
-				return _react2["default"].createElement(
-					"li",
-					{ className: "list-group-item", key: i },
-					(0, _mapField2["default"])(fieldDef, _this.props)
-				);
-			});
-
-			return _react2["default"].createElement(
-				"div",
-				{ className: "col-sm-6" },
-				_react2["default"].createElement(
-					"div",
-					{ className: "panel panel-default edit-form" },
-					_react2["default"].createElement(
-						"div",
-						{ className: "panel-heading" },
-						addNewButton,
-						saveButton,
-						deleteButton,
-						_react2["default"].createElement(
-							"h3",
-							{ className: "panel-title" },
-							MODE_LABELS[currentMode],
-							": ",
-							entity.domain.replace(/s$/, "")
-						)
-					),
-					_react2["default"].createElement(
-						"ul",
-						{ className: "list-group" },
-						formFields
-					)
-				)
-			);
-		}
-	}]);
-
-	return Form;
-})(_react2["default"].Component);
-
-Form.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	onDelete: _react2["default"].PropTypes.func,
-	onNew: _react2["default"].PropTypes.func,
-	onSave: _react2["default"].PropTypes.func,
-	user: _react2["default"].PropTypes.object,
-	vre: _react2["default"].PropTypes.object
-};
-
-exports["default"] = Form;
-module.exports = exports["default"];
-
-},{"./map-field":59,"react":"react"}],59:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-var _react = require("react");
-
-var _react2 = _interopRequireDefault(_react);
-
-var _fieldsString = require("./fields/string");
-
-var _fieldsString2 = _interopRequireDefault(_fieldsString);
-
-var _fieldsLinks = require("./fields/links");
-
-var _fieldsLinks2 = _interopRequireDefault(_fieldsLinks);
-
-var _fieldsDatable = require("./fields/datable");
-
-var _fieldsDatable2 = _interopRequireDefault(_fieldsDatable);
-
-var _fieldsNames = require("./fields/names");
-
-var _fieldsNames2 = _interopRequireDefault(_fieldsNames);
-
-var _fieldsAltnames = require("./fields/altnames");
-
-var _fieldsAltnames2 = _interopRequireDefault(_fieldsAltnames);
-
-var _fieldsMultiSelect = require("./fields/multi-select");
-
-var _fieldsMultiSelect2 = _interopRequireDefault(_fieldsMultiSelect);
+var _fieldsStringField2 = _interopRequireDefault(_fieldsStringField);
 
 var _fieldsSelect = require("./fields/select");
 
 var _fieldsSelect2 = _interopRequireDefault(_fieldsSelect);
 
+var _fieldsMultiSelect = require("./fields/multi-select");
+
+var _fieldsMultiSelect2 = _interopRequireDefault(_fieldsMultiSelect);
+
 var _fieldsRelation = require("./fields/relation");
 
 var _fieldsRelation2 = _interopRequireDefault(_fieldsRelation);
 
-var _fieldsKeyword = require("./fields/keyword");
-
-var _fieldsKeyword2 = _interopRequireDefault(_fieldsKeyword);
-
-var _fieldsList = require("./fields/list");
-
-var _fieldsList2 = _interopRequireDefault(_fieldsList);
-
-var MAP = {
-	"string": function string(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsString2["default"], _extends({}, props, { name: fieldDef.name }));
-	},
-	"text": function text(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsString2["default"], _extends({}, props, { name: fieldDef.name }));
-	},
-	"links": function links(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsLinks2["default"], _extends({}, props, { name: fieldDef.name }));
-	},
-	"datable": function datable(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsDatable2["default"], _extends({}, props, { name: fieldDef.name }));
-	},
-	"names": function names(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsNames2["default"], _extends({}, props, { name: fieldDef.name, options: fieldDef.options }));
-	},
-	"multiselect": function multiselect(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsMultiSelect2["default"], _extends({}, props, { name: fieldDef.name, options: fieldDef.options }));
-	},
-	"select": function select(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsSelect2["default"], _extends({}, props, { name: fieldDef.name, options: fieldDef.options }));
-	},
-	"relation": function relation(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsRelation2["default"], _extends({}, props, { name: fieldDef.name, path: fieldDef.quicksearch }));
-	},
-	"keyword": function keyword(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsKeyword2["default"], _extends({}, props, { fieldDefinition: fieldDef, name: fieldDef.name }));
-	},
-	"list-of-strings": function listOfStrings(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsList2["default"], _extends({}, props, { fieldDefinition: fieldDef, name: fieldDef.name }));
-	},
-	"altnames": function altnames(fieldDef, props) {
-		return _react2["default"].createElement(_fieldsAltnames2["default"], _extends({}, props, { fieldDefinition: fieldDef, name: fieldDef.name }));
-	}
+var fieldMap = {
+  "string": function string(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsStringField2["default"], _extends({}, props, { name: fieldDef.name }));
+  },
+  "text": function text(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsStringField2["default"], _extends({}, props, { name: fieldDef.name }));
+  },
+  "datable": function datable(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsStringField2["default"], _extends({}, props, { name: fieldDef.name }));
+  },
+  "multiselect": function multiselect(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsMultiSelect2["default"], _extends({}, props, { name: fieldDef.name, options: fieldDef.options }));
+  },
+  "select": function select(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsSelect2["default"], _extends({}, props, { name: fieldDef.name, options: fieldDef.options }));
+  },
+  "relation": function relation(fieldDef, props) {
+    return _react2["default"].createElement(_fieldsRelation2["default"], _extends({}, props, { name: fieldDef.name, path: fieldDef.quicksearch }));
+  }
 };
 
-exports["default"] = function (fieldDef, props) {
-	return (MAP[fieldDef.type] || MAP.string)(fieldDef, props);
-};
+var EntityForm = (function (_React$Component) {
+  _inherits(EntityForm, _React$Component);
 
+  function EntityForm() {
+    _classCallCheck(this, EntityForm);
+
+    _get(Object.getPrototypeOf(EntityForm.prototype), "constructor", this).apply(this, arguments);
+  }
+
+  _createClass(EntityForm, [{
+    key: "render",
+    value: function render() {
+      var _props = this.props;
+      var onNew = _props.onNew;
+      var onDelete = _props.onDelete;
+      var onChange = _props.onChange;
+      var getAutocompleteValues = _props.getAutocompleteValues;
+      var _props2 = this.props;
+      var entity = _props2.entity;
+      var currentMode = _props2.currentMode;
+      var properties = _props2.properties;
+      var entityLabel = _props2.entityLabel;
+
+      return _react2["default"].createElement(
+        "div",
+        { className: "col-sm-6 col-md-8" },
+        _react2["default"].createElement(
+          "div",
+          { className: "basic-margin" },
+          _react2["default"].createElement(
+            "button",
+            { className: "btn btn-primary pull-right", onClick: function () {
+                return onNew(entity.domain);
+              } },
+            "New ",
+            entityLabel
+          )
+        ),
+        properties.filter(function (fieldDef) {
+          return !fieldMap.hasOwnProperty(fieldDef.type);
+        }).map(function (fieldDef, i) {
+          return _react2["default"].createElement(
+            "div",
+            { key: i, style: { "color": "red" } },
+            _react2["default"].createElement(
+              "strong",
+              null,
+              "Field type not supported ",
+              fieldDef.type
+            )
+          );
+        }),
+        properties.filter(function (fieldDef) {
+          return fieldMap.hasOwnProperty(fieldDef.type);
+        }).map(function (fieldDef, i) {
+          return fieldMap[fieldDef.type](fieldDef, {
+            key: i + "-" + fieldDef.name,
+            entity: entity,
+            onChange: onChange,
+            getAutocompleteValues: getAutocompleteValues
+          });
+        }),
+        currentMode === "edit" ? _react2["default"].createElement(
+          "div",
+          { className: "basic-margin" },
+          _react2["default"].createElement(
+            "h4",
+            null,
+            "Delete"
+          ),
+          _react2["default"].createElement(
+            "buton",
+            { className: "btn btn-danger", onClick: onDelete },
+            "Delete ",
+            entityLabel
+          )
+        ) : null
+      );
+    }
+  }]);
+
+  return EntityForm;
+})(_react2["default"].Component);
+
+exports["default"] = EntityForm;
 module.exports = exports["default"];
 
-},{"./fields/altnames":44,"./fields/datable":45,"./fields/keyword":46,"./fields/links":47,"./fields/list":48,"./fields/multi-select":49,"./fields/names":54,"./fields/relation":55,"./fields/select":56,"./fields/string":57,"react":"react"}],60:[function(require,module,exports){
+},{"./fields/multi-select":36,"./fields/relation":37,"./fields/select":38,"./fields/string-field":39,"react":"react"}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
-exports.validateDate = validateDate;
-exports.validateURL = validateURL;
-
-function validateDate(value) {
-	// Handle validation.
-	var re = /^(\d{2}-)?(\d{2}-)?\d{1,4}(~|\?)?$/;
-	var isValid = re.test(value);
-
-	// Return a validator object.
-	return {
-		isValid: isValid,
-		message: isValid ? "" : "A date should be formatted as: DD-MM-YYYY. \nOptionally a '~' (approximate) or '?' (uncertain) can be added."
-	};
-}
-
-function validateURL(value) {
-	var re = /\s+|\.\.|"/;
-	var oneDot = value.indexOf(".") > 0;
-	var noEndDot = value.charAt(value.length - 1) !== ".";
-	var isValid = !re.test(value) && oneDot && noEndDot;
-
-	return {
-		isValid: value != null && value !== "" && isValid,
-		message: isValid ? "" : "Please enter a valid URL."
-	};
-}
-
-},{}],61:[function(require,module,exports){
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-	value: true
-});
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _login = require("./login");
+exports["default"] = function (props) {
+  var onSave = props.onSave;
+  var onCancel = props.onCancel;
 
-var _login2 = _interopRequireDefault(_login);
-
-var _classnames = require("classnames");
-
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var Header = (function (_React$Component) {
-	_inherits(Header, _React$Component);
-
-	function Header(props) {
-		_classCallCheck(this, Header);
-
-		_get(Object.getPrototypeOf(Header.prototype), "constructor", this).call(this, props);
-
-		this.state = {
-			openMenuVreId: "none"
-		};
-	}
-
-	_createClass(Header, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			document.addEventListener("click", this.documentClickListener, false);
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			document.removeEventListener("click", this.documentClickListener, false);
-		}
-	}, {
-		key: "onDomainSelect",
-		value: function onDomainSelect(domain) {
-			this.props.onNew(domain);
-			this.props.onSelectDomain(domain);
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var _this = this;
-
-			var vre = this.props.vre;
-
-			var domains = Object.keys(vre.collections || {});
-			console.log(this.props);
-			return _react2["default"].createElement(
-				"nav",
-				{ className: "navbar navbar-default" },
-				_react2["default"].createElement(
-					"ul",
-					{ className: "nav navbar-nav navbar-left" },
-					domains.filter(function (d) {
-						return !(vre.collections[d].unknown || vre.collections[d].relationCollection);
-					}).map(function (domain) {
-						return _react2["default"].createElement(
-							"li",
-							{ className: (0, _classnames2["default"])({ active: vre.domain === domain }), key: domain },
-							_react2["default"].createElement(
-								"a",
-								{ onClick: function () {
-										return _this.onDomainSelect(domain);
-									} },
-								vre.collections[domain].collectionLabel
-							)
-						);
-					})
-				)
-			);
-		}
-	}]);
-
-	return Header;
-})(_react2["default"].Component);
-
-Header.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	onLoginChange: _react2["default"].PropTypes.func,
-	onNew: _react2["default"].PropTypes.func,
-	onSelectDomain: _react2["default"].PropTypes.func,
-	onSelectVre: _react2["default"].PropTypes.func,
-	vre: _react2["default"].PropTypes.object
+  return _react2["default"].createElement(
+    "div",
+    null,
+    _react2["default"].createElement(
+      "button",
+      { className: "btn btn-primary", onClick: onSave },
+      "Save"
+    ),
+    " ",
+    "or",
+    " ",
+    _react2["default"].createElement(
+      "button",
+      { className: "btn btn-link", onClick: onCancel },
+      "Cancel"
+    )
+  );
 };
 
-exports["default"] = Header;
 module.exports = exports["default"];
 
-},{"./login":63,"classnames":"classnames","react":"react"}],62:[function(require,module,exports){
+},{"react":"react"}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
-
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _form = require("./form");
+exports["default"] = function (props) {
+  var start = props.start;
+  var list = props.list;
+  var onSelect = props.onSelect;
+  var domain = props.domain;
 
-var _form2 = _interopRequireDefault(_form);
-
-var _header = require("./header");
-
-var _header2 = _interopRequireDefault(_header);
-
-var _messages = require("./messages");
-
-var _messages2 = _interopRequireDefault(_messages);
-
-var _entityList = require("./entity-list");
-
-var _entityList2 = _interopRequireDefault(_entityList);
-
-var App = (function (_React$Component) {
-	_inherits(App, _React$Component);
-
-	function App() {
-		_classCallCheck(this, App);
-
-		_get(Object.getPrototypeOf(App.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(App, [{
-		key: "render",
-		value: function render() {
-			var businessPart = this.props.vre.vreId && this.props.entity.domain ? _react2["default"].createElement(
-				"div",
-				{ className: "container-fluid" },
-				_react2["default"].createElement(_form2["default"], this.props),
-				_react2["default"].createElement(_entityList2["default"], this.props)
-			) : null;
-
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"header",
-					null,
-					_react2["default"].createElement(_header2["default"], this.props)
-				),
-				_react2["default"].createElement(
-					"main",
-					null,
-					_react2["default"].createElement(_messages2["default"], _extends({}, this.props, { types: ["ERROR_MESSAGE", "SUCCESS_MESSAGE"] })),
-					businessPart
-				)
-			);
-		}
-	}]);
-
-	return App;
-})(_react2["default"].Component);
-
-App.propTypes = {
-	entity: _react2["default"].PropTypes.object,
-	messages: _react2["default"].PropTypes.object,
-	onLoginChange: _react2["default"].PropTypes.func,
-	onNew: _react2["default"].PropTypes.func,
-	onSelect: _react2["default"].PropTypes.func,
-	onSelectVre: _react2["default"].PropTypes.func,
-	vre: _react2["default"].PropTypes.object
+  return _react2["default"].createElement(
+    "div",
+    { className: "result-list result-list-edit" },
+    _react2["default"].createElement(
+      "ol",
+      { start: start + 1, style: { counterReset: "step-counter " + start } },
+      list.map(function (entry, i) {
+        return _react2["default"].createElement(
+          "li",
+          { key: entry._id },
+          _react2["default"].createElement(
+            "a",
+            { onClick: function () {
+                return onSelect({ domain: domain, id: entry._id });
+              } },
+            entry["@displayName"]
+          )
+        );
+      })
+    )
+  );
 };
 
-exports["default"] = App;
 module.exports = exports["default"];
 
-},{"./entity-list":43,"./form":58,"./header":61,"./messages":65,"react":"react"}],63:[function(require,module,exports){
+},{"react":"react"}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _classnames = require("classnames");
+exports["default"] = function (props) {
+  var onPaginateLeft = props.onPaginateLeft;
+  var onPaginateRight = props.onPaginateRight;
+  var start = props.start;
+  var rows = props.rows;
+  var listLength = props.listLength;
 
-var _classnames2 = _interopRequireDefault(_classnames);
-
-var _hireLogin = require("hire-login");
-
-var _loginDropdown = require("./login-dropdown");
-
-var _loginDropdown2 = _interopRequireDefault(_loginDropdown);
-
-var _config = require("../../../config");
-
-var _config2 = _interopRequireDefault(_config);
-
-var LoginMenu = (function (_React$Component) {
-	_inherits(LoginMenu, _React$Component);
-
-	function LoginMenu(props) {
-		_classCallCheck(this, LoginMenu);
-
-		_get(Object.getPrototypeOf(LoginMenu.prototype), "constructor", this).call(this, props);
-
-		this.state = {
-			loginDropdownOpen: false
-		};
-
-		this.documentClickListener = this.handleDocumentClick.bind(this);
-	}
-
-	_createClass(LoginMenu, [{
-		key: "componentDidMount",
-		value: function componentDidMount() {
-			document.addEventListener("click", this.documentClickListener, false);
-		}
-	}, {
-		key: "componentWillUnmount",
-		value: function componentWillUnmount() {
-			document.removeEventListener("click", this.documentClickListener, false);
-		}
-	}, {
-		key: "onToggleLogin",
-		value: function onToggleLogin() {
-			if (this.state.loginDropdownOpen) {
-				this.setState({ loginDropdownOpen: false });
-			} else {
-				this.setState({ loginDropdownOpen: true });
-			}
-		}
-	}, {
-		key: "handleDocumentClick",
-		value: function handleDocumentClick(ev) {
-			if (this.state.loginDropdownOpen && !document.querySelector(".login-dropdown-list-item").contains(ev.target)) {
-				this.setState({
-					loginDropdownOpen: false
-				});
-			}
-		}
-	}, {
-		key: "render",
-		value: function render() {
-			var user = this.props.user;
-
-			return _react2["default"].createElement(
-				"div",
-				null,
-				_react2["default"].createElement(
-					"div",
-					{ className: "navbar-form navbar-right", style: { display: user && user.token ? "inline-block" : "none" } },
-					_react2["default"].createElement(
-						"div",
-						{ className: "form-group" },
-						_react2["default"].createElement(_hireLogin.Login, {
-							appId: this.props.vre.vreId,
-							headers: { VRE_ID: "WomenWriters" },
-							onChange: this.props.onLoginChange,
-							userUrl: _config2["default"].apiUrl["v2.1"] + "/system/users/me" })
-					)
-				),
-				_react2["default"].createElement(
-					"ul",
-					{ className: "nav navbar-nav navbar-right", style: { display: user && user.token ? "none" : "inline-block" } },
-					_react2["default"].createElement(
-						"li",
-						{ className: (0, _classnames2["default"])("login-dropdown-list-item", "dropdown", { open: this.state.loginDropdownOpen }) },
-						_react2["default"].createElement(
-							"a",
-							{ className: "dropdown-toggle", onClick: this.onToggleLogin.bind(this), role: "button" },
-							"Login ",
-							_react2["default"].createElement("span", { className: "caret" })
-						),
-						_react2["default"].createElement(_loginDropdown2["default"], this.props)
-					)
-				)
-			);
-		}
-	}]);
-
-	return LoginMenu;
-})(_react2["default"].Component);
-
-LoginMenu.propTypes = {
-	onLoginChange: _react2["default"].PropTypes.func,
-	user: _react2["default"].PropTypes.object,
-	vre: _react2["default"].PropTypes.object
+  return _react2["default"].createElement(
+    "div",
+    null,
+    _react2["default"].createElement(
+      "button",
+      { className: "btn btn-default", disabled: start === 0, onClick: onPaginateLeft },
+      _react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-left" })
+    ),
+    " ",
+    start + 1,
+    " - ",
+    start + rows,
+    " ",
+    _react2["default"].createElement(
+      "button",
+      { className: "btn btn-default", disabled: listLength < rows, onClick: onPaginateRight },
+      _react2["default"].createElement("span", { className: "glyphicon glyphicon-chevron-right" })
+    )
+  );
 };
 
-exports["default"] = LoginMenu;
 module.exports = exports["default"];
 
-},{"../../../config":66,"./login-dropdown":64,"classnames":"classnames","hire-login":15,"react":"react"}],64:[function(require,module,exports){
+},{"react":"react"}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
-	value: true
+  value: true
 });
 
-var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
-
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
-
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
-
-function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 var _react = require("react");
 
 var _react2 = _interopRequireDefault(_react);
 
-var _hireLogin = require("hire-login");
+exports["default"] = function (props) {
+  var onQuickSearchQueryChange = props.onQuickSearchQueryChange;
+  var onQuickSearch = props.onQuickSearch;
+  var query = props.query;
 
-var _config = require("../../../config");
+  return _react2["default"].createElement(
+    "div",
+    { className: "input-group small-margin " },
+    _react2["default"].createElement("input", { type: "text", placeholder: "Search for...", className: "form-control",
+      onChange: function (ev) {
+        return onQuickSearchQueryChange(ev.target.value);
+      },
+      onKeyPress: function (ev) {
+        return ev.key === "Enter" ? onQuickSearch() : false;
+      },
+      value: query
+    }),
+    _react2["default"].createElement(
+      "span",
+      { className: "input-group-btn" },
+      _react2["default"].createElement(
+        "button",
+        { className: "btn btn-default", onClick: onQuickSearch },
+        _react2["default"].createElement("span", { className: "glyphicon glyphicon-search" })
+      ),
+      _react2["default"].createElement(
+        "button",
+        { className: "btn btn-blank", onClick: function () {
+            onQuickSearchQueryChange("");onQuickSearch();
+          } },
+        _react2["default"].createElement("span", { className: "glyphicon glyphicon-remove" })
+      )
+    )
+  );
+};
 
-var _config2 = _interopRequireDefault(_config);
-
-var LoginDropdown = (function (_React$Component) {
-	_inherits(LoginDropdown, _React$Component);
-
-	function LoginDropdown() {
-		_classCallCheck(this, LoginDropdown);
-
-		_get(Object.getPrototypeOf(LoginDropdown.prototype), "constructor", this).apply(this, arguments);
-	}
-
-	_createClass(LoginDropdown, [{
-		key: "render",
-		value: function render() {
-			return _react2["default"].createElement(
-				"ul",
-				{ className: "dropdown-menu" },
-				_react2["default"].createElement(
-					"li",
-					null,
-					_react2["default"].createElement(_hireLogin.Basic, { url: _config2["default"].apiUrl["v2.1"] + "/authenticate" })
-				)
-			);
-		}
-	}]);
-
-	return LoginDropdown;
-})(_react2["default"].Component);
-
-exports["default"] = LoginDropdown;
 module.exports = exports["default"];
 
-},{"../../../config":66,"hire-login":15,"react":"react"}],65:[function(require,module,exports){
+},{"react":"react"}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12678,15 +3257,24 @@ var _react2 = _interopRequireDefault(_react);
 var _classnames = require("classnames");
 
 var _classnames2 = _interopRequireDefault(_classnames);
+
+var _message = require("../../message");
+
+var _message2 = _interopRequireDefault(_message);
 
 var LABELS = {
-	"SUCCESS_MESSAGE": "Info",
-	"ERROR_MESSAGE": "Warning!"
+	"SUCCESS_MESSAGE": "",
+	"ERROR_MESSAGE": _react2["default"].createElement(
+		"span",
+		null,
+		_react2["default"].createElement("span", { className: "glyphicon glyphicon-exclamation-sign" }),
+		" Warning!"
+	)
 };
 
-var CLASS_NAMES = {
-	"SUCCESS_MESSAGE": "alert-success",
-	"ERROR_MESSAGE": "alert-danger"
+var ALERT_LEVELS = {
+	"SUCCESS_MESSAGE": "info",
+	"ERROR_MESSAGE": "danger"
 };
 
 var Messages = (function (_React$Component) {
@@ -12715,21 +3303,15 @@ var Messages = (function (_React$Component) {
 			return _react2["default"].createElement(
 				"div",
 				null,
-				filteredMessages.map(function (msg, i) {
+				filteredMessages.map(function (msg) {
 					return _react2["default"].createElement(
-						"div",
-						{ className: (0, _classnames2["default"])("alert", "alert-dismissible", CLASS_NAMES[msg.type]), key: i },
-						_react2["default"].createElement(
-							"button",
-							{ className: "close", onClick: function () {
-									return onDismissMessage(msg.index);
-								} },
-							_react2["default"].createElement(
-								"span",
-								{ "aria-hidden": "true" },
-								"×"
-							)
-						),
+						_message2["default"],
+						{ key: msg.index,
+							dismissible: true,
+							alertLevel: ALERT_LEVELS[msg.type],
+							onCloseMessage: function () {
+								return onDismissMessage(msg.index);
+							} },
 						_react2["default"].createElement(
 							"strong",
 							null,
@@ -12759,22 +3341,380 @@ Messages.propTypes = {
 exports["default"] = Messages;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react"}],66:[function(require,module,exports){
+},{"../../message":48,"classnames":"classnames","react":"react"}],46:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
+
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ("value" in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _reactDom = require("react-dom");
+
+var _reactDom2 = _interopRequireDefault(_reactDom);
+
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+var SelectField = (function (_React$Component) {
+  _inherits(SelectField, _React$Component);
+
+  function SelectField(props) {
+    _classCallCheck(this, SelectField);
+
+    _get(Object.getPrototypeOf(SelectField.prototype), "constructor", this).call(this, props);
+
+    this.state = {
+      isOpen: false
+    };
+    this.documentClickListener = this.handleDocumentClick.bind(this);
+  }
+
+  _createClass(SelectField, [{
+    key: "componentDidMount",
+    value: function componentDidMount() {
+      document.addEventListener("click", this.documentClickListener, false);
+    }
+  }, {
+    key: "componentWillUnmount",
+    value: function componentWillUnmount() {
+      document.removeEventListener("click", this.documentClickListener, false);
+    }
+  }, {
+    key: "toggleSelect",
+    value: function toggleSelect() {
+      if (this.state.isOpen) {
+        this.setState({ isOpen: false });
+      } else {
+        this.setState({ isOpen: true });
+      }
+    }
+  }, {
+    key: "handleDocumentClick",
+    value: function handleDocumentClick(ev) {
+      var isOpen = this.state.isOpen;
+
+      if (isOpen && !_reactDom2["default"].findDOMNode(this).contains(ev.target)) {
+        this.setState({
+          isOpen: false
+        });
+      }
+    }
+  }, {
+    key: "render",
+    value: function render() {
+      var _this = this;
+
+      var _props = this.props;
+      var onChange = _props.onChange;
+      var onClear = _props.onClear;
+      var value = _props.value;
+      var btnClass = _props.btnClass;
+      var noClear = _props.noClear;
+
+      var selectedOption = _react2["default"].Children.toArray(this.props.children).filter(function (opt) {
+        return opt.props.value === value;
+      });
+      var placeholder = _react2["default"].Children.toArray(this.props.children).filter(function (opt) {
+        return opt.props.type === "placeholder";
+      });
+      var otherOptions = _react2["default"].Children.toArray(this.props.children).filter(function (opt) {
+        return opt.props.value && opt.props.value !== value;
+      });
+
+      return _react2["default"].createElement(
+        "div",
+        { className: (0, _classnames2["default"])("dropdown", { open: this.state.isOpen }) },
+        _react2["default"].createElement(
+          "button",
+          { className: (0, _classnames2["default"])("btn", "dropdown-toggle", btnClass || "btn-blank"), onClick: this.toggleSelect.bind(this) },
+          selectedOption.length ? selectedOption : placeholder,
+          " ",
+          _react2["default"].createElement("span", { className: "caret" })
+        ),
+        _react2["default"].createElement(
+          "ul",
+          { className: "dropdown-menu" },
+          value && !noClear ? _react2["default"].createElement(
+            "li",
+            null,
+            _react2["default"].createElement(
+              "a",
+              { onClick: function () {
+                  onClear();_this.toggleSelect();
+                } },
+              "- clear -"
+            )
+          ) : null,
+          otherOptions.map(function (option, i) {
+            return _react2["default"].createElement(
+              "li",
+              { key: i },
+              _react2["default"].createElement(
+                "a",
+                { style: { cursor: "pointer" }, onClick: function () {
+                    onChange(option.props.value);_this.toggleSelect();
+                  } },
+                option
+              )
+            );
+          })
+        )
+      );
+    }
+  }]);
+
+  return SelectField;
+})(_react2["default"].Component);
+
+SelectField.propTypes = {
+  onChange: _react2["default"].PropTypes.func,
+  onClear: _react2["default"].PropTypes.func,
+  value: _react2["default"].PropTypes.any,
+  btnClass: _react2["default"].PropTypes.string,
+  noClear: _react2["default"].PropTypes.bool
+};
+
+exports["default"] = SelectField;
+module.exports = exports["default"];
+
+},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],47:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+function Footer(props) {
+  var hiLogo = _react2["default"].createElement(
+    "div",
+    { className: "col-sm-1 col-md-1" },
+    _react2["default"].createElement("img", { className: "hi-logo", src: "images/logo-huygens-ing.svg" })
+  );
+
+  var clariahLogo = _react2["default"].createElement(
+    "div",
+    { className: "col-sm-1 col-md-1" },
+    _react2["default"].createElement("img", { className: "logo", src: "images/logo-clariah.svg" })
+  );
+
+  var footerBody = _react2["default"].Children.count(props.children) > 0 ? _react2["default"].Children.map(props.children, function (child, i) {
+    return _react2["default"].createElement(
+      "div",
+      { className: "white-bar" },
+      _react2["default"].createElement(
+        "div",
+        { className: "container" },
+        i === _react2["default"].Children.count(props.children) - 1 ? _react2["default"].createElement(
+          "div",
+          { className: "row" },
+          hiLogo,
+          _react2["default"].createElement(
+            "div",
+            { className: "col-sm-10 col-md-10 text-center" },
+            child
+          ),
+          clariahLogo
+        ) : _react2["default"].createElement(
+          "div",
+          { className: "row" },
+          child
+        )
+      )
+    );
+  }) : _react2["default"].createElement(
+    "div",
+    { className: "white-bar" },
+    _react2["default"].createElement(
+      "div",
+      { className: "container" },
+      _react2["default"].createElement(
+        "div",
+        { className: "row" },
+        hiLogo,
+        _react2["default"].createElement("div", { className: "col-sm-10 col-md-10 text-center" }),
+        clariahLogo
+      )
+    )
+  );
+
+  return _react2["default"].createElement(
+    "footer",
+    { className: "footer" },
+    footerBody
+  );
+}
+
+exports["default"] = Footer;
+module.exports = exports["default"];
+
+},{"react":"react"}],48:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _react = require("react");
+
+var _react2 = _interopRequireDefault(_react);
+
+var _classnames = require("classnames");
+
+var _classnames2 = _interopRequireDefault(_classnames);
+
+exports["default"] = function (props) {
+  var dismissible = props.dismissible;
+  var alertLevel = props.alertLevel;
+  var onCloseMessage = props.onCloseMessage;
+
+  var dismissButton = dismissible ? _react2["default"].createElement(
+    "button",
+    { type: "button", className: "close", onClick: onCloseMessage },
+    _react2["default"].createElement(
+      "span",
+      null,
+      "×"
+    )
+  ) : null;
+
+  return _react2["default"].createElement(
+    "div",
+    { className: (0, _classnames2["default"])("alert", "alert-" + alertLevel, { "alert-dismissible": dismissible }), role: "alert" },
+    dismissButton,
+    props.children
+  );
+};
+
+;
+module.exports = exports["default"];
+
+},{"classnames":"classnames","react":"react"}],49:[function(require,module,exports){
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { "default": obj }; }
+
+var _react = require('react');
+
+var _react2 = _interopRequireDefault(_react);
+
+var _footer = require("./footer");
+
+var _footer2 = _interopRequireDefault(_footer);
+
+var FOOTER_HEIGHT = 81;
+
+function Page(props) {
+  var footers = _react2["default"].Children.toArray(props.children).filter(function (child) {
+    return child.props.type === "footer-body";
+  });
+
+  return _react2["default"].createElement(
+    "div",
+    { className: "page" },
+    _react2["default"].createElement(
+      "div",
+      { className: "basic-margin hi-Green container-fluid" },
+      _react2["default"].createElement(
+        "nav",
+        { className: "navbar " },
+        _react2["default"].createElement(
+          "div",
+          { className: "container" },
+          _react2["default"].createElement(
+            "div",
+            { className: "navbar-header" },
+            " ",
+            _react2["default"].createElement(
+              "a",
+              { className: "navbar-brand", href: "#" },
+              _react2["default"].createElement("img", { src: "images/logo-timbuctoo.svg", className: "logo", alt: "timbuctoo" })
+            ),
+            " "
+          ),
+          _react2["default"].createElement(
+            "div",
+            { id: "navbar", className: "navbar-collapse collapse" },
+            _react2["default"].createElement(
+              "ul",
+              { className: "nav navbar-nav navbar-right" },
+              props.username ? _react2["default"].createElement(
+                "li",
+                null,
+                _react2["default"].createElement(
+                  "a",
+                  { href: props.userlocation || '#' },
+                  _react2["default"].createElement("span", { className: "glyphicon glyphicon-user" }),
+                  " ",
+                  props.username
+                )
+              ) : null
+            )
+          )
+        )
+      )
+    ),
+    _react2["default"].createElement(
+      "div",
+      { style: { marginBottom: FOOTER_HEIGHT * footers.length + "px" } },
+      _react2["default"].Children.toArray(props.children).filter(function (child) {
+        return child.props.type !== "footer-body";
+      })
+    ),
+    _react2["default"].createElement(
+      _footer2["default"],
+      null,
+      footers
+    )
+  );
+}
+
+exports["default"] = Page;
+module.exports = exports["default"];
+
+},{"./footer":47,"react":"react"}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
+console.log("");
 exports["default"] = {
 	apiUrl: {
-		"v2.1": "/v2.1",
-		"v4": "/v2.1"
+		"v2.1": "" + "/v2.1",
+		"v4": "" + "/v2.1"
 	},
 	apiVersion: "v4"
 };
 module.exports = exports["default"];
 
-},{}],67:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 "use strict";
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
@@ -12801,14 +3741,18 @@ var _actions2 = _interopRequireDefault(_actions);
 
 var _actionsVre = require("./actions/vre");
 
-var _componentsEdit = require("./components/edit");
+var _componentsEditGuiEditGui = require("./components/edit-gui/edit-gui");
 
-var _componentsEdit2 = _interopRequireDefault(_componentsEdit);
+var _componentsEditGuiEditGui2 = _interopRequireDefault(_componentsEditGuiEditGui);
+
+var _actionsAutocomplete = require("./actions/autocomplete");
+
+var _actionsAutocomplete2 = _interopRequireDefault(_actionsAutocomplete);
 
 document.addEventListener("DOMContentLoaded", function () {
 
 	_store2["default"].subscribe(function () {
-		return _reactDom2["default"].render(_react2["default"].createElement(_componentsEdit2["default"], _extends({}, _store2["default"].getState(), _actions2["default"])), document.getElementById("app"));
+		return _reactDom2["default"].render(_react2["default"].createElement(_componentsEditGuiEditGui2["default"], _extends({}, _store2["default"].getState(), _actions2["default"], { getAutocompleteValues: _actionsAutocomplete2["default"] })), document.getElementById("app"));
 	});
 
 	function getVreId() {
@@ -12852,7 +3796,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_actions2["default"].onLoginChange(getLogin());
 });
 
-},{"./actions":37,"./actions/vre":42,"./components/edit":62,"./store":74,"react":"react","react-dom":"react-dom"}],68:[function(require,module,exports){
+},{"./actions":27,"./actions/autocomplete":24,"./actions/vre":32,"./components/edit-gui/edit-gui":34,"./store":58,"react":"react","react-dom":"react-dom"}],52:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12907,7 +3851,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":76}],69:[function(require,module,exports){
+},{"../util/set-in":60}],53:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12945,7 +3889,7 @@ exports["default"] = {
 };
 module.exports = exports["default"];
 
-},{"./entity":68,"./messages":70,"./quick-search":71,"./user":72,"./vre":73}],70:[function(require,module,exports){
+},{"./entity":52,"./messages":54,"./quick-search":55,"./user":56,"./vre":57}],54:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12988,7 +3932,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{"../util/set-in":76}],71:[function(require,module,exports){
+},{"../util/set-in":60}],55:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13027,7 +3971,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],72:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13053,7 +3997,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],73:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13097,7 +4041,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],74:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13121,7 +4065,7 @@ exports["default"] = (0, _redux.createStore)((0, _redux.combineReducers)(_reduce
 }));
 module.exports = exports["default"];
 
-},{"../reducers":69,"redux":29,"redux-thunk":23}],75:[function(require,module,exports){
+},{"../reducers":53,"redux":16,"redux-thunk":10}],59:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13154,7 +4098,7 @@ function deepClone9(obj) {
 exports["default"] = deepClone9;
 module.exports = exports["default"];
 
-},{}],76:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13205,5 +4149,5 @@ var setIn = function setIn(path, value, data) {
 exports["default"] = setIn;
 module.exports = exports["default"];
 
-},{"./clone-deep":75}]},{},[67])(67)
+},{"./clone-deep":59}]},{},[51])(51)
 });
