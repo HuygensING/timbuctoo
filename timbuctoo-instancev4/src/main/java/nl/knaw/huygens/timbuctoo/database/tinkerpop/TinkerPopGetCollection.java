@@ -36,7 +36,7 @@ public class TinkerPopGetCollection implements
   @Override
   public TransactionStateAndResult<Stream<ReadEntity>> apply(DataAccessMethods dataAccessMethods) {
     Stream<ReadEntity> entityStream =
-      dataAccessMethods.getCollection(this.collection, start, rows, withRelations, entityProps, relationProps);
+      dataAccessMethods.getCollection(this.collection, rows, start, withRelations, entityProps, relationProps);
     // make sure the entities are read before the transaction closes
     // TODO find a better way to stream the entities from the database
     List<ReadEntity> entities = entityStream.collect(toList());

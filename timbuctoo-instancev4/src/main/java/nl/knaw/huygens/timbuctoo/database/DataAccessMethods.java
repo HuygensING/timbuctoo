@@ -366,7 +366,7 @@ public class DataAccessMethods implements AutoCloseable {
       customRelationProperties).mapEntity(entityT, true);
   }
 
-  public Stream<ReadEntity> getCollection(Collection collection, int rows, int start, boolean withRelations,
+  public Stream<ReadEntity> getCollection(Collection collection, int start, int rows, boolean withRelations,
                                           CustomEntityProperties customEntityProperties,
                                           CustomRelationProperties customRelationProperties) {
     GraphTraversal<Vertex, Vertex> entities =
