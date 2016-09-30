@@ -264,6 +264,7 @@ public class JsonCrudService {
     try (DataAccess.DataAccessMethods db = dataAccess.start()) {
       try {
         db.replaceRelation(collection, id, rev.asInt(), accepted.asBoolean(), userId, clock.instant());
+        db.success();
       } catch (NotFoundException | AuthorizationUnavailableException | AuthorizationException e) {
         db.rollback();
         throw e;
