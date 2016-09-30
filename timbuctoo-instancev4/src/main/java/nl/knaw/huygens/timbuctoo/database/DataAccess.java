@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
@@ -20,7 +21,6 @@ import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 public class DataAccess {
 
@@ -117,12 +117,11 @@ public class DataAccess {
     return executeAndReturn(new TinkerPopDeleteEntity(collection, id, modified));
   }
 
-  public Stream<ReadEntity> getCollection(Collection collection, int start, int rows,
+  public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
                                           boolean withRelations, CustomEntityProperties entityProps,
                                           CustomRelationProperties relationProps) {
-    return executeAndReturn(
-      new TinkerPopGetCollection(collection, start, rows, withRelations, entityProps, relationProps));
-  }
 
+    return new TinkerPopGetCollection(collection, start, rows, withRelations, entityProps, relationProps, start());
+  }
 
 }

@@ -277,7 +277,7 @@ public class DataAccessMethods implements AutoCloseable {
         .orElseThrow(notPossible("Target vertex is not part of the VRE of " + collection.getCollectionName()));
       DirectionalRelationType desc = descs.getForDirection(sourceCollection, targetCollection)
                                           .orElseThrow(notPossible(
-                                                         "You can't have a " + descs.getName() + " from " +
+                                                         "You can't have a " + descs.getOutName() + " from " +
                                                            sourceCollection.getEntityTypeName() + " to " +
                                                            targetCollection.getEntityTypeName() + " or vice versa"));
 

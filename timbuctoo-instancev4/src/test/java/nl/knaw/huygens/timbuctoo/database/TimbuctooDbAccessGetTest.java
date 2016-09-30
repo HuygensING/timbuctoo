@@ -1,13 +1,15 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -56,16 +58,25 @@ public class TimbuctooDbAccessGetTest {
 
   @Test
   public void getCollectionLetsReturnsACollection() {
-    Stream<ReadEntity> entities = Lists.<ReadEntity>newArrayList().stream();
+    DataStream<ReadEntity> entities = mockDataStream();
     int start = 0;
     int rows = 10;
     when(dataAccess.getCollection(collection, start, rows, withRelations, entityProps, relationProps))
       .thenReturn(entities);
 
-    Stream<ReadEntity> result =
+    DataStream<ReadEntity> result = 
       instance.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
 
     assertThat(result, is(sameInstance(entities)));
+  }
+
+  private DataStream<ReadEntity> mockDataStream() {
+    return new DataStream<ReadEntity>() {
+      @Override
+      public <U> List<U> map(Function<ReadEntity, U> mapping) {
+        throw new UnsupportedOperationException("Not implemented yet");
+      }
+    };
   }
 
 

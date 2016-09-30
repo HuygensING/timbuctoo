@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
@@ -32,7 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -194,7 +194,7 @@ public class JsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    Stream<ReadEntity> entities = timDbAccess.getCollection(collection, rows, start, withRelations,
+    DataStream<ReadEntity> entities = timDbAccess.getCollection(collection, rows, start,withRelations,
       (traversalSource, vre) -> {
 
       },
@@ -202,12 +202,13 @@ public class JsonCrudService {
 
       }
     );
-    List<ObjectNode> result = entities.map(entity -> entityToJsonMapper.mapEntity(collection, entity, withRelations,
-      (readEntity, resultJson) -> {
-      },
-      (relationRef, resultJson) -> {
-      }
-    )).collect(Collectors.toList());
+    List<ObjectNode> result = entities.map(entity ->
+      entityToJsonMapper.mapEntity(collection, entity, withRelations,
+        (readEntity, resultJson) -> {
+        },
+        (relationRef, resultJson) -> {
+        })
+    );
     return result;
   }
 

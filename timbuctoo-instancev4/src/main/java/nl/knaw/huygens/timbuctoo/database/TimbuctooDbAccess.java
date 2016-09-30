@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
@@ -119,9 +120,9 @@ public class TimbuctooDbAccess {
     }
   }
 
-  public Stream<ReadEntity> getCollection(Collection collection, int start, int rows,
+  public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
                                           boolean withRelations, CustomEntityProperties entityProps,
-                                          CustomRelationProperties relationProps) {
+                                              CustomRelationProperties relationProps) {
     return dataAccess.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 }
