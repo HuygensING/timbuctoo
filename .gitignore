@@ -10,12 +10,5 @@
 *.iml
 .idea
 
-# timbuctoo acceptance test files
-/timbuctoo-instancev4/src/spec/resources/database
-
-# list of database migrations already executed on this system
-executed-migrations.json
-
-# debug run files
-/timbuctoo-instancev4/docker/database
-/timbuctoo-instancev4/docker/authorizations
+# debug run state (database, known users, authorizations)
+/timbuctoo-instancev4/temp_for_debugrun
