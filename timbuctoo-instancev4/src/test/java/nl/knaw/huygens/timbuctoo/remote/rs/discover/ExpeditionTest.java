@@ -9,6 +9,7 @@ import org.mockserver.model.HttpResponse;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -40,38 +41,51 @@ public class ExpeditionTest extends AbstractRemoteTest {
   @Test
   public void exploreAndFindResults() throws Exception {
     String path = "/timbucto";
-    setUpServer(path);
-
     String url = composePath(path);
 
+    setUpServer(path);
     Expedition expedition = new Expedition(getHttpclient(), getRsContext());
+
     List<ResultIndex> indexes = expedition.explore(url);
-
-    //indexes.forEach(resultIndex -> resultIndex.getResultMap()
-    //  .forEach((uri, result) -> System.out.println(uri + " " + result.getContent().isPresent())));
-
+    /*indexes.forEach(resultIndex -> resultIndex.getResultMap()
+      .forEach((uri, result) -> System.out.println(uri + " "
+        + result.getStatusCode() + " "
+        + result.getOrdinal())));*/
     assertThat(indexes.size(), equalTo(4));
 
-    int finds = indexes.stream()
-      .map(ResultIndex::getResultsWithContent)
-      .mapToInt(List::size).sum();
+    int resultCount1 = indexes.stream()
+      .map(ResultIndex::getResultMap)
+      .mapToInt(Map::size)
+      .sum();
+    assertThat(resultCount1, equalTo(15));
+
+    int deadEnds1 = indexes.stream()
+      .map(ResultIndexPivot::new)
+      .map(ResultIndexPivot::listErrorResults)
+      .mapToInt(List::size)
+      .sum();
+    assertThat(deadEnds1, equalTo(12));
+
+    // again with merged indexes
+    // uri's http://localhost:xxxxx/timbucto will be merged
+    setUpServer(path);
+    ResultIndex index = expedition.exploreAndMerge(url);
+    ResultIndexPivot pivot = new ResultIndexPivot((index));
+
+    int resultCount = index.getResultMap().size();
+    assertThat(resultCount, equalTo(14)); // 15 > 14, merged http://localhost:xxxxxx/timbucto
+
+    int deadEnds = pivot.listErrorResults().size();
+    assertThat(deadEnds, equalTo(11)); // 12 > 11, merged http://localhost:xxxxxx/timbucto
+
+    int finds = pivot.listUrlsetResults().size();
     assertThat(finds, equalTo(3));
 
-    int clCount = indexes.stream()
-      .map(resultIndex -> resultIndex.getUrlsetResults(Capability.CAPABILITYLIST))
-      .mapToInt(List::size).sum();
+    int clCount = pivot.listUrlsetResults(Capability.CAPABILITYLIST).size();
     assertThat(clCount, equalTo(2));
 
-    int descCount = indexes.stream()
-      .map(resultIndex -> resultIndex.getUrlsetResults(Capability.DESCRIPTION))
-      .mapToInt(List::size).sum();
+    int descCount = pivot.listUrlsetResults(Capability.DESCRIPTION).size();
     assertThat(descCount, equalTo(1));
-
-    int deadEnds = indexes.stream()
-      .map(ResultIndex::getErrorResults)
-      .mapToInt(List::size).sum();
-    assertThat(deadEnds, equalTo(12));
-
   }
 
   @Test
@@ -81,7 +95,9 @@ public class ExpeditionTest extends AbstractRemoteTest {
 
     String url = composePath(path);
     Expedition expedition = new Expedition(getHttpclient(), getRsContext());
-    List<String> locs = expedition.listUrlLocations(url, Capability.CAPABILITYLIST);
+    ResultIndex index = expedition.exploreAndMerge(url);
+    ResultIndexPivot pivot = new ResultIndexPivot((index));
+    List<String> locs = pivot.listUrlLocations(Capability.CAPABILITYLIST);
 
     String[] expectedLocs = new String[] {
       composePath("/clariah/duck/soup/resourcelist.xml"),
@@ -96,17 +112,6 @@ public class ExpeditionTest extends AbstractRemoteTest {
     assertThat(locs, containsInAnyOrder(expectedLocs));
   }
 
-  @Test
-  public void listGraphs() throws Exception {
-    String path = "/clariah";
-    setUpServer(path);
-
-    String url = composePath(path);
-    Expedition expedition = new Expedition(getHttpclient(), getRsContext());
-    expedition.listGraphs(url);
-
-  }
-
   private void setUpServer(String path) {
     getMockServer().reset();
 
@@ -115,7 +120,7 @@ public class ExpeditionTest extends AbstractRemoteTest {
       .when(HttpRequest.request()
           .withMethod("GET")
           .withPath("/.well-known/resourcesync"),
-        Times.exactly(1))
+        Times.unlimited())
 
       .respond(HttpResponse.response()
         .withStatusCode(200)
@@ -126,7 +131,7 @@ public class ExpeditionTest extends AbstractRemoteTest {
       .when(HttpRequest.request()
           .withMethod("GET")
           .withPath("/robots.txt"),
-        Times.exactly(1))
+        Times.unlimited())
 
       .respond(HttpResponse.response()
         .withStatusCode(404)
@@ -137,7 +142,7 @@ public class ExpeditionTest extends AbstractRemoteTest {
       .when(HttpRequest.request()
           .withMethod("GET")
           .withPath(path),
-        Times.exactly(2))
+        Times.unlimited()) // 2 x
 
       .respond(HttpResponse.response()
         .withStatusCode(404)
@@ -149,7 +154,7 @@ public class ExpeditionTest extends AbstractRemoteTest {
       .when(HttpRequest.request()
           .withMethod("GET")
           .withPath(path + "/capabilitylist1.xml"),
-        Times.exactly(1))
+        Times.unlimited())
 
       .respond(HttpResponse.response()
         .withStatusCode(200)
@@ -160,7 +165,7 @@ public class ExpeditionTest extends AbstractRemoteTest {
       .when(HttpRequest.request()
           .withMethod("GET")
           .withPath(path + "/capabilitylist2.xml"),
-        Times.exactly(1))
+        Times.unlimited())
 
       .respond(HttpResponse.response()
         .withStatusCode(200)

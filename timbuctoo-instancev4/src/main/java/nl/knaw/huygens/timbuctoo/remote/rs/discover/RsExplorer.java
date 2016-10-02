@@ -48,6 +48,8 @@ public class RsExplorer extends AbstractUriExplorer {
         verifyUpRelation(result, parentResult, capability);
       } catch (URISyntaxException e) {
         index.addInvalidUri(parentLink);
+        result.addError(e);
+        result.addInvalidUri(parentLink);
       }
     }
 
@@ -61,6 +63,8 @@ public class RsExplorer extends AbstractUriExplorer {
         verifyIndexRelation(result, indexResult, capability);
       } catch (URISyntaxException e) {
         index.addInvalidUri(indexLink);
+        result.addError(e);
+        result.addInvalidUri(indexLink);
       }
     }
 
@@ -84,6 +88,8 @@ public class RsExplorer extends AbstractUriExplorer {
             verifyChildRelation(result, childResult, capability);
           } catch (URISyntaxException e) {
             index.addInvalidUri(childLink);
+            result.addError(e);
+            result.addInvalidUri(childLink);
           }
         }
       }

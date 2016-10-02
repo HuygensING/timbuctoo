@@ -2,14 +2,14 @@ package nl.knaw.huygens.timbuctoo.remote.rs;
 
 
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.Expedition;
-import nl.knaw.huygens.timbuctoo.remote.rs.sync.ResourceSet;
+import nl.knaw.huygens.timbuctoo.remote.rs.view.FrameworkBase;
+import nl.knaw.huygens.timbuctoo.remote.rs.view.Interpreter;
+import nl.knaw.huygens.timbuctoo.remote.rs.view.SetListBase;
+import nl.knaw.huygens.timbuctoo.remote.rs.view.TreeBase;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
 import org.apache.http.impl.client.CloseableHttpClient;
 
-import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.List;
 
 public class ResourceSyncService {
 
@@ -21,9 +21,20 @@ public class ResourceSyncService {
     this.rsContext = rsContext;
   }
 
-  public List<ResourceSet> listGraphs(String url) throws URISyntaxException, InterruptedException {
+  public SetListBase listSets(String url, Interpreter interpreter) throws URISyntaxException, InterruptedException {
     Expedition expedition = new Expedition(httpClient, rsContext);
-    return expedition.listGraphs(url);
+    return new SetListBase(expedition.exploreAndMerge(url), interpreter);
+  }
+
+  public FrameworkBase getFramework(String url, Interpreter interpreter)
+      throws URISyntaxException, InterruptedException {
+    Expedition expedition = new Expedition(httpClient, rsContext);
+    return new FrameworkBase(expedition.exploreAndMerge(url), interpreter);
+  }
+
+  public TreeBase getTree(String url, Interpreter interpreter) throws URISyntaxException, InterruptedException {
+    Expedition expedition = new Expedition(httpClient, rsContext);
+    return new TreeBase(expedition.exploreAndMerge(url), interpreter);
   }
 
 }

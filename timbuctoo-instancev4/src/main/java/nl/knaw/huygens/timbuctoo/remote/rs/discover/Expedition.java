@@ -1,15 +1,8 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 
-import nl.knaw.huygens.timbuctoo.remote.rs.sync.ResourceSet;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsItem;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.SitemapItem;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.Sitemapindex;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.UrlItem;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -45,6 +38,8 @@ import java.util.stream.Collectors;
  *   http://www.openarchives.org/rs/1.0/resourcesync#Discovery</a>
  */
 public class Expedition {
+
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(Expedition.class);
 
   private static final String WELL_KNOWN_PATH = "/.well-known/resourcesync";
   private static final String ROBOTS_TXT = "/robots.txt";
@@ -105,76 +100,21 @@ public class Expedition {
       .collect(Collectors.toList());
   }
 
-  /**
-   * List the values of the &lt;loc&gt; element of &lt;url&gt; elements of documents of type urlset with
-   * the given capability.
-   * @param url the url to explore
-   * @param capability the capability of the documents from which locations will be extracted
-   * @return List of values of the &lt;loc&gt; elements
-   * @throws URISyntaxException if the url could not be converted to a URI.
-   * @throws InterruptedException at Executor interrupts.
-   */
-  public List<String> listUrlLocations(String url, Capability capability)
-      throws URISyntaxException, InterruptedException {
-
+  public ResultIndex exploreAndMerge(String url) throws URISyntaxException, InterruptedException {
+    // not sure how/whether this can be done on the stream of explore..
     List<ResultIndex> indexes = explore(url);
-
-    return indexes.stream()
-      .map(resultIndex -> resultIndex.getUrlsetResults(capability))
-      .flatMap(List::stream)
-      .map(urlsetResult -> urlsetResult.getContent().orElse(null))
-      .map(Urlset::getItemList)
-      .flatMap(List::stream)
-      .map(UrlItem::getLoc)
-      .collect(Collectors.toList());
-  }
-
-  /**
-   * List the values of the &lt;loc&gt; element of &lt;sitemap&gt; elements of documents of type sitemapindex with
-   * the given capability.
-   * @param url the url to explore
-   * @param capability the capability of the documents from which locations will be extracted
-   * @return List of values of the &lt;loc&gt; elements
-   * @throws URISyntaxException if the url could not be converted to a URI.
-   * @throws InterruptedException at Executor interrupts.
-   */
-  public List<String> listSitemapLocations(String url, Capability capability)
-      throws URISyntaxException, InterruptedException {
-
-    List<ResultIndex> indexes = explore(url);
-
-    return indexes.stream()
-      .map(resultIndex -> resultIndex.getSitemapindexResults(capability))
-      .flatMap(List::stream)
-      .map(sitemapindexResult -> sitemapindexResult.getContent().orElse(null))
-      .map(Sitemapindex::getItemList)
-      .flatMap(List::stream)
-      .map(SitemapItem::getLoc)
-      .collect(Collectors.toList());
-  }
-
-  public List<ResourceSet> listGraphs(String url) throws URISyntaxException, InterruptedException {
-    // the loc values in description have the graph names in base64:
-    // http://192.168.99.100:8085/aHR0cDovL2V4YW1wbGUuY29tL2NsYXJpYWgK/capability-list.xml
-    List<ResultIndex> indexes = explore(url);
-
-    List<Result<Urlset>> results = indexes.stream()
-      .map(resultIndex -> resultIndex.getUrlsetResults(Capability.DESCRIPTION))
-      .flatMap(List::stream)
-      .collect(Collectors.toList());
-
-    List<ResourceSet> sets = new ArrayList<>();
-    for (Result<Urlset> result : results) {
-      ResourceSet set = new ResourceSet(result.getUri());
-      sets.add(set);
+    ResultIndex resultIndex = indexes.size() > 0 ? indexes.get(0) : new ResultIndex();
+    for (int i = 1; i < indexes.size(); i++) {
+      resultIndex.merge(indexes.get(i));
     }
-    return sets;
+    return resultIndex;
   }
 
   private ResultIndex exploreWellKnown(URI uri) {
     ResultIndex index = new ResultIndex();
     RsExplorer explorer = new RsExplorer(httpClient, rsContext);
     explorer.explore(createWellKnownUri(uri), index);
+    //LOG.info("exploreWellKnown. Found {} results with {}", index.listResultsWithContent().size(), uri.toString());
     return index;
   }
 
@@ -182,6 +122,7 @@ public class Expedition {
     ResultIndex index = new ResultIndex();
     LinkExplorer explorer = new LinkExplorer(httpClient, rsContext, LinkExplorer.linkReader);
     explorer.explore(uri, index);
+    //LOG.info("exploreLinks. Found {} results with {}", index.listResultsWithContent().size(), uri.toString());
     return index;
   }
 
@@ -189,6 +130,7 @@ public class Expedition {
     ResultIndex index = new ResultIndex();
     LinkExplorer explorer = new LinkExplorer(httpClient, rsContext, LinkExplorer.robotsReader);
     explorer.explore(createRobotsUri(uri), index);
+    //LOG.info("exploreRobotsTxt. Found {} results with {}", index.listResultsWithContent().size(), uri.toString());
     return index;
   }
 
@@ -196,6 +138,7 @@ public class Expedition {
     ResultIndex index = new ResultIndex();
     RsExplorer explorer = new RsExplorer(httpClient, rsContext);
     explorer.explore(uri, index);
+    //LOG.info("exploreRsDocumentUri. Found {} results with {}", index.listResultsWithContent().size(), uri.toString());
     return index;
   }
 }

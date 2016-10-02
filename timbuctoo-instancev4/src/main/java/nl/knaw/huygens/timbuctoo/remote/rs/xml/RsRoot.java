@@ -7,6 +7,7 @@ import javax.xml.bind.annotation.XmlElement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
@@ -48,6 +49,18 @@ public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
       }
     }
     return null;
+  }
+
+  public int getLevel() {
+    return Capability.levelfor(rsMd.getCapability().orElse(""));
+  }
+
+  public Optional<Capability> getCapability() {
+    try {
+      return Optional.of(Capability.forString(rsMd.getCapability().orElse("")));
+    } catch (IllegalArgumentException e) {
+      return Optional.ofNullable(null);
+    }
   }
 
 }

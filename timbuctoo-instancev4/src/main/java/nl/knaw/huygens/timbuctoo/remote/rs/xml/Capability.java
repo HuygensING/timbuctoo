@@ -19,7 +19,7 @@ public enum Capability {
   CHANGEDUMP("changedump", 1),
   CHANGEDUMP_MANIFEST("changedump-manifest", 0);
 
-  public static Capability forString(String xmlValue) {
+  public static Capability forString(String xmlValue) throws IllegalArgumentException {
     String name = xmlValue.toUpperCase().replace('-', '_');
     return valueOf(name);
   }
@@ -41,9 +41,18 @@ public enum Capability {
     this.level = level;
   }
 
+  public String getXmlValue() {
+    return xmlValue;
+  }
+
+  public int getLevel() {
+    return level;
+  }
+
   /**
-   * The capability of a parent document expressed with a link with relation type 'up'.
-   * @return the capability of a parent document with relation type 'up', or <code>null</code> if such a mandatory
+   * The capability of a parent document expressed with a link with relation type 'up'. Except for documents with
+   * capability 'description' such a link is mandatory.
+   * @return the capability of a parent document with relation type 'up', or <code>null</code> if such a
    *     relation does not exist.
    */
   public Capability getUpRelation() {
@@ -109,10 +118,8 @@ public enum Capability {
   public boolean verifyChildRelation(Capability relation) {
     boolean allowed = false;
     Capability[] childRelations = getChildRelations();
-    if (relation == null) {
-      if (childRelations.length == 0) {
-        allowed = true;
-      }
+    if (relation == null && childRelations.length == 0) {
+      allowed = true;
     } else {
       for (Capability capa : childRelations) {
         if (capa == relation) {

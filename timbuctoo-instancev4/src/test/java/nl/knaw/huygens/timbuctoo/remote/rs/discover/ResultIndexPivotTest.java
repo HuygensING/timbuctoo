@@ -18,7 +18,7 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Created on 2016-09-19 16:32.
  */
-public class ResultIndexTest {
+public class ResultIndexPivotTest {
 
   @SuppressWarnings("unchecked")
   @Test
@@ -46,40 +46,62 @@ public class ResultIndexTest {
     result5.accept(new Sitemapindex(new RsMd((Capability.CAPABILITYLIST.xmlValue))));
     index.add(result5);
 
-    List<Throwable> errorList = index.getErrors();
+    ResultIndexPivot pivot = new ResultIndexPivot(index);
+
+    List<Throwable> errorList = pivot.listErrors();
     assertThat(errorList.stream().map(Throwable::getMessage).collect(Collectors.toList()),
       containsInAnyOrder("Bla1", "Bla4"));
     assertThat(errorList.size(), equalTo(2));
 
-    List<Result<?>> errorResultList = index.getErrorResults();
+    List<Result<?>> errorResultList = pivot.listErrorResults();
     assertThat(errorResultList, containsInAnyOrder(result1, result4));
     assertThat(errorResultList.size(), equalTo(2));
 
-    List<Result<?>> resultList = index.getResultsWithContent();
+    List<Result<?>> resultList = pivot.listResultsWithContent();
     assertThat(resultList, containsInAnyOrder(result1, result2, result3, result5));
     assertThat(resultList.size(), equalTo(4));
 
-    List<Result<Urlset>> setResultList = index.getUrlsetResults();
+    List<Result<Urlset>> setResultList = pivot.listUrlsetResults();
     assertThat(setResultList, containsInAnyOrder(result1, result2));
     assertThat(setResultList.size(), equalTo(2));
 
-    List<Result<Sitemapindex>> indexResultList = index.getSitemapindexResults();
+    List<Result<Sitemapindex>> indexResultList = pivot.listSitemapindexResults();
     assertThat(indexResultList.size(), equalTo(2));
     assertThat(indexResultList, containsInAnyOrder(result3, result5));
 
-    List<Result<Urlset>> capabilityListSetResults = index.getUrlsetResults(Capability.CAPABILITYLIST);
+    List<Result<Urlset>> capabilityListSetResults = pivot.listUrlsetResults(Capability.CAPABILITYLIST);
     assertThat(capabilityListSetResults.size(), equalTo(1));
     assertThat(capabilityListSetResults, containsInAnyOrder(result2));
 
-    List<Result<Sitemapindex>> capabilityListIndexResults = index.getSitemapindexResults(Capability.CAPABILITYLIST);
+    List<Result<Sitemapindex>> capabilityListIndexResults = pivot.listSitemapindexResults(Capability.CAPABILITYLIST);
     assertThat(capabilityListIndexResults.size(), equalTo(1));
     assertThat(capabilityListIndexResults, containsInAnyOrder(result5));
 
-    List<Result<RsRoot>> capabilityListResults = index.getRsRootResults(Capability.CAPABILITYLIST);
+    List<Result<RsRoot>> capabilityListResults = pivot.listRsRootResults(Capability.CAPABILITYLIST);
     assertThat(capabilityListResults.size(), equalTo(2));
     assertThat(capabilityListResults, containsInAnyOrder(result2, result5));
 
+    capabilityListResults = pivot.listRsRootResultsByLevel(0);
+    //capabilityListResults.stream().forEach(rsRootResult -> System.out.println(rsRootResult.getUri()));
+    assertThat(capabilityListResults.size(), equalTo(0));
 
+    capabilityListResults = pivot.listRsRootResultsByLevel(1);
+    //capabilityListResults.stream().forEach(rsRootResult -> System.out.println(rsRootResult.getUri()));
+    assertThat(capabilityListResults.size(), equalTo(2));
+    assertThat(capabilityListResults, containsInAnyOrder(result1, result3));
+
+    capabilityListResults = pivot.listRsRootResultsByLevel(2);
+    //capabilityListResults.stream().forEach(rsRootResult -> System.out.println(rsRootResult.getUri()));
+    assertThat(capabilityListResults.size(), equalTo(2));
+    assertThat(capabilityListResults, containsInAnyOrder(result2, result5));
+
+    capabilityListResults = pivot.listRsRootResultsByLevel(3);
+    //capabilityListResults.stream().forEach(rsRootResult -> System.out.println(rsRootResult.getUri()));
+    assertThat(capabilityListResults.size(), equalTo(0));
+
+    capabilityListResults = pivot.listRsRootResultsByLevel(-1);
+    //capabilityListResults.stream().forEach(rsRootResult -> System.out.println(rsRootResult.getUri()));
+    assertThat(capabilityListResults.size(), equalTo(0));
   }
 
 

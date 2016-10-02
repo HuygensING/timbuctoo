@@ -98,7 +98,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     ResultIndex index = new ResultIndex();
     Result<RsRoot> result = explorer.explore(uri, index);
 
-    //result.getErrors().forEach(Throwable::printStackTrace);
+    //result.listErrors().forEach(Throwable::printStackTrace);
 
     assertThat(result.getUri(), equalTo(uri));
     assertThat(result.getStatusCode(), equalTo(200));
@@ -145,7 +145,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(result.getErrors().isEmpty(), is(false));
     assertThat(result.getErrors().get(0), instanceOf(JAXBException.class));
     assertThat(result.getContent().isPresent(), is(false));
-    //result.getErrors().forEach(Throwable::printStackTrace);
+    //result.listErrors().forEach(Throwable::printStackTrace);
   }
 
   @Test
@@ -172,7 +172,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(result.getErrors().isEmpty(), is(false));
     assertThat(result.getErrors().get(0), instanceOf(RemoteException.class));
     assertThat(result.getContent().isPresent(), is(false));
-    //result.getErrors().forEach(Throwable::printStackTrace);
+    //result.listErrors().forEach(Throwable::printStackTrace);
   }
 
   private String createValidDescription() {

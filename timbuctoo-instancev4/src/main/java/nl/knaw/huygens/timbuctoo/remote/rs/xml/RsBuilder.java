@@ -41,6 +41,7 @@ public class RsBuilder {
     this.rsContext = rsContext;
   }
 
+  @SuppressWarnings ("unchecked")
   public Optional<RsRoot> build() throws JAXBException {
     latestQName = null;
     urlset = null;

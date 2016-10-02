@@ -13,7 +13,7 @@ import java.net.URI;
 import java.nio.charset.Charset;
 
 /**
- * Execute a request against a server. This class supports requests against a ResourceSync Framework source.
+ * Execute a request against a server.
  */
 public abstract class AbstractUriExplorer {
 
@@ -59,7 +59,5 @@ public abstract class AbstractUriExplorer {
     }
     return result;
   }
-
-
 
 }

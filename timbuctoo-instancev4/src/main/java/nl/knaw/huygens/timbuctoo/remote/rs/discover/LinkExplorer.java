@@ -15,6 +15,7 @@ import org.jsoup.select.Elements;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -52,20 +53,21 @@ import java.util.regex.Pattern;
 public class LinkExplorer extends AbstractUriExplorer {
 
   private final ResourceSyncContext rsContext;
-  private Function_WithExceptions<HttpResponse, List<String>, ?> strategy;
+  private Function_WithExceptions<HttpResponse, List<String>, ?> responseReader;
 
   public LinkExplorer(CloseableHttpClient httpClient,
                       ResourceSyncContext rsContext,
-                      Function_WithExceptions<HttpResponse, List<String>, ?> strategy) {
+                      Function_WithExceptions<HttpResponse, List<String>, ?> responseReader) {
     super(httpClient);
     this.rsContext = rsContext;
-    this.strategy = strategy;
+    this.responseReader = responseReader;
   }
 
   @Override
   public Result<LinkList> explore(URI uri, ResultIndex index) {
-    Result<List<String>> stringResult = execute(uri, strategy);
+    Result<List<String>> stringResult = execute(uri, responseReader);
     Result<LinkList> result = stringResult.map(stringListToLinkListConverter);
+    result.getInvalidUris().addAll(result.getContent().map(LinkList::getInvalidUris).orElse(Collections.emptySet()));
     index.add(result);
 
     // All valid uris point to ResourceSync documents (at least they should)
@@ -79,7 +81,7 @@ public class LinkExplorer extends AbstractUriExplorer {
     return  result;
   }
 
-  Function<List<String>, LinkList> stringListToLinkListConverter = (stringList) -> {
+  private Function<List<String>, LinkList> stringListToLinkListConverter = (stringList) -> {
     LinkList linkList = new LinkList();
     linkList.resolve(getCurrentUri(), stringList);
     return linkList;

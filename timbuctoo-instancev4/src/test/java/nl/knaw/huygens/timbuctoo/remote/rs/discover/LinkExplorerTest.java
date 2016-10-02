@@ -76,7 +76,7 @@ public class LinkExplorerTest extends AbstractRemoteTest {
 
     assertThat(child1.getErrors().isEmpty(), is(true));
     assertThat(child2.getErrors().isEmpty(), is(false));
-    //child2.getErrors().forEach(Throwable::printStackTrace); // RemoteException: 404 Not Found
+    //child2.listErrors().forEach(Throwable::printStackTrace); // RemoteException: 404 Not Found
 
     assertThat(child1.getContent().isPresent(), is(true));
     assertThat(child1.getContent().orElse(null), instanceOf(Urlset.class));
