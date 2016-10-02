@@ -27,7 +27,7 @@ public class ResourceSyncService {
   }
 
   public FrameworkBase getFramework(String url, Interpreter interpreter)
-      throws URISyntaxException, InterruptedException {
+    throws URISyntaxException, InterruptedException {
     Expedition expedition = new Expedition(httpClient, rsContext);
     return new FrameworkBase(expedition.exploreAndMerge(url), interpreter);
   }
