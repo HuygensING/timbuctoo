@@ -28,7 +28,7 @@ public class ResultView {
   private String capability;
 
   public ResultView(Result<?> result) {
-    init(result, new Interpreter() {});
+    init(result, new Interpreter());
   }
 
   public ResultView(Result<?> result, Interpreter interpreter) {
