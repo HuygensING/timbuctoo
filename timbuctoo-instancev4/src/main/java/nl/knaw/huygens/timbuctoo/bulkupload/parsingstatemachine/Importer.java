@@ -64,9 +64,11 @@ public class Importer {
       return Result.ignored();
     }
     Optional<ImportPropertyDescription> propOpt = propertyDescriptions.get(id);
-    if (propOpt.isPresent() && !Strings.isNullOrEmpty(value)) {
-      ImportPropertyDescription prop = propOpt.get();
-      currentProperties.add(new ImportProperty(prop, value));
+    if (propOpt.isPresent()) {
+      if (!Strings.isNullOrEmpty(value)) {
+        ImportPropertyDescription prop = propOpt.get();
+        currentProperties.add(new ImportProperty(prop, value));
+      }
       return Result.ignored();//actual validation will happen during finishEntity
     } else {
       return Result.failure("No property declared for id " + id);
