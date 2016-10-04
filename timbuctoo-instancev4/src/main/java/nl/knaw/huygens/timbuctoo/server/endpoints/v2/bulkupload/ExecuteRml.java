@@ -20,6 +20,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.glassfish.jersey.server.ChunkedOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,17 +34,18 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -162,51 +164,79 @@ public class ExecuteRml {
 
       final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper), vreMappings);
 
-      //first save the archetype mappings
-      model
-        .listStatements(
-          null,
-          model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
-          (String) null
-        )
-        .forEachRemaining(statement ->
-          processor.process(vreName, true, new Triple(
-            statement.getSubject().asNode(),
-            statement.getPredicate().asNode(),
-            statement.getObject().asNode()
-          ))
-        );
+      return streamingResult(Response.ok(), stringConsumer -> {
+        //first save the archetype mappings
+        model
+          .listStatements(
+            null,
+            model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
+            (String) null
+          )
+          .forEachRemaining(statement ->
+            processor.process(vreName, true, new Triple(
+              statement.getSubject().asNode(),
+              statement.getPredicate().asNode(),
+              statement.getObject().asNode()
+            ))
+          );
 
-      rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
-        (triple) -> processor.process(vreName, true, triple));
-
-      //Give the collections a proper name
-      graphWrapper
-        .getGraph()
-        .traversal()
-        .V()
-        .hasLabel(Vre.DATABASE_LABEL)
-        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-        .out(HAS_COLLECTION_RELATION_NAME)
-        .forEachRemaining(v -> {
-          if (!v.property(COLLECTION_LABEL_PROPERTY_NAME).isPresent()) {
-            String typeName = v.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
-            v.property(COLLECTION_LABEL_PROPERTY_NAME, typeName.substring(vreName.length()));
-          }
+        int[] count = {0};
+        rmlMappingDocument.execute(new ErrorConsumer(stringConsumer)).forEach((triple) -> {
+          processor.process(vreName, true, triple);
+          count[0]++;
+          stringConsumer.accept("\n" + count[0]);
         });
 
-      tx.commit();
+        //Give the collections a proper name
+        graphWrapper
+          .getGraph()
+          .traversal()
+          .V()
+          .hasLabel(Vre.DATABASE_LABEL)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+          .out(HAS_COLLECTION_RELATION_NAME)
+          .forEachRemaining(v -> {
+            if (!v.property(COLLECTION_LABEL_PROPERTY_NAME).isPresent()) {
+              String typeName = v.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+              v.property(COLLECTION_LABEL_PROPERTY_NAME, typeName.substring(vreName.length()));
+            }
+          });
+
+        tx.commit();
+        vres.reload();
+      });
+
     }
+  }
 
-    vres.reload();
+  private Response streamingResult(Response.ResponseBuilder response, Consumer<Consumer<String>> runnable) {
+    final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
 
-    boolean hasError = graph.traversal().V()
-                            .hasLabel(Vre.DATABASE_LABEL)
-                            .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-                            .out(RAW_COLLECTION_EDGE_NAME)
-                            .out(HAS_NEXT_ERROR)
-                            .hasNext();
-
-    return Response.ok().entity(jsnO("success", jsn(!hasError))).build();
+    final int[] writeErrors = {0};
+    new Thread() {
+      public void run() {
+        try {
+          runnable.accept(str -> {
+            try {
+              output.write(str);
+            } catch (IOException e) {
+              if (LOG.isDebugEnabled() && writeErrors[0] < 10) {
+                writeErrors[0]++;
+                LOG.debug("error while writing to output", e);
+              }
+            }
+          });
+        } finally {
+          try {
+            output.close();
+          } catch (IOException e) {
+            LOG.error("error while writing to output", e);
+          }
+        }
+      }
+    }.start();
+    // the output will be probably returned even before
+    // a first chunk is written by the new thread
+    return response.entity(output).build();
   }
 }
