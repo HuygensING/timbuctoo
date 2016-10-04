@@ -1,0 +1,30 @@
+package nl.knaw.huygens.timbuctoo.database;
+
+import nl.knaw.huygens.timbuctoo.crud.Authorization;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import org.mockito.Matchers;
+import org.mockito.Mockito;
+
+public class AuthorizerBuilder {
+  public AuthorizerBuilder() {
+  }
+
+  public static Authorizer notAllowedToWrite() throws AuthorizationUnavailableException {
+    return createAuthorizer(false);
+  }
+
+  public static Authorizer allowedToWrite() throws AuthorizationUnavailableException {
+    return createAuthorizer(true);
+  }
+
+  static Authorizer createAuthorizer(boolean allowedToWrite) throws AuthorizationUnavailableException {
+    Authorizer authorizer = Mockito.mock(Authorizer.class);
+    Authorization authorization = Mockito.mock(Authorization.class);
+    Mockito.when(authorization.isAllowedToWrite()).thenReturn(allowedToWrite);
+    Mockito.when(authorizer.authorizationFor(Matchers.any(Collection.class), Matchers.anyString()))
+           .thenReturn(authorization);
+    return authorizer;
+  }
+}

@@ -4,9 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
@@ -30,7 +33,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toSet;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -44,13 +46,15 @@ public class JsonCrudService {
   private final Vres mappings;
   private final Clock clock;
   private final DataAccess dataAccess;
+  private final TimbuctooDbAccess timDbAccess;
   private final EntityToJsonMapper entityToJsonMapper;
 
   public JsonCrudService(Vres mappings, UserStore userStore, UrlGenerator relationUrlFor, Clock clock,
-                         DataAccess dataAccess) {
+                         DataAccess dataAccess, TimbuctooDbAccess timDbAccess) {
     this.mappings = mappings;
     this.clock = clock;
     this.dataAccess = dataAccess;
+    this.timDbAccess = timDbAccess;
     entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
   }
 
@@ -86,7 +90,7 @@ public class JsonCrudService {
     UUID targetId = asUuid(input, "^targetId");
     UUID typeId = asUuid(input, "^typeId");
 
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       try {
         UUID relationId = db.acceptRelation(
           sourceId,
@@ -116,16 +120,7 @@ public class JsonCrudService {
 
     Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
 
-    UUID id;
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
-      try {
-        id = db.createEntity(collection, baseCollection, createEntity, userId, clock.instant());
-        db.success();
-      } catch (IOException | AuthorizationException | AuthorizationUnavailableException e) {
-        db.rollback();
-        throw e;
-      }
-    }
+    UUID id = timDbAccess.createEntity(collection, baseCollection, createEntity, userId);
 
     return id;
   }
@@ -175,32 +170,23 @@ public class JsonCrudService {
   }
 
   private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
-    try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
 
-      try {
-        ReadEntity entity = dataAccessMethods.getEntity(id, rev, collection,
-          (entity1, entityVertex) -> {
+    ReadEntity entity = timDbAccess.getEntity(collection, id, rev,
+      (entity1, entityVertex) -> {
 
-          },
-          (traversalSource, vre, target, relationRef) -> {
+      },
+      (traversalSource, vre, target, relationRef) -> {
 
-          });
+      });
 
-        ObjectNode result = entityToJsonMapper.mapEntity(collection, entity, true,
-          (readEntity, resultJson) -> {
-          },
-          (relationRef, resultJson) -> {
-          }
-        );
-
-        dataAccessMethods.success();
-        return result;
-      } catch (NotFoundException e) {
-        dataAccessMethods.rollback();
-        throw e;
+    ObjectNode result = entityToJsonMapper.mapEntity(collection, entity, true,
+      (readEntity, resultJson) -> {
+      },
+      (relationRef, resultJson) -> {
       }
-    }
+    );
 
+    return result;
   }
 
   public List<ObjectNode> getCollection(String collectionName, int rows, int start, boolean withRelations)
@@ -208,24 +194,24 @@ public class JsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    try (DataAccess.DataAccessMethods dataAccessMethods = dataAccess.start()) {
-      Stream<ReadEntity> entities = dataAccessMethods.getCollection(collection, rows, start, withRelations,
-        (entity1, entityVertex) -> {
+    DataStream<ReadEntity> entities = timDbAccess.getCollection(collection, rows, start,withRelations,
+      (traversalSource, vre) -> {
 
-        },
-        (traversalSource, vre, target, relationRef) -> {
+      },
+      (entity1, entityVertex, target, relationRef) -> {
 
-        });
-      List<ObjectNode> result = entities.map(entity -> entityToJsonMapper.mapEntity(collection, entity, withRelations,
+      }
+    );
+    List<ObjectNode> result = entities.map(entity ->
+      entityToJsonMapper.mapEntity(collection, entity, withRelations,
         (readEntity, resultJson) -> {
         },
         (relationRef, resultJson) -> {
-        }
-      )).collect(Collectors.toList());
-      dataAccessMethods.success();
-      return result;
-    }
+        })
+    );
+    return result;
   }
+
 
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
     throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException, AuthorizationException,
@@ -261,7 +247,7 @@ public class JsonCrudService {
       }
     }
 
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       try {
         db.replaceRelation(collection, id, rev.asInt(), accepted.asBoolean(), userId, clock.instant());
         db.success();
@@ -286,7 +272,6 @@ public class JsonCrudService {
 
     UpdateEntity updateEntity = new UpdateEntity(id, properties, rev, clock.instant());
 
-
     final Map<String, LocalProperty> collectionProperties = collection.getWriteableProperties();
 
     Set<String> propertyNames =
@@ -297,16 +282,8 @@ public class JsonCrudService {
         throw new IOException(name + " is not a valid property");
       }
     }
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
-      try {
-        db.replaceEntity(collection, userId, updateEntity);
-        db.success();
-      } catch (NotFoundException | IOException | AlreadyUpdatedException | AuthorizationUnavailableException |
-        AuthorizationException e) {
-        db.rollback();
-        throw e;
-      }
-    }
+
+    timDbAccess.replaceEntity(collection, updateEntity, userId);
   }
 
   private Set<String> getDataFields(ObjectNode data) {
@@ -322,20 +299,10 @@ public class JsonCrudService {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
-      try {
-        db.deleteEntity(collection, id, userId, clock.instant());
-
-        //Make sure this is the last line of the method. We don't want to commit half our changes
-        //this also means checking each function that we call to see if they don't call commit()
-        db.success();
-      } catch (NotFoundException | AuthorizationException e) {
-        db.rollback();
-        throw e;
-      } catch (AuthorizationUnavailableException e) {
-        db.rollback();
-        throw new IOException(e.getMessage());
-      }
+    try {
+      timDbAccess.deleteEntity(collection, id, userId);
+    } catch (AuthorizationUnavailableException e) {
+      throw new IOException(e.getMessage());
     }
 
   }

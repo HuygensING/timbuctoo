@@ -8,8 +8,9 @@ import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.DataAccess.CustomEntityProperties;
-import nl.knaw.huygens.timbuctoo.database.DataAccess.CustomRelationProperties;
+import nl.knaw.huygens.timbuctoo.database.CustomEntityProperties;
+import nl.knaw.huygens.timbuctoo.database.CustomRelationProperties;
+import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper.ExtraEntityMappingOptions;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper.ExtraRelationMappingOptions;
@@ -80,7 +81,7 @@ public class WomenWritersJsonCrudService {
 
   private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
     ObjectNode result;
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       try {
         CustomEntityMapping customEntityMapping = new CustomEntityMapping();
         CustomRelationMapping customRelationMapping = new CustomRelationMapping();

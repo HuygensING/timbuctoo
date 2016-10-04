@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
@@ -99,9 +100,12 @@ public class JsonCrudServiceBuilder {
   }
 
   public JsonCrudService build() {
+    DataAccess dataAccess = new DataAccess(graphWrapper, entityFetcher, authorizer, changeListener, vres, handleAdder);
     return new JsonCrudService(vres, userStore,
       relationUrlGenerator, clock,
-      new DataAccess(graphWrapper, entityFetcher, authorizer, changeListener, vres, handleAdder));
+      dataAccess,
+      new TimbuctooDbAccess(authorizer,dataAccess, clock, handleAdder)
+      );
   }
 
   public JsonCrudService forGraph(Graph graph) {

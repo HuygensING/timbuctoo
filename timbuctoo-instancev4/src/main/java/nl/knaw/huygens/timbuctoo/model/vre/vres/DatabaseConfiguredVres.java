@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.model.vre.vres;
 
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -42,7 +43,7 @@ public class DatabaseConfiguredVres implements Vres {
   }
 
   public void reload() {
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       loadedInstance = db.loadVres();
     }
   }

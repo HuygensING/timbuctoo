@@ -17,7 +17,7 @@ public class DataAccessMethodsTest {
   @Test
   public void emptyDatabaseIsShownAsEmpty() throws Exception {
     DataAccess dataAccess = new DataAccess(newGraph().wrap(), null, null, null, null);
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       assertThat(db.databaseIsEmptyExceptForMigrations(), is(true));
     }
   }
@@ -32,7 +32,7 @@ public class DataAccessMethodsTest {
       null,
       null,
       null);
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       assertThat(db.databaseIsEmptyExceptForMigrations(), is(false));
     }
   }
@@ -48,7 +48,7 @@ public class DataAccessMethodsTest {
       null,
       null,
       null);
-    try (DataAccess.DataAccessMethods db = dataAccess.start()) {
+    try (DataAccessMethods db = dataAccess.start()) {
       db.ensureVreExists("SomeVre");
       assertThat(
         graphWrapper.getGraph().traversal().V()
