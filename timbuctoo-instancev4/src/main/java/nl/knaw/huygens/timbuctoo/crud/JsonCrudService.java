@@ -3,8 +3,6 @@ package nl.knaw.huygens.timbuctoo.crud;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
@@ -13,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
@@ -45,15 +44,13 @@ public class JsonCrudService {
 
   private final Vres mappings;
   private final Clock clock;
-  private final DataAccess dataAccess;
   private final TimbuctooDbAccess timDbAccess;
   private final EntityToJsonMapper entityToJsonMapper;
 
   public JsonCrudService(Vres mappings, UserStore userStore, UrlGenerator relationUrlFor, Clock clock,
-                         DataAccess dataAccess, TimbuctooDbAccess timDbAccess) {
+                         TimbuctooDbAccess timDbAccess) {
     this.mappings = mappings;
     this.clock = clock;
-    this.dataAccess = dataAccess;
     this.timDbAccess = timDbAccess;
     entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
   }
@@ -231,15 +228,10 @@ public class JsonCrudService {
       }
     }
 
-    try (DataAccessMethods db = dataAccess.start()) {
-      try {
-        db.replaceRelation(collection, id, rev.asInt(), accepted.asBoolean(), userId, clock.instant());
-        db.success();
-      } catch (NotFoundException | AuthorizationUnavailableException | AuthorizationException e) {
-        db.rollback();
-        throw e;
-      }
-    }
+    UpdateRelation updateRelation = new UpdateRelation(id, rev.asInt(), accepted.asBoolean());
+
+    timDbAccess.replaceRelation(collection, updateRelation, userId);
+
   }
 
   private void replaceEntity(Collection collection, UUID id, ObjectNode data, String userId)

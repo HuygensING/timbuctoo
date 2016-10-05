@@ -103,7 +103,6 @@ public class JsonCrudServiceBuilder {
     DataAccess dataAccess = new DataAccess(graphWrapper, entityFetcher, authorizer, changeListener, vres, handleAdder);
     return new JsonCrudService(vres, userStore,
       relationUrlGenerator, clock,
-      dataAccess,
       new TimbuctooDbAccess(authorizer,dataAccess, clock, handleAdder)
       );
   }

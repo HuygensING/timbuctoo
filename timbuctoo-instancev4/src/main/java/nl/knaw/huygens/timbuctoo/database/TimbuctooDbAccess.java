@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -144,5 +145,17 @@ public class TimbuctooDbAccess {
   }
 
 
+  public void replaceRelation(Collection collection, UpdateRelation updateRelation, String userId)
+    throws AuthorizationUnavailableException, AuthorizationException, NotFoundException {
+    checkIfAllowedToWrite(userId, collection);
+
+    updateRelation.setModified(createChange(userId));
+
+    UpdateReturnMessage updateMessage = dataAccess.updateRelation(collection, updateRelation);
+
+    if (updateMessage.getStatus() == UpdateReturnMessage.UpdateStatus.NOT_FOUND) {
+      throw new NotFoundException();
+    }
+  }
 }
 

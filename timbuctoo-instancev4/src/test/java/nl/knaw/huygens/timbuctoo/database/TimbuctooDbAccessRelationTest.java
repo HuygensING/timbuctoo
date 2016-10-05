@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
+import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import org.junit.Before;
@@ -22,6 +24,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class TimbuctooDbAccessRelationTest {
@@ -76,7 +79,11 @@ public class TimbuctooDbAccessRelationTest {
   public void createRelationThrowsAnUnauthorizedExceptionWhenTheUserIsNotAllowedToWrite() throws Exception {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(notAllowedToWrite(), dataAccess, clock, handleAdder);
 
-    instance.createRelation(collection, createRelation, USER_ID);
+    try {
+      instance.createRelation(collection, createRelation, USER_ID);
+    } finally {
+      verifyZeroInteractions(dataAccess);
+    }
   }
 
   @Test(expected = IOException.class)
@@ -86,6 +93,44 @@ public class TimbuctooDbAccessRelationTest {
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
     instance.createRelation(collection, createRelation, USER_ID);
+  }
+
+  @Test(expected = AuthorizationException.class)
+  public void replaceRelationThrowsAnAuthorizationExceptionWhenTheUsersIsNotAllowedToWrite() throws Exception {
+    TimbuctooDbAccess instance = new TimbuctooDbAccess(notAllowedToWrite(), dataAccess, clock, handleAdder);
+
+    try {
+      instance.replaceRelation(collection, new UpdateRelation(UUID.randomUUID(), 1, false), USER_ID);
+    } finally {
+      verifyZeroInteractions(dataAccess);
+    }
+  }
+
+  @Test
+  public void replaceRelationUpdatesARelation() throws Exception {
+    UUID id = UUID.randomUUID();
+    UpdateRelation updateRelation = new UpdateRelation(id, 1, false);
+    when(dataAccess.updateRelation(collection, updateRelation)).thenReturn(UpdateReturnMessage.success(1));
+    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+
+    instance.replaceRelation(collection, updateRelation, USER_ID);
+
+    verify(dataAccess).updateRelation(argThat(is(collection)), argThat(allOf(
+      hasProperty("id", is(id)),
+      hasProperty("modified", allOf(
+        hasProperty("userId", is(USER_ID)),
+        hasProperty("timeStamp", is(instant.toEpochMilli()))
+      ))
+    )));
+  }
+
+  @Test(expected = NotFoundException.class)
+  public void replaceRelationThrowsANotFoundExceptionWhenTheRelationCannotBeFound() throws Exception {
+    UpdateRelation updateRelation = new UpdateRelation(null, 1, false);
+    when(dataAccess.updateRelation(collection, updateRelation)).thenReturn(UpdateReturnMessage.notFound());
+    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+
+    instance.replaceRelation(collection, updateRelation, USER_ID);
   }
 
 }

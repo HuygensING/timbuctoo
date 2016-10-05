@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopCreateEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopDeleteEntity;
@@ -126,5 +127,9 @@ public class DataAccess {
 
   public CreateMessage createRelation(Collection collection, CreateRelation createRelation) {
     return executeAndReturn(new TinkerPopCreateRelation(collection, createRelation));
+  }
+
+  public UpdateReturnMessage updateRelation(Collection collection, UpdateRelation updateRelation) {
+    return executeAndReturn(new TinkerPopUpdateRelation(collection, updateRelation));
   }
 }

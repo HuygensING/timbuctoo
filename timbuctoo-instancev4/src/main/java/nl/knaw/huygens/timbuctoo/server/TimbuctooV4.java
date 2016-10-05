@@ -197,7 +197,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       userStore,
       pathWithoutVersionAndRevision,
       Clock.systemDefaultZone(),
-      dataAccess, timDbAccess);
+      timDbAccess);
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(

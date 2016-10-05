@@ -455,9 +455,8 @@ public class DataAccessMethods implements AutoCloseable {
 
   public void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
                               Instant instant)
-    throws NotFoundException, AuthorizationUnavailableException, AuthorizationException {
+    throws NotFoundException {
 
-    checkIfAllowedToWrite(authorizer, userId, collection);
     requireCommit = true;
 
     // FIXME: string concatenating methods like this should be delegated to a configuration class
