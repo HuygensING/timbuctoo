@@ -210,7 +210,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       vres,
       userStore,
       pathWithoutVersionAndRevision,
-      dataAccess);
+      timDbAccess);
 
 
     environment.lifecycle().manage(graphManager);

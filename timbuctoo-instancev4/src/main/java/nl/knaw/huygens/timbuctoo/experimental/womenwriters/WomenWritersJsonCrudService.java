@@ -7,10 +7,9 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
 import nl.knaw.huygens.timbuctoo.database.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.CustomRelationProperties;
-import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper.ExtraEntityMappingOptions;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper.ExtraRelationMappingOptions;
@@ -49,15 +48,15 @@ public class WomenWritersJsonCrudService {
 
   public static final Logger LOG = LoggerFactory.getLogger(WomenWritersJsonCrudService.class);
   private final Vres mappings;
-  private final DataAccess dataAccess;
+  private final TimbuctooDbAccess timDbAccess;
   private final EntityToJsonMapper entityToJsonMapper;
 
   public WomenWritersJsonCrudService(Vres mappings,
                                      UserStore userStore,
                                      UrlGenerator relationUrlFor,
-                                     DataAccess dataAccess) {
+                                     TimbuctooDbAccess timDbAccess) {
     this.mappings = mappings;
-    this.dataAccess = dataAccess;
+    this.timDbAccess = timDbAccess;
     entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
   }
 
@@ -80,23 +79,12 @@ public class WomenWritersJsonCrudService {
   }
 
   private JsonNode getEntity(UUID id, Integer rev, Collection collection) throws NotFoundException {
-    ObjectNode result;
-    try (DataAccessMethods db = dataAccess.start()) {
-      try {
-        CustomEntityMapping customEntityMapping = new CustomEntityMapping();
-        CustomRelationMapping customRelationMapping = new CustomRelationMapping();
+    CustomEntityMapping customEntityMapping = new CustomEntityMapping();
+    CustomRelationMapping customRelationMapping = new CustomRelationMapping();
 
-        ReadEntity entity = db.getEntity(id, rev, collection, customEntityMapping, customRelationMapping);
+    ReadEntity entity = timDbAccess.getEntity(collection, id, rev, customEntityMapping, customRelationMapping);
 
-        result = entityToJsonMapper.mapEntity(collection, entity, true, customEntityMapping, customRelationMapping);
-        db.success();
-      } catch (NotFoundException e) {
-        db.rollback();
-        throw e;
-      }
-    }
-
-    return result;
+    return entityToJsonMapper.mapEntity(collection, entity, true, customEntityMapping, customRelationMapping);
   }
 
   private static class CustomEntityMapping implements CustomEntityProperties, ExtraEntityMappingOptions {

@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -131,18 +132,21 @@ public class WomenWritersJsonCrudServiceTest {
   }
 
   private WomenWritersJsonCrudService createInstance(GraphWrapper graphWrapper, GremlinEntityFetcher entityFetcher) {
+    DataAccess dataAccess = new DataAccess(graphWrapper,
+      entityFetcher,
+      null, //no ChangeListener needed for get
+      vres,
+      mock(HandleAdder.class)
+    );
     return new WomenWritersJsonCrudService(
       vres,
       userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
-      new DataAccess(graphWrapper,
-        entityFetcher,
-        // no Authorizer needed for get
-        null, //no ChangeListener needed for get
-        vres,
+      new TimbuctooDbAccess(null, // no authorizer for get needed
+        dataAccess,
+        null, // no clock for get needed
         mock(HandleAdder.class)
-      )
-    );
+      ));
   }
 
   @Test
