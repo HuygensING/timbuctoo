@@ -9,12 +9,12 @@ import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -90,26 +90,10 @@ public class JsonCrudService {
     UUID targetId = asUuid(input, "^targetId");
     UUID typeId = asUuid(input, "^typeId");
 
-    try (DataAccessMethods db = dataAccess.start()) {
-      try {
-        UUID relationId = db.acceptRelation(
-          sourceId,
-          typeId,
-          targetId,
-          collection,
-          userId,
-          clock.instant()
-        );
-        db.success();
-        return relationId;
-      } catch (RelationNotPossibleException e) {
-        db.rollback();
-        throw new IOException(e.getMessage(), e);
-      } catch (AuthorizationException | AuthorizationUnavailableException e) {
-        db.rollback();
-        throw e;
-      }
-    }
+
+    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+
+    return timDbAccess.createRelation(collection, createRelation, userId);
   }
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)

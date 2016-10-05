@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
@@ -18,7 +19,6 @@ import java.io.IOException;
 import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.database.DeleteMessage.DeleteStatus.NOT_FOUND;
 
@@ -121,9 +121,28 @@ public class TimbuctooDbAccess {
   }
 
   public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
-                                          boolean withRelations, CustomEntityProperties entityProps,
+                                              boolean withRelations, CustomEntityProperties entityProps,
                                               CustomRelationProperties relationProps) {
     return dataAccess.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
+
+
+  public UUID createRelation(Collection collection, CreateRelation createRelation, String userId)
+    throws AuthorizationUnavailableException, AuthorizationException, IOException {
+    checkIfAllowedToWrite(userId, collection);
+
+    UUID id = UUID.randomUUID();
+    createRelation.setId(id);
+    createRelation.setCreated(createChange(userId));
+
+    CreateMessage createMessage = dataAccess.createRelation(collection, createRelation);
+    if (!createMessage.succeeded()) {
+      throw new IOException(createMessage.getErrorMessage().get());
+    }
+
+    return id;
+  }
+
+
 }
 

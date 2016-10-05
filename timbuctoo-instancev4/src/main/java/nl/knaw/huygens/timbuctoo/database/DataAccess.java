@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
@@ -124,4 +124,7 @@ public class DataAccess {
     return new TinkerPopGetCollection(collection, start, rows, withRelations, entityProps, relationProps, start());
   }
 
+  public CreateMessage createRelation(Collection collection, CreateRelation createRelation) {
+    return executeAndReturn(new TinkerPopCreateRelation(collection, createRelation));
+  }
 }

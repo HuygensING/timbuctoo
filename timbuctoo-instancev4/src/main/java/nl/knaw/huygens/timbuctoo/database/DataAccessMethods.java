@@ -250,10 +250,8 @@ public class DataAccessMethods implements AutoCloseable {
    * @throws AuthorizationException            if the user is not authorized
    */
   public UUID acceptRelation(UUID sourceId, UUID typeId, UUID targetId, Collection collection, String userId,
-                             Instant instant) throws RelationNotPossibleException, AuthorizationUnavailableException,
-    AuthorizationException {
+                             Instant instant) throws RelationNotPossibleException {
 
-    checkIfAllowedToWrite(authorizer, userId, collection);
     requireCommit = true;
     RelationType descs = getRelationDescription(traversal, typeId)
       .orElseThrow(notPossible("Relation type " + typeId + " does not exist"));
@@ -277,9 +275,9 @@ public class DataAccessMethods implements AutoCloseable {
         .orElseThrow(notPossible("Target vertex is not part of the VRE of " + collection.getCollectionName()));
       DirectionalRelationType desc = descs.getForDirection(sourceCollection, targetCollection)
                                           .orElseThrow(notPossible(
-                                                         "You can't have a " + descs.getOutName() + " from " +
-                                                           sourceCollection.getEntityTypeName() + " to " +
-                                                           targetCollection.getEntityTypeName() + " or vice versa"));
+                                            "You can't have a " + descs.getOutName() + " from " +
+                                              sourceCollection.getEntityTypeName() + " to " +
+                                              targetCollection.getEntityTypeName() + " or vice versa"));
 
       return createRelation(sourceV, targetV, desc, userId, collection, true, instant);
     }
@@ -628,7 +626,7 @@ public class DataAccessMethods implements AutoCloseable {
   }
 
   private void updateRelation(EntityRelation existingEdge, Collection collection, String userId, boolean accepted,
-                              Instant time) throws AuthorizationUnavailableException, AuthorizationException {
+                              Instant time) {
     final Edge origEdge = getExpectedEdge(traversal, existingEdge.getTimId().toString());
     final Edge newEdge = EdgeManipulator.duplicateEdge(origEdge);
     newEdge.property(collection.getEntityTypeName() + "_accepted", accepted);
@@ -637,8 +635,7 @@ public class DataAccessMethods implements AutoCloseable {
   }
 
   private UUID createRelation(Vertex source, Vertex target, DirectionalRelationType relationType,
-                              String userId, Collection collection, boolean accepted, Instant time) throws
-    AuthorizationException, AuthorizationUnavailableException {
+                              String userId, Collection collection, boolean accepted, Instant time) {
     UUID id = UUID.randomUUID();
     Edge edge = source.addEdge(
       relationType.getDbName(),
