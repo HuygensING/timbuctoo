@@ -137,7 +137,7 @@ public class WomenWritersJsonCrudServiceTest {
       (collection, id, rev) -> URI.create("http://example.com/"),
       new DataAccess(graphWrapper,
         entityFetcher,
-        null, // no Authorizer needed for get
+        // no Authorizer needed for get
         null, //no ChangeListener needed for get
         vres,
         mock(HandleAdder.class)

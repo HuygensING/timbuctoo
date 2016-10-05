@@ -16,7 +16,6 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopUpdateEntity;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 
 import java.util.Optional;
@@ -27,25 +26,23 @@ public class DataAccess {
 
   private final GraphWrapper graphwrapper;
   private final EntityFetcher entityFetcher;
-  private final Authorizer authorizer;
   private final ChangeListener listener;
   private final Vres mappings;
   private final HandleAdder handleAdder;
 
-  public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, Authorizer authorizer,
-                    ChangeListener listener, HandleAdder handleAdder) {
-    this(graphwrapper, entityFetcher, authorizer, listener, null, handleAdder);
+  public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, ChangeListener listener,
+                    HandleAdder handleAdder) {
+    this(graphwrapper, entityFetcher, listener, null, handleAdder);
   }
 
   /**
    * @deprecated Use the constructor without the mappings.
    */
   @Deprecated
-  public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, Authorizer authorizer,
-                    ChangeListener listener, Vres mappings, HandleAdder handleAdder) {
+  public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, ChangeListener listener, Vres mappings,
+                    HandleAdder handleAdder) {
     this.graphwrapper = graphwrapper;
     this.entityFetcher = entityFetcher;
-    this.authorizer = authorizer;
     this.listener = listener;
     this.mappings = mappings;
     this.handleAdder = handleAdder;
@@ -57,7 +54,7 @@ public class DataAccess {
    */
   @Deprecated
   public DataAccessMethods start() {
-    return new DataAccessMethods(graphwrapper, authorizer, listener, entityFetcher, mappings, handleAdder);
+    return new DataAccessMethods(graphwrapper, listener, entityFetcher, mappings, handleAdder);
   }
 
   public <T> T executeAndReturn(Function<DataAccessMethods, TransactionStateAndResult<T>> actions) {
@@ -119,8 +116,8 @@ public class DataAccess {
   }
 
   public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
-                                          boolean withRelations, CustomEntityProperties entityProps,
-                                          CustomRelationProperties relationProps) {
+                                              boolean withRelations, CustomEntityProperties entityProps,
+                                              CustomRelationProperties relationProps) {
 
     return new TinkerPopGetCollection(collection, start, rows, withRelations, entityProps, relationProps, start());
   }

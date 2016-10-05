@@ -49,7 +49,7 @@ public class LoadSaveVreTest {
     TestGraphBuilder testGraphBuilder = newGraph();
     init.accept(testGraphBuilder);
     GraphWrapper wrap = testGraphBuilder.wrap();
-    return tuple(new DataAccess(wrap, null, null, null, mock(HandleAdder.class)), wrap.getGraph());
+    return tuple(new DataAccess(wrap, null, null, mock(HandleAdder.class)), wrap.getGraph());
   }
 
   private List<Vertex> save(Vre vre, Tuple<DataAccess, Graph> dataAccess) {

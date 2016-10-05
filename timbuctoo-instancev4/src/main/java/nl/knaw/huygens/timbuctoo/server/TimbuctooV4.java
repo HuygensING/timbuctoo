@@ -182,7 +182,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
-    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, authorizer, changeListeners, handleAdder);
+    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, changeListeners, handleAdder);
     TimbuctooDbAccess timDbAccess = new TimbuctooDbAccess(
       authorizer,
       dataAccess,

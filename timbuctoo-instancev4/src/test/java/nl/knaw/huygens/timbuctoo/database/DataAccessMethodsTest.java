@@ -16,7 +16,7 @@ public class DataAccessMethodsTest {
 
   @Test
   public void emptyDatabaseIsShownAsEmpty() throws Exception {
-    DataAccess dataAccess = new DataAccess(newGraph().wrap(), null, null, null, null);
+    DataAccess dataAccess = new DataAccess(newGraph().wrap(), null, null, null);
     try (DataAccessMethods db = dataAccess.start()) {
       assertThat(db.databaseIsEmptyExceptForMigrations(), is(true));
     }
@@ -28,7 +28,6 @@ public class DataAccessMethodsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap(),
-      null,
       null,
       null,
       null);
@@ -44,7 +43,6 @@ public class DataAccessMethodsTest {
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
     DataAccess dataAccess = new DataAccess(graphWrapper,
-      null,
       null,
       null,
       null);

@@ -20,7 +20,7 @@ public class DatabaseRdfIndexTest {
   public void indexTest() throws Exception {
     final TinkerpopGraphManager mgr = newGraph().wrap();
     final Database database = new Database(mgr);
-    final DataAccess dataAccess = new DataAccess(mgr, null, null, mock(ChangeListener.class), mock(HandleAdder.class));
+    final DataAccess dataAccess = new DataAccess(mgr, null, mock(ChangeListener.class), mock(HandleAdder.class));
 
     new ScaffoldMigrator(dataAccess).execute();
     dataAccess.execute(db -> {

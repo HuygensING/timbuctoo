@@ -34,7 +34,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -82,7 +81,6 @@ import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 public class DataAccessMethods implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(DataAccessMethods.class);
   private final Transaction transaction;
-  private final Authorizer authorizer;
   private final ChangeListener listener;
   private final EntityFetcher entityFetcher;
   private final GraphTraversalSource traversal;
@@ -94,12 +92,11 @@ public class DataAccessMethods implements AutoCloseable {
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
-  DataAccessMethods(GraphWrapper graphWrapper, Authorizer authorizer, ChangeListener listener,
+  DataAccessMethods(GraphWrapper graphWrapper, ChangeListener listener,
                     EntityFetcher entityFetcher, Vres mappings, HandleAdder handleAdder) {
     graph = graphWrapper.getGraph();
     this.handleAdder = handleAdder;
     this.transaction = graph.tx();
-    this.authorizer = authorizer;
     this.listener = listener;
     this.entityFetcher = entityFetcher;
 
@@ -183,13 +180,6 @@ public class DataAccessMethods implements AutoCloseable {
       .has("tim_id", typeId.toString())
     )
       .map(RelationType::relationType);
-  }
-
-  private static void checkIfAllowedToWrite(Authorizer authorizer, String userId, Collection collection) throws
-    AuthorizationException, AuthorizationUnavailableException {
-    if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
-      throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
-    }
   }
 
   private static String[] getEntityTypes(Element element) {

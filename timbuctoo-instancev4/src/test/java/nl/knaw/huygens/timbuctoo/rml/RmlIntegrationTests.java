@@ -221,7 +221,7 @@ public class RmlIntegrationTests {
     public IntegrationTester() {
       graphManager = newGraph().wrap();
       traversalSource = graphManager.getGraph().traversal();
-      dataAccess = new DataAccess(graphManager, null, null, mock(ChangeListener.class), mock(HandleAdder.class));
+      dataAccess = new DataAccess(graphManager, null, mock(ChangeListener.class), mock(HandleAdder.class));
       new ScaffoldMigrator(dataAccess).execute();
 
       vres = new DatabaseConfiguredVres(dataAccess);
