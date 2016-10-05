@@ -171,6 +171,7 @@ public class Gremlin {
     List<JsonNode> nodes = Lists.newArrayList();
     List<JsonNode> links = Lists.newArrayList();
 
+    Map<Vertex, Integer> vertexNodeMap = Maps.newHashMap();
     for (Vertex vreVertex : vreVertices) {
       int vreRef = nodes.size();
       nodes.add(jsnO(
@@ -223,11 +224,24 @@ public class Gremlin {
                "source", jsn(entityRef),
                "type", jsn("isInCollection")
             ));
+            vertexNodeMap.put(entityVertex, entityRef);
           }
         }
       }
     }
 
+    vertexNodeMap.forEach((vertex, entityRef) -> {
+      vertex.edges(Direction.OUT).forEachRemaining((edge) -> {
+        Vertex targetV = edge.inVertex();
+        if (vertexNodeMap.containsKey(targetV)) {
+          links.add(jsnO(
+                  "type", jsn(edge.label()),
+                  "source", jsn(entityRef),
+                  "target", jsn(vertexNodeMap.get(targetV))
+          ));
+        }
+      });
+    });
     transaction.close();
     ObjectNode d3Data = jsnO("nodes", jsnA(nodes.stream()), "links", jsnA(links.stream()));
     return Response.ok(d3Data).build();
