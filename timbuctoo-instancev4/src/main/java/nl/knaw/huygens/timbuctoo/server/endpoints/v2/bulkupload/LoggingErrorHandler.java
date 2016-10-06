@@ -15,15 +15,13 @@ public class LoggingErrorHandler implements ErrorHandler {
 
   @Override
   public void linkError(Map<String, Object> rowData, String childField, String parentCollection, String parentField) {
-    if (LOG.isErrorEnabled()) {
-      if (rowData.get(childField) != null) {
-        LOG.error("Row's field '{}' with value '{}' could not be linked to field '{}' of the collection '{}'",
-          childField,
-          rowData.get(childField),
-          parentField,
-          parentCollection
-        );
-      }
+    if (rowData.get(childField) != null) {
+      LOG.error("Row's field '{}' with value '{}' could not be linked to field '{}' of the collection '{}'",
+        childField,
+        rowData.get(childField),
+        parentField,
+        parentCollection
+      );
     }
   }
 }
