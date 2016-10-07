@@ -22,7 +22,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSo
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -159,7 +158,6 @@ public class RmlIntegrationTest {
   }
 
   @Test
-  @Ignore
   public void handlesSameAsRelations() throws Exception {
     IntegrationTester tester = new IntegrationTester();
     tester.executeRawUpload("someVre", "persons", ImmutableList.of(
@@ -206,8 +204,11 @@ public class RmlIntegrationTest {
     GraphTraversal<Vertex, Vertex> karel = tester.traversalSource.V().has(T.label, LabelP.of("someVrepersons"));
     assertThat(karel.asAdmin().clone().count().next(), is(1L));
     String timId = (String) karel.asAdmin().clone().values("tim_id").next();
-    assertThat(karel.asAdmin().clone().values("rdfUri").next(), is(new String[] {
-      "http://timbuctoo.com/mapping/someVre/persons/" + timId,
+    assertThat(
+      karel.asAdmin().clone().values("rdfUri").next(),
+      is("http://timbuctoo.com/mapping/someVre/persons/" + timId)
+    );
+    assertThat(karel.asAdmin().clone().values("rdfAlternatives").next(), is(new String[] {
       "http://timbuctoo.com/mapping/someVre/persons/local/2"
     }));
   }
