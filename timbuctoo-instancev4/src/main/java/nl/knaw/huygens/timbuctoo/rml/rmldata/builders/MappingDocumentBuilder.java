@@ -66,9 +66,9 @@ public class MappingDocumentBuilder {
           RrTriplesMap requester = input.get(promise.getRequesterUri());
           if (running.contains(requester)) {
             //  if n has a temporary mark then invert the edge to make it an acyclic graph again
-            requestedTripleMaps
+/*            requestedTripleMaps
               .get(requester.getUri()) //must exist to be able to get here
-              .add(new PromisedTriplesMap(current.getUri(), true));
+              .add(new PromisedTriplesMap(current.getUri(), true));*/
           } else {
             //  if not: then recurse
             sortStep(requester, running, done, result, input);
@@ -88,6 +88,7 @@ public class MappingDocumentBuilder {
   }
 
   public RmlMappingDocument build(Function<RdfResource, Optional<DataSource>> dataSourceFactory) {
+/*
     Map<String, RrTriplesMap> triplesMaps =
       this.tripleMapBuilders.stream()
                             .map(tripleMapBuilder -> tripleMapBuilder.build(dataSourceFactory, this::getRrTriplesMap,
@@ -96,6 +97,25 @@ public class MappingDocumentBuilder {
                             .collect(Collectors.toMap(RrTriplesMap::getUri, x -> x));
 
     return new RmlMappingDocument(topologicalSort(triplesMaps, errors), errors);
+
+*/
+
+    List<RrTriplesMap> triplesMaps =
+      this.tripleMapBuilders.stream()
+                            .map(tripleMapBuilder -> tripleMapBuilder.build(dataSourceFactory, this::getRrTriplesMap,
+                              errors::add))
+                            .filter(x -> x != null)
+                            .collect(Collectors.toList());
+
+    for(RrTriplesMap current : triplesMaps) {
+      if (requestedTripleMaps.containsKey(current.getUri())) {
+        for (PromisedTriplesMap promise : requestedTripleMaps.get(current.getUri())) {
+          promise.setTriplesMap(current, false);
+        }
+      }
+    }
+
+    return new RmlMappingDocument(triplesMaps, errors);
   }
 
   private PromisedTriplesMap getRrTriplesMap(String requesterUri, String requestedUri) {

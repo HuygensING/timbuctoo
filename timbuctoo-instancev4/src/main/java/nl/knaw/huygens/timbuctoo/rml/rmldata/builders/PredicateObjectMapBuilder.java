@@ -69,5 +69,20 @@ public class PredicateObjectMapBuilder {
       );
     }
   }
+/*
+
+  void build(RrTriplesMap owningTriplesMap) {
+    if (this.referencingObjectMapBuilder != null) {
+      this.referencingObjectMapBuilder.build(
+        predicateMap,
+        owningTriplesMap
+      );
+    } else {
+      owningTriplesMap.addPredicateObjectMap(
+        new RrPredicateObjectMapOfTermMap(this.predicateMap.build(), this.objectMap.build())
+      );
+    }
+  }
+*/
 
 }

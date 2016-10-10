@@ -47,4 +47,14 @@ public class ReferencingObjectMapBuilder {
       }
     });
   }
+
+/*  public void build(TermMapBuilder predicateMap, RrTriplesMap ownTriplesMap) {
+    ownTriplesMap.addPredicateObjectMap(
+      new RrPredicateObjectMapOfReferencingObjectMap(
+        predicateMap.build(),
+        false,
+        new RrRefObjectMap(otherMap, rrJoinCondition, ownTriplesMap.getDataSource())
+      )
+    );
+  }*/
 }

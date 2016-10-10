@@ -71,4 +71,24 @@ public class TriplesMapBuilder {
     }
   }
 
+/*  RrTriplesMap build(Function<RdfResource, Optional<DataSource>> dataSourceFactory, Consumer<String> errorLogger) {
+
+
+    Optional<DataSource> dataSource = dataSourceFactory.apply(logicalSource);
+    if (dataSource.isPresent()) {
+      RrTriplesMap instance = new RrTriplesMap(
+        subjectMapBuilder.build(predicateObjectMapBuilders::add),
+        dataSource.get(),
+        uri
+      );
+
+      for (PredicateObjectMapBuilder builder : this.predicateObjectMapBuilders) {
+        builder.build(instance);
+      }
+      return instance;
+    } else {
+      errorLogger.accept("No datasource could be constructed for map " + uri);
+      return null;
+    }
+  }*/
 }
