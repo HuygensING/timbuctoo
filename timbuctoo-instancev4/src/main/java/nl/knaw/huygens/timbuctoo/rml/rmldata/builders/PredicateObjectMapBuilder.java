@@ -72,4 +72,10 @@ public class PredicateObjectMapBuilder {
     }
   }
 
+  String getReferencedMap() {
+    if (this.referencingObjectMapBuilder != null) {
+      return this.referencingObjectMapBuilder.getReferencedMap();
+    }
+    return null;
+  }
 }
