@@ -155,10 +155,14 @@ public class RmlMapperTest {
     final String theNamePredicate = "http://example.org/vocab#name";
     final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
 
-    List<Triple> result = rmlMappingDocument()
-      .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
-      .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
-      .build(makePersonDocumentSourceFactory())
+    RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
+            .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
+            .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
+            .build(makePersonDocumentSourceFactory());
+
+    System.out.println(rmlMappingDocument);
+
+    List<Triple> result = rmlMappingDocument
       .execute(new ThrowingErrorHandler())
       .collect(toList());
 
@@ -181,10 +185,13 @@ public class RmlMapperTest {
     final String theNamePredicate = "http://example.org/vocab#name";
     final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
 
-    List<Triple> result = rmlMappingDocument()
-      .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
-      .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
-      .build(makePersonDocumentSourceFactory())
+    RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
+            .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
+            .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
+            .build(makePersonDocumentSourceFactory());
+    System.out.println(rmlMappingDocument);
+
+    List<Triple> result = rmlMappingDocument
       .execute(new ThrowingErrorHandler())
       .collect(toList());
 
@@ -273,11 +280,25 @@ public class RmlMapperTest {
     List<Triple> result = rmlMappingDocument
             .execute(new ThrowingErrorHandler())
             .collect(toList());
-    System.out.println(result);
+
+    assertThat(result, containsInAnyOrder(
+            likeTriple(
+                    uri("http://www.example.org/persons/1"),
+                    uri(theNamePredicate),
+                    literal("Bill")
+            ),
+            likeTriple(
+                    uri("http://www.example.org/persons/1"),
+                    uri(theCoAuthorOfPredicate),
+                    uri("http://www.example.org/documents/1")
+            ),
+            likeTriple(
+                    uri("http://www.example.org/documents/1"),
+                    uri(theWrittenByPredicate),
+                    uri("http://www.example.org/persons/1")
+            )
+    ));
   }
-
-
-
 
   @Test
   public void whenALinkToAnOtherObjectIsNotAvailableTheExceptionIsRegistered() {
