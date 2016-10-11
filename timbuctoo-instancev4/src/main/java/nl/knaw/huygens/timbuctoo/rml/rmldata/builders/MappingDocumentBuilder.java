@@ -24,7 +24,6 @@ import java.util.stream.Stream;
 public class MappingDocumentBuilder {
   private List<TriplesMapBuilder> tripleMapBuilders = new ArrayList<>();
   private Map<String, List<PromisedTriplesMap>> requestedTripleMaps = new HashMap<>();
-  private Map<String, List<PromisedTriplesMapBuilder>> requestedTripleMapBuilders = new HashMap<>();
   private List<String> errors = new ArrayList<>();
 
   public MappingDocumentBuilder(){
@@ -44,9 +43,11 @@ public class MappingDocumentBuilder {
 
   private static class MarkedBuilder {
     enum MarkType { UNMARKED, RUNNING, DONE }
+
     TriplesMapBuilder triplesMapBuilder;
     String uri;
     MarkType mark = MarkType.UNMARKED;
+
     MarkedBuilder(TriplesMapBuilder triplesMapBuilder) {
       this.triplesMapBuilder = triplesMapBuilder;
       this.uri = triplesMapBuilder.getUri();
@@ -67,7 +68,7 @@ public class MappingDocumentBuilder {
     LinkedList<TriplesMapBuilder> result = Lists.newLinkedList();
 
 
-    while(input.stream().filter(MarkedBuilder::isUnMarked).iterator().hasNext()) {
+    while (input.stream().filter(MarkedBuilder::isUnMarked).iterator().hasNext()) {
       MarkedBuilder current = input.stream().filter(MarkedBuilder::isUnMarked).iterator().next();
       sortStep(current, Lists.newArrayList(current.uri), result, input);
     }
@@ -119,8 +120,7 @@ public class MappingDocumentBuilder {
   private void sortStep(MarkedBuilder current, List<String> pathToCurrent,
                         LinkedList<TriplesMapBuilder> result,
                         List<MarkedBuilder> input) {
-
-     if (current.isUnMarked()) {
+    if (current.isUnMarked()) {
       current.mark = MarkedBuilder.MarkType.RUNNING;
       for (String uriOfDependency : current.triplesMapBuilder.getReferencedTriplesMaps()) {
         MarkedBuilder dependentBuilder = findBuilderForUri(input, uriOfDependency);
@@ -130,7 +130,7 @@ public class MappingDocumentBuilder {
                   .concat(pathToCurrent.stream(), Lists.newArrayList(dependentBuilder.uri).stream())
                   .collect(Collectors.toList());
 
-          if(dependentBuilder.isRunning()) {
+          if (dependentBuilder.isRunning()) {
             // fix this circular dependency later,
             // sort everything we can sort here.
           } else {
