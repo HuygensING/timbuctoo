@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.builders;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
@@ -19,6 +18,7 @@ public class TriplesMapBuilder {
   private SubjectMapBuilder subjectMapBuilder;
   private List<PredicateObjectMapBuilder> predicateObjectMapBuilders = new ArrayList<>();
   private final String uri;
+  private Consumer<SubjectMapBuilder> subjectMap;
 
   TriplesMapBuilder(String uri) {
     this.uri = uri;
@@ -39,6 +39,12 @@ public class TriplesMapBuilder {
     return this.subjectMapBuilder;
   }
 
+  public TriplesMapBuilder withSubjectMapBuilder(SubjectMapBuilder subBuilder) {
+    this.subjectMapBuilder = subBuilder;
+    return this;
+  }
+
+
   public TriplesMapBuilder withPredicateObjectMap(Consumer<PredicateObjectMapBuilder> subBuilder) {
     subBuilder.accept(withPredicateObjectMap());
     return this;
@@ -52,11 +58,37 @@ public class TriplesMapBuilder {
   }
 
   List<String> getReferencedTriplesMaps() {
-    return predicateObjectMapBuilders.stream()
-            .map(PredicateObjectMapBuilder::getReferencedMap)
-            .filter(x -> x != null)
-            .collect(Collectors.toList());
+    return predicateObjectMapBuilders
+      .stream()
+      .map(PredicateObjectMapBuilder::getReferencedMap)
+      .filter(x -> x != null)
+      .collect(Collectors.toList());
   }
+
+  List<PredicateObjectMapBuilder> withoutPredicatesReferencing(String uri) {
+    final List<PredicateObjectMapBuilder> buildersToRemove = predicateObjectMapBuilders
+            .stream()
+            .filter(builder -> builder.getReferencedMap() != null && builder.getReferencedMap().equals(uri))
+            .collect(Collectors.toList());
+
+    predicateObjectMapBuilders.removeAll(buildersToRemove);
+
+    return buildersToRemove;
+  }
+
+  TriplesMapBuilder withPredicateObjectMapBuilders(List<PredicateObjectMapBuilder> refs) {
+    this.predicateObjectMapBuilders = refs;
+    return this;
+  }
+
+  RdfResource getLogicalSource() {
+    return logicalSource;
+  }
+
+  SubjectMapBuilder getSubjectMapBuilder() {
+    return subjectMapBuilder;
+  }
+
 
   RrTriplesMap build(Function<RdfResource, Optional<DataSource>> dataSourceFactory,
                      BiFunction<String, String, PromisedTriplesMap> getTriplesMap, Consumer<String> errorLogger) {
@@ -64,6 +96,7 @@ public class TriplesMapBuilder {
 
     Optional<DataSource> dataSource = dataSourceFactory.apply(logicalSource);
     if (dataSource.isPresent()) {
+
       RrTriplesMap instance = new RrTriplesMap(
         subjectMapBuilder.build(predicateObjectMapBuilders::add),
         dataSource.get(),

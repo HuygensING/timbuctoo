@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -58,11 +59,13 @@ public class MappingDocumentBuilder {
 
     Set<TriplesMapBuilder> done = new HashSet<>();
     LinkedList<TriplesMapBuilder> result = new LinkedList<>();
+    List<TriplesMapBuilder> referenced = new LinkedList<>();
 
     for (TriplesMapBuilder rrTriplesMap : input.values()) {
-      sortStep(rrTriplesMap, new HashSet<>(), done, result, input);
+      sortStep(rrTriplesMap, new HashSet<>(), done, result, input, referenced);
     }
 
+    result.addAll(referenced);
     for (String uri : requestedTripleMapBuilders.keySet()) {
       errors.add("Triple map with URI " + uri + " is referenced as the parentTriplesMap of a referencingObjectMap, " +
               "but never defined");
@@ -71,7 +74,8 @@ public class MappingDocumentBuilder {
   }
 
   private void sortStep(TriplesMapBuilder current, Set<TriplesMapBuilder> running, Set<TriplesMapBuilder> done,
-                        LinkedList<TriplesMapBuilder> result, Map<String, TriplesMapBuilder> input) {
+                        LinkedList<TriplesMapBuilder> result, Map<String, TriplesMapBuilder> input,
+                        List<TriplesMapBuilder> referenced) {
     //   if n is not marked (i.e. has not been visited yet) then
     if (!done.contains(current)) {
       //      mark n temporarily
@@ -81,16 +85,25 @@ public class MappingDocumentBuilder {
         for (PromisedTriplesMapBuilder promise : requestedTripleMapBuilders.get(current.getUri())) {
           TriplesMapBuilder requester = input.get(promise.getRequesterUri());
           if (running.contains(requester)) {
-            // if n has a temporary mark then invert the edge to make it an acyclic graph again
-            /*
-              requestedTripleMaps
-              .get(requester.getUri()) //must exist to be able to get here
-              .add(new PromisedTriplesMap(current.getUri(), true));*/
+            // if n has a temporary mark then split off the mapper with the edge to make it an acyclic graph again
+
+            // Remove the PredicateObjectMapBuilders referencing the requester
+            final List<PredicateObjectMapBuilder> refs = current.withoutPredicatesReferencing(requester.getUri());
+
+            // Create a new triplesMapBuilder with the PredicateObjectMapBuilders referencing the requester
+            final String newTriplesMapUri = String.format("%s/split/%s", current.getUri(), UUID.randomUUID());
+            final TriplesMapBuilder triplesMapBuilderWithReferences =
+              new TriplesMapBuilder(newTriplesMapUri)
+                  .withLogicalSource(current.getLogicalSource())
+                  .withSubjectMapBuilder(current.getSubjectMapBuilder())
+                  .withPredicateObjectMapBuilders(refs);
+
+            referenced.add(triplesMapBuilderWithReferences);
+
           } else {
             //  if not: then recurse
-            sortStep(requester, running, done, result, input);
+            sortStep(requester, running, done, result, input, referenced);
           }
-          //really create the edges
         }
         requestedTripleMapBuilders.remove(current.getUri());
       }

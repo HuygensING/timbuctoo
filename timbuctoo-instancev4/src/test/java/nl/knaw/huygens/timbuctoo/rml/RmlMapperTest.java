@@ -31,6 +31,7 @@ import static nl.knaw.huygens.timbuctoo.rml.TripleMatcher.likeTriple;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument.rmlMappingDocument;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -200,6 +201,61 @@ public class RmlMapperTest {
   }
 
   @Test
+  public void canHandleCircularReferenceToSelf() {
+    final String theNamePredicate = "http://example.org/vocab#name";
+    final String theIsParentOfPredicate = "http://example.org/vocab#isParentOf";
+    final String theIsRelatedToPredicate = "http://example.org/vocab#isRelatedTo";
+
+    DataSource input = new TestDataSource(Lists.newArrayList(
+      ImmutableMap.of(
+              "rdfUri", "http://example.com/persons/1",
+              "naam", "Bill",
+              "parentOf", "Joe",
+              "relatedTo", ""
+      ),
+      ImmutableMap.of(
+              "rdfUri", "http://example.com/persons/2",
+              "naam", "Joe",
+              "parentOf", "",
+              "relatedTo", "Bill")
+    ));
+
+    List<Triple> result = rmlMappingDocument()
+            .withTripleMap("http://example.org/personsMap",
+                    makePersonMap(theNamePredicate, theIsParentOfPredicate, theIsRelatedToPredicate))
+            .build(x -> Optional.of(input))
+            .execute(new LoggingErrorHandler())
+            .collect(toList());
+
+    assertThat(result, containsInAnyOrder(
+      likeTriple(
+        uri("http://example.com/persons/1"),
+        uri(theNamePredicate),
+        literal("Bill")
+      ),
+      likeTriple(
+        uri("http://example.com/persons/2"),
+        uri(theNamePredicate),
+        literal("Joe")
+      ),
+      likeTriple(
+        uri("http://example.com/persons/1"),
+        uri(theIsParentOfPredicate),
+        uri("http://example.com/persons/2")
+      ),
+      likeTriple(
+        uri("http://example.com/persons/2"),
+        uri(theIsRelatedToPredicate),
+        uri("http://example.com/persons/1")
+      )
+
+    ));
+  }
+
+
+
+
+  @Test
   public void whenALinkToAnOtherObjectIsNotAvailableTheExceptionIsRegistered() {
     ErrorHandler errorHandler = mock(ErrorHandler.class);
 
@@ -252,6 +308,31 @@ public class RmlMapperTest {
       .withPredicateObjectMap(pom -> pom
         .withPredicate(theNamePredicate)
         .withObjectMap(tm -> tm.withColumnTerm("naam"))
+      );
+  }
+
+  private Consumer<TriplesMapBuilder> makePersonMap(String theNamePredicate, String theIsParentOfPredicate,
+                                                    String theIsRelatedToPredicate) {
+    return trip -> trip
+      .withLogicalSource(rdf("http://example.org/persons"))
+      .withSubjectMap(sm -> sm
+        .withTermMap(tm -> tm.withColumnTerm("rdfUri"))
+      )
+      .withPredicateObjectMap(pom -> pom
+        .withPredicate(theNamePredicate)
+        .withObjectMap(tm -> tm.withColumnTerm("naam"))
+      ).withPredicateObjectMap(pom -> pom
+        .withPredicate(theIsParentOfPredicate)
+        .withReference(rm -> rm
+          .withParentTriplesMap("http://example.org/personsMap")
+          .withJoinCondition("parentOf", "naam")
+        )
+      ).withPredicateObjectMap(pom -> pom
+        .withPredicate(theIsRelatedToPredicate)
+        .withReference(rm -> rm
+          .withParentTriplesMap("http://example.org/personsMap")
+          .withJoinCondition("relatedTo", "naam")
+        )
       );
   }
 
