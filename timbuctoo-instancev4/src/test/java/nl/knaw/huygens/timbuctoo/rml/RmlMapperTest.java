@@ -5,12 +5,14 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfLiteral;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
+import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.PredicateObjectMapBuilder;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.ReferencingObjectMapBuilder;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.SubjectMapBuilder;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.TermMapBuilder;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.TriplesMapBuilder;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
+import org.apache.jena.base.Sys;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
@@ -220,12 +222,15 @@ public class RmlMapperTest {
               "relatedTo", "Bill")
     ));
 
-    List<Triple> result = rmlMappingDocument()
+    RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
             .withTripleMap("http://example.org/personsMap",
                     makePersonMap(theNamePredicate, theIsParentOfPredicate, theIsRelatedToPredicate))
-            .build(x -> Optional.of(input))
+            .build(x -> Optional.of(input));
+    List<Triple> result = rmlMappingDocument
             .execute(new LoggingErrorHandler())
             .collect(toList());
+
+    System.out.println(rmlMappingDocument);
 
     assertThat(result, containsInAnyOrder(
       likeTriple(
@@ -248,8 +253,27 @@ public class RmlMapperTest {
         uri(theIsRelatedToPredicate),
         uri("http://example.com/persons/1")
       )
-
     ));
+  }
+
+  @Test
+  public void canHandleCircularReferenceWithIndirection() {
+    final String theNamePredicate = "http://example.org/vocab#name";
+    final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
+    final String theCoAuthorOfPredicate = "http://example.org/vocab#coAuthorOf";
+
+    RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
+            .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
+            .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate, theCoAuthorOfPredicate))
+            .build(makePersonDocumentSourceFactory());
+
+
+    System.out.println(rmlMappingDocument);
+
+    List<Triple> result = rmlMappingDocument
+            .execute(new ThrowingErrorHandler())
+            .collect(toList());
+    System.out.println(result);
   }
 
 
@@ -311,6 +335,25 @@ public class RmlMapperTest {
       );
   }
 
+  private Consumer<TriplesMapBuilder> makePersonMap(String theNamePredicate, String theCoAuthorOfPredicate) {
+    return trip -> trip
+      .withLogicalSource(rdf("http://example.org/persons"))
+      .withSubjectMap(sm -> sm
+        .withTermMap(tm -> tm.withColumnTerm("rdfUri"))
+      )
+      .withPredicateObjectMap(pom -> pom
+        .withPredicate(theNamePredicate)
+        .withObjectMap(tm -> tm.withColumnTerm("naam"))
+      )
+      .withPredicateObjectMap(pom -> pom
+        .withPredicate(theCoAuthorOfPredicate)
+        .withReference(rm -> rm
+          .withParentTriplesMap("http://example.org/documentsMap")
+          .withJoinCondition("heeftMeegeschrevenAan", "doc_id")
+        )
+      );
+  }
+
   private Consumer<TriplesMapBuilder> makePersonMap(String theNamePredicate, String theIsParentOfPredicate,
                                                     String theIsRelatedToPredicate) {
     return trip -> trip
@@ -341,13 +384,15 @@ public class RmlMapperTest {
       if (logicalSource.asIri().get().equals("http://example.org/persons")) {
         return Optional.of(new TestDataSource(Lists.newArrayList(ImmutableMap.of(
           "rdfUri", "http://www.example.org/persons/1",
-          "naam", "Bill"
+          "naam", "Bill",
+          "heeftMeegeschrevenAan", "1"
         ))));
       }
       if (logicalSource.asIri().get().equals("http://example.org/documents")) {
         return Optional.of(new TestDataSource(Lists.newArrayList(ImmutableMap.of(
           "rdfUri", "http://www.example.org/documents/1",
-          "geschrevenDoor", "Bill"
+          "geschrevenDoor", "Bill",
+          "doc_id", "1"
         ))));
       }
       return null;

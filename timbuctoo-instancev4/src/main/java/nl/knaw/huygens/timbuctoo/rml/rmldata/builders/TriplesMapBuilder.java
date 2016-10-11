@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -18,7 +19,6 @@ public class TriplesMapBuilder {
   private SubjectMapBuilder subjectMapBuilder;
   private List<PredicateObjectMapBuilder> predicateObjectMapBuilders = new ArrayList<>();
   private final String uri;
-  private Consumer<SubjectMapBuilder> subjectMap;
 
   TriplesMapBuilder(String uri) {
     this.uri = uri;
@@ -57,12 +57,12 @@ public class TriplesMapBuilder {
     return subBuilder;
   }
 
-  List<String> getReferencedTriplesMaps() {
+  Set<String> getReferencedTriplesMaps() {
     return predicateObjectMapBuilders
       .stream()
       .map(PredicateObjectMapBuilder::getReferencedMap)
       .filter(x -> x != null)
-      .collect(Collectors.toList());
+      .collect(Collectors.toSet());
   }
 
   List<PredicateObjectMapBuilder> withoutPredicatesReferencing(String uri) {

@@ -39,6 +39,7 @@ public class MappingDocumentBuilder {
   }
 
   /*
+  // TODO:
   SortedList ← Empty list that will contain the sorted nodes
   while there are unmarked nodes do
       select a node n that os not yet in list SortedList
@@ -55,79 +56,40 @@ public class MappingDocumentBuilder {
   //Algorithm from https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
   //adapted to be able to handle cyclic graphs.
   //A cycle is broken by inverting the edge
-  private List<TriplesMapBuilder> topologicalSort(Map<String, TriplesMapBuilder> input, List<String> errors) {
+
+  private List<TriplesMapBuilder> splitBuilders(List<TriplesMapBuilder> result) {
 
     Set<TriplesMapBuilder> done = new HashSet<>();
-    LinkedList<TriplesMapBuilder> result = new LinkedList<>();
     List<TriplesMapBuilder> referenced = new LinkedList<>();
 
-    for (TriplesMapBuilder rrTriplesMap : input.values()) {
-      sortStep(rrTriplesMap, new HashSet<>(), done, result, input, referenced);
-    }
+    for (TriplesMapBuilder current : result) {
+      for (String uriOfReferencedTriplesMap : current.getReferencedTriplesMaps()) {
+        if (!done.stream().map(d -> d.getUri()).collect(Collectors.toList()).contains(uriOfReferencedTriplesMap)) {
+          final List<PredicateObjectMapBuilder> refs = current.withoutPredicatesReferencing(uriOfReferencedTriplesMap);
 
-    result.addAll(referenced);
-    for (String uri : requestedTripleMapBuilders.keySet()) {
-      errors.add("Triple map with URI " + uri + " is referenced as the parentTriplesMap of a referencingObjectMap, " +
-              "but never defined");
+          // Create a new triplesMapBuilder with the PredicateObjectMapBuilders referencing the requester
+          final String newTriplesMapUri = String.format("%s/split/%s", current.getUri(), UUID.randomUUID());
+          final TriplesMapBuilder triplesMapBuilderWithReferences =
+                  new TriplesMapBuilder(newTriplesMapUri)
+                          .withLogicalSource(current.getLogicalSource())
+                          .withSubjectMapBuilder(current.getSubjectMapBuilder())
+                          .withPredicateObjectMapBuilders(refs);
+
+          referenced.add(triplesMapBuilderWithReferences);
+        }
+      }
+
+
+      done.add(current);
     }
+    result.addAll(referenced);
+
     return result;
   }
 
-  private void sortStep(TriplesMapBuilder current, Set<TriplesMapBuilder> running, Set<TriplesMapBuilder> done,
-                        LinkedList<TriplesMapBuilder> result, Map<String, TriplesMapBuilder> input,
-                        List<TriplesMapBuilder> referenced) {
-    //   if n is not marked (i.e. has not been visited yet) then
-    if (!done.contains(current)) {
-      //      mark n temporarily
-      running.add(current);
-      //      for each node m with an edge from n to m do
-      if (requestedTripleMapBuilders.containsKey(current.getUri())) {
-        for (PromisedTriplesMapBuilder promise : requestedTripleMapBuilders.get(current.getUri())) {
-          TriplesMapBuilder requester = input.get(promise.getRequesterUri());
-          if (running.contains(requester)) {
-            // if n has a temporary mark then split off the mapper with the edge to make it an acyclic graph again
-
-            // Remove the PredicateObjectMapBuilders referencing the requester
-            final List<PredicateObjectMapBuilder> refs = current.withoutPredicatesReferencing(requester.getUri());
-
-            // Create a new triplesMapBuilder with the PredicateObjectMapBuilders referencing the requester
-            final String newTriplesMapUri = String.format("%s/split/%s", current.getUri(), UUID.randomUUID());
-            final TriplesMapBuilder triplesMapBuilderWithReferences =
-              new TriplesMapBuilder(newTriplesMapUri)
-                  .withLogicalSource(current.getLogicalSource())
-                  .withSubjectMapBuilder(current.getSubjectMapBuilder())
-                  .withPredicateObjectMapBuilders(refs);
-
-            referenced.add(triplesMapBuilderWithReferences);
-
-          } else {
-            //  if not: then recurse
-            sortStep(requester, running, done, result, input, referenced);
-          }
-        }
-        requestedTripleMapBuilders.remove(current.getUri());
-      }
-      //      mark n permanently
-      done.add(current);
-      //      unmark n temporarily
-      running.remove(current);
-      //      add n to head of L
-      result.addFirst(current);
-    }
-  }
-
   public RmlMappingDocument build(Function<RdfResource, Optional<DataSource>> dataSourceFactory) {
-    final Map<String, TriplesMapBuilder> builderMaps = this.tripleMapBuilders
-      .stream()
-      .map(tripleMapBuilder -> {
-        tripleMapBuilder
-                .getReferencedTriplesMaps()
-                .forEach(requestedUri -> putTriplesMapBuilder(tripleMapBuilder.getUri(), requestedUri));
-        return tripleMapBuilder;
-      })
-      .collect(Collectors.toMap(TriplesMapBuilder::getUri, x -> x));
 
-    final List<RrTriplesMap> triplesMaps = topologicalSort(builderMaps, errors)
+    final List<RrTriplesMap> triplesMaps = splitBuilders(this.tripleMapBuilders)
       .stream()
       .map(tripleMapBuilder -> tripleMapBuilder.build(dataSourceFactory, this::getRrTriplesMap, errors::add))
       .filter(x -> x != null)
@@ -143,20 +105,6 @@ public class MappingDocumentBuilder {
     }
 
     return new RmlMappingDocument(triplesMaps, errors);
-  }
-
-  private void putTriplesMapBuilder(String requesterUri, String requestedUri) {
-    Optional<TriplesMapBuilder> found = this.tripleMapBuilders
-            .stream().filter(builder -> builder.getUri().equals(requestedUri)).findFirst();
-
-    if (found.isPresent()) {
-      PromisedTriplesMapBuilder promisedTriplesMapBuilder =
-              new PromisedTriplesMapBuilder(requesterUri, found.get());
-
-      requestedTripleMapBuilders
-              .computeIfAbsent(found.get().getUri(), key -> new ArrayList<>())
-              .add(promisedTriplesMapBuilder);
-    }
   }
 
   private PromisedTriplesMap getRrTriplesMap(String requesterUri, String requestedUri) {
