@@ -1,0 +1,466 @@
+java_library(
+  name = 'dropwizard-assets',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-assets_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-assets_jar',
+  binary_jar = ':dropwizard-assets_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard:dropwizard-core',
+    '//buckbuild/jars/io/dropwizard:dropwizard-servlets',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-assets.jar',
+  name = 'dropwizard-assets_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-assets/0.9.1/dropwizard-assets-0.9.1.jar',
+  sha1 = 'dcd9231646bc3307ad2abd419382103a3b2eafcb',
+)
+
+java_library(
+  name = 'dropwizard-client',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-client_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-client_jar',
+  binary_jar = ':dropwizard-client_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-httpclient',
+    '//buckbuild/jars/io/dropwizard:dropwizard-core',
+    '//buckbuild/jars/org/apache/httpcomponents:httpclient',
+    '//buckbuild/jars/org/glassfish/jersey/connectors:jersey-apache-connector',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-client',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-client.jar',
+  name = 'dropwizard-client_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-client/0.9.1/dropwizard-client-0.9.1.jar',
+  sha1 = 'a7f3da8b32761ccb58f34283d0d1f5fe1bac270b',
+)
+
+java_library(
+  name = 'dropwizard-configuration',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-configuration_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-configuration_jar',
+  binary_jar = ':dropwizard-configuration_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/dataformat:jackson-dataformat-yaml',
+    '//buckbuild/jars/io/dropwizard:dropwizard-jackson',
+    '//buckbuild/jars/io/dropwizard:dropwizard-validation',
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-configuration.jar',
+  name = 'dropwizard-configuration_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-configuration/0.9.1/dropwizard-configuration-0.9.1.jar',
+  sha1 = 'ec81e18b8024e3b1877be2c22ce6e9d1b19a1e84',
+)
+
+java_library(
+  name = 'dropwizard-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-core_jar',
+  binary_jar = ':dropwizard-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-healthchecks',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-jvm',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-servlets',
+    '//buckbuild/jars/io/dropwizard:dropwizard-configuration',
+    '//buckbuild/jars/io/dropwizard:dropwizard-jackson',
+    '//buckbuild/jars/io/dropwizard:dropwizard-jersey',
+    '//buckbuild/jars/io/dropwizard:dropwizard-jetty',
+    '//buckbuild/jars/io/dropwizard:dropwizard-lifecycle',
+    '//buckbuild/jars/io/dropwizard:dropwizard-logging',
+    '//buckbuild/jars/io/dropwizard:dropwizard-metrics',
+    '//buckbuild/jars/io/dropwizard:dropwizard-servlets',
+    '//buckbuild/jars/io/dropwizard:dropwizard-util',
+    '//buckbuild/jars/io/dropwizard:dropwizard-validation',
+    '//buckbuild/jars/net/sourceforge/argparse4j:argparse4j',
+    '//buckbuild/jars/org/eclipse/jetty/toolchain/setuid:jetty-setuid-java',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-core.jar',
+  name = 'dropwizard-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-core/0.9.1/dropwizard-core-0.9.1.jar',
+  sha1 = 'e3c2626fc3372b7d7c0fa47981d6c1a176ac4a43',
+)
+
+java_library(
+  name = 'dropwizard-forms',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-forms_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-forms_jar',
+  binary_jar = ':dropwizard-forms_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard:dropwizard-core',
+    '//buckbuild/jars/org/glassfish/jersey/media:jersey-media-multipart',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-forms.jar',
+  name = 'dropwizard-forms_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-forms/0.9.1/dropwizard-forms-0.9.1.jar',
+  sha1 = 'eeebd173e8a6c09c7771ae33504e0093d4fd106b',
+)
+
+java_library(
+  name = 'dropwizard-jackson',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-jackson_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-jackson_jar',
+  binary_jar = ':dropwizard-jackson_remote_jar',
+  deps = [
+    '//buckbuild/jars/ch/qos/logback:logback-classic',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-annotations',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+    '//buckbuild/jars/com/fasterxml/jackson/datatype:jackson-datatype-guava',
+    '//buckbuild/jars/com/fasterxml/jackson/datatype:jackson-datatype-jdk7',
+    '//buckbuild/jars/com/fasterxml/jackson/datatype:jackson-datatype-joda',
+    '//buckbuild/jars/com/fasterxml/jackson/module:jackson-module-afterburner',
+    '//buckbuild/jars/com/google/guava:guava',
+    '//buckbuild/jars/io/dropwizard:dropwizard-util',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-jackson.jar',
+  name = 'dropwizard-jackson_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-jackson/0.9.1/dropwizard-jackson-0.9.1.jar',
+  sha1 = 'f153e251ace78a919a09b89a91bd15962cde2541',
+)
+
+java_library(
+  name = 'dropwizard-jersey',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-jersey_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-jersey_jar',
+  binary_jar = ':dropwizard-jersey_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/jaxrs:jackson-jaxrs-json-provider',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-jersey2',
+    '//buckbuild/jars/io/dropwizard:dropwizard-jackson',
+    '//buckbuild/jars/io/dropwizard:dropwizard-logging',
+    '//buckbuild/jars/io/dropwizard:dropwizard-validation',
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-continuation',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-server',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-webapp',
+    '//buckbuild/jars/org/glassfish/jersey/containers:jersey-container-servlet',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-server',
+    '//buckbuild/jars/org/glassfish/jersey/ext:jersey-bean-validation',
+    '//buckbuild/jars/org/glassfish/jersey/ext:jersey-metainf-services',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-jersey.jar',
+  name = 'dropwizard-jersey_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-jersey/0.9.1/dropwizard-jersey-0.9.1.jar',
+  sha1 = '78daeabf43b8a52bba582c972cdd20e88720605e',
+)
+
+java_library(
+  name = 'dropwizard-jetty',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-jetty_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-jetty_jar',
+  binary_jar = ':dropwizard-jetty_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-jetty9',
+    '//buckbuild/jars/io/dropwizard:dropwizard-logging',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-http',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-server',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-servlet',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-servlets',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-jetty.jar',
+  name = 'dropwizard-jetty_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-jetty/0.9.1/dropwizard-jetty-0.9.1.jar',
+  sha1 = '848cb4ed08c5efb763d0b89333fa42b01e97f28a',
+)
+
+java_library(
+  name = 'dropwizard-lifecycle',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-lifecycle_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-lifecycle_jar',
+  binary_jar = ':dropwizard-lifecycle_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/google/guava:guava',
+    '//buckbuild/jars/io/dropwizard:dropwizard-util',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-server',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-lifecycle.jar',
+  name = 'dropwizard-lifecycle_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-lifecycle/0.9.1/dropwizard-lifecycle-0.9.1.jar',
+  sha1 = '5d67dbe43cff76930de7ec0fbf34c43c8cd54616',
+)
+
+java_library(
+  name = 'dropwizard-logging',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-logging_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-logging_jar',
+  binary_jar = ':dropwizard-logging_remote_jar',
+  deps = [
+    '//buckbuild/jars/ch/qos/logback:logback-classic',
+    '//buckbuild/jars/ch/qos/logback:logback-core',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-logback',
+    '//buckbuild/jars/io/dropwizard:dropwizard-jackson',
+    '//buckbuild/jars/io/dropwizard:dropwizard-validation',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-util',
+    '//buckbuild/jars/org/slf4j:jcl-over-slf4j',
+    '//buckbuild/jars/org/slf4j:jul-to-slf4j',
+    '//buckbuild/jars/org/slf4j:log4j-over-slf4j',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-logging.jar',
+  name = 'dropwizard-logging_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-logging/0.9.1/dropwizard-logging-0.9.1.jar',
+  sha1 = 'c9350b65d5f040d7b7bcf4a8c456dca4c69ea081',
+)
+
+java_library(
+  name = 'dropwizard-metrics-graphite',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-metrics-graphite_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-metrics-graphite_jar',
+  binary_jar = ':dropwizard-metrics-graphite_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-graphite',
+    '//buckbuild/jars/io/dropwizard:dropwizard-metrics',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-metrics-graphite.jar',
+  name = 'dropwizard-metrics-graphite_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-metrics-graphite/0.9.1/dropwizard-metrics-graphite-0.9.1.jar',
+  sha1 = 'd3cadff74200a4949290c581c71c55986b9669a5',
+)
+
+java_library(
+  name = 'dropwizard-metrics',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-metrics_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-metrics_jar',
+  binary_jar = ':dropwizard-metrics_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/io/dropwizard:dropwizard-jackson',
+    '//buckbuild/jars/io/dropwizard:dropwizard-lifecycle',
+    '//buckbuild/jars/io/dropwizard:dropwizard-validation',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-metrics.jar',
+  name = 'dropwizard-metrics_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-metrics/0.9.1/dropwizard-metrics-0.9.1.jar',
+  sha1 = '5d55a867e6c84599d0535beae685e6ac72888092',
+)
+
+java_library(
+  name = 'dropwizard-servlets',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-servlets_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-servlets_jar',
+  binary_jar = ':dropwizard-servlets_remote_jar',
+  deps = [
+    '//buckbuild/jars/ch/qos/logback:logback-classic',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-annotation',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/io/dropwizard:dropwizard-util',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-servlets.jar',
+  name = 'dropwizard-servlets_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-servlets/0.9.1/dropwizard-servlets-0.9.1.jar',
+  sha1 = 'a39c7c62ac84b210f3ac4fb2a534083bde961635',
+)
+
+java_library(
+  name = 'dropwizard-testing',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-testing_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-testing_jar',
+  binary_jar = ':dropwizard-testing_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard:dropwizard-core',
+    '//buckbuild/jars/junit:junit',
+    '//buckbuild/jars/org/assertj:assertj-core',
+    '//buckbuild/jars/org/glassfish/jersey/test-framework/providers:jersey-test-framework-provider-inmemory',
+    '//buckbuild/jars/org/mockito:mockito-core',
+    '//buckbuild/jars/org/objenesis:objenesis',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-testing.jar',
+  name = 'dropwizard-testing_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-testing/0.9.1/dropwizard-testing-0.9.1.jar',
+  sha1 = '1c7d3e65075fcbe8495d475d06128bf524a0d831',
+)
+
+java_library(
+  name = 'dropwizard-util',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-util_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-util_jar',
+  binary_jar = ':dropwizard-util_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-annotations',
+    '//buckbuild/jars/com/google/code/findbugs:jsr305',
+    '//buckbuild/jars/com/google/guava:guava',
+    '//buckbuild/jars/joda-time:joda-time',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-util.jar',
+  name = 'dropwizard-util_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-util/0.9.1/dropwizard-util-0.9.1.jar',
+  sha1 = '08f551584ec138e1e62910d730914f4ce64167da',
+)
+
+java_library(
+  name = 'dropwizard-validation',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-validation_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-validation_jar',
+  binary_jar = ':dropwizard-validation_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard:dropwizard-util',
+    '//buckbuild/jars/org/glassfish:javax.el',
+    '//buckbuild/jars/org/hibernate:hibernate-validator',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-validation.jar',
+  name = 'dropwizard-validation_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/dropwizard-validation/0.9.1/dropwizard-validation-0.9.1.jar',
+  sha1 = 'ab8d1ae84d079604a7539a73513bf77f42d0d5d7',
+)
+

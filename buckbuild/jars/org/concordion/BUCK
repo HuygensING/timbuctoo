@@ -1,0 +1,26 @@
+java_library(
+  name = 'concordion',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':concordion_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'concordion_jar',
+  binary_jar = ':concordion_remote_jar',
+  deps = [
+    '//buckbuild/jars/junit:junit',
+    '//buckbuild/jars/ognl:ognl',
+    '//buckbuild/jars/xom:xom',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'concordion.jar',
+  name = 'concordion_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/concordion/concordion/1.5.1/concordion-1.5.1.jar',
+  sha1 = '4d85091a86198c441a834aeec13d25c52826e6bb',
+)
+

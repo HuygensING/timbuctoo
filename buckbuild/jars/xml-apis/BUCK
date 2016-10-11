@@ -1,0 +1,23 @@
+java_library(
+  name = 'xml-apis',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':xml-apis_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'xml-apis_jar',
+  binary_jar = ':xml-apis_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'xml-apis.jar',
+  name = 'xml-apis_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/xml-apis/xml-apis/1.4.01/xml-apis-1.4.01.jar',
+  sha1 = '3789d9fada2d3d458c4ba2de349d48780f381ee3',
+)
+

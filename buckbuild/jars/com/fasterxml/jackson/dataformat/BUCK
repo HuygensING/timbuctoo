@@ -1,0 +1,25 @@
+java_library(
+  name = 'jackson-dataformat-yaml',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-dataformat-yaml_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-dataformat-yaml_jar',
+  binary_jar = ':jackson-dataformat-yaml_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/org/yaml:snakeyaml',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-dataformat-yaml.jar',
+  name = 'jackson-dataformat-yaml_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/dataformat/jackson-dataformat-yaml/2.6.3/jackson-dataformat-yaml-2.6.3.jar',
+  sha1 = '982067f5d57301b19f8cc9eae8d6c702626b3ac4',
+)
+

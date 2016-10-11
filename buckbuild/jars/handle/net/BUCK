@@ -1,0 +1,23 @@
+java_library(
+  name = 'handle-client',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':handle-client_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'handle-client_jar',
+  binary_jar = ':handle-client_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'handle-client.jar',
+  name = 'handle-client_remote_jar',
+  url = 'http://maven.huygens.knaw.nl/repository/handle/net/handle-client/7.3.1/handle-client-7.3.1.jar',
+  sha1 = '657373c9d974ec9d79205f61c9c4e5521c05131d',
+)
+

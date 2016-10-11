@@ -1,0 +1,32 @@
+prebuilt_jar(
+  name = 'xmlbeans',
+  binary_jar = ':xmlbeans_fixed_jar',
+  deps = [
+    '//buckbuild/jars/stax:stax-api'
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+
+zip_file(
+  # By unzipping the xmlbeans jar and rezipping it again we loose a file that was included twice in the zip (since this
+  # is impossible on a file system. The xmlbeans zip is malformed, but not malformed enough for most tools to complain
+  # about it (but buck does complain)
+  name = 'xmlbeans_fixed_jar',
+  out = 'xmlbeans_fixed.jar',
+  srcs = [
+    ':xmlbeans_orig',
+  ],
+)
+
+remote_file(
+  name = 'xmlbeans_orig',
+  # The `zip_file` automatically unpacks ZIP files with the `.src.zip` or `-sources.jar`
+  # extensions before zipping them again (this is documented behaviour) so we rename the download file
+  # to make this work. We could also have used a gen_rule to unzip it, but this way we are not dependent
+  # on zip binaries on the OS.
+  out = 'xmlbeans.orig.src.zip',
+  url = 'https://repo.maven.apache.org/maven2/org/apache/xmlbeans/xmlbeans/2.6.0/xmlbeans-2.6.0.jar',
+  sha1 = '29e80d2dd51f9dcdef8f9ffaee0d4dc1c9bbfc87',
+)

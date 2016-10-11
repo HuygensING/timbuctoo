@@ -1,0 +1,48 @@
+java_library(
+  name = 'parboiled-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':parboiled-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'parboiled-core_jar',
+  binary_jar = ':parboiled-core_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'parboiled-core.jar',
+  name = 'parboiled-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/parboiled/parboiled-core/1.1.7/parboiled-core-1.1.7.jar',
+  sha1 = 'a60ff9a54cbeb30ec44c89e16ac4c35913cbad5a',
+)
+
+java_library(
+  name = 'parboiled-scala_2.11',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':parboiled-scala_2.11_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'parboiled-scala_2.11_jar',
+  binary_jar = ':parboiled-scala_2.11_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/parboiled:parboiled-core',
+    '//buckbuild/jars/org/scala-lang:scala-library',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'parboiled-scala_2.11.jar',
+  name = 'parboiled-scala_2.11_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/parboiled/parboiled-scala_2.11/1.1.7/parboiled-scala_2.11-1.1.7.jar',
+  sha1 = '4e14ecb11f40f25216ce01dc349f541bc801354f',
+)
+

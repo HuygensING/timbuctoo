@@ -1,0 +1,23 @@
+java_library(
+  name = 'javax.inject',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':javax.inject_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'javax.inject_jar',
+  binary_jar = ':javax.inject_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'javax.inject.jar',
+  name = 'javax.inject_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/javax/inject/javax.inject/1/javax.inject-1.jar',
+  sha1 = '6975da39a7040257bd51d21a231b76c915872d38',
+)
+

@@ -1,0 +1,23 @@
+java_library(
+  name = 'xml-resolver',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':xml-resolver_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'xml-resolver_jar',
+  binary_jar = ':xml-resolver_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'xml-resolver.jar',
+  name = 'xml-resolver_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/xml-resolver/xml-resolver/1.2/xml-resolver-1.2.jar',
+  sha1 = '3d0f97750b3a03e0971831566067754ba4bfd68c',
+)
+

@@ -1,0 +1,50 @@
+java_library(
+  name = 'serializer',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':serializer_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'serializer_jar',
+  binary_jar = ':serializer_remote_jar',
+  deps = [
+    '//buckbuild/jars/xerces:xercesImpl',
+    '//buckbuild/jars/xml-apis:xml-apis',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'serializer.jar',
+  name = 'serializer_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/xalan/serializer/2.7.1/serializer-2.7.1.jar',
+  sha1 = '4b4b18df434451249bb65a63f2fb69e215a6a020',
+)
+
+java_library(
+  name = 'xalan',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':xalan_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'xalan_jar',
+  binary_jar = ':xalan_remote_jar',
+  deps = [
+    '//buckbuild/jars/xalan:serializer',
+    '//buckbuild/jars/xerces:xercesImpl',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'xalan.jar',
+  name = 'xalan_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/xalan/xalan/2.7.1/xalan-2.7.1.jar',
+  sha1 = '75f1d83ce27bab5f29fff034fc74aa9f7266f22a',
+)
+

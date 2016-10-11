@@ -1,0 +1,23 @@
+java_library(
+  name = 'javax.ws.rs-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':javax.ws.rs-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'javax.ws.rs-api_jar',
+  binary_jar = ':javax.ws.rs-api_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'javax.ws.rs-api.jar',
+  name = 'javax.ws.rs-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/javax/ws/rs/javax.ws.rs-api/2.0.1/javax.ws.rs-api-2.0.1.jar',
+  sha1 = '104e9c2b5583cfcfeac0402316221648d6d8ea6b',
+)
+

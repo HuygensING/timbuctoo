@@ -1,0 +1,27 @@
+java_library(
+  name = 'jersey-apache-connector',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-apache-connector_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-apache-connector_jar',
+  binary_jar = ':jersey-apache-connector_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/ws/rs:javax.ws.rs-api',
+    '//buckbuild/jars/org/apache/httpcomponents:httpclient',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-client',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-apache-connector.jar',
+  name = 'jersey-apache-connector_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/connectors/jersey-apache-connector/2.22.1/jersey-apache-connector-2.22.1.jar',
+  sha1 = '02a7e5d33808612866055e05d92e70aedf9b7a0f',
+)
+

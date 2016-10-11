@@ -1,0 +1,23 @@
+java_library(
+  name = 'objenesis',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':objenesis_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'objenesis_jar',
+  binary_jar = ':objenesis_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'objenesis.jar',
+  name = 'objenesis_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/objenesis/objenesis/2.2/objenesis-2.2.jar',
+  sha1 = '3fb533efdaa50a768c394aa4624144cf8df17845',
+)
+

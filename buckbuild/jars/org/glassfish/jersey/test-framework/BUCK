@@ -1,0 +1,28 @@
+java_library(
+  name = 'jersey-test-framework-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-test-framework-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-test-framework-core_jar',
+  binary_jar = ':jersey-test-framework-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/servlet:javax.servlet-api',
+    '//buckbuild/jars/junit:junit',
+    '//buckbuild/jars/org/glassfish/jersey/containers:jersey-container-servlet-core',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-server',
+    '//buckbuild/jars/org/ow2/asm:asm-debug-all',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-test-framework-core.jar',
+  name = 'jersey-test-framework-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/test-framework/jersey-test-framework-core/2.22.1/jersey-test-framework-core-2.22.1.jar',
+  sha1 = '8dec524b606f190c1c856938dde7c00296c992c0',
+)
+

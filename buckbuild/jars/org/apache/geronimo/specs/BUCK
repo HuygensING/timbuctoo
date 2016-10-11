@@ -1,0 +1,69 @@
+java_library(
+  name = 'geronimo-j2ee-management_1.1_spec',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':geronimo-j2ee-management_1.1_spec_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'geronimo-j2ee-management_1.1_spec_jar',
+  binary_jar = ':geronimo-j2ee-management_1.1_spec_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'geronimo-j2ee-management_1.1_spec.jar',
+  name = 'geronimo-j2ee-management_1.1_spec_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/geronimo/specs/geronimo-j2ee-management_1.1_spec/1.0.1/geronimo-j2ee-management_1.1_spec-1.0.1.jar',
+  sha1 = '5372615b0c04c1913c95c34a0414cef720ca2855',
+)
+
+java_library(
+  name = 'geronimo-jms_1.1_spec',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':geronimo-jms_1.1_spec_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'geronimo-jms_1.1_spec_jar',
+  binary_jar = ':geronimo-jms_1.1_spec_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'geronimo-jms_1.1_spec.jar',
+  name = 'geronimo-jms_1.1_spec_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/geronimo/specs/geronimo-jms_1.1_spec/1.1.1/geronimo-jms_1.1_spec-1.1.1.jar',
+  sha1 = 'c872b46c601d8dc03633288b81269f9e42762cea',
+)
+
+java_library(
+  name = 'geronimo-jta_1.0.1B_spec',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':geronimo-jta_1.0.1B_spec_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'geronimo-jta_1.0.1B_spec_jar',
+  binary_jar = ':geronimo-jta_1.0.1B_spec_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'geronimo-jta_1.0.1B_spec.jar',
+  name = 'geronimo-jta_1.0.1B_spec_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/geronimo/specs/geronimo-jta_1.0.1B_spec/1.0.1/geronimo-jta_1.0.1B_spec-1.0.1.jar',
+  sha1 = 'c9e67d21082a497f20e4ce87be1379faceb9c087',
+)
+

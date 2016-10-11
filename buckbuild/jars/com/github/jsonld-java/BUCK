@@ -1,0 +1,28 @@
+java_library(
+  name = 'jsonld-java',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jsonld-java_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jsonld-java_jar',
+  binary_jar = ':jsonld-java_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+    '//buckbuild/jars/commons-io:commons-io',
+    '//buckbuild/jars/org/slf4j:jcl-over-slf4j',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jsonld-java.jar',
+  name = 'jsonld-java_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/github/jsonld-java/jsonld-java/0.7.0/jsonld-java-0.7.0.jar',
+  sha1 = '8e5b63444ddaf911358dc66966617454f3590353',
+)
+

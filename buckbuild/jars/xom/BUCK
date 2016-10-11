@@ -1,0 +1,26 @@
+java_library(
+  name = 'xom',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':xom_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'xom_jar',
+  binary_jar = ':xom_remote_jar',
+  deps = [
+    '//buckbuild/jars/xalan:xalan',
+    '//buckbuild/jars/xerces:xercesImpl',
+    '//buckbuild/jars/xml-apis:xml-apis',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'xom.jar',
+  name = 'xom_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/xom/xom/1.2.5/xom-1.2.5.jar',
+  sha1 = '4166493b9f04e91b858ba4150b28b4d197f8f8ea',
+)
+

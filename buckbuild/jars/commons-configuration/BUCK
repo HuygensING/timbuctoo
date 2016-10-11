@@ -1,0 +1,29 @@
+java_library(
+  name = 'commons-configuration',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-configuration_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-configuration_jar',
+  binary_jar = ':commons-configuration_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-codec:commons-codec',
+    '//buckbuild/jars/commons-collections:commons-collections',
+    '//buckbuild/jars/commons-lang:commons-lang',
+    '//buckbuild/jars/commons-logging:commons-logging',
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/xml-resolver:xml-resolver',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-configuration.jar',
+  name = 'commons-configuration_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/commons-configuration/commons-configuration/1.10/commons-configuration-1.10.jar',
+  sha1 = '2b36e4adfb66d966c5aef2d73deb6be716389dc9',
+)
+

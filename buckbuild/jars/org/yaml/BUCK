@@ -1,0 +1,23 @@
+java_library(
+  name = 'snakeyaml',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':snakeyaml_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'snakeyaml_jar',
+  binary_jar = ':snakeyaml_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'snakeyaml.jar',
+  name = 'snakeyaml_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/yaml/snakeyaml/1.15/snakeyaml-1.15.jar',
+  sha1 = '3b132bea69e8ee099f416044970997bde80f4ea6',
+)
+

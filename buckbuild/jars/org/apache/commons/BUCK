@@ -1,0 +1,69 @@
+java_library(
+  name = 'commons-csv',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-csv_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-csv_jar',
+  binary_jar = ':commons-csv_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-csv.jar',
+  name = 'commons-csv_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/commons/commons-csv/1.0/commons-csv-1.0.jar',
+  sha1 = '8a0796ad6541a144eb1c00b93e06fbac03a9f313',
+)
+
+java_library(
+  name = 'commons-lang3',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-lang3_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-lang3_jar',
+  binary_jar = ':commons-lang3_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-lang3.jar',
+  name = 'commons-lang3_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/commons/commons-lang3/3.4/commons-lang3-3.4.jar',
+  sha1 = '5fe28b9518e58819180a43a850fbc0dd24b7c050',
+)
+
+java_library(
+  name = 'commons-pool2',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-pool2_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-pool2_jar',
+  binary_jar = ':commons-pool2_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-pool2.jar',
+  name = 'commons-pool2_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/commons/commons-pool2/2.4.2/commons-pool2-2.4.2.jar',
+  sha1 = 'e5f4f28f19d57716fbc3989d7a357ebf1e454fea',
+)
+

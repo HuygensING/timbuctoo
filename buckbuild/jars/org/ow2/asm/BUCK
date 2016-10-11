@@ -1,0 +1,46 @@
+java_library(
+  name = 'asm-debug-all',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':asm-debug-all_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'asm-debug-all_jar',
+  binary_jar = ':asm-debug-all_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'asm-debug-all.jar',
+  name = 'asm-debug-all_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/ow2/asm/asm-debug-all/5.0.4/asm-debug-all-5.0.4.jar',
+  sha1 = '702b8525fcf81454235e5e2fa2a35f15ffc0ec7e',
+)
+
+java_library(
+  name = 'asm',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':asm_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'asm_jar',
+  binary_jar = ':asm_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'asm.jar',
+  name = 'asm_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/ow2/asm/asm/5.0.2/asm-5.0.2.jar',
+  sha1 = 'baa28ca0269720d94c9f0cafef35a9ac63991de7',
+)
+

@@ -1,0 +1,25 @@
+java_library(
+  name = 'hamcrest-json',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':hamcrest-json_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'hamcrest-json_jar',
+  binary_jar = ':hamcrest-json_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/hamcrest:hamcrest-core',
+    '//buckbuild/jars/org/skyscreamer:jsonassert',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'hamcrest-json.jar',
+  name = 'hamcrest-json_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/uk/co/datumedge/hamcrest-json/0.2/hamcrest-json-0.2.jar',
+  sha1 = '4bc7b706b01f42d90492ad5d2d7a4122734f4fc2',
+)
+

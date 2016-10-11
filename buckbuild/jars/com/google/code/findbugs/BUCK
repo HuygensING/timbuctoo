@@ -1,0 +1,23 @@
+java_library(
+  name = 'jsr305',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jsr305_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jsr305_jar',
+  binary_jar = ':jsr305_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jsr305.jar',
+  name = 'jsr305_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/google/code/findbugs/jsr305/3.0.1/jsr305-3.0.1.jar',
+  sha1 = 'f7be08ec23c21485b9b5a1cf1654c2ec8c58168d',
+)
+

@@ -1,0 +1,23 @@
+java_library(
+  name = 'args4j',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':args4j_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'args4j_jar',
+  binary_jar = ':args4j_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'args4j.jar',
+  name = 'args4j_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/args4j/args4j/2.32/args4j-2.32.jar',
+  sha1 = '1ccacebdf8f2db750eb09a402969050f27695fb7',
+)
+

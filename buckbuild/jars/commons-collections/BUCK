@@ -1,0 +1,23 @@
+java_library(
+  name = 'commons-collections',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-collections_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-collections_jar',
+  binary_jar = ':commons-collections_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-collections.jar',
+  name = 'commons-collections_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/commons-collections/commons-collections/3.0/commons-collections-3.0.jar',
+  sha1 = 'aa12980fe4eca7331a660bdeed371d024687c68d',
+)
+

@@ -1,0 +1,120 @@
+java_library(
+  name = 'jcl-over-slf4j',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jcl-over-slf4j_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jcl-over-slf4j_jar',
+  binary_jar = ':jcl-over-slf4j_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jcl-over-slf4j.jar',
+  name = 'jcl-over-slf4j_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/slf4j/jcl-over-slf4j/1.7.5/jcl-over-slf4j-1.7.5.jar',
+  sha1 = '0cd5970bd13fa85f7bed41ca606d6daf7cbf1365',
+)
+
+java_library(
+  name = 'jul-to-slf4j',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jul-to-slf4j_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jul-to-slf4j_jar',
+  binary_jar = ':jul-to-slf4j_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jul-to-slf4j.jar',
+  name = 'jul-to-slf4j_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/slf4j/jul-to-slf4j/1.7.5/jul-to-slf4j-1.7.5.jar',
+  sha1 = 'd2b0f76abde33a62f1dbc19a9da726ffe9a0180e',
+)
+
+java_library(
+  name = 'log4j-over-slf4j',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':log4j-over-slf4j_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'log4j-over-slf4j_jar',
+  binary_jar = ':log4j-over-slf4j_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'log4j-over-slf4j.jar',
+  name = 'log4j-over-slf4j_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/slf4j/log4j-over-slf4j/1.7.12/log4j-over-slf4j-1.7.12.jar',
+  sha1 = 'd2444c9c7c1923304c25f86c5ee83a79a8166205',
+)
+
+java_library(
+  name = 'slf4j-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':slf4j-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'slf4j-api_jar',
+  binary_jar = ':slf4j-api_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'slf4j-api.jar',
+  name = 'slf4j-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/1.7.5/slf4j-api-1.7.5.jar',
+  sha1 = '6b262da268f8ad9eff941b25503a9198f0a0ac93',
+)
+
+java_library(
+  name = 'slf4j-log4j12',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':slf4j-log4j12_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'slf4j-log4j12_jar',
+  binary_jar = ':slf4j-log4j12_remote_jar',
+  deps = [
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'slf4j-log4j12.jar',
+  name = 'slf4j-log4j12_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/slf4j/slf4j-log4j12/1.7.5/slf4j-log4j12-1.7.5.jar',
+  sha1 = '6edffc576ce104ec769d954618764f39f0f0f10d',
+)
+

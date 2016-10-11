@@ -1,0 +1,54 @@
+java_library(
+  name = 'jersey-media-jaxb',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-media-jaxb_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-media-jaxb_jar',
+  binary_jar = ':jersey-media-jaxb_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/glassfish/hk2/external:javax.inject',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-api',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-locator',
+    '//buckbuild/jars/org/glassfish/hk2:osgi-resource-locator',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-media-jaxb.jar',
+  name = 'jersey-media-jaxb_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/media/jersey-media-jaxb/2.22.1/jersey-media-jaxb-2.22.1.jar',
+  sha1 = '1bc910febfe9e07f741920ff5ac24bb8a59f649f',
+)
+
+java_library(
+  name = 'jersey-media-multipart',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-media-multipart_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-media-multipart_jar',
+  binary_jar = ':jersey-media-multipart_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-server',
+    '//buckbuild/jars/org/jvnet/mimepull:mimepull',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-media-multipart.jar',
+  name = 'jersey-media-multipart_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/media/jersey-media-multipart/2.22.1/jersey-media-multipart-2.22.1.jar',
+  sha1 = 'c68e535f2395fa961a0903dac0ae32641768d4b6',
+)
+

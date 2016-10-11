@@ -1,0 +1,23 @@
+java_library(
+  name = 'aopalliance',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aopalliance_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aopalliance_jar',
+  binary_jar = ':aopalliance_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aopalliance.jar',
+  name = 'aopalliance_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/aopalliance/aopalliance/1.0/aopalliance-1.0.jar',
+  sha1 = '0235ba8b489512805ac13a8f9ea77a1ca5ebe3e8',
+)
+

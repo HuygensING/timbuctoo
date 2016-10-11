@@ -1,0 +1,647 @@
+java_library(
+  name = 'neo4j-codegen',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-codegen_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-codegen_jar',
+  binary_jar = ':neo4j-codegen_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/ow2/asm:asm',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-codegen.jar',
+  name = 'neo4j-codegen_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-codegen/2.3.0/neo4j-codegen-2.3.0.jar',
+  sha1 = '96fa1f1ed95a6156426987aec82b73d524508df6',
+)
+
+java_library(
+  name = 'neo4j-consistency-check-legacy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-consistency-check-legacy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-consistency-check-legacy_jar',
+  binary_jar = ':neo4j-consistency-check-legacy_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+    '//buckbuild/jars/org/neo4j:neo4j-lucene-index',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-consistency-check-legacy.jar',
+  name = 'neo4j-consistency-check-legacy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-consistency-check-legacy/2.3.0/neo4j-consistency-check-legacy-2.3.0.jar',
+  sha1 = '060f989fa018fe3fa5fcb2b1a259e8b9c8d0f2ce',
+)
+
+java_library(
+  name = 'neo4j-consistency-check',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-consistency-check_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-consistency-check_jar',
+  binary_jar = ':neo4j-consistency-check_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-consistency-check-legacy',
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+    '//buckbuild/jars/org/neo4j:neo4j-lucene-index',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-consistency-check.jar',
+  name = 'neo4j-consistency-check_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-consistency-check/2.3.0/neo4j-consistency-check-2.3.0.jar',
+  sha1 = '287ad32b71736b1dcb471ccb8dc1ca7f4899dfd1',
+)
+
+java_library(
+  name = 'neo4j-csv',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-csv_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-csv_jar',
+  binary_jar = ':neo4j-csv_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-primitive-collections',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-csv.jar',
+  name = 'neo4j-csv_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-csv/2.3.1/neo4j-csv-2.3.1.jar',
+  sha1 = '0897609409cf6aa8dd80e5f6ff91f08e93883fcd',
+)
+
+java_library(
+  name = 'neo4j-cypher-compiler-1.9_2.11',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-cypher-compiler-1.9_2.11_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-cypher-compiler-1.9_2.11_jar',
+  binary_jar = ':neo4j-cypher-compiler-1.9_2.11_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-graph-algo',
+    '//buckbuild/jars/org/neo4j:neo4j-graph-matching',
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+    '//buckbuild/jars/org/neo4j:neo4j-lucene-index',
+    '//buckbuild/jars/org/scala-lang:scala-library',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-cypher-compiler-1.9_2.11.jar',
+  name = 'neo4j-cypher-compiler-1.9_2.11_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-cypher-compiler-1.9_2.11/2.0.5/neo4j-cypher-compiler-1.9_2.11-2.0.5.jar',
+  sha1 = '4762c2e73ba32b8e2baa187e69f9375f688b39f1',
+)
+
+java_library(
+  name = 'neo4j-cypher-compiler-2.2_2.11',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-cypher-compiler-2.2_2.11_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-cypher-compiler-2.2_2.11_jar',
+  binary_jar = ':neo4j-cypher-compiler-2.2_2.11_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/googlecode/concurrentlinkedhashmap:concurrentlinkedhashmap-lru',
+    '//buckbuild/jars/org/parboiled:parboiled-scala_2.11',
+    '//buckbuild/jars/org/scala-lang:scala-library',
+    '//buckbuild/jars/org/scala-lang:scala-reflect',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-cypher-compiler-2.2_2.11.jar',
+  name = 'neo4j-cypher-compiler-2.2_2.11_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-cypher-compiler-2.2_2.11/2.2.6/neo4j-cypher-compiler-2.2_2.11-2.2.6.jar',
+  sha1 = 'be771f007153d6ff141d1c394f324a9b961a95dd',
+)
+
+java_library(
+  name = 'neo4j-cypher-compiler-2.3',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-cypher-compiler-2.3_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-cypher-compiler-2.3_jar',
+  binary_jar = ':neo4j-cypher-compiler-2.3_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/googlecode/concurrentlinkedhashmap:concurrentlinkedhashmap-lru',
+    '//buckbuild/jars/org/neo4j:neo4j-cypher-frontend-2.3',
+    '//buckbuild/jars/org/parboiled:parboiled-scala_2.11',
+    '//buckbuild/jars/org/scala-lang:scala-library',
+    '//buckbuild/jars/org/scala-lang:scala-reflect',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-cypher-compiler-2.3.jar',
+  name = 'neo4j-cypher-compiler-2.3_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-cypher-compiler-2.3/2.3.0/neo4j-cypher-compiler-2.3-2.3.0.jar',
+  sha1 = '3562104cc0a49b5662f562adb3bb7817c2f791d4',
+)
+
+java_library(
+  name = 'neo4j-cypher-frontend-2.3',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-cypher-frontend-2.3_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-cypher-frontend-2.3_jar',
+  binary_jar = ':neo4j-cypher-frontend-2.3_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/parboiled:parboiled-scala_2.11',
+    '//buckbuild/jars/org/scala-lang:scala-library',
+    '//buckbuild/jars/org/scala-lang:scala-reflect',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-cypher-frontend-2.3.jar',
+  name = 'neo4j-cypher-frontend-2.3_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-cypher-frontend-2.3/2.3.0/neo4j-cypher-frontend-2.3-2.3.0.jar',
+  sha1 = '9240a1405a589af33e4b6a67dfdf4faf0454423a',
+)
+
+java_library(
+  name = 'neo4j-cypher',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-cypher_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-cypher_jar',
+  binary_jar = ':neo4j-cypher_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/googlecode/concurrentlinkedhashmap:concurrentlinkedhashmap-lru',
+    '//buckbuild/jars/net/sf/opencsv:opencsv',
+    '//buckbuild/jars/org/neo4j:neo4j-codegen',
+    '//buckbuild/jars/org/neo4j:neo4j-cypher-compiler-1.9_2.11',
+    '//buckbuild/jars/org/neo4j:neo4j-cypher-compiler-2.2_2.11',
+    '//buckbuild/jars/org/neo4j:neo4j-cypher-compiler-2.3',
+    '//buckbuild/jars/org/neo4j:neo4j-graph-algo',
+    '//buckbuild/jars/org/neo4j:neo4j-graph-matching',
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+    '//buckbuild/jars/org/neo4j:neo4j-lucene-index',
+    '//buckbuild/jars/org/parboiled:parboiled-scala_2.11',
+    '//buckbuild/jars/org/scala-lang/modules:scala-parser-combinators_2.11',
+    '//buckbuild/jars/org/scala-lang:scala-library',
+    '//buckbuild/jars/org/scala-lang:scala-reflect',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-cypher.jar',
+  name = 'neo4j-cypher_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-cypher/2.3.0/neo4j-cypher-2.3.0.jar',
+  sha1 = '2945cb1df4215430a23e6811f0cba1087409c817',
+)
+
+java_library(
+  name = 'neo4j-function',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-function_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-function_jar',
+  binary_jar = ':neo4j-function_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-function.jar',
+  name = 'neo4j-function_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-function/2.3.1/neo4j-function-2.3.1.jar',
+  sha1 = '22ad166a9b37f7e0a9c552850d464f88ea957a90',
+)
+
+java_library(
+  name = 'neo4j-graph-algo',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-graph-algo_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-graph-algo_jar',
+  binary_jar = ':neo4j-graph-algo_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-graph-algo.jar',
+  name = 'neo4j-graph-algo_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-graph-algo/2.3.0/neo4j-graph-algo-2.3.0.jar',
+  sha1 = '5400817a83bf834766bf0baa9c8bd65f1dbef05e',
+)
+
+java_library(
+  name = 'neo4j-graph-matching',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-graph-matching_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-graph-matching_jar',
+  binary_jar = ':neo4j-graph-matching_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-graph-matching.jar',
+  name = 'neo4j-graph-matching_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-graph-matching/2.3.0/neo4j-graph-matching-2.3.0.jar',
+  sha1 = 'ddd945b5fb3930904f09cd0537aca138f0c5f1df',
+)
+
+java_library(
+  name = 'neo4j-io',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-io_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-io_jar',
+  binary_jar = ':neo4j-io_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/neo4j:neo4j-primitive-collections',
+    '//buckbuild/jars/org/neo4j:neo4j-unsafe',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-io.jar',
+  name = 'neo4j-io_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-io/2.3.1/neo4j-io-2.3.1.jar',
+  sha1 = '5d6b6197341c9e8318e4ad770db7b7d3136bfc7d',
+)
+
+java_library(
+  name = 'neo4j-io-tests',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-io-tests_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-io-tests_jar',
+  binary_jar = ':neo4j-io-tests_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/neo4j:neo4j-primitive-collections',
+    '//buckbuild/jars/org/neo4j:neo4j-unsafe',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-io-tests.jar',
+  name = 'neo4j-io-tests_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-io/2.3.1/neo4j-io-2.3.1-tests.jar',
+  sha1 = '1356b4e7a565edb7544973034a361f88c2e8156d',
+)
+
+java_library(
+  name = 'neo4j-jmx',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-jmx_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-jmx_jar',
+  binary_jar = ':neo4j-jmx_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-jmx.jar',
+  name = 'neo4j-jmx_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-jmx/2.3.0/neo4j-jmx-2.3.0.jar',
+  sha1 = 'd131a803a4d2e5e49c7df64b952100d5ca30d636',
+)
+
+java_library(
+  name = 'neo4j-kernel',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-kernel_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-kernel_jar',
+  binary_jar = ':neo4j-kernel_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-csv',
+    '//buckbuild/jars/org/neo4j:neo4j-io',
+    '//buckbuild/jars/org/neo4j:neo4j-logging',
+    '//buckbuild/jars/org/neo4j:neo4j-primitive-collections',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-kernel.jar',
+  name = 'neo4j-kernel_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-kernel/2.3.0/neo4j-kernel-2.3.0.jar',
+  sha1 = 'f581c45d5b66b9a7d27703a9fda22298d82b1553',
+)
+
+java_library(
+  name = 'neo4j-kernel-tests',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-kernel-tests_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-kernel-tests_jar',
+  binary_jar = ':neo4j-kernel-tests_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-csv',
+    '//buckbuild/jars/org/neo4j:neo4j-io',
+    '//buckbuild/jars/org/neo4j:neo4j-logging',
+    '//buckbuild/jars/org/neo4j:neo4j-primitive-collections',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-kernel-tests.jar',
+  name = 'neo4j-kernel-tests_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-kernel/2.3.1/neo4j-kernel-2.3.1-tests.jar',
+  sha1 = 'b07d1e68e28f184f069f8501889ba09695fe7a2a',
+)
+
+java_library(
+  name = 'neo4j-logging',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-logging_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-logging_jar',
+  binary_jar = ':neo4j-logging_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-io',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-logging.jar',
+  name = 'neo4j-logging_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-logging/2.3.1/neo4j-logging-2.3.1.jar',
+  sha1 = 'd6d74c4b003657624794eab695453a296a6e7f10',
+)
+
+java_library(
+  name = 'neo4j-lucene-index',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-lucene-index_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-lucene-index_jar',
+  binary_jar = ':neo4j-lucene-index_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/lucene:lucene-core',
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-lucene-index.jar',
+  name = 'neo4j-lucene-index_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-lucene-index/2.3.0/neo4j-lucene-index-2.3.0.jar',
+  sha1 = '803d88053a81c7aa51a12eb9a1746286f081a0b9',
+)
+
+java_library(
+  name = 'neo4j-primitive-collections',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-primitive-collections_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-primitive-collections_jar',
+  binary_jar = ':neo4j-primitive-collections_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-function',
+    '//buckbuild/jars/org/neo4j:neo4j-unsafe',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-primitive-collections.jar',
+  name = 'neo4j-primitive-collections_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-primitive-collections/2.3.1/neo4j-primitive-collections-2.3.1.jar',
+  sha1 = '2e5e249d663c774bf6e2653e9b500669d4949a77',
+)
+
+java_library(
+  name = 'neo4j-tinkerpop-api-impl',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-tinkerpop-api-impl_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-tinkerpop-api-impl_jar',
+  binary_jar = ':neo4j-tinkerpop-api-impl_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j',
+    '//buckbuild/jars/org/neo4j:neo4j-tinkerpop-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-tinkerpop-api-impl.jar',
+  name = 'neo4j-tinkerpop-api-impl_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-tinkerpop-api-impl/0.3-2.3.0/neo4j-tinkerpop-api-impl-0.3-2.3.0.jar',
+  sha1 = '4bf2b0453f6b44bd6e941ae5d722b83d1968ed2f',
+)
+
+java_library(
+  name = 'neo4j-tinkerpop-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-tinkerpop-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-tinkerpop-api_jar',
+  binary_jar = ':neo4j-tinkerpop-api_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-tinkerpop-api.jar',
+  name = 'neo4j-tinkerpop-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-tinkerpop-api/0.1/neo4j-tinkerpop-api-0.1.jar',
+  sha1 = '57d6ac458f42419e26378263b0c2413948980853',
+)
+
+java_library(
+  name = 'neo4j-udc',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-udc_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-udc_jar',
+  binary_jar = ':neo4j-udc_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-udc.jar',
+  name = 'neo4j-udc_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-udc/2.3.0/neo4j-udc-2.3.0.jar',
+  sha1 = 'f70401e6adbad5a056fa3f8782a8ce56de12d919',
+)
+
+java_library(
+  name = 'neo4j-unsafe',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-unsafe_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-unsafe_jar',
+  binary_jar = ':neo4j-unsafe_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-unsafe.jar',
+  name = 'neo4j-unsafe_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j-unsafe/2.3.1/neo4j-unsafe-2.3.1.jar',
+  sha1 = 'baf075d3acfb2be81c52c3835a57955ec7c2c512',
+)
+
+java_library(
+  name = 'neo4j',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j_jar',
+  binary_jar = ':neo4j_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-consistency-check',
+    '//buckbuild/jars/org/neo4j:neo4j-cypher',
+    '//buckbuild/jars/org/neo4j:neo4j-graph-algo',
+    '//buckbuild/jars/org/neo4j:neo4j-graph-matching',
+    '//buckbuild/jars/org/neo4j:neo4j-jmx',
+    '//buckbuild/jars/org/neo4j:neo4j-kernel',
+    '//buckbuild/jars/org/neo4j:neo4j-lucene-index',
+    '//buckbuild/jars/org/neo4j:neo4j-udc',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j.jar',
+  name = 'neo4j_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/neo4j/neo4j/2.3.0/neo4j-2.3.0.jar',
+  sha1 = 'e40152451f73a47cfec44fdc441dcb5b966f87c2',
+)
+

@@ -1,0 +1,27 @@
+java_library(
+  name = 'jersey-guice',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-guice_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-guice_jar',
+  binary_jar = ':jersey-guice_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/google/inject/extensions:guice-servlet',
+    '//buckbuild/jars/com/google/inject:guice',
+    '//buckbuild/jars/com/sun/jersey:jersey-servlet',
+    '//buckbuild/jars/javax/inject:javax.inject',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-guice.jar',
+  name = 'jersey-guice_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/sun/jersey/contribs/jersey-guice/1.18/jersey-guice-1.18.jar',
+  sha1 = '95345360f4bbb4b7087529d3a1e562cd46ff4257',
+)
+

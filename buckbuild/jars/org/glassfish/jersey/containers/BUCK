@@ -1,0 +1,54 @@
+java_library(
+  name = 'jersey-container-servlet-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-container-servlet-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-container-servlet-core_jar',
+  binary_jar = ':jersey-container-servlet-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/ws/rs:javax.ws.rs-api',
+    '//buckbuild/jars/org/glassfish/hk2/external:javax.inject',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-server',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-container-servlet-core.jar',
+  name = 'jersey-container-servlet-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet-core/2.22.1/jersey-container-servlet-core-2.22.1.jar',
+  sha1 = '0d3fb3002ebb5fb5ef4cce370641dbb10bf993b8',
+)
+
+java_library(
+  name = 'jersey-container-servlet',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-container-servlet_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-container-servlet_jar',
+  binary_jar = ':jersey-container-servlet_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/ws/rs:javax.ws.rs-api',
+    '//buckbuild/jars/org/glassfish/jersey/containers:jersey-container-servlet-core',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-server',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-container-servlet.jar',
+  name = 'jersey-container-servlet_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/containers/jersey-container-servlet/2.22.1/jersey-container-servlet-2.22.1.jar',
+  sha1 = '5a4c27e0271867c212c8cdf730db56898f106041',
+)
+

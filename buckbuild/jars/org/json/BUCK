@@ -1,0 +1,23 @@
+java_library(
+  name = 'json',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':json_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'json_jar',
+  binary_jar = ':json_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'json.jar',
+  name = 'json_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/json/json/20090211/json-20090211.jar',
+  sha1 = 'c183aa3a2a6250293808bba12262c8920ce5a51c',
+)
+

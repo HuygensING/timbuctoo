@@ -1,0 +1,25 @@
+java_library(
+  name = 'commons-httpclient',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-httpclient_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-httpclient_jar',
+  binary_jar = ':commons-httpclient_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-codec:commons-codec',
+    '//buckbuild/jars/commons-logging:commons-logging',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-httpclient.jar',
+  name = 'commons-httpclient_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/commons-httpclient/commons-httpclient/3.1/commons-httpclient-3.1.jar',
+  sha1 = '964cd74171f427720480efdec40a7c7f6e58426a',
+)
+

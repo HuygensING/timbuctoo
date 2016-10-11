@@ -1,0 +1,23 @@
+java_library(
+  name = 'commons-cli',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-cli_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-cli_jar',
+  binary_jar = ':commons-cli_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-cli.jar',
+  name = 'commons-cli_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/commons-cli/commons-cli/1.3/commons-cli-1.3.jar',
+  sha1 = 'a48653b6bcd06b5e61ed63739ca601701fcb6a6c',
+)
+

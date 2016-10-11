@@ -1,0 +1,23 @@
+java_library(
+  name = 'commons-lang',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-lang_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-lang_jar',
+  binary_jar = ':commons-lang_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-lang.jar',
+  name = 'commons-lang_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/commons-lang/commons-lang/2.6/commons-lang-2.6.jar',
+  sha1 = '0ce1edb914c94ebc388f086c6827e8bdeec71ac2',
+)
+

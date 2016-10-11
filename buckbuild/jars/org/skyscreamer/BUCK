@@ -1,0 +1,25 @@
+java_library(
+  name = 'jsonassert',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jsonassert_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jsonassert_jar',
+  binary_jar = ':jsonassert_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-collections:commons-collections',
+    '//buckbuild/jars/org/json:json',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jsonassert.jar',
+  name = 'jsonassert_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/skyscreamer/jsonassert/1.1.1/jsonassert-1.1.1.jar',
+  sha1 = 'e9faeb6ab98837bb79a1e54a673102550a48e81d',
+)
+

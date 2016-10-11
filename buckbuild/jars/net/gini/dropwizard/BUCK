@@ -1,0 +1,25 @@
+java_library(
+  name = 'dropwizard-gelf',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-gelf_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-gelf_jar',
+  binary_jar = ':dropwizard-gelf_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard:dropwizard-core',
+    '//buckbuild/jars/me/moocar:logback-gelf',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-gelf.jar',
+  name = 'dropwizard-gelf_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/net/gini/dropwizard/dropwizard-gelf/0.9.2-1/dropwizard-gelf-0.9.2-1.jar',
+  sha1 = '6b4ad05c7ef3d639f0e561c86b63e21eea107ed4',
+)
+

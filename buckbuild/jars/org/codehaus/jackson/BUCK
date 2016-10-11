@@ -1,0 +1,97 @@
+java_library(
+  name = 'jackson-core-asl',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-core-asl_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-core-asl_jar',
+  binary_jar = ':jackson-core-asl_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-core-asl.jar',
+  name = 'jackson-core-asl_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/jackson/jackson-core-asl/1.9.2/jackson-core-asl-1.9.2.jar',
+  sha1 = '8493982bba1727106d767034bd0d8e77bc1931a9',
+)
+
+java_library(
+  name = 'jackson-jaxrs',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-jaxrs_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-jaxrs_jar',
+  binary_jar = ':jackson-jaxrs_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/jackson:jackson-core-asl',
+    '//buckbuild/jars/org/codehaus/jackson:jackson-mapper-asl',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-jaxrs.jar',
+  name = 'jackson-jaxrs_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/jackson/jackson-jaxrs/1.9.2/jackson-jaxrs-1.9.2.jar',
+  sha1 = 'aedf43f1d5005561e531b6bf0d067e4d20f58aba',
+)
+
+java_library(
+  name = 'jackson-mapper-asl',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-mapper-asl_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-mapper-asl_jar',
+  binary_jar = ':jackson-mapper-asl_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/jackson:jackson-core-asl',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-mapper-asl.jar',
+  name = 'jackson-mapper-asl_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/jackson/jackson-mapper-asl/1.9.2/jackson-mapper-asl-1.9.2.jar',
+  sha1 = '95400a7922ce75383866eb72f6ef4a7897923945',
+)
+
+java_library(
+  name = 'jackson-xc',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-xc_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-xc_jar',
+  binary_jar = ':jackson-xc_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/jackson:jackson-core-asl',
+    '//buckbuild/jars/org/codehaus/jackson:jackson-mapper-asl',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-xc.jar',
+  name = 'jackson-xc_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/jackson/jackson-xc/1.9.2/jackson-xc-1.9.2.jar',
+  sha1 = '437c991a8eb2c8b69ef1dba2eba27fccb9b98448',
+)
+

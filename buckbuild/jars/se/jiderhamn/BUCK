@@ -1,0 +1,23 @@
+java_library(
+  name = 'classloader-leak-prevention',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':classloader-leak-prevention_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'classloader-leak-prevention_jar',
+  binary_jar = ':classloader-leak-prevention_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'classloader-leak-prevention.jar',
+  name = 'classloader-leak-prevention_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/se/jiderhamn/classloader-leak-prevention/1.8.1/classloader-leak-prevention-1.8.1.jar',
+  sha1 = 'c28c875840d446081790ef257d8b41ab12e50592',
+)
+

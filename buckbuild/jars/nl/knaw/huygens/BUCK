@@ -1,0 +1,68 @@
+java_library(
+  name = 'huygens-persistence',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':huygens-persistence_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'huygens-persistence_jar',
+  binary_jar = ':huygens-persistence_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/google/guava:guava',
+    '//buckbuild/jars/commons-io:commons-io',
+    '//buckbuild/jars/handle/net:handle-client',
+    '//buckbuild/jars/org/mockito:mockito-all',
+    '//buckbuild/jars/org/slf4j:jcl-over-slf4j',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'huygens-persistence.jar',
+  name = 'huygens-persistence_remote_jar',
+  url = 'http://maven.huygens.knaw.nl/repository/nl/knaw/huygens/huygens-persistence/2.2.0/huygens-persistence-2.2.0.jar',
+  sha1 = '20996447a9626285763efab0c10e06d76c9e5372',
+)
+
+java_library(
+  name = 'security-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':security-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'security-core_jar',
+  binary_jar = ':security-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/datatype:jackson-datatype-joda',
+    '//buckbuild/jars/com/fasterxml/jackson/jaxrs:jackson-jaxrs-json-provider',
+    '//buckbuild/jars/com/google/guava:guava',
+    '//buckbuild/jars/com/google/inject:guice',
+    '//buckbuild/jars/com/sun/jersey/contribs:jersey-guice',
+    '//buckbuild/jars/com/sun/jersey:jersey-core',
+    '//buckbuild/jars/com/sun/jersey:jersey-json',
+    '//buckbuild/jars/com/sun/jersey:jersey-server',
+    '//buckbuild/jars/com/sun/jersey:jersey-servlet',
+    '//buckbuild/jars/javax/annotation:javax.annotation-api',
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/opensaml:opensaml',
+    '//buckbuild/jars/org/slf4j:jul-to-slf4j',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+    '//buckbuild/jars/se/jiderhamn:classloader-leak-prevention',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'security-core.jar',
+  name = 'security-core_remote_jar',
+  url = 'http://maven.huygens.knaw.nl/repository/nl/knaw/huygens/security-core/2.2.2.4/security-core-2.2.2.4.jar',
+  sha1 = '243830376df19df1facf48079704ed58c6aa8e20',
+)
+

@@ -1,0 +1,284 @@
+java_library(
+  name = 'metrics-annotation',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-annotation_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-annotation_jar',
+  binary_jar = ':metrics-annotation_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-annotation.jar',
+  name = 'metrics-annotation_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-annotation/3.1.2/metrics-annotation-3.1.2.jar',
+  sha1 = '7ee8e9afe8e15f921a3bc9f8d4b1109b58b63d46',
+)
+
+java_library(
+  name = 'metrics-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-core_jar',
+  binary_jar = ':metrics-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-core.jar',
+  name = 'metrics-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-core/3.1.2/metrics-core-3.1.2.jar',
+  sha1 = '224f03afd2521c6c94632f566beb1bb5ee32cf07',
+)
+
+java_library(
+  name = 'metrics-graphite',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-graphite_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-graphite_jar',
+  binary_jar = ':metrics-graphite_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-graphite.jar',
+  name = 'metrics-graphite_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-graphite/3.1.2/metrics-graphite-3.1.2.jar',
+  sha1 = '15a68399652c6123fe6e4c82ac4f0749e2eb6583',
+)
+
+java_library(
+  name = 'metrics-healthchecks',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-healthchecks_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-healthchecks_jar',
+  binary_jar = ':metrics-healthchecks_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-jvm',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-healthchecks.jar',
+  name = 'metrics-healthchecks_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-healthchecks/3.1.2/metrics-healthchecks-3.1.2.jar',
+  sha1 = 'e32a01aa7ca4070676e22e707272422baa0f7ecd',
+)
+
+java_library(
+  name = 'metrics-httpclient',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-httpclient_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-httpclient_jar',
+  binary_jar = ':metrics-httpclient_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/org/apache/httpcomponents:httpclient',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-httpclient.jar',
+  name = 'metrics-httpclient_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-httpclient/3.1.2/metrics-httpclient-3.1.2.jar',
+  sha1 = '4aa88b0c7facf3f2cd54d8575e9ddfeb6e73e428',
+)
+
+java_library(
+  name = 'metrics-jersey2',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-jersey2_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-jersey2_jar',
+  binary_jar = ':metrics-jersey2_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-annotation',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-server',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-jersey2.jar',
+  name = 'metrics-jersey2_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-jersey2/3.1.2/metrics-jersey2-3.1.2.jar',
+  sha1 = 'eedb4a4e3cda157633f93f430681e85383e3aad0',
+)
+
+java_library(
+  name = 'metrics-jetty9',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-jetty9_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-jetty9_jar',
+  binary_jar = ':metrics-jetty9_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-server',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-jetty9.jar',
+  name = 'metrics-jetty9_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-jetty9/3.1.2/metrics-jetty9-3.1.2.jar',
+  sha1 = '7f2fe1039424ca687bea5d09ec0bfa372bf7d062',
+)
+
+java_library(
+  name = 'metrics-json',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-json_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-json_jar',
+  binary_jar = ':metrics-json_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-healthchecks',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-json.jar',
+  name = 'metrics-json_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-json/3.1.2/metrics-json-3.1.2.jar',
+  sha1 = '88d9e57e1ef6431109d4030c717cf5f927900fd9',
+)
+
+java_library(
+  name = 'metrics-jvm',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-jvm_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-jvm_jar',
+  binary_jar = ':metrics-jvm_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-jvm.jar',
+  name = 'metrics-jvm_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-jvm/3.1.2/metrics-jvm-3.1.2.jar',
+  sha1 = 'ed364e77218e50fdcdebce4d982cb4d1f4a8c187',
+)
+
+java_library(
+  name = 'metrics-logback',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-logback_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-logback_jar',
+  binary_jar = ':metrics-logback_remote_jar',
+  deps = [
+    '//buckbuild/jars/ch/qos/logback:logback-classic',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-logback.jar',
+  name = 'metrics-logback_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-logback/3.1.2/metrics-logback-3.1.2.jar',
+  sha1 = '7bff405ac68f4d38dcac37ced3814c7a7bb541f7',
+)
+
+java_library(
+  name = 'metrics-servlets',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':metrics-servlets_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'metrics-servlets_jar',
+  binary_jar = ':metrics-servlets_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-core',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-healthchecks',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-json',
+    '//buckbuild/jars/io/dropwizard/metrics:metrics-jvm',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'metrics-servlets.jar',
+  name = 'metrics-servlets_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/metrics/metrics-servlets/3.1.2/metrics-servlets-3.1.2.jar',
+  sha1 = 'f552e662d790b805f01a8b2997dc4ae9409cd4c8',
+)
+

@@ -1,0 +1,23 @@
+java_library(
+  name = 'value',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':value_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'value_jar',
+  binary_jar = ':value_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'value.jar',
+  name = 'value_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/immutables/value/2.2.12/value-2.2.12.jar',
+  sha1 = 'd6153db9f1fc8c1e5a91b4cdc28f9802996c9488',
+)
+

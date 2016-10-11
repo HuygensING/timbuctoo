@@ -1,0 +1,76 @@
+java_library(
+  name = 'poi-ooxml-schemas',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':poi-ooxml-schemas_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'poi-ooxml-schemas_jar',
+  binary_jar = ':poi-ooxml-schemas_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/xmlbeans:xmlbeans',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'poi-ooxml-schemas.jar',
+  name = 'poi-ooxml-schemas_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/poi/poi-ooxml-schemas/3.14/poi-ooxml-schemas-3.14.jar',
+  sha1 = '97fe4bfdef7f103bfd9ec63c98ea90469afeec7b',
+)
+
+java_library(
+  name = 'poi-ooxml',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':poi-ooxml_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'poi-ooxml_jar',
+  binary_jar = ':poi-ooxml_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/github/virtuald:curvesapi',
+    '//buckbuild/jars/org/apache/poi:poi',
+    '//buckbuild/jars/org/apache/poi:poi-ooxml-schemas',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'poi-ooxml.jar',
+  name = 'poi-ooxml_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/poi/poi-ooxml/3.14/poi-ooxml-3.14.jar',
+  sha1 = '911b3a5562b5dc4c5156d2d5f0f68a83346100d0',
+)
+
+java_library(
+  name = 'poi',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':poi_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'poi_jar',
+  binary_jar = ':poi_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-codec:commons-codec',
+    '//buckbuild/jars/commons-logging:commons-logging',
+    '//buckbuild/jars/log4j:log4j',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'poi.jar',
+  name = 'poi_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/poi/poi/3.14/poi-3.14.jar',
+  sha1 = 'fad7ae6d2e59c59ffdb45f1981500babfa765180',
+)
+

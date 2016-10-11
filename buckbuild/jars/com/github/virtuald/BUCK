@@ -1,0 +1,23 @@
+java_library(
+  name = 'curvesapi',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':curvesapi_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'curvesapi_jar',
+  binary_jar = ':curvesapi_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'curvesapi.jar',
+  name = 'curvesapi_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/github/virtuald/curvesapi/1.03/curvesapi-1.03.jar',
+  sha1 = '6b0977602901464b056959027fdf2396050f9dd2',
+)
+

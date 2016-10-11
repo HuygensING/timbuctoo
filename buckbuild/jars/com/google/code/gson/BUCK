@@ -1,0 +1,23 @@
+java_library(
+  name = 'gson',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':gson_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'gson_jar',
+  binary_jar = ':gson_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'gson.jar',
+  name = 'gson_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/google/code/gson/gson/2.2.4/gson-2.2.4.jar',
+  sha1 = 'a60a5e993c98c864010053cb901b7eab25306568',
+)
+

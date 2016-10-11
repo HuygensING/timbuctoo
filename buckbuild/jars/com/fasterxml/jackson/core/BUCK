@@ -1,0 +1,71 @@
+java_library(
+  name = 'jackson-annotations',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-annotations_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-annotations_jar',
+  binary_jar = ':jackson-annotations_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-annotations.jar',
+  name = 'jackson-annotations_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-annotations/2.6.0/jackson-annotations-2.6.0.jar',
+  sha1 = 'a0990e2e812ac6639b6ce955c91b13228500476e',
+)
+
+java_library(
+  name = 'jackson-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-core_jar',
+  binary_jar = ':jackson-core_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-core.jar',
+  name = 'jackson-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-core/2.6.3/jackson-core-2.6.3.jar',
+  sha1 = '0142ce64dcd709a4b5f6e7d71305a31d3893d077',
+)
+
+java_library(
+  name = 'jackson-databind',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-databind_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-databind_jar',
+  binary_jar = ':jackson-databind_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-annotations',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-databind.jar',
+  name = 'jackson-databind_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/core/jackson-databind/2.6.3/jackson-databind-2.6.3.jar',
+  sha1 = '5c4fcae53dd82e2c549b8322d78c6ff47c94c8a8',
+)
+

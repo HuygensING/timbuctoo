@@ -1,0 +1,23 @@
+java_library(
+  name = 'concurrentlinkedhashmap-lru',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':concurrentlinkedhashmap-lru_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'concurrentlinkedhashmap-lru_jar',
+  binary_jar = ':concurrentlinkedhashmap-lru_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'concurrentlinkedhashmap-lru.jar',
+  name = 'concurrentlinkedhashmap-lru_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/googlecode/concurrentlinkedhashmap/concurrentlinkedhashmap-lru/1.4.2/concurrentlinkedhashmap-lru-1.4.2.jar',
+  sha1 = '2eaf3d3c9746d526ff7e5b93931d482c3887e6ac',
+)
+

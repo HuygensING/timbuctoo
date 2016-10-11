@@ -6,6 +6,8 @@
 .project
 /timbuctoo-instancev4/generated-sources
 
+/buck-out
+/.buckd
 # intellij files and folders
 *.iml
 .idea

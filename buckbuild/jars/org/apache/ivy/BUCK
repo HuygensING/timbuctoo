@@ -1,0 +1,24 @@
+java_library(
+  name = 'ivy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':ivy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'ivy_jar',
+  binary_jar = ':ivy_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-httpclient:commons-httpclient',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'ivy.jar',
+  name = 'ivy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/ivy/ivy/2.3.0/ivy-2.3.0.jar',
+  sha1 = 'c5ebf1c253ad4959a29f4acfe696ee48cdd9f473',
+)
+

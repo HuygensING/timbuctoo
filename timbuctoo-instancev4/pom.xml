@@ -35,21 +35,6 @@
     <url>http://ci.huygens.knaw.nl/job/timbuctoo_develop</url>
   </ciManagement>
 
-  <distributionManagement>
-    <repository>
-      <id>maven.huygens</id>
-      <name>Huygens Maven Repository</name>
-      <url>${huygens-repo}</url>
-    </repository>
-    <!-- use the following if you ARE using a snapshot version. -->
-    <snapshotRepository>
-      <id>maven.huygens</id>
-      <name>Huygens Maven Repository</name>
-      <url>${huygens-repo}</url>
-      <uniqueVersion>false</uniqueVersion>
-    </snapshotRepository>
-  </distributionManagement>
-
   <developers>
     <developer>
       <id>RA</id>
@@ -135,6 +120,7 @@
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
     <jsonld-java.version>0.8.3</jsonld-java.version>
+    <aether-api.version>1.0.0.v20140518</aether-api.version>
   </properties>
 
   <dependencies>
@@ -168,6 +154,12 @@
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-assets</artifactId>
       <version>${dropwizard.version}</version>
+    </dependency>
+    <!--we're usually getting this version-->
+    <dependency>
+      <groupId>org.apache.httpcomponents</groupId>
+      <artifactId>httpclient</artifactId>
+      <version>4.5.2</version>
     </dependency>
 
 
@@ -247,6 +239,55 @@
 	    <artifactId>dans-dp-lib</artifactId>
 	    <version>36e6037f4b</version>
 	  </dependency>
+
+
+    <!-- ### Buck importer ## -->
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-api</artifactId>
+      <version>${aether-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-util</artifactId>
+      <version>${aether-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-transport-http</artifactId>
+      <version>${aether-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-transport-file</artifactId>
+      <version>${aether-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-connector-basic</artifactId>
+      <version>${aether-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-impl</artifactId>
+      <version>${aether-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.aether</groupId>
+      <artifactId>aether-spi</artifactId>
+      <version>${aether-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.maven</groupId>
+      <artifactId>maven-aether-provider</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>args4j</groupId>
+      <artifactId>args4j</artifactId>
+      <version>2.32</version>
+    </dependency>
 
     <!-- ### Logging and reporting ## -->
     <!--GELF logback handler for sending logs to a remote log server-->
@@ -374,14 +415,14 @@
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-kernel</artifactId>
       <version>2.3.1</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-io</artifactId>
       <version>2.3.1</version>
-      <type>test-jar</type>
+      <classifier>tests</classifier>
       <scope>test</scope>
     </dependency>
 

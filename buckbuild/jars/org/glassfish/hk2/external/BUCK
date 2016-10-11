@@ -1,0 +1,48 @@
+java_library(
+  name = 'aopalliance-repackaged',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aopalliance-repackaged_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aopalliance-repackaged_jar',
+  binary_jar = ':aopalliance-repackaged_remote_jar',
+  deps = [
+    '//buckbuild/jars/aopalliance:aopalliance',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aopalliance-repackaged.jar',
+  name = 'aopalliance-repackaged_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/hk2/external/aopalliance-repackaged/2.4.0-b34/aopalliance-repackaged-2.4.0-b34.jar',
+  sha1 = '3d5e856dbc91a3a2b0bcb3a3424f8b62421ae4cf',
+)
+
+java_library(
+  name = 'javax.inject',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':javax.inject_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'javax.inject_jar',
+  binary_jar = ':javax.inject_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/inject:javax.inject',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'javax.inject.jar',
+  name = 'javax.inject_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/hk2/external/javax.inject/2.4.0-b34/javax.inject-2.4.0-b34.jar',
+  sha1 = 'a6a3d4935af7b03e44126b5aac2c2a0ce98fe6e9',
+)
+

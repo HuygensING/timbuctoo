@@ -1,0 +1,49 @@
+java_library(
+  name = 'jcabi-log',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jcabi-log_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jcabi-log_jar',
+  binary_jar = ':jcabi-log_remote_jar',
+  deps = [
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jcabi-log.jar',
+  name = 'jcabi-log_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/jcabi/jcabi-log/0.14/jcabi-log-0.14.jar',
+  sha1 = '819a57348f2448f01d74f8a317dab61d6a90cac2',
+)
+
+java_library(
+  name = 'jcabi-manifests',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jcabi-manifests_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jcabi-manifests_jar',
+  binary_jar = ':jcabi-manifests_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/jcabi:jcabi-log',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jcabi-manifests.jar',
+  name = 'jcabi-manifests_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/jcabi/jcabi-manifests/1.1/jcabi-manifests-1.1.jar',
+  sha1 = 'e4f4488c0e3905c6fab287aca2569928fe1712df',
+)
+

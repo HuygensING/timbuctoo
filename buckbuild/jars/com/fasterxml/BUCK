@@ -1,0 +1,23 @@
+java_library(
+  name = 'classmate',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':classmate_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'classmate_jar',
+  binary_jar = ':classmate_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'classmate.jar',
+  name = 'classmate_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/classmate/1.1.0/classmate-1.1.0.jar',
+  sha1 = 'dbbd699a1486ad0f2ed6f5af6cfed66acacb9056',
+)
+

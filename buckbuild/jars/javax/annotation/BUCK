@@ -1,0 +1,46 @@
+java_library(
+  name = 'javax.annotation-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':javax.annotation-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'javax.annotation-api_jar',
+  binary_jar = ':javax.annotation-api_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'javax.annotation-api.jar',
+  name = 'javax.annotation-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/javax/annotation/javax.annotation-api/1.2/javax.annotation-api-1.2.jar',
+  sha1 = '479c1e06db31c432330183f5cae684163f186146',
+)
+
+java_library(
+  name = 'jsr250-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jsr250-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jsr250-api_jar',
+  binary_jar = ':jsr250-api_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jsr250-api.jar',
+  name = 'jsr250-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/javax/annotation/jsr250-api/1.0/jsr250-api-1.0.jar',
+  sha1 = '5025422767732a1ab45d93abfea846513d742dcf',
+)
+

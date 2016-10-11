@@ -1,0 +1,23 @@
+java_library(
+  name = 'joda-time',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':joda-time_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'joda-time_jar',
+  binary_jar = ':joda-time_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'joda-time.jar',
+  name = 'joda-time_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/joda-time/joda-time/2.9/joda-time-2.9.jar',
+  sha1 = 'e8a58b7f5853b693b8c4795a714fe77c266c3acc',
+)
+

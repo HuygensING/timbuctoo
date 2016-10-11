@@ -1,0 +1,25 @@
+java_library(
+  name = 'xercesImpl',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':xercesImpl_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'xercesImpl_jar',
+  binary_jar = ':xercesImpl_remote_jar',
+  deps = [
+    '//buckbuild/jars/xml-apis:xml-apis',
+    '//buckbuild/jars/xml-resolver:xml-resolver',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'xercesImpl.jar',
+  name = 'xercesImpl_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/xerces/xercesImpl/2.10.0/xercesImpl-2.10.0.jar',
+  sha1 = '9161654d2afe7f9063455f02ccca8e4ec2787222',
+)
+

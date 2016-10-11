@@ -1,0 +1,23 @@
+java_library(
+  name = 'commons-codec',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-codec_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-codec_jar',
+  binary_jar = ':commons-codec_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-codec.jar',
+  name = 'commons-codec_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/commons-codec/commons-codec/1.9/commons-codec-1.9.jar',
+  sha1 = '9ce04e34240f674bc72680f8b843b1457383161a',
+)
+

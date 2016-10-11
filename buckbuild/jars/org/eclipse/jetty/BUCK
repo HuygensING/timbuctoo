@@ -1,0 +1,244 @@
+java_library(
+  name = 'jetty-continuation',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-continuation_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-continuation_jar',
+  binary_jar = ':jetty-continuation_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-continuation.jar',
+  name = 'jetty-continuation_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-continuation/9.2.13.v20150730/jetty-continuation-9.2.13.v20150730.jar',
+  sha1 = 'f6bd4e6871ecd0a5e7a5e5addcea160cd73f81bb',
+)
+
+java_library(
+  name = 'jetty-http',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-http_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-http_jar',
+  binary_jar = ':jetty-http_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/jetty:jetty-util',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-http.jar',
+  name = 'jetty-http_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-http/9.2.13.v20150730/jetty-http-9.2.13.v20150730.jar',
+  sha1 = '23a745d9177ef67ef53cc46b9b70c5870082efc2',
+)
+
+java_library(
+  name = 'jetty-io',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-io_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-io_jar',
+  binary_jar = ':jetty-io_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/jetty:jetty-util',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-io.jar',
+  name = 'jetty-io_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-io/9.2.13.v20150730/jetty-io-9.2.13.v20150730.jar',
+  sha1 = '7a351e6a1b63dfd56b6632623f7ca2793ffb67ad',
+)
+
+java_library(
+  name = 'jetty-security',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-security_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-security_jar',
+  binary_jar = ':jetty-security_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/jetty:jetty-server',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-security.jar',
+  name = 'jetty-security_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-security/9.2.13.v20150730/jetty-security-9.2.13.v20150730.jar',
+  sha1 = 'cc7c7f27ec4cc279253be1675d9e47e58b995943',
+)
+
+java_library(
+  name = 'jetty-server',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-server_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-server_jar',
+  binary_jar = ':jetty-server_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/servlet:javax.servlet-api',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-http',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-io',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-server.jar',
+  name = 'jetty-server_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-server/9.2.13.v20150730/jetty-server-9.2.13.v20150730.jar',
+  sha1 = '5be7d1da0a7abffd142de3091d160717c120b6ab',
+)
+
+java_library(
+  name = 'jetty-servlet',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-servlet_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-servlet_jar',
+  binary_jar = ':jetty-servlet_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/jetty:jetty-security',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-servlet.jar',
+  name = 'jetty-servlet_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-servlet/9.2.13.v20150730/jetty-servlet-9.2.13.v20150730.jar',
+  sha1 = '5ad6e38015a97ae9a60b6c2ad744ccfa9cf93a50',
+)
+
+java_library(
+  name = 'jetty-servlets',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-servlets_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-servlets_jar',
+  binary_jar = ':jetty-servlets_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/jetty:jetty-continuation',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-http',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-io',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-util',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-servlets.jar',
+  name = 'jetty-servlets_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-servlets/9.2.13.v20150730/jetty-servlets-9.2.13.v20150730.jar',
+  sha1 = '23eb48f1d889d45902e400750460d4cd94d74663',
+)
+
+java_library(
+  name = 'jetty-util',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-util_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-util_jar',
+  binary_jar = ':jetty-util_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-util.jar',
+  name = 'jetty-util_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-util/9.2.13.v20150730/jetty-util-9.2.13.v20150730.jar',
+  sha1 = 'c101476360a7cdd0670462de04053507d5e70c97',
+)
+
+java_library(
+  name = 'jetty-webapp',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-webapp_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-webapp_jar',
+  binary_jar = ':jetty-webapp_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/jetty:jetty-servlet',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-xml',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-webapp.jar',
+  name = 'jetty-webapp_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-webapp/9.2.13.v20150730/jetty-webapp-9.2.13.v20150730.jar',
+  sha1 = '716b5cdea1e818cd0e36dfea791f620d49bd2d2a',
+)
+
+java_library(
+  name = 'jetty-xml',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-xml_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-xml_jar',
+  binary_jar = ':jetty-xml_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/jetty:jetty-util',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-xml.jar',
+  name = 'jetty-xml_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/jetty-xml/9.2.13.v20150730/jetty-xml-9.2.13.v20150730.jar',
+  sha1 = '9e17bdfb8c25d0cd377960326b79379df3181776',
+)
+

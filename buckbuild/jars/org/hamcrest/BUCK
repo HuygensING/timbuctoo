@@ -1,0 +1,46 @@
+java_library(
+  name = 'hamcrest-all',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':hamcrest-all_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'hamcrest-all_jar',
+  binary_jar = ':hamcrest-all_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'hamcrest-all.jar',
+  name = 'hamcrest-all_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-all/1.3/hamcrest-all-1.3.jar',
+  sha1 = '63a21ebc981131004ad02e0434e799fd7f3a8d5a',
+)
+
+java_library(
+  name = 'hamcrest-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':hamcrest-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'hamcrest-core_jar',
+  binary_jar = ':hamcrest-core_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'hamcrest-core.jar',
+  name = 'hamcrest-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar',
+  sha1 = '42a25dc3219429f0e5d060061f71acb49bf010a0',
+)
+

@@ -1,0 +1,46 @@
+java_library(
+  name = 'byte-buddy-agent',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':byte-buddy-agent_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'byte-buddy-agent_jar',
+  binary_jar = ':byte-buddy-agent_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'byte-buddy-agent.jar',
+  name = 'byte-buddy-agent_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/net/bytebuddy/byte-buddy-agent/1.5.5/byte-buddy-agent-1.5.5.jar',
+  sha1 = '273c16dd04de665a8952bfdd8f65d416da0fd787',
+)
+
+java_library(
+  name = 'byte-buddy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':byte-buddy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'byte-buddy_jar',
+  binary_jar = ':byte-buddy_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'byte-buddy.jar',
+  name = 'byte-buddy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/net/bytebuddy/byte-buddy/1.5.5/byte-buddy-1.5.5.jar',
+  sha1 = '8557b6465cea17f3769678235e77d5cb076c1170',
+)
+

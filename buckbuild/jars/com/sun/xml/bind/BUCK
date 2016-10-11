@@ -1,0 +1,24 @@
+java_library(
+  name = 'jaxb-impl',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jaxb-impl_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jaxb-impl_jar',
+  binary_jar = ':jaxb-impl_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/xml/bind:jaxb-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jaxb-impl.jar',
+  name = 'jaxb-impl_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/sun/xml/bind/jaxb-impl/2.2.3-1/jaxb-impl-2.2.3-1.jar',
+  sha1 = '56baae106392040a45a06d4a41099173425da1e6',
+)
+

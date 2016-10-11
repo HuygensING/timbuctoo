@@ -1,0 +1,25 @@
+java_library(
+  name = 'guice',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':guice_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'guice_jar',
+  binary_jar = ':guice_remote_jar',
+  deps = [
+    '//buckbuild/jars/aopalliance:aopalliance',
+    '//buckbuild/jars/javax/inject:javax.inject',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'guice.jar',
+  name = 'guice_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/google/inject/guice/3.0/guice-3.0.jar',
+  sha1 = '9d84f15fe35e2c716a02979fb62f50a29f38aefa',
+)
+

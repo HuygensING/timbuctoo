@@ -1,0 +1,23 @@
+java_library(
+  name = 'stax-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':stax-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'stax-api_jar',
+  binary_jar = ':stax-api_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'stax-api.jar',
+  name = 'stax-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/stax/stax-api/1.0.1/stax-api-1.0.1.jar',
+  sha1 = '49c100caf72d658aca8e58bd74a4ba90fa2b0d70',
+)
+

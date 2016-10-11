@@ -1,0 +1,54 @@
+java_library(
+  name = 'jersey-bean-validation',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-bean-validation_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-bean-validation_jar',
+  binary_jar = ':jersey-bean-validation_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/validation:validation-api',
+    '//buckbuild/jars/javax/ws/rs:javax.ws.rs-api',
+    '//buckbuild/jars/org/glassfish/hk2/external:javax.inject',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-server',
+    '//buckbuild/jars/org/hibernate:hibernate-validator',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-bean-validation.jar',
+  name = 'jersey-bean-validation_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/ext/jersey-bean-validation/2.22.1/jersey-bean-validation-2.22.1.jar',
+  sha1 = '566e0710b5c2d85893189be48675c33024170bfd',
+)
+
+java_library(
+  name = 'jersey-metainf-services',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-metainf-services_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-metainf-services_jar',
+  binary_jar = ':jersey-metainf-services_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/ws/rs:javax.ws.rs-api',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-metainf-services.jar',
+  name = 'jersey-metainf-services_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/ext/jersey-metainf-services/2.22.1/jersey-metainf-services-2.22.1.jar',
+  sha1 = 'ea6e0bfd5e8d73dbad7c2c12ee57b6e52ecdc19f',
+)
+

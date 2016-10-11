@@ -1,0 +1,109 @@
+java_library(
+  name = 'maven-aether-provider',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':maven-aether-provider_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'maven-aether-provider_jar',
+  binary_jar = ':maven-aether-provider_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/maven:maven-model',
+    '//buckbuild/jars/org/apache/maven:maven-model-builder',
+    '//buckbuild/jars/org/apache/maven:maven-repository-metadata',
+    '//buckbuild/jars/org/codehaus/plexus:plexus-component-annotations',
+    '//buckbuild/jars/org/codehaus/plexus:plexus-utils',
+    '//buckbuild/jars/org/eclipse/aether:aether-api',
+    '//buckbuild/jars/org/eclipse/aether:aether-impl',
+    '//buckbuild/jars/org/eclipse/aether:aether-spi',
+    '//buckbuild/jars/org/eclipse/aether:aether-util',
+    '//buckbuild/jars/org/eclipse/sisu:org.eclipse.sisu.plexus',
+    '//buckbuild/jars/org/sonatype/sisu:sisu-guice-no_aop',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'maven-aether-provider.jar',
+  name = 'maven-aether-provider_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/maven/maven-aether-provider/3.1.0/maven-aether-provider-3.1.0.jar',
+  sha1 = 'dda2231a2be2768109d474805c702b76a8e794e6',
+)
+
+java_library(
+  name = 'maven-model-builder',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':maven-model-builder_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'maven-model-builder_jar',
+  binary_jar = ':maven-model-builder_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/maven:maven-model',
+    '//buckbuild/jars/org/codehaus/plexus:plexus-component-annotations',
+    '//buckbuild/jars/org/codehaus/plexus:plexus-interpolation',
+    '//buckbuild/jars/org/codehaus/plexus:plexus-utils',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'maven-model-builder.jar',
+  name = 'maven-model-builder_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/maven/maven-model-builder/3.1.0/maven-model-builder-3.1.0.jar',
+  sha1 = '13ba294cedb659c3851f0c2980af7f44bcc6a8e0',
+)
+
+java_library(
+  name = 'maven-model',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':maven-model_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'maven-model_jar',
+  binary_jar = ':maven-model_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/plexus:plexus-utils',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'maven-model.jar',
+  name = 'maven-model_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/maven/maven-model/3.1.0/maven-model-3.1.0.jar',
+  sha1 = '82b2f097c1cc9a8d0e6b99af5e56327d5002c30f',
+)
+
+java_library(
+  name = 'maven-repository-metadata',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':maven-repository-metadata_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'maven-repository-metadata_jar',
+  binary_jar = ':maven-repository-metadata_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/plexus:plexus-utils',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'maven-repository-metadata.jar',
+  name = 'maven-repository-metadata_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/maven/maven-repository-metadata/3.1.0/maven-repository-metadata-3.1.0.jar',
+  sha1 = '77bb2c383b1654b158cf9f905f4105d9d522fc7e',
+)
+

@@ -1,0 +1,25 @@
+java_library(
+  name = 'jetty-setuid-java',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jetty-setuid-java_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jetty-setuid-java_jar',
+  binary_jar = ':jetty-setuid-java_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/jetty:jetty-server',
+    '//buckbuild/jars/org/eclipse/jetty:jetty-util',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jetty-setuid-java.jar',
+  name = 'jetty-setuid-java_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/jetty/toolchain/setuid/jetty-setuid-java/1.0.3/jetty-setuid-java-1.0.3.jar',
+  sha1 = '73ae4ab171d396103f32e392970641e985d1a845',
+)
+

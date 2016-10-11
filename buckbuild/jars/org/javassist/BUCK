@@ -1,0 +1,23 @@
+java_library(
+  name = 'javassist',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':javassist_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'javassist_jar',
+  binary_jar = ':javassist_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'javassist.jar',
+  name = 'javassist_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/javassist/javassist/3.18.1-GA/javassist-3.18.1-GA.jar',
+  sha1 = 'd9a09f7732226af26bf99f19e2cffe0ae219db5b',
+)
+

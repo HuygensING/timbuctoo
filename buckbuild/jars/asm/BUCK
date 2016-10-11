@@ -1,0 +1,23 @@
+java_library(
+  name = 'asm',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':asm_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'asm_jar',
+  binary_jar = ':asm_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'asm.jar',
+  name = 'asm_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/asm/asm/3.1/asm-3.1.jar',
+  sha1 = 'c157def142714c544bdea2e6144645702adf7097',
+)
+

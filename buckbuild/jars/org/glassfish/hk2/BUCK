@@ -1,0 +1,102 @@
+java_library(
+  name = 'hk2-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':hk2-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'hk2-api_jar',
+  binary_jar = ':hk2-api_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/inject:javax.inject',
+    '//buckbuild/jars/org/glassfish/hk2/external:aopalliance-repackaged',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-utils',
+    '//buckbuild/jars/org/glassfish/hk2:osgi-resource-locator',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'hk2-api.jar',
+  name = 'hk2-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/hk2/hk2-api/2.4.0-b34/hk2-api-2.4.0-b34.jar',
+  sha1 = '1017432e219dbd1d4a1121b2d7e87c5b2f0bcfb9',
+)
+
+java_library(
+  name = 'hk2-locator',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':hk2-locator_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'hk2-locator_jar',
+  binary_jar = ':hk2-locator_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/glassfish/hk2/external:aopalliance-repackaged',
+    '//buckbuild/jars/org/glassfish/hk2/external:javax.inject',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-api',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-utils',
+    '//buckbuild/jars/org/javassist:javassist',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'hk2-locator.jar',
+  name = 'hk2-locator_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/hk2/hk2-locator/2.4.0-b34/hk2-locator-2.4.0-b34.jar',
+  sha1 = '1451fc3e5b7f00d7a5ca0feaff2c1bf68be5ac91',
+)
+
+java_library(
+  name = 'hk2-utils',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':hk2-utils_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'hk2-utils_jar',
+  binary_jar = ':hk2-utils_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/inject:javax.inject',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'hk2-utils.jar',
+  name = 'hk2-utils_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/hk2/hk2-utils/2.4.0-b34/hk2-utils-2.4.0-b34.jar',
+  sha1 = 'aacce18411fffef9621d8fc91464ca0477119c38',
+)
+
+java_library(
+  name = 'osgi-resource-locator',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':osgi-resource-locator_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'osgi-resource-locator_jar',
+  binary_jar = ':osgi-resource-locator_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'osgi-resource-locator.jar',
+  name = 'osgi-resource-locator_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/hk2/osgi-resource-locator/1.0.1/osgi-resource-locator-1.0.1.jar',
+  sha1 = '4ed2b2d4738aed5786cfa64cba5a332779c4c708',
+)
+

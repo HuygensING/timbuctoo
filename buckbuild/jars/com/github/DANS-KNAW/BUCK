@@ -1,0 +1,23 @@
+java_library(
+  name = 'dans-dp-lib',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dans-dp-lib_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dans-dp-lib_jar',
+  binary_jar = ':dans-dp-lib_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dans-dp-lib.jar',
+  name = 'dans-dp-lib_remote_jar',
+  url = 'https://jitpack.io/com/github/DANS-KNAW/dans-dp-lib/36e6037f4b/dans-dp-lib-36e6037f4b.jar',
+  sha1 = '9b220b77d30b37257db9b3822b3c97c796a9d6b2',
+)
+

@@ -1,0 +1,25 @@
+java_library(
+  name = 'not-yet-commons-ssl',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':not-yet-commons-ssl_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'not-yet-commons-ssl_jar',
+  binary_jar = ':not-yet-commons-ssl_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-httpclient:commons-httpclient',
+    '//buckbuild/jars/log4j:log4j',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'not-yet-commons-ssl.jar',
+  name = 'not-yet-commons-ssl_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/ca/juliusdavies/not-yet-commons-ssl/0.3.9/not-yet-commons-ssl-0.3.9.jar',
+  sha1 = 'e20f0960c000681c91d00de846a43cf2051b8f69',
+)
+

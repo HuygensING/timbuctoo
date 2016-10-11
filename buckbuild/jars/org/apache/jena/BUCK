@@ -1,0 +1,185 @@
+java_library(
+  name = 'apache-jena-libs',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/apache/jena:jena-tdb',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+  ],
+)
+
+java_library(
+  name = 'jena-arq',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jena-arq_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jena-arq_jar',
+  binary_jar = ':jena-arq_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/github/jsonld-java:jsonld-java',
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/apache/commons:commons-csv',
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/apache/httpcomponents:httpclient',
+    '//buckbuild/jars/org/apache/httpcomponents:httpclient-cache',
+    '//buckbuild/jars/org/apache/jena:jena-core',
+    '//buckbuild/jars/org/apache/jena:jena-shaded-guava',
+    '//buckbuild/jars/org/apache/thrift:libthrift',
+    '//buckbuild/jars/org/slf4j:jcl-over-slf4j',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jena-arq.jar',
+  name = 'jena-arq_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/jena/jena-arq/3.1.0/jena-arq-3.1.0.jar',
+  sha1 = '9f306f67f35a15d5c0ec486fef8e1e2ece34d0ee',
+)
+
+java_library(
+  name = 'jena-base',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jena-base_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jena-base_jar',
+  binary_jar = ':jena-base_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/github/andrewoma/dexx:collection',
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/apache/commons:commons-csv',
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/apache/jena:jena-shaded-guava',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jena-base.jar',
+  name = 'jena-base_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/jena/jena-base/3.1.0/jena-base-3.1.0.jar',
+  sha1 = 'b8eb06db8462d570c8d7896aaf29b3b76e1dafa2',
+)
+
+java_library(
+  name = 'jena-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jena-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jena-core_jar',
+  binary_jar = ':jena-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-cli:commons-cli',
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/apache/jena:jena-base',
+    '//buckbuild/jars/org/apache/jena:jena-iri',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+    '//buckbuild/jars/xerces:xercesImpl',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jena-core.jar',
+  name = 'jena-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/jena/jena-core/3.1.0/jena-core-3.1.0.jar',
+  sha1 = '9762d7180fc8bb6bf8a15b86bc41bd49f4147136',
+)
+
+java_library(
+  name = 'jena-iri',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jena-iri_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jena-iri_jar',
+  binary_jar = ':jena-iri_remote_jar',
+  deps = [
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jena-iri.jar',
+  name = 'jena-iri_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/jena/jena-iri/3.1.0/jena-iri-3.1.0.jar',
+  sha1 = '13d22953f9ede17bee10eda82c4d6d2060c8a8c6',
+)
+
+java_library(
+  name = 'jena-shaded-guava',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jena-shaded-guava_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jena-shaded-guava_jar',
+  binary_jar = ':jena-shaded-guava_remote_jar',
+  deps = [
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jena-shaded-guava.jar',
+  name = 'jena-shaded-guava_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/jena/jena-shaded-guava/3.1.0/jena-shaded-guava-3.1.0.jar',
+  sha1 = '6e2400a81e3d6d50a894daa07db0501fc900c659',
+)
+
+java_library(
+  name = 'jena-tdb',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jena-tdb_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jena-tdb_jar',
+  binary_jar = ':jena-tdb_remote_jar',
+  deps = [
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/org/apache/jena:jena-arq',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jena-tdb.jar',
+  name = 'jena-tdb_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/jena/jena-tdb/3.1.0/jena-tdb-3.1.0.jar',
+  sha1 = 'ee0d6be78e09cf04e757542eb32d37f3b30715b3',
+)
+

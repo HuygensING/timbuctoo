@@ -1,0 +1,102 @@
+java_library(
+  name = 'jersey-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-core_jar',
+  binary_jar = ':jersey-core_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-core.jar',
+  name = 'jersey-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/sun/jersey/jersey-core/1.18/jersey-core-1.18.jar',
+  sha1 = 'b3d0fde341fafdab2318602954218d38727f95cf',
+)
+
+java_library(
+  name = 'jersey-json',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-json_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-json_jar',
+  binary_jar = ':jersey-json_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/sun/jersey:jersey-core',
+    '//buckbuild/jars/com/sun/xml/bind:jaxb-impl',
+    '//buckbuild/jars/org/codehaus/jackson:jackson-core-asl',
+    '//buckbuild/jars/org/codehaus/jackson:jackson-jaxrs',
+    '//buckbuild/jars/org/codehaus/jackson:jackson-mapper-asl',
+    '//buckbuild/jars/org/codehaus/jackson:jackson-xc',
+    '//buckbuild/jars/org/codehaus/jettison:jettison',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-json.jar',
+  name = 'jersey-json_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/sun/jersey/jersey-json/1.18/jersey-json-1.18.jar',
+  sha1 = '76204239e551ae47dbbf871a5649660661a053a0',
+)
+
+java_library(
+  name = 'jersey-server',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-server_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-server_jar',
+  binary_jar = ':jersey-server_remote_jar',
+  deps = [
+    '//buckbuild/jars/asm:asm',
+    '//buckbuild/jars/com/sun/jersey:jersey-core',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-server.jar',
+  name = 'jersey-server_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/sun/jersey/jersey-server/1.18/jersey-server-1.18.jar',
+  sha1 = '5f60786cb44b6e00d572506a82c5da6d17173fa1',
+)
+
+java_library(
+  name = 'jersey-servlet',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-servlet_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-servlet_jar',
+  binary_jar = ':jersey-servlet_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/sun/jersey:jersey-server',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-servlet.jar',
+  name = 'jersey-servlet_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/sun/jersey/jersey-servlet/1.18/jersey-servlet-1.18.jar',
+  sha1 = '7bd3dba613847e7d8ee20cb12392f62e354e6d2d',
+)
+

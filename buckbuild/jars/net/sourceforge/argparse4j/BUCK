@@ -1,0 +1,23 @@
+java_library(
+  name = 'argparse4j',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':argparse4j_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'argparse4j_jar',
+  binary_jar = ':argparse4j_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'argparse4j.jar',
+  name = 'argparse4j_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/net/sourceforge/argparse4j/argparse4j/0.6.0/argparse4j-0.6.0.jar',
+  sha1 = '249d45cf3a76713563644657be6b2bcc2cac5dec',
+)
+

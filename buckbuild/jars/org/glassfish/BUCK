@@ -1,0 +1,23 @@
+java_library(
+  name = 'javax.el',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':javax.el_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'javax.el_jar',
+  binary_jar = ':javax.el_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'javax.el.jar',
+  name = 'javax.el_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/javax.el/3.0.0/javax.el-3.0.0.jar',
+  sha1 = 'dd532526e7c8de48e40419e6af1183658a973379',
+)
+

@@ -1,0 +1,26 @@
+java_library(
+  name = 'dropwizard-java8',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-java8_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-java8_jar',
+  binary_jar = ':dropwizard-java8_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/datatype:jackson-datatype-jdk8',
+    '//buckbuild/jars/com/fasterxml/jackson/datatype:jackson-datatype-jsr310',
+    '//buckbuild/jars/io/dropwizard:dropwizard-core',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-java8.jar',
+  name = 'dropwizard-java8_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/io/dropwizard/modules/dropwizard-java8/0.9.0-1/dropwizard-java8-0.9.0-1.jar',
+  sha1 = '3e3315c037827e0eac4fb7e9a1814ef85cd7909e',
+)
+

@@ -1,0 +1,92 @@
+java_library(
+  name = 'plexus-classworlds',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':plexus-classworlds_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'plexus-classworlds_jar',
+  binary_jar = ':plexus-classworlds_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'plexus-classworlds.jar',
+  name = 'plexus-classworlds_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-classworlds/2.4/plexus-classworlds-2.4.jar',
+  sha1 = 'ef38ff5c25f83a4a02fcd9843d85f3e47012873e',
+)
+
+java_library(
+  name = 'plexus-component-annotations',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':plexus-component-annotations_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'plexus-component-annotations_jar',
+  binary_jar = ':plexus-component-annotations_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'plexus-component-annotations.jar',
+  name = 'plexus-component-annotations_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-component-annotations/1.5.5/plexus-component-annotations-1.5.5.jar',
+  sha1 = 'c72f2660d0cbed24246ddb55d7fdc4f7374d2078',
+)
+
+java_library(
+  name = 'plexus-interpolation',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':plexus-interpolation_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'plexus-interpolation_jar',
+  binary_jar = ':plexus-interpolation_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'plexus-interpolation.jar',
+  name = 'plexus-interpolation_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-interpolation/1.16/plexus-interpolation-1.16.jar',
+  sha1 = 'a868d4a603bd42c9dee67890c4e60e360a11838c',
+)
+
+java_library(
+  name = 'plexus-utils',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':plexus-utils_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'plexus-utils_jar',
+  binary_jar = ':plexus-utils_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'plexus-utils.jar',
+  name = 'plexus-utils_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/plexus/plexus-utils/3.0.10/plexus-utils-3.0.10.jar',
+  sha1 = '65e6460a49460d2ca038f8644ff9ae6d878733b8',
+)
+

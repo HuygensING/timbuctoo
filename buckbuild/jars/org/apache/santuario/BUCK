@@ -1,0 +1,24 @@
+java_library(
+  name = 'xmlsec',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':xmlsec_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'xmlsec_jar',
+  binary_jar = ':xmlsec_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-logging:commons-logging',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'xmlsec.jar',
+  name = 'xmlsec_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/santuario/xmlsec/1.4.5/xmlsec-1.4.5.jar',
+  sha1 = 'bbf6ed865e4920a068e389f6fa2c0465aebaca7b',
+)
+

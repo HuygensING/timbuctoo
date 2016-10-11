@@ -1,0 +1,47 @@
+java_library(
+  name = 'scala-library',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':scala-library_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'scala-library_jar',
+  binary_jar = ':scala-library_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'scala-library.jar',
+  name = 'scala-library_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/scala-lang/scala-library/2.11.7/scala-library-2.11.7.jar',
+  sha1 = 'f75e7acabd57b213d6f61483240286c07213ec0e',
+)
+
+java_library(
+  name = 'scala-reflect',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':scala-reflect_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'scala-reflect_jar',
+  binary_jar = ':scala-reflect_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/scala-lang:scala-library',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'scala-reflect.jar',
+  name = 'scala-reflect_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/scala-lang/scala-reflect/2.11.7/scala-reflect-2.11.7.jar',
+  sha1 = 'bf1649c9d33da945dea502180855b56caf06288c',
+)
+

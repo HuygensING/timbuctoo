@@ -1,0 +1,23 @@
+java_library(
+  name = 'validation-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':validation-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'validation-api_jar',
+  binary_jar = ':validation-api_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'validation-api.jar',
+  name = 'validation-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/javax/validation/validation-api/1.1.0.Final/validation-api-1.1.0.Final.jar',
+  sha1 = '8613ae82954779d518631e05daa73a6a954817d5',
+)
+

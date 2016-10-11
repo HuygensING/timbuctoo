@@ -1,0 +1,91 @@
+java_library(
+  name = 'jersey-client',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-client_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-client_jar',
+  binary_jar = ':jersey-client_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/ws/rs:javax.ws.rs-api',
+    '//buckbuild/jars/org/glassfish/hk2/external:javax.inject',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-api',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-locator',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-client.jar',
+  name = 'jersey-client_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/core/jersey-client/2.22.2/jersey-client-2.22.2.jar',
+  sha1 = '1712fff037ce5a59e3d67f90fff29222989799ee',
+)
+
+java_library(
+  name = 'jersey-common',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-common_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-common_jar',
+  binary_jar = ':jersey-common_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/annotation:javax.annotation-api',
+    '//buckbuild/jars/javax/ws/rs:javax.ws.rs-api',
+    '//buckbuild/jars/org/glassfish/hk2/external:javax.inject',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-api',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-locator',
+    '//buckbuild/jars/org/glassfish/hk2:osgi-resource-locator',
+    '//buckbuild/jars/org/glassfish/jersey/bundles/repackaged:jersey-guava',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-common.jar',
+  name = 'jersey-common_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/core/jersey-common/2.22.2/jersey-common-2.22.2.jar',
+  sha1 = '1209b89878b60ce7d49afadeff7522d2fde0e217',
+)
+
+java_library(
+  name = 'jersey-server',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-server_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-server_jar',
+  binary_jar = ':jersey-server_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/annotation:javax.annotation-api',
+    '//buckbuild/jars/javax/validation:validation-api',
+    '//buckbuild/jars/javax/ws/rs:javax.ws.rs-api',
+    '//buckbuild/jars/org/glassfish/hk2/external:javax.inject',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-api',
+    '//buckbuild/jars/org/glassfish/hk2:hk2-locator',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-client',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-common',
+    '//buckbuild/jars/org/glassfish/jersey/media:jersey-media-jaxb',
+    '//buckbuild/jars/org/ow2/asm:asm-debug-all',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-server.jar',
+  name = 'jersey-server_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/core/jersey-server/2.22.1/jersey-server-2.22.1.jar',
+  sha1 = '20eee7b976e7005a40f05c0965dd76a308689e98',
+)
+

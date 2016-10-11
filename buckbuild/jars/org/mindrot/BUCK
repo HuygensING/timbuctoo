@@ -1,0 +1,23 @@
+java_library(
+  name = 'jbcrypt',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jbcrypt_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jbcrypt_jar',
+  binary_jar = ':jbcrypt_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jbcrypt.jar',
+  name = 'jbcrypt_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/mindrot/jbcrypt/0.3m/jbcrypt-0.3m.jar',
+  sha1 = 'fe2d9c5f23767d681a7e38fc8986b812400ec583',
+)
+

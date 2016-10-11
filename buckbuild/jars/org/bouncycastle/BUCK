@@ -1,0 +1,23 @@
+java_library(
+  name = 'bcprov-jdk15',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':bcprov-jdk15_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'bcprov-jdk15_jar',
+  binary_jar = ':bcprov-jdk15_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'bcprov-jdk15.jar',
+  name = 'bcprov-jdk15_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/bouncycastle/bcprov-jdk15/1.46/bcprov-jdk15-1.46.jar',
+  sha1 = 'd726ceb2dcc711ef066cc639c12d856128ea1ef1',
+)
+

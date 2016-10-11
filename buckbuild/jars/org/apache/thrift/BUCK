@@ -1,0 +1,26 @@
+java_library(
+  name = 'libthrift',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':libthrift_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'libthrift_jar',
+  binary_jar = ':libthrift_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/httpcomponents:httpclient',
+    '//buckbuild/jars/org/apache/httpcomponents:httpcore',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'libthrift.jar',
+  name = 'libthrift_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar',
+  sha1 = '9b067e2e2c5291e9f0d8b3561b1654286e6d81ee',
+)
+

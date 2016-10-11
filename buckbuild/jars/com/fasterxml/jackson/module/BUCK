@@ -1,0 +1,50 @@
+java_library(
+  name = 'jackson-module-afterburner',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-module-afterburner_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-module-afterburner_jar',
+  binary_jar = ':jackson-module-afterburner_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-module-afterburner.jar',
+  name = 'jackson-module-afterburner_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/module/jackson-module-afterburner/2.6.3/jackson-module-afterburner-2.6.3.jar',
+  sha1 = '0655d9a2c8be9221abc6ae341f2191de8115114b',
+)
+
+java_library(
+  name = 'jackson-module-jaxb-annotations',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-module-jaxb-annotations_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-module-jaxb-annotations_jar',
+  binary_jar = ':jackson-module-jaxb-annotations_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-module-jaxb-annotations.jar',
+  name = 'jackson-module-jaxb-annotations_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/module/jackson-module-jaxb-annotations/2.3.0/jackson-module-jaxb-annotations-2.3.0.jar',
+  sha1 = 'c23c81074cbac7ccd3926d68507d46d98c5cdc81',
+)
+

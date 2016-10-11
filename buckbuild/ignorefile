@@ -1,0 +1,4 @@
+nl.knaw.huygens.concordion:HttpCommand:jar:1.0.0-SNAPSHOT
+nl.knaw.huygens:contract-diff:jar:1.0.0-SNAPSHOT
+nl.knaw.huygens:security-client-agnostic:jar:1.0.0-SNAPSHOT
+nl.knaw.huygens:timbuctoo-test-services:jar:1.0.0-SNAPSHOT

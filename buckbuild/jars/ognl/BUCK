@@ -1,0 +1,23 @@
+java_library(
+  name = 'ognl',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':ognl_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'ognl_jar',
+  binary_jar = ':ognl_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'ognl.jar',
+  name = 'ognl_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/ognl/ognl/2.6.9/ognl-2.6.9.jar',
+  sha1 = 'fad9692184899994e977b647998f9fa4a9cfec35',
+)
+

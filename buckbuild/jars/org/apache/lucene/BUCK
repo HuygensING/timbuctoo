@@ -1,0 +1,23 @@
+java_library(
+  name = 'lucene-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':lucene-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'lucene-core_jar',
+  binary_jar = ':lucene-core_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'lucene-core.jar',
+  name = 'lucene-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/lucene/lucene-core/3.6.2/lucene-core-3.6.2.jar',
+  sha1 = '9ec77e2507f9cc01756964c71d91efd8154a8c47',
+)
+

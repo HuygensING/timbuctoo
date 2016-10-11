@@ -1,0 +1,52 @@
+java_library(
+  name = 'jackson-jaxrs-base',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-jaxrs-base_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-jaxrs-base_jar',
+  binary_jar = ':jackson-jaxrs-base_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-jaxrs-base.jar',
+  name = 'jackson-jaxrs-base_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/jaxrs/jackson-jaxrs-base/2.3.0/jackson-jaxrs-base-2.3.0.jar',
+  sha1 = '4e48453917026169059c457e5dc6e0c6d449ce70',
+)
+
+java_library(
+  name = 'jackson-jaxrs-json-provider',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-jaxrs-json-provider_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-jaxrs-json-provider_jar',
+  binary_jar = ':jackson-jaxrs-json-provider_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+    '//buckbuild/jars/com/fasterxml/jackson/jaxrs:jackson-jaxrs-base',
+    '//buckbuild/jars/com/fasterxml/jackson/module:jackson-module-jaxb-annotations',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-jaxrs-json-provider.jar',
+  name = 'jackson-jaxrs-json-provider_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/jaxrs/jackson-jaxrs-json-provider/2.3.0/jackson-jaxrs-json-provider-2.3.0.jar',
+  sha1 = '61b23fa961da85823ad68b46b0341c603bd44cb6',
+)
+

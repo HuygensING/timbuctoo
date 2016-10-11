@@ -1,0 +1,23 @@
+java_library(
+  name = 'commons-io',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-io_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-io_jar',
+  binary_jar = ':commons-io_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-io.jar',
+  name = 'commons-io_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/commons-io/commons-io/2.4/commons-io-2.4.jar',
+  sha1 = 'b1b6ea3b7e4aa4f492509a4952029cd8e48019ad',
+)
+

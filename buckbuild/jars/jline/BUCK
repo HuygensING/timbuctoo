@@ -1,0 +1,23 @@
+java_library(
+  name = 'jline',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jline_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jline_jar',
+  binary_jar = ':jline_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jline.jar',
+  name = 'jline_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/jline/jline/2.12/jline-2.12.jar',
+  sha1 = 'ce9062c6a125e0f9ad766032573c041ae8ecc986',
+)
+

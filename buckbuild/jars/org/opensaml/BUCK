@@ -1,0 +1,97 @@
+java_library(
+  name = 'opensaml',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':opensaml_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'opensaml_jar',
+  binary_jar = ':opensaml_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-codec:commons-codec',
+    '//buckbuild/jars/commons-collections:commons-collections',
+    '//buckbuild/jars/commons-lang:commons-lang',
+    '//buckbuild/jars/joda-time:joda-time',
+    '//buckbuild/jars/org/opensaml:openws',
+    '//buckbuild/jars/org/owasp/esapi:esapi',
+    '//buckbuild/jars/velocity:velocity',
+    '//buckbuild/jars/xalan:xalan',
+    '//buckbuild/jars/xerces:xercesImpl',
+    '//buckbuild/jars/xml-apis:xml-apis',
+    '//buckbuild/jars/xml-resolver:xml-resolver',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'opensaml.jar',
+  name = 'opensaml_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/opensaml/opensaml/2.5.3/opensaml-2.5.3.jar',
+  sha1 = '306e0d8d1894d1eedeba2841f304d1166af37f96',
+)
+
+java_library(
+  name = 'openws',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':openws_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'openws_jar',
+  binary_jar = ':openws_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-codec:commons-codec',
+    '//buckbuild/jars/commons-httpclient:commons-httpclient',
+    '//buckbuild/jars/joda-time:joda-time',
+    '//buckbuild/jars/org/opensaml:xmltooling',
+    '//buckbuild/jars/xalan:xalan',
+    '//buckbuild/jars/xerces:xercesImpl',
+    '//buckbuild/jars/xml-apis:xml-apis',
+    '//buckbuild/jars/xml-resolver:xml-resolver',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'openws.jar',
+  name = 'openws_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/opensaml/openws/1.4.4/openws-1.4.4.jar',
+  sha1 = 'f3ccaa249e76083b5386376abe47e1a3e74324fb',
+)
+
+java_library(
+  name = 'xmltooling',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':xmltooling_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'xmltooling_jar',
+  binary_jar = ':xmltooling_remote_jar',
+  deps = [
+    '//buckbuild/jars/ca/juliusdavies:not-yet-commons-ssl',
+    '//buckbuild/jars/commons-codec:commons-codec',
+    '//buckbuild/jars/joda-time:joda-time',
+    '//buckbuild/jars/org/apache/santuario:xmlsec',
+    '//buckbuild/jars/org/bouncycastle:bcprov-jdk15',
+    '//buckbuild/jars/xalan:xalan',
+    '//buckbuild/jars/xerces:xercesImpl',
+    '//buckbuild/jars/xml-apis:xml-apis',
+    '//buckbuild/jars/xml-resolver:xml-resolver',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'xmltooling.jar',
+  name = 'xmltooling_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/opensaml/xmltooling/1.3.4/xmltooling-1.3.4.jar',
+  sha1 = '1721db73ffb963fedf2a1d2be0eaf7cf4d146f71',
+)
+

@@ -1,0 +1,23 @@
+java_library(
+  name = 'activation',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':activation_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'activation_jar',
+  binary_jar = ':activation_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'activation.jar',
+  name = 'activation_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/javax/activation/activation/1.1/activation-1.1.jar',
+  sha1 = 'e6cb541461c2834bdea3eb920f1884d1eb508b50',
+)
+

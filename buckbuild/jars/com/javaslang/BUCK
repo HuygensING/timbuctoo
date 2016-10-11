@@ -1,0 +1,23 @@
+java_library(
+  name = 'javaslang',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':javaslang_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'javaslang_jar',
+  binary_jar = ':javaslang_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'javaslang.jar',
+  name = 'javaslang_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/javaslang/javaslang/2.0.0-RC4/javaslang-2.0.0-RC4.jar',
+  sha1 = 'e36d29540f89e6cd8043daefde9e1be98c4db530',
+)
+

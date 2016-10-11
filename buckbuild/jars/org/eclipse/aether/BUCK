@@ -1,0 +1,177 @@
+java_library(
+  name = 'aether-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aether-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aether-api_jar',
+  binary_jar = ':aether-api_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aether-api.jar',
+  name = 'aether-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/aether/aether-api/1.0.0.v20140518/aether-api-1.0.0.v20140518.jar',
+  sha1 = 'be68e917f454dcd841865ad7cf9b7615b26a51f7',
+)
+
+java_library(
+  name = 'aether-connector-basic',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aether-connector-basic_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aether-connector-basic_jar',
+  binary_jar = ':aether-connector-basic_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/aether:aether-api',
+    '//buckbuild/jars/org/eclipse/aether:aether-spi',
+    '//buckbuild/jars/org/eclipse/aether:aether-util',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aether-connector-basic.jar',
+  name = 'aether-connector-basic_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/aether/aether-connector-basic/1.0.0.v20140518/aether-connector-basic-1.0.0.v20140518.jar',
+  sha1 = 'fd563f66fc1b6b908934639f87b4e0a0f43809c3',
+)
+
+java_library(
+  name = 'aether-impl',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aether-impl_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aether-impl_jar',
+  binary_jar = ':aether-impl_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/aether:aether-api',
+    '//buckbuild/jars/org/eclipse/aether:aether-spi',
+    '//buckbuild/jars/org/eclipse/aether:aether-util',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aether-impl.jar',
+  name = 'aether-impl_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/aether/aether-impl/1.0.0.v20140518/aether-impl-1.0.0.v20140518.jar',
+  sha1 = 'a5ee67be2c99dfb95ad61235d749c92ae09c926e',
+)
+
+java_library(
+  name = 'aether-spi',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aether-spi_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aether-spi_jar',
+  binary_jar = ':aether-spi_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/aether:aether-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aether-spi.jar',
+  name = 'aether-spi_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/aether/aether-spi/1.0.0.v20140518/aether-spi-1.0.0.v20140518.jar',
+  sha1 = '985a9a12b904fb3bafd4dc6b49f6a084845703a1',
+)
+
+java_library(
+  name = 'aether-transport-file',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aether-transport-file_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aether-transport-file_jar',
+  binary_jar = ':aether-transport-file_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/aether:aether-api',
+    '//buckbuild/jars/org/eclipse/aether:aether-spi',
+    '//buckbuild/jars/org/eclipse/aether:aether-util',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aether-transport-file.jar',
+  name = 'aether-transport-file_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/aether/aether-transport-file/1.0.0.v20140518/aether-transport-file-1.0.0.v20140518.jar',
+  sha1 = 'fd2844e8b329b929a823a351fe5adb16e49a2dfb',
+)
+
+java_library(
+  name = 'aether-transport-http',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aether-transport-http_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aether-transport-http_jar',
+  binary_jar = ':aether-transport-http_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/httpcomponents:httpclient',
+    '//buckbuild/jars/org/eclipse/aether:aether-api',
+    '//buckbuild/jars/org/eclipse/aether:aether-spi',
+    '//buckbuild/jars/org/eclipse/aether:aether-util',
+    '//buckbuild/jars/org/slf4j:jcl-over-slf4j',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aether-transport-http.jar',
+  name = 'aether-transport-http_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/aether/aether-transport-http/1.0.0.v20140518/aether-transport-http-1.0.0.v20140518.jar',
+  sha1 = 'a5a17a9d97a3694182b0b3539d047014c8e01ad6',
+)
+
+java_library(
+  name = 'aether-util',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':aether-util_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'aether-util_jar',
+  binary_jar = ':aether-util_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/eclipse/aether:aether-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'aether-util.jar',
+  name = 'aether-util_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/aether/aether-util/1.0.0.v20140518/aether-util-1.0.0.v20140518.jar',
+  sha1 = '7df5ba98ce8b78985d75fdd8c2981fe69234ef85',
+)
+

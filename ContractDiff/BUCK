@@ -1,0 +1,29 @@
+java_library(
+  name = 'ContractDiff',
+  srcs = glob(['src/main/java/**/*.java']),
+  deps = [
+    "//buckbuild/jars/com/fasterxml/jackson/core:jackson-core",
+    "//buckbuild/jars/com/google/guava:guava"
+  ],
+  exported_deps = [
+    "//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind",
+  ],
+  visibility = [
+    "PUBLIC"
+  ],
+  tests = [':tests']
+)
+
+java_test(
+  name = 'tests',
+  srcs = glob(['src/test/java/**/*Test.java']),
+  deps = [
+    "//buckbuild/jars/com/google/guava:guava",
+    "//buckbuild/jars/junit:junit",
+    '//buckbuild/jars/org/hamcrest:hamcrest-all',
+    ':ContractDiff'
+  ],
+  visibility = [
+    "PUBLIC"
+  ]
+)

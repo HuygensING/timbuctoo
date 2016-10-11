@@ -1,0 +1,221 @@
+java_library(
+  name = 'groovy-console',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy-console_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy-console_jar',
+  binary_jar = ':groovy-console_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/groovy:groovy',
+    '//buckbuild/jars/org/codehaus/groovy:groovy-swing',
+    '//buckbuild/jars/org/codehaus/groovy:groovy-templates',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy-console.jar',
+  name = 'groovy-console_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy-console/2.4.1/groovy-console-2.4.1.jar',
+  sha1 = '452c65efde81c69951c5e9e766d137df79f6d907',
+)
+
+java_library(
+  name = 'groovy-groovysh-indy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy-groovysh-indy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy-groovysh-indy_jar',
+  binary_jar = ':groovy-groovysh-indy_remote_jar',
+  deps = [
+    '//buckbuild/jars/jline:jline',
+    '//buckbuild/jars/org/codehaus/groovy:groovy',
+    '//buckbuild/jars/org/codehaus/groovy:groovy-console',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy-groovysh-indy.jar',
+  name = 'groovy-groovysh-indy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy-groovysh/2.4.1/groovy-groovysh-2.4.1-indy.jar',
+  sha1 = '1600fde728c885cc9506cb102deb1b494bd7c130',
+)
+
+java_library(
+  name = 'groovy-json-indy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy-json-indy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy-json-indy_jar',
+  binary_jar = ':groovy-json-indy_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/groovy:groovy',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy-json-indy.jar',
+  name = 'groovy-json-indy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy-json/2.4.1/groovy-json-2.4.1-indy.jar',
+  sha1 = 'fc9707bc8cee39c499d0df50d0f2901302011060',
+)
+
+java_library(
+  name = 'groovy-jsr223-indy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy-jsr223-indy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy-jsr223-indy_jar',
+  binary_jar = ':groovy-jsr223-indy_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/groovy:groovy',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy-jsr223-indy.jar',
+  name = 'groovy-jsr223-indy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy-jsr223/2.4.1/groovy-jsr223-2.4.1-indy.jar',
+  sha1 = 'f30b503eee002c16699181f79a5933c53a4d442f',
+)
+
+java_library(
+  name = 'groovy-swing',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy-swing_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy-swing_jar',
+  binary_jar = ':groovy-swing_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/groovy:groovy',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy-swing.jar',
+  name = 'groovy-swing_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy-swing/2.4.1/groovy-swing-2.4.1.jar',
+  sha1 = '6199e94c4b911aa766b28250f9225aea0cc7b18b',
+)
+
+java_library(
+  name = 'groovy-templates',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy-templates_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy-templates_jar',
+  binary_jar = ':groovy-templates_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/groovy:groovy',
+    '//buckbuild/jars/org/codehaus/groovy:groovy-xml',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy-templates.jar',
+  name = 'groovy-templates_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy-templates/2.4.1/groovy-templates-2.4.1.jar',
+  sha1 = 'd1ee8c32a666a0bc39c2e326c457b1142a636382',
+)
+
+java_library(
+  name = 'groovy-xml',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy-xml_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy-xml_jar',
+  binary_jar = ':groovy-xml_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/codehaus/groovy:groovy',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy-xml.jar',
+  name = 'groovy-xml_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy-xml/2.4.1/groovy-xml-2.4.1.jar',
+  sha1 = '43783b1ddaa495eff815951788bc0710dda485a5',
+)
+
+java_library(
+  name = 'groovy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy_jar',
+  binary_jar = ':groovy_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/ivy:ivy',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy.jar',
+  name = 'groovy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy/2.4.1/groovy-2.4.1.jar',
+  sha1 = '71452d4c828c34fe3542af2253a07c3d98bbd99c',
+)
+
+java_library(
+  name = 'groovy-indy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':groovy-indy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'groovy-indy_jar',
+  binary_jar = ':groovy-indy_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/ivy:ivy',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'groovy-indy.jar',
+  name = 'groovy-indy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/groovy/groovy/2.4.1/groovy-2.4.1-indy.jar',
+  sha1 = '1f5805150866ed9c5fdbf3fc444fef39c38bb074',
+)
+

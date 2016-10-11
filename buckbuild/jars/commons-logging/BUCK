@@ -1,0 +1,24 @@
+java_library(
+  name = 'commons-logging',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':commons-logging_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'commons-logging_jar',
+  binary_jar = ':commons-logging_remote_jar',
+  deps = [
+    '//buckbuild/jars/log4j:log4j',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'commons-logging.jar',
+  name = 'commons-logging_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/commons-logging/commons-logging/1.2/commons-logging-1.2.jar',
+  sha1 = '4bfc12adfe4842bf07b657f0369c4cb522955686',
+)
+

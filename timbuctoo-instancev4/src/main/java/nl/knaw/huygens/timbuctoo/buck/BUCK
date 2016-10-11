@@ -1,0 +1,24 @@
+java_binary(
+  name = 'importer',
+  main_class = 'nl.knaw.huygens.timbuctoo.buck.Importer',
+  deps = [
+    ':buck-importer-libs'
+  ]
+)
+
+java_library(
+  name = 'buck-importer-libs',
+  srcs = glob(["*.java"]),
+  deps = [
+    '//buckbuild/jars/args4j:args4j',
+    '//buckbuild/jars/com/google/guava:guava',
+    '//buckbuild/jars/org/eclipse/aether:aether-api',
+    '//buckbuild/jars/org/eclipse/aether:aether-util',
+    '//buckbuild/jars/org/eclipse/aether:aether-transport-http',
+    '//buckbuild/jars/org/eclipse/aether:aether-transport-file',
+    '//buckbuild/jars/org/eclipse/aether:aether-connector-basic',
+    '//buckbuild/jars/org/apache/maven:maven-aether-provider',
+    '//buckbuild/jars/org/eclipse/aether:aether-impl',
+    '//buckbuild/jars/org/eclipse/aether:aether-spi',
+  ]
+)

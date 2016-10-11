@@ -1,0 +1,12 @@
+[java]
+  source_level = 8
+  target_level = 8
+
+[project]
+  allow_symlinks = forbid
+  build_file_search_method = watchman
+  ignore = .git, .idea
+  enable_build_file_sandboxing = true
+
+[download]
+  in_build = true

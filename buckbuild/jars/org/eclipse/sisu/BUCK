@@ -1,0 +1,57 @@
+java_library(
+  name = 'org.eclipse.sisu.inject',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':org.eclipse.sisu.inject_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'org.eclipse.sisu.inject_jar',
+  binary_jar = ':org.eclipse.sisu.inject_remote_jar',
+  deps = [
+    '//buckbuild/jars/asm:asm',
+    '//buckbuild/jars/com/google/inject:guice',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'org.eclipse.sisu.inject.jar',
+  name = 'org.eclipse.sisu.inject_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/sisu/org.eclipse.sisu.inject/0.0.0.M2a/org.eclipse.sisu.inject-0.0.0.M2a.jar',
+  sha1 = '17941e32c751179a9628b25f54ce5641edafb9be',
+)
+
+java_library(
+  name = 'org.eclipse.sisu.plexus',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':org.eclipse.sisu.plexus_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'org.eclipse.sisu.plexus_jar',
+  binary_jar = ':org.eclipse.sisu.plexus_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/google/guava:guava',
+    '//buckbuild/jars/javax/enterprise:cdi-api',
+    '//buckbuild/jars/junit:junit',
+    '//buckbuild/jars/org/codehaus/plexus:plexus-classworlds',
+    '//buckbuild/jars/org/codehaus/plexus:plexus-component-annotations',
+    '//buckbuild/jars/org/codehaus/plexus:plexus-utils',
+    '//buckbuild/jars/org/eclipse/sisu:org.eclipse.sisu.inject',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+    '//buckbuild/jars/org/sonatype/sisu:sisu-guice-no_aop',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'org.eclipse.sisu.plexus.jar',
+  name = 'org.eclipse.sisu.plexus_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/eclipse/sisu/org.eclipse.sisu.plexus/0.0.0.M2a/org.eclipse.sisu.plexus-0.0.0.M2a.jar',
+  sha1 = '07510dc8dfe27a0b57c17601bc760b7b0c8f95fa',
+)
+

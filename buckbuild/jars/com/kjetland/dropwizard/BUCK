@@ -1,0 +1,26 @@
+java_library(
+  name = 'dropwizard-activemq',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':dropwizard-activemq_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'dropwizard-activemq_jar',
+  binary_jar = ':dropwizard-activemq_remote_jar',
+  deps = [
+    '//buckbuild/jars/io/dropwizard:dropwizard-core',
+    '//buckbuild/jars/org/apache/activemq:activemq-client',
+    '//buckbuild/jars/org/apache/activemq:activemq-jms-pool',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'dropwizard-activemq.jar',
+  name = 'dropwizard-activemq_remote_jar',
+  url = 'https://raw.githubusercontent.com/mbknor/mbknor.github.com/master/m2repo/releases/com/kjetland/dropwizard/dropwizard-activemq/0.3.13/dropwizard-activemq-0.3.13.jar',
+  sha1 = '9b5b76f183584d431e56af9eb7a7fa72b16841fd',
+)
+

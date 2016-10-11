@@ -1,0 +1,50 @@
+java_library(
+  name = 'logback-classic',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':logback-classic_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'logback-classic_jar',
+  binary_jar = ':logback-classic_remote_jar',
+  deps = [
+    '//buckbuild/jars/ch/qos/logback:logback-core',
+    '//buckbuild/jars/org/apache/geronimo/specs:geronimo-jms_1.1_spec',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'logback-classic.jar',
+  name = 'logback-classic_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/ch/qos/logback/logback-classic/1.1.3/logback-classic-1.1.3.jar',
+  sha1 = 'd90276fff414f06cb375f2057f6778cd63c6082f',
+)
+
+java_library(
+  name = 'logback-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':logback-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'logback-core_jar',
+  binary_jar = ':logback-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/geronimo/specs:geronimo-jms_1.1_spec',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'logback-core.jar',
+  name = 'logback-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/ch/qos/logback/logback-core/1.1.3/logback-core-1.1.3.jar',
+  sha1 = 'e3c02049f2dbbc764681b40094ecf0dcbc99b157',
+)
+

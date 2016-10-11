@@ -1,0 +1,23 @@
+java_library(
+  name = 'mimepull',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':mimepull_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'mimepull_jar',
+  binary_jar = ':mimepull_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'mimepull.jar',
+  name = 'mimepull_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/jvnet/mimepull/mimepull/1.9.6/mimepull-1.9.6.jar',
+  sha1 = '41c913d791e16f93bc712a8c8a30bb64daa2e9bd',
+)
+

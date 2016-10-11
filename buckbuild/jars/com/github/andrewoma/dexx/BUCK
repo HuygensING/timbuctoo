@@ -1,0 +1,23 @@
+java_library(
+  name = 'collection',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':collection_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'collection_jar',
+  binary_jar = ':collection_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'collection.jar',
+  name = 'collection_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/github/andrewoma/dexx/collection/0.6/collection-0.6.jar',
+  sha1 = '9364d0beacd4dbb3168a274b1dc4fef1a4023616',
+)
+

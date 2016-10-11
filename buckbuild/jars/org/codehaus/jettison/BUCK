@@ -1,0 +1,24 @@
+java_library(
+  name = 'jettison',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jettison_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jettison_jar',
+  binary_jar = ':jettison_remote_jar',
+  deps = [
+    '//buckbuild/jars/stax:stax-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jettison.jar',
+  name = 'jettison_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/codehaus/jettison/jettison/1.1/jettison-1.1.jar',
+  sha1 = '1a01a2a1218fcf9faa2cc2a6ced025bdea687262',
+)
+

@@ -1,0 +1,27 @@
+java_library(
+  name = 'hibernate-validator',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':hibernate-validator_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'hibernate-validator_jar',
+  binary_jar = ':hibernate-validator_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml:classmate',
+    '//buckbuild/jars/javax/validation:validation-api',
+    '//buckbuild/jars/joda-time:joda-time',
+    '//buckbuild/jars/org/jboss/logging:jboss-logging',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'hibernate-validator.jar',
+  name = 'hibernate-validator_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/hibernate/hibernate-validator/5.2.2.Final/hibernate-validator-5.2.2.Final.jar',
+  sha1 = '990905cd9184450c5f3e929ab2566305e3a67fa1',
+)
+

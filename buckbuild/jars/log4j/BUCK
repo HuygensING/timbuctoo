@@ -1,0 +1,24 @@
+java_library(
+  name = 'log4j',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':log4j_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'log4j_jar',
+  binary_jar = ':log4j_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/geronimo/specs:geronimo-jms_1.1_spec',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'log4j.jar',
+  name = 'log4j_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/log4j/log4j/1.2.17/log4j-1.2.17.jar',
+  sha1 = '5af35056b4d257e4b64b9e8069c0746e8b08629f',
+)
+

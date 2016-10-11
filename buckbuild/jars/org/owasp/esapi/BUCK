@@ -1,0 +1,27 @@
+java_library(
+  name = 'esapi',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':esapi_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'esapi_jar',
+  binary_jar = ':esapi_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-collections:commons-collections',
+    '//buckbuild/jars/commons-configuration:commons-configuration',
+    '//buckbuild/jars/log4j:log4j',
+    '//buckbuild/jars/xom:xom',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'esapi.jar',
+  name = 'esapi_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/owasp/esapi/esapi/2.0.1/esapi-2.0.1.jar',
+  sha1 = '2ea3b87c948dbc0c77a17fe24fda961ecc38c6f2',
+)
+

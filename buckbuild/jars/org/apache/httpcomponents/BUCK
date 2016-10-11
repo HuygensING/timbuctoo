@@ -1,0 +1,74 @@
+java_library(
+  name = 'httpclient-cache',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':httpclient-cache_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'httpclient-cache_jar',
+  binary_jar = ':httpclient-cache_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-logging:commons-logging',
+    '//buckbuild/jars/org/apache/httpcomponents:httpclient',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'httpclient-cache.jar',
+  name = 'httpclient-cache_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/httpcomponents/httpclient-cache/4.2.6/httpclient-cache-4.2.6.jar',
+  sha1 = '21dc2e715f7177fb218579bd5fc8aba135efa29a',
+)
+
+java_library(
+  name = 'httpclient',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':httpclient_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'httpclient_jar',
+  binary_jar = ':httpclient_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-codec:commons-codec',
+    '//buckbuild/jars/commons-logging:commons-logging',
+    '//buckbuild/jars/org/apache/httpcomponents:httpcore',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'httpclient.jar',
+  name = 'httpclient_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/httpcomponents/httpclient/4.5.2/httpclient-4.5.2.jar',
+  sha1 = '733db77aa8d9b2d68015189df76ab06304406e50',
+)
+
+java_library(
+  name = 'httpcore',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':httpcore_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'httpcore_jar',
+  binary_jar = ':httpcore_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'httpcore.jar',
+  name = 'httpcore_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/httpcomponents/httpcore/4.4.4/httpcore-4.4.4.jar',
+  sha1 = 'b31526a230871fbe285fbcbe2813f9c0839ae9b0',
+)
+

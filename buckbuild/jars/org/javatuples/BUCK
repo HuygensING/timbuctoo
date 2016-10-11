@@ -1,0 +1,23 @@
+java_library(
+  name = 'javatuples',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':javatuples_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'javatuples_jar',
+  binary_jar = ':javatuples_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'javatuples.jar',
+  name = 'javatuples_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/javatuples/javatuples/1.2/javatuples-1.2.jar',
+  sha1 = '507312ac4b601204a72a83380badbca82683dd36',
+)
+

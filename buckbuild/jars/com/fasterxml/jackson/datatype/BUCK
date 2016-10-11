@@ -1,0 +1,127 @@
+java_library(
+  name = 'jackson-datatype-guava',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-datatype-guava_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-datatype-guava_jar',
+  binary_jar = ':jackson-datatype-guava_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+    '//buckbuild/jars/com/google/guava:guava',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-datatype-guava.jar',
+  name = 'jackson-datatype-guava_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-guava/2.6.3/jackson-datatype-guava-2.6.3.jar',
+  sha1 = '9c3a0c1b254c8205468cf11b46783b4c51ca0236',
+)
+
+java_library(
+  name = 'jackson-datatype-jdk7',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-datatype-jdk7_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-datatype-jdk7_jar',
+  binary_jar = ':jackson-datatype-jdk7_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-datatype-jdk7.jar',
+  name = 'jackson-datatype-jdk7_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk7/2.6.3/jackson-datatype-jdk7-2.6.3.jar',
+  sha1 = 'b263543bf9f99402d338a9caa9df7847a65cd653',
+)
+
+java_library(
+  name = 'jackson-datatype-jdk8',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-datatype-jdk8_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-datatype-jdk8_jar',
+  binary_jar = ':jackson-datatype-jdk8_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-datatype-jdk8.jar',
+  name = 'jackson-datatype-jdk8_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.6.3/jackson-datatype-jdk8-2.6.3.jar',
+  sha1 = '791500a712616459d2406bffabdcd639beb9f577',
+)
+
+java_library(
+  name = 'jackson-datatype-joda',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-datatype-joda_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-datatype-joda_jar',
+  binary_jar = ':jackson-datatype-joda_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+    '//buckbuild/jars/joda-time:joda-time',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-datatype-joda.jar',
+  name = 'jackson-datatype-joda_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-joda/2.3.0/jackson-datatype-joda-2.3.0.jar',
+  sha1 = 'bbf92c440af3909466867033218f4f27248648a4',
+)
+
+java_library(
+  name = 'jackson-datatype-jsr310',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jackson-datatype-jsr310_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jackson-datatype-jsr310_jar',
+  binary_jar = ':jackson-datatype-jsr310_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-core',
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jackson-datatype-jsr310.jar',
+  name = 'jackson-datatype-jsr310_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.6.3/jackson-datatype-jsr310-2.6.3.jar',
+  sha1 = '1e8848e2a3ddaaacbb9ac1eeb4da90f7630084c4',
+)
+

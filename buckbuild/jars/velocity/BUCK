@@ -1,0 +1,25 @@
+java_library(
+  name = 'velocity',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':velocity_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'velocity_jar',
+  binary_jar = ':velocity_remote_jar',
+  deps = [
+    '//buckbuild/jars/commons-collections:commons-collections',
+    '//buckbuild/jars/commons-lang:commons-lang',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'velocity.jar',
+  name = 'velocity_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/velocity/velocity/1.5/velocity-1.5.jar',
+  sha1 = '09f306baf7523ffc0e81a6353d08a584d254133b',
+)
+

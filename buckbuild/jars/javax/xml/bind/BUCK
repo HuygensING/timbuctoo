@@ -1,0 +1,25 @@
+java_library(
+  name = 'jaxb-api',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jaxb-api_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jaxb-api_jar',
+  binary_jar = ':jaxb-api_remote_jar',
+  deps = [
+    '//buckbuild/jars/javax/activation:activation',
+    '//buckbuild/jars/javax/xml/stream:stax-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jaxb-api.jar',
+  name = 'jaxb-api_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/javax/xml/bind/jaxb-api/2.2.2/jaxb-api-2.2.2.jar',
+  sha1 = 'aeb3021ca93dde265796d82015beecdcff95bf09',
+)
+

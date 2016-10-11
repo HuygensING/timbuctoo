@@ -1,0 +1,49 @@
+java_library(
+  name = 'mockito-all',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':mockito-all_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'mockito-all_jar',
+  binary_jar = ':mockito-all_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'mockito-all.jar',
+  name = 'mockito-all_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/mockito/mockito-all/1.9.5/mockito-all-1.9.5.jar',
+  sha1 = '79a8984096fc6591c1e3690e07d41be506356fa5',
+)
+
+java_library(
+  name = 'mockito-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':mockito-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'mockito-core_jar',
+  binary_jar = ':mockito-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/net/bytebuddy:byte-buddy',
+    '//buckbuild/jars/net/bytebuddy:byte-buddy-agent',
+    '//buckbuild/jars/org/objenesis:objenesis',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'mockito-core.jar',
+  name = 'mockito-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/mockito/mockito-core/2.2.22/mockito-core-2.2.22.jar',
+  sha1 = '3e50bf8784e32843a6f6d5d84ceecd8536cb979c',
+)
+

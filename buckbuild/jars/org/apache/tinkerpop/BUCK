@@ -1,0 +1,113 @@
+java_library(
+  name = 'gremlin-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':gremlin-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'gremlin-core_jar',
+  binary_jar = ':gremlin-core_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/carrotsearch:hppc',
+    '//buckbuild/jars/com/jcabi:jcabi-manifests',
+    '//buckbuild/jars/commons-configuration:commons-configuration',
+    '//buckbuild/jars/org/apache/tinkerpop:gremlin-shaded',
+    '//buckbuild/jars/org/javatuples:javatuples',
+    '//buckbuild/jars/org/slf4j:jcl-over-slf4j',
+    '//buckbuild/jars/org/slf4j:slf4j-log4j12',
+    '//buckbuild/jars/org/yaml:snakeyaml',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'gremlin-core.jar',
+  name = 'gremlin-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/tinkerpop/gremlin-core/3.1.0-incubating/gremlin-core-3.1.0-incubating.jar',
+  sha1 = '3b524b0866f1b545ecc14dfbfc740c3e75bba07a',
+)
+
+java_library(
+  name = 'gremlin-groovy',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':gremlin-groovy_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'gremlin-groovy_jar',
+  binary_jar = ':gremlin-groovy_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/apache/ivy:ivy',
+    '//buckbuild/jars/org/apache/tinkerpop:gremlin-core',
+    '//buckbuild/jars/org/codehaus/groovy:groovy-groovysh-indy',
+    '//buckbuild/jars/org/codehaus/groovy:groovy-indy',
+    '//buckbuild/jars/org/codehaus/groovy:groovy-json-indy',
+    '//buckbuild/jars/org/codehaus/groovy:groovy-jsr223-indy',
+    '//buckbuild/jars/org/mindrot:jbcrypt',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'gremlin-groovy.jar',
+  name = 'gremlin-groovy_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/tinkerpop/gremlin-groovy/3.1.0-incubating/gremlin-groovy-3.1.0-incubating.jar',
+  sha1 = '7e1639a0d294538c85789a7b6fe8dbceb5d6c0c4',
+)
+
+java_library(
+  name = 'gremlin-shaded',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':gremlin-shaded_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'gremlin-shaded_jar',
+  binary_jar = ':gremlin-shaded_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/fasterxml/jackson/core:jackson-databind',
+    '//buckbuild/jars/org/objenesis:objenesis',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'gremlin-shaded.jar',
+  name = 'gremlin-shaded_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/tinkerpop/gremlin-shaded/3.1.0-incubating/gremlin-shaded-3.1.0-incubating.jar',
+  sha1 = 'cd711f3f7751ecfc49f573596285db65107114bf',
+)
+
+java_library(
+  name = 'neo4j-gremlin',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':neo4j-gremlin_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'neo4j-gremlin_jar',
+  binary_jar = ':neo4j-gremlin_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/tinkerpop:gremlin-core',
+    '//buckbuild/jars/org/apache/tinkerpop:gremlin-groovy',
+    '//buckbuild/jars/org/neo4j:neo4j-tinkerpop-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'neo4j-gremlin.jar',
+  name = 'neo4j-gremlin_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/tinkerpop/neo4j-gremlin/3.1.0-incubating/neo4j-gremlin-3.1.0-incubating.jar',
+  sha1 = '261eb017b6efb83c4fe47e3a581c785ee008ae6b',
+)
+

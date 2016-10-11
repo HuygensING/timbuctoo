@@ -1,0 +1,28 @@
+java_library(
+  name = 'jersey-test-framework-provider-inmemory',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-test-framework-provider-inmemory_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-test-framework-provider-inmemory_jar',
+  binary_jar = ':jersey-test-framework-provider-inmemory_remote_jar',
+  deps = [
+    '//buckbuild/jars/junit:junit',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-client',
+    '//buckbuild/jars/org/glassfish/jersey/core:jersey-server',
+    '//buckbuild/jars/org/glassfish/jersey/test-framework:jersey-test-framework-core',
+    '//buckbuild/jars/org/ow2/asm:asm-debug-all',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-test-framework-provider-inmemory.jar',
+  name = 'jersey-test-framework-provider-inmemory_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/test-framework/providers/jersey-test-framework-provider-inmemory/2.22.1/jersey-test-framework-provider-inmemory-2.22.1.jar',
+  sha1 = '7a28717e7677f491eb36956552763fb828e8f18d',
+)
+

@@ -1,0 +1,23 @@
+java_library(
+  name = 'hppc',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':hppc_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'hppc_jar',
+  binary_jar = ':hppc_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'hppc.jar',
+  name = 'hppc_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/carrotsearch/hppc/0.7.1/hppc-0.7.1.jar',
+  sha1 = '8b5057f74ea378c0150a1860874a3ebdcb713767',
+)
+

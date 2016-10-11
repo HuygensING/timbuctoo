@@ -1,0 +1,24 @@
+java_library(
+  name = 'guice-servlet',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':guice-servlet_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'guice-servlet_jar',
+  binary_jar = ':guice-servlet_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/google/inject:guice',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'guice-servlet.jar',
+  name = 'guice-servlet_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/com/google/inject/extensions/guice-servlet/3.0/guice-servlet-3.0.jar',
+  sha1 = '610cde0e8da5a8b7d8efb8f0b8987466ffebaaf9',
+)
+

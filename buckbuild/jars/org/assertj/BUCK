@@ -1,0 +1,23 @@
+java_library(
+  name = 'assertj-core',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':assertj-core_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'assertj-core_jar',
+  binary_jar = ':assertj-core_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'assertj-core.jar',
+  name = 'assertj-core_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/assertj/assertj-core/2.2.0/assertj-core-2.2.0.jar',
+  sha1 = 'edd59795b236afc790dd161e7e3677757b06f2e7',
+)
+

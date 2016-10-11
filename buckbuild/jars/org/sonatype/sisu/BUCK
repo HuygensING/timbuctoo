@@ -1,0 +1,26 @@
+java_library(
+  name = 'sisu-guice-no_aop',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':sisu-guice-no_aop_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'sisu-guice-no_aop_jar',
+  binary_jar = ':sisu-guice-no_aop_remote_jar',
+  deps = [
+    '//buckbuild/jars/aopalliance:aopalliance',
+    '//buckbuild/jars/javax/inject:javax.inject',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'sisu-guice-no_aop.jar',
+  name = 'sisu-guice-no_aop_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/sonatype/sisu/sisu-guice/3.1.0/sisu-guice-3.1.0-no_aop.jar',
+  sha1 = '97c87d15d749c86b2be1b9809b28321a1d926c7f',
+)
+

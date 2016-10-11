@@ -1,0 +1,54 @@
+java_library(
+  name = 'activemq-client',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':activemq-client_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'activemq-client_jar',
+  binary_jar = ':activemq-client_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/geronimo/specs:geronimo-j2ee-management_1.1_spec',
+    '//buckbuild/jars/org/apache/geronimo/specs:geronimo-jms_1.1_spec',
+    '//buckbuild/jars/org/fusesource/hawtbuf:hawtbuf',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'activemq-client.jar',
+  name = 'activemq-client_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/activemq/activemq-client/5.13.0/activemq-client-5.13.0.jar',
+  sha1 = '046f797e687e1651b36bc4c3feab4c64381fa3de',
+)
+
+java_library(
+  name = 'activemq-jms-pool',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':activemq-jms-pool_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'activemq-jms-pool_jar',
+  binary_jar = ':activemq-jms-pool_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/apache/commons:commons-pool2',
+    '//buckbuild/jars/org/apache/geronimo/specs:geronimo-jms_1.1_spec',
+    '//buckbuild/jars/org/apache/geronimo/specs:geronimo-jta_1.0.1B_spec',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'activemq-jms-pool.jar',
+  name = 'activemq-jms-pool_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/apache/activemq/activemq-jms-pool/5.13.0/activemq-jms-pool-5.13.0.jar',
+  sha1 = '64692aeb91abbe06c7c53f36386868e98be5cb65',
+)
+

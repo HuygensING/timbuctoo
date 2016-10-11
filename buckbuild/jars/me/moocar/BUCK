@@ -1,0 +1,26 @@
+java_library(
+  name = 'logback-gelf',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':logback-gelf_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'logback-gelf_jar',
+  binary_jar = ':logback-gelf_remote_jar',
+  deps = [
+    '//buckbuild/jars/ch/qos/logback:logback-classic',
+    '//buckbuild/jars/com/google/code/gson:gson',
+    '//buckbuild/jars/org/slf4j:slf4j-api',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'logback-gelf.jar',
+  name = 'logback-gelf_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/me/moocar/logback-gelf/0.12/logback-gelf-0.12.jar',
+  sha1 = '7d88b92d0013e585ae5e3f7dd79f5c9fbdca1b76',
+)
+

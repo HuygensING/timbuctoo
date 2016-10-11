@@ -1,0 +1,24 @@
+java_library(
+  name = 'scala-parser-combinators_2.11',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':scala-parser-combinators_2.11_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'scala-parser-combinators_2.11_jar',
+  binary_jar = ':scala-parser-combinators_2.11_remote_jar',
+  deps = [
+    '//buckbuild/jars/org/scala-lang:scala-library',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'scala-parser-combinators_2.11.jar',
+  name = 'scala-parser-combinators_2.11_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/scala-lang/modules/scala-parser-combinators_2.11/1.0.4/scala-parser-combinators_2.11-1.0.4.jar',
+  sha1 = '7369d653bcfa95d321994660477a4d7e81d7f490',
+)
+

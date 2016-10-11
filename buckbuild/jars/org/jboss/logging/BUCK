@@ -1,0 +1,23 @@
+java_library(
+  name = 'jboss-logging',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jboss-logging_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jboss-logging_jar',
+  binary_jar = ':jboss-logging_remote_jar',
+  deps = [
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jboss-logging.jar',
+  name = 'jboss-logging_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/jboss/logging/jboss-logging/3.2.1.Final/jboss-logging-3.2.1.Final.jar',
+  sha1 = 'fedf11b3d4665a434b554a5891fe7f208f029f45',
+)
+

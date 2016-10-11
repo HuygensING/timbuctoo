@@ -1,0 +1,24 @@
+java_library(
+  name = 'jersey-guava',
+  visibility = ['PUBLIC'],
+  exported_deps = [
+    ':jersey-guava_jar'
+  ],
+)
+prebuilt_jar(
+  name = 'jersey-guava_jar',
+  binary_jar = ':jersey-guava_remote_jar',
+  deps = [
+    '//buckbuild/jars/com/google/guava:guava',
+  ],
+  visibility = [
+    'PUBLIC'
+  ],
+)
+remote_file(
+  out = 'jersey-guava.jar',
+  name = 'jersey-guava_remote_jar',
+  url = 'http://repo.maven.apache.org/maven2/org/glassfish/jersey/bundles/repackaged/jersey-guava/2.22.2/jersey-guava-2.22.2.jar',
+  sha1 = '7422c693c89640c9685dfa99dbef2da745aa4617',
+)
+
