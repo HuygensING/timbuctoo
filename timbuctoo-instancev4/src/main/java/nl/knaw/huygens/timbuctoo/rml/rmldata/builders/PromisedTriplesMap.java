@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 class PromisedTriplesMap {

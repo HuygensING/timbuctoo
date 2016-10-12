@@ -39,7 +39,7 @@ public class TriplesMapBuilder {
     return this.subjectMapBuilder;
   }
 
-  public TriplesMapBuilder withSubjectMapBuilder(SubjectMapBuilder subBuilder) {
+  TriplesMapBuilder withSubjectMapBuilder(SubjectMapBuilder subBuilder) {
     this.subjectMapBuilder = subBuilder;
     return this;
   }
