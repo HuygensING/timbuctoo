@@ -1,0 +1,83 @@
+= RML implementation
+
+The code in this package to implements the http://rml.io[rml specification].
+It does not implement any of the datasources itself, but allows you to provide your own implementations.
+
+== Context
+
+In timbuctoo we import data in tabular form as a "raw import" and then use a http://github.com/huygensING/timbuctoo-default-frontend[GUI] to generate an RML mapping that converts it into RDF.
+We then import the RDF using our generic RDF importer.
+
+ * This allows us to import many different data formats.
+ * It decouples the GUI from the importer which has allowed us to import data that the GUI does not support without having to make the GUI more complex (we can bypass it if needed).
+ * It makes our mapping software usable for people who do not use the full timbuctoo stack (by generating basic RDF).
+
+== Usage
+
+```java
+  //First you should generate a Jena Model of the data somehow
+  
+  //Dependencies:
+  //The thing that can construct an RmlMappingDocument from a jena model
+  final rmlBuilder = new JenaBasedReader();
+
+  //The thing that constructs dataSource instances as needed.
+  //This factory should use the contents of the rdfResource to determine what dataSource to create
+  Function<RdfResource, Optional<DataSource>> dataSourceFactory = rdfResource -> Optional.of(new MyDataSource(rdfResource));
+  
+  //The thing that responds to errors that can occur in valid RML mappings, such as missing values.
+  ErrorHandler errorHandler = new ErrorHandler() {
+    @Override
+    public void linkError(Map<String, Object> rowData, String childField, String parentCollection, String parentField) {
+      throw new RuntimeException("Linking failed!");
+    }
+  };
+  
+  //create the mappingDocument instance
+  final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(model, dataSourceFactory);
+
+  //You can see how it's interpreted using toString()
+
+  if (rmlMappingDocument.getErrors().size() == 0) { //check for errors that make the RML mapping invalid
+    //execute the mapping
+    rmlMappingDocument.execute(errorHandler).forEach((triple) -> {
+      System.out.println(triple);
+    });
+  }
+```
+
+== Code layout
+The package contains the following folders:
+
+link:./rmldata[/rmldata]::
+  Contains the java representation of the RML rdf classes.
+  The java classes form a tree rooted in RmlMappingDocument.
+  They usually have a method that generates data (i.e. `execute()` or `getItems()`) and a toString() method that recursively prints the tree.
+  You will normally only interact with the outermost RmlMappingDocument class which calls the other classes recursively.
+link:./rmldata/builders[/rmldata/builders]::
+  RML contains a bunch of shorthands and the builders contain the logic needed to interpret the RML in context so that the built instances no longer need this context.
+  For example: you can omit the termType in the source mapping document. 
+  The `TermMapBuilder` will decide what the termType should be and the resulting `RrTermMap` will simply have a property TermType set to the correct value.
+link:./jena[/jena]::
+link:./rdfshim[/rdfshim]::
+  The library depends on jena at this moment, but we've invested some effort to make this a minimal dependency. 
+  It should be possible to extract the jena package to a separate package that depends on this library while the library is jena agnostic.
+
+
+== Known issues
+
+Joining::
+Rml is based on https://www.w3.org/TR/r2rml/[R2RML].
+R2RML is very much dependent on the database engine to make int useful.
+This is apparent when you read the algorithm for implementing ReferencingObjectMaps which very much depends on being able to do a SQL join.
+To implement this in RML we have added a method to datasources called `willBeJoinedOn`.
+A dataSource is supposed to store this value in a HashMap or something and then merge that value into it's result set when getRows is called.
++
+The code to implement this does not yet support circular dependencies very well and does not support self-joins at all.
+Mapping columns::
+You cannot transform a column in RML.
+The R2RML languages gives you the ability to use an arbitrary SQL query as a datasource which allows for most of the conversions in SQL.
+R2RML does not have this support.
+This is especially annoying for implementing manytomany links and when you want to derive the name of the predicate.
++
+We might implement an extension that allows for referencingMaps in subjectMaps and predicateMaps and an extension that allows you to transform the inputline to aleviate some of this pain.
