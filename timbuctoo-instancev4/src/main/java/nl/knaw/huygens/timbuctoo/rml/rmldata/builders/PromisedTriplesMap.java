@@ -7,15 +7,8 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 class PromisedTriplesMap {
-  private final String requesterUri;
   private RrTriplesMap triplesMap;
   private Set<BiConsumer<RrTriplesMap, Boolean>> consumers = new HashSet<>();
-  private final boolean flipped;
-
-  PromisedTriplesMap(String requesterUri, boolean flipped) {
-    this.requesterUri = requesterUri;
-    this.flipped = flipped;
-  }
 
   void setTriplesMap(RrTriplesMap triplesMap, boolean flippedEdge) {
     this.triplesMap = triplesMap;
@@ -30,13 +23,5 @@ class PromisedTriplesMap {
     } else {
       throw new RuntimeException("");
     }
-  }
-
-  String getRequesterUri() {
-    return requesterUri;
-  }
-
-  boolean isFlipped() {
-    return flipped;
   }
 }

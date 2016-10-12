@@ -238,7 +238,7 @@ public class MappingDocumentBuilder {
   }
 
   private PromisedTriplesMap getRrTriplesMap(String requesterUri, String requestedUri) {
-    PromisedTriplesMap promisedTriplesMap = new PromisedTriplesMap(requesterUri, false);
+    PromisedTriplesMap promisedTriplesMap = new PromisedTriplesMap();
 
     requestedTripleMaps
       .computeIfAbsent(requestedUri, key -> new ArrayList<>())
