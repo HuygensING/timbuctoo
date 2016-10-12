@@ -34,6 +34,8 @@ These judgements are sometimes the core of your research and sometimes incidenta
 Timbuctoo aims to make it easier to publish your research dataset and then to re-use other people's published datasets.
 To continue the example: another researcher might create a dataset containing locations, their coördinates and names and how that changed over time. You can then re-use that dataset and link to the entries instead of typing a string of characters that a humand might correctly interpret or not.
 
+[![video](https://i.vimeocdn.com/video/596033818_640.webp)](https://vimeo.com/186090384)
+
 ## Related work
 There are many tools for storing data (tabular or not). 
 However, there are not many tools that will 
