@@ -27,24 +27,14 @@ public class ReferencingObjectMapBuilder {
 
   public void build(TermMapBuilder predicateMap,
                     Function<String, PromisedTriplesMap> getTriplesMap, RrTriplesMap ownTriplesMap) {
-    getTriplesMap.apply(parentTriplesMapUri).onTriplesMapReceived((referencingTriplesMap, flippedEdge) -> {
-      if (flippedEdge) {
-        referencingTriplesMap.addPredicateObjectMap(
-          new RrPredicateObjectMapOfReferencingObjectMap(
-            predicateMap.build(),
-            true,
-            new RrRefObjectMap(ownTriplesMap, rrJoinCondition.flipped(), referencingTriplesMap.getDataSource())
-          )
-        );
-      } else {
-        ownTriplesMap.addPredicateObjectMap(
-          new RrPredicateObjectMapOfReferencingObjectMap(
-            predicateMap.build(),
-            false,
-            new RrRefObjectMap(referencingTriplesMap, rrJoinCondition, ownTriplesMap.getDataSource())
-          )
-        );
-      }
+    getTriplesMap.apply(parentTriplesMapUri).onTriplesMapReceived((referencingTriplesMap) -> {
+      ownTriplesMap.addPredicateObjectMap(
+        new RrPredicateObjectMapOfReferencingObjectMap(
+          predicateMap.build(),
+          false,
+          new RrRefObjectMap(referencingTriplesMap, rrJoinCondition, ownTriplesMap.getDataSource())
+        )
+      );
     });
   }
 

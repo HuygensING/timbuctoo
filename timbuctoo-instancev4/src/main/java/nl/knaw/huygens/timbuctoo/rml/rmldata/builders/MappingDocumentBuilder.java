@@ -229,7 +229,7 @@ public class MappingDocumentBuilder {
     for (RrTriplesMap current : triplesMaps) {
       if (requestedTripleMaps.containsKey(current.getUri())) {
         for (PromisedTriplesMap promise : requestedTripleMaps.get(current.getUri())) {
-          promise.setTriplesMap(current, false);
+          promise.setTriplesMap(current);
         }
       }
     }
