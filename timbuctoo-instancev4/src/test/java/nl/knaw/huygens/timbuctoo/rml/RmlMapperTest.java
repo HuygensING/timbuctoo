@@ -154,13 +154,10 @@ public class RmlMapperTest {
   public void canGenerateLinks() {
     final String theNamePredicate = "http://example.org/vocab#name";
     final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
-
     RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
             .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
             .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
             .build(makePersonDocumentSourceFactory());
-
-    System.out.println(rmlMappingDocument);
 
     List<Triple> result = rmlMappingDocument
       .execute(new ThrowingErrorHandler())
@@ -184,12 +181,10 @@ public class RmlMapperTest {
   public void canHandleMappingsInTheWrongOrder() {
     final String theNamePredicate = "http://example.org/vocab#name";
     final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
-
     RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
             .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
             .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
             .build(makePersonDocumentSourceFactory());
-    System.out.println(rmlMappingDocument);
 
     List<Triple> result = rmlMappingDocument
       .execute(new ThrowingErrorHandler())
@@ -214,7 +209,6 @@ public class RmlMapperTest {
     final String theNamePredicate = "http://example.org/vocab#name";
     final String theIsParentOfPredicate = "http://example.org/vocab#isParentOf";
     final String theIsRelatedToPredicate = "http://example.org/vocab#isRelatedTo";
-
     DataSource input = new TestDataSource(Lists.newArrayList(
       ImmutableMap.of(
               "rdfUri", "http://example.com/persons/1",
@@ -228,16 +222,14 @@ public class RmlMapperTest {
               "parentOf", "",
               "relatedTo", "Bill")
     ));
-
     RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
             .withTripleMap("http://example.org/personsMap",
                     makePersonMap(theNamePredicate, theIsParentOfPredicate, theIsRelatedToPredicate))
             .build(x -> Optional.of(input));
+
     List<Triple> result = rmlMappingDocument
             .execute(new LoggingErrorHandler())
             .collect(toList());
-
-    System.out.println(rmlMappingDocument);
 
     assertThat(result, containsInAnyOrder(
       likeTriple(
@@ -268,35 +260,31 @@ public class RmlMapperTest {
     final String theNamePredicate = "http://example.org/vocab#name";
     final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
     final String theCoAuthorOfPredicate = "http://example.org/vocab#coAuthorOf";
-
     RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
             .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
             .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate, theCoAuthorOfPredicate))
             .build(makePersonDocumentSourceFactory());
-
-
-    System.out.println(rmlMappingDocument);
 
     List<Triple> result = rmlMappingDocument
             .execute(new ThrowingErrorHandler())
             .collect(toList());
 
     assertThat(result, containsInAnyOrder(
-            likeTriple(
-                    uri("http://www.example.org/persons/1"),
-                    uri(theNamePredicate),
-                    literal("Bill")
-            ),
-            likeTriple(
-                    uri("http://www.example.org/persons/1"),
-                    uri(theCoAuthorOfPredicate),
-                    uri("http://www.example.org/documents/1")
-            ),
-            likeTriple(
-                    uri("http://www.example.org/documents/1"),
-                    uri(theWrittenByPredicate),
-                    uri("http://www.example.org/persons/1")
-            )
+      likeTriple(
+              uri("http://www.example.org/persons/1"),
+              uri(theNamePredicate),
+              literal("Bill")
+      ),
+      likeTriple(
+              uri("http://www.example.org/persons/1"),
+              uri(theCoAuthorOfPredicate),
+              uri("http://www.example.org/documents/1")
+      ),
+      likeTriple(
+              uri("http://www.example.org/documents/1"),
+              uri(theWrittenByPredicate),
+              uri("http://www.example.org/persons/1")
+      )
     ));
   }
 
