@@ -4,39 +4,24 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 class PromisedTriplesMap {
-  private final String requesterUri;
   private RrTriplesMap triplesMap;
-  private Set<BiConsumer<RrTriplesMap, Boolean>> consumers = new HashSet<>();
-  private final boolean flipped;
+  private Set<Consumer<RrTriplesMap>> consumers = new HashSet<>();
 
-  PromisedTriplesMap(String requesterUri, boolean flipped) {
-    this.requesterUri = requesterUri;
-    this.flipped = flipped;
-  }
-
-  void setTriplesMap(RrTriplesMap triplesMap, boolean flippedEdge) {
+  void setTriplesMap(RrTriplesMap triplesMap) {
     this.triplesMap = triplesMap;
-    for (BiConsumer<RrTriplesMap, Boolean> consumer : this.consumers) {
-      consumer.accept(triplesMap, flippedEdge);
+    for (Consumer<RrTriplesMap> consumer : this.consumers) {
+      consumer.accept(triplesMap);
     }
   }
 
-  void onTriplesMapReceived(BiConsumer<RrTriplesMap, Boolean> consumer) {
+  void onTriplesMapReceived(Consumer<RrTriplesMap> consumer) {
     if (triplesMap == null) {
       this.consumers.add(consumer);
     } else {
       throw new RuntimeException("");
     }
-  }
-
-  String getRequesterUri() {
-    return requesterUri;
-  }
-
-  boolean isFlipped() {
-    return flipped;
   }
 }
