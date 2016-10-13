@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
+import nl.knaw.huygens.timbuctoo.rml.DataSourceWithJoiningSupport;
 import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 import org.apache.jena.graph.Node;
@@ -45,7 +46,10 @@ public class RrRefObjectMap {
   }
 
   public void onNewSubject(Object value, Node subject) {
-    dataSource.willBeJoinedOn(rrJoinCondition.getChild(), value, subject.getURI(), uniqueId);
+    if (dataSource instanceof DataSourceWithJoiningSupport) {
+      ((DataSourceWithJoiningSupport) dataSource)
+        .willBeJoinedOn(rrJoinCondition.getChild(), value, subject.getURI(), uniqueId);
+    } // else error has been thrown/logged while building this mapper.
   }
 
 
