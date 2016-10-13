@@ -20,8 +20,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.rml.TripleMatcher.likeTriple;
@@ -29,6 +31,7 @@ import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument.rmlMappin
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -279,6 +282,180 @@ public class RmlMapperTest {
               uri("http://www.example.org/documents/1"),
               uri(theWrittenByPredicate),
               uri("http://www.example.org/persons/1")
+      )
+    ));
+  }
+
+  @Test
+  public void createsExactlyAsManySplitOffsAsNecessary() {
+    /* given
+
+      x dep y
+      y dep a
+      y dep y
+      y dep z
+      z dep x
+
+      and unsortedList = [z, x, y, a]
+
+      we expect exactly one splitOff for y (y') such that
+      y dep a
+      y' dep y
+      y' dep z
+
+      in a sortedList as follows: [a, y, x, z, y']
+
+      before this test it was:
+
+      y dep a
+      y' dep y
+      y'' dep z
+
+      in a sortedList as follows: [a, y, x, z, y', y'']
+    */
+
+    final String nameSpace = "http://example.org/";
+    final String mappingNameSpace = nameSpace + "mappings/";
+    final String theDependsOnPredicate = mappingNameSpace + "vocab#dependsOn";
+    final String theDepColumnKey = "dependsOn";
+    final String theIdColumnKey = "ID";
+    ErrorHandler errorHandler = mock(ErrorHandler.class);
+
+    AtomicInteger passesThroughDataSourceX = new AtomicInteger(0);
+    AtomicInteger passesThroughDataSourceY = new AtomicInteger(0);
+    AtomicInteger passesThroughDataSourceZ = new AtomicInteger(0);
+    AtomicInteger passesThroughDataSourceA = new AtomicInteger(0);
+
+    RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
+      .withTripleMap(mappingNameSpace + "z", trip -> trip
+        .withLogicalSource(rdf(nameSpace + "z"))
+        .withSubjectMap(sm -> sm.withTermMap(tm -> tm.withColumnTerm("rdfUri")))
+        .withPredicateObjectMap(pom -> pom
+          .withPredicate(theDependsOnPredicate)
+          .withReference(rm -> rm
+            .withParentTriplesMap(mappingNameSpace + "x")
+            .withJoinCondition(theDepColumnKey, theIdColumnKey)
+          )
+        )
+      )
+      .withTripleMap(mappingNameSpace + "x", trip -> trip
+        .withSubjectMap(sm -> sm.withTermMap(tm -> tm.withColumnTerm("rdfUri")))
+        .withLogicalSource(rdf(nameSpace + "x"))
+        .withPredicateObjectMap(pom -> pom
+          .withPredicate(theDependsOnPredicate)
+          .withReference(rm -> rm
+            .withParentTriplesMap(mappingNameSpace + "y")
+            .withJoinCondition(theDepColumnKey, theIdColumnKey)
+          )
+        )
+      )
+      .withTripleMap(mappingNameSpace + "y", trip -> trip
+        .withSubjectMap(sm -> sm.withTermMap(tm -> tm.withColumnTerm("rdfUri")))
+        .withLogicalSource(rdf(nameSpace + "y"))
+        .withPredicateObjectMap(pom -> pom
+          .withPredicate(theDependsOnPredicate)
+          .withReference(rm -> rm
+            .withParentTriplesMap(mappingNameSpace + "y")
+            .withJoinCondition(theDepColumnKey + "Y", theIdColumnKey)
+          )
+        )
+        .withPredicateObjectMap(pom -> pom
+          .withPredicate(theDependsOnPredicate)
+          .withReference(rm -> rm
+            .withParentTriplesMap(mappingNameSpace + "z")
+            .withJoinCondition(theDepColumnKey + "Z", theIdColumnKey)
+          )
+        )
+        .withPredicateObjectMap(pom -> pom
+          .withPredicate(theDependsOnPredicate)
+          .withReference(rm -> rm
+            .withParentTriplesMap(mappingNameSpace + "a")
+            .withJoinCondition(theDepColumnKey + "A", theIdColumnKey)
+          )
+        )
+      )
+      .withTripleMap(mappingNameSpace + "a", trip -> trip
+        .withLogicalSource(rdf(nameSpace + "a"))
+        .withSubjectMap(sm -> sm.withTermMap(tm -> tm.withColumnTerm("rdfUri")))
+        .withPredicateObjectMap(pom -> pom
+          .withPredicate(nameSpace + "vocab#name")
+          .withObjectMap(tm -> tm.withColumnTerm("naam"))
+        )
+      )
+      .build(logicalSource -> {
+
+        if (logicalSource.asIri().get().equals(nameSpace + "z")) {
+          passesThroughDataSourceZ.incrementAndGet();
+          return Optional.of(new TestDataSource(Lists.newArrayList(
+            ImmutableMap.of(theIdColumnKey, "z1", theDepColumnKey, "x1", "rdfUri", nameSpace + "z1")
+
+          ), errorHandler));
+        }
+        if (logicalSource.asIri().get().equals(nameSpace + "x")) {
+          passesThroughDataSourceX.incrementAndGet();
+          return Optional.of(new TestDataSource(Lists.newArrayList(
+            ImmutableMap.of(theIdColumnKey, "x1", theDepColumnKey, "y1", "rdfUri", nameSpace + "x1")
+
+          ), errorHandler));
+        }
+        if (logicalSource.asIri().get().equals(nameSpace + "y")) {
+          passesThroughDataSourceY.incrementAndGet();
+          return Optional.of(new TestDataSource(Lists.newArrayList(
+            ImmutableMap.of(theIdColumnKey, "y1", theDepColumnKey + "Y", "y2", "rdfUri", nameSpace + "y1"),
+            ImmutableMap.of(theIdColumnKey, "y2", theDepColumnKey + "A", "a1", "rdfUri", nameSpace + "y2" ),
+            ImmutableMap.of(theIdColumnKey, "y3", theDepColumnKey + "Z", "z1", "rdfUri", nameSpace + "y3")
+          ), errorHandler));
+        }
+        if (logicalSource.asIri().get().equals(nameSpace + "a")) {
+          passesThroughDataSourceA.incrementAndGet();
+          return Optional.of(new TestDataSource(Lists.newArrayList(
+            ImmutableMap.of(theIdColumnKey, "a1", "naam", "Naam van A", "rdfUri", nameSpace + "a1")
+
+          ), errorHandler));
+        }
+
+        return null;
+      });
+
+    final List<Triple> result = rmlMappingDocument.execute(errorHandler).collect(Collectors.toList());
+
+    // Verify that no unnecessary splitOffs have been generated by counting the amount of passes through each
+    // datasource.
+    assertThat(passesThroughDataSourceA.intValue(), equalTo(1));
+    assertThat(passesThroughDataSourceX.intValue(), equalTo(1));
+    assertThat(passesThroughDataSourceZ.intValue(), equalTo(1));
+    assertThat(passesThroughDataSourceY.intValue(), equalTo(2));
+
+    assertThat(result, containsInAnyOrder(
+      likeTriple(
+        uri(nameSpace + "a1"),
+        uri(nameSpace + "vocab#name"),
+        literal("Naam van A")
+      ),
+      likeTriple(
+        uri(nameSpace + "y2"),
+        uri(theDependsOnPredicate),
+        uri(nameSpace + "a1")
+      ),
+      likeTriple(
+        uri(nameSpace + "x1"),
+        uri(theDependsOnPredicate),
+        uri(nameSpace + "y1")
+      ),
+      likeTriple(
+        uri(nameSpace + "z1"),
+        uri(theDependsOnPredicate),
+        uri(nameSpace + "x1")
+      ),
+      likeTriple(
+        uri(nameSpace + "y3"),
+        uri(theDependsOnPredicate),
+        uri(nameSpace + "z1")
+      ),
+      likeTriple(
+        uri(nameSpace + "y1"),
+        uri(theDependsOnPredicate),
+        uri(nameSpace + "y2")
       )
     ));
   }

@@ -182,33 +182,17 @@ public class MappingDocumentBuilder {
     List<TriplesMapBuilder> splitOffs = new LinkedList<>();
 
     for (TriplesMapBuilder current : sortedList) {
-      // Loop through all the triplesMapBuilders the current builder depends on
-      for (String uriOfReferencedTriplesMap : current.getReferencedTriplesMaps()) {
+      // Get all the unresolved dependencies to other triplesMapBuilder for the current triplesMapBuilder
+      final List<PredicateObjectMapBuilder> unresolved = removeUnresolvedDependencies(done, current);
 
-        // Contains all the URIs of triplesMapBuilders which can safely be depended upon by the current builder
-        final List<String> resolvedDependencies = done
-          .stream()
-          .map(TriplesMapBuilder::getUri)
-          .collect(Collectors.toList());
+      if (unresolved.size() > 0) {
+        // Create a new triplesMapBuilder with the PredicateObjectMapBuilders referencing the unresolved dependency
+        final TriplesMapBuilder splitOffTriplesMapBuilder = createTriplesMapBuilderFrom(current, unresolved);
 
-        // If the current builder depends on a builder that comes after it in the sorted list...
-        if (!resolvedDependencies.contains(uriOfReferencedTriplesMap)) {
-          // Remove all the predicate-object-map-builders that refer to the unresolved dependency
-          // and store them in a list (refs)
-          final List<PredicateObjectMapBuilder> refs = current.withoutPredicatesReferencing(uriOfReferencedTriplesMap);
-
-          // Create a new triplesMapBuilder with the PredicateObjectMapBuilders referencing the unresolved dependency
-          final String newTriplesMapUri = String.format("%s/split/%s", current.getUri(), UUID.randomUUID());
-          final TriplesMapBuilder triplesMapBuilderWithReferences =
-            new TriplesMapBuilder(newTriplesMapUri)
-              .withLogicalSource(current.getLogicalSource())
-              .withSubjectMapBuilder(current.getSubjectMapBuilder())
-              .withPredicateObjectMapBuilders(refs);
-
-          // add this new builder to the list of split-offs
-          splitOffs.add(triplesMapBuilderWithReferences);
-        }
+        // add this new builder to the list of split-offs
+        splitOffs.add(splitOffTriplesMapBuilder);
       }
+
       // Now we are done with current
       done.add(current);
     }
@@ -216,6 +200,54 @@ public class MappingDocumentBuilder {
     // with unresolved dependencies on other builders.
     sortedList.addAll(splitOffs);
   }
+
+  /**
+   * Removes the pom-builders which depend on pom-builders not in the resolved list (from current triplesMap builder)
+   * and returns them
+   * @param resolved the resolved dependencies (which come before current)
+   * @param current the current mapper in the list
+   * @return all the unresolvedDependencies to other triplesMapBuilder for the current triplesMapBuilder
+   */
+  private List<PredicateObjectMapBuilder> removeUnresolvedDependencies(Set<TriplesMapBuilder> resolved,
+                                                                       TriplesMapBuilder current) {
+
+    final List<PredicateObjectMapBuilder> refsToUnresolvedDependencies = Lists.newArrayList();
+    // Loop through all the triplesMapBuilders the current builder depends on
+    for (String uriOfReferencedTriplesMap : current.getReferencedTriplesMaps()) {
+      // Contains all the URIs of triplesMapBuilders which can safely be depended upon by the current builder
+      final List<String> resolvedDependencies = resolved
+        .stream()
+        .map(TriplesMapBuilder::getUri)
+        .collect(Collectors.toList());
+
+      // If the current builder depends on a builder that comes after it in the sorted list...
+      if (!resolvedDependencies.contains(uriOfReferencedTriplesMap)) {
+        // Remove all the predicate-object-map-builders that refer to the unresolved dependency
+        // and add them to the list of refsToUnresolvedDependencies
+        refsToUnresolvedDependencies.addAll(current.withoutPredicatesReferencing(uriOfReferencedTriplesMap));
+      }
+    }
+
+    return refsToUnresolvedDependencies;
+  }
+
+  /**
+   * Creates a new triplesMapBuilder which has the same logical source + subject map as current and the
+   * PredicateObjectMapBuilders in builders
+   * @param current the source triplesMapBuilder
+   * @param builders the PredicateObjectMapBuilders which depend on unresolved pom builders
+   * @return the new triplesMapBuilder
+   */
+  private TriplesMapBuilder createTriplesMapBuilderFrom(TriplesMapBuilder current,
+                                                        List<PredicateObjectMapBuilder> builders) {
+
+    final String newTriplesMapUri = String.format("%s/split/%s", current.getUri(), UUID.randomUUID());
+    return new TriplesMapBuilder(newTriplesMapUri)
+      .withLogicalSource(current.getLogicalSource())
+      .withSubjectMapBuilder(current.getSubjectMapBuilder())
+      .withPredicateObjectMapBuilders(builders);
+  }
+
 
   public RmlMappingDocument build(Function<RdfResource, Optional<DataSource>> dataSourceFactory) {
 
