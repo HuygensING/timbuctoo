@@ -205,7 +205,7 @@ public class RmlMapperTest {
 
     final String theNamePredicate = "http://example.org/vocab#name";
     final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
-    final ImmutableMap<String, Object> firstDocument = ImmutableMap.of(
+    final Map<String, Object> firstDocument = ImmutableMap.of(
       "rdfUri", "http://www.example.org/documents/1",
       "geschrevenDoor", "Bill"
     );
@@ -227,6 +227,28 @@ public class RmlMapperTest {
 
     verify(errorHandler).linkError(firstDocument, "geschrevenDoor", "http://example.org/personsMap", "naam");
   }
+
+  @Test(expected = RuntimeException.class)
+  public void whenAMapperWithoutJoiningSupportIsReferencedByAnotherMapperTheExceptionIsRegistered() {
+    final DataSource dataSource = mock(DataSource.class);
+    final String theNamePredicate = "http://example.org/vocab#name";
+    final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
+
+    final RmlMappingDocument rmlMappingDocument = rmlMappingDocument()
+      .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
+      .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
+      .build(logicalSource -> Optional.of(dataSource));
+
+    assertThat(rmlMappingDocument.getErrors().size(), equalTo(1));
+
+    assertThat(rmlMappingDocument.getErrors().get(0),
+      equalTo("Datasource of triplesMap identified by http://example.org/personsMap, " +
+        "requested by http://example.org/documentsMap does not support joining"));
+
+    rmlMappingDocument.execute(new LoggingErrorHandler()).collect(toList());
+
+  }
+
 
   private Consumer<TriplesMapBuilder> makeDocumentMap(String theWrittenByPredicate) {
     return trip -> trip

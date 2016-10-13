@@ -2,11 +2,12 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.rml.DataSource;
+import nl.knaw.huygens.timbuctoo.rml.DataSourceWithJoiningSupport;
 import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.Row;
+import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
+import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
@@ -15,22 +16,21 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.VALUE_PREFIX;
 
-public class BulkUploadedDataSource implements DataSource {
+public class BulkUploadedDataSource implements DataSourceWithJoiningSupport {
   public static final Logger LOG = LoggerFactory.getLogger(BulkUploadedDataSource.class);
   private final String vreName;
   private final String collectionName;
   private final GraphWrapper graphWrapper;
   private final TimbuctooErrorHandler errorHandler;
-  private Map<String, Tuple<String, Map<Object, List<String>>>> cachedUris = new HashMap<>();
+
+  private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
 
   public static final String HAS_NEXT_ERROR = "hasNextError";
 
@@ -62,16 +62,8 @@ public class BulkUploadedDataSource implements DataSource {
                              valueMap.put(prop.key(), prop.value());
                            }
                          }
-
-                         for (Map.Entry<String, Tuple<String, Map<Object, List<String>>>> stringMapEntry : cachedUris
-                           .entrySet()) {
-                           final Tuple<String, Map<Object, List<String>>> stringMapTuple =
-                             cachedUris.get(stringMapEntry.getKey());
-                           List<String> uri = cachedUris.get(
-                             stringMapEntry.getKey()).getRight().get(valueMap.get(stringMapTuple.getLeft())
-                           );
-                           valueMap.put(stringMapEntry.getKey(), uri);
-                         }
+                         // Adds
+                         joinHandler.resolveReferences(valueMap);
 
                          errorHandler.setCurrentVertex(vertex);
 
@@ -83,10 +75,7 @@ public class BulkUploadedDataSource implements DataSource {
   @Override
   public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
     if (referenceJoinValue != null) {
-      cachedUris.computeIfAbsent(outputFieldName, x -> Tuple.tuple(fieldName, new HashMap<>()))
-                .getRight()
-                .computeIfAbsent(referenceJoinValue, x -> new ArrayList<>())
-                .add(uri);
+      joinHandler.announceJoinOn(fieldName, referenceJoinValue, uri, outputFieldName);
     }
   }
 
