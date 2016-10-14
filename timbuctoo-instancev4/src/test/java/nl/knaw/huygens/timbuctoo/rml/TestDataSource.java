@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
 
 import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.stream;
 
-class TestDataSource implements DataSourceWithJoiningSupport {
+class TestDataSource implements DataSource {
   private final Iterable<Map<String, Object>> data;
   private final ErrorHandler errorHandler;
   private final JoinHandler joinHandler = new HashMapBasedJoinHandler();

@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.rml.DataSourceWithJoiningSupport;
+import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
@@ -23,7 +23,7 @@ import java.util.Map;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.VALUE_PREFIX;
 
-public class BulkUploadedDataSource implements DataSourceWithJoiningSupport {
+public class BulkUploadedDataSource implements DataSource {
   public static final Logger LOG = LoggerFactory.getLogger(BulkUploadedDataSource.class);
   private final String vreName;
   private final String collectionName;
