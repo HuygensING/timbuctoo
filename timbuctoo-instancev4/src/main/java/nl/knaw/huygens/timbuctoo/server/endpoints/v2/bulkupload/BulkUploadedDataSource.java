@@ -62,7 +62,7 @@ public class BulkUploadedDataSource implements DataSource {
                              valueMap.put(prop.key(), prop.value());
                            }
                          }
-                         // Adds
+
                          joinHandler.resolveReferences(valueMap);
 
                          errorHandler.setCurrentVertex(vertex);
