@@ -1,10 +1,13 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.builders;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.ImmutableMultiset;
+import com.google.common.collect.Multiset;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,6 +20,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static nl.knaw.huygens.timbuctoo.rml.util.TopologicalSorter.topologicalSort;
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
 public class MappingDocumentBuilder {
   private List<TriplesMapBuilder> tripleMapBuilders = new ArrayList<>();
@@ -37,161 +43,84 @@ public class MappingDocumentBuilder {
     return subBuilder;
   }
 
-  /**
-   * Sorts the triplesMapBuilders based on the dependencies they have to other triplesMapBuilders
-   * In case of unresolved (circular) dependencies, splits off sub-builders.
-   * @param triplesMapBuilders the original list of builders
-   * @return the sorted and splitted list of builders
-   */
-  private List<TriplesMapBuilder> sortAndSplitBuilders(List<TriplesMapBuilder> triplesMapBuilders) {
+  private List<TriplesMapBuilder> breakCyclesAndSort(List<TriplesMapBuilder> triplesMapBuilders) {
 
-    LinkedList<TriplesMapBuilder> result = topologicalSort(triplesMapBuilders);
+    Map<String, TriplesMapBuilder> lookup = triplesMapBuilders
+      .stream().collect(Collectors.toMap(TriplesMapBuilder::getUri, v -> v));
 
-    splitOffUnresolvedDependencies(result);
-
-    return result;
+    Set<Multiset<TriplesMapBuilder>> cycles = detectCycles(triplesMapBuilders, lookup);
+    List<TriplesMapBuilder> buildersListWithoutCycles = breakCycles(triplesMapBuilders, cycles);
+    return topologicalSort(buildersListWithoutCycles, lookup, ((currentChain, current, dependency) -> {
+      //chains should no longer be possible
+      throw new IllegalStateException("Chains detected");
+    }), errors::add);
   }
 
-  /**
-   * Utility class used for marking in topologicalSort
-   */
-  private static class MarkedBuilder {
-    enum MarkType { UNMARKED, RUNNING, DONE }
-
-    TriplesMapBuilder triplesMapBuilder;
-    String uri;
-    MarkType mark = MarkType.UNMARKED;
-
-    MarkedBuilder(TriplesMapBuilder triplesMapBuilder) {
-      this.triplesMapBuilder = triplesMapBuilder;
-      this.uri = triplesMapBuilder.getUri();
-    }
-
-    boolean isUnMarked() {
-      return mark == MarkType.UNMARKED;
-    }
-
-    boolean isRunning() {
-      return mark == MarkType.RUNNING;
-    }
-  }
-
-  /**
-   * Sorts the list of triplesMapBuilders
-   * Taken from https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
-   *
-   * <p>
-   *   L ← Empty list that will contain the sorted nodes // where L = inputList --> input
-   *   while there are unmarked nodes do
-   *      select an unmarked node n // where n = current
-   *      visit(n) // where visit(n) is sortStep(current, result, input)
-   * </p>
-   *
-   * @param inputList the original list of triplesMapBuilders
-   * @return the sorted list of builders
-   */
-  private LinkedList<TriplesMapBuilder> topologicalSort(List<TriplesMapBuilder> inputList) {
-    // L ← Empty list that will contain the sorted nodes
-    List<MarkedBuilder> input = inputList.stream().map(MarkedBuilder::new).collect(Collectors.toList());
-    LinkedList<TriplesMapBuilder> result = Lists.newLinkedList();
-
-    // while there are unmarked nodes do
-    while (input.stream().filter(MarkedBuilder::isUnMarked).iterator().hasNext()) {
-      // select an unmarked node n
-      MarkedBuilder current = input.stream().filter(MarkedBuilder::isUnMarked).iterator().next();
-      // visit(n)
-      sortStep(current, result, input);
-    }
-
-    return result;
-  }
-
-  /**
-   * Taken from https://en.wikipedia.org/wiki/Topological_sorting#Depth-first_search
-   *
-   * <p>
-   *  function visit(node n)
-   *   if n has a temporary mark then stop (not a DAG) // this check moves to *before* the recursion
-   *   if n is not marked (i.e. has not been visited yet) then
-   *     mark n temporarily
-   *     for each node m with an edge from n to m do
-   *       visit(m)
-   *     mark n permanently
-   *     unmark n temporarily
-   *     add n to head of L
-   * </p>
-   *
-   * @param current the next unmarked node from input
-   * @param result the sorted result
-   * @param input the complete list of input
-   */
-  private void sortStep(MarkedBuilder current, LinkedList<TriplesMapBuilder> result, List<MarkedBuilder> input) {
-    // if n is not marked (i.e. has not been visited yet) then
-    if (current.isUnMarked()) {
-      // mark n temporarily
-      current.mark = MarkedBuilder.MarkType.RUNNING;
-      // for each node m with an edge from n to m do
-      for (String uriOfDependency : current.triplesMapBuilder.getReferencedTriplesMaps()) {
-        Optional<MarkedBuilder> dependentBuilder = input
-                .stream()
-                .filter(markedBuilder -> markedBuilder.uri.equals(uriOfDependency))
-                .findFirst();
-
-        // if m has not a temporary mark then
-        if (dependentBuilder.isPresent() && !dependentBuilder.get().isRunning()) {
-          // visit(m)
-          sortStep(dependentBuilder.get(), result, input);
+  //we're doing a topological sort without the actual sorting. We're just keeping track of the cycles so we can break
+  //the nodes who are part of most cycles.
+  private Set<Multiset<TriplesMapBuilder>> detectCycles(List<TriplesMapBuilder> triplesMapBuilders,
+                                                        Map<String, TriplesMapBuilder> lookup) {
+    Set<Multiset<TriplesMapBuilder>> cycles = new HashSet<>();
+    topologicalSort(
+      triplesMapBuilders,
+      lookup,
+      ((currentChain, current, dependency) -> {
+        ImmutableMultiset.Builder<TriplesMapBuilder> cycleChain = ImmutableMultiset.builder();
+        cycleChain.addAll(currentChain);
+        if (current == dependency) {
+          //self reference
+          cycleChain.add(dependency);//make sure the self referencing item is counted twice
         }
-        // else {
-        //   this is not a DAG, there is a circular dependency of node m to node m.
-        //   we solve this by stopping the recursion and allowing the sort to place m in the sorted list
-        //   as though it did not have this cycle.
-        //   the method splitOffUnresolvedDependencies will break the cycle by splitting off the
-        //   parts of the mapper which depend on a mapper not yet seen.
-        // }
+        cycles.add(cycleChain.build());
+      }),
+      e -> {
+        //errors are handled in the actual sort and ignored for now
       }
-      // mark n permanently
-      // unmark n temporarily
-      current.mark = MarkedBuilder.MarkType.DONE;
-      // add n to head of L
-      result.add(current.triplesMapBuilder);
-    }
+    );
+    return cycles;
   }
 
-  /**
-   * Splits off the parts of all triplesMapBuilders that depend on another builder that comes after it in the sorted
-   * list:
-   *
-   * <p>
-   *   Given:  x depends on [y]
-   *   And:    y depends on [x]
-   *   And:    sortedList = [x, y]
-   *   And:    splitOffs = []
-   *
-   *   Create: x' depends on y
-   *   Make:   x not depend on y
-   *   Add:    splitOffs.add(x')
-   *
-   *   After:  sortedList.concat(splitOffs) --> [x, y].concat([x']) --> [x, y, x']
-   * </p>
-   * @param sortedList the sorted list of triples map builders
-   */
-  private void splitOffUnresolvedDependencies(LinkedList<TriplesMapBuilder> sortedList) {
-    Set<String> doneUris = new HashSet<>();
-
-    LinkedList<TriplesMapBuilder> splittedOfTriplesMaps = new LinkedList<>();
-    for (TriplesMapBuilder current : sortedList) {
-      current.splitOffUnresolvedDependencies(doneUris)
-             .ifPresent(splittedOfTriplesMaps::add);
-
-      doneUris.add(current.getUri());
+  private List<TriplesMapBuilder> breakCycles(List<TriplesMapBuilder> triplesMapBuilders,
+                                              Set<Multiset<TriplesMapBuilder>> cycles) {
+    List<TriplesMapBuilder> result = new LinkedList<>();
+    for (TriplesMapBuilder triplesMapBuilder : triplesMapBuilders) {
+      result.add(triplesMapBuilder);
     }
-    sortedList.addAll(splittedOfTriplesMaps);
+    while (cycles.size() > 0) {
+      Multiset<TriplesMapBuilder> cycleOccurrence = HashMultiset.create();
+      for (Multiset<TriplesMapBuilder> cycle : cycles) {
+        for (TriplesMapBuilder triplesMapBuilder : cycle) {
+          cycleOccurrence.add(triplesMapBuilder);
+        }
+      }
+      //get the triplesMapBuilder that is currently taking part in most of the cycles
+      triplesMapBuilders.stream()
+        .map(b -> tuple(b, cycleOccurrence.count(b)))
+        .sorted(this::selectBestBreakCandidate)
+        .map(Tuple::getLeft)
+        .findFirst()
+        .ifPresent(x -> {
+          result.add(x.splitOffDependendingPredObjMaps());
+          List<Multiset<TriplesMapBuilder>> itemsToRemove = new LinkedList<>();
+          for (Multiset<TriplesMapBuilder> cycle : cycles) {
+            if (cycle.contains(x)) {
+              itemsToRemove.add(cycle);
+            }
+          }
+          cycles.removeAll(itemsToRemove);
+        });
+    }
+    return result;
+  }
+
+  private int selectBestBreakCandidate(Tuple<TriplesMapBuilder, Integer> o1, Tuple<TriplesMapBuilder, Integer> o2) {
+    //reverse sort by cycle breakage
+    return o2.getRight() - o1.getRight();
   }
 
   public RmlMappingDocument build(Function<RdfResource, Optional<DataSource>> dataSourceFactory) {
 
-    final List<RrTriplesMap> triplesMaps = sortAndSplitBuilders(this.tripleMapBuilders).stream()
+    final List<RrTriplesMap> triplesMaps = breakCyclesAndSort(this.tripleMapBuilders).stream()
       // Build the tripleMapBuilders with lambda to resolve otherMap they are dependent on
       .map(tripleMapBuilder -> tripleMapBuilder.build(dataSourceFactory, this::getRrTriplesMap, errors::add))
       .filter(x -> x != null)
