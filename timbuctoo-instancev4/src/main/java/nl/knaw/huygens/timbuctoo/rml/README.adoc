@@ -104,6 +104,42 @@ link:./rdfshim[/rdfshim]::
 link:./datasource[/datasource]::
   The library ships with a JoinHandler interface which can be used by the datasource to handle joins and one sample implementation backed by a HashMap.
 
+== Handling of circular and self-referencing data sources (let's call them tables)
+In order for this library to support big datasets without the leverage SQL based databases provide data rows are expected to be streamed.
+
+References without a cycle::
+
+When exactly one table references exactly one other table this is simply resolved by first mapping the rows of the table that is referred to and then the table that refers to it.
+```
+sample here
+
+solution here
+```
+
+Self reference::
+The solution above does not solve the issue of a table in which one column references another column in the same table.
+In this case a new mapper is generated (split off) from the original mapper, so that two passes are made through the same datasource.
+The first pass maps all the values that are not a reference.
+The second pass maps all the values that are a reference to another column.
+
+```
+sample here
+
+solution here
+```
+
+Cyclic references::
+In cases where table A references table B and table B references table A there is a circular depency as well.
+The same solutions as above apply here: first sort by dependency, then split off any unresolved dependencies.
+This even works for more complex cases with multiple cycles.
+The full implementation of sort and split is here: link:./rml/rmldata/builders/MappingDocumentBuilder.java[/rml/rmldata/builders/MappingDocumentBuilder.java].
+
+```
+sample here
+
+solution here
+```
+
 == Known issues
 
 Mapping columns::
