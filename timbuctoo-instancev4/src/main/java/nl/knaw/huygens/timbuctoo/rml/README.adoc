@@ -108,7 +108,11 @@ link:./datasource[/datasource]::
   backed by a HashMap.
 
 == Handling of circular and self-referencing data sources (let's call them tables)
-In order for this library to support big datasets without the leverage SQL based databases provide data rows are expected to be streamed.
+In order for this library to support big datasets without the leverage (which SQL based databases provide),
+data rows are expected to be streamed.
+
+This however introduces the problem of handling tables which refer to eachother (possibly with cyclic dependency) as explained
+in the next sub-sections.
 
 References without a cycle::
 
