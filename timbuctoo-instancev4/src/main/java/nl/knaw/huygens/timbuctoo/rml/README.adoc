@@ -48,7 +48,7 @@ We then import the RDF using our generic RDF importer.
 
 Implementing a minimal DataSource with shipped JoinHandler::
 
-```
+```java
  class MyDataSource implements DataSource {
    // This wil handle references from one table to another
    private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
@@ -103,7 +103,9 @@ link:./jena[/jena]::
 link:./rdfshim[/rdfshim]::
   The library depends on jena at this moment, but we've invested some effort to make this a minimal dependency. 
   It should be possible to extract the jena package to a separate package that depends on this library while the library is jena agnostic.
-
+link:./datasource[/datasource]::
+  The library ships with a JoinHandler interface which can be used by the datasource to handle joins and one sample implementation
+  backed by a HashMap.
 
 == Known issues
 
