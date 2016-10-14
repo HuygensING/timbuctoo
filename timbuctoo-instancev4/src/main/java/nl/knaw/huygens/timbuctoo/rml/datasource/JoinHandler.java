@@ -6,6 +6,6 @@ public interface JoinHandler {
 
   void resolveReferences(Map<String, Object> valueMap);
 
-  void announceJoinOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName);
+  void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName);
 
 }
