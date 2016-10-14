@@ -113,7 +113,7 @@ References without a cycle::
 
 When exactly one table references exactly one other table this is simply resolved by first mapping the rows of the table that is referred to and then the table that refers to it.
 ```
-Given these tables
+Given these tables:
 +---------------+                         +--------------+
 |Persons        |                         |Locations     |
 +---------------+                         +--------------+
@@ -122,7 +122,7 @@ Given these tables
 | birthplace_id |----|hasBirthPlace|----->| ID           |
 +---------------+                         +--------------+
 
-And this original order of mappings:
+And this original order of mappers:
 [
   mapperForPersons,
   mapperForLocations
@@ -130,7 +130,7 @@ And this original order of mappings:
 
 Sort the mappers so that URI's for Locations are generated *before* the mappings of persons are performed:
 [
-  mapperForLocations, --> will resolve URI's and store them using JoinHandler implementation
+  mapperForLocations, --> will generate URI's and store them using JoinHandler implementation
   mapperForPersons    --> will look up URI's for the locations using store in JoinHandler implementation
 ]
 
@@ -143,9 +143,28 @@ The first pass maps all the values that are not a reference.
 The second pass maps all the values that are a reference to another column.
 
 ```
-sample here
+Given this table:
+     +----------+
+     |Persons   |
+     +----------+
++--> |ID        |
+|    |name      |
+|    |mother_id |-+
+|    +----------+ |
+|                 |
++---|hasMother|---+
 
-solution here
+And this mapper list:
+[
+  mapperForPersons
+]
+
+
+Split off one extra mapper to resolve the URI of person being referenced to by mother_id:
+[
+  mapperForPersons,  --> will generate URI's and store them using JoinHandler implementation
+  mapperForPersons'  --> will look up URI's for the mothers using store in JoinHandler implementation
+]
 ```
 
 Cyclic references::
