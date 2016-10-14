@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.builders;
 
-import nl.knaw.huygens.timbuctoo.rml.DataSourceWithJoiningSupport;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMapOfTermMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
@@ -61,19 +60,11 @@ public class PredicateObjectMapBuilder {
   void build(Function<String, PromisedTriplesMap> getTriplesMap, RrTriplesMap owningTriplesMap)
     throws IOException {
     if (this.referencingObjectMapBuilder != null) {
-      if (owningTriplesMap.getDataSource() instanceof DataSourceWithJoiningSupport) {
-        this.referencingObjectMapBuilder.build(
-          predicateMap,
-          getTriplesMap,
-          owningTriplesMap
-        );
-      } else {
-        throw new IOException(
-          String.format("Datasource of triplesMap identified by %s, requested by %s does not support joining",
-            referencingObjectMapBuilder.getReferencedMap(),
-            owningTriplesMap.getUri()
-          ));
-      }
+      this.referencingObjectMapBuilder.build(
+        predicateMap,
+        getTriplesMap,
+        owningTriplesMap
+      );
     } else {
       owningTriplesMap.addPredicateObjectMap(
         new RrPredicateObjectMapOfTermMap(this.predicateMap.build(), this.objectMap.build())
