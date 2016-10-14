@@ -75,7 +75,7 @@ public class BulkUploadedDataSource implements DataSource {
   @Override
   public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
     if (referenceJoinValue != null) {
-      joinHandler.announceJoinOn(fieldName, referenceJoinValue, uri, outputFieldName);
+      joinHandler.willBeJoinedOn(fieldName, referenceJoinValue, uri, outputFieldName);
     }
   }
 

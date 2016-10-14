@@ -50,6 +50,6 @@ class TestDataSource implements DataSource {
 
   @Override
   public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
-    joinHandler.announceJoinOn(fieldName, referenceJoinValue, uri, outputFieldName);
+    joinHandler.willBeJoinedOn(fieldName, referenceJoinValue, uri, outputFieldName);
   }
 }

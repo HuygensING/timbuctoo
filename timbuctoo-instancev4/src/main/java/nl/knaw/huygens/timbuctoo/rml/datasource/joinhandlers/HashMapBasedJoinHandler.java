@@ -27,7 +27,7 @@ public class HashMapBasedJoinHandler implements JoinHandler {
   }
 
   @Override
-  public void announceJoinOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
+  public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
     cachedUris.computeIfAbsent(outputFieldName, x -> Tuple.tuple(fieldName, new HashMap<>()))
       .getRight()
       .computeIfAbsent(referenceJoinValue, x -> new ArrayList<>())
