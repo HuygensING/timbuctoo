@@ -13,8 +13,8 @@ public class HashMapBasedJoinHandler implements JoinHandler {
 
 
   /**
-   * When invoked from getRows() in DataSource, this adds the unique key (UUID) and the uri of this row to
-   * the mapped values for this row.
+   * When invoked from getRows() in DataSource, this adds the unique key (UUID) of the referencing row/subject in other
+   * data source as key and the uri of this row as the value the mapped values for this row.
    *
    * <p>
    * Given this entry in cachedUris: {
@@ -37,7 +37,7 @@ public class HashMapBasedJoinHandler implements JoinHandler {
    *    "rdfUri": "http://example.org/y2",
    *    "ID": "y2",
    *    "dependsOnA": "a1"
-   *    "825d6cb3-0d8f-416f-b4ff-73e525e1d9b4": [
+   *    "825d6cb3-0d8f-416f-b4ff-73e525e1d9b4": [  <-- is the unique ID of the referencing row/subject
    *      "http://example.org/a1"
    *    ]
    * }
@@ -47,7 +47,6 @@ public class HashMapBasedJoinHandler implements JoinHandler {
    */
   @Override
   public void resolveReferences(Map<String, Object> valueMap) {
-    System.out.println(valueMap);
     for (Map.Entry<String, Tuple<String, Map<Object, List<String>>>> stringMapEntry : cachedUris
       .entrySet()) {
       final Tuple<String, Map<Object, List<String>>> stringMapTuple = cachedUris.get(stringMapEntry.getKey());
@@ -58,8 +57,6 @@ public class HashMapBasedJoinHandler implements JoinHandler {
 
       valueMap.put(stringMapEntry.getKey(), uri);
     }
-    System.out.println(valueMap);
-    System.out.println("===");
   }
 
   /**
