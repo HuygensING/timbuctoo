@@ -119,9 +119,27 @@ References without a cycle::
 When exactly one table references exactly one other table this is simply resolved by first mapping the rows of the table
 that is referred to and then the table that refers to it.
 ```
-sample here
+Given these tables
++---------------+                         +--------------+
+|Persons        |                         |Locations     |
++---------------+                         +--------------+
+| ID            |                         | name         |
+| name          |                         | country      |
+| birthplace_id |----|hasBirthPlace|----->| ID           |
++---------------+                         +--------------+
 
-solution here
+And this original order of mappings:
+[
+  mapperForPersons,
+  mapperForLocations
+]
+
+Sort the mappers so that URI's for Locations are generated *before* the mappings of persons are performed:
+[
+  mapperForLocations, --> will resolve URI's and store them using JoinHandler implementation
+  mapperForPersons    --> will look up URI's for the locations using store in JoinHandler implementation
+]
+
 ```
 
 Self reference::
