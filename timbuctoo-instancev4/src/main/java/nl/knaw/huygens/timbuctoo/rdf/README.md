@@ -67,3 +67,44 @@ The structure will be transformed to the following structure.
 
 ## Dependencies
 We use [Apache Jena](https://jena.apache.org/) to convert the triple strings to java objects.
+
+
+## Known issues
+
+Timbuctoo supports edges with inverse names for inverse directions in a data structure called RelationType. 
+Currently mapping via URI of an rdf predicate only works for the regular name of a relation type.
+
+For instance, given these triples:
+```
+<amsterdam> <isDeathPlaceOf> <piet> .
+<jan> <hasBirthPlace> <Amsterdam> .
+```
+
+And a RelationType definition as follows:
+```
+{
+  ..., 
+  "regularName": "hasDeathPlace",
+  "inverName": "isDeathPlaceOf",
+  "sourceType: "person",
+  "targetType: "location"
+}
+```
+
+We currently get these resulting edges:
+```
+v[73] --[isDeathPlaceOf]--> v[72]
+v[65] --[hasBirthPlace]--> v[73]
+```
+Where isDeathPlaceOf is a newly generated relationType, in stead of one mapped against the existing relationType.
+
+The expected result would have been:
+```
+v[72]--[hasDeathPlace]-->v[73]
+v[65] --[hasBirthPlace]--> v[73]
+```
+
+Culprit code only looks at RDF_URI_PROP identifying a regular name.
+```
+rdf.Database.java[r215]:  graphWrapper.getGraph().traversal().V().hasLabel("relationtype").has(RDF_URI_PROP, predicate.getURI());
+```
