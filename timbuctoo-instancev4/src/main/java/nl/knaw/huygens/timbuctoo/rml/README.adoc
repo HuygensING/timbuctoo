@@ -77,7 +77,7 @@ The code to implement this does not yet support circular dependencies very well 
 Mapping columns::
 You cannot transform a column in RML.
 The R2RML languages gives you the ability to use an arbitrary SQL query as a datasource which allows for most of the conversions in SQL.
-R2RML does not have this support.
+RML does not have this support.
 This is especially annoying for implementing manytomany links and when you want to derive the name of the predicate.
 +
 We might implement an extension that allows for referencingMaps in subjectMaps and predicateMaps and an extension that allows you to transform the inputline to aleviate some of this pain.
