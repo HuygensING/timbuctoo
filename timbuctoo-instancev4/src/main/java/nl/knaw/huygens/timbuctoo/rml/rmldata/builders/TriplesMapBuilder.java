@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.builders;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
@@ -9,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -40,11 +42,6 @@ public class TriplesMapBuilder {
     return this.subjectMapBuilder;
   }
 
-  TriplesMapBuilder withSubjectMapBuilder(SubjectMapBuilder subBuilder) {
-    this.subjectMapBuilder = subBuilder;
-    return this;
-  }
-
 
   public TriplesMapBuilder withPredicateObjectMap(Consumer<PredicateObjectMapBuilder> subBuilder) {
     subBuilder.accept(withPredicateObjectMap());
@@ -58,38 +55,13 @@ public class TriplesMapBuilder {
     return subBuilder;
   }
 
-  Set<String> getReferencedTriplesMaps() {
-    return predicateObjectMapBuilders
-      .stream()
+  public Set<String> getReferencedTriplesMaps() {
+    return predicateObjectMapBuilders.stream()
       .map(PredicateObjectMapBuilder::getReferencedMap)
-      .filter(x -> x != null)
+      .filter(Optional::isPresent)
+      .map(Optional::get)
       .collect(Collectors.toSet());
   }
-
-  List<PredicateObjectMapBuilder> withoutPredicatesReferencing(String uri) {
-    final List<PredicateObjectMapBuilder> buildersToRemove = predicateObjectMapBuilders
-            .stream()
-            .filter(builder -> builder.getReferencedMap() != null && builder.getReferencedMap().equals(uri))
-            .collect(Collectors.toList());
-
-    predicateObjectMapBuilders.removeAll(buildersToRemove);
-
-    return buildersToRemove;
-  }
-
-  TriplesMapBuilder withPredicateObjectMapBuilders(List<PredicateObjectMapBuilder> refs) {
-    this.predicateObjectMapBuilders = refs;
-    return this;
-  }
-
-  RdfResource getLogicalSource() {
-    return logicalSource;
-  }
-
-  SubjectMapBuilder getSubjectMapBuilder() {
-    return subjectMapBuilder;
-  }
-
 
   RrTriplesMap build(Function<RdfResource, Optional<DataSource>> dataSourceFactory,
                      BiFunction<String, String, PromisedTriplesMap> getTriplesMap, Consumer<String> errorLogger) {
@@ -99,7 +71,7 @@ public class TriplesMapBuilder {
     if (dataSource.isPresent()) {
 
       RrTriplesMap instance = new RrTriplesMap(
-        subjectMapBuilder.build(predicateObjectMapBuilders::add),
+        subjectMapBuilder.build(x -> predicateObjectMapBuilders.add(x)),
         dataSource.get(),
         uri
       );
@@ -122,4 +94,57 @@ public class TriplesMapBuilder {
   public String getUri() {
     return uri;
   }
+
+  /**
+   * Removes the predObjMap-builders which depend on predObjMap-builders not in the resolved list (from current
+   * triplesMap builder) and returns them
+   * @param resolved the resolved dependencies (which come before current)
+   * @return all the unresolvedDependencies to other triplesMapBuilder for the current triplesMapBuilder
+   */
+  Optional<TriplesMapBuilder> splitOffUnresolvedDependencies(Set<String> resolved) {
+
+    Set<String> referencedTriplesMaps = getReferencedTriplesMaps();
+    Sets.SetView<String> unresolvedDependencies = Sets.difference(
+      referencedTriplesMaps,
+      Sets.intersection(
+        referencedTriplesMaps,
+        resolved
+      )
+    );
+
+    final List<PredicateObjectMapBuilder> refsToUnresolvedDependencies = new ArrayList<>();
+    for (String uriOfReferencedTriplesMap : unresolvedDependencies) {
+      for (int i = predicateObjectMapBuilders.size() - 1; i >= 0; i--) {
+        PredicateObjectMapBuilder referencingObjMap = predicateObjectMapBuilders.get(i);
+        if (referencingObjMap.getReferencedMap().isPresent()) {
+          if (uriOfReferencedTriplesMap.equals(referencingObjMap.getReferencedMap().get())) {
+            refsToUnresolvedDependencies.add(referencingObjMap);
+            predicateObjectMapBuilders.remove(referencingObjMap);
+          }
+        }
+      }
+    }
+
+    if (refsToUnresolvedDependencies.size() > 0) {
+      // Create a new triplesMapBuilder with the PredicateObjectMapBuilders referencing the unresolved dependency
+      return Optional.of(createTriplesMapBuilderFrom(refsToUnresolvedDependencies));
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  /**
+   * Creates a new triplesMapBuilder which has the same logical source + subject map as current and the
+   * PredicateObjectMapBuilders in builders
+   * @param builders the PredicateObjectMapBuilders which depend on unresolved pom builders
+   * @return the new triplesMapBuilder
+   */
+  private TriplesMapBuilder createTriplesMapBuilderFrom(List<PredicateObjectMapBuilder> builders) {
+    TriplesMapBuilder result = new TriplesMapBuilder(this.uri + "/split/" + UUID.randomUUID());
+    result.logicalSource = this.logicalSource;
+    result.subjectMapBuilder = this.subjectMapBuilder;
+    result.predicateObjectMapBuilders = builders;
+    return result;
+  }
+
 }
