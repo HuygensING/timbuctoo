@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -62,7 +63,12 @@ public class TriplesMapBuilder {
       );
 
       for (PredicateObjectMapBuilder builder : this.predicateObjectMapBuilders) {
-        builder.build(requesteduri -> getTriplesMap.apply(this.uri, requesteduri), instance);
+
+        try {
+          builder.build(requesteduri -> getTriplesMap.apply(this.uri, requesteduri), instance);
+        } catch (IOException e) {
+          errorLogger.accept(e.getMessage());
+        }
       }
       return instance;
     } else {

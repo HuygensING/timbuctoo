@@ -205,7 +205,7 @@ public class RmlMapperTest {
 
     final String theNamePredicate = "http://example.org/vocab#name";
     final String theWrittenByPredicate = "http://example.org/vocab#writtenBy";
-    final ImmutableMap<String, Object> firstDocument = ImmutableMap.of(
+    final Map<String, Object> firstDocument = ImmutableMap.of(
       "rdfUri", "http://www.example.org/documents/1",
       "geschrevenDoor", "Bill"
     );
