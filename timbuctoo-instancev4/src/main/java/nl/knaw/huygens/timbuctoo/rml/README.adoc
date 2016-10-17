@@ -46,6 +46,45 @@ We then import the RDF using our generic RDF importer.
   }
 ```
 
+Implementing a minimal DataSource with shipped JoinHandler::
+
+```
+ class MyDataSource implements DataSource {
+   // This wil handle references from one table to another
+   private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
+   private final MyData myData;
+
+   public MyDataSource(RdfResource rdfResource) {
+     this.myData = new MyData(rdfResource); // somehow derive the correct data rows for this rdfResource
+   }
+
+   @Override
+   public Iterator<Row> getRows(ErrorHandler errorHandler) {
+     return myData
+       .turnIntoStream()
+       .map(values -> {
+         // values in Map should look like this:
+         // { "columnName": "cellValue", ... }
+         Map<String, Object> valueMap = transFormValuesOfThisDataRowToValueMap(values);
+
+         // This will handle the reference from one data source to another
+         joinHandler.resolveReferences(valueMap);
+
+         return new Row(valueMap, errorHandler);
+       })
+       .iterator();
+   }
+
+   @Override
+   public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
+    // This will handle the reference from one data source to another
+     joinHandler.willBeJoinedOn(fieldName, referenceJoinValue, uri, outputFieldName);
+   }
+ }
+```
+
+More information on how a JoinHandler can be implemented is documented in the source of link: ./datasource/joinhandlers/HashMapBasedJoinHandler.java[HashMapBasedJoinHandler].
+
 == Code layout
 The package contains the following folders:
 
@@ -66,14 +105,6 @@ link:./rdfshim[/rdfshim]::
 
 == Known issues
 
-Joining::
-Rml is based on https://www.w3.org/TR/r2rml/[R2RML].
-R2RML is very much dependent on the database engine to make int useful.
-This is apparent when you read the algorithm for implementing ReferencingObjectMaps which very much depends on being able to do a SQL join.
-To implement this in RML we have added a method to datasources called `willBeJoinedOn`.
-A dataSource is supposed to store this value in a HashMap or something and then merge that value into it's result set when getRows is called.
-+
-The code to implement this does not yet support circular dependencies very well and does not support self-joins at all.
 Mapping columns::
 You cannot transform a column in RML.
 The R2RML languages gives you the ability to use an arbitrary SQL query as a datasource which allows for most of the conversions in SQL.
