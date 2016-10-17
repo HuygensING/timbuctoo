@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrPredicateObjectMapOfTermMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -72,4 +73,8 @@ public class PredicateObjectMapBuilder {
     }
   }
 
+  Optional<String> getReferencedMap() {
+    return Optional.ofNullable(this.referencingObjectMapBuilder)
+                   .map(ReferencingObjectMapBuilder::getReferencedMap);
+  }
 }

@@ -6,11 +6,15 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 
 public class TriplesMapBuilder {
@@ -38,6 +42,7 @@ public class TriplesMapBuilder {
     return this.subjectMapBuilder;
   }
 
+
   public TriplesMapBuilder withPredicateObjectMap(Consumer<PredicateObjectMapBuilder> subBuilder) {
     subBuilder.accept(withPredicateObjectMap());
     return this;
@@ -50,14 +55,23 @@ public class TriplesMapBuilder {
     return subBuilder;
   }
 
+  public Set<String> getReferencedTriplesMaps() {
+    return predicateObjectMapBuilders.stream()
+      .map(PredicateObjectMapBuilder::getReferencedMap)
+      .filter(Optional::isPresent)
+      .map(Optional::get)
+      .collect(Collectors.toSet());
+  }
+
   RrTriplesMap build(Function<RdfResource, Optional<DataSource>> dataSourceFactory,
                      BiFunction<String, String, PromisedTriplesMap> getTriplesMap, Consumer<String> errorLogger) {
 
 
     Optional<DataSource> dataSource = dataSourceFactory.apply(logicalSource);
     if (dataSource.isPresent()) {
+
       RrTriplesMap instance = new RrTriplesMap(
-        subjectMapBuilder.build(predicateObjectMapBuilders::add),
+        subjectMapBuilder.build(x -> predicateObjectMapBuilders.add(x)),
         dataSource.get(),
         uri
       );
@@ -77,4 +91,21 @@ public class TriplesMapBuilder {
     }
   }
 
+  public String getUri() {
+    return uri;
+  }
+
+  public TriplesMapBuilder splitOffDependendingPredObjMaps() {
+    TriplesMapBuilder result = new TriplesMapBuilder(this.uri + "/split/" + UUID.randomUUID());
+    result.logicalSource = this.logicalSource;
+    result.subjectMapBuilder = this.subjectMapBuilder;
+    result.predicateObjectMapBuilders = this.predicateObjectMapBuilders;
+    this.predicateObjectMapBuilders = new LinkedList<>();
+    return result;
+  }
+
+  @Override
+  public String toString() {
+    return "TriplesmapBuilder: " + this.getUri();
+  }
 }
