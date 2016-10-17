@@ -168,15 +168,43 @@ Split off one extra mapper to resolve the URI of person being referenced to by m
 ```
 
 Cyclic references::
-In cases where table A references table B and table B references table A there is a circular depency as well.
+In cases where table A references table B and table B references table A there is a circular dependency as well.
 The same solutions as above apply here: first sort by dependency, then split off any unresolved dependencies.
-This even works for more complex cases with multiple cycles.
+This also works for more complex cases with multiple cycles.
 The full implementation of sort and split is here: link:./rmldata/builders/MappingDocumentBuilder.java[/rml/rmldata/builders/MappingDocumentBuilder.java].
 
 ```
-sample here
+Given this data structure:
+   +------+                +------+                           +------+
+   |x     |                |y     |                           |a     |
+   +------+                +------+                           +------+
+   | y_id |--|dependsOn|-+>| ID   |                           | ...  |
++->| ID   |              | | a_id |------|dependsOn|--------->| ID   |
+|  +------+              | | z_id |------|dependsOn|----+     +------+
+|                        | | y_id |---+                 |
+|                        | +------+   |                 |     +------+
+|                        |            |                 |     |z     |
+|                        +|dependsOn|-+                 |     +------+
+|                                                       +---->| ID   |
++-------------------------|dependsOn|-------------------------| x_id |
+                                                              +------+
 
-solution here
+And this original order of mappers:
+[
+ zMapper, <--- depends on xMapper
+ xMapper, <--- depends on yMapper
+ yMapper, <--- depends on zMapper, aMapper and yMapper (self)
+ aMapper  <--- depends on no mapper
+]
+
+Sort and split the mappers like this:
+[
+  aMapper,   <--- has no dependencies on other mappers having been run
+  yMapper,   <--- depends on aMapper
+  xMapper,   <--- depends on yMapper
+  zMapper,   <--- depends on xMapper
+  yMapper'   <--- depends on yMapper and on zMapper (only one mapper needed to be split off to break 2 cycles.
+]
 ```
 
 == Known issues
