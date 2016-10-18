@@ -108,4 +108,9 @@ Timbuctoo is funded by
  * The Huygens Institute (indefinite)
  * CLARIAH.nl (until ...)
  * NDE (funding ends december 2016)
+ 
+## Future ideas
+We have more ideas than we can realize, so we focus on our main features. 
+The next ideas we really want to implement, but we do not see the time to do it soon:
+* [Run a cluster of Timbuctoo instances](https://github.com/HuygensING/neo4j-cluster-test) based on a Neo4j HA-cluster.
 
