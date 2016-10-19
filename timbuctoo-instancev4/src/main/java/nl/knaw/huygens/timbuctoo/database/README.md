@@ -42,6 +42,54 @@ DataAccess will solve both problems by becoming the only way to access the datab
         * throw a distinct Exception when the client tries to save a relation with different source, target or type.
             * we want to be sure the client updates the right relation.
             * throw a new custom exception.
+            
+## Dataflow
+The picture below describes the data flow of the update or the retrieval of an entity.
+```
++-----------------------------------------------------------+------------------------------------------------------------------+--------------------------------------+
+|                                                           |                                                                  |                                      |
+|                                                           |                                                                  |                                      |
+|       Client API                                          |                Domain                                            |         Database                     |
+|                                                           |                                                                  |                                      |
+| +------------------+                                      |                                                                  |                                      |
+| |                  |                                      |           +----------------------+                               |                                      |
+| |   SingleEntity   |                                      |           |                      |                               |                                      |
+| |                  |                                      |           |   TimbuctooActions   |                               |                                      |
+| +----------+-------+                                      |           |                      |                               |                                      |
+|            |                                              |           +----^----------+------+                               |                                      |
+|            |        +---------------------+               |                |          |                                      |                                      |
+|            |        |                     +--------------------------------+          |     +-------------------------+      |      +-------------------------+     |
+|            +-------->   JsonCrudService   |               |                           |     |                         |  Implements |                         |     |
+|                     |                     |               |                           +----->   DataStoreOperations   <-------------+   TinkerPopOperations   |     |
+|                     +---------------------+               |                                 |                         |      |      |                         |     |
+|                                                           |                                 +-------------------------+      |      +-------------------------+     |
+|                                                           |                                                                  |                                      |
+|                                                           |                                                                  |                                      |
+|                                                           |                                                                  |                                      |
+|                                                           |                                                                  |                                      |
+|                                                           |                                                                  |                                      |
+|                                                           |                                                                  |                                      |
++-----------------------------------------------------------+------------------------------------------------------------------+--------------------------------------+
+```
+
+### Client API
+The client API is our REST API. This where the client request arrive
+#### SingleEntity
+'SingleEntity' is the REST endpoint that is used for updating an retrieving entities. 
+#### JsonCrudService
+'JsonCrudService' translates the Json input of the REST endpoints to Entity (a data transfer object).
+
+### Domain
+Domain contains all the actions that are specific for Timbuctoo. 
+#### TimbuctooActions
+'TimbuctooActions' is the interface for interacting with the database from the client.
+This class manages the Timbuctoo specific information, for example the way the id's look.
+#### DataStoreOperations
+'DataStoreOperations' is an interface that contains all the methods needed by 'TimbuctooActions'.
+To support a new database this class should be implemented.
+
+### Database
+'TinkerPopOperations' is our implementation of DataStoreOperations.
  
 ## Data model
 ### Entity
