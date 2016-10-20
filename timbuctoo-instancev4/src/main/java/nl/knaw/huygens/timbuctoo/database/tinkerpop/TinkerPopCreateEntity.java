@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TransactionState;
 import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
@@ -14,7 +14,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-public class TinkerPopCreateEntity implements Function<DataAccessMethods, TransactionStateAndResult<TransactionState>> {
+public class TinkerPopCreateEntity
+  implements Function<DataStoreOperations, TransactionStateAndResult<TransactionState>> {
   public static final Logger LOG = LoggerFactory.getLogger(TinkerPopCreateEntity.class);
   private final Collection col;
   private final Optional<Collection> baseCollection;
@@ -34,9 +35,9 @@ public class TinkerPopCreateEntity implements Function<DataAccessMethods, Transa
   }
 
   @Override
-  public TransactionStateAndResult<TransactionState> apply(DataAccessMethods dataAccessMethods) {
+  public TransactionStateAndResult<TransactionState> apply(DataStoreOperations dataStoreOperations) {
     try {
-      dataAccessMethods.createEntity(col, baseCollection, input);
+      dataStoreOperations.createEntity(col, baseCollection, input);
       return TransactionStateAndResult.commitAndReturn(TransactionState.commit());
     } catch (IOException e) {
       LOG.error("Failing to create a new entity", e);

@@ -40,20 +40,20 @@ import static org.mockito.Mockito.mock;
 
 public class LoadSaveVreTest {
 
-  private Tuple<DataAccess, Graph> initGraph() {
+  private Tuple<TransactionEnforcer, Graph> initGraph() {
     return initGraph(c -> {
     });
   }
 
-  private Tuple<DataAccess, Graph> initGraph(Consumer<TestGraphBuilder> init) {
+  private Tuple<TransactionEnforcer, Graph> initGraph(Consumer<TestGraphBuilder> init) {
     TestGraphBuilder testGraphBuilder = newGraph();
     init.accept(testGraphBuilder);
     GraphWrapper wrap = testGraphBuilder.wrap();
-    return tuple(new DataAccess(wrap, null, null, mock(HandleAdder.class)), wrap.getGraph());
+    return tuple(new TransactionEnforcer(wrap, null, null, mock(HandleAdder.class)), wrap.getGraph());
   }
 
-  private List<Vertex> save(Vre vre, Tuple<DataAccess, Graph> dataAccess) {
-    try (DataAccessMethods db = dataAccess.getLeft().start()) {
+  private List<Vertex> save(Vre vre, Tuple<TransactionEnforcer, Graph> dataAccess) {
+    try (DataStoreOperations db = dataAccess.getLeft().start()) {
       db.saveVre(vre);
       db.success();
 
@@ -61,8 +61,8 @@ public class LoadSaveVreTest {
     }
   }
 
-  private Vre load(Tuple<DataAccess, Graph> dataAccess) {
-    try (DataAccessMethods db = dataAccess.getLeft().start()) {
+  private Vre load(Tuple<TransactionEnforcer, Graph> dataAccess) {
+    try (DataStoreOperations db = dataAccess.getLeft().start()) {
       return db.loadVres().getVre("VreName");
     }
   }

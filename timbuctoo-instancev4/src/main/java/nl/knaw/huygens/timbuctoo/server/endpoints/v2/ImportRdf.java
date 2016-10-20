@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
@@ -23,20 +23,20 @@ public class ImportRdf {
   private final TinkerpopGraphManager graphWrapper;
   private Vres vres;
   private ExecutorService rfdExecutorService;
-  private final DataAccess dataAccess;
+  private final TransactionEnforcer transactionEnforcer;
 
   public ImportRdf(TinkerpopGraphManager graphWrapper, Vres vres, ExecutorService rfdExecutorService,
-                   DataAccess dataAccess) {
+                   TransactionEnforcer transactionEnforcer) {
     this.graphWrapper = graphWrapper;
     this.vres = vres;
     this.rfdExecutorService = rfdExecutorService;
-    this.dataAccess = dataAccess;
+    this.transactionEnforcer = transactionEnforcer;
   }
 
   @Consumes("application/n-quads")
   @POST
   public void post(String rdfString, @HeaderParam("VRE_ID") String vreName) {
-    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, dataAccess);
+    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, transactionEnforcer);
     final ByteArrayInputStream rdfInputStream = new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8));
     final ImportRunner importRunner = new ImportRunner(rdfImporter, rdfInputStream);
 
@@ -49,7 +49,7 @@ public class ImportRdf {
                      @FormDataParam("VRE_ID") String vreNameInput) {
 
     final String vreName = vreNameInput != null && vreNameInput.length() > 0 ? vreNameInput : "RdfImport";
-    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, dataAccess);
+    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, transactionEnforcer);
     rdfImporter.importRdf(rdfInputStream, Lang.NQUADS);
   }
 

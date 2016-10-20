@@ -11,7 +11,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 public class TinkerPopCreateRelation
-  implements Function<DataAccessMethods, TransactionStateAndResult<CreateMessage>> {
+  implements Function<DataStoreOperations, TransactionStateAndResult<CreateMessage>> {
   private static final Logger LOG = LoggerFactory.getLogger(TinkerPopCreateRelation.class);
   private final Collection collection;
   private final CreateRelation createRelation;
@@ -22,9 +22,9 @@ public class TinkerPopCreateRelation
   }
 
   @Override
-  public TransactionStateAndResult<CreateMessage> apply(DataAccessMethods dataAccessMethods) {
+  public TransactionStateAndResult<CreateMessage> apply(DataStoreOperations dataStoreOperations) {
     try {
-      UUID id = dataAccessMethods.acceptRelation(
+      UUID id = dataStoreOperations.acceptRelation(
         createRelation.getSourceId(),
         createRelation.getTypeId(),
         createRelation.getTargetId(),

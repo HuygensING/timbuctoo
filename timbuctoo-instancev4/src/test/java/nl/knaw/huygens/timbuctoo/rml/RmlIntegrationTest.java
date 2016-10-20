@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDe
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
@@ -219,17 +219,18 @@ public class RmlIntegrationTest {
 
   public class IntegrationTester {
     private final TinkerpopGraphManager graphManager;
-    private final DataAccess dataAccess;
+    private final TransactionEnforcer transactionEnforcer;
     private final DatabaseConfiguredVres vres;
     public final GraphTraversalSource traversalSource;
 
     public IntegrationTester() {
       graphManager = newGraph().wrap();
       traversalSource = graphManager.getGraph().traversal();
-      dataAccess = new DataAccess(graphManager, null, mock(ChangeListener.class), mock(HandleAdder.class));
-      new ScaffoldMigrator(dataAccess).execute();
+      transactionEnforcer = new TransactionEnforcer(graphManager, null, mock(ChangeListener.class),
+        mock(HandleAdder.class));
+      new ScaffoldMigrator(transactionEnforcer).execute();
 
-      vres = new DatabaseConfiguredVres(dataAccess);
+      vres = new DatabaseConfiguredVres(transactionEnforcer);
     }
 
     public void executeRawUpload(String vreName, String collectionName, List<Map<String, String>> data) {
@@ -258,7 +259,7 @@ public class RmlIntegrationTest {
         new JenaBasedReader(),
         alwaysAllowed,
         new DataSourceFactory(graphManager),
-        dataAccess
+        transactionEnforcer
       );
 
       return executeRml.post(

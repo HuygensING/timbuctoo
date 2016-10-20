@@ -78,8 +78,8 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
-public class DataAccessMethods implements AutoCloseable {
-  private static final Logger LOG = LoggerFactory.getLogger(DataAccessMethods.class);
+public class DataStoreOperations implements AutoCloseable {
+  private static final Logger LOG = LoggerFactory.getLogger(DataStoreOperations.class);
   private final Transaction transaction;
   private final ChangeListener listener;
   private final EntityFetcher entityFetcher;
@@ -92,8 +92,8 @@ public class DataAccessMethods implements AutoCloseable {
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
-  DataAccessMethods(GraphWrapper graphWrapper, ChangeListener listener,
-                    EntityFetcher entityFetcher, Vres mappings, HandleAdder handleAdder) {
+  DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener,
+                      EntityFetcher entityFetcher, Vres mappings, HandleAdder handleAdder) {
     graph = graphWrapper.getGraph();
     this.handleAdder = handleAdder;
     this.transaction = graph.tx();

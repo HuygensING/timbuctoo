@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.CustomRelationProperties;
-import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.junit.Before;
@@ -27,7 +27,7 @@ public class TinkerPopGetCollectionTest {
   private Collection collection;
   private CustomEntityProperties entityProps;
   private CustomRelationProperties relationProps;
-  private DataAccessMethods dataAccessMethods;
+  private DataStoreOperations dataStoreOperations;
   private TinkerPopGetCollection instance;
   private Function<ReadEntity, String> toStringFunction;
   private ReadEntity readEntity1;
@@ -38,14 +38,14 @@ public class TinkerPopGetCollectionTest {
     collection = mock(Collection.class);
     entityProps = mock(CustomEntityProperties.class);
     relationProps = mock(CustomRelationProperties.class);
-    dataAccessMethods = mock(DataAccessMethods.class);
+    dataStoreOperations = mock(DataStoreOperations.class);
     readEntity2 = mock(ReadEntity.class);
     readEntity1 = mock(ReadEntity.class);
-    Mockito.when(dataAccessMethods.getCollection(collection, ROWS, START, WITH_RELATIONS, entityProps, relationProps))
+    Mockito.when(dataStoreOperations.getCollection(collection, ROWS, START, WITH_RELATIONS, entityProps, relationProps))
            .thenReturn(Lists.newArrayList(readEntity1, readEntity2).stream());
     instance =
       new TinkerPopGetCollection(collection, START, ROWS, WITH_RELATIONS, entityProps, relationProps,
-        dataAccessMethods);
+        dataStoreOperations);
     toStringFunction = readEntity -> readEntity.toString();
   }
 
@@ -53,11 +53,11 @@ public class TinkerPopGetCollectionTest {
   public void mapRetrievesTheDataAndThenClosesTheTransaction() {
     instance.map(toStringFunction);
 
-    InOrder inOrder = inOrder(dataAccessMethods);
-    inOrder.verify(dataAccessMethods)
+    InOrder inOrder = inOrder(dataStoreOperations);
+    inOrder.verify(dataStoreOperations)
            .getCollection(collection, ROWS, START, WITH_RELATIONS, entityProps, relationProps);
-    inOrder.verify(dataAccessMethods).success();
-    inOrder.verify(dataAccessMethods).close();
+    inOrder.verify(dataStoreOperations).success();
+    inOrder.verify(dataStoreOperations).close();
   }
 
   @Test

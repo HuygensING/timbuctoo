@@ -12,26 +12,26 @@ import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
-public class DataAccessMethodsTest {
+public class TransactionEnforcerMethodsTest {
 
   @Test
   public void emptyDatabaseIsShownAsEmpty() throws Exception {
-    DataAccess dataAccess = new DataAccess(newGraph().wrap(), null, null, null);
-    try (DataAccessMethods db = dataAccess.start()) {
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(newGraph().wrap(), null, null, null);
+    try (DataStoreOperations db = transactionEnforcer.start()) {
       assertThat(db.databaseIsEmptyExceptForMigrations(), is(true));
     }
   }
 
   @Test
   public void nonEmptyDatabaseIsShownAsFull() throws Exception {
-    DataAccess dataAccess = new DataAccess(newGraph()
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(newGraph()
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap(),
       null,
       null,
       null);
-    try (DataAccessMethods db = dataAccess.start()) {
+    try (DataStoreOperations db = transactionEnforcer.start()) {
       assertThat(db.databaseIsEmptyExceptForMigrations(), is(false));
     }
   }
@@ -42,11 +42,11 @@ public class DataAccessMethodsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
-    DataAccess dataAccess = new DataAccess(graphWrapper,
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(graphWrapper,
       null,
       null,
       null);
-    try (DataAccessMethods db = dataAccess.start()) {
+    try (DataStoreOperations db = transactionEnforcer.start()) {
       db.ensureVreExists("SomeVre");
       assertThat(
         graphWrapper.getGraph().traversal().V()

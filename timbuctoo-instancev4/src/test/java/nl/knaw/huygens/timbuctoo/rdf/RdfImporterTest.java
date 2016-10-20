@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
@@ -32,12 +32,12 @@ public class RdfImporterTest {
   @Test
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
     TinkerpopGraphManager graphWrapper = newGraph().wrap();
-    DataAccess dataAccess = mock(DataAccess.class);
-    DataAccessMethods db = mock(DataAccessMethods.class);
-    given(dataAccess.start()).willReturn(db);
-    Mockito.doCallRealMethod().when(dataAccess).execute(org.mockito.Matchers.any());
+    TransactionEnforcer transactionEnforcer = mock(TransactionEnforcer.class);
+    DataStoreOperations db = mock(DataStoreOperations.class);
+    given(transactionEnforcer.start()).willReturn(db);
+    Mockito.doCallRealMethod().when(transactionEnforcer).execute(org.mockito.Matchers.any());
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), dataAccess, processor);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), transactionEnforcer, processor);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
@@ -48,11 +48,11 @@ public class RdfImporterTest {
 
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
-    DataAccess dataAccess = mock(DataAccess.class);
+    TransactionEnforcer transactionEnforcer = mock(TransactionEnforcer.class);
     TinkerpopGraphManager graphWrapper = newGraph().wrap();
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, dataAccess, processor);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, transactionEnforcer, processor);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 

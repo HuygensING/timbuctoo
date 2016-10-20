@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
@@ -100,10 +100,11 @@ public class JsonCrudServiceBuilder {
   }
 
   public JsonCrudService build() {
-    DataAccess dataAccess = new DataAccess(graphWrapper, entityFetcher, changeListener, vres, handleAdder);
+    TransactionEnforcer
+      transactionEnforcer = new TransactionEnforcer(graphWrapper, entityFetcher, changeListener, vres, handleAdder);
     return new JsonCrudService(vres, userStore,
       relationUrlGenerator, clock,
-      new TimbuctooDbAccess(authorizer,dataAccess, clock, handleAdder)
+      new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder)
       );
   }
 

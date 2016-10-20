@@ -26,16 +26,17 @@ import static nl.knaw.huygens.timbuctoo.database.DeleteMessage.DeleteStatus.NOT_
 /**
  * This class is performs all the steps needed to save entities relations, etc.
  */
-public class TimbuctooDbAccess {
+public class TimbuctooActions {
 
   private final Authorizer authorizer;
-  private final DataAccess dataAccess;
+  private final TransactionEnforcer transactionEnforcer;
   private final Clock clock;
   private final HandleAdder handleAdder;
 
-  public TimbuctooDbAccess(Authorizer authorizer, DataAccess dataAccess, Clock clock, HandleAdder handleAdder) {
+  public TimbuctooActions(Authorizer authorizer, TransactionEnforcer transactionEnforcer, Clock clock,
+                          HandleAdder handleAdder) {
     this.authorizer = authorizer;
-    this.dataAccess = dataAccess;
+    this.transactionEnforcer = transactionEnforcer;
     this.clock = clock;
     this.handleAdder = handleAdder;
   }
@@ -49,7 +50,7 @@ public class TimbuctooDbAccess {
     Change created = createChange(userId);
     createEntity.setCreated(created);
 
-    TransactionState transactionState = dataAccess.createEntity(collection, baseCollection, createEntity);
+    TransactionState transactionState = transactionEnforcer.createEntity(collection, baseCollection, createEntity);
 
     if (transactionState.wasCommitted()) {
       handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, 1));
@@ -64,7 +65,7 @@ public class TimbuctooDbAccess {
 
     updateEntity.setModified(createChange(userId));
 
-    UpdateReturnMessage updateReturnMessage = dataAccess.updateEntity(collection, updateEntity);
+    UpdateReturnMessage updateReturnMessage = transactionEnforcer.updateEntity(collection, updateEntity);
 
     switch (updateReturnMessage.getStatus()) {
       case SUCCESS:
@@ -86,7 +87,7 @@ public class TimbuctooDbAccess {
     throws AuthorizationUnavailableException, AuthorizationException, NotFoundException {
     checkIfAllowedToWrite(userId, collection);
 
-    DeleteMessage deleteMessage = dataAccess.deleteEntity(collection, uuid, createChange(userId));
+    DeleteMessage deleteMessage = transactionEnforcer.deleteEntity(collection, uuid, createChange(userId));
     if (deleteMessage.getStatus() == NOT_FOUND) {
       throw new NotFoundException();
     }
@@ -109,7 +110,7 @@ public class TimbuctooDbAccess {
   public ReadEntity getEntity(Collection collection, UUID id, Integer rev,
                               CustomEntityProperties customEntityPros,
                               CustomRelationProperties customRelationProps) throws NotFoundException {
-    GetMessage getMessage = dataAccess.getEntity(collection, id, rev, customEntityPros, customRelationProps);
+    GetMessage getMessage = transactionEnforcer.getEntity(collection, id, rev, customEntityPros, customRelationProps);
 
     switch (getMessage.getStatus()) {
       case SUCCESS:
@@ -124,7 +125,7 @@ public class TimbuctooDbAccess {
   public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
                                               boolean withRelations, CustomEntityProperties entityProps,
                                               CustomRelationProperties relationProps) {
-    return dataAccess.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
+    return transactionEnforcer.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 
 
@@ -136,7 +137,7 @@ public class TimbuctooDbAccess {
     // createRelation.setId(id);
     createRelation.setCreated(createChange(userId));
 
-    CreateMessage createMessage = dataAccess.createRelation(collection, createRelation);
+    CreateMessage createMessage = transactionEnforcer.createRelation(collection, createRelation);
     if (!createMessage.succeeded()) {
       throw new IOException(createMessage.getErrorMessage().get());
     }
@@ -151,7 +152,7 @@ public class TimbuctooDbAccess {
 
     updateRelation.setModified(createChange(userId));
 
-    UpdateReturnMessage updateMessage = dataAccess.updateRelation(collection, updateRelation);
+    UpdateReturnMessage updateMessage = transactionEnforcer.updateRelation(collection, updateRelation);
 
     if (updateMessage.getStatus() == UpdateReturnMessage.UpdateStatus.NOT_FOUND) {
       throw new NotFoundException();

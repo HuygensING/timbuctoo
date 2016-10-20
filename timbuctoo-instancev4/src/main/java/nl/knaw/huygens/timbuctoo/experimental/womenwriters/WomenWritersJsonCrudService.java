@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.CustomRelationProperties;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper.ExtraEntityMappingOptions;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper.ExtraRelationMappingOptions;
@@ -48,13 +48,13 @@ public class WomenWritersJsonCrudService {
 
   public static final Logger LOG = LoggerFactory.getLogger(WomenWritersJsonCrudService.class);
   private final Vres mappings;
-  private final TimbuctooDbAccess timDbAccess;
+  private final TimbuctooActions timDbAccess;
   private final EntityToJsonMapper entityToJsonMapper;
 
   public WomenWritersJsonCrudService(Vres mappings,
                                      UserStore userStore,
                                      UrlGenerator relationUrlFor,
-                                     TimbuctooDbAccess timDbAccess) {
+                                     TimbuctooActions timDbAccess) {
     this.mappings = mappings;
     this.timDbAccess = timDbAccess;
     entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);

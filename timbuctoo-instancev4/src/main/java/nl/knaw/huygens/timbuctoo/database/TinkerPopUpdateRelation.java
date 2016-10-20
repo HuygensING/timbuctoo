@@ -10,7 +10,7 @@ import java.time.Instant;
 import java.util.function.Function;
 
 public class TinkerPopUpdateRelation
-  implements Function<DataAccessMethods, TransactionStateAndResult<UpdateReturnMessage>> {
+  implements Function<DataStoreOperations, TransactionStateAndResult<UpdateReturnMessage>> {
   private static final Logger LOG = LoggerFactory.getLogger(TinkerPopUpdateRelation.class);
   private final Collection collection;
   private final UpdateRelation updateRelation;
@@ -21,9 +21,9 @@ public class TinkerPopUpdateRelation
   }
 
   @Override
-  public TransactionStateAndResult<UpdateReturnMessage> apply(DataAccessMethods dataAccessMethods) {
+  public TransactionStateAndResult<UpdateReturnMessage> apply(DataStoreOperations dataStoreOperations) {
     try {
-      dataAccessMethods
+      dataStoreOperations
         .replaceRelation(collection, updateRelation.getId(), updateRelation.getRev(), updateRelation.getAccepted(),
           updateRelation.getModified().getUserId(),
           Instant.ofEpochMilli(updateRelation.getModified().getTimeStamp()));

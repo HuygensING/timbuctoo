@@ -19,8 +19,8 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
@@ -182,16 +182,17 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
-    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, changeListeners, handleAdder);
-    TimbuctooDbAccess timDbAccess = new TimbuctooDbAccess(
+    TransactionEnforcer
+      transactionEnforcer = new TransactionEnforcer(graphManager, entityFetcher, changeListeners, handleAdder);
+    TimbuctooActions timDbAccess = new TimbuctooActions(
       authorizer,
-      dataAccess,
+      transactionEnforcer,
       Clock.systemDefaultZone(),
       handleAdder
     );
-    graphManager.onGraph(g -> new ScaffoldMigrator(dataAccess).execute());
+    graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
 
-    final Vres vres = new DatabaseConfiguredVres(dataAccess);
+    final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
     final JsonCrudService crudService = new JsonCrudService(
       vres,
       userStore,
@@ -244,7 +245,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
-      new DataSourceFactory(graphManager), dataAccess);
+      new DataSourceFactory(graphManager), transactionEnforcer);
     register(environment, executeRml);
     BulkUploadVre bulkUploadVre =
       new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker);
@@ -258,7 +259,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new MyVres(loggedInUserStore, authorizer, vres, bulkUploadVre));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
-    register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, dataAccess));
+    register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));

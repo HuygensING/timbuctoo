@@ -26,13 +26,13 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-public class TimbuctooDbAccessReplaceTest {
+public class TimbuctooActionsReplaceTest {
 
   public static final int NEW_REV = 1;
   public static final String COLLECTION_NAME = "collection";
   public static final UUID ID = UUID.randomUUID();
   private static final String USER_ID = "userId";
-  private DataAccess dataAccess;
+  private TransactionEnforcer transactionEnforcer;
   private Clock clock;
   private HandleAdder handleAdder;
   private UpdateEntity updateEntity;
@@ -41,7 +41,7 @@ public class TimbuctooDbAccessReplaceTest {
 
   @Before
   public void setUp() throws Exception {
-    dataAccess = mock(DataAccess.class);
+    transactionEnforcer = mock(TransactionEnforcer.class);
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
@@ -54,48 +54,48 @@ public class TimbuctooDbAccessReplaceTest {
 
   @Test(expected = AuthorizationException.class)
   public void replaceEntityThrowsAnUnauthorizedExceptionWhenTheUserIsNotAllowedToWrite() throws Exception {
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(notAllowedToWrite(), dataAccess, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     try {
       instance.replaceEntity(collection, updateEntity, USER_ID);
     } finally {
-      verifyZeroInteractions(dataAccess);
+      verifyZeroInteractions(transactionEnforcer);
     }
   }
 
   @Test
   public void replaceEntityAddsAHandleAfterASuccessfulUpdate() throws Exception {
-    when(dataAccess.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
-    InOrder inOrder = inOrder(dataAccess, handleAdder);
-    inOrder.verify(dataAccess).updateEntity(collection, updateEntity);
+    InOrder inOrder = inOrder(transactionEnforcer, handleAdder);
+    inOrder.verify(transactionEnforcer).updateEntity(collection, updateEntity);
     inOrder.verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV));
 
   }
 
   @Test
   public void replaceEntityAddsTheModifiedPropertyToUpdateEntityBeforeExecutingTheUpdate() throws Exception {
-    when(dataAccess.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
-    InOrder inOrder = inOrder(dataAccess, updateEntity);
+    InOrder inOrder = inOrder(transactionEnforcer, updateEntity);
     inOrder.verify(updateEntity).setModified(argThat(allOf(
       hasProperty("timeStamp", is(instant.toEpochMilli())),
       hasProperty("userId", is(USER_ID))
     )));
-    inOrder.verify(dataAccess).updateEntity(collection, updateEntity);
+    inOrder.verify(transactionEnforcer).updateEntity(collection, updateEntity);
   }
 
   @Test(expected = NotFoundException.class)
   public void replaceEntityThrowsANotFoundExceptionWhenExecuteAndReturnReturnsAnUpdateStatusNotFound()
     throws Exception {
-    when(dataAccess.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.notFound());
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.notFound());
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
   }
@@ -103,8 +103,8 @@ public class TimbuctooDbAccessReplaceTest {
   @Test(expected = AlreadyUpdatedException.class)
   public void replaceEntityThrowsAnAlreadyUpdatedExceptionWhenExecuteAndReturnReturnsAnUpdateStatusAlreadyUpdated()
     throws Exception {
-    when(dataAccess.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.allreadyUpdated());
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.allreadyUpdated());
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
   }

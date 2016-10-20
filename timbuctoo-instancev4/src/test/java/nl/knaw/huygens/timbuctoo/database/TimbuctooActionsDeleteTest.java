@@ -19,11 +19,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-public class TimbuctooDbAccessDeleteTest {
+public class TimbuctooActionsDeleteTest {
 
   public static final String USER_ID = "userId";
   public static final UUID ID = UUID.randomUUID();
-  private DataAccess dataAccess;
+  private TransactionEnforcer transactionEnforcer;
   private Clock clock;
   private HandleAdder handleAdder;
   private Collection collection;
@@ -32,7 +32,7 @@ public class TimbuctooDbAccessDeleteTest {
 
   @Before
   public void setUp() throws Exception {
-    dataAccess = mock(DataAccess.class);
+    transactionEnforcer = mock(TransactionEnforcer.class);
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
@@ -45,29 +45,29 @@ public class TimbuctooDbAccessDeleteTest {
 
   @Test
   public void deleteEntityLetsDataAccessDeleteTheEntity() throws Exception {
-    when(dataAccess.deleteEntity(collection, ID, change)).thenReturn(DeleteMessage.success());
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    when(transactionEnforcer.deleteEntity(collection, ID, change)).thenReturn(DeleteMessage.success());
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     instance.deleteEntity(collection, ID, USER_ID);
 
-    verify(dataAccess).deleteEntity(collection, ID, change);
+    verify(transactionEnforcer).deleteEntity(collection, ID, change);
   }
 
   @Test(expected = AuthorizationException.class)
   public void deleteEntityThrowsAnUnAuthrozedExceptionIfTheUserIsNotAllowedToWriteTheCollection() throws Exception {
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(notAllowedToWrite(), dataAccess, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     try {
       instance.deleteEntity(collection, ID, USER_ID);
     } finally {
-      verifyZeroInteractions(dataAccess);
+      verifyZeroInteractions(transactionEnforcer);
     }
   }
 
   @Test(expected = NotFoundException.class)
   public void deleteEntityThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
-    when(dataAccess.deleteEntity(collection, ID, change)).thenReturn(DeleteMessage.notFound());
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    when(transactionEnforcer.deleteEntity(collection, ID, change)).thenReturn(DeleteMessage.notFound());
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     instance.deleteEntity(collection, ID, USER_ID);
   }

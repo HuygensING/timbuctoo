@@ -22,7 +22,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 
-public class DataAccess {
+public class TransactionEnforcer {
 
   private final GraphWrapper graphwrapper;
   private final EntityFetcher entityFetcher;
@@ -30,8 +30,8 @@ public class DataAccess {
   private final Vres mappings;
   private final HandleAdder handleAdder;
 
-  public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, ChangeListener listener,
-                    HandleAdder handleAdder) {
+  public TransactionEnforcer(GraphWrapper graphwrapper, EntityFetcher entityFetcher, ChangeListener listener,
+                             HandleAdder handleAdder) {
     this(graphwrapper, entityFetcher, listener, null, handleAdder);
   }
 
@@ -39,8 +39,8 @@ public class DataAccess {
    * @deprecated Use the constructor without the mappings.
    */
   @Deprecated
-  public DataAccess(GraphWrapper graphwrapper, EntityFetcher entityFetcher, ChangeListener listener, Vres mappings,
-                    HandleAdder handleAdder) {
+  public TransactionEnforcer(GraphWrapper graphwrapper, EntityFetcher entityFetcher, ChangeListener listener,
+                             Vres mappings, HandleAdder handleAdder) {
     this.graphwrapper = graphwrapper;
     this.entityFetcher = entityFetcher;
     this.listener = listener;
@@ -53,12 +53,12 @@ public class DataAccess {
    *     and rollback methods are always called
    */
   @Deprecated
-  public DataAccessMethods start() {
-    return new DataAccessMethods(graphwrapper, listener, entityFetcher, mappings, handleAdder);
+  public DataStoreOperations start() {
+    return new DataStoreOperations(graphwrapper, listener, entityFetcher, mappings, handleAdder);
   }
 
-  public <T> T executeAndReturn(Function<DataAccessMethods, TransactionStateAndResult<T>> actions) {
-    DataAccessMethods db = start();
+  public <T> T executeAndReturn(Function<DataStoreOperations, TransactionStateAndResult<T>> actions) {
+    DataStoreOperations db = start();
 
     try {
       TransactionStateAndResult<T> result = actions.apply(db);
@@ -76,8 +76,8 @@ public class DataAccess {
     }
   }
 
-  public void execute(Function<DataAccessMethods, TransactionState> actions) {
-    DataAccessMethods db = start();
+  public void execute(Function<DataStoreOperations, TransactionState> actions) {
+    DataStoreOperations db = start();
 
     try {
       TransactionState result = actions.apply(db);

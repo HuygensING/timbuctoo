@@ -31,10 +31,10 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-public class TimbuctooDbAccessCreateTest {
+public class TimbuctooActionsCreateTest {
 
   public static final String COLLECTION_NAME = "collectionName";
-  private DataAccess dataAccess;
+  private TransactionEnforcer transactionEnforcer;
   private Clock clock;
   private Instant instant;
   private Collection collection;
@@ -46,9 +46,9 @@ public class TimbuctooDbAccessCreateTest {
 
   @Before
   public void setUp() throws Exception {
-    dataAccess = mock(DataAccess.class);
+    transactionEnforcer = mock(TransactionEnforcer.class);
     transactionState = mock(TransactionState.class);
-    when(dataAccess.createEntity(any(), any(), any())).thenReturn(transactionState);
+    when(transactionEnforcer.createEntity(any(), any(), any())).thenReturn(transactionState);
     when(transactionState.wasCommitted()).thenReturn(false);
 
     clock = mock(Clock.class);
@@ -65,35 +65,35 @@ public class TimbuctooDbAccessCreateTest {
   @Test(expected = AuthorizationException.class)
   public void createEntityThrowsAnAuthorizationExceptionWhenTheUserIsNotAllowedToWriteToTheCollection()
     throws Exception {
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(notAllowedToWrite(), dataAccess, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     try {
       instance.createEntity(mock(Collection.class), baseCollection, new CreateEntity(Lists.newArrayList()), "userId");
     } finally {
-      verifyZeroInteractions(dataAccess);
+      verifyZeroInteractions(transactionEnforcer);
     }
   }
 
 
   @Test
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
-    InOrder inOrder = inOrder(dataAccess, createEntity);
+    InOrder inOrder = inOrder(transactionEnforcer, createEntity);
     inOrder.verify(createEntity).setId(id);
     inOrder.verify(createEntity).setCreated(argThat(allOf(
       hasProperty("userId", is(userId)),
       hasProperty("timeStamp", is(instant.toEpochMilli()))
       ))
     );
-    inOrder.verify(dataAccess).createEntity(collection, baseCollection, this.createEntity);
+    inOrder.verify(transactionEnforcer).createEntity(collection, baseCollection, this.createEntity);
   }
 
   @Test
   public void createEntityReturnsTheId() throws Exception {
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -103,7 +103,7 @@ public class TimbuctooDbAccessCreateTest {
   @Test
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
     when(transactionState.wasCommitted()).thenReturn(true);
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -113,7 +113,7 @@ public class TimbuctooDbAccessCreateTest {
   @Test
   public void createEntityDoesNotCallTheHandleAdderWhenTheTransactionIsRolledBack() throws Exception {
     when(transactionState.wasCommitted()).thenReturn(false);
-    TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 

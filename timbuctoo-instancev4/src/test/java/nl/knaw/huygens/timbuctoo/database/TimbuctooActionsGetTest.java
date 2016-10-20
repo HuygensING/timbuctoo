@@ -10,37 +10,38 @@ import org.junit.Test;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
+import static nl.knaw.huygens.timbuctoo.database.GetMessage.notFound;
+import static nl.knaw.huygens.timbuctoo.database.GetMessage.success;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TimbuctooDbAccessGetTest {
+public class TimbuctooActionsGetTest {
 
   private static final UUID ID = UUID.randomUUID();
   private static final Integer rev = 1;
   private CustomEntityProperties entityProps;
   private CustomRelationProperties relationProps;
-  private DataAccess dataAccess;
-  private TimbuctooDbAccess instance;
+  private TransactionEnforcer transactionEnforcer;
+  private TimbuctooActions instance;
   private Collection collection;
-  private boolean withRelations;
+  private boolean withRelations = false;
 
   @Before
   public void setUp() throws Exception {
     entityProps = mock(CustomEntityProperties.class);
     relationProps = mock(CustomRelationProperties.class);
-    dataAccess = mock(DataAccess.class);
-    instance = new TimbuctooDbAccess(null, dataAccess, null, null);
+    transactionEnforcer = mock(TransactionEnforcer.class);
+    instance = new TimbuctooActions(null, transactionEnforcer, null, null);
     collection = mock(Collection.class);
   }
 
   @Test(expected = NotFoundException.class)
   public void getEntityThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
-    when(dataAccess.getEntity(collection, ID, rev, entityProps, relationProps)).thenReturn(GetMessage.notFound());
+    when(transactionEnforcer.getEntity(collection, ID, rev, entityProps, relationProps)).thenReturn(notFound());
 
     instance.getEntity(collection, ID, rev, entityProps, relationProps);
   }
@@ -48,8 +49,8 @@ public class TimbuctooDbAccessGetTest {
   @Test
   public void getEntityReturnsTheReadEntity() throws Exception {
     ReadEntity readEntity = mock(ReadEntity.class);
-    when(dataAccess.getEntity(collection, ID, rev, entityProps, relationProps))
-      .thenReturn(GetMessage.success(readEntity));
+    when(transactionEnforcer.getEntity(collection, ID, rev, entityProps, relationProps))
+      .thenReturn(success(readEntity));
 
     ReadEntity actualEntity = instance.getEntity(collection, ID, rev, entityProps, relationProps);
 
@@ -61,10 +62,10 @@ public class TimbuctooDbAccessGetTest {
     DataStream<ReadEntity> entities = mockDataStream();
     int start = 0;
     int rows = 10;
-    when(dataAccess.getCollection(collection, start, rows, withRelations, entityProps, relationProps))
+    when(transactionEnforcer.getCollection(collection, start, rows, withRelations, entityProps, relationProps))
       .thenReturn(entities);
 
-    DataStream<ReadEntity> result = 
+    DataStream<ReadEntity> result =
       instance.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
 
     assertThat(result, is(sameInstance(entities)));

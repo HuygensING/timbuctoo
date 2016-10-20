@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.CustomRelationProperties;
-import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.GetMessage;
 import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
@@ -13,7 +13,7 @@ import java.util.UUID;
 import java.util.function.Function;
 
 public class TinkerPopGetEntity implements
-  Function<DataAccessMethods, TransactionStateAndResult<GetMessage>> {
+  Function<DataStoreOperations, TransactionStateAndResult<GetMessage>> {
   private final Collection collection;
   private final UUID id;
   private final Integer rev;
@@ -30,9 +30,9 @@ public class TinkerPopGetEntity implements
   }
 
   @Override
-  public TransactionStateAndResult<GetMessage> apply(DataAccessMethods dataAccessMethods) {
+  public TransactionStateAndResult<GetMessage> apply(DataStoreOperations dataStoreOperations) {
     try {
-      ReadEntity entity = dataAccessMethods.getEntity(id, rev, collection, entityProps, relationProps);
+      ReadEntity entity = dataStoreOperations.getEntity(id, rev, collection, entityProps, relationProps);
       return TransactionStateAndResult.commitAndReturn(GetMessage.success(entity));
     } catch (NotFoundException e) {
       return TransactionStateAndResult.rollbackAndReturn(GetMessage.notFound());

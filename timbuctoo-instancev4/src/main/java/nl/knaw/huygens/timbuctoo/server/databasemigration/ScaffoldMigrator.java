@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -17,17 +17,17 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.d
 
 public class ScaffoldMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(ScaffoldMigrator.class);
-  private final DataAccess dataAccess;
+  private final TransactionEnforcer transactionEnforcer;
 
-  public ScaffoldMigrator(DataAccess dataAccess) {
-    this.dataAccess = dataAccess;
+  public ScaffoldMigrator(TransactionEnforcer transactionEnforcer) {
+    this.transactionEnforcer = transactionEnforcer;
   }
 
   //FIXME move to DataAccess (allow ScaffoldVresConfig.mappings to be injected as an argument)
   public void execute() {
     //The migrations are executed first, so those vertices _will_ be present, even on a new empty database
     //The code below will add vertices, so a second launch will not run this code
-    try (DataAccessMethods db = dataAccess.start()) {
+    try (DataStoreOperations db = transactionEnforcer.start()) {
       if (db.databaseIsEmptyExceptForMigrations()) {
         LOG.info("Setting up a new scaffold for empty database");
         Vres mappings = new VresBuilder()
