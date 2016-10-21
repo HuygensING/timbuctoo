@@ -32,8 +32,8 @@ class DutchCaribbeanIndexer
 
   def run
     # Scrape persons and documents from Timbuctoo
-    scrape_persons
-    scrape_documents
+    scrape_archives
+#    scrape_documents
 
     # Always run person_mapper.add_languages before @document_mapper.add_creators to ensure correct _childDocuments_
     # filters on dcardocuments index and dcardocumentreceptions index!!
@@ -44,11 +44,11 @@ class DutchCaribbeanIndexer
     puts "Found #{@document_mapper.person_receptions.length} person receptions"
     puts "Found #{@document_mapper.document_receptions.length} document receptions"
 
-    reindex_collectives
-    reindex_persons
-    reindex_documents
-    reindex_person_receptions
-    reindex_document_receptions
+    reindex_archives
+#    reindex_persons
+#    reindex_documents
+#    reindex_person_receptions
+#    reindex_document_receptions
   end
 
   private
@@ -62,34 +62,35 @@ class DutchCaribbeanIndexer
     puts "SCRAPE: #{@document_mapper.record_count} documents"
   end
 
-  def scrape_persons
-    @timbuctoo_io.scrape_collection("dcarpersons", {
-        :with_relations => true,
+  def scrape_archives
+    @timbuctoo_io.scrape_collection("dcararchives", {
+        :with_relations => false,
         :from_file => @options[:from_file],
         :process_record => @person_mapper.method(:convert)
     })
-    puts "SCRAPE: #{@person_mapper.record_count} persons"
+    puts "SCRAPE: #{@person_mapper.record_count} archives"
   end
 
-  def reindex_collectives
-    puts "DELETE collectives"
-    @solr_io.delete_data("dcarcollectives")
-    puts "UPDATE collectives"
+  def reindex_archives
+    puts "DELETE archives"
+#    @solr_io.delete_data("dcararchives")
+    puts "UPDATE archives"
     batch = []
-    batch_size = 500
-    @timbuctoo_io.scrape_collection("dcarcollectives", {
+    batch_size = 1000
+    STDERR.puts "from_file: #{@options[:from_file]}"
+    @timbuctoo_io.scrape_collection("dcararchives", {
         :process_record => -> (record) {
           batch << @collective_mapper.convert(record)
           if batch.length >= batch_size
-            @solr_io.update("dcarcollectives", batch)
+            @solr_io.update("dcararchives", batch)
             batch = []
           end
         },
         :from_file => @options[:from_file]
     })
-    @solr_io.update("dcarcollectives", batch)
-    puts "COMMIT collectives"
-    @solr_io.commit("dcarcollectives")
+    @solr_io.update("dcararchives", batch)
+    puts "COMMIT archives"
+    @solr_io.commit("dcararchives")
   end
 
   def reindex_persons
