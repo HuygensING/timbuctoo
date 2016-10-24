@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.UUID;
 import java.util.function.Function;
 
 public class TinkerPopCreateRelation
@@ -23,7 +24,7 @@ public class TinkerPopCreateRelation
   @Override
   public TransactionStateAndResult<CreateMessage> apply(DataAccessMethods dataAccessMethods) {
     try {
-      dataAccessMethods.acceptRelation(
+      UUID id = dataAccessMethods.acceptRelation(
         createRelation.getSourceId(),
         createRelation.getTypeId(),
         createRelation.getTargetId(),
@@ -31,7 +32,7 @@ public class TinkerPopCreateRelation
         createRelation.getCreated().getUserId(),
         Instant.ofEpochMilli(createRelation.getCreated().getTimeStamp())
       );
-      return TransactionStateAndResult.commitAndReturn(CreateMessage.success());
+      return TransactionStateAndResult.commitAndReturn(CreateMessage.success(id));
     } catch (RelationNotPossibleException e) {
       LOG.error("Relation could not be created", e);
       return TransactionStateAndResult.rollbackAndReturn(CreateMessage.failure(e.getMessage()));
