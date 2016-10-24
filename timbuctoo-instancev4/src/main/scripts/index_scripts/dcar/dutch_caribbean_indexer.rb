@@ -14,8 +14,10 @@ class DutchCaribbeanIndexer
   def initialize(options)
     @options = options
 
-    @person_mapper = DcarPersonMapper.new(DcarPersonConfig.get)
-    @document_mapper = DcarDocumentMapper.new(DcarDocumentConfig.get)
+#    @person_mapper = DcarPersonMapper.new(DcarPersonConfig.get)
+    @person_mapper = DefaultMapper.new(DcarPersonConfig.get)
+#    @document_mapper = DcarDocumentMapper.new(DcarDocumentConfig.get)
+    @document_mapper = DefaultMapper.new(DcarDocumentConfig.get)
     @collective_mapper = DefaultMapper.new(DcarCollectiveConfig.get)
 
     @person_reception_mapper = DcarPersonReceptionMapper.new(@person_mapper, @document_mapper)
@@ -33,30 +35,32 @@ class DutchCaribbeanIndexer
   def run
     # Scrape persons and documents from Timbuctoo
     scrape_archives
-#    scrape_documents
+#    scrape_archivers
+#    scrape legislation
 
     # Always run person_mapper.add_languages before @document_mapper.add_creators to ensure correct _childDocuments_
     # filters on dcardocuments index and dcardocumentreceptions index!!
-    @person_mapper.add_languages(@document_mapper)
-    @document_mapper.add_creators(@person_mapper)
+#    @person_mapper.add_languages(@document_mapper)
+#    @document_mapper.add_creators(@person_mapper)
 
 
-    puts "Found #{@document_mapper.person_receptions.length} person receptions"
-    puts "Found #{@document_mapper.document_receptions.length} document receptions"
+#    puts "Found #{@document_mapper.person_receptions.length} person receptions"
+#    puts "Found #{@document_mapper.document_receptions.length} document receptions"
 
     reindex_archives
-#    reindex_persons
-#    reindex_documents
+#    reindex_archivers
+#    reindex_legislation
 #    reindex_person_receptions
 #    reindex_document_receptions
   end
 
   private
 
-  def scrape_documents
-    @timbuctoo_io.scrape_collection("dcardocuments", {
-        :with_relations => true,
+  def scrape_legislation
+    @timbuctoo_io.scrape_collection("dcarlegislation", {
+        :with_relations => false,
         :from_file => @options[:from_file],
+        :batch_size => 1000,
         :process_record => @document_mapper.method(:convert)
     })
     puts "SCRAPE: #{@document_mapper.record_count} documents"
@@ -66,18 +70,19 @@ class DutchCaribbeanIndexer
     @timbuctoo_io.scrape_collection("dcararchives", {
         :with_relations => false,
         :from_file => @options[:from_file],
-        :process_record => @person_mapper.method(:convert)
+        :batch_size => 1000,
+        :process_record => @collective_mapper.method(:convert)
     })
-    puts "SCRAPE: #{@person_mapper.record_count} archives"
+    # No counter in default mapper
+#    puts "SCRAPE: #{@collective_mapper.record_count} archives"
   end
 
   def reindex_archives
     puts "DELETE archives"
-#    @solr_io.delete_data("dcararchives")
+    @solr_io.delete_data("dcararchives")
     puts "UPDATE archives"
     batch = []
     batch_size = 1000
-    STDERR.puts "from_file: #{@options[:from_file]}"
     @timbuctoo_io.scrape_collection("dcararchives", {
         :process_record => -> (record) {
           batch << @collective_mapper.convert(record)
@@ -86,29 +91,30 @@ class DutchCaribbeanIndexer
             batch = []
           end
         },
-        :from_file => @options[:from_file]
+        :from_file => @options[:from_file],
+        :batch_size => 1000
     })
     @solr_io.update("dcararchives", batch)
     puts "COMMIT archives"
     @solr_io.commit("dcararchives")
   end
 
-  def reindex_persons
-    puts "DELETE persons"
-    @solr_io.delete_data("dcarpersons")
-    puts "UPDATE persons"
-    @person_mapper.send_cached_batches_to("dcarpersons", @solr_io.method(:update))
-    puts "COMMIT persons"
-    @solr_io.commit("dcarpersons")
+  def reindex_archivers
+    puts "DELETE archivers"
+    @solr_io.delete_data("dcararchivers")
+    puts "UPDATE archivers"
+    @person_mapper.send_cached_batches_to("dcararchivers", @solr_io.method(:update))
+    puts "COMMIT archivers"
+    @solr_io.commit("dcararchivers")
   end
 
-  def reindex_documents
-    puts "DELETE documents"
-    @solr_io.delete_data("dcardocuments")
-    puts "UPDATE documents"
-    @document_mapper.send_cached_batches_to("dcardocuments", @solr_io.method(:update))
-    puts "COMMIT documents"
-    @solr_io.commit("dcardocuments")
+  def reindex_legislation
+    puts "DELETE legislation"
+    @solr_io.delete_data("dcarlegislation")
+    puts "UPDATE legislation"
+    @document_mapper.send_cached_batches_to("dcarlegislation", @solr_io.method(:update))
+    puts "COMMIT legislation"
+    @solr_io.commit("dcarlegislation")
   end
 
   def reindex_person_receptions

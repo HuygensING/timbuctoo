@@ -3,9 +3,10 @@ class DcarCollectiveConfig
     {
         :properties => [
             { :name => '_id',  :converted_name => 'id'},
-            { :name => 'name',  :converted_name => 'name_t'},
             { :name => 'type',  :converted_name => 'type_s'},
-            { :name => 'name',  :converted_name => 'displayName_s'},
+            { :name => 'titleNld',  :converted_name => 'displayName_s'},
+            { :name => 'titleEng',  :converted_name => 'titleEng_s_tim'},
+            { :name => 'titleNld',  :converted_name => 'titleNld_s_tim'},
         ]
     }
   end
