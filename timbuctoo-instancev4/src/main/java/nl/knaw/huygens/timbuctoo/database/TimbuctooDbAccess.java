@@ -132,8 +132,8 @@ public class TimbuctooDbAccess {
     throws AuthorizationUnavailableException, AuthorizationException, IOException {
     checkIfAllowedToWrite(userId, collection);
 
-    UUID id = UUID.randomUUID();
-    createRelation.setId(id);
+    // TODO make this method determine the id of the relation
+    // createRelation.setId(id);
     createRelation.setCreated(createChange(userId));
 
     CreateMessage createMessage = dataAccess.createRelation(collection, createRelation);
@@ -141,7 +141,7 @@ public class TimbuctooDbAccess {
       throw new IOException(createMessage.getErrorMessage().get());
     }
 
-    return id;
+    return createMessage.getId().get();
   }
 
 

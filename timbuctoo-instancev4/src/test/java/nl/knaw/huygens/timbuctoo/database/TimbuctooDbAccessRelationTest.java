@@ -50,13 +50,12 @@ public class TimbuctooDbAccessRelationTest {
 
   @Test
   public void createRelationCreatesANewRelation() throws Exception {
-    when(dataAccess.createRelation(collection, createRelation)).thenReturn(CreateMessage.success());
+    when(dataAccess.createRelation(collection, createRelation)).thenReturn(CreateMessage.success(UUID.randomUUID()));
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
-    UUID id = instance.createRelation(collection, createRelation, USER_ID);
+    instance.createRelation(collection, createRelation, USER_ID);
 
     verify(dataAccess).createRelation(argThat(is(collection)), argThat(allOf(
-      hasProperty("id", is(id)),
       hasProperty("created", allOf(
         hasProperty("userId", is(USER_ID)),
         hasProperty("timeStamp", is(instant.toEpochMilli()))
@@ -67,7 +66,7 @@ public class TimbuctooDbAccessRelationTest {
 
   @Test
   public void createRelationReturnsTheIdOfTheNewLyCreatedRelation() throws Exception {
-    when(dataAccess.createRelation(collection, createRelation)).thenReturn(CreateMessage.success());
+    when(dataAccess.createRelation(collection, createRelation)).thenReturn(CreateMessage.success(UUID.randomUUID()));
     TimbuctooDbAccess instance = new TimbuctooDbAccess(allowedToWrite(), dataAccess, clock, handleAdder);
 
     UUID id = instance.createRelation(collection, createRelation, USER_ID);

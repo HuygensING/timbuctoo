@@ -29,23 +29,23 @@ public class RelationTypeDescription {
 
   public RelationTypeDescription(Vertex vertex) {
 
-    setId((String) vertex.property("tim_id").value());
-    setType((String) vertex.property("types").value());
-    setRegularName((String) vertex.property("relationtype_regularName").value());
-    setInverseName((String) vertex.property("relationtype_inverseName").value());
+    setId(vertex.<String>property("tim_id").value());
+    setType(vertex.<String>property("types").value());
+    setRegularName(vertex.<String>property("relationtype_regularName").value());
+    setInverseName(vertex.<String>property("relationtype_inverseName").value());
 
-    setSourceTypeName((String) vertex.property("relationtype_sourceTypeName").value());
-    setTargetTypeName((String) vertex.property("relationtype_targetTypeName").value());
+    setSourceTypeName(vertex.<String>property("relationtype_sourceTypeName").value());
+    setTargetTypeName(vertex.<String>property("relationtype_targetTypeName").value());
 
-    setCreated((String) vertex.property("created").value());
-    setModified((String) vertex.property("modified").value());
-    setRev((Integer) vertex.property("rev").value());
-    setReflexive((Boolean) vertex.property("relationtype_reflexive").value());
-    setDerived((Boolean) vertex.property("relationtype_derived").value());
-    setSymmetric((Boolean) vertex.property("relationtype_symmetric").value());
+
+    vertex.<String>property("created").ifPresent(this::setCreated);
+    vertex.<String>property("modified").ifPresent(this::setModified); 
+    setRev(vertex.<Integer>property("rev").value());
+    setReflexive(vertex.<Boolean>property("relationtype_reflexive").value());
+    setDerived(vertex.<Boolean>property("relationtype_derived").value());
+    setSymmetric(vertex.<Boolean>property("relationtype_symmetric").value());
 
   }
-
 
 
   @JsonProperty("@type")
