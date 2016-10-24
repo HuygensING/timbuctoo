@@ -51,7 +51,8 @@ public class TimbuctooActionsRelationTest {
 
   @Test
   public void createRelationCreatesANewRelation() throws Exception {
-    when(dataAccess.createRelation(collection, createRelation)).thenReturn(CreateMessage.success(UUID.randomUUID()));
+    when(transactionEnforcer.createRelation(collection, createRelation))
+      .thenReturn(CreateMessage.success(UUID.randomUUID()));
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     instance.createRelation(collection, createRelation, USER_ID);
@@ -67,7 +68,8 @@ public class TimbuctooActionsRelationTest {
 
   @Test
   public void createRelationReturnsTheIdOfTheNewLyCreatedRelation() throws Exception {
-    when(dataAccess.createRelation(collection, createRelation)).thenReturn(CreateMessage.success(UUID.randomUUID()));
+    when(transactionEnforcer.createRelation(collection, createRelation))
+      .thenReturn(CreateMessage.success(UUID.randomUUID()));
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
 
     UUID id = instance.createRelation(collection, createRelation, USER_ID);
