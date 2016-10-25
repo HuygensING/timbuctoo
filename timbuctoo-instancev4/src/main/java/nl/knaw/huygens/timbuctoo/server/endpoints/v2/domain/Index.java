@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
@@ -33,6 +33,9 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Produces(MediaType.APPLICATION_JSON)
 public class Index {
 
+  private final LoggedInUserStore loggedInUserStore;
+  private final CrudServiceFactory crudServiceFactory;
+
   public static URI makeUrl(String collectionName) {
     return UriBuilder.fromResource(Index.class)
                      .buildFromMap(ImmutableMap.of(
@@ -40,13 +43,11 @@ public class Index {
                      ));
   }
 
-  private final JsonCrudService crudService;
-  private final LoggedInUserStore loggedInUserStore;
-
-  public Index(JsonCrudService crudService, LoggedInUserStore loggedInUserStore) {
-    this.crudService = crudService;
+  public Index(LoggedInUserStore loggedInUserStore, CrudServiceFactory crudServiceFactory) {
     this.loggedInUserStore = loggedInUserStore;
+    this.crudServiceFactory = crudServiceFactory;
   }
+
 
   @POST
   public Response createNew(
@@ -59,7 +60,7 @@ public class Index {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
       try {
-        UUID id = crudService.create(collectionName, body, user.get().getId());
+        UUID id = crudServiceFactory.newJsonCrudService().create(collectionName, body, user.get().getId());
         return Response.created(SingleEntity.makeUrl(collectionName, id)).build();
       } catch (InvalidCollectionException e) {
         return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
@@ -78,7 +79,8 @@ public class Index {
                        @QueryParam("withRelations") @DefaultValue("false") boolean withRelations) {
 
     try {
-      List<ObjectNode> jsonNodes = crudService.getCollection(collectionName, rows, start, withRelations);
+      List<ObjectNode> jsonNodes =
+        crudServiceFactory.newJsonCrudService().getCollection(collectionName, rows, start, withRelations);
       return Response.ok(jsonNodes).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();

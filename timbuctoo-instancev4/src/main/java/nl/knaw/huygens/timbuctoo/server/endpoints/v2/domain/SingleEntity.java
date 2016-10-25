@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
+import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
@@ -57,19 +58,19 @@ public class SingleEntity {
     }
   }
 
-  private final JsonCrudService crudService;
   private final LoggedInUserStore loggedInUserStore;
+  private final CrudServiceFactory crudServiceFactory;
 
-  public SingleEntity(JsonCrudService crudService, LoggedInUserStore loggedInUserStore) {
-    this.crudService = crudService;
+  public SingleEntity(LoggedInUserStore loggedInUserStore, CrudServiceFactory crudServiceFactory) {
     this.loggedInUserStore = loggedInUserStore;
+    this.crudServiceFactory = crudServiceFactory;
   }
 
   @GET
   public Response get(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id,
                       @QueryParam("rev") Integer rev) {
     try {
-      JsonNode result = crudService.get(collectionName, id.get(), rev);
+      JsonNode result = crudServiceFactory.newJsonCrudService().get(collectionName, id.get(), rev);
       return Response.ok(result).build();
     } catch (InvalidCollectionException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
@@ -86,6 +87,7 @@ public class SingleEntity {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
       try {
+        JsonCrudService crudService = crudServiceFactory.newJsonCrudService();
         crudService.replace(collectionName, id.get(), body, user.get().getId());
         JsonNode jsonNode = crudService.get(collectionName, id.get());
         return Response.ok(jsonNode).build();
@@ -120,7 +122,7 @@ public class SingleEntity {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
       try {
-        crudService.delete(collectionName, id.get(), user.get().getId());
+        crudServiceFactory.newJsonCrudService().delete(collectionName, id.get(), user.get().getId());
         return Response.noContent().build();
       } catch (InvalidCollectionException e) {
         return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
