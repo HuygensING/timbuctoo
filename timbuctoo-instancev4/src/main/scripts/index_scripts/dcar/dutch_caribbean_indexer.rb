@@ -71,7 +71,7 @@ class DutchCaribbeanIndexer
         :with_relations => false,
         :from_file => @options[:from_file],
         :batch_size => 1000,
-        :process_record => @collective_mapper.method(:convert)
+        :process_record => @document_mapper.method(:convert)
     })
     # No counter in default mapper
 #    puts "SCRAPE: #{@collective_mapper.record_count} archives"
@@ -85,7 +85,7 @@ class DutchCaribbeanIndexer
     batch_size = 1000
     @timbuctoo_io.scrape_collection("dcararchives", {
         :process_record => -> (record) {
-          batch << @collective_mapper.convert(record)
+          batch << @document_mapper.convert(record)
           if batch.length >= batch_size
             @solr_io.update("dcararchives", batch)
             batch = []
@@ -103,7 +103,7 @@ class DutchCaribbeanIndexer
     puts "DELETE archivers"
     @solr_io.delete_data("dcararchivers")
     puts "UPDATE archivers"
-    @person_mapper.send_cached_batches_to("dcararchivers", @solr_io.method(:update))
+    @collective_mapper.send_cached_batches_to("dcararchivers", @solr_io.method(:update))
     puts "COMMIT archivers"
     @solr_io.commit("dcararchivers")
   end
