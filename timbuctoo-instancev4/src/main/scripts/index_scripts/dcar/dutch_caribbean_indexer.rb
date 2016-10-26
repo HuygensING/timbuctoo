@@ -3,7 +3,7 @@ require '../lib/timbuctoo_solr/solr_io'
 require '../lib/timbuctoo_solr/default_mapper'
 
 require './configs/dcar_archive_config'
-require './configs/dcar_collective_config'
+require './configs/dcar_archiver_config'
 require './configs/dcar_legislation_config'
 #require './mappers/dcar_person_mapper'
 #require './mappers/dcar_document_mapper'
@@ -16,7 +16,7 @@ class DutchCaribbeanIndexer
 
     @legislation_mapper = DefaultMapper.new(DcarLegislationConfig.get)
     @archive_mapper = DefaultMapper.new(DcarArchiveConfig.get)
-    @collective_mapper = DefaultMapper.new(DcarCollectiveConfig.get)
+    @archiver_mapper = DefaultMapper.new(DcarArchiverConfig.get)
 
 #    @person_reception_mapper = DcarPersonReceptionMapper.new(@person_mapper, @document_mapper)
 #    @document_reception_mapper = DcarDocumentReceptionMapper.new(@document_mapper)
@@ -56,7 +56,7 @@ class DutchCaribbeanIndexer
 
   def scrape_legislation
     @timbuctoo_io.scrape_collection("dcarlegislations", {
-        :with_relations => false,
+        :with_relations => true,
         :from_file => @options[:from_file],
         :batch_size => 1000,
         :process_record => @legislation_mapper.method(:convert)
@@ -67,21 +67,21 @@ class DutchCaribbeanIndexer
 
   def scrape_archives
     @timbuctoo_io.scrape_collection("dcararchives", {
-        :with_relations => false,
+        :with_relations => true,
         :from_file => @options[:from_file],
         :batch_size => 1000,
         :process_record => @archive_mapper.method(:convert)
     })
     # No counter in default mapper
-#    puts "SCRAPE: #{@collective_mapper.record_count} archives"
+#    puts "SCRAPE: #{@archive_mapper.record_count} archives"
   end
 
   def scrape_archivers
     @timbuctoo_io.scrape_collection("dcararchivers", {
-        :with_relations => false,
+        :with_relations => true,
         :from_file => @options[:from_file],
         :batch_size => 1000,
-        :process_record => @collective_mapper.method(:convert)
+        :process_record => @archiver_mapper.method(:convert)
     })
     # No counter in default mapper
 #    puts "SCRAPE: #{@collective_mapper.record_count} archives"
@@ -101,6 +101,7 @@ class DutchCaribbeanIndexer
             batch = []
           end
         },
+        :with_relations => true,
         :from_file => @options[:from_file],
         :batch_size => 1000
     })
@@ -120,12 +121,13 @@ class DutchCaribbeanIndexer
     batch_size = 1000
     @timbuctoo_io.scrape_collection("dcararchivers", {
         :process_record => -> (record) {
-          batch << @collective_mapper.convert(record)
+          batch << @archiver_mapper.convert(record)
           if batch.length >= batch_size
             @solr_io.update("dcararchivers", batch)
             batch = []
           end
         },
+        :with_relations => true,
         :from_file => @options[:from_file],
         :batch_size => 1000
     })
@@ -151,6 +153,7 @@ class DutchCaribbeanIndexer
             batch = []
           end
         },
+        :with_relations => true,
         :from_file => @options[:from_file],
         :batch_size => 1000
     })
