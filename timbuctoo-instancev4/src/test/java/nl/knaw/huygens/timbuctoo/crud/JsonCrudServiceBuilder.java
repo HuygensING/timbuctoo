@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 
 import java.net.URI;
@@ -32,12 +31,9 @@ public class JsonCrudServiceBuilder {
   private Clock clock;
   private HandleAdder handleAdder;
   private UrlGenerator relationUrlGenerator;
-  private UrlGenerator autoCompleteUrlGenerator;
   private UserStore userStore;
   private Authorizer authorizer;
   private GraphWrapper graphWrapper = null;
-  private UrlGenerator handleUrlGenerator;
-  private TinkerpopGraphManager graphManager;
   private ChangeListener changeListener = new CompositeChangeListener(
     new AddLabelChangeListener()
   );
@@ -78,11 +74,8 @@ public class JsonCrudServiceBuilder {
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/");
     clock = Clock.systemDefaultZone();
     handleAdder = mock(HandleAdder.class);
-    handleUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/handleUrl");
-    autoCompleteUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/autocomplete");
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/relationUrl");
     authorizer = anyUserIsAllowedToWriteAnyCollectionAuthorizer();
-    graphManager = mock(TinkerpopGraphManager.class);
     userStore = mock(UserStore.class);
 
     try {
@@ -135,7 +128,6 @@ public class JsonCrudServiceBuilder {
   }
 
   public JsonCrudServiceBuilder withHandleAdder(UrlGenerator handleUrlGenerator, HandleAdder handleAdder) {
-    this.handleUrlGenerator = handleUrlGenerator;
     this.handleAdder = handleAdder;
     return this;
   }

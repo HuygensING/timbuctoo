@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
@@ -57,7 +56,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.Instant;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -88,7 +86,6 @@ public class DataStoreOperations implements AutoCloseable {
   private final Vres mappings;
   private final Graph graph;
   private final HandleAdder handleAdder;
-  private final List<HandleAdderParameters> handlesToAdd;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
@@ -106,7 +103,6 @@ public class DataStoreOperations implements AutoCloseable {
     this.traversal = graph.traversal();
     this.latestState = graphWrapper.getLatestState();
     this.mappings = mappings == null ? loadVres() : mappings;
-    handlesToAdd = Lists.newArrayList();
   }
 
   private static UUID asUuid(String input, Element source) {
@@ -209,7 +205,6 @@ public class DataStoreOperations implements AutoCloseable {
   public void close() {
     if (isSuccess.isPresent()) {
       if (isSuccess.get()) {
-        handlesToAdd.forEach(handleAdder::add);
         transaction.commit();
       } else {
         transaction.rollback();
@@ -523,6 +518,7 @@ public class DataStoreOperations implements AutoCloseable {
     callUpdateListener(entity);
     duplicateVertex(traversal, entity);
 
+    // TODO move to Timbuctoo actions
     handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, newRev));
   }
 
