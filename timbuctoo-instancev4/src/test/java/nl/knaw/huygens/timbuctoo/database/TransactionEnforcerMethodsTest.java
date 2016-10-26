@@ -16,7 +16,8 @@ public class TransactionEnforcerMethodsTest {
 
   @Test
   public void emptyDatabaseIsShownAsEmpty() throws Exception {
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(newGraph().wrap(), null, null, null);
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
+      () -> new DataStoreOperations(newGraph().wrap(), null, null, null, null));
     try (DataStoreOperations db = transactionEnforcer.start()) {
       assertThat(db.databaseIsEmptyExceptForMigrations(), is(true));
     }
@@ -24,13 +25,10 @@ public class TransactionEnforcerMethodsTest {
 
   @Test
   public void nonEmptyDatabaseIsShownAsFull() throws Exception {
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(newGraph()
-      .withVertex(v -> v
-        .withTimId(UUID.randomUUID().toString())
-      ).wrap(),
-      null,
-      null,
-      null);
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> new DataStoreOperations(newGraph()
+        .withVertex(v -> v
+          .withTimId(UUID.randomUUID().toString())
+        ).wrap(), null, null, null, null));
     try (DataStoreOperations db = transactionEnforcer.start()) {
       assertThat(db.databaseIsEmptyExceptForMigrations(), is(false));
     }
@@ -42,10 +40,8 @@ public class TransactionEnforcerMethodsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(graphWrapper,
-      null,
-      null,
-      null);
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
+      () -> new DataStoreOperations(graphWrapper, null, null, null, null));
     try (DataStoreOperations db = transactionEnforcer.start()) {
       db.ensureVreExists("SomeVre");
       assertThat(

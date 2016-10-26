@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
@@ -20,8 +21,8 @@ public class DatabaseRdfIndexTest {
   public void indexTest() throws Exception {
     final TinkerpopGraphManager mgr = newGraph().wrap();
     final Database database = new Database(mgr);
-    final TransactionEnforcer transactionEnforcer = new TransactionEnforcer(mgr, null, mock(ChangeListener.class),
-      mock(HandleAdder.class));
+    final TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
+      () -> new DataStoreOperations(mgr, mock(ChangeListener.class), null, null, mock(HandleAdder.class)));
 
     new ScaffoldMigrator(transactionEnforcer).execute();
     transactionEnforcer.execute(db -> {

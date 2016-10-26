@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
@@ -132,11 +133,9 @@ public class WomenWritersJsonCrudServiceTest {
   }
 
   private WomenWritersJsonCrudService createInstance(GraphWrapper graphWrapper, GremlinEntityFetcher entityFetcher) {
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(graphWrapper,
-      entityFetcher,
-      null, //no ChangeListener needed for get
-      vres,
-      mock(HandleAdder.class)
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
+      //no ChangeListener needed for get
+      () -> new DataStoreOperations(graphWrapper, null, entityFetcher, vres, mock(HandleAdder.class))
     );
     return new WomenWritersJsonCrudService(
       vres,

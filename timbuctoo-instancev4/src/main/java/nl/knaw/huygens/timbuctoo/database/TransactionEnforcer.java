@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
@@ -15,37 +13,18 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetCollection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopUpdateEntity;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class TransactionEnforcer {
 
-  private final GraphWrapper graphwrapper;
-  private final EntityFetcher entityFetcher;
-  private final ChangeListener listener;
-  private final Vres mappings;
-  private final HandleAdder handleAdder;
+  private final Supplier<DataStoreOperations> dataStoreOperationsSupplier;
 
-  public TransactionEnforcer(GraphWrapper graphwrapper, EntityFetcher entityFetcher, ChangeListener listener,
-                             HandleAdder handleAdder) {
-    this(graphwrapper, entityFetcher, listener, null, handleAdder);
-  }
-
-  /**
-   * @deprecated Use the constructor without the mappings.
-   */
-  @Deprecated
-  public TransactionEnforcer(GraphWrapper graphwrapper, EntityFetcher entityFetcher, ChangeListener listener,
-                             Vres mappings, HandleAdder handleAdder) {
-    this.graphwrapper = graphwrapper;
-    this.entityFetcher = entityFetcher;
-    this.listener = listener;
-    this.mappings = mappings;
-    this.handleAdder = handleAdder;
+  public TransactionEnforcer(Supplier<DataStoreOperations> dataStoreOperationsSupplier) {
+    this.dataStoreOperationsSupplier = dataStoreOperationsSupplier;
   }
 
   /**
@@ -54,7 +33,7 @@ public class TransactionEnforcer {
    */
   @Deprecated
   public DataStoreOperations start() {
-    return new DataStoreOperations(graphwrapper, listener, entityFetcher, mappings, handleAdder);
+    return dataStoreOperationsSupplier.get();
   }
 
   public <T> T executeAndReturn(Function<DataStoreOperations, TransactionStateAndResult<T>> actions) {

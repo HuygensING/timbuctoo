@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
@@ -93,12 +94,13 @@ public class JsonCrudServiceBuilder {
   }
 
   public JsonCrudService build() {
-    TransactionEnforcer
-      transactionEnforcer = new TransactionEnforcer(graphWrapper, entityFetcher, changeListener, vres, handleAdder);
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
+      () -> new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres, handleAdder)
+    );
     return new JsonCrudService(vres, userStore,
       relationUrlGenerator, clock,
       new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder)
-      );
+    );
   }
 
   public JsonCrudService forGraph(Graph graph) {
@@ -127,7 +129,7 @@ public class JsonCrudServiceBuilder {
     return this;
   }
 
-  public JsonCrudServiceBuilder withHandleAdder(UrlGenerator handleUrlGenerator, HandleAdder handleAdder) {
+  public JsonCrudServiceBuilder withHandleAdder(HandleAdder handleAdder) {
     this.handleAdder = handleAdder;
     return this;
   }
@@ -145,10 +147,6 @@ public class JsonCrudServiceBuilder {
   public JsonCrudServiceBuilder withGraphWrapper(GraphWrapper wrapper) {
     this.graphWrapper = wrapper;
     return this;
-  }
-
-  public GraphWrapper getGraphWrapperMock() {
-    return graphWrapper;
   }
 
   public JsonCrudServiceBuilder withChangeListener(ChangeListener changeListener) {

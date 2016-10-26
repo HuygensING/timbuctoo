@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
@@ -180,8 +181,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
-    TransactionEnforcer
-      transactionEnforcer = new TransactionEnforcer(graphManager, entityFetcher, changeListeners, handleAdder);
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
+      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null, handleAdder)
+    );
     graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);

@@ -365,7 +365,7 @@ public class JsonCrudServiceReplaceTest {
     HandleAdder handleAdder = mock(HandleAdder.class);
     UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev);
     JsonCrudService instance =
-      newJsonCrudService().withHandleAdder(urlGen, handleAdder).forGraph(graph);
+      newJsonCrudService().withHandleAdder(handleAdder).forGraph(graph);
 
     instance.replace("wwpersons", uuid, jsnO("^rev", jsn(oldRev)), "");
 
@@ -400,7 +400,7 @@ public class JsonCrudServiceReplaceTest {
     UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev);
     ChangeListener changeListener = mock(ChangeListener.class);
     JsonCrudService instance = newJsonCrudService()
-      .withHandleAdder(urlGen, handleAdder)
+      .withHandleAdder(handleAdder)
       .withChangeListener(changeListener)
       .forGraph(graph);
 

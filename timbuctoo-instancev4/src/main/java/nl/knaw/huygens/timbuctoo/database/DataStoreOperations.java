@@ -89,8 +89,8 @@ public class DataStoreOperations implements AutoCloseable {
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
-  DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener,
-                      EntityFetcher entityFetcher, Vres mappings, HandleAdder handleAdder) {
+  public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener,
+                             EntityFetcher entityFetcher, Vres mappings, HandleAdder handleAdder) {
     graph = graphWrapper.getGraph();
     this.handleAdder = handleAdder;
     this.transaction = graph.tx();

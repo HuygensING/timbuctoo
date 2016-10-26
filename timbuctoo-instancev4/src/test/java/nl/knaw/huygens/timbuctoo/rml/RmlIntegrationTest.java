@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDe
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
@@ -226,8 +227,8 @@ public class RmlIntegrationTest {
     public IntegrationTester() {
       graphManager = newGraph().wrap();
       traversalSource = graphManager.getGraph().traversal();
-      transactionEnforcer = new TransactionEnforcer(graphManager, null, mock(ChangeListener.class),
-        mock(HandleAdder.class));
+      transactionEnforcer = new TransactionEnforcer(
+        () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null, mock(HandleAdder.class)));
       new ScaffoldMigrator(transactionEnforcer).execute();
 
       vres = new DatabaseConfiguredVres(transactionEnforcer);

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
@@ -9,14 +9,12 @@ import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.riot.Lang;
 import org.junit.Test;
 import org.mockito.InOrder;
-import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.inOrder;
@@ -32,10 +30,8 @@ public class RdfImporterTest {
   @Test
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
     TinkerpopGraphManager graphWrapper = newGraph().wrap();
-    TransactionEnforcer transactionEnforcer = mock(TransactionEnforcer.class);
     DataStoreOperations db = mock(DataStoreOperations.class);
-    given(transactionEnforcer.start()).willReturn(db);
-    Mockito.doCallRealMethod().when(transactionEnforcer).execute(org.mockito.Matchers.any());
+    TransactionEnforcer transactionEnforcer = createTransactionEnforcer(db);
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), transactionEnforcer, processor);
 
@@ -46,9 +42,14 @@ public class RdfImporterTest {
     inOrder.verify(processor).process(eq(VRE_NAME), eq(true), any());
   }
 
+  private TransactionEnforcer createTransactionEnforcer(DataStoreOperations db) {
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> db);
+    return transactionEnforcer;
+  }
+
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
-    TransactionEnforcer transactionEnforcer = mock(TransactionEnforcer.class);
+    TransactionEnforcer transactionEnforcer = createTransactionEnforcer(mock(DataStoreOperations.class));
     TinkerpopGraphManager graphWrapper = newGraph().wrap();
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);

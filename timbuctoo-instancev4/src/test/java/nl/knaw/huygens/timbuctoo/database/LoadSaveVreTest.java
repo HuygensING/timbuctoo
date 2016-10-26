@@ -49,7 +49,9 @@ public class LoadSaveVreTest {
     TestGraphBuilder testGraphBuilder = newGraph();
     init.accept(testGraphBuilder);
     GraphWrapper wrap = testGraphBuilder.wrap();
-    return tuple(new TransactionEnforcer(wrap, null, null, mock(HandleAdder.class)), wrap.getGraph());
+    return tuple(
+      new TransactionEnforcer(() -> new DataStoreOperations(wrap, null, null, null, mock(HandleAdder.class))),
+      wrap.getGraph());
   }
 
   private List<Vertex> save(Vre vre, Tuple<TransactionEnforcer, Graph> dataAccess) {
@@ -145,8 +147,8 @@ public class LoadSaveVreTest {
     final Vre instance = load(initGraph(g ->
       g.withVertex(v ->
         v.withLabel(Vre.DATABASE_LABEL)
-          .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
-          .withProperty(KEYWORD_TYPES_PROPERTY_NAME, stringifiedKeyWordTypes)
+         .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
+         .withProperty(KEYWORD_TYPES_PROPERTY_NAME, stringifiedKeyWordTypes)
       )));
 
     assertThat(instance.getVreName(), equalTo("VreName"));

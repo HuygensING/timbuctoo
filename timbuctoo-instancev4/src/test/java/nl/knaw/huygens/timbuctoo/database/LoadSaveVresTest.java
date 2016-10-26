@@ -51,8 +51,8 @@ public class LoadSaveVresTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     given(graphWrapper.getGraph()).willReturn(graph);
 
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(graphWrapper, null, null,
-      mock(HandleAdder.class)));
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
+      () -> new DataStoreOperations(graphWrapper, null, null, null, mock(HandleAdder.class))));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getCollection("documents").get(), instanceOf(Collection.class));
@@ -72,8 +72,8 @@ public class LoadSaveVresTest {
     MockWrapper graphWrapper = new MockWrapper();
     graphWrapper.graph = graph;
 
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(graphWrapper, null, null,
-      mock(HandleAdder.class)));
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
+      () -> new DataStoreOperations(graphWrapper, null, null, null, mock(HandleAdder.class))));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));

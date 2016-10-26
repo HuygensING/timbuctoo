@@ -265,7 +265,7 @@ public class JsonCrudServiceCreateTest {
     HandleAdder handleAdder = mock(HandleAdder.class);
     UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com?id=" + id + "&rev=" + rev);
     JsonCrudService instance =
-      newJsonCrudService().withHandleAdder(urlGen, handleAdder).forGraph(graph);
+      newJsonCrudService().withHandleAdder(handleAdder).forGraph(graph);
 
     UUID uuid = instance.create("wwpersons", JsonBuilder.jsnO(), "");
 

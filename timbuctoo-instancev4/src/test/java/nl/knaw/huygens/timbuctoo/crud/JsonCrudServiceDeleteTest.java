@@ -261,7 +261,7 @@ public class JsonCrudServiceDeleteTest {
     HandleAdder handleAdder = mock(HandleAdder.class);
     UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev);
     JsonCrudService instance =
-      newJsonCrudService().withHandleAdder(urlGen, handleAdder).forGraph(graph);
+      newJsonCrudService().withHandleAdder(handleAdder).forGraph(graph);
 
     instance.delete("wwpersons", uuid, "");
 
@@ -297,7 +297,7 @@ public class JsonCrudServiceDeleteTest {
     UrlGenerator urlGen = (collectionName, id, rev) -> URI.create("http://example.com/" + id + "?r=" + rev);
     ChangeListener changeListener = mock(ChangeListener.class);
     JsonCrudService instance = newJsonCrudService()
-      .withHandleAdder(urlGen, handleAdder)
+      .withHandleAdder(handleAdder)
       .withChangeListener(changeListener)
       .forGraph(graph);
 
