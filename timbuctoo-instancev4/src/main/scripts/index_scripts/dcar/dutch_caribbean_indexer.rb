@@ -35,8 +35,8 @@ class DutchCaribbeanIndexer
   def run
     # Scrape persons and documents from Timbuctoo
     scrape_archives
-#    scrape_archivers
-#    scrape legislation
+    scrape_archivers
+    scrape_legislation
 
     # Always run person_mapper.add_languages before @document_mapper.add_creators to ensure correct _childDocuments_
     # filters on dcardocuments index and dcardocumentreceptions index!!
@@ -48,8 +48,8 @@ class DutchCaribbeanIndexer
 #    puts "Found #{@document_mapper.document_receptions.length} document receptions"
 
     reindex_archives
-#    reindex_archivers
-#    reindex_legislation
+    reindex_archivers
+    reindex_legislation
 #    reindex_person_receptions
 #    reindex_document_receptions
   end
@@ -57,13 +57,14 @@ class DutchCaribbeanIndexer
   private
 
   def scrape_legislation
-    @timbuctoo_io.scrape_collection("dcarlegislation", {
+    @timbuctoo_io.scrape_collection("dcarlegislations", {
         :with_relations => false,
         :from_file => @options[:from_file],
         :batch_size => 1000,
         :process_record => @document_mapper.method(:convert)
     })
-    puts "SCRAPE: #{@document_mapper.record_count} documents"
+    # No counter in default mapper
+#    puts "SCRAPE: #{@document_mapper.record_count} legislations"
   end
 
   def scrape_archives
@@ -72,6 +73,17 @@ class DutchCaribbeanIndexer
         :from_file => @options[:from_file],
         :batch_size => 1000,
         :process_record => @document_mapper.method(:convert)
+    })
+    # No counter in default mapper
+#    puts "SCRAPE: #{@collective_mapper.record_count} archives"
+  end
+
+  def scrape_archivers
+    @timbuctoo_io.scrape_collection("dcararchivers", {
+        :with_relations => false,
+        :from_file => @options[:from_file],
+        :batch_size => 1000,
+        :process_record => @collective_mapper.method(:convert)
     })
     # No counter in default mapper
 #    puts "SCRAPE: #{@collective_mapper.record_count} archives"
@@ -103,7 +115,24 @@ class DutchCaribbeanIndexer
     puts "DELETE archivers"
     @solr_io.delete_data("dcararchivers")
     puts "UPDATE archivers"
-    @collective_mapper.send_cached_batches_to("dcararchivers", @solr_io.method(:update))
+# not available in collective_mapper
+#    @collective_mapper.send_cached_batches_to("dcararchivers", @solr_io.method(:update))
+# copied from: reindex_archives
+    batch = []
+    batch_size = 1000
+    @timbuctoo_io.scrape_collection("dcararchivers", {
+        :process_record => -> (record) {
+          batch << @collective_mapper.convert(record)
+          if batch.length >= batch_size
+            @solr_io.update("dcararchivers", batch)
+            batch = []
+          end
+        },
+        :from_file => @options[:from_file],
+        :batch_size => 1000
+    })
+    @solr_io.update("dcararchives", batch)
+#
     puts "COMMIT archivers"
     @solr_io.commit("dcararchivers")
   end
