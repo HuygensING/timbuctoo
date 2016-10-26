@@ -21,9 +21,9 @@ public class SameAsTripleProcessor {
     Optional<Entity> object = database.findEntity(vreName, triple.getObject());
     Optional<Entity> subject = database.findEntity(vreName, triple.getSubject());
     if (object.isPresent() && subject.isPresent()) {
-      //FIXME: handle this case
-      //FIXME: handle the case where the same property is asserted for both same-as versions using different values
-      LOG.error("SameAs encountered, but the entities both already exist. This is not handled yet");
+      Entity objectEntity = object.get();
+      Entity subjectEntity = subject.get();
+      database.mergeObjectIntoSubjectEntity(vreName, subjectEntity, objectEntity);
     } else if (object.isPresent()) {
       database.addRdfSynonym(vreName, object.get(), triple.getSubject());
     } else if (subject.isPresent()) {
