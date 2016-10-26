@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.TransactionState;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -27,7 +27,7 @@ public class ScaffoldMigrator {
   public void execute() {
     //The migrations are executed first, so those vertices _will_ be present, even on a new empty database
     //The code below will add vertices, so a second launch will not run this code
-    try (DataStoreOperations db = transactionEnforcer.start()) {
+    transactionEnforcer.execute(db -> {
       if (db.databaseIsEmptyExceptForMigrations()) {
         LOG.info("Setting up a new scaffold for empty database");
         Vres mappings = new VresBuilder()
@@ -108,9 +108,9 @@ public class ScaffoldMigrator {
           relationType("concept", "isScientistBioOf", "person", "hasScientistBio",
             false, false, false, UUID.randomUUID())
         );
-        db.success();
       }
-    }
+      return TransactionState.commit();
+    });
   }
 
 

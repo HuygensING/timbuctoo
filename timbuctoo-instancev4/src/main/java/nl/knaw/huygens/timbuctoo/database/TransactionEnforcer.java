@@ -26,18 +26,9 @@ public class TransactionEnforcer {
   public TransactionEnforcer(Supplier<DataStoreOperations> dataStoreOperationsSupplier) {
     this.dataStoreOperationsSupplier = dataStoreOperationsSupplier;
   }
-
-  /**
-   * @deprecated Use {@link #executeAndReturn(Function)} or {@link #execute(Function)} method to ensure that the commit
-   *     and rollback methods are always called
-   */
-  @Deprecated
-  public DataStoreOperations start() {
-    return dataStoreOperationsSupplier.get();
-  }
-
+  
   public <T> T executeAndReturn(Function<DataStoreOperations, TransactionStateAndResult<T>> actions) {
-    DataStoreOperations db = start();
+    DataStoreOperations db = dataStoreOperationsSupplier.get();
 
     try {
       TransactionStateAndResult<T> result = actions.apply(db);
@@ -56,7 +47,7 @@ public class TransactionEnforcer {
   }
 
   public void execute(Function<DataStoreOperations, TransactionState> actions) {
-    DataStoreOperations db = start();
+    DataStoreOperations db = dataStoreOperationsSupplier.get();
 
     try {
       TransactionState result = actions.apply(db);
@@ -98,7 +89,14 @@ public class TransactionEnforcer {
                                               boolean withRelations, CustomEntityProperties entityProps,
                                               CustomRelationProperties relationProps) {
 
-    return new TinkerPopGetCollection(collection, start, rows, withRelations, entityProps, relationProps, start());
+    return new TinkerPopGetCollection(
+      collection,
+      start,
+      rows,
+      withRelations,
+      entityProps,
+      relationProps,
+      dataStoreOperationsSupplier.get());
   }
 
   public CreateMessage createRelation(Collection collection, CreateRelation createRelation) {
