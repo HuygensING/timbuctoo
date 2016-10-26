@@ -56,6 +56,14 @@ public class ScaffoldMigrator {
                   .withDisplayName(localProperty("collective_name"))
                   .withProperty("name", localProperty("collective_name"))
               )
+              .withCollection("documents", collection ->
+                collection
+                  .withDisplayName(localProperty("document_title"))
+                  .withProperty("title", localProperty("document_title"))
+                  .withProperty("documentType", localProperty("document_documentType"))
+                  .withProperty("date", localProperty("document_date", datable))
+
+              )
               .withCollection("concepts")
               .withCollection("relations", CollectionBuilder::isRelationCollection))
           .build();
@@ -64,7 +72,8 @@ public class ScaffoldMigrator {
           relationType("person", "hasBirthPlace", "location", "isBirthPlaceOf", false, false, false, UUID.randomUUID()),
           relationType("person", "hasDeathPlace", "location", "isDeathPlaceOf", false, false, false, UUID.randomUUID()),
           relationType("collective", "hasMember", "person", "isMemberOf", false, false, false, UUID.randomUUID()),
-          relationType("collective", "locatedAt", "location", "isHomeOf", false, false, false, UUID.randomUUID())
+          relationType("collective", "locatedAt", "location", "isHomeOf", false, false, false, UUID.randomUUID()),
+          relationType("document", "isCreatedBy", "person", "isCreatorOf", false, false, false, UUID.randomUUID())
         );
         db.success();
       }
