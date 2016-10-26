@@ -2,20 +2,20 @@ require '../lib/timbuctoo_solr/timbuctoo_io'
 require '../lib/timbuctoo_solr/solr_io'
 require '../lib/timbuctoo_solr/default_mapper'
 
+require './configs/dcar_archive_config'
 require './configs/dcar_collective_config'
-require './configs/dcar_document_config'
 require './configs/dcar_legislation_config'
-require './mappers/dcar_person_mapper'
-require './mappers/dcar_document_mapper'
-require './mappers/dcar_person_reception_mapper'
-require './mappers/dcar_document_reception_mapper'
+#require './mappers/dcar_person_mapper'
+#require './mappers/dcar_document_mapper'
+#require './mappers/dcar_person_reception_mapper'
+#require './mappers/dcar_document_reception_mapper'
 
 class DutchCaribbeanIndexer
   def initialize(options)
     @options = options
 
     @legislation_mapper = DefaultMapper.new(DcarLegislationConfig.get)
-    @document_mapper = DefaultMapper.new(DcarDocumentConfig.get)
+    @archive_mapper = DefaultMapper.new(DcarArchiveConfig.get)
     @collective_mapper = DefaultMapper.new(DcarCollectiveConfig.get)
 
 #    @person_reception_mapper = DcarPersonReceptionMapper.new(@person_mapper, @document_mapper)
@@ -31,7 +31,7 @@ class DutchCaribbeanIndexer
   end
 
   def run
-    # Scrape persons and documents from Timbuctoo
+    # Scrape archives, archivers and legislation from Timbuctoo
     scrape_archives
     scrape_archivers
     scrape_legislation
@@ -70,7 +70,7 @@ class DutchCaribbeanIndexer
         :with_relations => false,
         :from_file => @options[:from_file],
         :batch_size => 1000,
-        :process_record => @document_mapper.method(:convert)
+        :process_record => @archive_mapper.method(:convert)
     })
     # No counter in default mapper
 #    puts "SCRAPE: #{@collective_mapper.record_count} archives"
@@ -95,7 +95,7 @@ class DutchCaribbeanIndexer
     batch_size = 1000
     @timbuctoo_io.scrape_collection("dcararchives", {
         :process_record => -> (record) {
-          batch << @document_mapper.convert(record)
+          batch << @archive_mapper.convert(record)
           if batch.length >= batch_size
             @solr_io.update("dcararchives", batch)
             batch = []

@@ -1,5 +1,5 @@
-class DcarDocumentConfig
-  def DcarDocumentConfig.get
+class DcarArchiveConfig
+  def DcarArchiveConfig.get
     {
       :properties => [
         { :name => '_id',  :converted_name => 'id'},
