@@ -3,7 +3,7 @@ class DcarArchiveConfig
     {
       :properties => [
         { :name => '_id',  :converted_name => 'id'},
-        { :name => 'type',  :converted_name => 'type_s'},
+        { :name => '@type',  :converted_name => 'type_s'},
         { :name => 'titleEng',  :converted_name => 'titleEng_t'},
         { :name => 'titleNld',  :converted_name => 'titleNld_t'},
         { :name => 'documentType', :converted_name => 'documentType_s'},
