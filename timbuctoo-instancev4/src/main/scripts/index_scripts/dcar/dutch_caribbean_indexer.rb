@@ -131,7 +131,7 @@ class DutchCaribbeanIndexer
         :from_file => @options[:from_file],
         :batch_size => 1000
     })
-    @solr_io.update("dcararchives", batch)
+    @solr_io.update("dcararchivers", batch)
 #
     puts "COMMIT archivers"
     @solr_io.commit("dcararchivers")
@@ -141,7 +141,23 @@ class DutchCaribbeanIndexer
     puts "DELETE legislation"
     @solr_io.delete_data("dcarlegislation")
     puts "UPDATE legislation"
-    @document_mapper.send_cached_batches_to("dcarlegislation", @solr_io.method(:update))
+    # not available in document_mapper
+#    @document_mapper.send_cached_batches_to("dcarlegislation", @solr_io.method(:update))
+    batch = []
+    batch_size = 1000
+    @timbuctoo_io.scrape_collection("dcarlegislations", {
+        :process_record => -> (record) {
+          batch << @document_mapper.convert(record)
+          if batch.length >= batch_size
+            @solr_io.update("dcarlegislation", batch)
+            batch = []
+          end
+        },
+        :from_file => @options[:from_file],
+        :batch_size => 1000
+    })
+    @solr_io.update("dcarlegislation", batch)
+ #
     puts "COMMIT legislation"
     @solr_io.commit("dcarlegislation")
   end
