@@ -11,6 +11,8 @@ class DcarArchiverConfig
             { :name => 'notes',  :converted_name => 'notes_t'},
         ], :relations => [
             { :relation_name => 'has_archiver_keyword', :property_name => 'displayName', :converted_name => 'subject_ss'},
+            { :relation_name => 'has_archiver_person', :property_name => 'displayName', :converted_name => 'person_ss'},
+            { :relation_name => 'has_archiver_place', :property_name => 'displayName', :converted_name => 'place_ss'},
         ]       
     }
   end
