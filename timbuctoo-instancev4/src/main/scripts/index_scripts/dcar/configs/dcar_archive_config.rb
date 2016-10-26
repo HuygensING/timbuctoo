@@ -8,7 +8,7 @@ class DcarArchiveConfig
         { :name => 'titleNld',  :converted_name => 'titleNld_t'},
         { :name => 'documentType', :converted_name => 'documentType_s'},
         { :name => 'notes', :converted_name => 'notes_t'},
-        { :name => '"refCodeArchive"', :converted_name => 'refcode_s'},
+        { :name => 'refCodeArchive', :converted_name => 'refcode_s'},
       ], :relations => [
        { :relation_name => 'is_created_by', :property_name => 'displayName', :converted_name => 'creator_ss'},
        { :relation_name => 'has_child_archive', :property_name => 'displayName', :converted_name => 'child_archive_ss'},
