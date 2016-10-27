@@ -18,15 +18,13 @@ module ToYearConverter
     return nil if value.nil?
     parsed_date = 0
     if value.match(/\d{4}-\d{2}-\d{2}/)
-#      puts value
       return value
     elsif value.length==4
-#      puts value
       return "#{value}-01-01"
     end
-    puts "value: |#{value}|"
     if value.length==7
-#      puts value
+      # ad hoc solution to fix data
+      return "#{value[0..3]}-12-#{value[5..6]}"  if value[5..6].eql?("31")
       return "#{value}-01"
     elsif value.length > 4 and value.match(/.*([0-9]{4}).*/)
       parsed_str = value.sub(/.*([0-9]{4}).*/, '\1')

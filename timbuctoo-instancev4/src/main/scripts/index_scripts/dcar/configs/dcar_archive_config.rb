@@ -9,7 +9,7 @@ class DcarArchiveConfig
         { :name => 'documentType', :converted_name => 'documentType_s'},
         { :name => 'notes', :converted_name => 'notes_t'},
         { :name => 'refCodeArchive', :converted_name => 'refcode_s'},
-        { :name => 'beginDate', :converted_name => 'beginDate_s'},
+        { :name => 'beginDate', :converted_name => 'beginDate_dt', :type => 'date'},
         { :name => 'endDate', :converted_name => 'endDate_dt', :type => 'date'},
       ], :relations => [
        { :relation_name => 'is_created_by', :property_name => 'displayName', :converted_name => 'creator_ss'},
