@@ -87,13 +87,19 @@ public class ScaffoldMigrator {
           relationType("concept", "hasPersonToPersonRelationType", "concept", "isPersonToPersonRelationTypeOf",
             false, false, false, UUID.randomUUID()),
 
-          // states of persons, institutes and
+          // states of persons
           relationType("concept", "hasStateType", "concept", "isStateTypeOf", false, false, false, UUID.randomUUID()),
           relationType("concept", "isStateOfPerson", "person", "hasPersonState",
             false, false, false, UUID.randomUUID()),
           relationType("concept", "isStateLinkedToInstitute", "collective", "isInstituteLinkedToState",
             false, false, false, UUID.randomUUID()),
           relationType("concept", "isStateLinkedToLocation", "location", "isLocationLinkedToState",
+            false, false, false, UUID.randomUUID()),
+
+          // data lines for persons
+          relationType("concept", "hasDataLineType", "concept", "isDataLineTypeOf",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "isDataLineForPerson", "person", "hasDataLine",
             false, false, false, UUID.randomUUID())
         );
         db.success();
