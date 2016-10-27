@@ -20,7 +20,7 @@ class DcarArchiveMapper < DefaultMapper
 #    convert_temp_name(data)
 #    add_location_sort(data)
 
-    puts "Archive scrape: #{@record_count}" if @record_count % 100 == 0
+#    puts "Archive scrape: #{@record_count}" if @record_count % 100 == 0
     @record_count += 1
     @cache[data['id']] = data
   end
