@@ -6,11 +6,12 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.junit.Before;
@@ -18,6 +19,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.net.URI;
+import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -133,10 +135,13 @@ public class WomenWritersJsonCrudServiceTest {
   }
 
   private WomenWritersJsonCrudService createInstance(GraphWrapper graphWrapper, GremlinEntityFetcher entityFetcher) {
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
-      //no ChangeListener needed for get
-      () -> new DataStoreOperations(graphWrapper, null, entityFetcher, vres, mock(HandleAdder.class))
-    );
+    DataStoreOperations dataStoreOperations =
+      new DataStoreOperations(graphWrapper, null, entityFetcher, vres, mock(HandleAdder.class));
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
+      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
+        mock(HandleAdder.class));
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> dataStoreOperations,
+      timbuctooActionsFactory);
     return new WomenWritersJsonCrudService(
       vres,
       userStore,
@@ -144,8 +149,8 @@ public class WomenWritersJsonCrudServiceTest {
       new TimbuctooActions(null, // no authorizer for get needed
         transactionEnforcer,
         null, // no clock for get needed
-        mock(HandleAdder.class)
-      ));
+        mock(HandleAdder.class),
+        dataStoreOperations));
   }
 
   @Test

@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
@@ -181,8 +182,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
+
+    // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
+      new TimbuctooActions.TimbuctooActionsFactory(authorizer, Clock.systemDefaultZone(), handleAdder);
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
-      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null, handleAdder)
+      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null, handleAdder),
+      timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
 
@@ -213,7 +219,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       handleAdder,
       vres,
       userStore,
-      pathWithoutVersionAndRevision
+      pathWithoutVersionAndRevision,
+      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null, handleAdder)
     );
 
     // register REST endpoints
@@ -224,8 +231,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Search(configuration, graphManager));
     register(environment, new Autocomplete(autocompleteService));
     register(environment, new Index(loggedInUserStore, crudServiceFactory));
-    register(environment, new SingleEntity(loggedInUserStore, crudServiceFactory));
-    register(environment, new WomenWritersEntityGet(crudServiceFactory));
+    register(environment, new SingleEntity(loggedInUserStore, crudServiceFactory, transactionEnforcer));
+    register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacyApiRedirects(uriHelper));
 
     if (configuration.isAllowGremlinEndpoint()) {

@@ -1,10 +1,13 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.riot.Lang;
 import org.junit.Test;
@@ -13,6 +16,7 @@ import org.mockito.InOrder;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.mockito.Matchers.any;
@@ -43,7 +47,10 @@ public class RdfImporterTest {
   }
 
   private TransactionEnforcer createTransactionEnforcer(DataStoreOperations db) {
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> db);
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
+      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
+        mock(HandleAdder.class));
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> db, timbuctooActionsFactory);
     return transactionEnforcer;
   }
 

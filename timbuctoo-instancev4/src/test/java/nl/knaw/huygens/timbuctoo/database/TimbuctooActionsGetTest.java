@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static nl.knaw.huygens.timbuctoo.database.GetMessage.notFound;
-import static nl.knaw.huygens.timbuctoo.database.GetMessage.success;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -29,19 +27,22 @@ public class TimbuctooActionsGetTest {
   private TimbuctooActions instance;
   private Collection collection;
   private boolean withRelations = false;
+  private DataStoreOperations dataStoreOperations;
 
   @Before
   public void setUp() throws Exception {
     entityProps = mock(CustomEntityProperties.class);
     relationProps = mock(CustomRelationProperties.class);
     transactionEnforcer = mock(TransactionEnforcer.class);
-    instance = new TimbuctooActions(null, transactionEnforcer, null, null);
+    dataStoreOperations = mock(DataStoreOperations.class);
+    instance = new TimbuctooActions(null, transactionEnforcer, null, null, dataStoreOperations);
     collection = mock(Collection.class);
   }
 
   @Test(expected = NotFoundException.class)
   public void getEntityThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
-    when(transactionEnforcer.getEntity(collection, ID, rev, entityProps, relationProps)).thenReturn(notFound());
+    when(dataStoreOperations.getEntity(ID, rev, collection, entityProps, relationProps))
+      .thenThrow(new NotFoundException());
 
     instance.getEntity(collection, ID, rev, entityProps, relationProps);
   }
@@ -49,8 +50,7 @@ public class TimbuctooActionsGetTest {
   @Test
   public void getEntityReturnsTheReadEntity() throws Exception {
     ReadEntity readEntity = mock(ReadEntity.class);
-    when(transactionEnforcer.getEntity(collection, ID, rev, entityProps, relationProps))
-      .thenReturn(success(readEntity));
+    when(dataStoreOperations.getEntity(ID, rev, collection, entityProps, relationProps)).thenReturn(readEntity);
 
     ReadEntity actualEntity = instance.getEntity(collection, ID, rev, entityProps, relationProps);
 

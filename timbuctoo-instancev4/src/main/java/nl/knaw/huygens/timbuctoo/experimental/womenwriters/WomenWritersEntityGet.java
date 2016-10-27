@@ -6,6 +6,8 @@ import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -25,30 +27,37 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Produces(MediaType.APPLICATION_JSON)
 public class WomenWritersEntityGet {
 
-  public static URI makeUrl(String collectionName, UUID id) {
-    return UriBuilder.fromResource(WomenWritersEntityGet.class)
-      .buildFromMap(ImmutableMap.of(
-        "collection", collectionName,
-        "id", id
-      ));
+  private final CrudServiceFactory crudServiceFactory;
+  private final TransactionEnforcer transactionEnforcer;
+
+  public WomenWritersEntityGet(CrudServiceFactory crudServiceFactory, TransactionEnforcer transactionEnforcer) {
+    this.crudServiceFactory = crudServiceFactory;
+    this.transactionEnforcer = transactionEnforcer;
   }
 
-  private final CrudServiceFactory crudServiceFactory;
-
-  public WomenWritersEntityGet(CrudServiceFactory crudServiceFactory) {
-    this.crudServiceFactory = crudServiceFactory;
+  public static URI makeUrl(String collectionName, UUID id) {
+    return UriBuilder.fromResource(WomenWritersEntityGet.class)
+                     .buildFromMap(ImmutableMap.of(
+                       "collection", collectionName,
+                       "id", id
+                     ));
   }
 
   @GET
   public Response get(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id,
                       @QueryParam("rev") Integer rev) {
-    try {
-      JsonNode result = crudServiceFactory.newWomenWritersJsonCrudService().get(collectionName, id.get(), rev);
-      return Response.ok(result).build();
-    } catch (InvalidCollectionException e) {
-      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
-    } catch (NotFoundException e) {
-      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
-    }
+    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+      WomenWritersJsonCrudService womenWritersJsonCrudService = crudServiceFactory.newWomenWritersJsonCrudService();
+      try {
+        JsonNode result = womenWritersJsonCrudService.get(collectionName, id.get(), rev);
+        return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());
+      } catch (InvalidCollectionException e) {
+        return TransactionStateAndResult.rollbackAndReturn(
+          Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build());
+      } catch (NotFoundException e) {
+        return TransactionStateAndResult.rollbackAndReturn(
+          Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build());
+      }
+    });
   }
 }

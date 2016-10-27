@@ -6,9 +6,11 @@ import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
@@ -27,6 +29,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
+import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 
@@ -227,8 +230,12 @@ public class RmlIntegrationTest {
     public IntegrationTester() {
       graphManager = newGraph().wrap();
       traversalSource = graphManager.getGraph().traversal();
+      TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
+        new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
+          mock(HandleAdder.class));
       transactionEnforcer = new TransactionEnforcer(
-        () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null, mock(HandleAdder.class)));
+        () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null, mock(HandleAdder.class)),
+        timbuctooActionsFactory);
       new ScaffoldMigrator(transactionEnforcer).execute();
 
       vres = new DatabaseConfiguredVres(transactionEnforcer);

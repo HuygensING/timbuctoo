@@ -44,6 +44,6 @@ public class DatabaseConfiguredVres implements Vres {
 
   public void reload() {
     loadedInstance =
-      transactionEnforcer.executeAndReturn(db -> TransactionStateAndResult.commitAndReturn(db.loadVres()));
+      transactionEnforcer.oldExecuteAndReturn(db -> TransactionStateAndResult.commitAndReturn(db.loadVres()));
   }
 }

@@ -7,8 +7,10 @@ import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
+import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -37,12 +39,23 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Produces(MediaType.APPLICATION_JSON)
 public class SingleEntity {
 
+  private final LoggedInUserStore loggedInUserStore;
+  private final CrudServiceFactory crudServiceFactory;
+  private final TransactionEnforcer transactionEnforcer;
+
+  public SingleEntity(LoggedInUserStore loggedInUserStore, CrudServiceFactory crudServiceFactory,
+                      TransactionEnforcer transactionEnforcer) {
+    this.loggedInUserStore = loggedInUserStore;
+    this.crudServiceFactory = crudServiceFactory;
+    this.transactionEnforcer = transactionEnforcer;
+  }
+
   public static URI makeUrl(String collectionName, UUID id) {
     return UriBuilder.fromResource(SingleEntity.class)
-      .buildFromMap(ImmutableMap.of(
-        "collection", collectionName,
-        "id", id
-      ));
+                     .buildFromMap(ImmutableMap.of(
+                       "collection", collectionName,
+                       "id", id
+                     ));
   }
 
   public static URI makeUrl(String collectionName, UUID id, Integer rev) {
@@ -50,33 +63,31 @@ public class SingleEntity {
       return makeUrl(collectionName, id);
     } else {
       return UriBuilder.fromResource(SingleEntity.class)
-        .queryParam("rev", rev)
-        .buildFromMap(ImmutableMap.of(
-          "collection", collectionName,
-          "id", id
-        ));
+                       .queryParam("rev", rev)
+                       .buildFromMap(ImmutableMap.of(
+                         "collection", collectionName,
+                         "id", id
+                       ));
     }
-  }
-
-  private final LoggedInUserStore loggedInUserStore;
-  private final CrudServiceFactory crudServiceFactory;
-
-  public SingleEntity(LoggedInUserStore loggedInUserStore, CrudServiceFactory crudServiceFactory) {
-    this.loggedInUserStore = loggedInUserStore;
-    this.crudServiceFactory = crudServiceFactory;
   }
 
   @GET
   public Response get(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id,
                       @QueryParam("rev") Integer rev) {
-    try {
-      JsonNode result = crudServiceFactory.newJsonCrudService().get(collectionName, id.get(), rev);
-      return Response.ok(result).build();
-    } catch (InvalidCollectionException e) {
-      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
-    } catch (NotFoundException e) {
-      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
-    }
+
+    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+      JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
+      try {
+        JsonNode result = crudService.get(collectionName, id.get(), rev);
+        return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());
+      } catch (InvalidCollectionException e) {
+        return TransactionStateAndResult.rollbackAndReturn(
+          Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build());
+      } catch (NotFoundException e) {
+        return TransactionStateAndResult.rollbackAndReturn(
+          Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build());
+      }
+    });
   }
 
   @PUT

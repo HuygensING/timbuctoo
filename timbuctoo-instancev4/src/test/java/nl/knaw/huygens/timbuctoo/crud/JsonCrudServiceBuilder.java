@@ -94,12 +94,17 @@ public class JsonCrudServiceBuilder {
   }
 
   public JsonCrudService build() {
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
-      () -> new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres, handleAdder)
-    );
+    DataStoreOperations dataStoreOperations =
+      new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres, handleAdder);
+
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
+      new TimbuctooActions.TimbuctooActionsFactory(authorizer, clock, handleAdder);
+
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> dataStoreOperations,
+      timbuctooActionsFactory);
     return new JsonCrudService(vres, userStore,
       relationUrlGenerator, clock,
-      new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder)
+      new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder, dataStoreOperations)
     );
   }
 

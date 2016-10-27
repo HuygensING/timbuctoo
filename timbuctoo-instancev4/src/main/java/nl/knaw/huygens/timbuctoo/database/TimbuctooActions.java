@@ -32,13 +32,15 @@ public class TimbuctooActions {
   private final TransactionEnforcer transactionEnforcer;
   private final Clock clock;
   private final HandleAdder handleAdder;
+  private final DataStoreOperations dataStoreOperations;
 
   public TimbuctooActions(Authorizer authorizer, TransactionEnforcer transactionEnforcer, Clock clock,
-                          HandleAdder handleAdder) {
+                          HandleAdder handleAdder, DataStoreOperations dataStoreOperations) {
     this.authorizer = authorizer;
     this.transactionEnforcer = transactionEnforcer;
     this.clock = clock;
     this.handleAdder = handleAdder;
+    this.dataStoreOperations = dataStoreOperations;
   }
 
   public UUID createEntity(Collection collection, Optional<Collection> baseCollection, CreateEntity createEntity,
@@ -108,18 +110,9 @@ public class TimbuctooActions {
   }
 
   public ReadEntity getEntity(Collection collection, UUID id, Integer rev,
-                              CustomEntityProperties customEntityPros,
+                              CustomEntityProperties customEntityProps,
                               CustomRelationProperties customRelationProps) throws NotFoundException {
-    GetMessage getMessage = transactionEnforcer.getEntity(collection, id, rev, customEntityPros, customRelationProps);
-
-    switch (getMessage.getStatus()) {
-      case SUCCESS:
-        return getMessage.getReadEntity().get();
-      case NOT_FOUND:
-        throw new NotFoundException();
-      default:
-        throw new IllegalStateException("GetStatus '" + getMessage.getStatus() + "' is unknown.");
-    }
+    return dataStoreOperations.getEntity(id, rev, collection, customEntityProps, customRelationProps);
   }
 
   public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
@@ -156,6 +149,22 @@ public class TimbuctooActions {
 
     if (updateMessage.getStatus() == UpdateReturnMessage.UpdateStatus.NOT_FOUND) {
       throw new NotFoundException();
+    }
+  }
+
+  public static class TimbuctooActionsFactory {
+    private final Authorizer authorizer;
+    private final Clock clock;
+    private final HandleAdder handleAdder;
+
+    public TimbuctooActionsFactory(Authorizer authorizer, Clock clock, HandleAdder handleAdder) {
+      this.authorizer = authorizer;
+      this.clock = clock;
+      this.handleAdder = handleAdder;
+    }
+
+    public TimbuctooActions create(TransactionEnforcer transactionEnforcer, DataStoreOperations dataStoreOperations) {
+      return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder, dataStoreOperations);
     }
   }
 }

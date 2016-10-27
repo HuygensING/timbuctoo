@@ -65,7 +65,8 @@ public class TimbuctooActionsCreateTest {
   @Test(expected = AuthorizationException.class)
   public void createEntityThrowsAnAuthorizationExceptionWhenTheUserIsNotAllowedToWriteToTheCollection()
     throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     try {
       instance.createEntity(mock(Collection.class), baseCollection, new CreateEntity(Lists.newArrayList()), "userId");
@@ -74,10 +75,10 @@ public class TimbuctooActionsCreateTest {
     }
   }
 
-
   @Test
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -93,7 +94,8 @@ public class TimbuctooActionsCreateTest {
 
   @Test
   public void createEntityReturnsTheId() throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -103,7 +105,8 @@ public class TimbuctooActionsCreateTest {
   @Test
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
     when(transactionState.wasCommitted()).thenReturn(true);
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -113,7 +116,8 @@ public class TimbuctooActionsCreateTest {
   @Test
   public void createEntityDoesNotCallTheHandleAdderWhenTheTransactionIsRolledBack() throws Exception {
     when(transactionState.wasCommitted()).thenReturn(false);
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 

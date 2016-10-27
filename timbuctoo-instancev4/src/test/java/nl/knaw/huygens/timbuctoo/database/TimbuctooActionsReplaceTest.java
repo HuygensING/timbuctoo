@@ -54,7 +54,8 @@ public class TimbuctooActionsReplaceTest {
 
   @Test(expected = AuthorizationException.class)
   public void replaceEntityThrowsAnUnauthorizedExceptionWhenTheUserIsNotAllowedToWrite() throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     try {
       instance.replaceEntity(collection, updateEntity, USER_ID);
@@ -66,7 +67,8 @@ public class TimbuctooActionsReplaceTest {
   @Test
   public void replaceEntityAddsAHandleAfterASuccessfulUpdate() throws Exception {
     when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
@@ -79,7 +81,8 @@ public class TimbuctooActionsReplaceTest {
   @Test
   public void replaceEntityAddsTheModifiedPropertyToUpdateEntityBeforeExecutingTheUpdate() throws Exception {
     when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
@@ -95,7 +98,8 @@ public class TimbuctooActionsReplaceTest {
   public void replaceEntityThrowsANotFoundExceptionWhenExecuteAndReturnReturnsAnUpdateStatusNotFound()
     throws Exception {
     when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.notFound());
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
   }
@@ -104,7 +108,8 @@ public class TimbuctooActionsReplaceTest {
   public void replaceEntityThrowsAnAlreadyUpdatedExceptionWhenExecuteAndReturnReturnsAnUpdateStatusAlreadyUpdated()
     throws Exception {
     when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.allreadyUpdated());
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder);
+    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
+      mock(DataStoreOperations.class));
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
   }
