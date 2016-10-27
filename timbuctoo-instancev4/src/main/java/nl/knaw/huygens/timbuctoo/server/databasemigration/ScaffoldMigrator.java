@@ -100,6 +100,12 @@ public class ScaffoldMigrator {
           relationType("concept", "hasDataLineType", "concept", "isDataLineTypeOf",
             false, false, false, UUID.randomUUID()),
           relationType("concept", "isDataLineForPerson", "person", "hasDataLine",
+            false, false, false, UUID.randomUUID()),
+
+          // scientist_bios for persons
+          relationType("concept", "hasFieldOfInterest", "concept", "isFieldOfInterestOf",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "isScientistBioOf", "person", "hasScientistBio",
             false, false, false, UUID.randomUUID())
         );
         db.success();
