@@ -64,7 +64,10 @@ public class ScaffoldMigrator {
                   .withProperty("date", localProperty("document_date", datable))
 
               )
-              .withCollection("concepts")
+              .withCollection("concepts", collection ->
+                collection
+                  .withDisplayName(localProperty("label"))
+              )
               .withCollection("relations", CollectionBuilder::isRelationCollection))
           .build();
         db.initDb(
@@ -73,7 +76,25 @@ public class ScaffoldMigrator {
           relationType("person", "hasDeathPlace", "location", "isDeathPlaceOf", false, false, false, UUID.randomUUID()),
           relationType("collective", "hasMember", "person", "isMemberOf", false, false, false, UUID.randomUUID()),
           relationType("collective", "locatedAt", "location", "isHomeOf", false, false, false, UUID.randomUUID()),
-          relationType("document", "isCreatedBy", "person", "isCreatorOf", false, false, false, UUID.randomUUID())
+          relationType("document", "isCreatedBy", "person", "isCreatorOf", false, false, false, UUID.randomUUID()),
+
+          // TODO+FIXME, these BIA relationTypes should be made VRE specific and editable before mapping
+          // person to person relations
+          relationType("concept", "hasFirstPerson", "person", "isFirstPersonInRelation",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "hasSecondPerson", "person", "isSecondPersonInRelation",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "hasPersonToPersonRelationType", "concept", "isPersonToPersonRelationTypeOf",
+            false, false, false, UUID.randomUUID()),
+
+          // states of persons, institutes and
+          relationType("concept", "hasStateType", "concept", "isStateTypeOf", false, false, false, UUID.randomUUID()),
+          relationType("concept", "isStateOfPerson", "person", "hasPersonState",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "isStateLinkedToInstitute", "collective", "isInstituteLinkedToState",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "isStateLinkedToLocation", "location", "isLocationLinkedToState",
+            false, false, false, UUID.randomUUID())
         );
         db.success();
       }
