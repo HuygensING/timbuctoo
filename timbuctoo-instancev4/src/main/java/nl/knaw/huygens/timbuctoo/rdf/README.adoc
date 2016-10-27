@@ -61,18 +61,72 @@ An import can result in a combination of the next 3 scenario's.
 ==== No type information available
 This is the most basic one. For example when the first triple of the VRE has not http://www.w3.org/2000/01/rdf-schema#type predicate, the newly created vertex will be added to the 'unknown'-collection of the VRE.
 
-image::images/unknown_type_hierarchy.png["Hierarchy for an unknown type."]
+[graphviz]
+--
+digraph graphname{
+	V [label="VRE"]
+	AV [label="Admin"]
+        C [label="VREUnknowns"]  
+        EN [label=""]
+	ARCH [label="Concepts"]
+	ARCH_EN [label=""]
+	E [label="Concept,VREUnknown"]	
+        V->C [label="hasCollection"]
+	C->ARCH [label="hasArchetype"]
+	AV->ARCH [label="hasCollection"]
+	C->EN
+	ARCH->ARCH_EN
+	EN->E[label="hasEntity"]
+	ARCH_EN->E[label="hasEntity"]
+}
+--
 
 ==== A type without a connection with a known archetype
 When type information becomes available, the structure will be transformed to the next structure.
 
-image::images/default_hierarchy.png["Default hierarchy."]
+[graphviz]
+--
+digraph graphname{
+	V [label="VRE"]
+	AV [label="Admin"]
+        C [label="VREFamilies"]  
+        EN [label=""]
+	ARCH [label="Concepts"]
+	ARCH_EN [label=""]
+	E [label="Concept, VREFamily"]	
+        V->C [label="hasCollection"]
+	C->ARCH [label="hasArchetype"]
+	AV->ARCH [label="hasCollection"]
+	C->EN
+	ARCH->ARCH_EN
+	EN->E[label="hasEntity"]
+	ARCH_EN->E[label="hasEntity"]
+}
+--
 
 ==== A type with a known archetype
 When the type is http://www.w3.org/2000/01/rdf-schema#subClassOf of a Timbuctoo known archetype. 
 The structure will be transformed to the following structure.
 
-image::images/hierarchy.png["Hierarchy with a known archetype."]
+[graphviz]
+--
+digraph graphname{
+	V [label="VRE"]
+	AV [label="Admin"]
+        C [label="VREPersons"]  
+        EN [label=""]
+	ARCH [label="Persons"]
+	ARCH_EN [label=""]
+	E [label="Person,VREPerson"]	
+        V->C [label="hasCollection"]
+	C->ARCH [label="hasArchetype"]
+	AV->ARCH [label="hasCollection"]
+	C->EN
+	ARCH->ARCH_EN
+	EN->E[label="hasEntity"]
+	ARCH_EN->E[label="hasEntity"]
+}
+--
 
 == Dependencies
 We use [Apache Jena](https://jena.apache.org/) to convert the triple strings to java objects.
