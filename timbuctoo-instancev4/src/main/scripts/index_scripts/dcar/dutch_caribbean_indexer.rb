@@ -5,7 +5,7 @@ require '../lib/timbuctoo_solr/default_mapper'
 require './configs/dcar_archive_config'
 require './configs/dcar_archiver_config'
 require './configs/dcar_legislation_config'
-#require './mappers/dcar_person_mapper'
+require './mappers/dcar_archive_mapper'
 #require './mappers/dcar_document_mapper'
 #require './mappers/dcar_person_reception_mapper'
 #require './mappers/dcar_document_reception_mapper'
@@ -15,7 +15,7 @@ class DutchCaribbeanIndexer
     @options = options
 
     @legislation_mapper = DefaultMapper.new(DcarLegislationConfig.get)
-    @archive_mapper = DefaultMapper.new(DcarArchiveConfig.get)
+    @archive_mapper = DcarArchiveMapper.new(DcarArchiveConfig.get)
     @archiver_mapper = DefaultMapper.new(DcarArchiverConfig.get)
 
 #    @person_reception_mapper = DcarPersonReceptionMapper.new(@person_mapper, @document_mapper)

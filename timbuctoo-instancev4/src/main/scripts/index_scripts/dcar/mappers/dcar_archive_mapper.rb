@@ -2,7 +2,7 @@ require File.dirname(__FILE__) + '/../../lib/timbuctoo_solr/default_mapper'
 require File.dirname(__FILE__) + '/../../lib/mixins/converters/to_year_converter'
 require File.dirname(__FILE__) + '/../../lib/mixins/converters/to_names_converter'
 
-class DcarPersonMapper < DefaultMapper
+class DcarArchiveMapper < DefaultMapper
   include ToYearConverter
   include ToNamesConverter
 
@@ -16,11 +16,11 @@ class DcarPersonMapper < DefaultMapper
 
   def convert(record)
     data = super(record)
-    data['type_s'] = 'person'
-    convert_temp_name(data)
-    add_location_sort(data)
+    data['type_s'] = 'archive'
+#    convert_temp_name(data)
+#    add_location_sort(data)
 
-    puts "Person scrape: #{@record_count}" if @record_count % 100 == 0
+    puts "Archive scrape: #{@record_count}" if @record_count % 100 == 0
     @record_count += 1
     @cache[data['id']] = data
   end

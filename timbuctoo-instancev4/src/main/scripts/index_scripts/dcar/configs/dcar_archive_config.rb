@@ -9,6 +9,8 @@ class DcarArchiveConfig
         { :name => 'documentType', :converted_name => 'documentType_s'},
         { :name => 'notes', :converted_name => 'notes_t'},
         { :name => 'refCodeArchive', :converted_name => 'refcode_s'},
+        { :name => 'beginDate', :converted_name => 'beginDate_i', :type => 'year'},
+        { :name => 'endDate', :converted_name => 'endDate_i', :type => 'year'},
       ], :relations => [
        { :relation_name => 'is_created_by', :property_name => 'displayName', :converted_name => 'creator_ss'},
        { :relation_name => 'has_child_archive', :property_name => 'displayName', :converted_name => 'child_archive_ss'},
