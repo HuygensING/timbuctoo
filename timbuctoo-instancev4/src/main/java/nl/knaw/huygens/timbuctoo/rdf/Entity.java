@@ -27,6 +27,11 @@ public class Entity {
     collections.forEach(collection -> collection.addProperty(vertex, propertyName, value));
   }
 
+
+  public void addToListProperty(String propertyName, String value) {
+    collections.forEach(collection -> collection.addToListProperty(vertex, propertyName, value));
+  }
+
   public void removeProperty(String propertyName) {
     collections.forEach(collection -> collection.removeProperty(vertex, propertyName));
   }
