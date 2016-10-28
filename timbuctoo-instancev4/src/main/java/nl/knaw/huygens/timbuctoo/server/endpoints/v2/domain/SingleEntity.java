@@ -97,30 +97,61 @@ public class SingleEntity {
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
-      try {
-        JsonCrudService crudService = crudServiceFactory.newJsonCrudService();
-        crudService.replace(collectionName, id.get(), body, user.get().getId());
-        JsonNode jsonNode = crudService.get(collectionName, id.get());
-        return Response.ok(jsonNode).build();
-      } catch (InvalidCollectionException e) {
-        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
-      } catch (NotFoundException e) {
-        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
-      } catch (IOException e) {
-        return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
-      } catch (AlreadyUpdatedException e) {
-        return Response
-          .status(Response.Status.EXPECTATION_FAILED)
-          .entity(jsnO("message", jsn("Entry was already updated")))
-          .build();
-      } catch (AuthorizationException e) {
-        return Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build();
-      } catch (AuthorizationUnavailableException e) {
-        return Response
-          .status(Response.Status.INTERNAL_SERVER_ERROR)
-          .entity(jsnO("message", jsn(e.getMessage())))
-          .build();
+      UpdateMessage updateMessage = transactionEnforcer.executeAndReturn(timbuctooActions -> {
+        JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
+        try {
+          crudService.replace(collectionName, id.get(), body, user.get().getId());
+          return TransactionStateAndResult.commitAndReturn(UpdateMessage.success());
+        } catch (InvalidCollectionException e) {
+          return TransactionStateAndResult.rollbackAndReturn(
+            UpdateMessage.failure(e.getMessage(), Response.Status.NOT_FOUND)
+          );
+        } catch (NotFoundException e) {
+          return TransactionStateAndResult.rollbackAndReturn(
+            UpdateMessage.failure("not found", Response.Status.NOT_FOUND)
+          );
+        } catch (IOException e) {
+          return TransactionStateAndResult.rollbackAndReturn(
+            UpdateMessage.failure(e.getMessage(), Response.Status.BAD_REQUEST)
+          );
+        } catch (AlreadyUpdatedException e) {
+          return TransactionStateAndResult.rollbackAndReturn(
+            UpdateMessage.failure("Entry was already updated", Response.Status.EXPECTATION_FAILED)
+          );
+        } catch (AuthorizationException e) {
+          return TransactionStateAndResult.rollbackAndReturn(
+            UpdateMessage.failure(e.getMessage(), Response.Status.FORBIDDEN)
+          );
+        } catch (AuthorizationUnavailableException e) {
+          return TransactionStateAndResult.rollbackAndReturn(
+            UpdateMessage.failure(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR)
+          );
+        }
+      });
+
+      // it is needed to split the put into two transactions to make sure the latest version is saved to the database.
+      if (updateMessage.isSuccess()) {
+        return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+          JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
+          try {
+            JsonNode jsonNode = crudService.get(collectionName, id.get());
+            return TransactionStateAndResult.commitAndReturn(Response.ok(jsonNode).build());
+          } catch (InvalidCollectionException e) {
+            return TransactionStateAndResult.rollbackAndReturn(
+              Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build()
+            );
+          } catch (NotFoundException e) {
+            return TransactionStateAndResult.rollbackAndReturn(
+              Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build()
+            );
+          }
+        });
+      } else {
+        return Response.status(updateMessage.getResponseStatus())
+                       .entity(jsnO("message", jsn(updateMessage.getException().get())))
+                       .build();
       }
+
     }
   }
 
@@ -145,6 +176,39 @@ public class SingleEntity {
         return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
       }
     }
+  }
+
+  private static class UpdateMessage {
+    private final boolean success;
+    private final String exception;
+    private final Response.Status responseStatus;
+
+    private UpdateMessage(boolean success, String exceptionMessage, Response.Status responseStatus) {
+      this.success = success;
+      this.exception = exceptionMessage;
+      this.responseStatus = responseStatus;
+    }
+
+    public static UpdateMessage success() {
+      return new UpdateMessage(true, null, Response.Status.OK);
+    }
+
+    public static UpdateMessage failure(String exception, Response.Status responseStatus) {
+      return new UpdateMessage(false, exception, responseStatus);
+    }
+
+    public boolean isSuccess() {
+      return success;
+    }
+
+    public Response.Status getResponseStatus() {
+      return responseStatus;
+    }
+
+    public Optional<String> getException() {
+      return Optional.ofNullable(exception);
+    }
+
   }
 
 }

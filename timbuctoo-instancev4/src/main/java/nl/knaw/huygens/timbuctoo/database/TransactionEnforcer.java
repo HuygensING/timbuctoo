@@ -22,11 +22,20 @@ public class TransactionEnforcer {
 
   private final Supplier<DataStoreOperations> dataStoreOperationsSupplier;
   private final TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory;
+  private final AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   public TransactionEnforcer(Supplier<DataStoreOperations> dataStoreOperationsSupplier,
                              TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory) {
+    this(dataStoreOperationsSupplier, timbuctooActionsFactory, new AfterSuccessTaskExecutor());
+  }
+
+  public TransactionEnforcer(Supplier<DataStoreOperations> dataStoreOperationsSupplier,
+                             TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory,
+                             AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
+
     this.dataStoreOperationsSupplier = dataStoreOperationsSupplier;
     this.timbuctooActionsFactory = timbuctooActionsFactory;
+    this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
   }
 
   public <T> T oldExecuteAndReturn(Function<DataStoreOperations, TransactionStateAndResult<T>> actions) {
@@ -51,20 +60,27 @@ public class TransactionEnforcer {
   public <T> T executeAndReturn(Function<TimbuctooActions, TransactionStateAndResult<T>> action) {
     DataStoreOperations db = dataStoreOperationsSupplier.get();
 
-    TimbuctooActions timbuctooActions = timbuctooActionsFactory.create(this, db);
+    boolean success = false;
+    TimbuctooActions timbuctooActions = timbuctooActionsFactory.create(this, db, afterSuccessTaskExecutor);
     try {
       TransactionStateAndResult<T> result = action.apply(timbuctooActions);
       if (result.wasCommitted()) {
+        success = true;
         db.success();
       } else {
+        success = false;
         db.rollback();
       }
       return result.getValue();
     } catch (RuntimeException e) {
+      success = false;
       db.rollback();
       throw e;
     } finally {
       db.close();
+      if (success) {
+        afterSuccessTaskExecutor.executeTasks();
+      }
     }
   }
 

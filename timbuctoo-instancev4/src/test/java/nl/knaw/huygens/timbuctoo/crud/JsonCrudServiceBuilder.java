@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
+import nl.knaw.huygens.timbuctoo.database.AfterSuccessTaskExecutor;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
@@ -104,7 +105,14 @@ public class JsonCrudServiceBuilder {
       timbuctooActionsFactory);
     return new JsonCrudService(vres, userStore,
       relationUrlGenerator, clock,
-      new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder, dataStoreOperations)
+      new TimbuctooActions(
+        authorizer,
+        transactionEnforcer,
+        clock,
+        handleAdder,
+        dataStoreOperations,
+        new AfterSuccessTaskExecutor()
+      )
     );
   }
 

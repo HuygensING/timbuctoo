@@ -54,7 +54,7 @@ public class TimbuctooActionsRelationTest {
     when(transactionEnforcer.createRelation(collection, createRelation))
       .thenReturn(CreateMessage.success(UUID.randomUUID()));
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     instance.createRelation(collection, createRelation, USER_ID);
 
@@ -72,7 +72,7 @@ public class TimbuctooActionsRelationTest {
     when(transactionEnforcer.createRelation(collection, createRelation))
       .thenReturn(CreateMessage.success(UUID.randomUUID()));
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     UUID id = instance.createRelation(collection, createRelation, USER_ID);
 
@@ -82,7 +82,7 @@ public class TimbuctooActionsRelationTest {
   @Test(expected = AuthorizationException.class)
   public void createRelationThrowsAnUnauthorizedExceptionWhenTheUserIsNotAllowedToWrite() throws Exception {
     TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     try {
       instance.createRelation(collection, createRelation, USER_ID);
@@ -96,7 +96,7 @@ public class TimbuctooActionsRelationTest {
     throws Exception {
     when(transactionEnforcer.createRelation(collection, createRelation)).thenReturn(failure("error message"));
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     instance.createRelation(collection, createRelation, USER_ID);
   }
@@ -104,7 +104,7 @@ public class TimbuctooActionsRelationTest {
   @Test(expected = AuthorizationException.class)
   public void replaceRelationThrowsAnAuthorizationExceptionWhenTheUsersIsNotAllowedToWrite() throws Exception {
     TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     try {
       instance.replaceRelation(collection, new UpdateRelation(UUID.randomUUID(), 1, false), USER_ID);
@@ -119,7 +119,7 @@ public class TimbuctooActionsRelationTest {
     UpdateRelation updateRelation = new UpdateRelation(id, 1, false);
     when(transactionEnforcer.updateRelation(collection, updateRelation)).thenReturn(UpdateReturnMessage.success(1));
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     instance.replaceRelation(collection, updateRelation, USER_ID);
 
@@ -137,7 +137,7 @@ public class TimbuctooActionsRelationTest {
     UpdateRelation updateRelation = new UpdateRelation(null, 1, false);
     when(transactionEnforcer.updateRelation(collection, updateRelation)).thenReturn(UpdateReturnMessage.notFound());
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     instance.replaceRelation(collection, updateRelation, USER_ID);
   }

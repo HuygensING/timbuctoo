@@ -35,7 +35,7 @@ public class TimbuctooActionsGetTest {
     relationProps = mock(CustomRelationProperties.class);
     transactionEnforcer = mock(TransactionEnforcer.class);
     dataStoreOperations = mock(DataStoreOperations.class);
-    instance = new TimbuctooActions(null, transactionEnforcer, null, null, dataStoreOperations);
+    instance = new TimbuctooActions(null, transactionEnforcer, null, null, dataStoreOperations, null);
     collection = mock(Collection.class);
   }
 

@@ -66,7 +66,7 @@ public class TimbuctooActionsCreateTest {
   public void createEntityThrowsAnAuthorizationExceptionWhenTheUserIsNotAllowedToWriteToTheCollection()
     throws Exception {
     TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     try {
       instance.createEntity(mock(Collection.class), baseCollection, new CreateEntity(Lists.newArrayList()), "userId");
@@ -78,7 +78,7 @@ public class TimbuctooActionsCreateTest {
   @Test
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -95,7 +95,7 @@ public class TimbuctooActionsCreateTest {
   @Test
   public void createEntityReturnsTheId() throws Exception {
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -106,7 +106,7 @@ public class TimbuctooActionsCreateTest {
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
     when(transactionState.wasCommitted()).thenReturn(true);
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -117,7 +117,7 @@ public class TimbuctooActionsCreateTest {
   public void createEntityDoesNotCallTheHandleAdderWhenTheTransactionIsRolledBack() throws Exception {
     when(transactionState.wasCommitted()).thenReturn(false);
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 

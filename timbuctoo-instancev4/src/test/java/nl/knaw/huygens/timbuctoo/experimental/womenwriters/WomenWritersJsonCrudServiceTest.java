@@ -150,7 +150,7 @@ public class WomenWritersJsonCrudServiceTest {
         transactionEnforcer,
         null, // no clock for get needed
         mock(HandleAdder.class),
-        dataStoreOperations));
+        dataStoreOperations, null));
   }
 
   @Test

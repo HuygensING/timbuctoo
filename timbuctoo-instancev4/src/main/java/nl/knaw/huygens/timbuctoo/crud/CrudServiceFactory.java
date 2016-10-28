@@ -47,7 +47,7 @@ public class CrudServiceFactory {
   }
 
   private TimbuctooActions createTimbuctooActions() {
-    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder, datastore.get());
+    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder, datastore.get(), null);
   }
 
   public WomenWritersJsonCrudService newWomenWritersJsonCrudService() {

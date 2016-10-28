@@ -7,6 +7,8 @@ import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -32,12 +34,14 @@ public class TimbuctooActionsReplaceTest {
   public static final String COLLECTION_NAME = "collection";
   public static final UUID ID = UUID.randomUUID();
   private static final String USER_ID = "userId";
+  private final DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
   private TransactionEnforcer transactionEnforcer;
   private Clock clock;
   private HandleAdder handleAdder;
   private UpdateEntity updateEntity;
   private Collection collection;
   private Instant instant;
+  private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   @Before
   public void setUp() throws Exception {
@@ -50,56 +54,57 @@ public class TimbuctooActionsReplaceTest {
     when(updateEntity.getId()).thenReturn(ID);
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
+    afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
 
   @Test(expected = AuthorizationException.class)
   public void replaceEntityThrowsAnUnauthorizedExceptionWhenTheUserIsNotAllowedToWrite() throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+    TimbuctooActions instance = createInstance(notAllowedToWrite());
 
     try {
       instance.replaceEntity(collection, updateEntity, USER_ID);
     } finally {
-      verifyZeroInteractions(transactionEnforcer);
+      verifyZeroInteractions(dataStoreOperations);
     }
   }
 
   @Test
   public void replaceEntityAddsAHandleAfterASuccessfulUpdate() throws Exception {
-    when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+    when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenReturn(NEW_REV);
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
-    InOrder inOrder = inOrder(transactionEnforcer, handleAdder);
-    inOrder.verify(transactionEnforcer).updateEntity(collection, updateEntity);
-    inOrder.verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV));
+    InOrder inOrder = inOrder(dataStoreOperations, handleAdder, afterSuccessTaskExecutor);
+    inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
+    inOrder.verify(afterSuccessTaskExecutor).addHandleTask(
+      handleAdder,
+      new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
+    );
+    // inOrder.verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV));
 
   }
 
   @Test
   public void replaceEntityAddsTheModifiedPropertyToUpdateEntityBeforeExecutingTheUpdate() throws Exception {
     when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
-    InOrder inOrder = inOrder(transactionEnforcer, updateEntity);
+    InOrder inOrder = inOrder(dataStoreOperations, updateEntity);
     inOrder.verify(updateEntity).setModified(argThat(allOf(
       hasProperty("timeStamp", is(instant.toEpochMilli())),
       hasProperty("userId", is(USER_ID))
     )));
-    inOrder.verify(transactionEnforcer).updateEntity(collection, updateEntity);
+    inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
   }
 
   @Test(expected = NotFoundException.class)
   public void replaceEntityThrowsANotFoundExceptionWhenExecuteAndReturnReturnsAnUpdateStatusNotFound()
     throws Exception {
-    when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.notFound());
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+    when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenThrow(new NotFoundException());
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
   }
@@ -107,11 +112,15 @@ public class TimbuctooActionsReplaceTest {
   @Test(expected = AlreadyUpdatedException.class)
   public void replaceEntityThrowsAnAlreadyUpdatedExceptionWhenExecuteAndReturnReturnsAnUpdateStatusAlreadyUpdated()
     throws Exception {
-    when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.allreadyUpdated());
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+    when(dataStoreOperations.replaceEntity(collection, updateEntity)).thenThrow(new AlreadyUpdatedException());
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
+  }
+
+  private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
+    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder,
+      dataStoreOperations, afterSuccessTaskExecutor);
   }
 
 }

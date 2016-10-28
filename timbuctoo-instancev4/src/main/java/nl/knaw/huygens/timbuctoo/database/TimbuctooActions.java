@@ -33,14 +33,17 @@ public class TimbuctooActions {
   private final Clock clock;
   private final HandleAdder handleAdder;
   private final DataStoreOperations dataStoreOperations;
+  private final AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   public TimbuctooActions(Authorizer authorizer, TransactionEnforcer transactionEnforcer, Clock clock,
-                          HandleAdder handleAdder, DataStoreOperations dataStoreOperations) {
+                          HandleAdder handleAdder, DataStoreOperations dataStoreOperations,
+                          AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
     this.authorizer = authorizer;
     this.transactionEnforcer = transactionEnforcer;
     this.clock = clock;
     this.handleAdder = handleAdder;
     this.dataStoreOperations = dataStoreOperations;
+    this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
   }
 
   public UUID createEntity(Collection collection, Optional<Collection> baseCollection, CreateEntity createEntity,
@@ -62,27 +65,17 @@ public class TimbuctooActions {
   }
 
   public void replaceEntity(Collection collection, UpdateEntity updateEntity, String userId)
-    throws AuthorizationUnavailableException, AuthorizationException, NotFoundException, AlreadyUpdatedException {
+    throws AuthorizationUnavailableException, AuthorizationException, NotFoundException, AlreadyUpdatedException,
+    IOException {
     checkIfAllowedToWrite(userId, collection);
 
     updateEntity.setModified(createChange(userId));
 
-    UpdateReturnMessage updateReturnMessage = transactionEnforcer.updateEntity(collection, updateEntity);
+    int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
+    HandleAdderParameters params = new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(),
+      rev);
+    afterSuccessTaskExecutor.addHandleTask(handleAdder, params);
 
-    switch (updateReturnMessage.getStatus()) {
-      case SUCCESS:
-        Integer rev = updateReturnMessage.getNewRev().get();
-        HandleAdderParameters params = new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(),
-          rev);
-        handleAdder.add(params);
-        break;
-      case NOT_FOUND:
-        throw new NotFoundException();
-      case ALREADY_UPDATED:
-        throw new AlreadyUpdatedException();
-      default:
-        throw new IllegalStateException("UpdateStatus '" + updateReturnMessage.getStatus() + "' is unknown.");
-    }
   }
 
   public void deleteEntity(Collection collection, UUID uuid, String userId)
@@ -163,8 +156,18 @@ public class TimbuctooActions {
       this.handleAdder = handleAdder;
     }
 
-    public TimbuctooActions create(TransactionEnforcer transactionEnforcer, DataStoreOperations dataStoreOperations) {
-      return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder, dataStoreOperations);
+    public TimbuctooActions create(TransactionEnforcer transactionEnforcer,
+                                   DataStoreOperations dataStoreOperations,
+                                   AfterSuccessTaskExecutor afterSuccessTaskExecutor
+    ) {
+      return new TimbuctooActions(
+        authorizer,
+        transactionEnforcer,
+        clock,
+        handleAdder,
+        dataStoreOperations,
+        afterSuccessTaskExecutor
+      );
     }
   }
 }

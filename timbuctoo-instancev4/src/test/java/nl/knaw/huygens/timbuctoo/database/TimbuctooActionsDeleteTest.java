@@ -47,7 +47,7 @@ public class TimbuctooActionsDeleteTest {
   public void deleteEntityLetsDataAccessDeleteTheEntity() throws Exception {
     when(transactionEnforcer.deleteEntity(collection, ID, change)).thenReturn(DeleteMessage.success());
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     instance.deleteEntity(collection, ID, USER_ID);
 
@@ -57,7 +57,7 @@ public class TimbuctooActionsDeleteTest {
   @Test(expected = AuthorizationException.class)
   public void deleteEntityThrowsAnUnAuthrozedExceptionIfTheUserIsNotAllowedToWriteTheCollection() throws Exception {
     TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     try {
       instance.deleteEntity(collection, ID, USER_ID);
@@ -70,7 +70,7 @@ public class TimbuctooActionsDeleteTest {
   public void deleteEntityThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
     when(transactionEnforcer.deleteEntity(collection, ID, change)).thenReturn(DeleteMessage.notFound());
     TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class));
+      mock(DataStoreOperations.class), null);
 
     instance.deleteEntity(collection, ID, USER_ID);
   }
