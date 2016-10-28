@@ -6,10 +6,13 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
+import java.io.IOException;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
@@ -24,9 +27,9 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
@@ -43,6 +46,8 @@ public class TimbuctooActionsCreateTest {
   private Optional<Collection> baseCollection;
   private HandleAdder handleAdder;
   private TransactionState transactionState;
+  private DataStoreOperations dataStoreOperations;
+  private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   @Before
   public void setUp() throws Exception {
@@ -60,42 +65,41 @@ public class TimbuctooActionsCreateTest {
     userId = "userId";
     baseCollection = Optional.empty();
     handleAdder = mock(HandleAdder.class);
+    dataStoreOperations = mock(DataStoreOperations.class);
+    afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
 
   @Test(expected = AuthorizationException.class)
   public void createEntityThrowsAnAuthorizationExceptionWhenTheUserIsNotAllowedToWriteToTheCollection()
     throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class), null);
+    TimbuctooActions instance = createInstance(notAllowedToWrite());
 
     try {
       instance.createEntity(mock(Collection.class), baseCollection, new CreateEntity(Lists.newArrayList()), "userId");
     } finally {
-      verifyZeroInteractions(transactionEnforcer);
+      verifyZeroInteractions(dataStoreOperations);
     }
   }
 
   @Test
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class), null);
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
-    InOrder inOrder = inOrder(transactionEnforcer, createEntity);
+    InOrder inOrder = inOrder(dataStoreOperations, createEntity);
     inOrder.verify(createEntity).setId(id);
     inOrder.verify(createEntity).setCreated(argThat(allOf(
       hasProperty("userId", is(userId)),
       hasProperty("timeStamp", is(instant.toEpochMilli()))
       ))
     );
-    inOrder.verify(transactionEnforcer).createEntity(collection, baseCollection, this.createEntity);
+    inOrder.verify(dataStoreOperations).createEntity(collection, baseCollection, this.createEntity);
   }
 
   @Test
   public void createEntityReturnsTheId() throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class), null);
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
@@ -104,24 +108,26 @@ public class TimbuctooActionsCreateTest {
 
   @Test
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
-    when(transactionState.wasCommitted()).thenReturn(true);
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class), null);
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
-    verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, id, 1));
+    verify(afterSuccessTaskExecutor).addHandleTask(handleAdder, new HandleAdderParameters(COLLECTION_NAME, id, 1));
   }
 
-  @Test
-  public void createEntityDoesNotCallTheHandleAdderWhenTheTransactionIsRolledBack() throws Exception {
-    when(transactionState.wasCommitted()).thenReturn(false);
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class), null);
+  @Test(expected = IOException.class)
+  public void createEntityDoesNotCallTheAfterSuccessTaskExecutor() throws Exception {
+    doThrow(IOException.class).when(dataStoreOperations).createEntity(collection, baseCollection, createEntity);
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
-    UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
+    instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
-    verify(handleAdder, never()).add(new HandleAdderParameters(COLLECTION_NAME, id, 1));
+    verifyZeroInteractions(afterSuccessTaskExecutor);
+  }
+
+  private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
+    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder,
+      dataStoreOperations, afterSuccessTaskExecutor);
   }
 
 }

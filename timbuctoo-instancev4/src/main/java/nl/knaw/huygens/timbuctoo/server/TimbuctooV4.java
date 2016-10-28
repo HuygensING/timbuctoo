@@ -230,7 +230,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Me(loggedInUserStore));
     register(environment, new Search(configuration, graphManager));
     register(environment, new Autocomplete(autocompleteService));
-    register(environment, new Index(loggedInUserStore, crudServiceFactory));
+    register(environment, new Index(loggedInUserStore, crudServiceFactory, transactionEnforcer));
     register(environment, new SingleEntity(loggedInUserStore, crudServiceFactory, transactionEnforcer));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacyApiRedirects(uriHelper));

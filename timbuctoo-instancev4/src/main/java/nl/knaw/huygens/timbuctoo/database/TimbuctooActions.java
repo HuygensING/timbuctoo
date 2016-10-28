@@ -53,11 +53,12 @@ public class TimbuctooActions {
     Change created = createChange(userId);
     createEntity.setCreated(created);
 
-    TransactionState transactionState = transactionEnforcer.createEntity(collection, baseCollection, createEntity);
+    dataStoreOperations.createEntity(collection, baseCollection, createEntity);
 
-    if (transactionState.wasCommitted()) {
-      handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, 1));
-    }
+    afterSuccessTaskExecutor.addHandleTask(
+      handleAdder,
+      new HandleAdderParameters(collection.getCollectionName(), id, 1)
+    );
 
     return id;
   }

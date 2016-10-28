@@ -4,6 +4,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
+import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
@@ -26,6 +29,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.commitAndReturn;
+import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.rollbackAndReturn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
@@ -35,6 +40,14 @@ public class Index {
 
   private final LoggedInUserStore loggedInUserStore;
   private final CrudServiceFactory crudServiceFactory;
+  private final TransactionEnforcer transactionEnforcer;
+
+  public Index(LoggedInUserStore loggedInUserStore, CrudServiceFactory crudServiceFactory,
+               TransactionEnforcer transactionEnforcer) {
+    this.loggedInUserStore = loggedInUserStore;
+    this.crudServiceFactory = crudServiceFactory;
+    this.transactionEnforcer = transactionEnforcer;
+  }
 
   public static URI makeUrl(String collectionName) {
     return UriBuilder.fromResource(Index.class)
@@ -42,12 +55,6 @@ public class Index {
                        "collection", collectionName
                      ));
   }
-
-  public Index(LoggedInUserStore loggedInUserStore, CrudServiceFactory crudServiceFactory) {
-    this.loggedInUserStore = loggedInUserStore;
-    this.crudServiceFactory = crudServiceFactory;
-  }
-
 
   @POST
   public Response createNew(
@@ -59,16 +66,28 @@ public class Index {
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
-      try {
-        UUID id = crudServiceFactory.newJsonCrudService().create(collectionName, body, user.get().getId());
-        return Response.created(SingleEntity.makeUrl(collectionName, id)).build();
-      } catch (InvalidCollectionException e) {
-        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
-      } catch (IOException e) {
-        return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
-      } catch (AuthorizationException e) {
-        return Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build();
-      }
+      return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+        JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
+        try {
+          UUID id = crudService.create(collectionName, body, user.get().getId());
+          return commitAndReturn(
+            Response.created(SingleEntity.makeUrl(collectionName, id)).build()
+          );
+        } catch (InvalidCollectionException e) {
+          return rollbackAndReturn(
+            Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build()
+          );
+        } catch (IOException e) {
+          return rollbackAndReturn(
+            Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build()
+          );
+        } catch (AuthorizationException e) {
+          return rollbackAndReturn(
+            Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build()
+          );
+        }
+      });
+
     }
   }
 
