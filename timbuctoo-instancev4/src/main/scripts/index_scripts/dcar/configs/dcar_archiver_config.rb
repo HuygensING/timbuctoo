@@ -8,6 +8,8 @@ class DcarArchiverConfig
             { :name => 'nameNld',  :converted_name => 'nameNld_t'},
             { :name => 'history',  :converted_name => 'history_t'},
             { :name => 'notes',  :converted_name => 'notes_t'},
+            { :name => 'beginDate', :converted_name => 'beginDate_i'},
+            { :name => 'endDate', :converted_name => 'endDate_i'},
         ], :relations => [
             { :relation_name => 'has_archiver_keyword', :property_name => 'displayName', :converted_name => 'subject_ss'},
             { :relation_name => 'has_archiver_person', :property_name => 'displayName', :converted_name => 'person_ss'},

@@ -6,6 +6,7 @@ require './configs/dcar_archive_config'
 require './configs/dcar_archiver_config'
 require './configs/dcar_legislation_config'
 require './mappers/dcar_archive_mapper'
+require './mappers/dcar_archiver_mapper'
 #require './mappers/dcar_document_mapper'
 #require './mappers/dcar_person_reception_mapper'
 #require './mappers/dcar_document_reception_mapper'
@@ -16,7 +17,7 @@ class DutchCaribbeanIndexer
 
     @legislation_mapper = DefaultMapper.new(DcarLegislationConfig.get)
     @archive_mapper = DcarArchiveMapper.new(DcarArchiveConfig.get)
-    @archiver_mapper = DefaultMapper.new(DcarArchiverConfig.get)
+    @archiver_mapper = DcarArchiverMapper.new(DcarArchiverConfig.get)
 
 #    @person_reception_mapper = DcarPersonReceptionMapper.new(@person_mapper, @document_mapper)
 #    @document_reception_mapper = DcarDocumentReceptionMapper.new(@document_mapper)
@@ -73,7 +74,7 @@ class DutchCaribbeanIndexer
         :process_record => @archive_mapper.method(:convert)
     })
     # No counter in default mapper
-#    puts "SCRAPE: #{@archive_mapper.record_count} archives"
+    puts "SCRAPE: #{@archive_mapper.record_count} archives"
   end
 
   def scrape_archivers
@@ -84,7 +85,7 @@ class DutchCaribbeanIndexer
         :process_record => @archiver_mapper.method(:convert)
     })
     # No counter in default mapper
-#    puts "SCRAPE: #{@collective_mapper.record_count} archives"
+    puts "SCRAPE: #{@archiver_mapper.record_count} archives"
   end
 
   def reindex_archives
