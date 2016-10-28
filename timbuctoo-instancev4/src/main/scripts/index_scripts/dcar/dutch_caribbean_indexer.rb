@@ -7,15 +7,13 @@ require './configs/dcar_archiver_config'
 require './configs/dcar_legislation_config'
 require './mappers/dcar_archive_mapper'
 require './mappers/dcar_archiver_mapper'
-#require './mappers/dcar_document_mapper'
-#require './mappers/dcar_person_reception_mapper'
-#require './mappers/dcar_document_reception_mapper'
+require './mappers/dcar_mapper'
 
 class DutchCaribbeanIndexer
   def initialize(options)
     @options = options
 
-    @legislation_mapper = DefaultMapper.new(DcarLegislationConfig.get)
+    @legislation_mapper = DcarMapper.new(DcarLegislationConfig.get)
     @archive_mapper = DcarArchiveMapper.new(DcarArchiveConfig.get)
     @archiver_mapper = DcarArchiverMapper.new(DcarArchiverConfig.get)
 
@@ -37,20 +35,9 @@ class DutchCaribbeanIndexer
     scrape_archivers
     scrape_legislation
 
-    # Always run person_mapper.add_languages before @document_mapper.add_creators to ensure correct _childDocuments_
-    # filters on dcardocuments index and dcardocumentreceptions index!!
-#    @person_mapper.add_languages(@document_mapper)
-#    @document_mapper.add_creators(@person_mapper)
-
-
-#    puts "Found #{@document_mapper.person_receptions.length} person receptions"
-#    puts "Found #{@document_mapper.document_receptions.length} document receptions"
-
     reindex_archives
     reindex_archivers
     reindex_legislation
-#    reindex_person_receptions
-#    reindex_document_receptions
   end
 
   private
@@ -62,8 +49,7 @@ class DutchCaribbeanIndexer
         :batch_size => 1000,
         :process_record => @legislation_mapper.method(:convert)
     })
-    # No counter in default mapper
-#    puts "SCRAPE: #{@legislation_mapper.record_count} legislations"
+    puts "SCRAPE: #{@legislation_mapper.record_count} legislations"
   end
 
   def scrape_archives

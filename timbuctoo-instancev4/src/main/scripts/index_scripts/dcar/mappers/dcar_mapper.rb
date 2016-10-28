@@ -1,7 +1,7 @@
 require File.dirname(__FILE__) + '/../../lib/timbuctoo_solr/default_mapper'
 require File.dirname(__FILE__) + '/../../lib/mixins/converters/to_year_converter'
 
-class DcarArchiverMapper < DefaultMapper
+class DcarMapper < DefaultMapper
   include ToYearConverter
 
   attr_reader :cache, :record_count
