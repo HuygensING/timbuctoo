@@ -5,6 +5,8 @@ import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,6 +16,7 @@ import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.database.AuthorizerBuilder.allowedToWrite;
 import static nl.knaw.huygens.timbuctoo.database.AuthorizerBuilder.notAllowedToWrite;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -29,6 +32,7 @@ public class TimbuctooActionsDeleteTest {
   private Collection collection;
   private Instant instant;
   private Change change;
+  private DataStoreOperations dataStoreOperations;
 
   @Before
   public void setUp() throws Exception {
@@ -41,38 +45,40 @@ public class TimbuctooActionsDeleteTest {
     change = new Change();
     change.setUserId(USER_ID);
     change.setTimeStamp(instant.toEpochMilli());
+    dataStoreOperations = mock(DataStoreOperations.class);
   }
 
   @Test
   public void deleteEntityLetsDataAccessDeleteTheEntity() throws Exception {
-    when(transactionEnforcer.deleteEntity(collection, ID, change)).thenReturn(DeleteMessage.success());
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class), null);
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.deleteEntity(collection, ID, USER_ID);
 
-    verify(transactionEnforcer).deleteEntity(collection, ID, change);
+    verify(dataStoreOperations).deleteEntity(collection, ID, change);
   }
 
   @Test(expected = AuthorizationException.class)
   public void deleteEntityThrowsAnUnAuthrozedExceptionIfTheUserIsNotAllowedToWriteTheCollection() throws Exception {
-    TimbuctooActions instance = new TimbuctooActions(notAllowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class), null);
+    TimbuctooActions instance = createInstance(notAllowedToWrite());
 
     try {
       instance.deleteEntity(collection, ID, USER_ID);
     } finally {
-      verifyZeroInteractions(transactionEnforcer);
+      verifyZeroInteractions(dataStoreOperations);
     }
   }
 
   @Test(expected = NotFoundException.class)
   public void deleteEntityThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
-    when(transactionEnforcer.deleteEntity(collection, ID, change)).thenReturn(DeleteMessage.notFound());
-    TimbuctooActions instance = new TimbuctooActions(allowedToWrite(), transactionEnforcer, clock, handleAdder,
-      mock(DataStoreOperations.class), null);
+    doThrow(new NotFoundException()).when(dataStoreOperations).deleteEntity(collection, ID, change);
+    TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.deleteEntity(collection, ID, USER_ID);
+  }
+
+  private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
+    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder,
+      dataStoreOperations, null);
   }
 
 

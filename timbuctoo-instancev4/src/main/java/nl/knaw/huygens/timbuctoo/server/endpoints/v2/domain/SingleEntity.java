@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -32,6 +31,8 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.commitAndReturn;
+import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.rollbackAndReturn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
@@ -79,12 +80,12 @@ public class SingleEntity {
       JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
       try {
         JsonNode result = crudService.get(collectionName, id.get(), rev);
-        return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());
+        return commitAndReturn(Response.ok(result).build());
       } catch (InvalidCollectionException e) {
-        return TransactionStateAndResult.rollbackAndReturn(
+        return rollbackAndReturn(
           Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build());
       } catch (NotFoundException e) {
-        return TransactionStateAndResult.rollbackAndReturn(
+        return rollbackAndReturn(
           Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build());
       }
     });
@@ -101,29 +102,29 @@ public class SingleEntity {
         JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
         try {
           crudService.replace(collectionName, id.get(), body, user.get().getId());
-          return TransactionStateAndResult.commitAndReturn(UpdateMessage.success());
+          return commitAndReturn(UpdateMessage.success());
         } catch (InvalidCollectionException e) {
-          return TransactionStateAndResult.rollbackAndReturn(
+          return rollbackAndReturn(
             UpdateMessage.failure(e.getMessage(), Response.Status.NOT_FOUND)
           );
         } catch (NotFoundException e) {
-          return TransactionStateAndResult.rollbackAndReturn(
+          return rollbackAndReturn(
             UpdateMessage.failure("not found", Response.Status.NOT_FOUND)
           );
         } catch (IOException e) {
-          return TransactionStateAndResult.rollbackAndReturn(
+          return rollbackAndReturn(
             UpdateMessage.failure(e.getMessage(), Response.Status.BAD_REQUEST)
           );
         } catch (AlreadyUpdatedException e) {
-          return TransactionStateAndResult.rollbackAndReturn(
+          return rollbackAndReturn(
             UpdateMessage.failure("Entry was already updated", Response.Status.EXPECTATION_FAILED)
           );
         } catch (AuthorizationException e) {
-          return TransactionStateAndResult.rollbackAndReturn(
+          return rollbackAndReturn(
             UpdateMessage.failure(e.getMessage(), Response.Status.FORBIDDEN)
           );
         } catch (AuthorizationUnavailableException e) {
-          return TransactionStateAndResult.rollbackAndReturn(
+          return rollbackAndReturn(
             UpdateMessage.failure(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR)
           );
         }
@@ -135,13 +136,13 @@ public class SingleEntity {
           JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
           try {
             JsonNode jsonNode = crudService.get(collectionName, id.get());
-            return TransactionStateAndResult.commitAndReturn(Response.ok(jsonNode).build());
+            return commitAndReturn(Response.ok(jsonNode).build());
           } catch (InvalidCollectionException e) {
-            return TransactionStateAndResult.rollbackAndReturn(
+            return rollbackAndReturn(
               Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build()
             );
           } catch (NotFoundException e) {
-            return TransactionStateAndResult.rollbackAndReturn(
+            return rollbackAndReturn(
               Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build()
             );
           }
@@ -163,18 +164,30 @@ public class SingleEntity {
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
-      try {
-        crudServiceFactory.newJsonCrudService().delete(collectionName, id.get(), user.get().getId());
-        return Response.noContent().build();
-      } catch (InvalidCollectionException e) {
-        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
-      } catch (NotFoundException e) {
-        return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();
-      } catch (AuthorizationException e) {
-        return Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build();
-      } catch (IOException e) {
-        return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build();
-      }
+
+      return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+        JsonCrudService jsonCrudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
+        try {
+          jsonCrudService.delete(collectionName, id.get(), user.get().getId());
+          return commitAndReturn(Response.noContent().build());
+        } catch (InvalidCollectionException e) {
+          return rollbackAndReturn(
+            Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build()
+          );
+        } catch (NotFoundException e) {
+          return rollbackAndReturn(
+            Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build()
+          );
+        } catch (AuthorizationException e) {
+          return rollbackAndReturn(
+            Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build()
+          );
+        } catch (IOException e) {
+          return rollbackAndReturn(
+            Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build()
+          );
+        }
+      });
     }
   }
 

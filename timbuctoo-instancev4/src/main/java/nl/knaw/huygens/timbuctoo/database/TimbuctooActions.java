@@ -21,8 +21,6 @@ import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.database.DeleteMessage.DeleteStatus.NOT_FOUND;
-
 /**
  * This class is performs all the steps needed to save entities relations, etc.
  */
@@ -82,10 +80,7 @@ public class TimbuctooActions {
     throws AuthorizationUnavailableException, AuthorizationException, NotFoundException {
     checkIfAllowedToWrite(userId, collection);
 
-    DeleteMessage deleteMessage = transactionEnforcer.deleteEntity(collection, uuid, createChange(userId));
-    if (deleteMessage.getStatus() == NOT_FOUND) {
-      throw new NotFoundException();
-    }
+    dataStoreOperations.deleteEntity(collection, uuid, createChange(userId));
   }
 
   private Change createChange(String userId) {
