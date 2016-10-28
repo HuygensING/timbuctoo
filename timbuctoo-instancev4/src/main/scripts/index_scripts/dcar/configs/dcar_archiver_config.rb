@@ -4,10 +4,11 @@ class DcarArchiverConfig
         :properties => [
             { :name => '_id',  :converted_name => 'id'},
             { :name => '@type',  :converted_name => 'type_s'},
-            { :name => 'nameEng',  :converted_name => 'nameEng_t'},
-            { :name => 'nameNld',  :converted_name => 'nameNld_t'},
-            { :name => 'history',  :converted_name => 'history_t'},
-            { :name => 'notes',  :converted_name => 'notes_t'},
+            { :name => 'nameEng',  :converted_name => 'nameEng_tim'},
+            { :name => 'nameNld',  :converted_name => 'nameNld_tim'},
+            { :name => 'history',  :converted_name => 'history_tim'},
+            { :name => 'notes',  :converted_name => 'notes_tim'},
+            { :name => 'types',  :converted_name => 'archiverTypes_ss'},
             { :name => 'beginDate', :converted_name => 'beginDate_i'},
             { :name => 'endDate', :converted_name => 'endDate_i'},
         ], :relations => [
