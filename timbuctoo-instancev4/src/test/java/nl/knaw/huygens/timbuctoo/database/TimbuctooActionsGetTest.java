@@ -62,7 +62,7 @@ public class TimbuctooActionsGetTest {
     DataStream<ReadEntity> entities = mockDataStream();
     int start = 0;
     int rows = 10;
-    when(transactionEnforcer.getCollection(collection, start, rows, withRelations, entityProps, relationProps))
+    when(dataStoreOperations.getCollection(collection, start, rows, withRelations, entityProps, relationProps))
       .thenReturn(entities);
 
     DataStream<ReadEntity> result =

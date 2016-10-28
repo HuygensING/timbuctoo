@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
@@ -97,16 +96,22 @@ public class Index {
                        @QueryParam("start") @DefaultValue("0") int start,
                        @QueryParam("withRelations") @DefaultValue("false") boolean withRelations) {
 
-    try {
-      List<ObjectNode> jsonNodes =
-        crudServiceFactory.newJsonCrudService().getCollection(collectionName, rows, start, withRelations);
-      return Response.ok(jsonNodes).build();
-    } catch (InvalidCollectionException e) {
-      return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build();
-    } catch (IllegalArgumentException e) {
-      String message =
-        String.format("Could not process parameters rows=%d start=%d", rows, start);
-      return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(message))).build();
-    }
+    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+      JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
+      try {
+        List<ObjectNode> jsonNodes = crudService.getCollection(collectionName, rows, start, withRelations);
+        return commitAndReturn(Response.ok(jsonNodes).build());
+      } catch (InvalidCollectionException e) {
+        return rollbackAndReturn(
+          Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build()
+        );
+      } catch (IllegalArgumentException e) {
+        String message =
+          String.format("Could not process parameters rows=%d start=%d", rows, start);
+        return rollbackAndReturn(
+          Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(message))).build()
+        );
+      }
+    });
   }
 }

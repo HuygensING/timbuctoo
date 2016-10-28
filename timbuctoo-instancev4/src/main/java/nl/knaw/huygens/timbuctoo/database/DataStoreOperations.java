@@ -7,12 +7,11 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
@@ -25,6 +24,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.ImmutableVresDto;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetCollection;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
@@ -63,7 +63,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.crud.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
@@ -347,16 +346,18 @@ public class DataStoreOperations implements AutoCloseable {
       customRelationProperties).mapEntity(entityT, true);
   }
 
-  public Stream<ReadEntity> getCollection(Collection collection, int start, int rows, boolean withRelations,
-                                          CustomEntityProperties customEntityProperties,
-                                          CustomRelationProperties customRelationProperties) {
+  public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows, boolean withRelations,
+                                              CustomEntityProperties customEntityProperties,
+                                              CustomRelationProperties customRelationProperties) {
     GraphTraversal<Vertex, Vertex> entities =
-      getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
+      getCurrentEntitiesFor(collection.getEntityTypeName()).range(rows, rows + start);
 
     TinkerPopToEntityMapper tinkerPopToEntityMapper =
       new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties, customRelationProperties);
 
-    return entities.toStream().map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex, withRelations));
+    return new TinkerPopGetCollection(
+      entities.toStream().map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex, withRelations))
+    );
   }
 
   /**

@@ -109,7 +109,7 @@ public class TimbuctooActions {
   public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
                                               boolean withRelations, CustomEntityProperties entityProps,
                                               CustomRelationProperties relationProps) {
-    return transactionEnforcer.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
+    return dataStoreOperations.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 
 

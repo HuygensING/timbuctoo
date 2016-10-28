@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopCreateEntity;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopDeleteEntity;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetCollection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopUpdateEntity;
 import nl.knaw.huygens.timbuctoo.model.Change;
 
@@ -120,14 +119,8 @@ public class TransactionEnforcer {
                                               boolean withRelations, CustomEntityProperties entityProps,
                                               CustomRelationProperties relationProps) {
 
-    return new TinkerPopGetCollection(
-      collection,
-      start,
-      rows,
-      withRelations,
-      entityProps,
-      relationProps,
-      dataStoreOperationsSupplier.get());
+    return dataStoreOperationsSupplier.get().getCollection(collection, rows, start,
+      withRelations, entityProps, relationProps);
   }
 
   public CreateMessage createRelation(Collection collection, CreateRelation createRelation) {
