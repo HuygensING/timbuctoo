@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -121,12 +122,11 @@ public class TimbuctooActions {
     // createRelation.setId(id);
     createRelation.setCreated(createChange(userId));
 
-    CreateMessage createMessage = transactionEnforcer.createRelation(collection, createRelation);
-    if (!createMessage.succeeded()) {
-      throw new IOException(createMessage.getErrorMessage().get());
+    try {
+      return dataStoreOperations.acceptRelation(collection, createRelation);
+    } catch (RelationNotPossibleException e) {
+      throw new IOException(e);
     }
-
-    return createMessage.getId().get();
   }
 
 

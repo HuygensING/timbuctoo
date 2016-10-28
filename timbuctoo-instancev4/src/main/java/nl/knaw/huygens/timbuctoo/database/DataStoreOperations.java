@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
@@ -214,6 +215,17 @@ public class DataStoreOperations implements AutoCloseable {
       }
     }
     transaction.close();
+  }
+
+  public UUID acceptRelation(Collection collection, CreateRelation createRelation) throws RelationNotPossibleException {
+    return acceptRelation(
+      createRelation.getSourceId(),
+      createRelation.getTypeId(),
+      createRelation.getTargetId(),
+      collection,
+      createRelation.getCreated().getUserId(),
+      Instant.ofEpochMilli(createRelation.getCreated().getTimeStamp())
+    );
   }
 
   /**
