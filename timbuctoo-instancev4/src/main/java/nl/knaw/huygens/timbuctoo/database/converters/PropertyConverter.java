@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.converters;
 
 import nl.knaw.huygens.timbuctoo.database.dto.property.AltNamesProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DatableProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultFullPersonNameProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultLocationNameProperty;
@@ -51,6 +52,8 @@ public abstract class PropertyConverter<TypeT> {
         return createHyperLinksProperty(propertyName, value);
       case "person-names":
         return createPersonNamesProperty(propertyName, value);
+      case "encoded-array":
+        return createArrayProperty(propertyName, value);
       case "encoded-array-of-limited-values":
         return createArrayOfLimitedValuesProperty(propertyName, value);
       case "encoded-string-of-limited-values":
@@ -68,6 +71,8 @@ public abstract class PropertyConverter<TypeT> {
         ));
     }
   }
+
+  protected abstract ArrayProperty createArrayProperty(String propertyName, TypeT value) throws IOException;
 
   protected abstract AltNamesProperty createAltNamesProperty(String propertyName, TypeT value) throws IOException;
 
@@ -114,6 +119,8 @@ public abstract class PropertyConverter<TypeT> {
   public abstract Tuple<String, TypeT> to(StringProperty property) throws IOException;
 
   public abstract Tuple<String, TypeT> to(StringOfLimitedValuesProperty property) throws IOException;
+
+  public abstract Tuple<String, TypeT> to(ArrayProperty property) throws IOException;
 
   protected IOException readOnlyProperty(String propertyName, Class<? extends TimProperty> propertyType) {
     return new IOException(String.format(
