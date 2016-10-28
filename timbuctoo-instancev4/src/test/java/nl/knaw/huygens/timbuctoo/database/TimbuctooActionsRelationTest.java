@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -111,7 +112,7 @@ public class TimbuctooActionsRelationTest {
     try {
       instance.replaceRelation(collection, new UpdateRelation(UUID.randomUUID(), 1, false), USER_ID);
     } finally {
-      verifyZeroInteractions(transactionEnforcer);
+      verifyZeroInteractions(dataStoreOperations);
     }
   }
 
@@ -119,12 +120,11 @@ public class TimbuctooActionsRelationTest {
   public void replaceRelationUpdatesARelation() throws Exception {
     UUID id = UUID.randomUUID();
     UpdateRelation updateRelation = new UpdateRelation(id, 1, false);
-    when(transactionEnforcer.updateRelation(collection, updateRelation)).thenReturn(UpdateReturnMessage.success(1));
     TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.replaceRelation(collection, updateRelation, USER_ID);
 
-    verify(transactionEnforcer).updateRelation(argThat(is(collection)), argThat(allOf(
+    verify(dataStoreOperations).replaceRelation(argThat(is(collection)), argThat(allOf(
       hasProperty("id", is(id)),
       hasProperty("modified", allOf(
         hasProperty("userId", is(USER_ID)),
@@ -136,7 +136,7 @@ public class TimbuctooActionsRelationTest {
   @Test(expected = NotFoundException.class)
   public void replaceRelationThrowsANotFoundExceptionWhenTheRelationCannotBeFound() throws Exception {
     UpdateRelation updateRelation = new UpdateRelation(null, 1, false);
-    when(transactionEnforcer.updateRelation(collection, updateRelation)).thenReturn(UpdateReturnMessage.notFound());
+    doThrow(new NotFoundException()).when(dataStoreOperations).replaceRelation(collection, updateRelation);
     TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.replaceRelation(collection, updateRelation, USER_ID);

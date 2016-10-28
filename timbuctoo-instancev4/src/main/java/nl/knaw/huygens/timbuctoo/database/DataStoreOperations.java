@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.ImmutableVresDto;
@@ -447,6 +448,12 @@ public class DataStoreOperations implements AutoCloseable {
 
     duplicateVertex(traversal, entityVertex);
     return newRev;
+  }
+
+  public void replaceRelation(Collection collection, UpdateRelation updateRelation) throws NotFoundException {
+    replaceRelation(collection, updateRelation.getId(), updateRelation.getRev(), updateRelation.getAccepted(),
+      updateRelation.getModified().getUserId(),
+      Instant.ofEpochMilli(updateRelation.getModified().getTimeStamp()));
   }
 
   public void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,

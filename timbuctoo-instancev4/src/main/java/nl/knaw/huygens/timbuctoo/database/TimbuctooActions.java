@@ -136,11 +136,7 @@ public class TimbuctooActions {
 
     updateRelation.setModified(createChange(userId));
 
-    UpdateReturnMessage updateMessage = transactionEnforcer.updateRelation(collection, updateRelation);
-
-    if (updateMessage.getStatus() == UpdateReturnMessage.UpdateStatus.NOT_FOUND) {
-      throw new NotFoundException();
-    }
+    dataStoreOperations.replaceRelation(collection, updateRelation);
   }
 
   public static class TimbuctooActionsFactory {
