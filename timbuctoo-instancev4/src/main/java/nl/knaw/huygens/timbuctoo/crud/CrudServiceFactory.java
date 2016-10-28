@@ -16,7 +16,6 @@ import java.util.function.Supplier;
 public class CrudServiceFactory {
 
   private final Authorizer authorizer;
-  private final TransactionEnforcer transactionEnforcer;
   private final Clock clock;
   private final HandleAdder handleAdder;
   private final Vres vres;
@@ -24,11 +23,10 @@ public class CrudServiceFactory {
   private final Supplier<DataStoreOperations> datastore;
   private final UrlGenerator relationUrlFor;
 
-  public CrudServiceFactory(JsonBasedAuthorizer authorizer, TransactionEnforcer transactionEnforcer, Clock clock,
+  public CrudServiceFactory(JsonBasedAuthorizer authorizer, Clock clock,
                             HandleAdder handleAdder, Vres vres, JsonBasedUserStore userStore,
                             UrlGenerator relationUrlFor, Supplier<DataStoreOperations> datastore) {
     this.authorizer = authorizer;
-    this.transactionEnforcer = transactionEnforcer;
     this.clock = clock;
     this.handleAdder = handleAdder;
     this.vres = vres;
@@ -37,21 +35,12 @@ public class CrudServiceFactory {
     this.datastore = datastore;
   }
 
-  public JsonCrudService newJsonCrudService() {
-    TimbuctooActions timbuctooActions = createTimbuctooActions();
-    return newJsonCrudService(timbuctooActions);
-  }
-
   public JsonCrudService newJsonCrudService(TimbuctooActions timbuctooActions) {
     return new JsonCrudService(vres, userStore, relationUrlFor, clock, timbuctooActions);
   }
 
-  private TimbuctooActions createTimbuctooActions() {
-    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder, datastore.get(), null);
-  }
-
-  public WomenWritersJsonCrudService newWomenWritersJsonCrudService() {
-    return new WomenWritersJsonCrudService(vres, userStore, relationUrlFor, createTimbuctooActions());
+  public WomenWritersJsonCrudService newWomenWritersJsonCrudService(TimbuctooActions timbuctooActions) {
+    return new WomenWritersJsonCrudService(vres, userStore, relationUrlFor, timbuctooActions);
   }
 
 

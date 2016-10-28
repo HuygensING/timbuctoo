@@ -107,7 +107,6 @@ public class JsonCrudServiceBuilder {
       relationUrlGenerator, clock,
       new TimbuctooActions(
         authorizer,
-        transactionEnforcer,
         clock,
         handleAdder,
         dataStoreOperations,

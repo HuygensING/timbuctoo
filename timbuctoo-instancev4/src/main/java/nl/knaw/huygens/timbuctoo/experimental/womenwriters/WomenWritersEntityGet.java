@@ -47,7 +47,8 @@ public class WomenWritersEntityGet {
   public Response get(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id,
                       @QueryParam("rev") Integer rev) {
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
-      WomenWritersJsonCrudService womenWritersJsonCrudService = crudServiceFactory.newWomenWritersJsonCrudService();
+      WomenWritersJsonCrudService womenWritersJsonCrudService = crudServiceFactory
+        .newWomenWritersJsonCrudService(timbuctooActions);
       try {
         JsonNode result = womenWritersJsonCrudService.get(collectionName, id.get(), rev);
         return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());

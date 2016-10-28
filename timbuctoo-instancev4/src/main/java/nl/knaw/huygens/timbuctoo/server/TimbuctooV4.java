@@ -214,7 +214,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final CrudServiceFactory crudServiceFactory = new CrudServiceFactory(
       authorizer,
-      transactionEnforcer,
       Clock.systemDefaultZone(),
       handleAdder,
       vres,

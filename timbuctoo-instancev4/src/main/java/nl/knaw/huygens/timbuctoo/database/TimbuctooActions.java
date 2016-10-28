@@ -28,17 +28,15 @@ import java.util.UUID;
 public class TimbuctooActions {
 
   private final Authorizer authorizer;
-  private final TransactionEnforcer transactionEnforcer;
   private final Clock clock;
   private final HandleAdder handleAdder;
   private final DataStoreOperations dataStoreOperations;
   private final AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
-  public TimbuctooActions(Authorizer authorizer, TransactionEnforcer transactionEnforcer, Clock clock,
+  public TimbuctooActions(Authorizer authorizer, Clock clock,
                           HandleAdder handleAdder, DataStoreOperations dataStoreOperations,
                           AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
     this.authorizer = authorizer;
-    this.transactionEnforcer = transactionEnforcer;
     this.clock = clock;
     this.handleAdder = handleAdder;
     this.dataStoreOperations = dataStoreOperations;
@@ -150,13 +148,11 @@ public class TimbuctooActions {
       this.handleAdder = handleAdder;
     }
 
-    public TimbuctooActions create(TransactionEnforcer transactionEnforcer,
-                                   DataStoreOperations dataStoreOperations,
+    public TimbuctooActions create(DataStoreOperations dataStoreOperations,
                                    AfterSuccessTaskExecutor afterSuccessTaskExecutor
     ) {
       return new TimbuctooActions(
         authorizer,
-        transactionEnforcer,
         clock,
         handleAdder,
         dataStoreOperations,

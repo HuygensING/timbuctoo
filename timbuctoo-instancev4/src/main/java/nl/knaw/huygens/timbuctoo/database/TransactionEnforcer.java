@@ -1,19 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
-import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
-import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopCreateEntity;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopDeleteEntity;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopUpdateEntity;
-import nl.knaw.huygens.timbuctoo.model.Change;
 
-import java.util.Optional;
-import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -37,6 +26,10 @@ public class TransactionEnforcer {
     this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
   }
 
+  /**
+   * @deprecated use {@link #executeAndReturn(Function)}
+   */
+  @Deprecated
   public <T> T oldExecuteAndReturn(Function<DataStoreOperations, TransactionStateAndResult<T>> actions) {
     DataStoreOperations db = dataStoreOperationsSupplier.get();
 
@@ -60,7 +53,7 @@ public class TransactionEnforcer {
     DataStoreOperations db = dataStoreOperationsSupplier.get();
 
     boolean success = false;
-    TimbuctooActions timbuctooActions = timbuctooActionsFactory.create(this, db, afterSuccessTaskExecutor);
+    TimbuctooActions timbuctooActions = timbuctooActionsFactory.create(db, afterSuccessTaskExecutor);
     try {
       TransactionStateAndResult<T> result = action.apply(timbuctooActions);
       if (result.wasCommitted()) {
@@ -101,33 +94,4 @@ public class TransactionEnforcer {
     }
   }
 
-  public TransactionState createEntity(Collection collection,
-                                       Optional<Collection> baseCollection,
-                                       CreateEntity entity) {
-    return oldExecuteAndReturn(new TinkerPopCreateEntity(collection, baseCollection, entity));
-  }
-
-  public UpdateReturnMessage updateEntity(Collection collection, UpdateEntity updateEntity) {
-    return oldExecuteAndReturn(new TinkerPopUpdateEntity(collection, updateEntity));
-  }
-
-  public DeleteMessage deleteEntity(Collection collection, UUID id, Change modified) {
-    return oldExecuteAndReturn(new TinkerPopDeleteEntity(collection, id, modified));
-  }
-
-  public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
-                                              boolean withRelations, CustomEntityProperties entityProps,
-                                              CustomRelationProperties relationProps) {
-
-    return dataStoreOperationsSupplier.get().getCollection(collection, rows, start,
-      withRelations, entityProps, relationProps);
-  }
-
-  public CreateMessage createRelation(Collection collection, CreateRelation createRelation) {
-    return oldExecuteAndReturn(new TinkerPopCreateRelation(collection, createRelation));
-  }
-
-  public UpdateReturnMessage updateRelation(Collection collection, UpdateRelation updateRelation) {
-    return oldExecuteAndReturn(new TinkerPopUpdateRelation(collection, updateRelation));
-  }
 }

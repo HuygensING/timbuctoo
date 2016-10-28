@@ -23,7 +23,6 @@ public class TimbuctooActionsGetTest {
   private static final Integer rev = 1;
   private CustomEntityProperties entityProps;
   private CustomRelationProperties relationProps;
-  private TransactionEnforcer transactionEnforcer;
   private TimbuctooActions instance;
   private Collection collection;
   private boolean withRelations = false;
@@ -33,9 +32,8 @@ public class TimbuctooActionsGetTest {
   public void setUp() throws Exception {
     entityProps = mock(CustomEntityProperties.class);
     relationProps = mock(CustomRelationProperties.class);
-    transactionEnforcer = mock(TransactionEnforcer.class);
     dataStoreOperations = mock(DataStoreOperations.class);
-    instance = new TimbuctooActions(null, transactionEnforcer, null, null, dataStoreOperations, null);
+    instance = new TimbuctooActions(null, null, null, dataStoreOperations, null);
     collection = mock(Collection.class);
   }
 

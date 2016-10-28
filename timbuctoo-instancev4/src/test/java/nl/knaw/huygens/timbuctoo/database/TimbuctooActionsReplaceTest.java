@@ -81,13 +81,11 @@ public class TimbuctooActionsReplaceTest {
       handleAdder,
       new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
     );
-    // inOrder.verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV));
 
   }
 
   @Test
   public void replaceEntityAddsTheModifiedPropertyToUpdateEntityBeforeExecutingTheUpdate() throws Exception {
-    when(transactionEnforcer.updateEntity(collection, updateEntity)).thenReturn(UpdateReturnMessage.success(NEW_REV));
     TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
@@ -119,7 +117,7 @@ public class TimbuctooActionsReplaceTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder,
+    return new TimbuctooActions(authorizer, clock, handleAdder,
       dataStoreOperations, afterSuccessTaskExecutor);
   }
 

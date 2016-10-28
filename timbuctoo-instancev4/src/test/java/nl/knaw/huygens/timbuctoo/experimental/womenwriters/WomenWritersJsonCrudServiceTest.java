@@ -147,7 +147,6 @@ public class WomenWritersJsonCrudServiceTest {
       userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
       new TimbuctooActions(null, // no authorizer for get needed
-        transactionEnforcer,
         null, // no clock for get needed
         mock(HandleAdder.class),
         dataStoreOperations, null));

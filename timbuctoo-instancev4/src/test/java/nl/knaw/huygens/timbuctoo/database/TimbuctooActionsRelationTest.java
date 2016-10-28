@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 public class TimbuctooActionsRelationTest {
 
   private static final String USER_ID = "userId";
-  private TransactionEnforcer transactionEnforcer;
   private Clock clock;
   private HandleAdder handleAdder;
   private CreateRelation createRelation;
@@ -45,7 +44,6 @@ public class TimbuctooActionsRelationTest {
 
   @Before
   public void setUp() throws Exception {
-    transactionEnforcer = mock(TransactionEnforcer.class);
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
@@ -58,8 +56,6 @@ public class TimbuctooActionsRelationTest {
 
   @Test
   public void createRelationCreatesANewRelation() throws Exception {
-    when(transactionEnforcer.createRelation(collection, createRelation))
-      .thenReturn(CreateMessage.success(UUID.randomUUID()));
     TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.createRelation(collection, createRelation, USER_ID);
@@ -143,7 +139,7 @@ public class TimbuctooActionsRelationTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder,
+    return new TimbuctooActions(authorizer, clock, handleAdder,
       dataStoreOperations, afterSuccessTaskExecutor);
   }
 

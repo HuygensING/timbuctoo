@@ -29,7 +29,6 @@ public class TimbuctooActionsDeleteTest {
   public static final UUID ID = UUID.randomUUID();
   public static final int REV = 1;
   public static final String COLLECTION_NAME = "collectionName";
-  private TransactionEnforcer transactionEnforcer;
   private Clock clock;
   private HandleAdder handleAdder;
   private Collection collection;
@@ -39,7 +38,6 @@ public class TimbuctooActionsDeleteTest {
 
   @Before
   public void setUp() throws Exception {
-    transactionEnforcer = mock(TransactionEnforcer.class);
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
@@ -91,7 +89,7 @@ public class TimbuctooActionsDeleteTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, transactionEnforcer, clock, handleAdder,
+    return new TimbuctooActions(authorizer, clock, handleAdder,
       dataStoreOperations, null);
   }
 
