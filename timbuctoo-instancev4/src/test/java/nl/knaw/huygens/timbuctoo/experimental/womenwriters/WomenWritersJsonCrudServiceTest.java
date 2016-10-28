@@ -136,7 +136,7 @@ public class WomenWritersJsonCrudServiceTest {
 
   private WomenWritersJsonCrudService createInstance(GraphWrapper graphWrapper, GremlinEntityFetcher entityFetcher) {
     DataStoreOperations dataStoreOperations =
-      new DataStoreOperations(graphWrapper, null, entityFetcher, vres, mock(HandleAdder.class));
+      new DataStoreOperations(graphWrapper, null, entityFetcher, vres);
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
         mock(HandleAdder.class));

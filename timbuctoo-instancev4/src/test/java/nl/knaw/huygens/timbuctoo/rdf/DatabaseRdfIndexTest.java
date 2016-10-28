@@ -26,7 +26,7 @@ public class DatabaseRdfIndexTest {
     final TinkerpopGraphManager mgr = newGraph().wrap();
     final Database database = new Database(mgr);
     final DataStoreOperations dataStoreOperations =
-      new DataStoreOperations(mgr, mock(ChangeListener.class), null, null, mock(HandleAdder.class));
+      new DataStoreOperations(mgr, mock(ChangeListener.class), null, null);
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
         mock(HandleAdder.class));

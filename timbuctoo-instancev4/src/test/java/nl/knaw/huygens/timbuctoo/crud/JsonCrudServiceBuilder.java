@@ -96,7 +96,7 @@ public class JsonCrudServiceBuilder {
 
   public JsonCrudService build() {
     DataStoreOperations dataStoreOperations =
-      new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres, handleAdder);
+      new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres);
 
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(authorizer, clock, handleAdder);

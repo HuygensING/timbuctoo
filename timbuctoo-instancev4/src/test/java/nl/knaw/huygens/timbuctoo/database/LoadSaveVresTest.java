@@ -58,7 +58,7 @@ public class LoadSaveVresTest {
         mock(HandleAdder.class));
 
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
-      () -> new DataStoreOperations(graphWrapper, null, null, null, mock(HandleAdder.class)), timbuctooActionsFactory));
+      () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getCollection("documents").get(), instanceOf(Collection.class));
@@ -83,7 +83,7 @@ public class LoadSaveVresTest {
         mock(HandleAdder.class));
 
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
-      () -> new DataStoreOperations(graphWrapper, null, null, null, mock(HandleAdder.class)), timbuctooActionsFactory));
+      () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));

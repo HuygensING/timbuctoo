@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -50,7 +49,7 @@ public class LoadSaveVreTest {
     init.accept(testGraphBuilder);
     GraphWrapper wrap = testGraphBuilder.wrap();
     return tuple(
-      new DataStoreOperations(wrap, null, null, null, mock(HandleAdder.class)),
+      new DataStoreOperations(wrap, null, null, null),
       wrap.getGraph());
   }
 

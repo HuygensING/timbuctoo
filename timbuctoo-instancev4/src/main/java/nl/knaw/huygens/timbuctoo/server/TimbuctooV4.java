@@ -187,7 +187,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(authorizer, Clock.systemDefaultZone(), handleAdder);
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
-      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null, handleAdder),
+      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null),
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
@@ -220,7 +220,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       vres,
       userStore,
       pathWithoutVersionAndRevision,
-      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null, handleAdder)
+      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null)
     );
 
     // register REST endpoints

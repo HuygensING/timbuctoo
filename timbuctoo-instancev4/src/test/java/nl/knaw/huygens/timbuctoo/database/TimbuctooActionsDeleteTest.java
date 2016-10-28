@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
+import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -26,6 +27,8 @@ public class TimbuctooActionsDeleteTest {
 
   public static final String USER_ID = "userId";
   public static final UUID ID = UUID.randomUUID();
+  public static final int REV = 1;
+  public static final String COLLECTION_NAME = "collectionName";
   private TransactionEnforcer transactionEnforcer;
   private Clock clock;
   private HandleAdder handleAdder;
@@ -42,6 +45,7 @@ public class TimbuctooActionsDeleteTest {
     when(clock.instant()).thenReturn(instant);
     handleAdder = mock(HandleAdder.class);
     collection = mock(Collection.class);
+    when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
     change = new Change();
     change.setUserId(USER_ID);
     change.setTimeStamp(instant.toEpochMilli());
@@ -74,6 +78,16 @@ public class TimbuctooActionsDeleteTest {
     TimbuctooActions instance = createInstance(allowedToWrite());
 
     instance.deleteEntity(collection, ID, USER_ID);
+  }
+
+  @Test
+  public void deleteEntityAddsAPidAfterTheEntityIsDeleted() throws Exception {
+    when(dataStoreOperations.deleteEntity(collection, ID, change)).thenReturn(REV);
+    TimbuctooActions instance = createInstance(allowedToWrite());
+
+    instance.deleteEntity(collection, ID, USER_ID);
+
+    verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, ID, REV));
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {

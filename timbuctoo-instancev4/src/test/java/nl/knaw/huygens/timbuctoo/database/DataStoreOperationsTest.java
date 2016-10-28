@@ -16,7 +16,7 @@ public class DataStoreOperationsTest {
 
   @Test
   public void emptyDatabaseIsShownAsEmpty() throws Exception {
-    DataStoreOperations instance = new DataStoreOperations(newGraph().wrap(), null, null, null, null);
+    DataStoreOperations instance = new DataStoreOperations(newGraph().wrap(), null, null, null);
 
     boolean isEmpty = instance.databaseIsEmptyExceptForMigrations();
 
@@ -29,7 +29,7 @@ public class DataStoreOperationsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, null, null, null, null);
+    DataStoreOperations instance = new DataStoreOperations(graphWrapper, null, null, null);
 
     boolean isEmpty = instance.databaseIsEmptyExceptForMigrations();
 
@@ -42,7 +42,7 @@ public class DataStoreOperationsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, null, null, null, null);
+    DataStoreOperations instance = new DataStoreOperations(graphWrapper, null, null, null);
 
     instance.ensureVreExists("SomeVre");
     assertThat(

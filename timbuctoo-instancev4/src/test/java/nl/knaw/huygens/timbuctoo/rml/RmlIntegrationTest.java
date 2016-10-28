@@ -234,7 +234,7 @@ public class RmlIntegrationTest {
         new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
           mock(HandleAdder.class));
       transactionEnforcer = new TransactionEnforcer(
-        () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null, mock(HandleAdder.class)),
+        () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null),
         timbuctooActionsFactory);
       new ScaffoldMigrator(transactionEnforcer).execute();
 

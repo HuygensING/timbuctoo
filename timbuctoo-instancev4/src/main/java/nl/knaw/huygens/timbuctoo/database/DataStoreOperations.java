@@ -85,14 +85,12 @@ public class DataStoreOperations implements AutoCloseable {
   private final GraphTraversalSource latestState;
   private final Vres mappings;
   private final Graph graph;
-  private final HandleAdder handleAdder;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
   public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener,
-                             EntityFetcher entityFetcher, Vres mappings, HandleAdder handleAdder) {
+                             EntityFetcher entityFetcher, Vres mappings) {
     graph = graphWrapper.getGraph();
-    this.handleAdder = handleAdder;
     this.transaction = graph.tx();
     this.listener = listener;
     this.entityFetcher = entityFetcher;
@@ -468,7 +466,7 @@ public class DataStoreOperations implements AutoCloseable {
     setModified(edge, userId, instant);
   }
 
-  public void deleteEntity(Collection collection, UUID id, Change modified)
+  public int deleteEntity(Collection collection, UUID id, Change modified)
     throws NotFoundException {
 
     requireCommit = true;
@@ -518,8 +516,7 @@ public class DataStoreOperations implements AutoCloseable {
     callUpdateListener(entity);
     duplicateVertex(traversal, entity);
 
-    // TODO move to Timbuctoo actions
-    handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), id, newRev));
+    return newRev;
   }
 
   public Vres loadVres() {

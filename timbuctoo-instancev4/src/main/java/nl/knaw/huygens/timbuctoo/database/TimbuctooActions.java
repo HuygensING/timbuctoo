@@ -80,7 +80,9 @@ public class TimbuctooActions {
     throws AuthorizationUnavailableException, AuthorizationException, NotFoundException {
     checkIfAllowedToWrite(userId, collection);
 
-    dataStoreOperations.deleteEntity(collection, uuid, createChange(userId));
+    int rev = dataStoreOperations.deleteEntity(collection, uuid, createChange(userId));
+
+    handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), uuid, rev));
   }
 
   private Change createChange(String userId) {
