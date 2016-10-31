@@ -6,3 +6,41 @@ Some things that timbuctoo will not do, and that you can use other software for:
  - visualize the data (for this we'll expose the data in timbuctoo in such a way that it can be picked up by tools such as http://hdlab.stanford.edu/projects/palladio/[palladio] or https://gephi.org/[gephi])
 
 We will offer a basic editing interface but we'll also actively try to allow the data to be edited in external tools such as google spreadsheets, openrefine or excel.
+
+=== Databases
+For most databases the answer is the same: timbuctoo is not a database, but rather it uses a database and adds a REST API and related 
+http://ontotext.com/products/graphdb/
+
+=== triple stores
+
+=== Database wrappers
+Sandman::
+Postgres-rest::
+firebase and other Baas-es::
+no interlinking and transclusion of datasets
+
+=== mapping languages
+X3ML::https://github.com/delving/x3ml http://139.91.183.3/3M/
+R2RML::
+XSLT::
+JSON-LD framing::
+XML2RDF::
+SQuaRE::
+  http://resources.visualdataweb.de/paper4.pdf
+=== harmonization tools
+GoogleRefine/OpenRefine::
+karma::
+tabulapdf::
+UIMA (entity extraction)
+Gate (entity extraction)
+Silk (link discovery)
+Datagraft::
+  https://datagraft.net/ (https://github.com/dapaas)
+
+map4rdf
+lodlive
+
+http://link.springer.com/book/10.1007/978-3-319-13817-6/page/2#page-2
+
+xanadu::
+  rdf heeft geen natural order waardoor editlists ofwel heel gefragmenteerd kunnen worden ofwel niet goed mogelijk zijn.
