@@ -115,6 +115,9 @@ include::../timbuctoo-instancev4/src/main/scripts/index_scripts/README.adoc[]
 [WARNING]
 todo:feature[A user guide has not been written yet]
 
+== API documentation
+link:./api.html[API documentation has it's own page]
+
 == Additional information
 === Presentations
 

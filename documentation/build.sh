@@ -10,6 +10,7 @@ asciidoctor \
   -D ./output \
   README.adoc
 
+cp api.html concordion.css output
 cd output
 
 echo converting XML to html  >&2
