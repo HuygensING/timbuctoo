@@ -139,7 +139,9 @@ public class SingleEntity {
             return commitAndReturn(Response.ok(jsonNode).build());
           } catch (InvalidCollectionException e) {
             return rollbackAndReturn(
-              Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(e.getMessage()))).build()
+              Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn(
+                "Collection '" + collectionName + "' was available a moment ago, but not anymore: " + e.getMessage()
+              ))).build()
             );
           } catch (NotFoundException e) {
             return rollbackAndReturn(
