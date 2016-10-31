@@ -10,10 +10,10 @@ The crud service offers an interpreted view of the RDF data. It might for exampl
 Provenance information is included as part of the entity it belongs to.
 //end::summary[]
 
- * todo:bug[Only the person who changed the entity last and the time at which the change was made is provided at the moment, the exact nature of the change is recorded as well but not displayed yet.]
- * todo:feature[No provenance over multiple entities or of automated transformations can be recorded at this moment.]
- * todo:feature[The interpretation is currently hard-coded, but we have plans to allow the user to specify an interpretation with the dataset as metadata.]
- * todo:feature[The entities returned by the service are currently only provided in a custom JSON format, but we are planning to also provide them as JSON-ld, graphml and n-triples]  
+ * todo:bug["Only the person who changed the entity last and the time at which the change was made is provided at the moment, the exact nature of the change is recorded as well but not displayed yet."]
+ * todo:feature["No provenance over multiple entities or of automated transformations can be recorded at this moment."]
+ * todo:feature["The interpretation is currently hard-coded, but we have plans to allow the user to specify an interpretation with the dataset as metadata."]
+ * todo:feature["The entities returned by the service are currently only provided in a custom JSON format, but we are planning to also provide them as JSON-ld, graphml and n-triples"]  
 
 
 == Context

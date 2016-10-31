@@ -5,8 +5,8 @@
 The RDF importer can be provided with a dataset in n-triples format that will then be inserted as-is into the database.
 //end::summary[]
 
- * todo:feature[An extra piece of provenance should be generated, listing the person who uploaded the file and the name or url of the file (if available to the server).]
- * todo:feature[The endpoint should be able to download datasets from the internet directly.] 
+ * todo:feature["An extra piece of provenance should be generated, listing the person who uploaded the file and the name or url of the file (if available to the server)."]
+ * todo:feature["The endpoint should be able to download datasets from the internet directly."] 
 
 == Context
 RDF is a widely used linked data format. 

@@ -3,7 +3,7 @@
 == Summary
 //tag::summary[]
 This package allows you to upload something that is tabular-like and have it converted to a basic RDF representation (just records pointing to the next record). 
-todo:bug[The data entered like this is not yet part of the changelog, but should be.]
+todo:bug["The data entered like this is not yet part of the changelog, but should be."]
 //end::summary[]
 
 == Context
