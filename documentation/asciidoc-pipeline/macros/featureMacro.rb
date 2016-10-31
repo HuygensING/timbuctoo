@@ -10,7 +10,7 @@ class TodoInlineMacro < Asciidoctor::Extensions::InlineMacroProcessor
   name_positional_attributes 'description'
   
   def process parent, target, attrs
-    %(<tim:todo xmlns:tim="http://timbuctoo.huygens.knaw.nl/docbook-extensions" type="#{target}">#{attrs['description']}</tim:todo>)
+    %(<span class="#{target}">#{attrs['description']}</span>)
   end
 end
 
@@ -22,7 +22,7 @@ class GlossaryMacro < Asciidoctor::Extensions::InlineMacroProcessor
   
   def process parent, target, attrs
     keyterm = attrs["keyTerm"] || target
-    %(<tim:gloss xmlns:tim="http://timbuctoo.huygens.knaw.nl/docbook-extensions" term="#{keyterm}">#{target}</tim:gloss>)
+    %(<abbr title="#{keyterm}">#{target}</abbr>)
   end
 end
 

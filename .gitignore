@@ -13,4 +13,4 @@
 # debug run state (database, known users, authorizations)
 /timbuctoo-instancev4/temp_for_debugrun
 
-/documentation/output
+/documentation/asciidoc-pipeline/output
