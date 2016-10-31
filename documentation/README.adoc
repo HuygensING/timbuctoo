@@ -1,0 +1,128 @@
+= Timbuctoo: Bridge to networked research data
+
+:hide-uri-scheme:
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
+
+include::../README.adoc[tags=support-note] 
+
+== Introduction
+
+=== Background
+
+include::../README.adoc[tags=background] 
+
+A lot of applications go quite some part of the distance however, so timbuctoo mostly glue between these applications.
+
+=== History
+
+Timbuctoo was started in 2012.
+
+:leveloffset: +1
+
+include::./compiling.adoc[]
+
+:leveloffset: -1
+
+== Software Components
+
+=== Overview
+
+Timbuctoo is a set of REST api's on top of a graph database that stores RDF. gloss:REST[http api]
+
+[ditaa,file="./images/ditaa-example.png"]
+--
+                              +     +----------+           +--------+                                         +----------+
+                              |     |Search GUI|           |Edit GUI|                                         |Upload GUI|
+                              |     +-----+----+           +-+-+-+--+                                         +--+--+--+-+
+                              |           |                  | | |                                               |  |  |
+                              |           |                  | | |                                               |  |  |
+ Client tooling               |        +--+-+                | | |                                               |  |  |
+(we provide some scaffolds,   |        |SOLR|                | | |                                               |  |  |
+ but you're expected to write |        +--+-+                | | |                                               |  |  |
+ this yourself)               |           |                  | | |                                               |  |  |
+                              |           |                  | | |                                               |  |  |
+                              |    +------+------+           | | |                                               |  |  |
+                              |    |Index crawler+---+  +----+ | +-----------+                   +---------------+  |  +----------------+
+                              +    +---+---------+   |  |      |             |                   |                  |                   |
+                                       |             |  |      |             |                   |                  |                   |
+                                       |             |  |      |             |                   |                  |                   |
+                              + +------+---+        ++--+-+ +--+-----+ +-----+------+     +------+--------------+   +------+-------+     +-----+------+
+               Timbuctoo API  | |Changelog |        |CRUD | |Metadata| |Autocomplete|     |Tabular data importer|   |Rml processor |     |RDF importer|
+                              + +----------+        +-----+ +--------+ +------------+     +---------------------+   +--------------+     +------------+
+
+
+
+                                                                    +---------+
+                                                                    |{s}      |
+                                                                    |graph db |
+                                                                    |  with   |
+                                                                    |   RDF   |
+                                                                    +---------+
+--
+Changelog::
+todo:feature[The changelog will provide a chronological list of additions or deletions filtered by either the entity or the dataset].
+The changelog API isn't available yet, but the data to generate it is already being saved. So when the API becomes available it will expose the data retroactively.  
+CRUD::
+include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/crud/README.adoc[tags=summary] 
+Metadata::
+A dataset contains information about the property names (predicates) that are in use etc.
+This information cannot be retrieved from the CRUD endpoint, but can be retrieved from here.
+This module is not really documented, you can read link:../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/server/endpoints/v2/Metadata.java[the source] though.
+Autocomplete::
+Timbuctoo allows you to do a quick search on the labels (aka displaynames) of the entities.
+This is implemented as part of the CRUD module.  
+Tabular data importer::
+include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload/README.adoc[tags=summary] 
+RML processor::
+include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/README.adoc[tags=summary] 
+RDF importer::
+include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf/README.adoc[tags=summary] 
+Search GUI & Index crawler::
+include::../timbuctoo-instancev4/src/main/scripts/index_scripts/README.adoc[tags=summary] 
+
+Next to these core endpoints we also have:
+
+An authentication endpoint::
+This allows users to sign in.
+We will probably remove the code once the project that we're part of (CLARIAH) provides a good openid2 implementation.
+A D3 graph render endpoint::
+This will probably be removed after we have built the new CRUD Api
+A raw query endpoint::
+This is for development use only
+A jsenv endpoint::
+This is a quick way to pass some data from the configuration file to the javascript applications.
+We're not sure if we're keeping this around.
+
+These are all the user facing components. Other components do not directly implement 
+
+:leveloffset: +2
+
+include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/crud/README.adoc[]
+
+include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload/README.adoc[]
+
+include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/README.adoc[]
+
+include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf/README.adoc[]
+
+include::../timbuctoo-instancev4/src/main/scripts/index_scripts/README.adoc[] 
+
+:leveloffset: -2
+
+== User guide
+
+[WARNING]
+todo:feature[A user guide has not been written yet]
+
+== Additional information
+=== Presentations
+
+.A quick overview of the timbuctoo project
+video::186090384[vimeo,align="center"]
+
+:leveloffset: +1
+
+include::./related-work.adoc[]
+
+:leveloffset: -1

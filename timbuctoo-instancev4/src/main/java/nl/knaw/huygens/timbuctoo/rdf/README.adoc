@@ -1,6 +1,14 @@
-# RDF import
+= RDF import
 
-## Context
+== Summary
+//tag::summary[]
+The RDF importer can be provided with a dataset in n-triples format that will then be inserted as-is into the database.
+//end::summary[]
+
+ * todo:feature[An extra piece of provenance should be generated, listing the person who uploaded the file and the name or url of the file (if available to the server).]
+ * todo:feature[The endpoint should be able to download datasets from the internet directly.] 
+
+== Context
 RDF is a widely used linked data format. 
 Therefore Timbuctoo has to communicate with a with services through the RDF data format. 
 This package contains a mapping to convert RDF to the Timbuctoo native property graph format. 
@@ -8,7 +16,7 @@ The RDF syntax we support are n-quads. Because n-quads are a superset of n-tripl
 
 The code for the RDF import can be found in the package [nl.knaw.huygens.timbuctoo.rdf](https://github.com/HuygensING/timbuctoo/tree/master/timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf)
 
-## Import
+== Import
 There are two options to import data. 
 The first one is can be found at http://localhost:8080/static/bulk-upload/.
 This way you can upload a file with n-quads and n-triples.
@@ -27,7 +35,7 @@ If you just want to try to import a few triples the second option would be an ea
 Both imports will create a VRE with the name provided by the header VRE_ID or filled in in the field of the for of the bulk-upload. (Wat gebeurd er met de graph URI van de quad?) 
 After the import has completed you can find your data in the [Edit GUI](http://localhost:8080/static/edit-gui/) under the dropdown of the VRE you chose the importer to create.
 
-### Process
+=== Process
 When the data is uploaded, it is processed by the RdfImporter. 
 The RdfImport prepares the import, by creating a new VRE. Then it delegates the import of the triples to the TripleImporter. 
 The TripleImporter lets a TripleProcessor execute one of the [supported cases](#supported-cases). 
@@ -35,9 +43,10 @@ These TripleProcessors add the data to the database.
 They also add the necessary configuration to the database. 
 This configuration could be adding a new Collection to the database or adding a Property configuration to a Collection.
  
-#### Supported cases
+==== Supported cases
 We support 4 types of triples. 
 These 4 types seem to are enough to support most of the rdf language.
+
  1. Triples that describe a http://www.w3.org/2000/01/rdf-schema#subClassOf with a for Timbuctoo known archetype.
  When the object contains no known archetype this subClassOf relation will be treated like every other relation.
  2. Triples that describe http://www.w3.org/2000/01/rdf-schema#type.
@@ -46,41 +55,43 @@ These 4 types seem to are enough to support most of the rdf language.
  
 Each of the cases has its own TripleProcessor in the [triple processor package](https://github.com/HuygensING/timbuctoo/tree/master/timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf/tripleprocessor).
 
-### Hierarchy
+=== Hierarchy
 An import can result in a combination of the next 3 scenario's.   
 
-#### No type information available
+==== No type information available
 This is the most basic one. For example when the first triple of the VRE has not http://www.w3.org/2000/01/rdf-schema#type predicate, the newly created vertex will be added to the 'unknown'-collection of the VRE.
 
-![images/unknown_type_hierarchy.png](images/unknown_type_hierarchy.png "Hierarchy for an unknown type.")
+image::images/unknown_type_hierarchy.png["Hierarchy for an unknown type."]
 
-#### A type without a connection with a known archetype
+==== A type without a connection with a known archetype
 When type information becomes available, the structure will be transformed to the next structure.
 
-![images/default_hierarchy.png](images/default_hierarchy.png "Default hierarchy.")
+image::images/default_hierarchy.png["Default hierarchy."]
 
-#### A type with a known archetype
+==== A type with a known archetype
 When the type is http://www.w3.org/2000/01/rdf-schema#subClassOf of a Timbuctoo known archetype. 
 The structure will be transformed to the following structure.
 
-![images/hierarchy.png](images/hierarchy.png "Hierarchy with a known archetype.")
+image::images/hierarchy.png["Hierarchy with a known archetype."]
 
-## Dependencies
+== Dependencies
 We use [Apache Jena](https://jena.apache.org/) to convert the triple strings to java objects.
 
 
-## Known issues
+== Known issues
 
 Timbuctoo supports edges with inverse names for inverse directions in a data structure called RelationType. 
 Currently mapping via URI of an rdf predicate only works for the regular name of a relation type.
 
 For instance, given these triples:
+
 ```
 <amsterdam> <isDeathPlaceOf> <piet> .
 <jan> <hasBirthPlace> <Amsterdam> .
 ```
 
 And a RelationType definition as follows:
+
 ```
 {
   ..., 
@@ -92,19 +103,23 @@ And a RelationType definition as follows:
 ```
 
 We currently get these resulting edges:
+
 ```
 v[73] --[isDeathPlaceOf]--> v[72]
 v[65] --[hasBirthPlace]--> v[73]
 ```
+
 Where isDeathPlaceOf is a newly generated relationType, in stead of one mapped against the existing relationType.
 
 The expected result would have been:
+
 ```
 v[72]--[hasDeathPlace]-->v[73]
 v[65] --[hasBirthPlace]--> v[73]
 ```
 
 Culprit code only looks at RDF_URI_PROP identifying a regular name.
+
 ```
 rdf.Database.java[r215]:  graphWrapper.getGraph().traversal().V().hasLabel("relationtype").has(RDF_URI_PROP, predicate.getURI());
 ```

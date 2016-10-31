@@ -1,24 +1,44 @@
-## Context
+= CRUD
+
+[WARNING]
+We will probably release a new REST API for the crud service, while also maintaining the current API. The current API is sometimes a bit cumbersome to develop against.
+
+== Summary
+
+//tag::summary[]
+The crud service offers an interpreted view of the RDF data. It might for example fold a list expressed as blank nodes in RDF into the the entity that references them.
+Provenance information is included as part of the entity it belongs to.
+//end::summary[]
+
+ * todo:bug[Only the person who changed the entity last and the time at which the change was made is provided at the moment, the exact nature of the change is recorded as well but not displayed yet.]
+ * todo:feature[No provenance over multiple entities or of automated transformations can be recorded at this moment.]
+ * todo:feature[The interpretation is currently hard-coded, but we have plans to allow the user to specify an interpretation with the dataset as metadata.]
+ * todo:feature[The entities returned by the service are currently only provided in a custom JSON format, but we are planning to also provide them as JSON-ld, graphml and n-triples]  
+
+
+== Context
 Timbuctoo offers a REST interface to edit data within different datasets.
 This API precedes the RDF data model and even the graph database underpinnings.
 Recently we have performed a clean re-implementation of the crud API based on the graph database to clear out many intermediate layers that are no longer needed.
 
 This package contains code that translates a timbuctoo specific JSON format into changes on the Tinkerpop graph.
 
-## Responsibilies
+== Responsibilies
 This package is responsible for
+
  * Parsing various formats (currently excel only)
  * generating "collections" (i.e. tables, sheets, files) containing "rows" of "fields"
  * handling imports of arbitrary size (only limited by the space limitations of the target database)
 
 It is currently not responsible for
+
  * converting the data to a specific data type (it should output plain text)
  * handling links (i.e. foreign keys or edges)
  * handling data that cannot be expressed as collections of rows
 
 After an import is finished all traces of the original format should be gone.
 
-## Data model
+== Data model
 The timbuctoo database is divided into datasets.
 Each Virtual Research Environment used to have it's own dataset and each dataset would be solely for a specific VRE.
 Therefore a dataset is itself called a VRE.
@@ -40,11 +60,6 @@ Outside of the normal VRE's there is a VRE called Admin.
 
 There is also a VRE called Base.
 
-
-
-```
-```
-
-## Contents of this package
- * [TinkerpopJsonCrudService](TinkerpopJsonCrudService.java) is the entry point. It contains methods for creating, reading, updating and deleting entities and will modify the database according to the above schedule.
+== Contents of this package
+ * link:TinkerpopJsonCrudService.java[TinkerpopJsonCrudService] is the entry point. It contains methods for creating, reading, updating and deleting entities and will modify the database according to the above schedule.
   

@@ -1,5 +1,10 @@
 = RML implementation
 
+//tag::summary[]
+Once you have uploaded some data in a tabular representation you can call the RML processor with an RML document to generate RDF which is then inserted into the database.
+The processor calls the RDF importer in the background with the generated triples.
+//end::summary[]
+
 The code in this package to implements the http://rml.io[rml specification].
 It does not implement any of the datasources itself, but allows you to provide your own implementations.
 
@@ -112,23 +117,30 @@ This however introduces the problem of handling tables which refer to each other
 References without a cycle::
 
 When exactly one table references exactly one other table this is simply resolved by first mapping the rows of the table that is referred to and then the table that refers to it.
-```
 Given these tables:
+
+[ditaa]
+--
 +---------------+                         +--------------+
 |Persons        |                         |Locations     |
 +---------------+                         +--------------+
 | ID            |                         | name         |
 | name          |                         | country      |
-| birthplace_id |----|hasBirthPlace|----->| ID           |
+| birthplace_id |-----hasBirthPlace------>| ID           |
 +---------------+                         +--------------+
+--
 
 And this original order of mappers:
+
+```
 [
   mapperForPersons,
   mapperForLocations
 ]
-
+```
 Sort the mappers so that URI's for Locations are generated *before* the mappings of persons are performed:
+
+```
 [
   mapperForLocations, --> will generate URI's and store them using JoinHandler implementation
   mapperForPersons    --> will look up URI's for the locations using store in JoinHandler implementation
@@ -142,8 +154,10 @@ In this case a new mapper is generated (split off) from the original mapper, so 
 The first pass maps all the values that are not a reference.
 The second pass maps all the values that are a reference to another column.
 
-```
 Given this table:
+
+[ditaa]
+--
      +----------+
      |Persons   |
      +----------+
@@ -152,15 +166,20 @@ Given this table:
 |    |mother_id |-+
 |    +----------+ |
 |                 |
-+---|hasMother|---+
++----hasMother----+
+--
 
 And this mapper list:
+
+```
 [
   mapperForPersons
 ]
-
+```
 
 Split off one extra mapper to resolve the URI of person being referenced to by mother_id:
+
+```
 [
   mapperForPersons,  --> will generate URI's and store them using JoinHandler implementation
   mapperForPersons'  --> will look up URI's for the mothers using store in JoinHandler implementation
@@ -173,31 +192,39 @@ The same solutions as above apply here: first sort by dependency, then split off
 This also works for more complex cases with multiple cycles.
 The full implementation of sort and split is here: link:./rmldata/builders/MappingDocumentBuilder.java[/rml/rmldata/builders/MappingDocumentBuilder.java].
 
-```
 Given this data structure:
+
+[ditaa]
+--
    +------+                +------+                           +------+
    |x     |                |y     |                           |a     |
    +------+                +------+                           +------+
-   | y_id |--|dependsOn|-+>| ID   |                           | ...  |
-+->| ID   |              | | a_id |------|dependsOn|--------->| ID   |
-|  +------+              | | z_id |------|dependsOn|----+     +------+
-|                        | | y_id |---+                 |
-|                        | +------+   |                 |     +------+
-|                        |            |                 |     |z     |
-|                        +|dependsOn|-+                 |     +------+
+   | y_id |---dependsOn-+->| ID   |                           |      |
++->| ID   |             |  | a_id |-------dependsOn---------->| ID   |
+|  +------+             |  | z_id |-------dependsOn-----+     +------+
+|                       |  | y_id |---+                 |
+|                       |  +------+   |                 |     +------+
+|                       |             |                 |     |z     |
+|                       +--dependsOn--+                 |     +------+
 |                                                       +---->| ID   |
-+-------------------------|dependsOn|-------------------------| x_id |
++--------------------------dependsOn--------------------------| x_id |
                                                               +------+
+--
 
 And this original order of mappers:
+
+```
 [
  zMapper, <--- depends on xMapper
  xMapper, <--- depends on yMapper
  yMapper, <--- depends on zMapper, aMapper and yMapper (self)
  aMapper  <--- depends on no mapper
 ]
+```
 
 Sort and split the mappers like this:
+
+```
 [
   aMapper,   <--- has no dependencies on other mappers having been run
   yMapper,   <--- depends on aMapper
@@ -216,3 +243,7 @@ RML does not have this support.
 This is especially annoying for implementing manytomany links and when you want to derive the name of the predicate.
 +
 We might implement an extension that allows for referencingMaps in subjectMaps and predicateMaps and an extension that allows you to transform the inputline to aleviate some of this pain.
+Join handling is done by the wrong datasource::
+The index for joining is stored by the datasource that will use the join values.
+This is perhaps a bit confusing.
+I can imagine that intuitively the datasource that provides the data also stores the index (technicaly there's no clear preference).

@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<refentry xml:id="docbook-html5" xmlns="http://docbook.org/ns" version="5.0" xml:lang="en-gb" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<info>
+		<productname>Research &amp; Education Space</productname>
+		<author>
+            <personname>
+                    <firstname>Mo</firstname>
+                    <surname>McRoberts</surname>
+                    <affiliation>
+                            <org>
+                                    <orgname>BBC Archive Development</orgname>
+                                    <uri type="website">http://www.bbc.co.uk/archive/</uri>
+                            </org>
+                    </affiliation>
+            </personname>
+		</author>
+		<legalnotice>
+			<para>Copyright © 2014 BBC.</para>
+			<para>docbook-html5 is licensed under the terms of the <link xlink:href="http://www.apache.org/licenses/LICENSE-2.0">Apache License, Version 2.0</link> and is available to browse or download via <link xlink:href="https://github.com/bbcarchdev/docbook-html5">GitHub</link>.</para>
+			<para>The text of this document is licensed under the terms of the <link xlink:href="http://www.nationalarchives.gov.uk/doc/open-government-licence/version/2/">Open Government Licence, v2.0</link>.</para>
+		</legalnotice>						
+	</info>
+	
+	<refmeta>
+		<refentrytitle>docbook-html5</refentrytitle>
+	</refmeta>
+	
+	<refsect1>
+		<title>Introduction</title>
+		<para>
+			The <link xlink:href="https://github.com/bbcarchdev/docbook-html5">docbook-html5 project</link>
+			is a set of
+			<link xlink:href="http://www.w3.org/TR/xslt">XSLT</link> stylesheets for
+			transforming <link xlink:href="http://www.docbook.org/tdg5/en/html/docbook.html">DocBook 5</link>
+			XML into (X)HTML5 documents, developed as part of the
+			<link xlink:href="http://bbcarchdev.github.io/res/">Research &amp; Education Space</link>
+			project in order to produce specific mark-up from our DocBook 5 sources.
+		</para>
+		<para>
+			The stylesheets have no direct connection to the extremely
+			comprehensive
+			<link xlink:href="http://docbook.sourceforge.net/release/xsl/current/doc/">official DocBook XSL stylesheets</link>,
+			and don't have the same level of element coverage, but you
+			may find them easier to modify to suit your needs than the official XSL
+			package thanks to to their relative simplicity.
+		</para>
+	</refsect1>
+	
+	<refsect1>
+		<title>Usage</title>
+		<para>
+			If your XSLT processor supports it, docbook-html5 can be used either
+			remotely, or you can include a copy in your project (for example, as
+			a <link xlink:href="http://git-scm.com/book/en/Git-Tools-Submodules">git submodule</link>),
+			and used locally.
+		</para>
+		<para>
+			Examples given here use <link xlink:href="http://xmlsoft.org/XSLT/xsltproc.html"><command>xsltproc</command></link>,
+			an open source cross-platform XSLT processor included with most Linux
+			and Unix distributions.
+		</para>
+		<para>
+			To use docbook-html5 remotely:—
+		</para>
+		<screen><prompt>$ </prompt> <userinput>xsltproc --xinclude -o <replaceable>OUTPUT.html</replaceable> http://bbcarchdev.github.io/docbook-html5/docbook-html5.xsl <replaceable>INPUT.xml</replaceable></userinput></screen>
+		<para>
+			To use docbook-html5 locally, simply specify the filesystem path to
+			<filename>docbook-html5.xsl</filename> in place of the URL:—
+		</para>
+		<screen><prompt>$ </prompt> <userinput>xsltproc --xinclude --nonet -o <replaceable>OUTPUT.html</replaceable> http://bbcarchdev.github.io/docbook-html5/docbook-html5.xsl <replaceable>INPUT.xml</replaceable></userinput></screen>		
+		<para>
+			When using the stylesheets locally, the <option>--nonet</option> option may
+			be supplied, which prevents <command>xsltproc</command> from performing any
+			requests to remote network hosts.
+		</para>
+		<tip>
+			Many XSLT processors have the concept of a <firstterm>catalog</firstterm>,
+			where remote URLs are redirected to a local cache of resources—typically
+			DTDs and XSLT. This capability allows you to consistently use the
+			remote URL to the stylesheets, but a local copy will be used instead if
+			present and configured properly. See your XSLT processor’s documentation
+			for more information on configuring the catalog.
+		</tip>
+	</refsect1>
+	<refsect1>
+		<title>Parameters</title>
+		<para>
+			The stylesheets support a number of parameters which alter the output
+			which is produced.
+		</para>
+		<variablelist>
+			<varlistentry>
+				<term><varname>html.linksfile</varname></term>
+				<listitem>
+					<para>
+						Specifies the URL of an XML file whose contents will be substituted
+						into the output document’s <tag class="element">head</tag> element,
+						and typically contains <tag class="element">link</tag> and
+						<tag class="element">meta</tag> elements. See
+						<link xlink:href="https://github.com/bbcarchdev/docbook-html5/blob/gh-pages/links-sample.xml"><filename>links-sample.xml</filename></link> 
+						for an example. Note that the URL specified will be interpreted as
+						relative to the stylesheets URL, and so you may need to specify
+						an absolute <literal>file:///</literal> URL.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><varname>html.navfile</varname></term>
+				<listitem>
+					<para>
+						Specifies the URL of an XML file whose contents will be substituted
+						into the output document’s global <tag class="element">nav</tag> element
+						(which appears, if this parameter is specified, within the
+						document-level <tag class="element">header</tag>). See
+						<link xlink:href="https://github.com/bbcarchdev/docbook-html5/blob/gh-pages/nav-sample.xml"><filename>nav-sample.xml</filename></link> 
+						for an example. Note that the URL specified will be interpreted as
+						relative to the stylesheets URL, and so you may need to specify
+						an absolute <literal>file:///</literal> URL.
+					</para>
+				</listitem>
+			</varlistentry>
+			<varlistentry>
+				<term><varname>html.ie78css</varname></term>
+				<listitem>
+					<para>
+						Specifies the URL of the CSS stylesheet which targets <productname>Microsoft
+						Internet Explorer</productname> 7 and 8, and will be referenced by
+						a <tag class="element">link</tag> element within the HTML document’s
+						<tag class="element">head</tag> element, and is emitted as a
+						<link xlink:href="http://msdn.microsoft.com/en-us/library/ms537512(v=vs.85).aspx">conditional comment</link>
+						which is ignored by other web browsers.
+					</para>
+				</listitem>
+			</varlistentry>
+		</variablelist>
+	</refsect1>
+	
+	<refsect1>
+		<title>Example</title>
+		<screen><prompt>$ </prompt> <userinput>xsltproc --xinclude \
+	-o <replaceable>OUTPUT.html</replaceable> \
+	--param html.linksfile "'file://`pwd`/links-sample.xml'" \
+	--param html.navfile "'file://`pwd`/nav-sample.xml'" \
+	--param html.ie78css "'http://docs.example.com/stylesheets/ie78.css'" \
+	/path/or/url/to/docbook-html5/docbook-html5.xsl \
+	<replaceable>INPUT.xml</replaceable></userinput></screen>
+	</refsect1>
+</refentry>
