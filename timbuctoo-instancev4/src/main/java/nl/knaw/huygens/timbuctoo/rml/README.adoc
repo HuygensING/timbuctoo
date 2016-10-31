@@ -109,7 +109,9 @@ link:./rdfshim[/rdfshim]::
 link:./datasource[/datasource]::
   The library ships with a JoinHandler interface which can be used by the datasource to handle joins and one sample implementation backed by a HashMap.
 
-== Handling of circular and self-referencing data sources (let's call them tables)
+== Implementation details
+
+=== Handling of circular and self-referencing data sources (let's call them tables)
 In order for this library to support big datasets without the leverage of querying on-the-fly (which SQL based databases provide), data rows are expected to be streamed per logical source (i.e. RdfResource).
 
 This however introduces the problem of handling tables which refer to each other (possibly with cyclic dependency) as explained in the next sub-sections.
@@ -233,6 +235,31 @@ Sort and split the mappers like this:
   yMapper'   <--- depends on yMapper and on zMapper (only one mapper needed to be split off to break 2 cycles.
 ]
 ```
+
+=== Error reporting
+
+R2RML (and thus RML) specifies that data errors should be reported to the client.
+We implement this by writing errors back to the datasource, allowing the application to present the user with the data rows that triggered invalid input according to his or her specification.
+For our own datasource the results will be written to neo4j as follows:
+
+[graphviz]
+--
+digraph {
+  VRE
+  RawCollection
+  VRE -> RawCollection [label="hasRawCollection"]
+  RawItem1 [label="prop1_value=\"val\""]
+  RawCollection -> RawItem1 [label="hasNextItem"]
+  RawItem2 [label="prop1_value=\"val1\"\nprop1_error=\"Exception message\""]
+  RawItem1 -> RawItem2 [label="hasNextItem"]
+  RawCollection -> RawItem2 [label="hasNextError"]
+  RawItem3 [label="prop2_value=\"val\""]
+  RawItem2 -> RawItem3 [label="hasNextItem"]
+  RawItem4 [label="prop2_value=\"val1\"\n`prop2_error=\"Exception message\""]
+  RawItem3 -> RawItem4 [label="hasNextItem"]
+  RawItem2 -> RawItem4 [label="hasNextError"]
+}
+--
 
 == Known issues
 

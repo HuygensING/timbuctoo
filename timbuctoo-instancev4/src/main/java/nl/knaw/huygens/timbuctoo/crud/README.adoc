@@ -60,6 +60,33 @@ Outside of the normal VRE's there is a VRE called Admin.
 
 There is also a VRE called Base.
 
+The current data model is based on the lowest common denominator of the data abstraction layer (tinkerpop2) and the database (neo4j). This means that there are:
+ 
+ * Vertices (what neo4 calls nodes)
+ * Properties
+ * Edges (a relation between two vertices)
+
+Vertices represent a version of an entity. Properties represent the values of that entity that do not warrant their own identifier. Edges represent the relations between vertices and might have properties of their own (though this happens rarely)
+
+=== Versioning
+image:../../../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/crud/versioning.png[]
+
+(A, B, C & D) The light blue square represents a vertex and thus one version of the entity. In A and B there is only 1 versie of Maria and Pieter, in C there are 2 versions of Maria and 1 of Pieter and in D there are 2 versies of both Maria and Pieter. The set of vertices with the same value for the property tim_id form a singly linked list through edges of the type isVersionOf. These are grouped in a darker blue square and labeled “version series”
+
+(B) When an edge is created between two vertices, no new version is created. Both the vertex and the relations have a created_at property so that one can identify that there was a time when the vertices did exist, but the relation did not.
+
+(C & D) When a property is changed a new version _is_ created. The relations to the old vertex are deleted and new relations are created using the new vertex. These new relations keep their created_at date, so it is possible to find all the vertices that existed while the old vertex was active by following the isVersionOf relation up to the latest version and iterating over its relations.
+
+(Not in the drawing) When a property of a relation is modified a new relation is created and the old one marked as obsolete. similar to vertices.
+
+(not in th drawing) The drawing slightly misrepresents the actual workings of the data persistence code in order to make it easier to understand. In reality the duplication of the object does not happen right before a modification, but directly after a “persistent id” has been received from the handle server. The race conditions that this might introduce are prevented by disallowing writes depending on whether a persistent id is available or not. (There are three states possible: the property is non-existent, the property exists but has the value NULL and the property exists)
+Variants
+
+The current timbuctoo also code to achieve most of the goals of anansi. These goals are implemented by storing all the data of the different research projects on a certain entity in the same vertex using namespaces for the properties.
+There is also 1 namespace that contains the “abstract” data that does have meaning within the domain, such as a persons name. De facto this is the data of the first research environment that entered a value for that property. This abstract-level data is currently unused.
+There is also data that is not domain related, such as the isLatest property. This is again placed in its own namespace.
+
+
 == Contents of this package
  * link:TinkerpopJsonCrudService.java[TinkerpopJsonCrudService] is the entry point. It contains methods for creating, reading, updating and deleting entities and will modify the database according to the above schedule.
   
