@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -135,6 +136,10 @@ public class TimbuctooActions {
     updateRelation.setModified(createChange(userId));
 
     dataStoreOperations.replaceRelation(collection, updateRelation);
+  }
+
+  public Vres loadVres() {
+    return dataStoreOperations.loadVres();
   }
 
   public static class TimbuctooActionsFactory {

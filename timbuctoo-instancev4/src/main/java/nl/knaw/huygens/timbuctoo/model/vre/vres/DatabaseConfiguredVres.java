@@ -1,13 +1,14 @@
 package nl.knaw.huygens.timbuctoo.model.vre.vres;
 
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 
 import java.util.Map;
 import java.util.Optional;
+
+import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.commitAndReturn;
 
 public class DatabaseConfiguredVres implements Vres {
 
@@ -43,7 +44,8 @@ public class DatabaseConfiguredVres implements Vres {
   }
 
   public void reload() {
-    loadedInstance =
-      transactionEnforcer.oldExecuteAndReturn(db -> TransactionStateAndResult.commitAndReturn(db.loadVres()));
+    loadedInstance = transactionEnforcer.executeAndReturn(
+      timbuctooActions -> commitAndReturn(timbuctooActions.loadVres())
+    );
   }
 }

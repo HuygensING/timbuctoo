@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -78,5 +79,14 @@ public class TimbuctooActionsGetTest {
     };
   }
 
+  @Test
+  public void loadVresDelegatesToDataStoreOperationsLoadVres() {
+    Vres vres = mock(Vres.class);
+    when(dataStoreOperations.loadVres()).thenReturn(vres);
+
+    Vres actualVres = instance.loadVres();
+
+    assertThat(actualVres, is(sameInstance(vres)));
+  }
 
 }

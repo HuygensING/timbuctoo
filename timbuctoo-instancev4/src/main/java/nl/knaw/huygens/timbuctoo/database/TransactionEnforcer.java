@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -24,29 +21,6 @@ public class TransactionEnforcer {
     this.dataStoreOperationsSupplier = dataStoreOperationsSupplier;
     this.timbuctooActionsFactory = timbuctooActionsFactory;
     this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
-  }
-
-  /**
-   * @deprecated use {@link #executeAndReturn(Function)}
-   */
-  @Deprecated
-  public <T> T oldExecuteAndReturn(Function<DataStoreOperations, TransactionStateAndResult<T>> actions) {
-    DataStoreOperations db = dataStoreOperationsSupplier.get();
-
-    try {
-      TransactionStateAndResult<T> result = actions.apply(db);
-      if (result.wasCommitted()) {
-        db.success();
-      } else {
-        db.rollback();
-      }
-      return result.getValue();
-    } catch (RuntimeException e) {
-      db.rollback();
-      throw e;
-    } finally {
-      db.close();
-    }
   }
 
   public <T> T executeAndReturn(Function<TimbuctooActions, TransactionStateAndResult<T>> action) {
