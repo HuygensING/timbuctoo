@@ -154,6 +154,7 @@ public class JsonCrudServiceCreateTest {
     instance.create("wwpersons", JsonBuilder.jsnO("birthplace", jsn("Moordrecht")), "");
   }
 
+  // TODO find out what this test means
   @Test
   public void setsJsonPropertyMapForKnownProperties() throws Exception {
     Graph graph = newGraph().build();
