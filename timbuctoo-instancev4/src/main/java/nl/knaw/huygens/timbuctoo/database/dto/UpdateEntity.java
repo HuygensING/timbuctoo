@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.database.dto;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,14 +10,12 @@ public class UpdateEntity {
   private final UUID id;
   private final List<TimProperty<?>> properties;
   private final int rev;
-  private final Instant updateInstant;
   private Change modified;
 
-  public UpdateEntity(UUID id, List<TimProperty<?>> properties, int rev, Instant updateInstant) {
+  public UpdateEntity(UUID id, List<TimProperty<?>> properties, int rev) {
     this.id = id;
     this.properties = properties;
     this.rev = rev;
-    this.updateInstant = updateInstant;
   }
 
   public UUID getId() {
@@ -31,10 +28,6 @@ public class UpdateEntity {
 
   public int getRev() {
     return rev;
-  }
-
-  public Instant getUpdateInstant() {
-    return updateInstant;
   }
 
   public void setModified(Change modified) {
