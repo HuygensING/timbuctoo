@@ -1,0 +1,2520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<!--[if IE]><meta http-equiv="X-UA-Compatible" content="IE=edge"><![endif]-->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="generator" content="Asciidoctor 1.5.4">
+<title>Timbuctoo: Bridge to networked research data</title>
+<style>
+@import url(http://cdnjs.cloudflare.com/ajax/libs/font-awesome/3.2.0/css/font-awesome.css);
+/* normalize.css v2.1.1 | MIT License | git.io/normalize */
+/* ========================================================================== HTML5 display definitions ========================================================================== */
+/** Correct `block` display not defined in IE 8/9. */
+article, aside, details, figcaption, figure, footer, header, hgroup, main, nav, section, summary { display: block; }
+
+/** Correct `inline-block` display not defined in IE 8/9. */
+audio, canvas, video { display: inline-block; }
+
+/** Prevent modern browsers from displaying `audio` without controls. Remove excess height in iOS 5 devices. */
+audio:not([controls]) { display: none; height: 0; }
+
+/** Address styling not present in IE 8/9. */
+[hidden] { display: none; }
+
+/* ========================================================================== Base ========================================================================== */
+/** 1. Prevent system color scheme's background color being used in Firefox, IE, and Opera. 2. Prevent system color scheme's text color being used in Firefox, IE, and Opera. 3. Set default font family to sans-serif. 4. Prevent iOS text size adjust after orientation change, without disabling user zoom. */
+html { background: #fff; /* 1 */ color: #000; /* 2 */ font-family: sans-serif; /* 3 */ -ms-text-size-adjust: 100%; /* 4 */ -webkit-text-size-adjust: 100%; /* 4 */ }
+
+/** Remove default margin. */
+body { margin: 0; }
+
+/* ========================================================================== Links ========================================================================== */
+/** Address `outline` inconsistency between Chrome and other browsers. */
+a:focus { outline: thin dotted; }
+
+/** Improve readability when focused and also mouse hovered in all browsers. */
+a:active, a:hover { outline: 0; }
+
+/* ========================================================================== Typography ========================================================================== */
+/** Address variable `h1` font-size and margin within `section` and `article` contexts in Firefox 4+, Safari 5, and Chrome. */
+h1 { font-size: 2em; margin: 0.67em 0; }
+
+/** Address styling not present in IE 8/9, Safari 5, and Chrome. */
+abbr[title] { border-bottom: 1px dotted; }
+
+/** Address style set to `bolder` in Firefox 4+, Safari 5, and Chrome. */
+b, strong { font-weight: bold; }
+
+/** Address styling not present in Safari 5 and Chrome. */
+dfn { font-style: italic; }
+
+/** Address differences between Firefox and other browsers. */
+hr { -moz-box-sizing: content-box; box-sizing: content-box; height: 0; }
+
+/** Address styling not present in IE 8/9. */
+mark { background: #ff0; color: #000; }
+
+/** Correct font family set oddly in Safari 5 and Chrome. */
+code, kbd, pre, samp { font-family: monospace, serif; font-size: 1em; }
+
+/** Improve readability of pre-formatted text in all browsers. */
+pre { white-space: pre-wrap; }
+
+/** Set consistent quote types. */
+q { quotes: "\201C" "\201D" "\2018" "\2019"; }
+
+/** Address inconsistent and variable font size in all browsers. */
+small { font-size: 80%; }
+
+/** Prevent `sub` and `sup` affecting `line-height` in all browsers. */
+sub, sup { font-size: 75%; line-height: 0; position: relative; vertical-align: baseline; }
+
+sup { top: -0.5em; }
+
+sub { bottom: -0.25em; }
+
+/* ========================================================================== Embedded content ========================================================================== */
+/** Remove border when inside `a` element in IE 8/9. */
+img { border: 0; }
+
+/** Correct overflow displayed oddly in IE 9. */
+svg:not(:root) { overflow: hidden; }
+
+/* ========================================================================== Figures ========================================================================== */
+/** Address margin not present in IE 8/9 and Safari 5. */
+figure { margin: 0; }
+
+/* ========================================================================== Forms ========================================================================== */
+/** Define consistent border, margin, and padding. */
+fieldset { border: 1px solid #c0c0c0; margin: 0 2px; padding: 0.35em 0.625em 0.75em; }
+
+/** 1. Correct `color` not being inherited in IE 8/9. 2. Remove padding so people aren't caught out if they zero out fieldsets. */
+legend { border: 0; /* 1 */ padding: 0; /* 2 */ }
+
+/** 1. Correct font family not being inherited in all browsers. 2. Correct font size not being inherited in all browsers. 3. Address margins set differently in Firefox 4+, Safari 5, and Chrome. */
+button, input, select, textarea { font-family: inherit; /* 1 */ font-size: 100%; /* 2 */ margin: 0; /* 3 */ }
+
+/** Address Firefox 4+ setting `line-height` on `input` using `!important` in the UA stylesheet. */
+button, input { line-height: normal; }
+
+/** Address inconsistent `text-transform` inheritance for `button` and `select`. All other form control elements do not inherit `text-transform` values. Correct `button` style inheritance in Chrome, Safari 5+, and IE 8+. Correct `select` style inheritance in Firefox 4+ and Opera. */
+button, select { text-transform: none; }
+
+/** 1. Avoid the WebKit bug in Android 4.0.* where (2) destroys native `audio` and `video` controls. 2. Correct inability to style clickable `input` types in iOS. 3. Improve usability and consistency of cursor style between image-type `input` and others. */
+button, html input[type="button"], input[type="reset"], input[type="submit"] { -webkit-appearance: button; /* 2 */ cursor: pointer; /* 3 */ }
+
+/** Re-set default cursor for disabled elements. */
+button[disabled], html input[disabled] { cursor: default; }
+
+/** 1. Address box sizing set to `content-box` in IE 8/9. 2. Remove excess padding in IE 8/9. */
+input[type="checkbox"], input[type="radio"] { box-sizing: border-box; /* 1 */ padding: 0; /* 2 */ }
+
+/** 1. Address `appearance` set to `searchfield` in Safari 5 and Chrome. 2. Address `box-sizing` set to `border-box` in Safari 5 and Chrome (include `-moz` to future-proof). */
+input[type="search"] { -webkit-appearance: textfield; /* 1 */ -moz-box-sizing: content-box; -webkit-box-sizing: content-box; /* 2 */ box-sizing: content-box; }
+
+/** Remove inner padding and search cancel button in Safari 5 and Chrome on OS X. */
+input[type="search"]::-webkit-search-cancel-button, input[type="search"]::-webkit-search-decoration { -webkit-appearance: none; }
+
+/** Remove inner padding and border in Firefox 4+. */
+button::-moz-focus-inner, input::-moz-focus-inner { border: 0; padding: 0; }
+
+/** 1. Remove default vertical scrollbar in IE 8/9. 2. Improve readability and alignment in all browsers. */
+textarea { overflow: auto; /* 1 */ vertical-align: top; /* 2 */ }
+
+/* ========================================================================== Tables ========================================================================== */
+/** Remove most spacing between table cells. */
+table { border-collapse: collapse; border-spacing: 0; }
+
+*, *:before, *:after { -moz-box-sizing: border-box; -webkit-box-sizing: border-box; box-sizing: border-box; }
+
+html, body { font-size: 100%; }
+
+body { background: white; color: #222222; padding: 0; margin: 0; font-family: "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif; font-weight: normal; font-style: normal; line-height: 1; position: relative; cursor: auto; }
+
+a:hover { cursor: pointer; }
+
+a:focus { outline: none; }
+
+img, object, embed { max-width: 100%; height: auto; }
+
+object, embed { height: 100%; }
+
+img { -ms-interpolation-mode: bicubic; }
+
+#map_canvas img, #map_canvas embed, #map_canvas object, .map_canvas img, .map_canvas embed, .map_canvas object { max-width: none !important; }
+
+.left { float: left !important; }
+
+.right { float: right !important; }
+
+.text-left { text-align: left !important; }
+
+.text-right { text-align: right !important; }
+
+.text-center { text-align: center !important; }
+
+.text-justify { text-align: justify !important; }
+
+.hide { display: none; }
+
+.antialiased, body { -webkit-font-smoothing: antialiased; }
+
+img { display: inline-block; vertical-align: middle; }
+
+textarea { height: auto; min-height: 50px; }
+
+select { width: 100%; }
+
+p.lead, .paragraph.lead > p, #preamble > .sectionbody > .paragraph:first-of-type p { font-size: 1.21875em; line-height: 1.6; }
+
+.subheader, #content #toctitle, .admonitionblock td.content > .title, .exampleblock > .title, .imageblock > .title, .videoblock > .title, .listingblock > .title, .literalblock > .title, .openblock > .title, .paragraph > .title, .quoteblock > .title, .sidebarblock > .title, .tableblock > .title, .verseblock > .title, .dlist > .title, .olist > .title, .ulist > .title, .qlist > .title, .hdlist > .title, .tableblock > caption { line-height: 1.4; color: #6c818f; font-weight: 300; margin-top: 0.2em; margin-bottom: 0.5em; }
+
+/* Typography resets */
+div, dl, dt, dd, ul, ol, li, h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6, pre, form, p, blockquote, th, td { margin: 0; padding: 0; direction: ltr; }
+
+/* Default Link Styles */
+a { color: #444444; text-decoration: underline; line-height: inherit; }
+a:hover, a:focus { color: #111111; }
+a img { border: none; }
+
+/* Default paragraph styles */
+p { font-family: inherit; font-weight: normal; font-size: 1em; line-height: 1.5; margin-bottom: 1.25em; text-rendering: optimizeLegibility; }
+p aside { font-size: 0.875em; line-height: 1.35; font-style: italic; }
+
+/* Default header styles */
+h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6 { font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, Arial, "Helvetica Neue", sans-serif; font-weight: bold; font-style: normal; color: #465158; text-rendering: optimizeLegibility; margin-top: 1em; margin-bottom: 0.5em; line-height: 1.2125em; }
+h1 small, h2 small, h3 small, #toctitle small, .sidebarblock > .content > .title small, h4 small, h5 small, h6 small { font-size: 60%; color: #909ea7; line-height: 0; }
+
+h1 { font-size: 2.125em; }
+
+h2 { font-size: 1.6875em; }
+
+h3, #toctitle, .sidebarblock > .content > .title { font-size: 1.375em; }
+
+h4 { font-size: 1.125em; }
+
+h5 { font-size: 1.125em; }
+
+h6 { font-size: 1em; }
+
+hr { border: solid #dddddd; border-width: 1px 0 0; clear: both; margin: 1.25em 0 1.1875em; height: 0; }
+
+/* Helpful Typography Defaults */
+em, i { font-style: italic; line-height: inherit; }
+
+strong, b { font-weight: bold; line-height: inherit; }
+
+small { font-size: 60%; line-height: inherit; }
+
+code { font-family: "Consolas", "Deja Vu Sans Mono", "Bitstream Vera Sans Mono", monospace; font-weight: normal; color: #444444; }
+
+/* Lists */
+ul, ol, dl { font-size: 1em; line-height: 1.5; margin-bottom: 1.25em; list-style-position: outside; font-family: inherit; }
+
+ul, ol { margin-left: 0; }
+
+/* Unordered Lists */
+ul li ul, ul li ol { margin-left: 1.25em; margin-bottom: 0; font-size: 1em; /* Override nested font-size change */ }
+ul.square li ul, ul.circle li ul, ul.disc li ul { list-style: inherit; }
+ul.square { list-style-type: square; }
+ul.circle { list-style-type: circle; }
+ul.disc { list-style-type: disc; }
+ul.no-bullet { list-style: none; }
+
+/* Ordered Lists */
+ol li ul, ol li ol { margin-left: 1.25em; margin-bottom: 0; }
+
+/* Definition Lists */
+dl dt { margin-bottom: 0.3em; font-weight: bold; }
+dl dd { margin-bottom: 0.75em; }
+
+/* Abbreviations */
+abbr, acronym { text-transform: uppercase; font-size: 90%; color: black; border-bottom: 1px dotted #dddddd; cursor: help; }
+
+abbr { text-transform: none; }
+
+/* Blockquotes */
+blockquote { margin: 0 0 1.25em; padding: 0.5625em 1.25em 0 1.1875em; border-left: 1px solid #dddddd; }
+blockquote cite { display: block; font-size: 0.8125em; color: #748590; }
+blockquote cite:before { content: "\2014 \0020"; }
+blockquote cite a, blockquote cite a:visited { color: #748590; }
+
+blockquote, blockquote p { line-height: 1.5; color: #909ea7; }
+
+/* Microformats */
+.vcard { display: inline-block; margin: 0 0 1.25em 0; border: 1px solid #dddddd; padding: 0.625em 0.75em; }
+.vcard li { margin: 0; display: block; }
+.vcard .fn { font-weight: bold; font-size: 0.9375em; }
+
+.vevent .summary { font-weight: bold; }
+.vevent abbr { cursor: auto; text-decoration: none; font-weight: bold; border: none; padding: 0 0.0625em; }
+
+@media only screen and (min-width: 768px) { h1, h2, h3, #toctitle, .sidebarblock > .content > .title, h4, h5, h6 { line-height: 1.4; }
+  h1 { font-size: 2.75em; }
+  h2 { font-size: 2.3125em; }
+  h3, #toctitle, .sidebarblock > .content > .title { font-size: 1.6875em; }
+  h4 { font-size: 1.4375em; } }
+/* Print styles.  Inlined to avoid required HTTP connection: www.phpied.com/delay-loading-your-print-css/ Credit to Paul Irish and HTML5 Boilerplate (html5boilerplate.com)
+*/
+.print-only { display: none !important; }
+
+@media print { * { background: transparent !important; color: #000 !important; /* Black prints faster: h5bp.com/s */ box-shadow: none !important; text-shadow: none !important; }
+  a, a:visited { text-decoration: underline; }
+  a[href]:after { content: " (" attr(href) ")"; }
+  abbr[title]:after { content: " (" attr(title) ")"; }
+  .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after { content: ""; }
+  pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
+  thead { display: table-header-group; /* h5bp.com/t */ }
+  tr, img { page-break-inside: avoid; }
+  img { max-width: 100% !important; }
+  @page { margin: 0.5cm; }
+  p, h2, h3, #toctitle, .sidebarblock > .content > .title { orphans: 3; widows: 3; }
+  h2, h3, #toctitle, .sidebarblock > .content > .title { page-break-after: avoid; }
+  .hide-on-print { display: none !important; }
+  .print-only { display: block !important; }
+  .hide-for-print { display: none !important; }
+  .show-for-print { display: inherit !important; } }
+/* Tables */
+table { background: white; margin-bottom: 1.25em; border: solid 0 #dddddd; }
+table thead, table tfoot { background: none; font-weight: bold; }
+table thead tr th, table thead tr td, table tfoot tr th, table tfoot tr td { padding: 1px 8px 1px 5px; font-size: 1em; color: #222222; text-align: left; }
+table tr th, table tr td { padding: 1px 8px 1px 5px; font-size: 1em; color: #222222; }
+table tr.even, table tr.alt, table tr:nth-of-type(even) { background: none; }
+table thead tr th, table tfoot tr th, table tbody tr td, table tr td, table tfoot tr td { display: table-cell; line-height: 1.5; }
+
+.clearfix:before, .clearfix:after, .float-group:before, .float-group:after { content: " "; display: table; }
+.clearfix:after, .float-group:after { clear: both; }
+
+*:not(pre) > code { font-size: 0.95em; padding: 0; white-space: nowrap; background-color: #f2f2f2; border: 0 solid #dddddd; -webkit-border-radius: 6px; border-radius: 6px; text-shadow: none; }
+
+pre, pre > code { line-height: 1.2; color: inherit; font-family: "Consolas", "Deja Vu Sans Mono", "Bitstream Vera Sans Mono", monospace; font-weight: normal; }
+
+kbd.keyseq { color: #333333; }
+
+kbd:not(.keyseq) { display: inline-block; color: black; font-size: 0.75em; line-height: 1.4; background-color: #F7F7F7; border: 1px solid #ccc; -webkit-border-radius: 3px; border-radius: 3px; -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 2px white inset; box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 0 0 2px white inset; margin: -0.15em 0.15em 0 0.15em; padding: 0.2em 0.6em 0.2em 0.5em; vertical-align: middle; white-space: nowrap; }
+
+kbd kbd:first-child { margin-left: 0; }
+
+kbd kbd:last-child { margin-right: 0; }
+
+.menuseq, .menu { color: black; }
+
+p a > code:hover { color: #373737; }
+
+#header, #content, #footnotes, #footer { width: 100%; margin-left: auto; margin-right: auto; margin-top: 0; margin-bottom: 0; max-width: 62.5em; *zoom: 1; position: relative; padding-left: 0.9375em; padding-right: 0.9375em; }
+#header:before, #header:after, #content:before, #content:after, #footnotes:before, #footnotes:after, #footer:before, #footer:after { content: " "; display: table; }
+#header:after, #content:after, #footnotes:after, #footer:after { clear: both; }
+
+#header { margin-bottom: 2.5em; }
+#header > h1 { color: #111111; font-weight: bold; border-bottom: 1px solid #dddddd; margin-bottom: -28px; padding-bottom: 32px; }
+#header span { color: #909ea7; }
+#header #revnumber { text-transform: capitalize; }
+#header br { display: none; }
+#header br + span { padding-left: 3px; }
+#header br + span:before { content: "\2013 \0020"; }
+#header br + span.author { padding-left: 0; }
+#header br + span.author:before { content: ", "; }
+
+#toc { border-bottom: 1px solid #dddddd; padding-bottom: 1.25em; }
+#toc > ul { margin-left: 0.25em; }
+#toc ul.sectlevel0 > li > a { font-style: italic; }
+#toc ul.sectlevel0 ul.sectlevel1 { margin-left: 0; margin-top: 0.5em; margin-bottom: 0.5em; }
+#toc ul { list-style-type: none; }
+
+#toctitle { color: #6c818f; }
+
+@media only screen and (min-width: 1280px) { body.toc2 { padding-left: 20em; }
+  #toc.toc2 { position: fixed; width: 20em; left: 0; top: 0; border-right: 1px solid #dddddd; border-bottom: 0; z-index: 1000; padding: 1em; height: 100%; overflow: auto; }
+  #toc.toc2 #toctitle { margin-top: 0; }
+  #toc.toc2 > ul { font-size: .95em; }
+  #toc.toc2 ul ul { margin-left: 0; padding-left: 1.25em; }
+  #toc.toc2 ul.sectlevel0 ul.sectlevel1 { padding-left: 0; margin-top: 0.5em; margin-bottom: 0.5em; }
+  body.toc2.toc-right { padding-left: 0; padding-right: 20em; }
+  body.toc2.toc-right #toc.toc2 { border-right: 0; border-left: 1px solid #dddddd; left: auto; right: 0; } }
+#content #toc { border-style: solid; border-width: 1px; border-color: #d9d9d9; margin-bottom: 1.25em; padding: 1.25em; background: #f2f2f2; border-width: 0; -webkit-border-radius: 6px; border-radius: 6px; }
+#content #toc > :first-child { margin-top: 0; }
+#content #toc > :last-child { margin-bottom: 0; }
+#content #toc a { text-decoration: none; }
+
+#content #toctitle { font-weight: bold; font-family: ff-meta-web-pro-1, ff-meta-web-pro-2, Arial, "Helvetica Neue", sans-serif; font-size: 1em; padding-left: 0.125em; }
+
+#footer { max-width: 100%; background-color: black; padding: 1.25em; }
+
+#footer-text { color: white; line-height: 1.35; }
+
+.sect1 { padding-bottom: 1.25em; }
+
+.sect1 + .sect1 { border-top: 1px solid #dddddd; }
+
+#content h1 > a.anchor, h2 > a.anchor, h3 > a.anchor, #toctitle > a.anchor, .sidebarblock > .content > .title > a.anchor, h4 > a.anchor, h5 > a.anchor, h6 > a.anchor { position: absolute; width: 1em; margin-left: -1em; display: block; text-decoration: none; visibility: hidden; text-align: center; font-weight: normal; }
+#content h1 > a.anchor:before, h2 > a.anchor:before, h3 > a.anchor:before, #toctitle > a.anchor:before, .sidebarblock > .content > .title > a.anchor:before, h4 > a.anchor:before, h5 > a.anchor:before, h6 > a.anchor:before { content: '\00A7'; font-size: .85em; vertical-align: text-top; display: block; margin-top: 0.05em; }
+#content h1:hover > a.anchor, #content h1 > a.anchor:hover, h2:hover > a.anchor, h2 > a.anchor:hover, h3:hover > a.anchor, #toctitle:hover > a.anchor, .sidebarblock > .content > .title:hover > a.anchor, h3 > a.anchor:hover, #toctitle > a.anchor:hover, .sidebarblock > .content > .title > a.anchor:hover, h4:hover > a.anchor, h4 > a.anchor:hover, h5:hover > a.anchor, h5 > a.anchor:hover, h6:hover > a.anchor, h6 > a.anchor:hover { visibility: visible; }
+#content h1 > a.link, h2 > a.link, h3 > a.link, #toctitle > a.link, .sidebarblock > .content > .title > a.link, h4 > a.link, h5 > a.link, h6 > a.link { color: #465158; text-decoration: none; }
+#content h1 > a.link:hover, h2 > a.link:hover, h3 > a.link:hover, #toctitle > a.link:hover, .sidebarblock > .content > .title > a.link:hover, h4 > a.link:hover, h5 > a.link:hover, h6 > a.link:hover { color: #3b444a; }
+
+.imageblock, .literalblock, .listingblock, .verseblock, .videoblock { margin-bottom: 1.25em; }
+
+.admonitionblock td.content > .title, .exampleblock > .title, .imageblock > .title, .videoblock > .title, .listingblock > .title, .literalblock > .title, .openblock > .title, .paragraph > .title, .quoteblock > .title, .sidebarblock > .title, .tableblock > .title, .verseblock > .title, .dlist > .title, .olist > .title, .ulist > .title, .qlist > .title, .hdlist > .title { text-align: left; font-weight: bold; }
+
+.tableblock > caption { text-align: left; font-weight: bold; white-space: nowrap; overflow: visible; max-width: 0; }
+
+table.tableblock #preamble > .sectionbody > .paragraph:first-of-type p { font-size: inherit; }
+
+.admonitionblock > table { border: 0; background: none; width: 100%; }
+.admonitionblock > table td.icon { text-align: center; width: 80px; }
+.admonitionblock > table td.icon img { max-width: none; }
+.admonitionblock > table td.icon .title { font-weight: bold; text-transform: uppercase; }
+.admonitionblock > table td.content { padding-left: 1.125em; padding-right: 1.25em; border-left: 1px solid #dddddd; color: #909ea7; }
+.admonitionblock > table td.content > :last-child > :last-child { margin-bottom: 0; }
+
+.exampleblock > .content { border-style: solid; border-width: 1px; border-color: #e6e6e6; margin-bottom: 1.25em; padding: 1.25em; background: white; -webkit-border-radius: 6px; border-radius: 6px; }
+.exampleblock > .content > :first-child { margin-top: 0; }
+.exampleblock > .content > :last-child { margin-bottom: 0; }
+.exampleblock > .content h1, .exampleblock > .content h2, .exampleblock > .content h3, .exampleblock > .content #toctitle, .sidebarblock.exampleblock > .content > .title, .exampleblock > .content h4, .exampleblock > .content h5, .exampleblock > .content h6, .exampleblock > .content p { color: #333333; }
+.exampleblock > .content h1, .exampleblock > .content h2, .exampleblock > .content h3, .exampleblock > .content #toctitle, .sidebarblock.exampleblock > .content > .title, .exampleblock > .content h4, .exampleblock > .content h5, .exampleblock > .content h6 { line-height: 1; margin-bottom: 0.625em; }
+.exampleblock > .content h1.subheader, .exampleblock > .content h2.subheader, .exampleblock > .content h3.subheader, .exampleblock > .content .subheader#toctitle, .sidebarblock.exampleblock > .content > .subheader.title, .exampleblock > .content h4.subheader, .exampleblock > .content h5.subheader, .exampleblock > .content h6.subheader { line-height: 1.4; }
+
+.exampleblock.result > .content { -webkit-box-shadow: 0 1px 8px #d9d9d9; box-shadow: 0 1px 8px #d9d9d9; }
+
+.sidebarblock { border-style: solid; border-width: 1px; border-color: #d9d9d9; margin-bottom: 1.25em; padding: 1.25em; background: #f2f2f2; -webkit-border-radius: 6px; border-radius: 6px; }
+.sidebarblock > :first-child { margin-top: 0; }
+.sidebarblock > :last-child { margin-bottom: 0; }
+.sidebarblock h1, .sidebarblock h2, .sidebarblock h3, .sidebarblock #toctitle, .sidebarblock > .content > .title, .sidebarblock h4, .sidebarblock h5, .sidebarblock h6, .sidebarblock p { color: #333333; }
+.sidebarblock h1, .sidebarblock h2, .sidebarblock h3, .sidebarblock #toctitle, .sidebarblock > .content > .title, .sidebarblock h4, .sidebarblock h5, .sidebarblock h6 { line-height: 1; margin-bottom: 0.625em; }
+.sidebarblock h1.subheader, .sidebarblock h2.subheader, .sidebarblock h3.subheader, .sidebarblock .subheader#toctitle, .sidebarblock > .content > .subheader.title, .sidebarblock h4.subheader, .sidebarblock h5.subheader, .sidebarblock h6.subheader { line-height: 1.4; }
+.sidebarblock > .content > .title { color: #6c818f; margin-top: 0; line-height: 1.5; }
+
+.exampleblock > .content > :last-child > :last-child, .exampleblock > .content .olist > ol > li:last-child > :last-child, .exampleblock > .content .ulist > ul > li:last-child > :last-child, .exampleblock > .content .qlist > ol > li:last-child > :last-child, .sidebarblock > .content > :last-child > :last-child, .sidebarblock > .content .olist > ol > li:last-child > :last-child, .sidebarblock > .content .ulist > ul > li:last-child > :last-child, .sidebarblock > .content .qlist > ol > li:last-child > :last-child { margin-bottom: 0; }
+
+.literalblock > .content pre, .listingblock > .content pre { background: #eeeeee; border-width: 1px; border-style: solid; border-color: #cccccc; -webkit-border-radius: 6px; border-radius: 6px; padding: 0.5em; word-wrap: break-word; }
+.literalblock > .content pre.nowrap, .listingblock > .content pre.nowrap { overflow-x: auto; white-space: pre; word-wrap: normal; }
+.literalblock > .content pre > code, .listingblock > .content pre > code { display: block; }
+@media only screen { .literalblock > .content pre, .listingblock > .content pre { font-size: 0.76em; } }
+@media only screen and (min-width: 768px) { .literalblock > .content pre, .listingblock > .content pre { font-size: 0.855em; } }
+@media only screen and (min-width: 1280px) { .literalblock > .content pre, .listingblock > .content pre { font-size: 0.95em; } }
+
+.listingblock > .content { position: relative; }
+
+.listingblock:hover code[class*=" language-"]:before { text-transform: uppercase; font-size: 0.9em; color: #999; position: absolute; top: 0.375em; right: 0.375em; }
+
+.listingblock:hover code.asciidoc:before { content: "asciidoc"; }
+.listingblock:hover code.clojure:before { content: "clojure"; }
+.listingblock:hover code.css:before { content: "css"; }
+.listingblock:hover code.groovy:before { content: "groovy"; }
+.listingblock:hover code.html:before { content: "html"; }
+.listingblock:hover code.java:before { content: "java"; }
+.listingblock:hover code.javascript:before { content: "javascript"; }
+.listingblock:hover code.python:before { content: "python"; }
+.listingblock:hover code.ruby:before { content: "ruby"; }
+.listingblock:hover code.scss:before { content: "scss"; }
+.listingblock:hover code.xml:before { content: "xml"; }
+.listingblock:hover code.yaml:before { content: "yaml"; }
+
+.listingblock.terminal pre .command:before { content: attr(data-prompt); padding-right: 0.5em; color: #999; }
+
+.listingblock.terminal pre .command:not([data-prompt]):before { content: '$'; }
+
+table.pyhltable { border: 0; margin-bottom: 0; }
+
+table.pyhltable td { vertical-align: top; padding-top: 0; padding-bottom: 0; }
+
+table.pyhltable td.code { padding-left: .75em; padding-right: 0; }
+
+.highlight.pygments .lineno, table.pyhltable td:not(.code) { color: #999; padding-left: 0; padding-right: .5em; border-right: 1px solid #dddddd; }
+
+.highlight.pygments .lineno { display: inline-block; margin-right: .25em; }
+
+table.pyhltable .linenodiv { background-color: transparent !important; padding-right: 0 !important; }
+
+.quoteblock { margin: 0 0 1.25em; padding: 0.5625em 1.25em 0 1.1875em; border-left: 1px solid #dddddd; }
+.quoteblock blockquote { margin: 0 0 1.25em 0; padding: 0 0 0.5625em 0; border: 0; }
+.quoteblock blockquote > .paragraph:last-child p { margin-bottom: 0; }
+.quoteblock .attribution { margin-top: -.25em; padding-bottom: 0.5625em; font-size: 0.8125em; color: #748590; }
+.quoteblock .attribution br { display: none; }
+.quoteblock .attribution cite { display: block; margin-bottom: 0.625em; }
+
+table thead th, table tfoot th { font-weight: bold; }
+
+table.tableblock.grid-all { border-collapse: separate; border-spacing: 1px; -webkit-border-radius: 6px; border-radius: 6px; border-top: 0 solid #dddddd; border-bottom: 0 solid #dddddd; }
+
+table.tableblock.frame-topbot, table.tableblock.frame-none { border-left: 0; border-right: 0; }
+
+table.tableblock.frame-sides, table.tableblock.frame-none { border-top: 0; border-bottom: 0; }
+
+table.tableblock td .paragraph:last-child p, table.tableblock td > p:last-child { margin-bottom: 0; }
+
+th.tableblock.halign-left, td.tableblock.halign-left { text-align: left; }
+
+th.tableblock.halign-right, td.tableblock.halign-right { text-align: right; }
+
+th.tableblock.halign-center, td.tableblock.halign-center { text-align: center; }
+
+th.tableblock.valign-top, td.tableblock.valign-top { vertical-align: top; }
+
+th.tableblock.valign-bottom, td.tableblock.valign-bottom { vertical-align: bottom; }
+
+th.tableblock.valign-middle, td.tableblock.valign-middle { vertical-align: middle; }
+
+p.tableblock.header { color: #222222; font-weight: bold; }
+
+td > div.verse { white-space: pre; }
+
+ol { margin-left: 0.25em; }
+
+ul li ol { margin-left: 0; }
+
+dl dd { margin-left: 1.125em; }
+
+dl dd:last-child, dl dd:last-child > :last-child { margin-bottom: 0; }
+
+ol > li p, ul > li p, ul dd, ol dd, .olist .olist, .ulist .ulist, .ulist .olist, .olist .ulist { margin-bottom: 0.625em; }
+
+ul.unstyled, ol.unnumbered, ul.checklist, ul.none { list-style-type: none; }
+
+ul.unstyled, ol.unnumbered, ul.checklist { margin-left: 0.625em; }
+
+ul.checklist li > p:first-child > i[class^="icon-check"]:first-child, ul.checklist li > p:first-child > input[type="checkbox"]:first-child { margin-right: 0.25em; }
+
+ul.checklist li > p:first-child > input[type="checkbox"]:first-child { position: relative; top: 1px; }
+
+ul.inline { margin: 0 auto 0.625em auto; margin-left: -1.375em; margin-right: 0; padding: 0; list-style: none; overflow: hidden; }
+ul.inline > li { list-style: none; float: left; margin-left: 1.375em; display: block; }
+ul.inline > li > * { display: block; }
+
+.unstyled dl dt { font-weight: normal; font-style: normal; }
+
+ol.arabic { list-style-type: decimal; }
+
+ol.decimal { list-style-type: decimal-leading-zero; }
+
+ol.loweralpha { list-style-type: lower-alpha; }
+
+ol.upperalpha { list-style-type: upper-alpha; }
+
+ol.lowerroman { list-style-type: lower-roman; }
+
+ol.upperroman { list-style-type: upper-roman; }
+
+ol.lowergreek { list-style-type: lower-greek; }
+
+.hdlist > table, .colist > table { border: 0; background: none; }
+.hdlist > table > tbody > tr, .colist > table > tbody > tr { background: none; }
+
+td.hdlist1 { padding-right: .8em; font-weight: bold; }
+
+td.hdlist1, td.hdlist2 { vertical-align: top; }
+
+.literalblock + .colist, .listingblock + .colist { margin-top: -0.5em; }
+
+.colist > table tr > td:first-of-type { padding: 0 .8em; line-height: 1; }
+.colist > table tr > td:last-of-type { padding: 0.25em 0; }
+
+.qanda > ol > li > p > em:only-child { color: #373737; }
+
+.thumb, .th { line-height: 0; display: inline-block; border: solid 4px white; -webkit-box-shadow: 0 0 0 1px #dddddd; box-shadow: 0 0 0 1px #dddddd; }
+
+.imageblock.left, .imageblock[style*="float: left"] { margin: 0.25em 0.625em 1.25em 0; }
+.imageblock.right, .imageblock[style*="float: right"] { margin: 0.25em 0 1.25em 0.625em; }
+.imageblock > .title { margin-bottom: 0; }
+.imageblock.thumb, .imageblock.th { border-width: 6px; }
+.imageblock.thumb > .title, .imageblock.th > .title { padding: 0 0.125em; }
+
+.image.left, .image.right { margin-top: 0.25em; margin-bottom: 0.25em; display: inline-block; line-height: 0; }
+.image.left { margin-right: 0.625em; }
+.image.right { margin-left: 0.625em; }
+
+a.image { text-decoration: none; }
+
+span.footnote, span.footnoteref { vertical-align: super; font-size: 0.875em; }
+span.footnote a, span.footnoteref a { text-decoration: none; }
+
+#footnotes { padding-top: 0.75em; padding-bottom: 0.75em; margin-bottom: 0.625em; }
+#footnotes hr { width: 20%; min-width: 6.25em; margin: -.25em 0 .75em 0; border-width: 1px 0 0 0; }
+#footnotes .footnote { padding: 0 0.375em; line-height: 1.3; font-size: 0.875em; margin-left: 1.2em; text-indent: -1.2em; margin-bottom: .2em; }
+#footnotes .footnote a:first-of-type { font-weight: bold; text-decoration: none; }
+#footnotes .footnote:last-of-type { margin-bottom: 0; }
+
+#content #footnotes { margin-top: -0.625em; margin-bottom: 0; padding: 0.75em 0; }
+
+.gist .file-data > table { border: none; background: #fff; width: 100%; margin-bottom: 0; }
+.gist .file-data > table td.line-data { width: 99%; }
+
+div.unbreakable { page-break-inside: avoid; }
+
+.big { font-size: larger; }
+
+.small { font-size: smaller; }
+
+.underline { text-decoration: underline; }
+
+.overline { text-decoration: overline; }
+
+.line-through { text-decoration: line-through; }
+
+.aqua { color: #00bfbf; }
+
+.aqua-background { background-color: #00fafa; }
+
+.black { color: black; }
+
+.black-background { background-color: black; }
+
+.blue { color: #0000bf; }
+
+.blue-background { background-color: #0000fa; }
+
+.fuchsia { color: #bf00bf; }
+
+.fuchsia-background { background-color: #fa00fa; }
+
+.gray { color: #606060; }
+
+.gray-background { background-color: #7d7d7d; }
+
+.green { color: #006000; }
+
+.green-background { background-color: #007d00; }
+
+.lime { color: #00bf00; }
+
+.lime-background { background-color: #00fa00; }
+
+.maroon { color: #600000; }
+
+.maroon-background { background-color: #7d0000; }
+
+.navy { color: #000060; }
+
+.navy-background { background-color: #00007d; }
+
+.olive { color: #606000; }
+
+.olive-background { background-color: #7d7d00; }
+
+.purple { color: #600060; }
+
+.purple-background { background-color: #7d007d; }
+
+.red { color: #bf0000; }
+
+.red-background { background-color: #fa0000; }
+
+.silver { color: #909090; }
+
+.silver-background { background-color: #bcbcbc; }
+
+.teal { color: #006060; }
+
+.teal-background { background-color: #007d7d; }
+
+.white { color: #bfbfbf; }
+
+.white-background { background-color: #fafafa; }
+
+.yellow { color: #bfbf00; }
+
+.yellow-background { background-color: #fafa00; }
+
+span.icon > [class^="icon-"], span.icon > [class*=" icon-"] { cursor: default; }
+
+.admonitionblock td.icon [class^="icon-"]:before { font-size: 2.5em; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); cursor: default; }
+.admonitionblock td.icon .icon-note:before { content: "\f05a"; color: #444444; color: #333333; }
+.admonitionblock td.icon .icon-tip:before { content: "\f0eb"; text-shadow: 1px 1px 2px rgba(155, 155, 0, 0.8); color: #111; }
+.admonitionblock td.icon .icon-warning:before { content: "\f071"; color: #bf6900; }
+.admonitionblock td.icon .icon-caution:before { content: "\f06d"; color: #bf3400; }
+.admonitionblock td.icon .icon-important:before { content: "\f06a"; color: #bf0000; }
+
+.conum { display: inline-block; color: white !important; background-color: black; -webkit-border-radius: 100px; border-radius: 100px; text-align: center; width: 20px; height: 20px; font-size: 12px; font-weight: bold; line-height: 20px; font-family: Arial, sans-serif; font-style: normal; position: relative; top: -2px; letter-spacing: -1px; }
+.conum * { color: white !important; }
+.conum + b { display: none; }
+.conum:after { content: attr(data-value); }
+.conum:not([data-value]):empty { display: none; }
+
+h4 { color: #6c818f; }
+
+.literalblock > .content > pre, .listingblock > .content > pre { -webkit-border-radius: 6px; border-radius: 6px; margin-left: 2em; margin-right: 2em; }
+
+.admonitionblock { margin-left: 2em; margin-right: 2em; }
+.admonitionblock > table { border: 1px solid #609060; border-top-width: 1.5em; background-color: #e9ffe9; border-collapse: separate; -webkit-border-radius: 0; border-radius: 0; }
+.admonitionblock > table td.icon { padding-top: .5em; padding-bottom: .5em; }
+.admonitionblock > table td.content { padding: .5em 1em; color: black; font-size: .9em; border-left: none; }
+
+.sidebarblock { background-color: #e8ecef; border-color: #ccc; }
+.sidebarblock > .content > .title { color: #444444; }
+
+table.tableblock.grid-all { border-collapse: collapse; -webkit-border-radius: 0; border-radius: 0; }
+table.tableblock.grid-all th.tableblock, table.tableblock.grid-all td.tableblock { border-bottom: 1px solid #aaa; }
+
+#footer { background-color: #465158; padding: 2em; }
+
+#footer-text { color: #eee; font-size: 0.8em; text-align: center; }
+
+</style>
+<style>
+  .feature:before {
+    content: "🎁 "
+  }
+  .bug:before {
+    content: "🐛 "
+  }
+  .feature {
+    border-width: thin;
+    border-color: #6495ed;
+    border-style: solid;
+    background-color: #f0f8ff;
+    border-radius: 4px;
+    padding-right: 0.3em;
+  }
+  .bug {
+    border-width: thin;
+    border-color: #8c8c5d;
+    border-style: solid;
+    background-color: #ffffe0;
+    border-radius: 4px;
+    padding-right: 0.3em;
+  }
+</style>
+</head>
+<body class="article toc2 toc-left">
+<div id="header">
+<h1>Timbuctoo: Bridge to networked research data</h1>
+<div id="toc" class="toc2">
+<div id="toctitle">Table of Contents</div>
+<ul class="sectlevel1">
+<li><a href="#_introduction">Introduction</a>
+<ul class="sectlevel2">
+<li><a href="#_background">Background</a></li>
+<li><a href="#_history">History</a></li>
+<li><a href="#_getting_up_and_running">Getting up and running</a></li>
+</ul>
+</li>
+<li><a href="#_software_components">Software Components</a>
+<ul class="sectlevel2">
+<li><a href="#_overview">Overview</a></li>
+<li><a href="#_crud">CRUD</a></li>
+<li><a href="#_tabular_data_importer">Tabular data importer</a></li>
+<li><a href="#_rml_implementation">RML implementation</a></li>
+<li><a href="#_rdf_import">RDF import</a></li>
+<li><a href="#_solr_index_script">Solr index script</a></li>
+</ul>
+</li>
+<li><a href="#_user_guide">User guide</a></li>
+<li><a href="#_api_documentation">API documentation</a></li>
+<li><a href="#_development_process">Development process</a>
+<ul class="sectlevel2">
+<li><a href="#_releases">Releases</a></li>
+<li><a href="#_bug_tracking">Bug tracking</a></li>
+</ul>
+</li>
+<li><a href="#_additional_information">Additional information</a>
+<ul class="sectlevel2">
+<li><a href="#_presentations">Presentations</a></li>
+<li><a href="#_related_work">Related work</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="content">
+<div id="preamble">
+<div class="sectionbody">
+<div class="admonitionblock note">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Note</div>
+</td>
+<td class="content">
+<div class="paragraph">
+<p>This software is developed and supported by the <a href="http://huygens.knaw.nl">Huygens Institute</a> in the Netherlands.
+We intend to support the software indefinitely, but <strong>2018</strong> is our current planning horizon.
+This notice will be updated before the end of 2018 with the new support duration.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Support means that we&#8217;ll review your <a href="https://github.com/huygensing/timbuctoo/pulls">pull requests</a>, respond to <a href="https://github.com/huygensing/timbuctoo/issues">issues</a> and answer questions on the <a href="http://gitter.im/huygensing/timbuctoo">chat</a>.</p>
+</li>
+<li>
+<p>It does not mean that we&#8217;ll fix every issue that you raise.</p>
+</li>
+<li>
+<p>But it does mean that we&#8217;ll commit regularly with new features or patches (usually every workday).</p>
+</li>
+<li>
+<p>While we try to make timbuctoo run everywhere, we&#8217;re actively running it on Redhat 6. Using it on other platforms may trigger bugs that we are not aware of (and that you should report!)</p>
+</li>
+</ul>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+Links to files are broken. I have reported the issue at <a href="https://github.com/asciidoctor/asciidoctor/issues/1903" class="bare">github.com/asciidoctor/asciidoctor/issues/1903</a>
+</td>
+</tr>
+</table>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_introduction">Introduction</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_background">Background</h3>
+<div class="paragraph">
+<p>Timbuctoo is aimed at historians doing interpretative research.
+Such a researcher collects facts from various documents, interprets and structures them, and creates tables of these facts.
+The researcher then uses this new dataset either as an object to do analysis on, or as an index that allows them to look at their sources from a distance quickly stepping back to the original source for the real interpretative work.</p>
+</div>
+<div class="paragraph">
+<p>As such an historian you often need to categorize your findings.
+For example: you keep track of birthplaces.
+You then need to decide how to write down the birthplace</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Do you use the name of the city, or the burrough?</p>
+</li>
+<li>
+<p>Do you use the current name or the name when the person was born?</p>
+</li>
+<li>
+<p>If your dataset spans a long time you might have two different cities on the same geographical location. Are they one name or more?</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>These judgements are sometimes the core of your research and sometimes incidental to it.
+Timbuctoo aims to make it easier to publish your research dataset and then to re-use other people&#8217;s published datasets.
+To continue the example: another researcher might create a dataset containing locations, their coördinates and names and how that changed over time. You can then re-use that dataset and link to the entries instead of typing a string of characters that a humand might correctly interpret or not.</p>
+</div>
+<div class="paragraph">
+<p>There are database-like systems, so storing your data somewhere is easy.
+However, there are not many tools that will:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>allow you to upload any dataset without having to write code, (for most database importing large datasets will require you to write some amount of SQL, SPARQL or batch processing code)</p>
+</li>
+<li>
+<p>expose your dataset so that it can be retrieved by another researcher (a http download and a REST interface)</p>
+</li>
+<li>
+<p>allow the researcher to base it&#8217;s new dataset on that existing dataset</p>
+<div class="ulist">
+<ul>
+<li>
+<p>with a provenance trail</p>
+</li>
+<li>
+<p>without having to agree on the data model</p>
+</li>
+<li>
+<p>without having to agree on all data contents</p>
+</li>
+</ul>
+</div>
+</li>
+<li>
+<p>keep track of updates to the source dataset and allow the user to subscribe to these changes</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Which is the added value timbuctoo will bring.</p>
+</div>
+<div class="paragraph">
+<p>A lot of applications go quite some part of the distance however, so timbuctoo mostly glue between these applications.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_history">History</h3>
+<div class="paragraph">
+<p>Timbuctoo was started in 2012.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_getting_up_and_running">Getting up and running</h3>
+<div class="sect3">
+<h4 id="_sneak_peek">Sneak peek</h4>
+<div class="paragraph">
+<p>To get a quick look at timbuctoo go to: <a href="https://acc.repository.huygens.knaw.nl" class="bare">acc.repository.huygens.knaw.nl</a></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_1_system_requirements">1. System requirements</h4>
+
+</div>
+<div class="sect3">
+<h4 id="_2_building_it">2. Building it</h4>
+<div class="paragraph">
+<p>This tool has been verified to work on Redhat 6.
+To build your own version, you can either have 'java 8' and 'maven 3' installed or use the maven3 docker container.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>build</strong> using <code>mvn clean package</code></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_3_running_it">3. Running it</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>Do a quick <strong>debug run</strong> using <code>./timbuctoo-instancev4/debugrun.sh</code> or <code>docker-compose up</code>.
+If you do not use docker the external services, such as solr won&#8217;t be started.
+Timbuctoo will still run and the API will run fine, but some urls in the web GUI won&#8217;t work.</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>To run a real version you&#8217;d run all services mentioned in the docker-compose.yml file yourself and start timbuctoo using <code>./timbuctoo-instancev4/target/appassembler/bin/timbuctoo server &lt;your config&gt;.yaml</code>.
+You can use example_config.yaml for inspiration.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>After launching it you should be greated by a login page.</p>
+</li>
+<li>
+<p>After logging in you should be able to upload an excel file (or download the default excel file). The wizard will guide you onwards.</p>
+</li>
+<li>
+<p>When a dataset is uploaded you can edit it, and query it.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_4_installing_it">4. installing it</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><strong>install/package timbuctoo</strong> by copying the target/appassembler folder wherever you like (i.e. <code>mv timbuctoo-instancev4/target/appassembler/ my-install-location</code></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_software_components">Software Components</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_overview">Overview</h3>
+<div class="paragraph">
+<p>Timbuctoo is a set of REST api&#8217;s on top of a graph database that stores RDF. <abbr title="http api">REST</abbr></p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-923bd435e03703a067a92955c3613d58.png" alt="diag 923bd435e03703a067a92955c3613d58" width="1550" height="434">
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Changelog</dt>
+<dd>
+<p><span class="feature">The changelog will provide a chronological list of additions or deletions filtered by either the entity or the dataset</span>.
+The changelog API isn&#8217;t available yet, but the data to generate it is already being saved. So when the API becomes available it will expose the data retroactively.</p>
+</dd>
+<dt class="hdlist1">RDF-publication</dt>
+<dd>
+<p><span class="feature">We will publish the RDF data in the CLARIAH RDF exchange format</span>.</p>
+</dd>
+<dt class="hdlist1">The V2.1 API</dt>
+<dt class="hdlist1">CRUD</dt>
+<dd>
+<p>include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/crud/README.adoc[tags=summary]</p>
+</dd>
+<dt class="hdlist1">Metadata</dt>
+<dd>
+<p>A dataset contains information about the property names (predicates) that are in use etc.
+This information cannot be retrieved from the CRUD endpoint, but can be retrieved from here.
+This module is not really documented, you can read <a href="../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/server/endpoints/v2/Metadata.java">the source</a> though.</p>
+</dd>
+<dt class="hdlist1">Autocomplete</dt>
+<dd>
+<p>Timbuctoo allows you to do a quick search on the labels (aka displaynames) of the entities.
+This is implemented as part of the CRUD module.</p>
+</dd>
+<dt class="hdlist1">Tabular data importer</dt>
+<dd>
+<p>include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload/README.adoc[tags=summary]</p>
+</dd>
+<dt class="hdlist1">RML processor</dt>
+<dd>
+<p>include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/README.adoc[tags=summary]</p>
+</dd>
+<dt class="hdlist1">RDF importer</dt>
+<dd>
+<p>include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf/README.adoc[tags=summary]</p>
+</dd>
+<dt class="hdlist1">Search GUI &amp; Index crawler</dt>
+<dd>
+<p>include::../timbuctoo-instancev4/src/main/scripts/index_scripts/README.adoc[tags=summary]</p>
+</dd>
+<dt class="hdlist1">Discover-GUI</dt>
+<dd>
+<p>A gui that is not aimed at precise querying, but rather to get a high-level overview of the data so that you know what queries to write.</p>
+</dd>
+<dt class="hdlist1">Dataset-search</dt>
+<dd>
+<p>find subjects using their properties and then find the datasets that contain them</p>
+</dd>
+<dt class="hdlist1">Data curation tools</dt>
+<dd>
+<p>Tools for cleaning up datasets. We&#8217;re mostly implementing this by working together with existing tools.</p>
+</dd>
+<dt class="hdlist1">Data-export</dt>
+<dd>
+<p>Render the timbuctoo data as RDF, graphviz and whatnot. This epic might also focus on generating data representations in a semantic form that can be well imported by other tools. (i.e. use the proper date-time encoding or geo-coordinates encoding)</p>
+</dd>
+<dt class="hdlist1">Dataset-interdependencies</dt>
+<dd>
+<p>Be able to depend on other datasets.</p>
+<div class="ulist">
+<ul>
+<li>
+<p>Link to RDF subjects in a specific other dataset</p>
+</li>
+<li>
+<p><span class="feature">Import (parts of) other datasets into your own dataset</span></p>
+</li>
+<li>
+<p><span class="feature">Create a new (read-only?) dataset that is fully dependent on other datasets</span></p>
+</li>
+</ul>
+</div>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Next to these core endpoints we also have:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">An authentication endpoint</dt>
+<dd>
+<p>This allows users to sign in.
+We will probably remove the code once the project that we&#8217;re part of (CLARIAH) provides a good openid2 implementation.</p>
+</dd>
+<dt class="hdlist1">Authorization handling</dt>
+<dd>
+<p><span class="feature">User management that specifies who is allowed to see your data</span>. Currently only a basic form is implemented (only you are allowed to edit your own datasets).</p>
+</dd>
+<dt class="hdlist1">A D3 graph render endpoint</dt>
+<dd>
+<p>This will probably be removed after we have built the new CRUD Api</p>
+</dd>
+<dt class="hdlist1">A raw query endpoint</dt>
+<dd>
+<p>This is for development use only</p>
+</dd>
+<dt class="hdlist1">A jsenv endpoint</dt>
+<dd>
+<p>This is a quick way to pass some data from the configuration file to the javascript applications.
+We&#8217;re not sure if we&#8217;re keeping this around.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>These are all the user facing components. Other packages are supporting these components.</p>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_crud">CRUD</h3>
+<div class="admonitionblock warning">
+<table>
+<tr>
+<td class="icon">
+<div class="title">Warning</div>
+</td>
+<td class="content">
+We will probably release a new REST API for the crud service, while also maintaining the current API. The current API is sometimes a bit cumbersome to develop against.
+</td>
+</tr>
+</table>
+</div>
+<div class="sect3">
+<h4 id="_summary">Summary</h4>
+<div class="paragraph">
+<p>The crud service offers an interpreted view of the RDF data. It might for example fold a list expressed as blank nodes in RDF into the the entity that references them.
+Provenance information is included as part of the entity it belongs to.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><span class="bug">Only the person who changed the entity last and the time at which the change was made is provided at the moment, the exact nature of the change is recorded as well but not displayed yet.</span></p>
+</li>
+<li>
+<p><span class="feature">No provenance over multiple entities or of automated transformations can be recorded at this moment.</span></p>
+</li>
+<li>
+<p><span class="feature">The interpretation is currently hard-coded, but we have plans to allow the user to specify an interpretation with the dataset as metadata.</span></p>
+</li>
+<li>
+<p><span class="feature">The entities returned by the service are currently only provided in a custom JSON format, but we are planning to also provide them as JSON-ld, graphml and n-triples</span></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_context">Context</h4>
+<div class="paragraph">
+<p>Timbuctoo offers a REST interface to edit data within different datasets.
+This API precedes the RDF data model and even the graph database underpinnings.
+Recently we have performed a clean re-implementation of the crud API based on the graph database to clear out many intermediate layers that are no longer needed.</p>
+</div>
+<div class="paragraph">
+<p>This package contains code that translates a timbuctoo specific JSON format into changes on the Tinkerpop graph.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_responsibilies">Responsibilies</h4>
+<div class="paragraph">
+<p>This package is responsible for</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Parsing various formats (currently excel only)</p>
+</li>
+<li>
+<p>generating "collections" (i.e. tables, sheets, files) containing "rows" of "fields"</p>
+</li>
+<li>
+<p>handling imports of arbitrary size (only limited by the space limitations of the target database)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>It is currently not responsible for</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>converting the data to a specific data type (it should output plain text)</p>
+</li>
+<li>
+<p>handling links (i.e. foreign keys or edges)</p>
+</li>
+<li>
+<p>handling data that cannot be expressed as collections of rows</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>After an import is finished all traces of the original format should be gone.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data_model">Data model</h4>
+<div class="paragraph">
+<p>The timbuctoo database is divided into datasets.
+Each Virtual Research Environment used to have it&#8217;s own dataset and each dataset would be solely for a specific VRE.
+Therefore a dataset is itself called a VRE.
+A VRE has <strong>collections</strong>.
+Within a collection there are <strong>entities</strong>.
+Each entity belongs to one and only one collection.
+The collection that an entity belongs to is also refered to as it&#8217;s <strong>type</strong>.
+When we say <strong>type</strong> we are also using the singular version of the collection name, when we say <strong>collection</strong> we always uses the plural form.
+However, pluralisation is only done by appending an 's' (So a collection of people would have <strong>people</strong> as type and <strong>peoples</strong> as collection name).</p>
+</div>
+<div class="paragraph">
+<p>Instead of using something like OWL same-as relations timbuctoo handled the open information model by letting the reader specify along which VRE an entity should be viewed.
+When viewing along one VRE the properties from that VRE were shown, requesting the same entity (same identifier) using a different VRE would show different properties.
+The same identifier would refer to the same vertex, properties were namespaced by their type name.
+Types are namespaced by the VRE name, making properties also namespaced by their VRE name.</p>
+</div>
+<div class="paragraph">
+<p>VRE configuration has only recently been moved to the database, it used to be embedded in Java code.</p>
+</div>
+<div class="paragraph">
+<p>Outside of the normal VRE&#8217;s there is a VRE called Admin.</p>
+</div>
+<div class="paragraph">
+<p>There is also a VRE called Base.</p>
+</div>
+<div class="paragraph">
+<p>The current data model is based on the lowest common denominator of the data abstraction layer (tinkerpop2) and the database (neo4j). This means that there are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>Vertices (what neo4 calls nodes)</p>
+</li>
+<li>
+<p>Properties</p>
+</li>
+<li>
+<p>Edges (a relation between two vertices)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>Vertices represent a version of an entity. Properties represent the values of that entity that do not warrant their own identifier. Edges represent the relations between vertices and might have properties of their own (though this happens rarely)</p>
+</div>
+<div class="sect4">
+<h5 id="_versioning">Versioning</h5>
+<div class="paragraph">
+<p><span class="image"><img src="../../../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/crud/versioning.png" alt="versioning"></span></p>
+</div>
+<div class="paragraph">
+<p>(A, B, C &amp; D) The light blue square represents a vertex and thus one version of the entity. In A and B there is only 1 versie of Maria and Pieter, in C there are 2 versions of Maria and 1 of Pieter and in D there are 2 versies of both Maria and Pieter. The set of vertices with the same value for the property tim_id form a singly linked list through edges of the type isVersionOf. These are grouped in a darker blue square and labeled “version series”</p>
+</div>
+<div class="paragraph">
+<p>(B) When an edge is created between two vertices, no new version is created. Both the vertex and the relations have a created_at property so that one can identify that there was a time when the vertices did exist, but the relation did not.</p>
+</div>
+<div class="paragraph">
+<p>(C &amp; D) When a property is changed a new version <em>is</em> created. The relations to the old vertex are deleted and new relations are created using the new vertex. These new relations keep their created_at date, so it is possible to find all the vertices that existed while the old vertex was active by following the isVersionOf relation up to the latest version and iterating over its relations.</p>
+</div>
+<div class="paragraph">
+<p>(Not in the drawing) When a property of a relation is modified a new relation is created and the old one marked as obsolete. similar to vertices.</p>
+</div>
+<div class="paragraph">
+<p>(not in th drawing) The drawing slightly misrepresents the actual workings of the data persistence code in order to make it easier to understand. In reality the duplication of the object does not happen right before a modification, but directly after a “persistent id” has been received from the handle server. The race conditions that this might introduce are prevented by disallowing writes depending on whether a persistent id is available or not. (There are three states possible: the property is non-existent, the property exists but has the value NULL and the property exists)
+Variants</p>
+</div>
+<div class="paragraph">
+<p>The current timbuctoo also code to achieve most of the goals of anansi. These goals are implemented by storing all the data of the different research projects on a certain entity in the same vertex using namespaces for the properties.
+There is also 1 namespace that contains the “abstract” data that does have meaning within the domain, such as a persons name. De facto this is the data of the first research environment that entered a value for that property. This abstract-level data is currently unused.
+There is also data that is not domain related, such as the isLatest property. This is again placed in its own namespace.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contents_of_this_package">Contents of this package</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="TinkerpopJsonCrudService.java">TinkerpopJsonCrudService</a> is the entry point. It contains methods for creating, reading, updating and deleting entities and will modify the database according to the above schedule.</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_tabular_data_importer">Tabular data importer</h3>
+<div class="sect3">
+<h4 id="_summary_2">Summary</h4>
+<div class="paragraph">
+<p>This package allows you to upload something that is tabular-like and have it converted to a basic RDF representation (just records pointing to the next record).
+<span class="bug">The data entered like this is not yet part of the changelog, but should be.</span></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_context_2">Context</h4>
+<div class="paragraph">
+<p>Timbuctoo should allow users to upload datasets.
+We find that most of our users produce datasets in a tabular format (as opposed to a tree format or a graph format).
+This package contains an code to parse streams of tabular data and to generate vertices to represent that data.</p>
+</div>
+<div class="paragraph">
+<p>Originally this package also contained code to generate edges between the created vertices.
+This has been removed and replaced with an RML implementation.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_responsibilies_2">Responsibilies</h4>
+<div class="paragraph">
+<p>This package is responsible for
+ * Parsing various formats (currently excel only)
+ * generating "collections" (i.e. tables, sheets, files) containing "rows" of "fields"
+ * handling imports of arbitrary size (only limited by the space limitations of the target database)</p>
+</div>
+<div class="paragraph">
+<p>It is currently not responsible for
+ * converting the data to a specific data type (it should output plain text)
+ * handling links (i.e. foreign keys or edges)
+ * handling data that cannot be expressed as collections of rows</p>
+</div>
+<div class="paragraph">
+<p>After an import is finished all traces of the original format should be gone.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data_model_2">Data model</h4>
+<div class="paragraph">
+<p>Given a dataset called <code>movie information</code> containing a table called <code>actors</code> with the following data:</p>
+</div>
+<table class="tableblock frame-all grid-all spread">
+<colgroup>
+<col style="width: 50%;">
+<col style="width: 50%;">
+</colgroup>
+<thead>
+<tr>
+<th class="tableblock halign-left valign-top">first name</th>
+<th class="tableblock halign-left valign-top">rating</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Matt</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">42</p></td>
+</tr>
+<tr>
+<td class="tableblock halign-left valign-top"><p class="tableblock">Saoirse</p></td>
+<td class="tableblock halign-left valign-top"><p class="tableblock">44</p></td>
+</tr>
+</tbody>
+</table>
+<div class="paragraph">
+<p>you&#8217;d get the following graph</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-645b5f36cadf162d96a1dcc52e602b58.png" alt="diag 645b5f36cadf162d96a1dcc52e602b58" width="1210" height="434">
+</div>
+</div>
+<div class="paragraph">
+<p>Note the following:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>the _value postfix is needed because we will also store mapping errors next to these values. e.g. if a value is interpreted as foreign key, but it&#8217;s target is not available then an error will be stored on the raw entity vertex under <code>&lt;property&gt;_error</code></p>
+</li>
+<li>
+<p>the property descriptions are stored mostly to be able to traverse them in order.</p>
+</li>
+<li>
+<p>Together with the ordered traversal of the items (<code>hasNextItem</code>) this allows us to rerender the table as it was uploaded.</p>
+</li>
+<li>
+<p>All properties are stored as text, regardless of the datatypes that the source format supports.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contents_of_this_package_2">Contents of this package</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="./BulkUploadService.java">BulkUploadService</a> is the entry point. It performs the actual upload an links everything together.</p>
+</li>
+<li>
+<p><a href="./loaders">loaders</a> contains two variants of an Excel loader at the moment. To add a new loader you&#8217;d add an implementation of <a href="loaders/BulkLoader.java">BulkLoader</a> here.</p>
+</li>
+<li>
+<p><a href="loaders/excel/allsheetloader/AllSheetLoader.java">AllSheetLoader</a> loads all columns of all sheets. <strong>This is the one that timbuctoo currently uses</strong>.</p>
+</li>
+<li>
+<p><a href="loaders/excel/styleawarexlsxloader/StyleAwareXlsxLoader.java">StyleAwareXlsxLoader</a> loads only the columns that are marked with a specially named style. <strong>This is not used at the moment.</strong></p>
+</li>
+<li>
+<p><a href="parsingstatemachine">parsing state machine</a> contains the actual import logic.</p>
+</li>
+<li>
+<p><a href="savers">savers</a> contains only a Tinkerpop saver at the moment.
+To load data in a different database you&#8217;d add your own implementation of <a href="savers/Saver.java">Saver</a> here.
+To change how the data is stored in the graph you&#8217;d change the code in <a href="savers/TinkerpopSaver.java">TinkerpopSaver</a></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rml_implementation">RML implementation</h3>
+<div class="paragraph">
+<p>Once you have uploaded some data in a tabular representation you can call the RML processor with an RML document to generate RDF which is then inserted into the database.
+The processor calls the RDF importer in the background with the generated triples.</p>
+</div>
+<div class="paragraph">
+<p>The code in this package to implements the <a href="http://rml.io">rml specification</a>.
+It does not implement any of the datasources itself, but allows you to provide your own implementations.</p>
+</div>
+<div class="sect3">
+<h4 id="_context_3">Context</h4>
+<div class="paragraph">
+<p>In timbuctoo we import data in tabular form as a "raw import" and then use a <a href="http://github.com/huygensING/timbuctoo-default-frontend">GUI</a> to generate an RML mapping that converts it into RDF.
+We then import the RDF using our generic RDF importer.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>This allows us to import many different data formats.</p>
+</li>
+<li>
+<p>It decouples the GUI from the importer which has allowed us to import data that the GUI does not support without having to make the GUI more complex (we can bypass it if needed).</p>
+</li>
+<li>
+<p>It makes our mapping software usable for people who do not use the full timbuctoo stack (by generating basic RDF).</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_usage">Usage</h4>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">  //First you should generate a Jena Model of the data somehow
+
+  //Dependencies:
+  //The thing that can construct an RmlMappingDocument from a jena model
+  final rmlBuilder = new JenaBasedReader();
+
+  //The thing that constructs dataSource instances as needed.
+  //This factory should use the contents of the rdfResource to determine what dataSource to create
+  Function&lt;RdfResource, Optional&lt;DataSource&gt;&gt; dataSourceFactory = rdfResource -&gt; Optional.of(new MyDataSource(rdfResource));
+
+  //The thing that responds to errors that can occur in valid RML mappings, such as missing values.
+  ErrorHandler errorHandler = new ErrorHandler() {
+    @Override
+    public void linkError(Map&lt;String, Object&gt; rowData, String childField, String parentCollection, String parentField) {
+      throw new RuntimeException("Linking failed!");
+    }
+  };
+
+  //create the mappingDocument instance
+  final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(model, dataSourceFactory);
+
+  //You can see how it's interpreted using toString()
+
+  if (rmlMappingDocument.getErrors().size() == 0) { //check for errors that make the RML mapping invalid
+    //execute the mapping
+    rmlMappingDocument.execute(errorHandler).forEach((triple) -&gt; {
+      System.out.println(triple);
+    });
+  }</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Implementing a minimal DataSource with shipped JoinHandler</dt>
+</dl>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java"> class MyDataSource implements DataSource {
+   // This wil handle references from one table to another
+   private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
+   private final MyData myData;
+
+   public MyDataSource(RdfResource rdfResource) {
+     this.myData = new MyData(rdfResource); // somehow derive the correct data rows for this rdfResource
+   }
+
+   @Override
+   public Iterator&lt;Row&gt; getRows(ErrorHandler errorHandler) {
+     return myData
+       .turnIntoStream()
+       .map(values -&gt; {
+         // values in Map should look like this:
+         // { "columnName": "cellValue", ... }
+         Map&lt;String, Object&gt; valueMap = transFormValuesOfThisDataRowToValueMap(values);
+
+         // This will handle the reference from one data source to another
+         joinHandler.resolveReferences(valueMap);
+
+         return new Row(valueMap, errorHandler);
+       })
+       .iterator();
+   }
+
+   @Override
+   public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
+    // This will handle the reference from one data source to another
+     joinHandler.willBeJoinedOn(fieldName, referenceJoinValue, uri, outputFieldName);
+   }
+ }</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>More information on how a JoinHandler can be implemented is documented in the source of link: ./datasource/joinhandlers/HashMapBasedJoinHandler.java[HashMapBasedJoinHandler].</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_code_layout">Code layout</h4>
+<div class="paragraph">
+<p>The package contains the following folders:</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1"><a href="./rmldata">/rmldata</a></dt>
+<dd>
+<p>Contains the java representation of the RML rdf classes.
+The java classes form a tree rooted in RmlMappingDocument.
+They usually have a method that generates data (i.e. <code>execute()</code> or <code>getItems()</code>) and a toString() method that recursively prints the tree.
+You will normally only interact with the outermost RmlMappingDocument class which calls the other classes recursively.</p>
+</dd>
+<dt class="hdlist1"><a href="./rmldata/builders">/rmldata/builders</a></dt>
+<dd>
+<p>RML contains a bunch of shorthands and the builders contain the logic needed to interpret the RML in context so that the built instances no longer need this context.
+For example: you can omit the termType in the source mapping document.
+The <code>TermMapBuilder</code> will decide what the termType should be and the resulting <code>RrTermMap</code> will simply have a property TermType set to the correct value.</p>
+</dd>
+<dt class="hdlist1"><a href="./jena">/jena</a></dt>
+<dt class="hdlist1"><a href="./rdfshim">/rdfshim</a></dt>
+<dd>
+<p>The library depends on jena at this moment, but we&#8217;ve invested some effort to make this a minimal dependency.
+It should be possible to extract the jena package to a separate package that depends on this library while the library is jena agnostic.</p>
+</dd>
+<dt class="hdlist1"><a href="./datasource">/datasource</a></dt>
+<dd>
+<p>The library ships with a JoinHandler interface which can be used by the datasource to handle joins and one sample implementation backed by a HashMap.</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_implementation_details">Implementation details</h4>
+<div class="sect4">
+<h5 id="_handling_of_circular_and_self_referencing_data_sources_let_s_call_them_tables">Handling of circular and self-referencing data sources (let&#8217;s call them tables)</h5>
+<div class="paragraph">
+<p>In order for this library to support big datasets without the leverage of querying on-the-fly (which SQL based databases provide), data rows are expected to be streamed per logical source (i.e. RdfResource).</p>
+</div>
+<div class="paragraph">
+<p>This however introduces the problem of handling tables which refer to each other (possibly with cyclic dependency) as explained in the next sub-sections.</p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">References without a cycle</dt>
+<dd>
+<p>When exactly one table references exactly one other table this is simply resolved by first mapping the rows of the table that is referred to and then the table that refers to it.
+Given these tables:</p>
+</dd>
+</dl>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-8a7ea75cb166d7e3bb9781fbaea82c0b.png" alt="diag 8a7ea75cb166d7e3bb9781fbaea82c0b" width="620" height="154">
+</div>
+</div>
+<div class="paragraph">
+<p>And this original order of mappers:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>[
+  mapperForPersons,
+  mapperForLocations
+]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Sort the mappers so that URI&#8217;s for Locations are generated <strong>before</strong> the mappings of persons are performed:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>[
+  mapperForLocations, --&gt; will generate URI's and store them using JoinHandler implementation
+  mapperForPersons    --&gt; will look up URI's for the locations using store in JoinHandler implementation
+]</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Self reference</dt>
+<dd>
+<p>The solution above does not solve the issue of a table in which one column references another column in the same table.
+In this case a new mapper is generated (split off) from the original mapper, so that two passes are made through the same datasource.
+The first pass maps all the values that are not a reference.
+The second pass maps all the values that are a reference to another column.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Given this table:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-8b4bcab930ed825ca626661cf4ae487a.png" alt="diag 8b4bcab930ed825ca626661cf4ae487a" width="230" height="182">
+</div>
+</div>
+<div class="paragraph">
+<p>And this mapper list:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>[
+  mapperForPersons
+]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Split off one extra mapper to resolve the URI of person being referenced to by mother_id:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>[
+  mapperForPersons,  --&gt; will generate URI's and store them using JoinHandler implementation
+  mapperForPersons'  --&gt; will look up URI's for the mothers using store in JoinHandler implementation
+]</code></pre>
+</div>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Cyclic references</dt>
+<dd>
+<p>In cases where table A references table B and table B references table A there is a circular dependency as well.
+The same solutions as above apply here: first sort by dependency, then split off any unresolved dependencies.
+This also works for more complex cases with multiple cycles.
+The full implementation of sort and split is here: <a href="./rmldata/builders/MappingDocumentBuilder.java">/rml/rmldata/builders/MappingDocumentBuilder.java</a>.</p>
+</dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>Given this data structure:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-53dbf7cdede1b1c70fd27ce2b4a23a56.png" alt="diag 53dbf7cdede1b1c70fd27ce2b4a23a56" width="740" height="238">
+</div>
+</div>
+<div class="paragraph">
+<p>And this original order of mappers:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>[
+ zMapper, &lt;--- depends on xMapper
+ xMapper, &lt;--- depends on yMapper
+ yMapper, &lt;--- depends on zMapper, aMapper and yMapper (self)
+ aMapper  &lt;--- depends on no mapper
+]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Sort and split the mappers like this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>[
+  aMapper,   &lt;--- has no dependencies on other mappers having been run
+  yMapper,   &lt;--- depends on aMapper
+  xMapper,   &lt;--- depends on yMapper
+  zMapper,   &lt;--- depends on xMapper
+  yMapper'   &lt;--- depends on yMapper and on zMapper (only one mapper needed to be split off to break 2 cycles.
+]</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_error_reporting">Error reporting</h5>
+<div class="paragraph">
+<p>R2RML (and thus RML) specifies that data errors should be reported to the client.
+We implement this by writing errors back to the datasource, allowing the application to present the user with the data rows that triggered invalid input according to his or her specification.
+For our own datasource the results will be written to neo4j as follows:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-8188f029c0a72f84c8e3d09e49c9cebb.png" alt="diag 8188f029c0a72f84c8e3d09e49c9cebb" width="413" height="686">
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_known_issues">Known issues</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Mapping columns</dt>
+<dd>
+<p>You cannot transform a column in RML.
+The R2RML languages gives you the ability to use an arbitrary SQL query as a datasource which allows for most of the conversions in SQL.
+RML does not have this support.
+This is especially annoying for implementing manytomany links and when you want to derive the name of the predicate.</p>
+<div class="paragraph">
+<p>We might implement an extension that allows for referencingMaps in subjectMaps and predicateMaps and an extension that allows you to transform the inputline to aleviate some of this pain.</p>
+</div>
+</dd>
+<dt class="hdlist1">Join handling is done by the wrong datasource</dt>
+<dd>
+<p>The index for joining is stored by the datasource that will use the join values.
+This is perhaps a bit confusing.
+I can imagine that intuitively the datasource that provides the data also stores the index (technicaly there&#8217;s no clear preference).</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_rdf_import">RDF import</h3>
+<div class="sect3">
+<h4 id="_summary_3">Summary</h4>
+<div class="paragraph">
+<p>The RDF importer can be provided with a dataset in n-triples format that will then be inserted as-is into the database.</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><span class="feature">An extra piece of provenance should be generated, listing the person who uploaded the file and the name or url of the file (if available to the server).</span></p>
+</li>
+<li>
+<p><span class="feature">The endpoint should be able to download datasets from the internet directly.</span></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_context_4">Context</h4>
+<div class="paragraph">
+<p>RDF is a widely used linked data format.
+Therefore Timbuctoo has to communicate with a with services through the RDF data format.
+This package contains a mapping to convert RDF to the Timbuctoo native property graph format.
+The RDF syntax we support are n-quads. Because n-quads are a superset of n-triples we support that format as well.</p>
+</div>
+<div class="paragraph">
+<p>The code for the RDF import can be found in the package [nl.knaw.huygens.timbuctoo.rdf](<a href="https://github.com/HuygensING/timbuctoo/tree/master/timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf" class="bare">github.com/HuygensING/timbuctoo/tree/master/timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf</a>)</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_import">Import</h4>
+<div class="paragraph">
+<p>There are two options to import data.
+The first one is can be found at <a href="http://localhost:8080/static/bulk-upload/" class="bare">localhost:8080/static/bulk-upload/</a>.
+This way you can upload a file with n-quads and n-triples.
+If you want to call the endpoint directly, use <a href="http://localhost:8080/v2.1/rdf/import" class="bare">localhost:8080/v2.1/rdf/import</a> with the Content-Type 'multipart/form-data'.
+The form needs a 'VRE_ID'-field and a 'file'-field that contains a file with the triples to upload.</p>
+</div>
+<div class="paragraph">
+<p>The other possibility is that you POST several lines of n-quads of n-triples to the resource <a href="http://localhost:8080/v2.1/rdf/import" class="bare">localhost:8080/v2.1/rdf/import</a>.
+This requires the headers 'VRE_ID' and 'Content-Type' to be set.
+The 'VRE_ID' can be set to a name of VRE that does not exist yet.
+The Content-Type must be 'application/n-quads'.
+The body should contain the triples, with one line for each triple.</p>
+</div>
+<div class="paragraph">
+<p>If you have a large amount of data or a file containing your triples you want to use the first option.
+If you just want to try to import a few triples the second option would be an easier choice.</p>
+</div>
+<div class="paragraph">
+<p>Both imports will create a VRE with the name provided by the header VRE_ID or filled in in the field of the for of the bulk-upload. (Wat gebeurd er met de graph URI van de quad?)
+After the import has completed you can find your data in the [Edit GUI](<a href="http://localhost:8080/static/edit-gui/" class="bare">localhost:8080/static/edit-gui/</a>) under the dropdown of the VRE you chose the importer to create.</p>
+</div>
+<div class="sect4">
+<h5 id="_process">Process</h5>
+<div class="paragraph">
+<p>When the data is uploaded, it is processed by the RdfImporter.
+The RdfImport prepares the import, by creating a new VRE. Then it delegates the import of the triples to the TripleImporter.
+The TripleImporter lets a TripleProcessor execute one of the [supported cases](#supported-cases).
+These TripleProcessors add the data to the database.
+They also add the necessary configuration to the database.
+This configuration could be adding a new Collection to the database or adding a Property configuration to a Collection.</p>
+</div>
+<div class="sect5">
+<h6 id="_supported_cases">Supported cases</h6>
+<div class="paragraph">
+<p>We support 4 types of triples.
+These 4 types seem to are enough to support most of the rdf language.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Triples that describe a <a href="http://www.w3.org/2000/01/rdf-schema#subClassOf" class="bare">www.w3.org/2000/01/rdf-schema#subClassOf</a> with a for Timbuctoo known archetype.
+When the object contains no known archetype this subClassOf relation will be treated like every other relation.</p>
+</li>
+<li>
+<p>Triples that describe <a href="http://www.w3.org/2000/01/rdf-schema#type" class="bare">www.w3.org/2000/01/rdf-schema#type</a>.</p>
+</li>
+<li>
+<p>Triples where the object is a literal.</p>
+</li>
+<li>
+<p>Triples where the object is another resource. This includes subClassOf with a type that is not known as archetype in Timbuctoo.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Each of the cases has its own TripleProcessor in the [triple processor package](<a href="https://github.com/HuygensING/timbuctoo/tree/master/timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf/tripleprocessor" class="bare">github.com/HuygensING/timbuctoo/tree/master/timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf/tripleprocessor</a>).</p>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_hierarchy">Hierarchy</h5>
+<div class="paragraph">
+<p>An import can result in a combination of the next 3 scenario&#8217;s.</p>
+</div>
+<div class="sect5">
+<h6 id="_no_type_information_available">No type information available</h6>
+<div class="paragraph">
+<p>This is the most basic one. For example when the first triple of the VRE has not <a href="http://www.w3.org/2000/01/rdf-schema#type" class="bare">www.w3.org/2000/01/rdf-schema#type</a> predicate, the newly created vertex will be added to the 'unknown'-collection of the VRE.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-53340e10e5313082524a19aec83888e2.png" alt="diag 53340e10e5313082524a19aec83888e2" width="351" height="551">
+</div>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_a_type_without_a_connection_with_a_known_archetype">A type without a connection with a known archetype</h6>
+<div class="paragraph">
+<p>When type information becomes available, the structure will be transformed to the next structure.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-95d59af043a4f5827033670d15d89e26.png" alt="diag 95d59af043a4f5827033670d15d89e26" width="340" height="551">
+</div>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_a_type_with_a_known_archetype">A type with a known archetype</h6>
+<div class="paragraph">
+<p>When the type is <a href="http://www.w3.org/2000/01/rdf-schema#subClassOf" class="bare">www.w3.org/2000/01/rdf-schema#subClassOf</a> of a Timbuctoo known archetype.
+The structure will be transformed to the following structure.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-3fa91aaf64201fc51d09d3eee4e4492a.png" alt="diag 3fa91aaf64201fc51d09d3eee4e4492a" width="328" height="551">
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_dependencies">Dependencies</h4>
+<div class="paragraph">
+<p>We use [Apache Jena](<a href="https://jena.apache.org/" class="bare">jena.apache.org/</a>) to convert the triple strings to java objects.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_known_issues_2">Known issues</h4>
+<div class="paragraph">
+<p>Timbuctoo supports edges with inverse names for inverse directions in a data structure called RelationType.
+Currently mapping via URI of an rdf predicate only works for the regular name of a relation type.</p>
+</div>
+<div class="paragraph">
+<p>For instance, given these triples:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>&lt;amsterdam&gt; &lt;isDeathPlaceOf&gt; &lt;piet&gt; .
+&lt;jan&gt; &lt;hasBirthPlace&gt; &lt;Amsterdam&gt; .</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>And a RelationType definition as follows:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>{
+  ...,
+  "regularName": "hasDeathPlace",
+  "inverName": "isDeathPlaceOf",
+  "sourceType: "person",
+  "targetType: "location"
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>We currently get these resulting edges:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>v[73] --[isDeathPlaceOf]--&gt; v[72]
+v[65] --[hasBirthPlace]--&gt; v[73]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Where isDeathPlaceOf is a newly generated relationType, in stead of one mapped against the existing relationType.</p>
+</div>
+<div class="paragraph">
+<p>The expected result would have been:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>v[72]--[hasDeathPlace]--&gt;v[73]
+v[65] --[hasBirthPlace]--&gt; v[73]</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Culprit code only looks at RDF_URI_PROP identifying a regular name.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>rdf.Database.java[r215]:  graphWrapper.getGraph().traversal().V().hasLabel("relationtype").has(RDF_URI_PROP, predicate.getURI());</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_solr_index_script">Solr index script</h3>
+<div class="sect3">
+<h4 id="_summary_4">Summary</h4>
+<div class="paragraph">
+<p>These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_context_5">Context</h4>
+<div class="paragraph">
+<p>We want to be able expose Timbuctoo collections through solr/lucene in a flexible way,
+enabling indexes on both the direct properties of records in a collection, as well as
+key properties of directly related objects; for instance a keyword value from a keyword
+collection, which was linked to a document from a document collection (like genre).</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_usage_2">Usage</h4>
+<div class="paragraph">
+<p>Creating an index for a Timbuctoo collection is a 3-step process:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>[Scrape](#scraping) Timbuctoo data</p>
+</li>
+<li>
+<p>[Convert](#converting) to solr docs</p>
+</li>
+<li>
+<p>Send [solr](#solr) docs to solr server</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>For the impatient: [skip to complete example](#indexing).</p>
+</div>
+<div class="sect4">
+<h5 id="_libraries">Libraries</h5>
+<div class="paragraph">
+<p>For that purpose there are three classes in the dir <code><code>lib/timbuctoo_solr</code></code>.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>TimbuctooIO <code><code>lib/timbuctoo_solr/timbuctoo_io.rb</code></code></p>
+</li>
+<li>
+<p>DefaultMapper <code><code>lib/timbuctoo_solr/default_mapper.rb</code></code></p>
+</li>
+<li>
+<p>SolrIO <code><code>lib/timbuctoo_solr/solr_io.rb</code></code></p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>The next sections will explain the 3-step process in more detail, using examples which
+can be found in the <code><code>samples</code></code> dir.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_scraping">Scraping</h5>
+<div class="paragraph">
+<p>A scrape of a Timbuctoo collection is done in batches using the method</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-scrape_collection```inTimbuctooIO.Thiscaneitherbedonewithorwithout" data-lang="scrape_collection```inTimbuctooIO.Thiscaneitherbedonewithorwithout">direct relations:
+
+1. [Sample scrape response without relations](http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10)
+2. [Sample with relations](http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10&amp;withRelations=true)
+
+==== Basic scrape
+This script above scrapes the collection 'dcararchives' from the Timbuctoo test repository:
+```ruby
+# samples/basic-scrape.rb
+require '../lib/timbuctoo_solr/timbuctoo_io'
+
+timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
+timbuctoo_io.scrape_collection('dcararchives')</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Its default behaviour is to fetch the records in batches of 100, without relations, dumping
+each record individually to standard output.</p>
+</div>
+<div class="paragraph">
+<p>Sample of the output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>{"beginDate"=&gt;"1700", "countries"=&gt;["NL"], "endDate"=&gt;"1800", "extent"=&gt;"1 folder", "itemNo"=&gt;"9169", "madeBy"=&gt;"MS", "notes"=&gt;"18th century.", "origFilename"=&gt;"/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD9_9169", "refCode"=&gt;"AD.9", "refCodeArchive"=&gt;"Archief Nederlandse Jezuieten", "reminders"=&gt;"Gegevens ontvangen van Hans de Valk, 19-4-2007", "titleEng"=&gt;"Documents relating to the RC mission on Curaçao in the 18th century", "titleNld"=&gt;"Stukken betreffende de missie op Curaçao in de 18e eeuw", "@displayName"=&gt;"Stukken betreffende de missie op Curaçao in de 18e eeuw", "^rev"=&gt;1, "^modified"=&gt;{"timeStamp"=&gt;1411642687699, "userId"=&gt;"importer", "vreId"=&gt;"dcar"}, "^created"=&gt;{"timeStamp"=&gt;1411642687699, "userId"=&gt;"importer", "vreId"=&gt;"dcar"}, "@variationRefs"=&gt;[{"id"=&gt;"778bb9f8-a4fa-4a55-aed3-997da73112a0", "type"=&gt;"archive"}, {"id"=&gt;"778bb9f8-a4fa-4a55-aed3-997da73112a0", "type"=&gt;"dcararchive"}], "^deleted"=&gt;false, "_id"=&gt;"778bb9f8-a4fa-4a55-aed3-997da73112a0"}
+{"beginDate"=&gt;"1670", "countries"=&gt;["NL"], "endDate"=&gt;"1870", "extent"=&gt;"1 folder", "itemNo"=&gt;"9170", "madeBy"=&gt;"MS", "notes"=&gt;"Undated.", "origFilename"=&gt;"/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD10_9170", "refCode"=&gt;"AD.10", "refCodeArchive"=&gt;"Archief Nederlandse Jezuieten", "reminders"=&gt;"Gegevens ontvangen van Hans de Valk, 19-4-2007", "titleEng"=&gt;"(Handwritten) notes concerning the Jesuit mission and missionaries in Suriname and Curaçao during the Republic and in the 19th century", "titleNld"=&gt;"(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw", "@displayName"=&gt;"(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw", "^rev"=&gt;1, "^modified"=&gt;{"timeStamp"=&gt;1411642687699, "userId"=&gt;"importer", "vreId"=&gt;"dcar"}, "^created"=&gt;{"timeStamp"=&gt;1411642687699, "userId"=&gt;"importer", "vreId"=&gt;"dcar"}, "@variationRefs"=&gt;[{"id"=&gt;"bead3064-ada9-4ee5-aad0-e5a926026574", "type"=&gt;"archive"}, {"id"=&gt;"bead3064-ada9-4ee5-aad0-e5a926026574", "type"=&gt;"dcararchive"}], "^deleted"=&gt;false, "_id"=&gt;"bead3064-ada9-4ee5-aad0-e5a926026574"}</code></pre>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_configuring_the_scrape">Configuring the scrape</h6>
+<div class="paragraph">
+<p>The code block below documents some options exposed by TimbuctooIO to alter scraping behaviour.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/basic-scrape.rb
+
+# Will dump scraped files (json) to specified :dump_dir
+timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl', {
+    :dump_files =&gt; true,
+    :dump_dir =&gt; './'
+})
+timbuctoo_io.scrape_collection('dcararchives', {
+    :with_relations =&gt; true, # also scrape direct relations
+    :batch_size =&gt; 1000, # scrape in batches of 1000
+})</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Dumping files has the advantage of not having to re-scrape the collection during development.
+The filenames of the dump files have a signature reflecting the parameters of the scrape.
+For instance, the above example outputs files with this format: <code><code>dcararchives_rows_1000_start_1000_with_relations.json</code></code></p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_re_scraping_from_locally_dumped_files">Re-scraping from locally dumped files</h6>
+<div class="paragraph">
+<p>To scrape from the locally dumped files in stead of Timbuctoo, add the <code><code>:from_file</code></code> flag to the</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-scrape_collection```method.Inthiscasethevalueof```:dump_dir```intheconstructormust" data-lang="scrape_collection```method.Inthiscasethevalueof```:dump_dir```intheconstructormust">match the location of the dumped files. If the (some of the) files are not present, TimbuctooIO
+will fall back on scraping the Timbuctoo server.
+```ruby
+# samples/basic-scrape.rb
+
+timbuctoo_io.scrape_collection('dcararchives', {
+    :with_relations =&gt; true, # also scrape direct relations
+    :batch_size =&gt; 1000, # scrape in batches of 1000
+    :from_file =&gt; true # scrape from local file dump in stead of Timbuctoo, if files are present
+})</code></pre>
+</div>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_the_process_record_callback">The 'process_record' callback</h6>
+<div class="paragraph">
+<p>Each record scraped by <code><code>scrape_collection</code></code> is passed to a callback function, identified by
+the <code><code>:process_record</code></code> keyword argument. The default behaviour of <code><code>process_record</code></code> is
+to dump the (json deserialized) record to standard output (as seen above).
+The way to access the records in order to convert them is to set the <code><code>:process_record</code></code>
+parameter to a lambda function. The next examples illustrate this:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/scrape-callbacks.rb
+require 'json'
+require '../lib/timbuctoo_solr/timbuctoo_io'
+
+timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
+
+
+def process_record_callback(record)
+  puts record.to_json
+end
+
+timbuctoo_io.scrape_collection('dcararchives', {
+    :process_record =&gt; lambda {|record| process_record_callback(record) } # lambda syntax
+})
+
+timbuctoo_io.scrape_collection('dcararchives', {
+    :process_record =&gt; -&gt; (record) { process_record_callback(record) } # lambda shorthand syntax
+})
+
+timbuctoo_io.scrape_collection('dcararchives', {
+    :process_record =&gt; method(:process_record_callback) # using lambda generator utility method 'method'
+})
+
+
+class RecordProcessor
+  def process_record_callback(record)
+    puts record.to_json
+  end
+end
+
+record_processor = RecordProcessor.new
+timbuctoo_io.scrape_collection('dcararchives', {
+    :process_record =&gt; record_processor.method(:process_record_callback) # referencing a method in a different class instance
+})</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_converting">Converting</h5>
+<div class="paragraph">
+<p>To convert records from Timbuctoo format to a format that can be indexed into solr the DefaultMapper can be used.
+The DefaultMapper expects a configuration upon construction, telling it which properties to map to a solr field.</p>
+</div>
+<div class="sect5">
+<h6 id="_mapping_direct_properties_using_defaultmapper">Mapping direct properties using DefaultMapper</h6>
+<div class="paragraph">
+<p>This example shows how to map Timbuctoo record properties to a solr format using the [data_driven_schema_configs](<a href="https://cwiki.apache.org/confluence/display/solr/Schemaless+Mode" class="bare">cwiki.apache.org/confluence/display/solr/Schemaless+Mode</a>)
+config set of Solr 6. This format uses field name suffixes to identify data types, and the field named 'id' as
+for  uniqueness constraint.</p>
+</div>
+<div class="paragraph">
+<p>This first example illustrates conversion of some properties in the 'wwcollectives' collection</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/conversion-1.rb
+require '../lib/timbuctoo_solr/timbuctoo_io'
+require '../lib/timbuctoo_solr/default_mapper'
+
+timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
+
+@collectives_mapper = DefaultMapper.new({
+  :properties =&gt; [ # configure direct properties of Timbuctoo record
+      {
+          :name =&gt; '_id', # the property name in the Timbuctoo data
+          :converted_name =&gt; 'id' # the name used for Solr
+      },
+      { :name =&gt; 'name',  :converted_name =&gt; 'name_t'}, # name field for full-text search
+      { :name =&gt; 'type',  :converted_name =&gt; 'type_s'}, # type field as string for filtering
+      { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s'}, # the human readable display name
+      {
+          :name =&gt; [ '^modified', 'timeStamp' ], # a nested property ({ "^modified": {"timeStamp": ... }})
+          :converted_name =&gt; 'modified_l' # this field is of type long
+      }
+  ]
+})
+
+def process(record)
+  p @collectives_mapper.convert(record)
+end
+
+
+timbuctoo_io.scrape_collection('wwcollectives', :process_record =&gt; method(:process))</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Some samples of the output:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>{"id"=&gt;"bead82cb-3396-4194-8e01-c965d21314d5", "name_t"=&gt;"Suomen Naisyhdistys", "type_s"=&gt;"ASSOCIATION", "displayName_s"=&gt;"Suomen Naisyhdistys", "modified_l"=&gt;1457519077226}
+{"id"=&gt;"3750675a-8a6f-4bca-84b3-c8a0f8927a24", "name_t"=&gt;"Naisasialiitto Unioni", "type_s"=&gt;"ASSOCIATION", "displayName_s"=&gt;"Naisasialiitto Unioni", "modified_l"=&gt;1457519140679}
+{"id"=&gt;"5040485d-58d2-4539-968c-8bf7182f83ba", "name_t"=&gt;"Suomalainen naisliitto", "type_s"=&gt;"ASSOCIATION", "displayName_s"=&gt;"Suomalainen naisliitto", "modified_l"=&gt;1457521488510}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_converting_the_value_of_a_timbuctoo_property">Converting the value of a Timbuctoo property</h6>
+<div class="paragraph">
+<p>The DefaultMapper configuration can be supplied with a type parameter per property. It ships one supported data type (int)
+which will pass the property value to the <code><code>convert_to_int</code></code> method, which attempts to cast the value using <code><code>to_i</code></code>.</p>
+</div>
+<div class="paragraph">
+<p>This example converts the string value of 'birthDate' into the int value of 'birthDate_i'</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/conversion-2.rb
+
+@person_mapper = DefaultMapper.new({
+  :properties =&gt; [
+    { :name =&gt; '_id', :converted_name =&gt; 'id' },
+    { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s'},
+    { :name =&gt; 'birthDate', :converted_name =&gt; 'birthDate_i', :type =&gt; 'int' }
+  ]
+})</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Asking the DefaultMapper to convert to any other type than 'int' will raise the following message:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>default_mapper.rb:55:in `convert_value': Type 'your_type' not supported please define method convert_to_your_type (RuntimeError)</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>As illustrated in <code><code>samples/conversion-raise.rb</code></code>.</p>
+</div>
+<div class="paragraph">
+<p>To remedy this we recommend inheriting from DefaultMapper and implementing the method 'convert_to_your_type':</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/type-conversion-1.rb
+
+class FooMapper &lt; DefaultMapper
+  def convert_to_foo_type(value)
+    "fooified #{value}"
+  end
+end
+
+@person_mapper = FooMapper.new({
+   :properties =&gt; [
+       { :name =&gt; '_id', :converted_name =&gt; 'id' },
+       { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s', :type =&gt; 'foo_type'},
+   ]
+})</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>For some common data types modules are provided in <code><code>lib/mixins/converters</code></code>, delegating the responsibility of hand-writing
+type converters. Ruby modules can be used as mixins inside a class using the <code><code>include</code></code> instruction.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/type-conversion-2.rb
+
+require '../lib/mixins/converters/to_names_converter'
+require '../lib/mixins/converters/to_year_converter'
+
+class PersonMapper &lt; DefaultMapper
+  include ToNamesConverter
+  include ToYearConverter
+end
+
+@person_mapper = PersonMapper.new({
+  :properties =&gt; [
+    { :name =&gt; '_id', :converted_name =&gt; 'id' },
+    { :name =&gt; 'birthDate', :converted_name =&gt; 'birthDate_i', :type =&gt; 'year' },
+    { :name =&gt; 'names', :converted_name =&gt; 'name_t', :type =&gt; 'names'},
+    { :name =&gt; 'names', :converted_name =&gt; 'nameSort_s', :type =&gt; 'name_sort'},
+    { :name =&gt; 'names', :converted_name =&gt; 'displayName_s', :type =&gt; 'names_display_name'},
+  ]
+})</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>When writing a custom converter which has a good chance of being reused by another indexer, we recommend
+adding this converter in a similar module under <code><code>lib/mixins/converters</code></code>.</p>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_mapping_properties_of_direct_relations">Mapping properties of direct relations</h6>
+<div class="paragraph">
+<p>The DefaultMapper can also be configured with properties derived from directly related objects. This requires that</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-TimbuctooIO.scrape_collection```isinvokedwith```{:with_relations=>true}```." data-lang="TimbuctooIO.scrape_collection```isinvokedwith```{:with_relations=>true}```.">Example:
+```ruby
+# samples/conversion-with-relations.rb
+
+@collectives_mapper = DefaultMapper.new({
+  :properties =&gt; [
+    { :name =&gt; '_id', :converted_name =&gt; 'id' },
+    { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s'}
+  ],
+  :relations =&gt; [
+    {
+      :relation_name =&gt; 'hasMember', # name of the relation to follow
+      :property_name =&gt; 'displayName', # get the displayName property of the related object
+      :converted_name =&gt; 'members_ss' # list of strings data type
+    },
+    {
+      :relation_name =&gt; 'hasMember', # name of the relation to follow
+      :property_name =&gt; 'path', # get the path property to the related object
+      :converted_name =&gt; 'memberId_ss' # list of strings data type
+    }
+  ]
+})</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Sample of the output</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>{"id"=&gt;"3286ea24-d4fb-4c94-8a06-e04b8aa5741b", "displayName_s"=&gt;"Accademia degli Arcadia", "members_ss"=&gt;["Paolina Secco Suardo Grismondi", "Hélène Baletti Riccoboni"], "memberId_ss"=&gt;["domain/wwpersons/676c4572-25ce-4c19-af97-903a08e388e8", "domain/wwpersons/8b1e5848-cf76-448c-9427-5221dba236ef"]}
+{"id"=&gt;"769cd459-63bb-4b32-bc82-3630dfe3ec64", "displayName_s"=&gt;"Academies of Rouen, Lyon, Bologne, Padoue, Cortone, Florence, Rome Arcadia (Briquet)", "members_ss"=&gt;["Anne-Marie du Boccage"], "memberId_ss"=&gt;["domain/wwpersons/16b64aed-2d82-481b-9796-56cb51b71711"]}
+{"id"=&gt;"f3fb32d9-b28b-4aa8-88f9-d8945e44a1bb", "displayName_s"=&gt;"Other : Political party", "members_ss"=&gt;[], "memberId_ss"=&gt;[]}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>The same type conversion rules apply to properties derived from relations (see: <code><code>samples/type-conversion-1.rb</code></code>).</p>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_solr">Solr</h5>
+<div class="paragraph">
+<p>The class SolrIO exposes a few basic CRUD methods. The samples in this section assume a local running solr 6 server ([quickstart](<a href="http://lucene.apache.org/solr/quickstart.html)" class="bare">lucene.apache.org/solr/quickstart.html)</a>).
+The constructor is invoked with the solr url (usually including /solr without trailing slash). Optionally a value for the header 'Authorization'
+can be added in the constructor as well.</p>
+</div>
+<div class="sect5">
+<h6 id="_crud_methods_of_solrio">CRUD methods of SolrIO</h6>
+<div class="paragraph">
+<p>Use the <code><code>create</code></code> method to create an index. By default an index is created with the config set 'data_driven_schema_configs'
+If the index already exists, this method will raise an exception.</p>
+</div>
+<div class="paragraph">
+<p>Use the <code><code>update</code></code> method to send a batch of data to be indexed.</p>
+</div>
+<div class="paragraph">
+<p>Use the <code><code>delete_data</code></code> method to delete all contents of an index</p>
+</div>
+<div class="paragraph">
+<p>Use the <code><code>commit</code></code> method to commit the changes that were sent.</p>
+</div>
+<div class="paragraph">
+<p>Use the <code><code>delete_index</code></code> method to purge the entire index from solr.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/solr.rb
+require '../lib/timbuctoo_solr/solr_io'
+
+# Initialize for local solr
+solr_io = SolrIO.new('http://localhost:8983/solr')
+
+# Create index named 'testing'
+solr_io.create('testing')
+
+# Update index with batch of one record
+solr_io.update('testing', [{:id =&gt; "foobar", :value_i =&gt; 123}])
+solr_io.commit('testing')
+
+# Throw away the data
+solr_io.delete_data('testing')
+
+solr_io.commit('testing')
+
+solr_io.delete_index('testing')</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_indexing">Indexing</h5>
+<div class="paragraph">
+<p>This sample code integrates most of the pieces listed above into one sample indexer. If you skipped directly to this section,
+please be aware that this sample does not illustrate all the possibilities.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/indexer.rb
+require '../lib/timbuctoo_solr/timbuctoo_io'
+require '../lib/timbuctoo_solr/default_mapper'
+require '../lib/timbuctoo_solr/solr_io'
+
+class Indexer
+  def initialize
+    @timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
+    @solr_io = SolrIO.new('http://localhost:8983/solr')
+
+    @mapper = DefaultMapper.new({
+        :properties =&gt; [
+            { :name =&gt; '_id', :converted_name =&gt; 'id' },
+            { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s'},
+            { :name =&gt; [ '^modified', 'timeStamp' ], :converted_name =&gt; 'modified_l'}
+        ],
+        :relations =&gt; [
+            {
+                :relation_name =&gt; 'has_archive_keyword', # name of the relation to follow
+                :property_name =&gt; 'displayName', # get the path property to the related object
+                :converted_name =&gt; 'keyword_ss' # list of strings data type
+            }
+        ]
+    })
+  end
+
+  def run
+    @solr_io.create('testing')
+    @timbuctoo_io.scrape_collection('dcararchives', :with_relations =&gt; true, :process_record =&gt; method(:process))
+    @solr_io.commit('testing')
+    @solr_io.delete_index('testing')
+  end
+
+  def process(record)
+    @solr_io.update('testing', [@mapper.convert(record)])
+  end
+end
+
+Indexer.new.run</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>A more elaborate example is in <code><code>samples/complete-sample-runner.rb</code></code>.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_open_issues">Open issues</h4>
+<div class="sect4">
+<h5 id="_1_no_control_over_text_indexes">1. No control over text indexes</h5>
+<div class="paragraph">
+<p>Our current solr index is the default data driven index.
+This one does not handle accented words very well.
+We also have no control over how capitalization is handled.
+We&#8217;re pretty sure that our users need us to handle these cases in a way that differs on a project by project basis.</p>
+</div>
+<div class="sect5">
+<h6 id="_development_steps">Development steps</h6>
+<div class="ulist">
+<ul>
+<li>
+<p>Run a local solr 6 instance (docker or directly under windows, you&#8217;ll need to be able to access the files)</p>
+</li>
+<li>
+<p>create the index <code>wwpersons_accent_research</code> on your local solr</p>
+</li>
+<li>
+<p>Fill this index with the fulltext records (i.e. <code>*_t</code>) uit wwpersons</p>
+</li>
+<li>
+<p>Configure it so that</p>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>a search for <code>Bronte</code> and a search fot <code>Brontë</code> both return one instance for each of the three Brontë sisters</p>
+</li>
+<li>
+<p>a search for <code>de*</code> return both "Descartes" and "Eugénie Avril de Sainte Croix". A Search for <code>De*</code> returns only Descartes</p>
+</li>
+<li>
+<p>Find out how we could make the index fully case-sensitive</p>
+</li>
+</ol>
+</div>
+</li>
+<li>
+<p>How can we make this approach work for all <code>*_t</code> fields?</p>
+</li>
+<li>
+<p>How can we make this approach work for only a specific field?</p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_user_guide">User guide</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><span class="feature">A user guide has not been written yet</span></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_api_documentation">API documentation</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p><a href="./api.html">API documentation has it&#8217;s own page</a></p>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_development_process">Development process</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_releases">Releases</h3>
+
+</div>
+<div class="sect2">
+<h3 id="_bug_tracking">Bug tracking</h3>
+
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_additional_information">Additional information</h2>
+<div class="sectionbody">
+<div class="sect2">
+<h3 id="_presentations">Presentations</h3>
+<div class="videoblock">
+<div class="title">A quick overview of the timbuctoo project</div>
+<div class="content">
+<iframe src="https://player.vimeo.com/video/186090384" frameborder="0" allowfullscreen></iframe>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_related_work">Related work</h3>
+<div class="paragraph">
+<p>Some things that timbuctoo will not do, and that you can use other software for:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>present the data in a faceted search (for this we&#8217;re building a different tool that subscribes to timbuctoo&#8217;s data)</p>
+</li>
+<li>
+<p>clean up datasets (for this we point you to <a href="http://openrefine.org">openrefine</a> and <a href="https://github.com/usc-isi-i2/Web-Karma">karma</a>)</p>
+</li>
+<li>
+<p>visualize the data (for this we&#8217;ll expose the data in timbuctoo in such a way that it can be picked up by tools such as <a href="http://hdlab.stanford.edu/projects/palladio/">palladio</a> or <a href="https://gephi.org/">gephi</a>)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>We will offer a basic editing interface but we&#8217;ll also actively try to allow the data to be edited in external tools such as google spreadsheets, openrefine or excel.</p>
+</div>
+<div class="sect3">
+<h4 id="_databases">Databases</h4>
+<div class="paragraph">
+<p>For most databases the answer is the same: timbuctoo is not a database, but rather it uses a database and adds a REST API and related
+<a href="http://ontotext.com/products/graphdb/" class="bare">ontotext.com/products/graphdb/</a></p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_triple_stores">triple stores</h4>
+
+</div>
+<div class="sect3">
+<h4 id="_database_wrappers">Database wrappers</h4>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">Sandman</dt>
+<dt class="hdlist1">Postgres-rest</dt>
+<dt class="hdlist1">firebase and other Baas-es</dt>
+<dd>
+<p>no interlinking and transclusion of datasets</p>
+</dd>
+</dl>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_mapping_languages">mapping languages</h4>
+<div class="paragraph">
+<p>X3ML::https://github.com/delving/x3ml <a href="http://139.91.183.3/3M/" class="bare">139.91.183.3/3M/</a>
+R2RML::
+XSLT::
+JSON-LD framing::
+XML2RDF::
+SQuaRE::
+  <a href="http://resources.visualdataweb.de/paper4.pdf" class="bare">resources.visualdataweb.de/paper4.pdf</a>
+=== harmonization tools
+GoogleRefine/OpenRefine::
+karma::
+tabulapdf::
+UIMA (entity extraction)
+Gate (entity extraction)
+Silk (link discovery)
+Datagraft::
+  <a href="https://datagraft.net/" class="bare">datagraft.net/</a> (<a href="https://github.com/dapaas" class="bare">github.com/dapaas</a>)</p>
+</div>
+<div class="paragraph">
+<p>map4rdf
+lodlive</p>
+</div>
+<div class="paragraph">
+<p><a href="http://link.springer.com/book/10.1007/978-3-319-13817-6/page/2#page-2" class="bare">link.springer.com/book/10.1007/978-3-319-13817-6/page/2#page-2</a></p>
+</div>
+<div class="dlist">
+<dl>
+<dt class="hdlist1">xanadu</dt>
+<dd>
+<p>rdf heeft geen natural order waardoor editlists ofwel heel gefragmenteerd kunnen worden ofwel niet goed mogelijk zijn.</p>
+</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="footer">
+<div id="footer-text">
+Last updated 2016-11-01 10:46:24 UTC
+</div>
+</div>
+</body>
+</html>
