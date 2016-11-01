@@ -1,15 +1,18 @@
-# Solr index script
+= Solr index script
 
-This folder contains scripts that scrape timbuctoo and send the data to solr.
+== Summary
+//tag::summary[]
+These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.
+//end::summary[]
 
-## Context
+== Context
 We want to be able expose Timbuctoo collections through solr/lucene in a flexible way,
 enabling indexes on both the direct properties of records in a collection, as well as
 key properties of directly related objects; for instance a keyword value from a keyword 
 collection, which was linked to a document from a document collection (like genre).
 
 
-## Usage
+== Usage
 Creating an index for a Timbuctoo collection is a 3-step process:
 
 1. [Scrape](#scraping) Timbuctoo data
@@ -18,7 +21,7 @@ Creating an index for a Timbuctoo collection is a 3-step process:
 
 For the impatient: [skip to complete example](#indexing).
 
-### Libraries
+=== Libraries
 For that purpose there are three classes in the dir ```lib/timbuctoo_solr```.
 
 1. TimbuctooIO ```lib/timbuctoo_solr/timbuctoo_io.rb```
@@ -28,7 +31,7 @@ For that purpose there are three classes in the dir ```lib/timbuctoo_solr```.
 The next sections will explain the 3-step process in more detail, using examples which 
 can be found in the ```samples``` dir.
 
-### Scraping
+=== Scraping
 A scrape of a Timbuctoo collection is done in batches using the method 
 ```scrape_collection``` in TimbuctooIO. This can either be done with or without
 direct relations:
@@ -36,7 +39,7 @@ direct relations:
 1. [Sample scrape response without relations](http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10)
 2. [Sample with relations](http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10&withRelations=true)
 
-#### Basic scrape
+==== Basic scrape
 This script above scrapes the collection 'dcararchives' from the Timbuctoo test repository:
 ```ruby
 # samples/basic-scrape.rb
@@ -56,7 +59,7 @@ Sample of the output:
 
 
 
-#### Configuring the scrape
+==== Configuring the scrape
 The code block below documents some options exposed by TimbuctooIO to alter scraping behaviour.
 ```ruby
 # samples/basic-scrape.rb
@@ -76,7 +79,7 @@ Dumping files has the advantage of not having to re-scrape the collection during
 The filenames of the dump files have a signature reflecting the parameters of the scrape.
 For instance, the above example outputs files with this format: ```dcararchives_rows_1000_start_1000_with_relations.json```
 
-#### Re-scraping from locally dumped files
+==== Re-scraping from locally dumped files
 To scrape from the locally dumped files in stead of Timbuctoo, add the ```:from_file``` flag to the
 ```scrape_collection``` method. In this case the value of ```:dump_dir``` in the constructor must
 match the location of the dumped files. If the (some of the) files are not present, TimbuctooIO
@@ -91,7 +94,7 @@ timbuctoo_io.scrape_collection('dcararchives', {
 })
 ```
 
-#### The 'process_record' callback
+==== The 'process_record' callback
 Each record scraped by ```scrape_collection``` is passed to a callback function, identified by 
 the ```:process_record``` keyword argument. The default behaviour of ```process_record``` is
 to dump the (json deserialized) record to standard output (as seen above). 
@@ -136,11 +139,11 @@ timbuctoo_io.scrape_collection('dcararchives', {
 ```
 
 
-### Converting
+=== Converting
 To convert records from Timbuctoo format to a format that can be indexed into solr the DefaultMapper can be used.
 The DefaultMapper expects a configuration upon construction, telling it which properties to map to a solr field.
 
-#### Mapping direct properties using DefaultMapper
+==== Mapping direct properties using DefaultMapper
 This example shows how to map Timbuctoo record properties to a solr format using the [data_driven_schema_configs](https://cwiki.apache.org/confluence/display/solr/Schemaless+Mode)
 config set of Solr 6. This format uses field name suffixes to identify data types, and the field named 'id' as 
 for  uniqueness constraint.
@@ -184,7 +187,7 @@ Some samples of the output:
 {"id"=>"5040485d-58d2-4539-968c-8bf7182f83ba", "name_t"=>"Suomalainen naisliitto", "type_s"=>"ASSOCIATION", "displayName_s"=>"Suomalainen naisliitto", "modified_l"=>1457521488510}
 ```
 
-#### Converting the value of a Timbuctoo property
+==== Converting the value of a Timbuctoo property
 The DefaultMapper configuration can be supplied with a type parameter per property. It ships one supported data type (int)
 which will pass the property value to the ```convert_to_int``` method, which attempts to cast the value using ```to_i```.
 
@@ -254,7 +257,7 @@ When writing a custom converter which has a good chance of being reused by anoth
 adding this converter in a similar module under ```lib/mixins/converters```.
 
 
-#### Mapping properties of direct relations
+==== Mapping properties of direct relations
 The DefaultMapper can also be configured with properties derived from directly related objects. This requires that
 ```TimbuctooIO.scrape_collection``` is invoked with ```{ :with_relations => true }```.
 
@@ -291,12 +294,12 @@ Sample of the output
 
 The same type conversion rules apply to properties derived from relations (see: ```samples/type-conversion-1.rb```).
 
-### Solr
+=== Solr
 The class SolrIO exposes a few basic CRUD methods. The samples in this section assume a local running solr 6 server ([quickstart](http://lucene.apache.org/solr/quickstart.html)).
 The constructor is invoked with the solr url (usually including /solr without trailing slash). Optionally a value for the header 'Authorization' 
 can be added in the constructor as well.
 
-#### CRUD methods of SolrIO
+==== CRUD methods of SolrIO
 Use the ```create``` method to create an index. By default an index is created with the config set 'data_driven_schema_configs'
 If the index already exists, this method will raise an exception.
 
@@ -332,7 +335,7 @@ solr_io.delete_index('testing')
 ```
 
 
-### Indexing
+=== Indexing
 This sample code integrates most of the pieces listed above into one sample indexer. If you skipped directly to this section,
 please be aware that this sample does not illustrate all the possibilities.
 
@@ -382,15 +385,15 @@ A more elaborate example is in ```samples/complete-sample-runner.rb```.
 
 
 
-## Open issues
+== Open issues
 
-### 1. No control over text indexes
+=== 1. No control over text indexes
 Our current solr index is the default data driven index. 
 This one does not handle accented words very well. 
 We also have no control over how capitalization is handled.
 We're pretty sure that our users need us to handle these cases in a way that differs on a project by project basis.
 
-#### Development steps
+==== Development steps
 - Run a local solr 6 instance (docker or directly under windows, you'll need to be able to access the files)
 - create the index `wwpersons_accent_research` on your local solr
 - Fill this index with the fulltext records (i.e. `*_t`) uit wwpersons

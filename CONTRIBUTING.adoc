@@ -1,34 +1,35 @@
-# How to contribute to Timbuctoo
+= How to contribute to Timbuctoo
 
 OMG someone wants to help! That's so awesome! Quick! give him some hoops to jump through!
 
 Seriously though, this document is intended to let you know what you can expect from us and what we expect from you.
 
-## Do you have questions?
+== Do you have questions?
 
 Talk to us on https://gitter.im/HuygensING/timbuctoo
 
-## Did you find a bug?
+== Did you find a bug?
 
-* Talk to us on https://gitter.im/HuygensING/timbuctoo or alternatively...
-* ...report it on github [Issues](https://github.com/rails/rails/issues). It might seem awfully quiet there but we use a closed issue tracker ourselves because it has some features that github doesn't. We will get an e-mail about your issue though.
-* **...submit a pull request with a unittest exposing the bug** 😍
+ * Talk to us on https://gitter.im/HuygensING/timbuctoo or alternatively...
+ * ...report it on github [Issues](https://github.com/huygensing/timbuctoo/issues). It might seem awfully quiet there but we use a closed issue tracker ourselves because it has some features that github doesn't. We will get an e-mail about your issue though.
+ * *...submit a pull request with a unittest exposing the bug* 😍
 
-## Do you want to contribute to the documentation?
+== Do you want to contribute to the documentation?
 
-Change the docs were needed and submit a Pull request. You can do so from the github web interface if you like.
+Change the docs were needed and submit a Pull Request. You can do so from the github web interface if you like.
 
-## Do you want to contribute code?
+== Do you want to contribute code?
 
-* Open a new GitHub pull request in which you describe what you'd like to change using the provided template.
+* Open a new GitHub pull request that either changes the documentation to describe the new behaviour, or adds new documentation for your new feature.
+  You can use the link:./documentation/feature-template[]
 * Feel free to start coding right away, but we might respond that we won't merge this PR or that we'll only merge it if it's changed a bit.
 * Please read the list of things timbuctoo does and does not do in the README to check if there's a good chance that we'll merge your code.
 
-### style guide
-#### Commit messages
+=== style guide
+==== Commit messages
 When committing we try to adhere to http://chris.beams.io/posts/git-commit/
 
- * Use the imperative mood in the subject line
+ * Use the imperative mood in the subject line (you should be able to prepend "this commit will" to your subject line. e.g. "This commit will *improve the documentation*" vs. "This commit will *working on doc fixes*")
  * Separate subject from body with a blank line
  * Limit the subject line to 50 characters
  * Do not end the subject line with a period
@@ -39,7 +40,7 @@ When committing we try to adhere to http://chris.beams.io/posts/git-commit/
   * When a commit is a bugfix or refactoring we start with that. `Bugfix. Check if file exists before removing`
   * When the fix/refactoring is small you don't have to add anything other then bugfix/refactoring
 
-#### Java code
+==== Java code
 When writing code we try to follow these guidelines:
 
  - Use a maybe object (preferably java.util.Optional<T>) as the return value of a method when null is a possible value. This way the user of the API is forced to think about how to handle the null case.
@@ -48,7 +49,7 @@ When writing code we try to follow these guidelines:
  - If you want to create a URI to a timbuctoo endpoint, use the method 'makeUri' in the endpoint you are linking to. This means you have to inject the endpoint you want to link to in your current endpoint.
  - If the method 'makeUri' does not exist create one. Use the makeUri method to create a relative URI of the endpoint and use 'UriHelper.fromResourceUri' to make the URI absolute.
 
-#### Unit tests
+==== Unit tests
  - If a unit of code leans on another unit for accomplishing its task then that other unit should preferably not be mocked in a unittest.
  - If a unit of code calls another unit of code as a side-effect it should preferably be mocked.
  - When mocking, if the amount of lines needed for the mock becomes "big" then you should take care to keep the "intent" clear. e.g. break it into whitespace separated blocks with comments or extract it to separate methods or builders. If it is hard to mock correctly then you probably should not mock at all but instead use the actual implementation.

@@ -50,3 +50,10 @@ To get timbuctoo here we're mostly adding the <<Tabular-data-import>> and a very
 
 === MVP (januari 2016)
 For this version no new features will be introduced, though we'll probably also work on the <<Release-process>>.
+
+
+
+ == Future ideas
+ We have more ideas than we can realize, so we focus on our main features. 
+ The next ideas we really want to implement, but we do not see the time to do it soon:
+  * https://github.com/HuygensING/neo4j-cluster-test[Run a cluster of Timbuctoo instances] based on a Neo4j HA-cluster.
