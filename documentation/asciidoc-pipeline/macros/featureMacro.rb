@@ -1,7 +1,5 @@
 require 'asciidoctor'
 require 'asciidoctor/extensions'
-require 'ap'
-require 'pp'
 
 class TodoInlineMacro < Asciidoctor::Extensions::InlineMacroProcessor
   use_dsl
