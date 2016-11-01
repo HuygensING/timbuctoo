@@ -4,6 +4,7 @@
 :javasourcesdir: ../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo
 :scriptsourcesdir: ../timbuctoo-instancev4/src/main/scripts
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+:docinfo:
 
 include::../README.adoc[tags=support-note] 
 
@@ -129,7 +130,6 @@ include::{scriptsourcesdir}/index_scripts/README.adoc[]
 
 == User guide
 
-[WARNING]
 todo:feature["A user guide has not been written yet"]
 
 == API documentation
