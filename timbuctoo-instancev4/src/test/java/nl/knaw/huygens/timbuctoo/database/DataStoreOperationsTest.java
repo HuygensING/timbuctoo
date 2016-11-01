@@ -223,6 +223,33 @@ public class DataStoreOperationsTest {
     verify(changeListener).onCreate(vertex);
   }
 
+  @Test
+  public void createEntityMarksOneVertexAsLatest() throws Exception {
+    GraphWrapper graphWrapper = newGraph().wrap();
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    ChangeListener changeListener = mock(ChangeListener.class);
+    DataStoreOperations instance = new DataStoreOperations(graphWrapper, changeListener, null, vres);
+    List<TimProperty<?>> properties = Lists.newArrayList();
+    CreateEntity createEntity = new CreateEntity(properties);
+    UUID id = UUID.randomUUID();
+    createEntity.setId(id);
+    String userId = "userId";
+    long timeStamp = Instant.now().toEpochMilli();
+    createEntity.setCreated(new Change(timeStamp, userId, null));
+
+    instance.createEntity(collection, Optional.empty(), createEntity);
+
+
+    assertThat(graphWrapper.getGraph()
+                           .traversal().V()
+                           .has("tim_id", id.toString())
+                           .has("isLatest", true)
+                           .count().next(),
+      is(1L));
+
+  }
+
   @Test(expected = IOException.class)
   public void createEntityThrowsAnIoExceptionWhenItEncountersAnUnknownProperty() throws Exception {
     GraphWrapper graphWrapper = newGraph().wrap();
