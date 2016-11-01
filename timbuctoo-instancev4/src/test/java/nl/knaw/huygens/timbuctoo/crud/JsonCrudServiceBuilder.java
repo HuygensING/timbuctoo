@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.database.AfterSuccessTaskExecutor;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
@@ -98,13 +97,8 @@ public class JsonCrudServiceBuilder {
     DataStoreOperations dataStoreOperations =
       new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres);
 
-    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-      new TimbuctooActions.TimbuctooActionsFactory(authorizer, clock, handleAdder);
-
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> dataStoreOperations,
-      timbuctooActionsFactory);
     return new JsonCrudService(vres, userStore,
-      relationUrlGenerator, clock,
+      relationUrlGenerator,
       new TimbuctooActions(
         authorizer,
         clock,

@@ -18,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 
 import java.io.IOException;
-import java.time.Clock;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -30,15 +29,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class JsonCrudService {
 
   private final Vres mappings;
-  private final Clock clock;
   private final TimbuctooActions timDbAccess;
   private final EntityToJsonMapper entityToJsonMapper;
   private final JsonToEntityMapper jsonToEntityMapper;
 
-  public JsonCrudService(Vres mappings, UserStore userStore, UrlGenerator relationUrlFor, Clock clock,
+  public JsonCrudService(Vres mappings, UserStore userStore, UrlGenerator relationUrlFor,
                          TimbuctooActions timDbAccess) {
     this.mappings = mappings;
-    this.clock = clock;
     this.timDbAccess = timDbAccess;
     entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
     jsonToEntityMapper = new JsonToEntityMapper();
@@ -136,7 +133,7 @@ public class JsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    DataStream<ReadEntity> entities = timDbAccess.getCollection(collection, rows, start,withRelations,
+    DataStream<ReadEntity> entities = timDbAccess.getCollection(collection, rows, start, withRelations,
       (traversalSource, vre) -> {
 
       },
