@@ -68,7 +68,7 @@ RDF-publication::
   todo:feature["We will publish the RDF data in the CLARIAH RDF exchange format"].
 The V2.1 API::
   CRUD::
-    include::{javasourcesdir}/crud/README.adoc[tags=summary] 
+include::{javasourcesdir}/crud/README.adoc[tags=summary] 
   Metadata::
     A dataset contains information about the property names (predicates) that are in use etc.
     This information cannot be retrieved from the CRUD endpoint, but can be retrieved from here.
@@ -77,13 +77,13 @@ The V2.1 API::
     Timbuctoo allows you to do a quick search on the labels (aka displaynames) of the entities.
     This is implemented as part of the CRUD module.  
 Tabular data importer::
-  include::{javasourcesdir}/bulkupload/README.adoc[tags=summary] 
+include::{javasourcesdir}/bulkupload/README.adoc[tags=summary] 
 RML processor::
-  include::{javasourcesdir}/rml/README.adoc[tags=summary] 
+include::{javasourcesdir}/rml/README.adoc[tags=summary] 
 RDF importer::
-  include::{javasourcesdir}/rdf/README.adoc[tags=summary] 
+include::{javasourcesdir}/rdf/README.adoc[tags=summary] 
 Search GUI & Index crawler::
-  include::{scriptsourcesdir}/index_scripts/README.adoc[tags=summary] 
+include::{scriptsourcesdir}/index_scripts/README.adoc[tags=summary] 
 Discover-GUI::
   A gui that is not aimed at precise querying, but rather to get a high-level overview of the data so that you know what queries to write.
 Dataset-search::
