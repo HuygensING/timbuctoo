@@ -939,7 +939,8 @@ The changelog API isn&#8217;t available yet, but the data to generate it is alre
 <dt class="hdlist1">The V2.1 API</dt>
 <dt class="hdlist1">CRUD</dt>
 <dd>
-<p>include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/crud/README.adoc[tags=summary]</p>
+<p>The crud service offers an interpreted view of the RDF data. It might for example fold a list expressed as blank nodes in RDF into the the entity that references them.
+Provenance information is included as part of the entity it belongs to.</p>
 </dd>
 <dt class="hdlist1">Metadata</dt>
 <dd>
@@ -954,19 +955,21 @@ This is implemented as part of the CRUD module.</p>
 </dd>
 <dt class="hdlist1">Tabular data importer</dt>
 <dd>
-<p>include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload/README.adoc[tags=summary]</p>
+<p>This package allows you to upload something that is tabular-like and have it converted to a basic RDF representation (just records pointing to the next record).
+<span class="bug">The data entered like this is not yet part of the changelog, but should be.</span></p>
 </dd>
 <dt class="hdlist1">RML processor</dt>
 <dd>
-<p>include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/README.adoc[tags=summary]</p>
+<p>Once you have uploaded some data in a tabular representation you can call the RML processor with an RML document to generate RDF which is then inserted into the database.
+The processor calls the RDF importer in the background with the generated triples.</p>
 </dd>
 <dt class="hdlist1">RDF importer</dt>
 <dd>
-<p>include::../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rdf/README.adoc[tags=summary]</p>
+<p>The RDF importer can be provided with a dataset in n-triples format that will then be inserted as-is into the database.</p>
 </dd>
 <dt class="hdlist1">Search GUI &amp; Index crawler</dt>
 <dd>
-<p>include::../timbuctoo-instancev4/src/main/scripts/index_scripts/README.adoc[tags=summary]</p>
+<p>These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.</p>
 </dd>
 <dt class="hdlist1">Discover-GUI</dt>
 <dd>
@@ -2513,7 +2516,7 @@ lodlive</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-11-01 10:46:24 UTC
+Last updated 2016-11-01 15:38:11 UTC
 </div>
 </div>
 </body>
