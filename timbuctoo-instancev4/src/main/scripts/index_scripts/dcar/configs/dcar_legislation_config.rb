@@ -8,8 +8,10 @@ class DcarLegislationConfig
             { :name => 'titleNld', :converted_name => 'titleNld_t'},
             { :name => 'contents', :converted_name => 'contents_t'},
             { :name => 'reference', :converted_name => 'reference_t'},
-            { :name => 'date1', :converted_name => 'beginDate_dt'},
-            { :name => 'date2', :converted_name => 'endDate_dt'},
+            { :name => 'date1', :converted_name => 'beginDate_s'},
+            { :name => 'date2', :converted_name => 'endDate_s'},
+            { :name => 'date1', :converted_name => 'beginDate_i', :type => 'year'},
+            { :name => 'date2', :converted_name => 'endDate_i', :type => 'year'},
         ], :relations => [
             { :relation_name => 'has_legislation_keyword', :property_name => 'displayName', :converted_name => 'subject_ss' },
             { :relation_name => 'has_legislation_place', :property_name => 'displayName', :converted_name => 'place_ss' },

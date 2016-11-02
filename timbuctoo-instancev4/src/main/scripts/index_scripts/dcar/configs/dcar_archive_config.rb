@@ -11,6 +11,8 @@ class DcarArchiveConfig
         { :name => 'refCodeArchive', :converted_name => 'refcode_s'},
         { :name => 'beginDate', :converted_name => 'beginDate_dt', :type => 'date'},
         { :name => 'endDate', :converted_name => 'endDate_dt', :type => 'date'},
+        { :name => 'beginDate', :converted_name => 'beginDate_i', :type => 'year'},
+        { :name => 'endDate', :converted_name => 'endDate_i', :type => 'year'},
       ], :relations => [
        { :relation_name => 'is_created_by', :property_name => 'displayName', :converted_name => 'creator_ss'},
        { :relation_name => 'has_archive_keyword', :property_name => 'displayName', :converted_name => 'subject_ss'},
