@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.database.dto.property.AltNamesProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DatableProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultFullPersonNameProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultLocationNameProperty;
@@ -96,6 +97,11 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
   }
 
   @Override
+  protected ArrayProperty createArrayProperty(String propertyName, JsonNode value) throws IOException {
+    return new ArrayProperty(propertyName, objectMapper.writeValueAsString(value));
+  }
+
+  @Override
   protected EncodedStringOfLimitedValuesProperty createEncodedStringOfLimitedValuesProperty(String propertyName,
                                                                                             JsonNode value)
     throws IOException {
@@ -155,6 +161,12 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
 
   @Override
   public Tuple<String, JsonNode> to(ArrayOfLimitedValuesProperty property) throws IOException {
+    return new Tuple<>(property.getName(), objectMapper.readTree(property.getValue()));
+  }
+
+  @Override
+  public Tuple<String, JsonNode> to(ArrayProperty property) throws IOException {
+
     return new Tuple<>(property.getName(), objectMapper.readTree(property.getValue()));
   }
 
