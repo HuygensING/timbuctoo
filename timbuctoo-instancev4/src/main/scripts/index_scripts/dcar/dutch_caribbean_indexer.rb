@@ -15,9 +15,6 @@ class DutchCaribbeanIndexer
     @archive_mapper = DcarMapper.new(DcarArchiveConfig.get)
     @archiver_mapper = DcarMapper.new(DcarArchiverConfig.get)
 
-#    @person_reception_mapper = DcarPersonReceptionMapper.new(@person_mapper, @document_mapper)
-#    @document_reception_mapper = DcarDocumentReceptionMapper.new(@document_mapper)
-
     @timbuctoo_io = TimbuctooIO.new(options[:timbuctoo_url], {
         :dump_files => options[:dump_files],
         :dump_dir => options[:dump_dir],
@@ -29,9 +26,9 @@ class DutchCaribbeanIndexer
 
   def run
     # Scrape archives, archivers and legislation from Timbuctoo
-    scrape_archives
-    scrape_archivers
-    scrape_legislation
+    # scrape_archives
+    # scrape_archivers
+    # scrape_legislation
 
     reindex_archives
     reindex_archivers
@@ -57,7 +54,6 @@ class DutchCaribbeanIndexer
         :batch_size => 1000,
         :process_record => @archive_mapper.method(:convert)
     })
-    # No counter in default mapper
     puts "SCRAPE: #{@archive_mapper.record_count} archives"
   end
 
@@ -68,21 +64,22 @@ class DutchCaribbeanIndexer
         :batch_size => 1000,
         :process_record => @archiver_mapper.method(:convert)
     })
-    # No counter in default mapper
     puts "SCRAPE: #{@archiver_mapper.record_count} archives"
   end
 
   def reindex_archives
-    puts "DELETE archives"
-    @solr_io.delete_data("dcararchives")
-    puts "UPDATE archives"
+    collection_name = "dcararchives"
+    create_index(collection_name)
+    puts "DELETE dcararchives"
+    @solr_io.delete_data(collection_name)
+    puts "UPDATE dcararchives"
     batch = []
     batch_size = 1000
-    @timbuctoo_io.scrape_collection("dcararchives", {
+    @timbuctoo_io.scrape_collection(collection_name, {
         :process_record => -> (record) {
           batch << @archive_mapper.convert(record)
           if batch.length >= batch_size
-            @solr_io.update("dcararchives", batch)
+            @solr_io.update(collection_name, batch)
             batch = []
           end
         },
@@ -90,25 +87,25 @@ class DutchCaribbeanIndexer
         :from_file => @options[:from_file],
         :batch_size => 1000
     })
-    @solr_io.update("dcararchives", batch)
-    puts "COMMIT archives"
-    @solr_io.commit("dcararchives")
+    @solr_io.update(collection_name, batch)
+    puts "COMMIT dcararchives"
+    @solr_io.commit(collection_name)
   end
 
   def reindex_archivers
-    puts "DELETE archivers"
-    @solr_io.delete_data("dcararchivers")
-    puts "UPDATE archivers"
-# not available in collective_mapper
-#    @collective_mapper.send_cached_batches_to("dcararchivers", @solr_io.method(:update))
-# copied from: reindex_archives
+    collection_name = "dcararchivers"
+    create_index(collection_name)
+    puts "DELETE dcararchivers"
+    @solr_io.delete_data(collection_name)
+    puts "UPDATE dcararchivers"
+
     batch = []
     batch_size = 1000
-    @timbuctoo_io.scrape_collection("dcararchivers", {
+    @timbuctoo_io.scrape_collection(collection_name, {
         :process_record => -> (record) {
           batch << @archiver_mapper.convert(record)
           if batch.length >= batch_size
-            @solr_io.update("dcararchivers", batch)
+            @solr_io.update(collection_name, batch)
             batch = []
           end
         },
@@ -116,25 +113,25 @@ class DutchCaribbeanIndexer
         :from_file => @options[:from_file],
         :batch_size => 1000
     })
-    @solr_io.update("dcararchivers", batch)
-#
-    puts "COMMIT archivers"
-    @solr_io.commit("dcararchivers")
+    @solr_io.update(collection_name, batch)
+    puts "COMMIT dcararchivers"
+    @solr_io.commit(collection_name)
   end
 
   def reindex_legislation
-    puts "DELETE legislation"
-    @solr_io.delete_data("dcarlegislation")
-    puts "UPDATE legislation"
-    # not available in document_mapper
-#    @document_mapper.send_cached_batches_to("dcarlegislation", @solr_io.method(:update))
+    collection_name = "dcarlegislations"
+    create_index(collection_name)
+    puts "DELETE dcarlegislations"
+    @solr_io.delete_data(collection_name)
+    puts "UPDATE dcarlegislations"
+
     batch = []
     batch_size = 1000
-    @timbuctoo_io.scrape_collection("dcarlegislations", {
+    @timbuctoo_io.scrape_collection(collection_name, {
         :process_record => -> (record) {
           batch << @legislation_mapper.convert(record)
           if batch.length >= batch_size
-            @solr_io.update("dcarlegislation", batch)
+            @solr_io.update(collection_name, batch)
             batch = []
           end
         },
@@ -142,40 +139,17 @@ class DutchCaribbeanIndexer
         :from_file => @options[:from_file],
         :batch_size => 1000
     })
-    @solr_io.update("dcarlegislation", batch)
- #
-    puts "COMMIT legislation"
-    @solr_io.commit("dcarlegislation")
+    @solr_io.update(collection_name, batch)
+    puts "COMMIT dcarlegislations"
+    @solr_io.commit(collection_name)
   end
 
-#  def reindex_person_receptions
-#    puts "DELETE person receptions"
-#    @solr_io.delete_data("dcarpersonreceptions")
-#    puts "UPDATE person receptions"
-#    update_reception_index(@person_reception_mapper, "dcarpersonreceptions", :person_receptions)
-#    puts "COMMIT person receptions"
-#    @solr_io.commit("dcarpersonreceptions")
-#  end
-
-#  def reindex_document_receptions
-#    puts "DELETE document receptions"
-#    @solr_io.delete_data("dcardocumentreceptions")
-#    puts "UPDATE document receptions"
-#    update_reception_index(@document_reception_mapper, "dcardocumentreceptions", :document_receptions)
-#    puts "COMMIT document receptions"
-#    @solr_io.commit("dcardocumentreceptions")
-#  end
-
-#  def update_reception_index(reception_mapper, index_name, reception_entry)
-#    batch = []
-#    batch_size = 500
-#    @document_mapper.send(reception_entry).each do |reception|
-#      batch << reception_mapper.convert(reception)
-#      if batch.length >= batch_size
-#        @solr_io.update(index_name, batch)
-#        batch = []
-#      end
-#    end
-#    @solr_io.update(index_name, batch)
-#  end
+  def create_index collection
+    puts "CREATE #{collection}"
+    begin
+      @solr_io.create(collection)
+    rescue Exception => e
+      puts "Index #{collection} already exists"
+    end
+  end
 end

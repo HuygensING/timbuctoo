@@ -4,10 +4,10 @@ class DcarLegislationConfig
         :properties => [
             { :name => '_id',  :converted_name => 'id'},
             { :name => '@type',  :converted_name => 'type_s'},
-            { :name => 'titleEng', :converted_name => 'titleEng_tim'},
-            { :name => 'titleNld', :converted_name => 'titleNld_tim'},
-            { :name => 'contents', :converted_name => 'contents_tim'},
-            { :name => 'reference', :converted_name => 'reference_tim'},
+            { :name => 'titleEng', :converted_name => 'titleEng_t'},
+            { :name => 'titleNld', :converted_name => 'titleNld_t'},
+            { :name => 'contents', :converted_name => 'contents_t'},
+            { :name => 'reference', :converted_name => 'reference_t'},
             { :name => 'date1', :converted_name => 'beginDate_dt'},
             { :name => 'date2', :converted_name => 'endDate_dt'},
         ], :relations => [
