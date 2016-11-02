@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -40,31 +39,33 @@ import static org.mockito.Mockito.mock;
 
 public class LoadSaveVreTest {
 
-  private Tuple<DataAccess, Graph> initGraph() {
+  private Tuple<DataStoreOperations, Graph> initGraph() {
     return initGraph(c -> {
     });
   }
 
-  private Tuple<DataAccess, Graph> initGraph(Consumer<TestGraphBuilder> init) {
+  private Tuple<DataStoreOperations, Graph> initGraph(Consumer<TestGraphBuilder> init) {
     TestGraphBuilder testGraphBuilder = newGraph();
     init.accept(testGraphBuilder);
     GraphWrapper wrap = testGraphBuilder.wrap();
-    return tuple(new DataAccess(wrap, null, null, mock(HandleAdder.class)), wrap.getGraph());
+    return tuple(
+      new DataStoreOperations(wrap, null, null, null),
+      wrap.getGraph());
   }
 
-  private List<Vertex> save(Vre vre, Tuple<DataAccess, Graph> dataAccess) {
-    try (DataAccessMethods db = dataAccess.getLeft().start()) {
-      db.saveVre(vre);
-      db.success();
+  private List<Vertex> save(Vre vre, Tuple<DataStoreOperations, Graph> dataAccess) {
+    DataStoreOperations db = dataAccess.getLeft();
+    db.saveVre(vre);
+    db.success();
 
-      return dataAccess.getRight().traversal().V().toList();
-    }
+    return dataAccess.getRight().traversal().V().toList();
+
   }
 
-  private Vre load(Tuple<DataAccess, Graph> dataAccess) {
-    try (DataAccessMethods db = dataAccess.getLeft().start()) {
-      return db.loadVres().getVre("VreName");
-    }
+  private Vre load(Tuple<DataStoreOperations, Graph> dataAccess) {
+    DataStoreOperations db = dataAccess.getLeft();
+    return db.loadVres().getVre("VreName");
+
   }
 
   @Test
@@ -145,8 +146,8 @@ public class LoadSaveVreTest {
     final Vre instance = load(initGraph(g ->
       g.withVertex(v ->
         v.withLabel(Vre.DATABASE_LABEL)
-          .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
-          .withProperty(KEYWORD_TYPES_PROPERTY_NAME, stringifiedKeyWordTypes)
+         .withProperty(VRE_NAME_PROPERTY_NAME, "VreName")
+         .withProperty(KEYWORD_TYPES_PROPERTY_NAME, stringifiedKeyWordTypes)
       )));
 
     assertThat(instance.getVreName(), equalTo("VreName"));

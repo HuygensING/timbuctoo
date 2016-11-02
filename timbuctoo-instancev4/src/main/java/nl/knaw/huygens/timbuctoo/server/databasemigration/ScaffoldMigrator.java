@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.DataAccessMethods;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TransactionState;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -17,17 +17,17 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.d
 
 public class ScaffoldMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(ScaffoldMigrator.class);
-  private final DataAccess dataAccess;
+  private final TransactionEnforcer transactionEnforcer;
 
-  public ScaffoldMigrator(DataAccess dataAccess) {
-    this.dataAccess = dataAccess;
+  public ScaffoldMigrator(TransactionEnforcer transactionEnforcer) {
+    this.transactionEnforcer = transactionEnforcer;
   }
 
   //FIXME move to DataAccess (allow ScaffoldVresConfig.mappings to be injected as an argument)
   public void execute() {
     //The migrations are executed first, so those vertices _will_ be present, even on a new empty database
     //The code below will add vertices, so a second launch will not run this code
-    try (DataAccessMethods db = dataAccess.start()) {
+    transactionEnforcer.execute(db -> {
       if (db.databaseIsEmptyExceptForMigrations()) {
         LOG.info("Setting up a new scaffold for empty database");
         Vres mappings = new VresBuilder()
@@ -56,7 +56,18 @@ public class ScaffoldMigrator {
                   .withDisplayName(localProperty("collective_name"))
                   .withProperty("name", localProperty("collective_name"))
               )
-              .withCollection("concepts")
+              .withCollection("documents", collection ->
+                collection
+                  .withDisplayName(localProperty("document_title"))
+                  .withProperty("title", localProperty("document_title"))
+                  .withProperty("documentType", localProperty("document_documentType"))
+                  .withProperty("date", localProperty("document_date", datable))
+
+              )
+              .withCollection("concepts", collection ->
+                collection
+                  .withDisplayName(localProperty("label"))
+              )
               .withCollection("relations", CollectionBuilder::isRelationCollection))
           .build();
         db.initDb(
@@ -64,11 +75,42 @@ public class ScaffoldMigrator {
           relationType("person", "hasBirthPlace", "location", "isBirthPlaceOf", false, false, false, UUID.randomUUID()),
           relationType("person", "hasDeathPlace", "location", "isDeathPlaceOf", false, false, false, UUID.randomUUID()),
           relationType("collective", "hasMember", "person", "isMemberOf", false, false, false, UUID.randomUUID()),
-          relationType("collective", "locatedAt", "location", "isHomeOf", false, false, false, UUID.randomUUID())
+          relationType("collective", "locatedAt", "location", "isHomeOf", false, false, false, UUID.randomUUID()),
+          relationType("document", "isCreatedBy", "person", "isCreatorOf", false, false, false, UUID.randomUUID()),
+
+          // TODO+FIXME, these BIA relationTypes should be made VRE specific and editable before mapping
+          // person to person relations
+          relationType("concept", "hasFirstPerson", "person", "isFirstPersonInRelation",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "hasSecondPerson", "person", "isSecondPersonInRelation",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "hasPersonToPersonRelationType", "concept", "isPersonToPersonRelationTypeOf",
+            false, false, false, UUID.randomUUID()),
+
+          // states of persons
+          relationType("concept", "hasStateType", "concept", "isStateTypeOf", false, false, false, UUID.randomUUID()),
+          relationType("concept", "isStateOfPerson", "person", "hasPersonState",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "isStateLinkedToInstitute", "collective", "isInstituteLinkedToState",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "isStateLinkedToLocation", "location", "isLocationLinkedToState",
+            false, false, false, UUID.randomUUID()),
+
+          // data lines for persons
+          relationType("concept", "hasDataLineType", "concept", "isDataLineTypeOf",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "isDataLineForPerson", "person", "hasDataLine",
+            false, false, false, UUID.randomUUID()),
+
+          // scientist_bios for persons
+          relationType("concept", "hasFieldOfInterest", "concept", "isFieldOfInterestOf",
+            false, false, false, UUID.randomUUID()),
+          relationType("concept", "isScientistBioOf", "person", "hasScientistBio",
+            false, false, false, UUID.randomUUID())
         );
-        db.success();
       }
-    }
+      return TransactionState.commit();
+    });
   }
 
 

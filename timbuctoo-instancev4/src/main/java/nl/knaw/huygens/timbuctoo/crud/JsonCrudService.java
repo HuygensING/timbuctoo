@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.crud;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
@@ -44,11 +44,11 @@ public class JsonCrudService {
 
   private final Vres mappings;
   private final Clock clock;
-  private final TimbuctooDbAccess timDbAccess;
+  private final TimbuctooActions timDbAccess;
   private final EntityToJsonMapper entityToJsonMapper;
 
   public JsonCrudService(Vres mappings, UserStore userStore, UrlGenerator relationUrlFor, Clock clock,
-                         TimbuctooDbAccess timDbAccess) {
+                         TimbuctooActions timDbAccess) {
     this.mappings = mappings;
     this.clock = clock;
     this.timDbAccess = timDbAccess;

@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -15,6 +16,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import java.time.Clock;
 import java.util.HashMap;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -51,8 +53,12 @@ public class LoadSaveVresTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     given(graphWrapper.getGraph()).willReturn(graph);
 
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new DataAccess(graphWrapper, null, null,
-      mock(HandleAdder.class)));
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
+      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
+        mock(HandleAdder.class));
+
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
+      () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getCollection("documents").get(), instanceOf(Collection.class));
@@ -72,8 +78,12 @@ public class LoadSaveVresTest {
     MockWrapper graphWrapper = new MockWrapper();
     graphWrapper.graph = graph;
 
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new DataAccess(graphWrapper, null, null,
-      mock(HandleAdder.class)));
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
+      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
+        mock(HandleAdder.class));
+
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
+      () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));

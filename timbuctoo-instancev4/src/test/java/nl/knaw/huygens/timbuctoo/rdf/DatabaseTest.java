@@ -5,11 +5,13 @@ import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -20,10 +22,12 @@ import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCH
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
@@ -400,5 +404,124 @@ public class DatabaseTest {
     Optional<Collection> archetypeCollection = instance.findArchetypeCollection(node.getLocalName());
 
     assertThat(archetypeCollection, is(present()));
+  }
+
+  @Test
+  public void mergeObjectIntoSubjectEntityCopiesThePropertiesOfTheObjectIntoTheSubjectAndRemovesTheObject() {
+    TinkerpopGraphManager graphWrapper = newGraph()
+      .withVertex("entity1", v -> {
+        v.withProperty("a", "b").withProperty("c", "d").withProperty("modified", "x")
+         .withTimId("123");
+
+      })
+      .withVertex("entity2", v -> {
+        v.withProperty("a", "b").withProperty("c", "e").withProperty("f", "g").withProperty("modified", "y")
+         .withTimId("456");
+      })
+      .wrap();
+    final String vreName = "vreName";
+    final Vertex subjectVertex = graphWrapper.getGraph().traversal().V().has("tim_id", "123").next();
+    final Vertex objectVertex = graphWrapper.getGraph().traversal().V().has("tim_id", "456").next();
+    final Entity subject = new Entity(subjectVertex, null, null, null);
+    final Entity object = new Entity(objectVertex, null, null, null);
+    final Database instance = new Database(graphWrapper);
+
+    instance.mergeObjectIntoSubjectEntity(vreName, subject, object);
+    final Vertex result = graphWrapper.getGraph().traversal().V().next();
+
+    assertThat(graphWrapper.getGraph().traversal().V().has("tim_id", "456").hasNext(), equalTo(false));
+    assertThat(result, likeVertex()
+      .withProperty("a", "b")
+      .withProperty("c", "d")
+      .withProperty("f", "g")
+      .withProperty("modified", "x")
+      .withProperty("tim_id", "123")
+    );
+  }
+
+  @Test
+  public void mergeObjectIntoSubjectEntityCopiesTheOutgoingEdgesOfTheObjectIntoTheSubject() {
+    TinkerpopGraphManager graphWrapper = newGraph()
+      .withVertex("target1", v -> {
+        v.withTimId("789");
+      })
+      .withVertex("target2", v -> {
+        v.withTimId("abc");
+      })
+      .withVertex("entity1", v -> {
+        v.withTimId("123")
+          .withOutgoingRelation("relatedTo", "target1", edge -> edge.withRev(9));
+
+      })
+      .withVertex("entity2", v -> {
+        v.withTimId("456")
+          .withOutgoingRelation("relatedTo", "target1", edge ->
+            edge.withRev(1337)
+          )
+          .withOutgoingRelation("relatedTo", "target2", edge ->
+            edge.withRev(12)
+          );
+      })
+      .wrap();
+
+    final String vreName = "vreName";
+    final Vertex subjectVertex = graphWrapper.getGraph().traversal().V().has("tim_id", "123").next();
+    final Vertex objectVertex = graphWrapper.getGraph().traversal().V().has("tim_id", "456").next();
+    final Entity subject = new Entity(subjectVertex, null, null, null);
+    final Entity object = new Entity(objectVertex, null, null, null);
+    final Database instance = new Database(graphWrapper);
+
+    instance.mergeObjectIntoSubjectEntity(vreName, subject, object);
+
+    final List<Edge> edges = graphWrapper.getGraph().traversal().V().has("tim_id", "123").outE("relatedTo").toList();
+
+    assertThat(edges.size(), equalTo(2));
+    assertThat(edges, containsInAnyOrder(
+      likeEdge().withProperty("rev", 12),
+      likeEdge().withProperty("rev", 9)
+    ));
+  }
+
+  @Test
+  public void mergeObjectIntoSubjectEntityCopiesTheIncomingEdgesOfTheObjectIntoTheSubject() {
+    TinkerpopGraphManager graphWrapper = newGraph()
+      .withVertex("target1", v -> {
+        v.withTimId("789");
+      })
+      .withVertex("target2", v -> {
+        v.withTimId("abc");
+      })
+      .withVertex("entity1", v -> {
+        v.withTimId("123")
+          .withIncomingRelation("relatedTo", "target1", edge -> edge.withRev(9));
+
+      })
+      .withVertex("entity2", v -> {
+        v.withTimId("456")
+          .withIncomingRelation("relatedTo", "target1", edge ->
+            edge.withRev(1337)
+          )
+          .withIncomingRelation("relatedTo", "target2", edge ->
+            edge.withRev(12)
+          );
+      })
+      .wrap();
+
+    final String vreName = "vreName";
+    final Vertex subjectVertex = graphWrapper.getGraph().traversal().V().has("tim_id", "123").next();
+    final Vertex objectVertex = graphWrapper.getGraph().traversal().V().has("tim_id", "456").next();
+    final Entity subject = new Entity(subjectVertex, null, null, null);
+    final Entity object = new Entity(objectVertex, null, null, null);
+    final Database instance = new Database(graphWrapper);
+
+    instance.mergeObjectIntoSubjectEntity(vreName, subject, object);
+
+    final List<Edge> edges = graphWrapper.getGraph().traversal().V().has("tim_id", "123").inE("relatedTo").toList();
+
+    assertThat(edges.size(), equalTo(2));
+    assertThat(edges, containsInAnyOrder(
+      likeEdge().withProperty("rev", 12),
+      likeEdge().withProperty("rev", 9)
+    ));
   }
 }

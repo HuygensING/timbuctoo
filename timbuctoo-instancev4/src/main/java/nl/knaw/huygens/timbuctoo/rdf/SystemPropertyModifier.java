@@ -1,9 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Lists;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.shaded.jackson.databind.node.JsonNodeFactory;
 
 import java.time.Clock;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -11,6 +13,9 @@ import java.util.UUID;
  */
 public class SystemPropertyModifier {
 
+  public static final List<String> SYSTEM_PROPERTY_NAMES = Lists.newArrayList(
+    "rdfUri", "modified", "created", "types", "tim_id", "rdfAlternatives"
+  );
   private final JsonNodeFactory nodeFactory = JsonNodeFactory.instance;
   private final Clock clock;
 

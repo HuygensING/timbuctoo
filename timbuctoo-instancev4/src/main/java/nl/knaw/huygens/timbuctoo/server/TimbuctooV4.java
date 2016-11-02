@@ -15,12 +15,13 @@ import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
+import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooDbAccess;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
@@ -28,7 +29,6 @@ import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener
 import nl.knaw.huygens.timbuctoo.database.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
-import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
@@ -50,10 +50,10 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.JsEnv;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.JsEnv;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
@@ -182,22 +182,17 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
-    DataAccess dataAccess = new DataAccess(graphManager, entityFetcher, changeListeners, handleAdder);
-    TimbuctooDbAccess timDbAccess = new TimbuctooDbAccess(
-      authorizer,
-      dataAccess,
-      Clock.systemDefaultZone(),
-      handleAdder
-    );
-    graphManager.onGraph(g -> new ScaffoldMigrator(dataAccess).execute());
 
-    final Vres vres = new DatabaseConfiguredVres(dataAccess);
-    final JsonCrudService crudService = new JsonCrudService(
-      vres,
-      userStore,
-      pathWithoutVersionAndRevision,
-      Clock.systemDefaultZone(),
-      timDbAccess);
+    // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
+      new TimbuctooActions.TimbuctooActionsFactory(authorizer, Clock.systemDefaultZone(), handleAdder);
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
+      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null),
+      timbuctooActionsFactory
+    );
+    graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
+
+    final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(
@@ -205,12 +200,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriWithoutRev,
       vres
     );
-
-    final WomenWritersJsonCrudService womenWritersJsonCrudService = new WomenWritersJsonCrudService(
-      vres,
-      userStore,
-      pathWithoutVersionAndRevision,
-      timDbAccess);
 
 
     environment.lifecycle().manage(graphManager);
@@ -223,6 +212,16 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       graphManager // graphManager
     );
 
+    final CrudServiceFactory crudServiceFactory = new CrudServiceFactory(
+      authorizer,
+      Clock.systemDefaultZone(),
+      handleAdder,
+      vres,
+      userStore,
+      pathWithoutVersionAndRevision,
+      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null)
+    );
+
     // register REST endpoints
     register(environment, new RootEndpoint());
     register(environment, new JsEnv(configuration));
@@ -230,9 +229,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Me(loggedInUserStore));
     register(environment, new Search(configuration, graphManager));
     register(environment, new Autocomplete(autocompleteService));
-    register(environment, new Index(crudService, loggedInUserStore));
-    register(environment, new SingleEntity(crudService, loggedInUserStore));
-    register(environment, new WomenWritersEntityGet(womenWritersJsonCrudService));
+    register(environment, new Index(loggedInUserStore, crudServiceFactory, transactionEnforcer));
+    register(environment, new SingleEntity(loggedInUserStore, crudServiceFactory, transactionEnforcer));
+    register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacyApiRedirects(uriHelper));
 
     if (configuration.isAllowGremlinEndpoint()) {
@@ -244,7 +243,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
-      new DataSourceFactory(graphManager), dataAccess);
+      new DataSourceFactory(graphManager), transactionEnforcer);
     register(environment, executeRml);
     BulkUploadVre bulkUploadVre =
       new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker);
@@ -258,7 +257,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new MyVres(loggedInUserStore, authorizer, vres, bulkUploadVre));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
-    register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, dataAccess));
+    register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));

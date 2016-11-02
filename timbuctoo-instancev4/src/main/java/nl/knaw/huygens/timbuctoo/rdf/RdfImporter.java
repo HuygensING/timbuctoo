@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -26,20 +26,21 @@ public class RdfImporter {
   public static final Logger LOG = LoggerFactory.getLogger(RdfImporter.class);
   private final TinkerpopGraphManager graphWrapper;
   private final String vreName;
-  private final DataAccess dataAccess;
+  private final TransactionEnforcer transactionEnforcer;
   private final TripleProcessorImpl processor;
   private Vres vres;
 
-  public RdfImporter(TinkerpopGraphManager graphWrapper, String vreName, Vres vres, DataAccess dataAccess) {
-    this(graphWrapper, vreName, vres, dataAccess, new TripleProcessorImpl(new Database(graphWrapper)));
+  public RdfImporter(TinkerpopGraphManager graphWrapper, String vreName, Vres vres,
+                     TransactionEnforcer transactionEnforcer) {
+    this(graphWrapper, vreName, vres, transactionEnforcer, new TripleProcessorImpl(new Database(graphWrapper)));
   }
 
-  RdfImporter(TinkerpopGraphManager graphWrapper, String vreName, Vres vres, DataAccess dataAccess,
+  RdfImporter(TinkerpopGraphManager graphWrapper, String vreName, Vres vres, TransactionEnforcer transactionEnforcer,
               TripleProcessorImpl tripleImporter) {
     this.graphWrapper = graphWrapper;
     this.vreName = vreName;
     this.processor = tripleImporter;
-    this.dataAccess = dataAccess;
+    this.transactionEnforcer = transactionEnforcer;
     this.vres = vres;
   }
 
@@ -59,7 +60,7 @@ public class RdfImporter {
   }
 
   private void prepare() {
-    dataAccess.execute(db -> {
+    transactionEnforcer.execute(db -> {
       db.ensureVreExists(vreName);
       return commit();
     });
@@ -70,7 +71,7 @@ public class RdfImporter {
     private final List<Triple> batch = Lists.newArrayList();
 
     private long count = 0;
-    private Stopwatch stopwatch = Stopwatch.createStarted() ;
+    private Stopwatch stopwatch = Stopwatch.createStarted();
 
     @Override
     public void start() {

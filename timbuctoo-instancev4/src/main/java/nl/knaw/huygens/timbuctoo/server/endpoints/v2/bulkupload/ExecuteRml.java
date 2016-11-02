@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.database.DataAccess;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
@@ -57,18 +57,18 @@ public class ExecuteRml {
   private final UserPermissionChecker permissionChecker;
   private final JenaBasedReader rmlBuilder;
   private final DataSourceFactory dataSourceFactory;
-  private final DataAccess dataAccess;
+  private final TransactionEnforcer transactionEnforcer;
 
   public ExecuteRml(UriHelper uriHelper, TinkerpopGraphManager graphWrapper, Vres vres, JenaBasedReader rmlBuilder,
                     UserPermissionChecker permissionChecker, DataSourceFactory dataSourceFactory,
-                    DataAccess dataAccess) {
+                    TransactionEnforcer transactionEnforcer) {
     this.uriHelper = uriHelper;
     this.graphWrapper = graphWrapper;
     this.vres = vres;
     this.permissionChecker = permissionChecker;
     this.rmlBuilder = rmlBuilder;
     this.dataSourceFactory = dataSourceFactory;
-    this.dataAccess = dataAccess;
+    this.transactionEnforcer = transactionEnforcer;
   }
 
   public URI makeUri(String vreName) {
@@ -140,7 +140,7 @@ public class ExecuteRml {
                      .build();
     }
 
-    dataAccess.execute(db -> {
+    transactionEnforcer.execute(db -> {
       db.ensureVreExists(vreName);
       db.removeCollectionsAndEntities(vreName);
       return commit();
