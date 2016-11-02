@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.graph;
 
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
-import nl.knaw.huygens.timbuctoo.model.GraphReadUtils;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.model.GraphReadUtils;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -18,7 +18,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GraphService {
-  private static final int MAX_LINKS_PER_NODE = 20;
+
+  private static final int MAX_LINKS_PER_NODE = 50;
   private final GraphWrapper graphWrapper;
   private Vres mappings;
 
@@ -72,7 +73,7 @@ public class GraphService {
     AtomicInteger count = new AtomicInteger(0);
 
     vertex.edges(Direction.BOTH, relationNames.toArray(new String[relationNames.size()])).forEachRemaining(edge -> {
-      if (count.incrementAndGet() < MAX_LINKS_PER_NODE) {
+      if (count.get() < MAX_LINKS_PER_NODE) {
         final Boolean isAccepted = edge.property(relationTypeName + "_accepted").isPresent() ?
           (Boolean) edge.property(relationTypeName + "_accepted").value() : false;
 
@@ -80,6 +81,7 @@ public class GraphService {
           (Boolean) edge.property("isLatest").value() : false;
 
         if (isAccepted && isLatest) {
+          count.incrementAndGet();
           loadLinks(relationTypeName, vreId, d3Graph, relationNames, depth, currentDepth, edge);
         }
       }
