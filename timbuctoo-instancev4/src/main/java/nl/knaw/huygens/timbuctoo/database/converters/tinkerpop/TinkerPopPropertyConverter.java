@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.database.converters.tinkerpop;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.property.AltNamesProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DatableProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultFullPersonNameProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultLocationNameProperty;
@@ -70,6 +71,11 @@ public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
   }
 
   @Override
+  protected ArrayProperty createArrayProperty(String propertyName, Object value) throws IOException {
+    return new ArrayProperty(propertyName, toString(value));
+  }
+
+  @Override
   protected EncodedStringOfLimitedValuesProperty createEncodedStringOfLimitedValuesProperty(String propertyName,
                                                                                             Object value)
     throws IOException {
@@ -132,6 +138,11 @@ public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
 
   @Override
   public Tuple<String, Object> to(ArrayOfLimitedValuesProperty property) throws IOException {
+    return tuple(property.getName(), property.getValue());
+  }
+
+  @Override
+  public Tuple<String, Object> to(ArrayProperty property) throws IOException {
     return tuple(property.getName(), property.getValue());
   }
 
