@@ -5,6 +5,7 @@ class DcarArchiverConfig
             { :name => '_id',  :converted_name => 'id'},
             { :name => '@type',  :converted_name => 'type_s'},
             { :name => 'nameEng',  :converted_name => 'nameEng_t'},
+            { :name => 'nameEng',  :converted_name => 'nameEng_s'},
             { :name => 'nameNld',  :converted_name => 'nameNld_t'},
             { :name => 'history',  :converted_name => 'history_t'},
             { :name => 'notes',  :converted_name => 'notes_t'},

@@ -5,6 +5,7 @@ class DcarLegislationConfig
             { :name => '_id',  :converted_name => 'id'},
             { :name => '@type',  :converted_name => 'type_s'},
             { :name => 'titleEng', :converted_name => 'titleEng_t'},
+            { :name => 'titleEng', :converted_name => 'titleEng_s'},
             { :name => 'titleNld', :converted_name => 'titleNld_t'},
             { :name => 'contents', :converted_name => 'contents_t'},
             { :name => 'reference', :converted_name => 'reference_t'},
