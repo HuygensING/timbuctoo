@@ -1,5 +1,5 @@
+require '../lib/timbuctoo_solr/default_mapper'
 require '../lib/mixins/converters/to_year_converter'
-
 
 class DcarMapper < DefaultMapper
   include ToYearConverter

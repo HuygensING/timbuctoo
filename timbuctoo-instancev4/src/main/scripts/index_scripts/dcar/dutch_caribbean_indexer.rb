@@ -1,6 +1,5 @@
 require '../lib/timbuctoo_solr/timbuctoo_io'
 require '../lib/timbuctoo_solr/solr_io'
-require '../lib/timbuctoo_solr/default_mapper'
 
 require './configs/dcar_archive_config'
 require './configs/dcar_archiver_config'
