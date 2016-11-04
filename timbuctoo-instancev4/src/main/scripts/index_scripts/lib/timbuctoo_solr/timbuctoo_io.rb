@@ -46,7 +46,8 @@ class TimbuctooIO
                          process_record: lambda {|record| puts record.inspect },
                          with_relations: false,
                          batch_size: 100,
-                         from_file: false)
+                         from_file: false,
+                         debug_sample: false)
 
     start_value = 0
     data = nil
@@ -62,6 +63,7 @@ class TimbuctooIO
       data.each {|record| process_record.call(record) }
 
       start_value = start_value + batch_size
+      break if debug_sample
     end
   end
 
