@@ -13,4 +13,5 @@ module ToYearConverter
     return parsed_date if parsed_date != 0
     nil
   end
+
 end
