@@ -11,9 +11,11 @@ class DutchCaribbeanIndexer
   def initialize(options)
     @options = options
 
-    @legislation_mapper = DcarMapper.new(DcarLegislationConfig.get)
-    @archive_mapper = DcarMapper.new(DcarArchiveConfig.get)
-    @archiver_mapper = DcarMapper.new(DcarArchiverConfig.get)
+    @mappers = {
+      :dcararchives => DcarMapper.new(DcarArchiveConfig.get),
+      :dcarlegislations => DcarMapper.new(DcarLegislationConfig.get),
+      :dcararchivers => DcarMapper.new(DcarArchiverConfig.get)
+    }
 
     @timbuctoo_io = TimbuctooIO.new(options[:timbuctoo_url], {
         :dump_files => options[:dump_files],
@@ -25,24 +27,23 @@ class DutchCaribbeanIndexer
   end
 
   def run
-    reindex_archives
-    reindex_archivers
-    reindex_legislation
+    reindex("dcararchives")
+    reindex("dcararchivers")
+    reindex("dcarlegislations")
   end
 
   private
 
-  def reindex_archives
-    collection_name = "dcararchives"
+  def reindex(collection_name)
     create_index(collection_name)
-    puts "DELETE dcararchives"
+    puts "DELETE #{collection_name}"
     @solr_io.delete_data(collection_name)
-    puts "UPDATE dcararchives"
+    puts "UPDATE #{collection_name}"
     batch = []
     batch_size = 1000
     @timbuctoo_io.scrape_collection(collection_name, {
         :process_record => -> (record) {
-          batch << @archive_mapper.convert(record)
+          batch << @mappers[collection_name.to_sym].convert(record)
           if batch.length >= batch_size
             @solr_io.update(collection_name, batch)
             batch = []
@@ -53,59 +54,7 @@ class DutchCaribbeanIndexer
         :batch_size => 1000
     })
     @solr_io.update(collection_name, batch)
-    puts "COMMIT dcararchives"
-    @solr_io.commit(collection_name)
-  end
-
-  def reindex_archivers
-    collection_name = "dcararchivers"
-    create_index(collection_name)
-    puts "DELETE dcararchivers"
-    @solr_io.delete_data(collection_name)
-    puts "UPDATE dcararchivers"
-
-    batch = []
-    batch_size = 1000
-    @timbuctoo_io.scrape_collection(collection_name, {
-        :process_record => -> (record) {
-          batch << @archiver_mapper.convert(record)
-          if batch.length >= batch_size
-            @solr_io.update(collection_name, batch)
-            batch = []
-          end
-        },
-        :with_relations => true,
-        :from_file => @options[:from_file],
-        :batch_size => 1000
-    })
-    @solr_io.update(collection_name, batch)
-    puts "COMMIT dcararchivers"
-    @solr_io.commit(collection_name)
-  end
-
-  def reindex_legislation
-    collection_name = "dcarlegislations"
-    create_index(collection_name)
-    puts "DELETE dcarlegislations"
-    @solr_io.delete_data(collection_name)
-    puts "UPDATE dcarlegislations"
-
-    batch = []
-    batch_size = 1000
-    @timbuctoo_io.scrape_collection(collection_name, {
-        :process_record => -> (record) {
-          batch << @legislation_mapper.convert(record)
-          if batch.length >= batch_size
-            @solr_io.update(collection_name, batch)
-            batch = []
-          end
-        },
-        :with_relations => true,
-        :from_file => @options[:from_file],
-        :batch_size => 1000
-    })
-    @solr_io.update(collection_name, batch)
-    puts "COMMIT dcarlegislations"
+    puts "COMMIT #{collection_name}"
     @solr_io.commit(collection_name)
   end
 
