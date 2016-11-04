@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
@@ -31,9 +32,16 @@ import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.emptyIterable;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasProperty;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -155,6 +163,7 @@ public class DataStoreOperationsTest {
         .withCollection("testthings", col -> col
           .withProperty("prop1", localProperty("testthing_prop1"))
           .withProperty("prop2", localProperty("testthing_prop2"))
+          .withDisplayName(localProperty("testthing_displayName"))
         )
         .withCollection("teststuffs")
         .withCollection("testrelations", CollectionBuilder::isRelationCollection)
@@ -661,6 +670,595 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
 
     instance.deleteEntity(collection, id, null);
+  }
+
+  @Test
+  public void readEntityMapsTheId() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getId(), is(id));
+  }
+
+  @Test
+  public void readEntityOnlyMapsTheKnownProperties() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_prop1", "val1")
+        .withProperty("testthing_prop2", "val2")
+        .withProperty("testthing_unknownProp", "val")
+      )
+      .wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getProperties(), containsInAnyOrder(
+      allOf(hasProperty("name", equalTo("prop1")), hasProperty("value", equalTo("val1"))),
+      allOf(hasProperty("name", equalTo("prop2")), hasProperty("value", equalTo("val2")))
+    ));
+    assertThat(entity.getProperties(), not(contains(
+      allOf(hasProperty("name", equalTo("unknownProp")), hasProperty("value", equalTo("val")))
+    )));
+  }
+
+  @Test
+  public void readEntityIgnoresThePropertiesWithAWrongValue() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_prop2", 42) // should be a string
+      )
+      .wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getProperties(), emptyIterable());
+  }
+
+  @Test
+  public void readEntityReturnsTheLatestEntityIfTheRefIsNull() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_prop1", "old")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", false)
+        .withOutgoingRelation("VERSION_OF", "replacement")
+      )
+      .withVertex("replacement", v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_prop1", "new")
+        .withProperty("rev", 2)
+        .withProperty("isLatest", false)
+        .withOutgoingRelation("VERSION_OF", "dangling")
+      )
+      .withVertex("dangling", v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_prop1", "new")
+        .withProperty("rev", 2)
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getRev(), is(2));
+    assertThat(entity.getProperties(), contains(
+      allOf(hasProperty("name", equalTo("prop1")), hasProperty("value", equalTo("new")))
+    ));
+  }
+
+  @Test
+  public void readEntityReturnsTheSpecifiedRevision() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_prop1", "old")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", false)
+        .withOutgoingRelation("VERSION_OF", "replacement")
+      )
+      .withVertex("replacement", v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_prop1", "new")
+        .withProperty("rev", 2)
+        .withProperty("isLatest", false)
+        .withOutgoingRelation("VERSION_OF", "dangling")
+      )
+      .withVertex("dangling", v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_prop1", "new")
+        .withProperty("rev", 2)
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, 1, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getRev(), is(1));
+    assertThat(entity.getProperties(), contains(
+      allOf(hasProperty("name", equalTo("prop1")), hasProperty("value", equalTo("old")))
+    ));
+  }
+
+  @Test(expected = NotFoundException.class)
+  public void readEntityThrowsANotFoundExceptionWhenTheDatabaseDoesNotContainTheEntity() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph().wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+  }
+
+  @Test
+  public void readEntityReturnsTheRelations() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    UUID relatedId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isRelatedTo", "relatedThing")
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("relatedThing", v -> v
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .withTimId(relatedId.toString())
+        .withProperty("testthing_displayName", "displayName")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getRelations(), contains(
+      allOf(
+        hasProperty("entityId", equalTo(relatedId.toString())),
+        hasProperty("collectionName", equalTo("testthings")),
+        hasProperty("entityType", equalTo("testthing")),
+        hasProperty("relationType", equalTo("isRelatedTo")),
+        hasProperty("displayName", equalTo("displayName"))
+      )
+    ));
+  }
+
+  @Test
+  public void readEntityUsesTheInverseRelationName() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    UUID stuffId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("source", v -> v
+        .withIncomingRelation("isCreatedBy", "stuff")
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("stuff", v -> v
+        .withVre("test")
+        .withVre("")
+        .withType("stuff")
+        .withTimId(stuffId.toString())
+      )
+      .withVertex(v -> v
+        .withProperty("relationtype_regularName", "isCreatedBy")
+        .withProperty("relationtype_inverseName", "isCreatorOf")
+      )
+      .withVertex(v -> v
+        .withProperty("relationtype_regularName", "otherRelationType")
+        .withProperty("relationtype_inverseName", "otherInverseType")
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getRelations(), contains(
+      allOf(hasProperty("entityId", equalTo(stuffId.toString())), hasProperty("relationType", equalTo("isCreatorOf")))
+    ));
+  }
+
+  @Test
+  public void readEntityOmitsDeletedRelations() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    UUID relatedId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isRelatedTo", "relatedThing", rel -> rel.withDeleted(true))
+        .withOutgoingRelation("hasOtherRelationWith", "relatedThing")
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("relatedThing", v -> v
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .withTimId(relatedId.toString())
+        .withProperty("testthing_displayName", "displayName")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getRelations(), hasSize(1));
+    assertThat(entity.getRelations(), contains(hasProperty("relationType", equalTo("hasOtherRelationWith"))));
+  }
+
+  @Test
+  public void readEntityOnlyReturnsTheLatestRelations() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    UUID relatedId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation("isRelatedTo", "relatedThing", rel -> rel.withIsLatest(true).withRev(2))
+        .withOutgoingRelation("isRelatedTo", "relatedThing", rel -> rel.withIsLatest(false).withRev(1))
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("relatedThing", v -> v
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .withTimId(relatedId.toString())
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getRelations(), hasSize(1));
+    assertThat(entity.getRelations(), contains(
+      allOf(
+        hasProperty("entityId", equalTo(relatedId.toString())),
+        hasProperty("relationType", equalTo("isRelatedTo")),
+        hasProperty("relationRev", equalTo(2))
+      )
+    ));
+  }
+
+  @Test
+  public void readEntityOnlyReturnsAcceptedRelations() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    UUID relatedId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("source", v -> v
+        .withOutgoingRelation(
+          "isRelatedTo",
+          "relatedThing",
+          rel -> rel.withIsLatest(true).withAccepted("testrelation", true)
+        )
+        .withOutgoingRelation(
+          "hasOtherRelation",
+          "relatedThing",
+          rel -> rel.withIsLatest(true).withAccepted("testrelation", false)
+        )
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .isLatest(true)
+        .withTimId(id.toString())
+      )
+      .withVertex("relatedThing", v -> v
+        .withVre("test")
+        .withVre("")
+        .withType("thing")
+        .withTimId(relatedId.toString())
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getRelations(), hasSize(1));
+    assertThat(entity.getRelations(), contains(hasProperty("relationType", equalTo("isRelatedTo"))));
+  }
+
+  @Test
+  public void readEntityReturnsTheTypesOfTheEntity() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withProperty("types", "[\"testthing\", \"otherthing\"]")
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getTypes(), containsInAnyOrder("testthing", "otherthing"));
+  }
+
+  @Test(expected = NotFoundException.class)
+  public void readEntityThrowsNotFoundIfTheEntityDoesNotContainTheRequestType() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("other")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+  }
+
+  @Test(expected = NotFoundException.class)
+  public void readEntityThrowsNotFoundIfTheEntityIsDeleted() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("isLatest", true)
+        .withProperty("deleted", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+  }
+
+  @Test
+  public void readEntityAlwaysReturnsTheDeletedProperty() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getDeleted(), is(false));
+  }
+
+  @Test
+  public void readEntityReturnsThePid() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withProperty("pid", "pidValue")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getPid(), is("pidValue"));
+  }
+
+  @Test
+  public void readEntityReturnsANullPidWhenTheEntityDoesNotContainOne() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("thing")
+        .withVre("test")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    ReadEntity entity = instance.getEntity(id, null, collection,
+      (readEntity, vertex) -> {
+      },
+      (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    assertThat(entity.getPid(), is(nullValue()));
   }
 
 }
