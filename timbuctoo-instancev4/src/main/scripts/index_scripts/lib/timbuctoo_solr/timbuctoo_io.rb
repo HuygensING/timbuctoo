@@ -1,6 +1,29 @@
 require 'net/http'
 require 'json'
 
+class Dataset
+
+  attr_reader :metadata, :name
+
+  def initialize(name: nil, metadata: nil, base_url: nil)
+    @name = name
+    @base_url = base_url
+    @metadata = fetch_metadata(metadata)
+  end
+
+  private
+  def fetch_metadata(path)
+    location = "#{@base_url}#{path}?withCollectionInfo=true"
+    uri = URI.parse(location)
+    req = Net::HTTP::Get.new(uri)
+    http = Net::HTTP.new(uri.hostname, uri.port)
+
+    response = http.request(req)
+    raise "http request to #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
+    JSON.parse(response.body, :symbolize_names => true)
+  end
+end
+
 class TimbuctooIO
 
   # @param [String] base_url the timbuctoo server base url
@@ -42,6 +65,20 @@ class TimbuctooIO
     end
   end
 
+  def fetch_datasets
+    location = "#{@base_url}/v2.1/system/vres"
+    uri = URI.parse(location)
+    req = Net::HTTP::Get.new(uri)
+    http = Net::HTTP.new(uri.hostname, uri.port)
+
+    response = http.request(req)
+    raise "http request to #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
+
+    JSON.parse(response.body, :symbolize_names => true)
+        .map{|dataset_data| Dataset.new(dataset_data.merge({:base_url => @base_url}))}
+  end
+
+
   private
   def get_file_batch(batch_size, collection_name, start_value, with_relations)
     filename = get_dump_filename(batch_size, collection_name, start_value, with_relations)
@@ -59,7 +96,7 @@ class TimbuctooIO
     http = Net::HTTP.new(uri.hostname, uri.port)
 
     response = http.request(req)
-    raise "http request to failed with status #{response.code}: #{location}" unless response.code.eql?('200')
+    raise "http request to  #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
     response.body
   end
 
