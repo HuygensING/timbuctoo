@@ -5,7 +5,7 @@ require '../lib/timbuctoo_solr/default_mapper'
 require './configs/dcar_archive_config'
 require './configs/dcar_archiver_config'
 require './configs/dcar_legislation_config'
-require './mappers/dcar_mapper'
+require './dcar_mapper'
 
 class DutchCaribbeanIndexer
   def initialize(options)
@@ -25,47 +25,12 @@ class DutchCaribbeanIndexer
   end
 
   def run
-    # Scrape archives, archivers and legislation from Timbuctoo
-    # scrape_archives
-    # scrape_archivers
-    # scrape_legislation
-
     reindex_archives
     reindex_archivers
     reindex_legislation
   end
 
   private
-
-  def scrape_legislation
-    @timbuctoo_io.scrape_collection("dcarlegislations", {
-        :with_relations => true,
-        :from_file => @options[:from_file],
-        :batch_size => 1000,
-        :process_record => @legislation_mapper.method(:convert)
-    })
-    puts "SCRAPE: #{@legislation_mapper.record_count} legislations"
-  end
-
-  def scrape_archives
-    @timbuctoo_io.scrape_collection("dcararchives", {
-        :with_relations => true,
-        :from_file => @options[:from_file],
-        :batch_size => 1000,
-        :process_record => @archive_mapper.method(:convert)
-    })
-    puts "SCRAPE: #{@archive_mapper.record_count} archives"
-  end
-
-  def scrape_archivers
-    @timbuctoo_io.scrape_collection("dcararchivers", {
-        :with_relations => true,
-        :from_file => @options[:from_file],
-        :batch_size => 1000,
-        :process_record => @archiver_mapper.method(:convert)
-    })
-    puts "SCRAPE: #{@archiver_mapper.record_count} archives"
-  end
 
   def reindex_archives
     collection_name = "dcararchives"
