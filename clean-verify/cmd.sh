@@ -6,6 +6,6 @@ rm -r /root/build/timbuctoo-instancev4/src/spec/resources/specrunstate/database 
 mv /root/timbuctoo-prod-db /root/build/timbuctoo-instancev4/src/spec/resources/specrunstate/database &&
 mvn ${maventarget}
 
-mkdir /root/timbuctoo/timbuctoo-instancev4/target && 
+mkdir -p /root/timbuctoo/timbuctoo-instancev4/target &&
 cp -R /root/build/timbuctoo-instancev4/target/concordion /root/timbuctoo/timbuctoo-instancev4/target/concordion && 
 echo 'concordion result has been placed in the ./timbuctoo-instancev4/target folder'
