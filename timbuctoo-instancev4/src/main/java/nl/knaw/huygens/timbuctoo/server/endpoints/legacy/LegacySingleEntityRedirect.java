@@ -15,28 +15,20 @@ import javax.ws.rs.core.Response;
  * This class redirects from API endpoints that are no longer supported, but whose urls are still cached by google
  * or the handle server to their current counterparts.
  */
-public class LegacyApiRedirects {
+@Path("/domain/{collection}/{id}")
+public class LegacySingleEntityRedirect {
 
   private final UriHelper uriHelper;
 
-  public LegacyApiRedirects(UriHelper uriHelper) {
+  public LegacySingleEntityRedirect(UriHelper uriHelper) {
     this.uriHelper = uriHelper;
   }
 
-  @Path("/domain/{collection}/{id}")
   @GET
   public Response singleEntity(@PathParam("collection") String collectionName, @PathParam("id") UUIDParam id,
                                @QueryParam("rev") Integer rev) {
     return Response.status(301)
                    .location(uriHelper.fromResourceUri(SingleEntity.makeUrl(collectionName, id.get(), rev)))
-                   .build();
-  }
-
-  @Path("/domain/{collection}")
-  @GET
-  public Response index(@PathParam("collection") String collectionName) {
-    return Response.status(301)
-                   .location(uriHelper.fromResourceUri(Index.makeUrl(collectionName)))
                    .build();
   }
 }

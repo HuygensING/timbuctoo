@@ -47,7 +47,8 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayN
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyApiRedirects;
+import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacySingleEntityRedirect;
+import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyIndexRedirect;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
@@ -244,7 +245,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Index(loggedInUserStore, crudServiceFactory, transactionEnforcer));
     register(environment, new SingleEntity(loggedInUserStore, crudServiceFactory, transactionEnforcer));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
-    register(environment, new LegacyApiRedirects(uriHelper));
+    register(environment, new LegacySingleEntityRedirect(uriHelper));
+    register(environment, new LegacyIndexRedirect(uriHelper));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager, vres));
