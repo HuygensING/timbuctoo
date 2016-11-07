@@ -93,9 +93,9 @@ fi
 
 
 
-#if [ -z "$NO_DEBUG" ]; then
-#	JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_HALT},address=${DEBUG_PORT}"
-#fi
+if [ -z "$NO_DEBUG" ]; then
+	JAVA_OPTS="$JAVA_OPTS -agentlib:jdwp=transport=dt_socket,server=y,suspend=${DEBUG_HALT},address=${DEBUG_PORT}"
+fi
 if [ -n "$FLIGHT_CONTROL" ]; then
 	JAVA_OPTS="$JAVA_OPTS -XX:+UnlockCommercialFeatures -XX:+FlightRecorder -XX:StartFlightRecording=filename=\"$FLIGHT_CONTROL\",dumponexit=true"
 fi
