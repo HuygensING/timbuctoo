@@ -98,7 +98,7 @@ class TimbuctooIO
     http = Net::HTTP.new(uri.hostname, uri.port)
 
     response = http.request(req)
-    raise "http request to  #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
+    raise "http request failed with status #{response.code}: #{location}" unless response.code.eql?('200')
     response.body
   end
 
