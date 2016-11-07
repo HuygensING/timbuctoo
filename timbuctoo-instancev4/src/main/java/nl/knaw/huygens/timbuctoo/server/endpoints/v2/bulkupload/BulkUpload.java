@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
-import nl.knaw.huygens.timbuctoo.bulkupload.InvalidExcelFileException;
+import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -23,7 +23,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
@@ -76,7 +75,7 @@ public class BulkUpload {
         }
 
         try {
-          ByteArrayInputStream cachedInputStream = new ByteArrayInputStream(toByteArray(limit(fileUpload, maxCache)));
+          byte[] bytes = toByteArray(limit(fileUpload, maxCache));
           if (fileUpload.read() != -1) {
             return Response.status(Response.Status.BAD_REQUEST)
                            .entity("The file may not be larger then " + humanReadableByteCount(maxCache) + " bytes")
@@ -88,7 +87,7 @@ public class BulkUpload {
           new Thread() {
             public void run() {
               try {
-                uploadService.saveToDb(namespacedVre, cachedInputStream, i -> {
+                uploadService.saveToDb(namespacedVre, bytes, fileDetails.getFileName(), i -> {
                   try {
                     //write json objects
                     if (writeErrors[0] < 5) {
@@ -99,7 +98,7 @@ public class BulkUpload {
                     writeErrors[0]++;
                   }
                 });
-              } catch (AuthorizationUnavailableException | AuthorizationException | InvalidExcelFileException e) {
+              } catch (AuthorizationUnavailableException | AuthorizationException | InvalidFileException e) {
                 e.printStackTrace();
               } finally {
                 try {

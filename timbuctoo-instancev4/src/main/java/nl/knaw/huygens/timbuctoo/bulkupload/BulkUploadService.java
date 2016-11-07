@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.XlsxLoader;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.BulkLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
-import java.io.InputStream;
 import java.util.function.Consumer;
 
 public class BulkUploadService {
@@ -25,12 +24,17 @@ public class BulkUploadService {
     this.authorizer = null;//authorizer;
   }
 
-  public void saveToDb(String vreName, InputStream wb, Consumer<String> statusUpdate)
-    throws AuthorizationUnavailableException, AuthorizationException, InvalidExcelFileException {
+  public void saveToDb(String vreName, byte[] file, String fileName, Consumer<String> statusUpdate)
+    throws AuthorizationUnavailableException, AuthorizationException, InvalidFileException {
 
     try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, 50_000)) {
-      XlsxLoader loader = new AllSheetLoader();
-      loader.loadData(wb, new Importer(saver), statusUpdate);
+      BulkLoader loader;
+      if (fileName.endsWith(".xlsx")) {
+        loader = new AllSheetLoader();
+      } else {
+        throw new InvalidFileException("File type not found");
+      }
+      loader.loadData(file, new Importer(saver), statusUpdate);
     }
   }
 
