@@ -1,6 +1,8 @@
 version: '2' # version of this docker-compose file, unrelated to the langident version
 
 services:
+  timbuctoodata:
+    image: huygensing/timbuctoo:demodata
   timbuctoo:
     image: huygensing/timbuctoo:latest
     environment:
@@ -9,8 +11,8 @@ services:
     ports:
       - "8080:80"
       - "8081:81"
-    volumes: #override auth so you can edit it to contain secrets
-      - ~/Documents/timbuctoo/timbuctoo-instancev4/docker_config.yaml:/app/timbuctoo-instancev4/docker_config.yaml
+    volumes_from:
+      - timbuctoodata
   solr:
     image: solr
     ports:

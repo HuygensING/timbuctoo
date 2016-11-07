@@ -37,7 +37,7 @@ public class FederatedAuthConfiguration {
       if (authenticationServerUrl.equals("DUMMY")) {
         return sessionId -> {
           HuygensSecurityInformation information = new HuygensSecurityInformation();
-          information.setPersistentID("12345677890");
+          information.setPersistentID(authenticationCredentials == null ? "123456789" : authenticationCredentials);
           information.setDisplayName("TEST");
           return information;
         };

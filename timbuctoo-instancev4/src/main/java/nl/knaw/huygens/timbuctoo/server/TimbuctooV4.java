@@ -84,6 +84,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
+import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -129,8 +130,15 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
     //Make sure we know what version is running
     Properties properties = new Properties();
-    properties.load(getClass().getClassLoader().getResourceAsStream("git.properties"));
-    String currentVersion = properties.getProperty("git.commit.id");
+    InputStream gitproperties = getClass().getClassLoader().getResourceAsStream("git.properties");
+    String currentVersion;
+    if (gitproperties != null) {
+      properties.load(gitproperties);
+      currentVersion = properties.getProperty("git.commit.id");
+    } else {
+      currentVersion = "NO-GIT-PROPERTIES-FOUND";
+      LoggerFactory.getLogger(this.getClass()).error("NO-GIT-PROPERTIES-FOUND");
+    }
 
     LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
 
