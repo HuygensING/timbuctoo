@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel;
 
-import nl.knaw.huygens.timbuctoo.bulkupload.InvalidExcelFileException;
+import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.BulkLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.ResultHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
@@ -14,22 +14,20 @@ import org.xml.sax.XMLReader;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.function.Consumer;
 
-public abstract class XlsxLoader implements BulkLoader<InputStream> {
+public abstract class XlsxLoader implements BulkLoader {
 
   @Override
-  public void loadData(InputStream source, Importer importer, Consumer<String> statusUpdate)
-    throws InvalidExcelFileException {
+  public void loadData(byte[] source, Importer importer, Consumer<String> statusUpdate)
+    throws InvalidFileException {
+    ByteArrayInputStream sourceAsStream = new ByteArrayInputStream(source);
 
     try {
-      XSSFWorkbook workbook = new XSSFWorkbook(source);/* {
-        public void parseSheet(Map<String, XSSFSheet> shIdMap, CTSheet ctSheet) {
-          //don't parse sheets
-        }
-      }*/
+      XSSFWorkbook workbook = new XSSFWorkbook(sourceAsStream);
       XSSFReader xssfReader = new XSSFReader(workbook.getPackage());
       ResultHandler handler = new ResultHandler(statusUpdate);
 
@@ -51,7 +49,7 @@ public abstract class XlsxLoader implements BulkLoader<InputStream> {
       }
       handler.endImport();
     } catch (SAXException | IOException | OpenXML4JException | ParserConfigurationException e) {
-      throw new InvalidExcelFileException(e);
+      throw new InvalidFileException("Not a valid Excel file", e);
     }
   }
 
