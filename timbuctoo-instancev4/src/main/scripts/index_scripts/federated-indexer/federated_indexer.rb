@@ -1,84 +1,14 @@
 require 'json'
 require 'pp'
 require '../lib/mixins/converters/to_year_converter'
+require '../lib/mixins/converters/to_names_converter'
 require '../lib/timbuctoo_solr/default_mapper'
 require '../lib/timbuctoo_solr/timbuctoo_io'
 require '../lib/timbuctoo_solr/solr_io'
 
-class ArchetypeConfig
-  attr_reader :name
+require './archetype_config.rb'
+require './federated_mapper.rb'
 
-  def ArchetypeConfig.conversion_configs
-    {
-      :text => [{
-        :postfix => "_t"
-      }],
-      :select => [{
-        :postfix => "_s"
-      }],
-      :multiselect => [{
-        :postfix => "_ss",
-      }],
-      :names => [{
-        :postfix => "_s",
-        :converter_type => "names"
-      }],
-      :datable => [{
-        :postfix => "_i",
-        :converter_type => "year"
-       }, {
-        :postfix => "_s"
-      }],
-      :links => [{
-        :postfix => "_s",
-        :converter_type => "links"
-      }]
-    }
-  end
-
-  def initialize(name, properties)
-    @name = name
-    @properties = properties
-  end
-
-  def resolve_type_mapping (prop)
-    { :raw_type => prop[:type] }
-  end
-
-  def resolve_property_configs
-    property_configs = [
-      { :name => '@displayName', :converted_name => 'displayName_s' },
-      { :name => '@displayName', :converted_name => 'displayName_t' },
-      { :name => '_id', :converted_name => 'tim_id_s' },
-      { :name => "^rdfUri", :converted_name => 'rdfUri_s' }
-    ]
-    @properties.reject {|prop| prop[:type].eql?("relation") }.each do |prop|
-      ArchetypeConfig.conversion_configs[prop[:type].to_sym].each do |conf|
-        property_configs << {
-            :name => prop[:name],
-            :converted_name => "#{prop[:name]}#{conf[:postfix]}",
-            :type => conf.key?(:converter_type) ? conf[:converter_type] : nil
-        }
-      end
-    end
-
-    property_configs
-  end
-
-  def get
-    {
-        :properties => resolve_property_configs,
-        :relations => @properties
-          .select {|prop| prop[:type].eql?("relation") }
-          .map {|rel| {
-            :relation_name => rel[:name],
-            :property_name => 'displayName',
-            :converted_name => "#{rel[:name]}_ss"
-          }
-        }
-    }
-  end
-end
 
 class FederatedIndexer
 
@@ -93,20 +23,33 @@ class FederatedIndexer
     archetype_configs = datasets.select{|dataset| dataset.name.eql?("Admin")}.first
       .metadata.map{|_, collection| ArchetypeConfig.new(collection[:archetypeName], collection[:properties])}
 
-
+    forks = []
     datasets.reject{|dataset| dataset.name.eql?("Admin") or dataset.name.eql?("Base")}.each do |dataset|
 
       dataset.metadata.each do |_, collection|
         next if collection[:relationCollection]
 
 
-        archetype_config = archetype_configs.select{|conf| conf.name.eql?(collection[:archetypeName])}.first.get
-
+        archetype_config = archetype_configs.select{|conf| conf.name.eql?(collection[:archetypeName])}.first
+        mapper = FederatedMapper.new(collection[:collectionName], collection[:archetypeName], dataset.name, archetype_config.get)
         puts "#{collection[:collectionName]} < #{collection[:archetypeName]}"
-        pp archetype_config
 
-        @timbuctoo_io.scrape_collection(collection[:collectionName], :debug_sample => true)
+        forks << Process.fork do
+          @timbuctoo_io.scrape_collection(collection[:collectionName],
+                                          :with_relations => true,
+                                          :process_record => -> (record) { process_record(mapper, record) },
+                                          :debug_sample => true)
+        end
       end
     end
+
+    forks.each do |pid|
+      Process.wait(pid)
+    end
+  end
+
+  private
+  def process_record(mapper, record)
+    pp mapper.convert(record)
   end
 end
