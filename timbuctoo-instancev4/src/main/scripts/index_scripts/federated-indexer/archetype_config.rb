@@ -1,6 +1,7 @@
 class ArchetypeConfig
   attr_reader :name
 
+  # Contains postfix and converter types per timbuctoo data type
   def ArchetypeConfig.conversion_configs
     {
       :text => [{ :postfix => "_t" }],
@@ -20,18 +21,19 @@ class ArchetypeConfig
     @properties = properties
   end
 
-  def resolve_type_mapping (prop)
-    {:raw_type => prop[:type]}
-  end
 
-  def resolve_property_configs
+
+  def make_property_configs
     property_configs = [
+      # unique id collectionName/tim_id
       {:name => "_id", :converted_name => "id", :type => "collection_bound_id"},
       {:name => '_id', :converted_name => 'uuid_s'},
       {:name => "^rdfUri", :converted_name => 'rdfUri_s'},
       {:name => '@displayName', :converted_name => 'displayName_s'},
       {:name => '@displayName', :converted_name => 'displayName_t'},
     ]
+
+    # looks up the correct solr postfix and converter in conversions_configs
     @properties.reject { |prop| prop[:type].eql?("relation") }.each do |prop|
       ArchetypeConfig.conversion_configs[prop[:type].to_sym].each do |conf|
         property_configs << {
@@ -47,7 +49,7 @@ class ArchetypeConfig
 
   def get
     {
-        :properties => resolve_property_configs,
+        :properties => make_property_configs,
         :relations => @properties
                           .select { |prop| prop[:type].eql?("relation") }
                           .map { |rel| {
