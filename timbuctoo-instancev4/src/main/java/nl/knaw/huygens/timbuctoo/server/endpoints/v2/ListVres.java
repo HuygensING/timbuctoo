@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -21,9 +22,11 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class ListVres {
 
   private final Vres vres;
+  private final UriHelper uriHelper;
 
-  public ListVres(Vres vres) {
+  public ListVres(Vres vres, UriHelper uriHelper) {
     this.vres = vres;
+    this.uriHelper = uriHelper;
   }
 
   @GET
@@ -36,6 +39,6 @@ public class ListVres {
   }
 
   private URI createUri(String vreName) {
-    return UriBuilder.fromResource(Metadata.class).resolveTemplate("vre", vreName).build();
+    return uriHelper.fromResourceUri(UriBuilder.fromResource(Metadata.class).resolveTemplate("vre", vreName).build());
   }
 }

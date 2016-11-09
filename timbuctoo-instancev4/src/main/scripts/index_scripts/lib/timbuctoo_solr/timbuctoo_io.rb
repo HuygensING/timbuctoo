@@ -5,15 +5,14 @@ class Dataset
 
   attr_reader :metadata, :name
 
-  def initialize(name: nil, metadata: nil, base_url: nil)
+  def initialize(name: nil, metadata: nil)
     @name = name
-    @base_url = base_url
     @metadata = fetch_metadata(metadata)
   end
 
   private
-  def fetch_metadata(path)
-    location = "#{@base_url}#{path}?withCollectionInfo=true"
+  def fetch_metadata(metadata_url)
+    location = "#{metadata_url}?withCollectionInfo=true"
     uri = URI.parse(location)
     req = Net::HTTP::Get.new(uri)
     http = Net::HTTP.new(uri.hostname, uri.port)
@@ -77,7 +76,7 @@ class TimbuctooIO
     raise "http request to #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
 
     JSON.parse(response.body, :symbolize_names => true)
-        .map{|dataset_data| Dataset.new(dataset_data.merge({:base_url => @base_url}))}
+        .map{|dataset_data| Dataset.new(dataset_data)}
   end
 
 
