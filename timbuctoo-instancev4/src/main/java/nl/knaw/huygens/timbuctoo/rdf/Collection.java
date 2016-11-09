@@ -90,13 +90,13 @@ public class Collection {
   }
 
 
-  public void addProperty(Vertex entityVertex, String propName, String value) {
+  public void addProperty(Vertex entityVertex, String propName, String value, String type) {
     String collectionPropertyName = getDescription().createPropertyName(propName);
     entityVertex.property(collectionPropertyName, value);
 
     Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
 
-    addNewPropertyConfig(propName, collectionPropertyName, vertices);
+    addNewPropertyConfig(propName, collectionPropertyName, vertices, type);
 
   }
 
@@ -161,14 +161,15 @@ public class Collection {
                        .in(HAS_ENTITY_NODE_RELATION_NAME).hasNext();
   }
 
-  private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices) {
+  private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices,
+                                    String type) {
 
-    if (!isKnownProperty(collectionPropertyName, vertices)) {
+    final Optional<Vertex> knownProperty = getKnownProperty(collectionPropertyName, vertices);
+    if (!knownProperty.isPresent()) {
       Vertex newPropertyConfig = graphWrapper.getGraph().addVertex("property");
       newPropertyConfig.property(LocalProperty.CLIENT_PROPERTY_NAME, propName);
       newPropertyConfig.property(LocalProperty.DATABASE_PROPERTY_NAME, collectionPropertyName);
-      newPropertyConfig
-        .property(LocalProperty.PROPERTY_TYPE_NAME, new StringToStringConverter().getUniqueTypeIdentifier());
+      newPropertyConfig.property(LocalProperty.PROPERTY_TYPE_NAME, type);
 
       vertex.addEdge(HAS_PROPERTY_RELATION_NAME, newPropertyConfig);
       if (!vertex.edges(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME).hasNext()) {
@@ -177,17 +178,19 @@ public class Collection {
         Vertex lastProperty = getLastProperty();
         lastProperty.addEdge(HAS_NEXT_PROPERTY_RELATION_NAME, newPropertyConfig);
       }
+    } else {
+      knownProperty.get().property(LocalProperty.PROPERTY_TYPE_NAME, type);
     }
   }
 
-  private boolean isKnownProperty(String collectionPropertyName, Iterator<Vertex> vertices) {
+  private Optional<Vertex> getKnownProperty(String collectionPropertyName, Iterator<Vertex> vertices) {
     for (; vertices.hasNext(); ) {
       Vertex relatedProperty = vertices.next();
       if (Objects.equals(relatedProperty.value("dbName"), collectionPropertyName)) {
-        return true;
+        return Optional.of(relatedProperty);
       }
     }
-    return false;
+    return Optional.empty();
   }
 
   private Vertex getLastProperty() {

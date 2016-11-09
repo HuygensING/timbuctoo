@@ -23,8 +23,8 @@ public class Entity {
     this.propertyHelper = propertyHelper;
   }
 
-  public void addProperty(String propertyName, String value) {
-    collections.forEach(collection -> collection.addProperty(vertex, propertyName, value));
+  public void addProperty(String propertyName, String value, String type) {
+    collections.forEach(collection -> collection.addProperty(vertex, propertyName, value, type));
   }
 
   public void removeProperty(String propertyName) {

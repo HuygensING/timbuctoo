@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 class PropertyHelper {
@@ -17,7 +18,8 @@ class PropertyHelper {
       oldCollection
         .getUnprefixedProperty(prop.key())
         .ifPresent(unprefixedPropertyName ->
-          newCollection.addProperty(entityVertex, unprefixedPropertyName, (String) prop.value())
+          newCollection.addProperty(entityVertex, unprefixedPropertyName, (String) prop.value(),
+            new StringToStringConverter().getUniqueTypeIdentifier()) // FIXME
         );
     });
   }

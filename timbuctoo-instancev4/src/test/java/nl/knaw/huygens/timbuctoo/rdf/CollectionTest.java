@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.util.FastNoSuchElementException;
@@ -45,6 +46,7 @@ public class CollectionTest {
   public static final String VRE_NAME = "vreName";
   public static final String COLLECTION_NAME = "collectionName";
   public static final String ENTITY_NAME = "entityName";
+  private static final String type = new StringToStringConverter().getUniqueTypeIdentifier();
 
   @Test
   public void addPropertyAddsThePropertyForTheCurrentCollectionToTheEntityVertex() {
@@ -61,7 +63,7 @@ public class CollectionTest {
     Vertex entityVertex = mock(Vertex.class);
     String propValue = "propValue";
 
-    instance.addProperty(entityVertex, "propName", propValue);
+    instance.addProperty(entityVertex, "propName", propValue, type);
 
     verify(entityVertex).property(collectionPropertyName, propValue);
   }
@@ -82,7 +84,7 @@ public class CollectionTest {
     String propValue = "propValue";
 
     String propName = "propName";
-    instance.addProperty(entityVertex, propName, propValue);
+    instance.addProperty(entityVertex, propName, propValue, type);
 
     assertThat(graphWrapper.getGraph().traversal().V(collectionVertex.id())
                            .out(HAS_PROPERTY_RELATION_NAME)
@@ -113,8 +115,8 @@ public class CollectionTest {
     String propValue = "propValue";
     Vertex otherVertex = mock(Vertex.class);
 
-    instance.addProperty(entityVertex, propName, propValue);
-    instance.addProperty(otherVertex, propName, propValue);
+    instance.addProperty(entityVertex, propName, propValue, type);
+    instance.addProperty(otherVertex, propName, propValue, type);
 
     assertThat(graphWrapper.getGraph().traversal().V(collectionVertex.id())
                            .out(HAS_PROPERTY_RELATION_NAME)
@@ -133,9 +135,9 @@ public class CollectionTest {
     Vertex collectionVertex = graphWrapper.getGraph().traversal().V().next();
     Collection instance = new Collection(VRE_NAME, collectionVertex, graphWrapper);
 
-    instance.addProperty(mock(Vertex.class), "prop1", "val1");
-    instance.addProperty(mock(Vertex.class), "prop2", "val2");
-    instance.addProperty(mock(Vertex.class), "prop3", "val3");
+    instance.addProperty(mock(Vertex.class), "prop1", "val1", type);
+    instance.addProperty(mock(Vertex.class), "prop2", "val2", type);
+    instance.addProperty(mock(Vertex.class), "prop3", "val3", type);
 
     assertThat(graphWrapper.getGraph().traversal().V(collectionVertex.id())
                            .out(HAS_INITIAL_PROPERTY_RELATION_NAME)
@@ -155,8 +157,8 @@ public class CollectionTest {
     Vertex collectionVertex = graphWrapper.getGraph().traversal().V().next();
     Collection instance = new Collection(VRE_NAME, collectionVertex, graphWrapper);
 
-    instance.addProperty(mock(Vertex.class), "prop1", "val1");
-    instance.addProperty(mock(Vertex.class), "prop2", "val2");
+    instance.addProperty(mock(Vertex.class), "prop1", "val1", type);
+    instance.addProperty(mock(Vertex.class), "prop2", "val2", type);
 
     assertThat(graphWrapper.getGraph().traversal().V(collectionVertex.id())
                            .out(HAS_INITIAL_PROPERTY_RELATION_NAME)
