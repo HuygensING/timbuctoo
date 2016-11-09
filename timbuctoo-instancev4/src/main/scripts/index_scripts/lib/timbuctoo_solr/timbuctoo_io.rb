@@ -1,6 +1,28 @@
 require 'net/http'
 require 'json'
 
+class Dataset
+
+  attr_reader :metadata, :name
+
+  def initialize(name: nil, metadata: nil)
+    @name = name
+    @metadata = fetch_metadata(metadata)
+  end
+
+  private
+  def fetch_metadata(metadata_url)
+    location = "#{metadata_url}?withCollectionInfo=true"
+    uri = URI.parse(location)
+    req = Net::HTTP::Get.new(uri)
+    http = Net::HTTP.new(uri.hostname, uri.port)
+
+    response = http.request(req)
+    raise "http request to #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
+    JSON.parse(response.body, :symbolize_names => true)
+  end
+end
+
 class TimbuctooIO
 
   # @param [String] base_url the timbuctoo server base url
@@ -23,7 +45,8 @@ class TimbuctooIO
                          process_record: lambda {|record| puts record.inspect },
                          with_relations: false,
                          batch_size: 100,
-                         from_file: false)
+                         from_file: false,
+                         debug_sample: false)
 
     start_value = 0
     data = nil
@@ -39,8 +62,23 @@ class TimbuctooIO
       data.each {|record| process_record.call(record) }
 
       start_value = start_value + batch_size
+      break if debug_sample
     end
   end
+
+  def fetch_datasets
+    location = "#{@base_url}/v2.1/system/vres"
+    uri = URI.parse(location)
+    req = Net::HTTP::Get.new(uri)
+    http = Net::HTTP.new(uri.hostname, uri.port)
+
+    response = http.request(req)
+    raise "http request to #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
+
+    JSON.parse(response.body, :symbolize_names => true)
+        .map{|dataset_data| Dataset.new(dataset_data)}
+  end
+
 
   private
   def get_file_batch(batch_size, collection_name, start_value, with_relations)
@@ -59,7 +97,7 @@ class TimbuctooIO
     http = Net::HTTP.new(uri.hostname, uri.port)
 
     response = http.request(req)
-    raise "http request to failed with status #{response.code}: #{location}" unless response.code.eql?('200')
+    raise "http request failed with status #{response.code}: #{location}" unless response.code.eql?('200')
     response.body
   end
 
