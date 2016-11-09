@@ -31,6 +31,8 @@ class GenericConfigs
               .reject {|prop| prop['type'].eql?("relation") }
               .map {|prop| prop['type'].eql?("datable") ?
                     { :name => prop['name'], :converted_name => "#{prop['name']}_i", :type => "year" }
+                  : prop['type'].eql?("list-of-strings") ?
+                    { :name => prop['name'], :converted_name => "#{prop['name']}_ss" }
                   : { :name => prop['name'], :converted_name => "#{prop['name']}_s" }
               } <<  { :name => '@displayName', :converted_name => 'displayName_s' }  <<
                     { :name => '_id', :converted_name => 'id' } <<

@@ -1,18 +1,26 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.ArrayToEncodedArrayConverter;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
+import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -25,9 +33,14 @@ import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTI
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
+import static org.slf4j.LoggerFactory.getLogger;
 
 
 public class Collection {
+  private static final Logger LOG = getLogger(Collection.class);
+
   private final String vreName;
   private final Vertex vertex;
   private final GraphWrapper graphWrapper;
@@ -96,8 +109,35 @@ public class Collection {
 
     Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
 
-    addNewPropertyConfig(propName, collectionPropertyName, vertices);
+    addNewPropertyConfig(propName, collectionPropertyName, vertices,
+      new StringToStringConverter().getUniqueTypeIdentifier());
+  }
 
+  public void addToListProperty(Vertex entityVertex, String propName, String value) {
+    String collectionPropertyName = getDescription().createPropertyName(propName);
+    final VertexProperty<String> currentProp = entityVertex.property(collectionPropertyName);
+    if (currentProp.isPresent()) {
+      final ObjectMapper mapper = new ObjectMapper();
+      try {
+        final List<String> currentValue = mapper.readValue(currentProp.value(),
+          mapper.getTypeFactory().constructCollectionType(List.class, String.class));
+        currentValue.add(value);
+
+        final String newValue = jsnA(currentValue.stream().map(JsonBuilder::jsn)).toString();
+        entityVertex.property(collectionPropertyName, newValue);
+      } catch (IOException e) {
+        LOG.error("Failed to decode list of strings {} ", currentProp.value());
+      }
+    } else {
+      final List<String> newValues = Lists.newArrayList(value);
+      final String newValue = jsnA(newValues.stream().map(JsonBuilder::jsn)).toString();
+      entityVertex.property(collectionPropertyName, newValue);
+    }
+
+    Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
+
+    addNewPropertyConfig(propName, collectionPropertyName, vertices,
+      new ArrayToEncodedArrayConverter().getUniqueTypeIdentifier());
   }
 
   public Optional<Collection> getArchetype() {
@@ -161,14 +201,15 @@ public class Collection {
                        .in(HAS_ENTITY_NODE_RELATION_NAME).hasNext();
   }
 
-  private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices) {
+  private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices,
+                                    String uniqueTypeIdentifier) {
 
     if (!isKnownProperty(collectionPropertyName, vertices)) {
       Vertex newPropertyConfig = graphWrapper.getGraph().addVertex("property");
       newPropertyConfig.property(LocalProperty.CLIENT_PROPERTY_NAME, propName);
       newPropertyConfig.property(LocalProperty.DATABASE_PROPERTY_NAME, collectionPropertyName);
       newPropertyConfig
-        .property(LocalProperty.PROPERTY_TYPE_NAME, new StringToStringConverter().getUniqueTypeIdentifier());
+        .property(LocalProperty.PROPERTY_TYPE_NAME, uniqueTypeIdentifier);
 
       vertex.addEdge(HAS_PROPERTY_RELATION_NAME, newPropertyConfig);
       if (!vertex.edges(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME).hasNext()) {

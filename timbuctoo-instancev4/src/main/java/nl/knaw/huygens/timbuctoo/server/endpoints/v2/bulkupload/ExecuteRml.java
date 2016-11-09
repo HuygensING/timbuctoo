@@ -37,6 +37,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
@@ -163,22 +164,35 @@ public class ExecuteRml {
       final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper), vreMappings);
 
       //first save the archetype mappings
+      AtomicLong tripleCount = new AtomicLong(0);
       model
         .listStatements(
           null,
           model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
           (String) null
         )
-        .forEachRemaining(statement ->
+        .forEachRemaining(statement -> {
           processor.process(vreName, true, new Triple(
             statement.getSubject().asNode(),
             statement.getPredicate().asNode(),
             statement.getObject().asNode()
-          ))
-        );
+          ));
+          final long count = tripleCount.incrementAndGet();
+          if (LOG.isDebugEnabled() && count % 1000 == 0) {
+            LOG.debug("Processed {} triples", count);
+          }
+        });
 
-      rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
-        (triple) -> processor.process(vreName, true, triple));
+      rmlMappingDocument.execute(new LoggingErrorHandler()).forEach((triple) -> {
+        processor.process(vreName, true, triple);
+        final long count = tripleCount.incrementAndGet();
+        if (LOG.isDebugEnabled() && count % 1000 == 0) {
+          LOG.debug("Processed {} triples", count);
+        }
+      });
+      if (LOG.isDebugEnabled()) {
+        LOG.debug("Processed {} triples", tripleCount.get());
+      }
 
       //Give the collections a proper name
       graphWrapper

@@ -13,6 +13,7 @@ import java.util.UUID;
 import static nl.knaw.huygens.timbuctoo.database.dto.RelationType.relationType;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.scaffoldPersonDisplayNameProperty;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 
 public class ScaffoldMigrator {
@@ -50,11 +51,13 @@ public class ScaffoldMigrator {
                   .withDisplayName(localProperty("location_name"))
                   .withProperty("name", localProperty("location_name"))
                   .withProperty("country", localProperty("location_country"))
+                  .withProperty("altLabel", localProperty("location_altLabel", arrayToEncodedArray))
               )
               .withCollection("collectives", collection ->
                 collection
                   .withDisplayName(localProperty("collective_name"))
                   .withProperty("name", localProperty("collective_name"))
+                  .withProperty("altLabel", localProperty("collective_altLabel", arrayToEncodedArray))
               )
               .withCollection("documents", collection ->
                 collection
