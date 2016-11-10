@@ -41,6 +41,9 @@ public class SameAsTripleProcessor {
       // Merge the properties of the object entity into the reloaded subject entity via Entity model
       mergeEntityProperties(reloadedSubjectEntity , objectEntity);
 
+      // Merge any remaining properties
+      database.mergeRawVertexProperties(subjectEntity, objectEntity);
+
       // purge the object entity from the database and index
       database.purgeEntity(vreName, objectEntity);
 

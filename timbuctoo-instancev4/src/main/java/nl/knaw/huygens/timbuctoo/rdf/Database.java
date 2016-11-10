@@ -313,8 +313,6 @@ public class Database {
           return;
         }
       }
-
-      LOG.debug("Adding this edge to subject vertex {}: {}", edge.label(), edge.inVertex());
       final Edge newEdge = subjectEntity.vertex.addEdge(edge.label(), edge.inVertex());
       edge.properties().forEachRemaining(prop -> newEdge.property(prop.key(), prop.value()));
     });
@@ -327,10 +325,22 @@ public class Database {
           return;
         }
       }
-
-      LOG.debug("Adding this edge to subject vertex {}: {}", edge.label(), edge.outVertex());
       final Edge newEdge = edge.outVertex().addEdge(edge.label(), subjectEntity.vertex);
       edge.properties().forEachRemaining(prop -> newEdge.property(prop.key(), prop.value()));
+    });
+  }
+
+  public void mergeRawVertexProperties(Entity subjectEntity, Entity objectEntity) {
+    objectEntity.vertex.properties().forEachRemaining(prop -> {
+      if (!subjectEntity.vertex.property(prop.key()).isPresent()) {
+        subjectEntity.vertex.property(prop.key(), prop.value());
+        if (LOG.isDebugEnabled()) {
+          LOG.debug("Property merged into subject vertex {}: {}", prop.key(), prop.value());
+        }
+      } else if (!SYSTEM_PROPERTY_NAMES.contains(prop.key()) &&
+        !subjectEntity.vertex.property(prop.key()).value().equals(prop.value())) {
+        LOG.warn("Property values differ when merging synonymous (<owl:sameAs>) entities: {}", prop.key());
+      }
     });
   }
 
