@@ -13,14 +13,14 @@ class PropertyHelper {
     });
   }
 
-  public void movePropertiesToNewCollection(Vertex entityVertex, Collection oldCollection, Collection newCollection) {
-    entityVertex.properties().forEachRemaining(prop -> {
+  public void movePropertiesToNewCollection(Entity entity, Collection oldCollection, Collection newCollection) {
+    entity.vertex.properties().forEachRemaining(prop -> {
       oldCollection
         .getUnprefixedProperty(prop.key())
-        .ifPresent(unprefixedPropertyName ->
-          newCollection.addProperty(entityVertex, unprefixedPropertyName, (String) prop.value(),
-            new StringToStringConverter().getUniqueTypeIdentifier()) // FIXME
-        );
+        .ifPresent(unprefixedPropertyName -> {
+          newCollection.addProperty(entity.vertex, unprefixedPropertyName, (String) prop.value(),
+            entity.getPropertyType(unprefixedPropertyName));
+        });
     });
   }
 

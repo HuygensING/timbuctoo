@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -9,6 +10,7 @@ import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
 
 public class PropertyHelperTest {
 
@@ -32,7 +34,9 @@ public class PropertyHelperTest {
       "vreNameoldCollection2_prop", "value1"
     );
 
-    new PropertyHelper().movePropertiesToNewCollection(vertex, oldCollection, newCollection);
+    Entity entity = new Entity(vertex, Sets.newHashSet(oldCollection, newCollection));
+    
+    new PropertyHelper().movePropertiesToNewCollection(entity, oldCollection, newCollection);
 
     assertThat(vertex.value("vreNameoldCollection2_prop"), is("value1"));
     assertThat(vertex.value("vreNamenewCollection_prop"), is("value1"));

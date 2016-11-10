@@ -45,7 +45,7 @@ public class AltLabelTripleProcessor implements TripleProcessor {
   }
 
   private void addToListProperty(Entity entity, String propertyName,  String newRawValue) {
-    final Optional<String> currentRawValue = entity.getProperty(propertyName);
+    final Optional<String> currentRawValue = entity.getPropertyValue(propertyName);
 
     if (currentRawValue.isPresent()) {
       try {
@@ -68,7 +68,7 @@ public class AltLabelTripleProcessor implements TripleProcessor {
   }
 
   private void removeFromListProperty(Entity entity, String propertyName, String valueToRemove) {
-    final Optional<String> currentRawValue = entity.getProperty(propertyName);
+    final Optional<String> currentRawValue = entity.getPropertyValue(propertyName);
 
     if (currentRawValue.isPresent()) {
       try {

@@ -10,6 +10,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
@@ -99,10 +100,20 @@ public class Collection {
     addNewPropertyConfig(propName, collectionPropertyName, vertices, type);
   }
 
-  public Optional<String> getProperty(Vertex entityVertex, String propName) {
+  public Optional<String> getPropertyType(String collectionPropertyName) {
+    Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
+    final Optional<Vertex> knownProperty = getKnownProperty(collectionPropertyName, vertices);
+    if (knownProperty.isPresent() && knownProperty.get().property(LocalProperty.PROPERTY_TYPE_NAME).isPresent()) {
+      return Optional.of(knownProperty.get().<String>property(LocalProperty.PROPERTY_TYPE_NAME).value());
+    }
+    return Optional.empty();
+  }
+
+
+  public Optional<Property> getProperty(Vertex entityVertex, String propName) {
     String collectionPropertyName = getDescription().createPropertyName(propName);
     if (entityVertex.property(collectionPropertyName).isPresent()) {
-      return Optional.of(entityVertex.<String>property(collectionPropertyName).value());
+      return Optional.of(entityVertex.property(collectionPropertyName));
     }
     return Optional.empty();
   }
@@ -241,4 +252,5 @@ public class Collection {
       return Optional.empty();
     }
   }
+
 }

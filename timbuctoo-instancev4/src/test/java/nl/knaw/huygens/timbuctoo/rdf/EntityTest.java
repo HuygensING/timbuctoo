@@ -75,7 +75,7 @@ public class EntityTest {
 
     instance.moveToCollection(oldCollection, newCollection);
 
-    verify(propertyHelper).movePropertiesToNewCollection(vertex, oldCollection, newCollection);
+    verify(propertyHelper).movePropertiesToNewCollection(instance, oldCollection, newCollection);
   }
 
   @Test

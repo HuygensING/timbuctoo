@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;
@@ -28,15 +30,42 @@ public class Entity {
     collections.forEach(collection -> collection.addProperty(vertex, propertyName, value, type));
   }
 
-  public Optional<String> getProperty(String propertyName) {
+  public Optional<Property> getProperty(String unprefixedPropertyName) {
     for (Collection collection : collections) {
-      Optional<String> propertyValue = collection.getProperty(vertex, propertyName);
-      if (propertyValue.isPresent()) {
-        return propertyValue;
+      Optional<Property> property = collection.getProperty(vertex, unprefixedPropertyName);
+      if (property.isPresent()) {
+        return property;
       }
     }
     return Optional.empty();
   }
+
+  public Optional<String> getPropertyValue(String propertyName) {
+    final Optional<Property> property = getProperty(propertyName);
+    if (property.isPresent()) {
+      return Optional.of((String) property.get().value());
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  public String getPropertyType(String unprefixedPropertyName) {
+    final Optional<Property> property = getProperty(unprefixedPropertyName);
+    if (property.isPresent()) {
+      for (Collection collection : collections) {
+        Optional<String> propertyType = collection.getPropertyType(property.get().key());
+        if (propertyType.isPresent()) {
+          return propertyType.get();
+        }
+      }
+      // Cannot derive type from collection configuration, so default to string type
+      return new StringToStringConverter().getUniqueTypeIdentifier();
+    } else {
+      // Cannot find property, so default to string type
+      return new StringToStringConverter().getUniqueTypeIdentifier();
+    }
+  }
+
 
 
   public void removeProperty(String propertyName) {
@@ -50,10 +79,10 @@ public class Entity {
 
   public void moveToCollection(Collection oldCollection, Collection newCollection) {
     addToCollection(newCollection);
-    propertyHelper.movePropertiesToNewCollection(vertex, oldCollection, newCollection);
+    propertyHelper.movePropertiesToNewCollection(this, oldCollection, newCollection);
     newCollection.getArchetype().ifPresent(newArchetype -> {
       oldCollection.getArchetype().ifPresent(oldArchetype -> {
-        propertyHelper.movePropertiesToNewCollection(vertex, oldArchetype, newArchetype);
+        propertyHelper.movePropertiesToNewCollection(this, oldArchetype, newArchetype);
       });
     });
     removeFromCollection(oldCollection);
