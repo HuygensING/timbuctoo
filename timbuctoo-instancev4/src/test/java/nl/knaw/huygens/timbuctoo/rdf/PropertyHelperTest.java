@@ -10,7 +10,6 @@ import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
 
 public class PropertyHelperTest {
 
@@ -35,7 +34,7 @@ public class PropertyHelperTest {
     );
 
     Entity entity = new Entity(vertex, Sets.newHashSet(oldCollection, newCollection));
-    
+
     new PropertyHelper().movePropertiesToNewCollection(entity, oldCollection, newCollection);
 
     assertThat(vertex.value("vreNameoldCollection2_prop"), is("value1"));

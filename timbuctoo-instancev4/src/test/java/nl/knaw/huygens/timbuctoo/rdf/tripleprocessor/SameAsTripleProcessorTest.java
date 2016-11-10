@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.rdf.TripleHelper;
 import org.apache.jena.graph.Triple;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
