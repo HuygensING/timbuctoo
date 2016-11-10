@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.graph.Node;
@@ -10,6 +11,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -304,17 +306,8 @@ public class Database {
     rdfIndex.add(neo4jNode, vreName, synonymUri);
   }
 
-  public void mergeObjectIntoSubjectEntity(String vreName, Entity subjectEntity, Entity objectEntity) {
+  public void copyEdgesFromObjectIntoSubject(String vreName, Entity subjectEntity, Entity objectEntity) {
 
-    objectEntity.vertex.properties().forEachRemaining(prop -> {
-      if (!subjectEntity.vertex.property(prop.key()).isPresent()) {
-        subjectEntity.vertex.property(prop.key(), prop.value());
-        LOG.debug("Property merged into subject vertex {}: {}", prop.key(), prop.value());
-      } else if (!SYSTEM_PROPERTY_NAMES.contains(prop.key()) &&
-        !subjectEntity.vertex.property(prop.key()).value().equals(prop.value())) {
-        LOG.warn("Property values differ when merging synonymous (<owl:sameAs>) entities: {}", prop.key());
-      }
-    });
 
     objectEntity.vertex.edges(Direction.OUT).forEachRemaining(edge -> {
       // skip duplicates

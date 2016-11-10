@@ -1,13 +1,17 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Map;
 
 public class Entity {
   public final Vertex vertex;
@@ -38,6 +42,18 @@ public class Entity {
       }
     }
     return Optional.empty();
+  }
+
+
+  public List<Map<String, String>> getProperties() {
+    List<Map<String, String>> properties = Lists.newArrayList();
+
+    for (Collection collection : collections) {
+      final List<Map<String, String>> collectionProperties = collection.getPropertiesFor(vertex);
+      properties.addAll(collectionProperties);
+    }
+
+    return properties;
   }
 
   public Optional<String> getPropertyValue(String propertyName) {

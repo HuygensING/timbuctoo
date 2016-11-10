@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 class PropertyHelper {

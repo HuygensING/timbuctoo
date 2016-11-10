@@ -1,9 +1,10 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
@@ -14,10 +15,11 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
@@ -25,6 +27,7 @@ import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTI
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 
 
@@ -99,6 +102,28 @@ public class Collection {
 
     addNewPropertyConfig(propName, collectionPropertyName, vertices, type);
   }
+
+  public List<Map<String, String>> getPropertiesFor(Vertex entityVertex) {
+    final Iterator<Vertex> propertyConfigs = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
+    final List<Map<String, String>> properties = Lists.newArrayList();
+    propertyConfigs.forEachRemaining(configVertex -> {
+      final String collectionPropertyName = configVertex.<String>property(LocalProperty.DATABASE_PROPERTY_NAME).value();
+
+      if (entityVertex.property(collectionPropertyName).isPresent()) {
+        final String propertyType = configVertex.<String>property(LocalProperty.PROPERTY_TYPE_NAME).value();
+        final String propName = configVertex.<String>property(LocalProperty.CLIENT_PROPERTY_NAME).value();
+        final String propertyValue = entityVertex.<String>property(collectionPropertyName).value();
+        final Map<String, String> propertyMap = Maps.newHashMap();
+
+        propertyMap.put(LocalProperty.PROPERTY_TYPE_NAME, propertyType);
+        propertyMap.put(LocalProperty.CLIENT_PROPERTY_NAME, propName);
+        propertyMap.put("value", propertyValue);
+        properties.add(propertyMap);
+      }
+    });
+    return properties;
+  }
+
 
   public Optional<String> getPropertyType(String collectionPropertyName) {
     Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);

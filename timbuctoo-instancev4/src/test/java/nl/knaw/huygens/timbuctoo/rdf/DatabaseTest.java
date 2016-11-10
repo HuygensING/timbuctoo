@@ -406,41 +406,9 @@ public class DatabaseTest {
     assertThat(archetypeCollection, is(present()));
   }
 
-  @Test
-  public void mergeObjectIntoSubjectEntityCopiesThePropertiesOfTheObjectIntoTheSubjectAndRemovesTheObject() {
-    TinkerpopGraphManager graphWrapper = newGraph()
-      .withVertex("entity1", v -> {
-        v.withProperty("a", "b").withProperty("c", "d").withProperty("modified", "x")
-         .withTimId("123");
-
-      })
-      .withVertex("entity2", v -> {
-        v.withProperty("a", "b").withProperty("c", "e").withProperty("f", "g").withProperty("modified", "y")
-         .withTimId("456");
-      })
-      .wrap();
-    final String vreName = "vreName";
-    final Vertex subjectVertex = graphWrapper.getGraph().traversal().V().has("tim_id", "123").next();
-    final Vertex objectVertex = graphWrapper.getGraph().traversal().V().has("tim_id", "456").next();
-    final Entity subject = new Entity(subjectVertex, null, null, null);
-    final Entity object = new Entity(objectVertex, null, null, null);
-    final Database instance = new Database(graphWrapper);
-
-    instance.mergeObjectIntoSubjectEntity(vreName, subject, object);
-    final Vertex result = graphWrapper.getGraph().traversal().V().next();
-
-    assertThat(graphWrapper.getGraph().traversal().V().has("tim_id", "456").hasNext(), equalTo(false));
-    assertThat(result, likeVertex()
-      .withProperty("a", "b")
-      .withProperty("c", "d")
-      .withProperty("f", "g")
-      .withProperty("modified", "x")
-      .withProperty("tim_id", "123")
-    );
-  }
 
   @Test
-  public void mergeObjectIntoSubjectEntityCopiesTheOutgoingEdgesOfTheObjectIntoTheSubject() {
+  public void copyEdgesFromObjectIntoSubjectCopiesTheOutgoingEdgesOfTheObjectIntoTheSubject() {
     TinkerpopGraphManager graphWrapper = newGraph()
       .withVertex("target1", v -> {
         v.withTimId("789");
@@ -471,19 +439,15 @@ public class DatabaseTest {
     final Entity object = new Entity(objectVertex, null, null, null);
     final Database instance = new Database(graphWrapper);
 
-    instance.mergeObjectIntoSubjectEntity(vreName, subject, object);
+    instance.copyEdgesFromObjectIntoSubject(vreName, subject, object);
 
     final List<Edge> edges = graphWrapper.getGraph().traversal().V().has("tim_id", "123").outE("relatedTo").toList();
 
     assertThat(edges.size(), equalTo(2));
-    assertThat(edges, containsInAnyOrder(
-      likeEdge().withProperty("rev", 12),
-      likeEdge().withProperty("rev", 9)
-    ));
   }
 
   @Test
-  public void mergeObjectIntoSubjectEntityCopiesTheIncomingEdgesOfTheObjectIntoTheSubject() {
+  public void copyEdgesFromObjectIntoSubjectCopiesTheIncomingEdgesOfTheObjectIntoTheSubject() {
     TinkerpopGraphManager graphWrapper = newGraph()
       .withVertex("target1", v -> {
         v.withTimId("789");
@@ -514,14 +478,10 @@ public class DatabaseTest {
     final Entity object = new Entity(objectVertex, null, null, null);
     final Database instance = new Database(graphWrapper);
 
-    instance.mergeObjectIntoSubjectEntity(vreName, subject, object);
+    instance.copyEdgesFromObjectIntoSubject(vreName, subject, object);
 
     final List<Edge> edges = graphWrapper.getGraph().traversal().V().has("tim_id", "123").inE("relatedTo").toList();
 
     assertThat(edges.size(), equalTo(2));
-    assertThat(edges, containsInAnyOrder(
-      likeEdge().withProperty("rev", 12),
-      likeEdge().withProperty("rev", 9)
-    ));
   }
 }
