@@ -97,8 +97,16 @@ public class Collection {
     Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
 
     addNewPropertyConfig(propName, collectionPropertyName, vertices, type);
-
   }
+
+  public Optional<String> getProperty(Vertex entityVertex, String propName) {
+    String collectionPropertyName = getDescription().createPropertyName(propName);
+    if (entityVertex.property(collectionPropertyName).isPresent()) {
+      return Optional.of(entityVertex.<String>property(collectionPropertyName).value());
+    }
+    return Optional.empty();
+  }
+
 
   public Optional<Collection> getArchetype() {
     Iterator<Vertex> archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME);

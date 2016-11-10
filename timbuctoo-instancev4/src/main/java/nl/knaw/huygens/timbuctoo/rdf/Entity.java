@@ -4,6 +4,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Optional;
 import java.util.Set;
 
 public class Entity {
@@ -26,6 +27,17 @@ public class Entity {
   public void addProperty(String propertyName, String value, String type) {
     collections.forEach(collection -> collection.addProperty(vertex, propertyName, value, type));
   }
+
+  public Optional<String> getProperty(String propertyName) {
+    for (Collection collection : collections) {
+      Optional<String> propertyValue = collection.getProperty(vertex, propertyName);
+      if (propertyValue.isPresent()) {
+        return propertyValue;
+      }
+    }
+    return Optional.empty();
+  }
+
 
   public void removeProperty(String propertyName) {
     collections.forEach(collection -> collection.removeProperty(vertex, propertyName));
