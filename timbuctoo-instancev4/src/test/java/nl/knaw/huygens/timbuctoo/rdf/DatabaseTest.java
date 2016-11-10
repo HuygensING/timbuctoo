@@ -437,7 +437,7 @@ public class DatabaseTest {
     final Entity object = new Entity(objectVertex, null, null, null);
     final Database instance = new Database(graphWrapper);
 
-    instance.copyEdgesFromObjectIntoSubject(vreName, subject, object);
+    instance.copyEdgesFromObjectIntoSubject(subject, object);
 
     final List<Edge> edges = graphWrapper.getGraph().traversal().V().has("tim_id", "123").outE("relatedTo").toList();
 
@@ -476,7 +476,7 @@ public class DatabaseTest {
     final Entity object = new Entity(objectVertex, null, null, null);
     final Database instance = new Database(graphWrapper);
 
-    instance.copyEdgesFromObjectIntoSubject(vreName, subject, object);
+    instance.copyEdgesFromObjectIntoSubject(subject, object);
 
     final List<Edge> edges = graphWrapper.getGraph().traversal().V().has("tim_id", "123").inE("relatedTo").toList();
 

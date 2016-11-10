@@ -33,6 +33,7 @@ import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCH
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier.SYSTEM_PROPERTY_NAMES;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class Database {
@@ -302,8 +303,7 @@ public class Database {
     rdfIndex.add(neo4jNode, vreName, synonymUri);
   }
 
-  public void copyEdgesFromObjectIntoSubject(String vreName, Entity subjectEntity, Entity objectEntity) {
-
+  public void copyEdgesFromObjectIntoSubject(Entity subjectEntity, Entity objectEntity) {
 
     objectEntity.vertex.edges(Direction.OUT).forEachRemaining(edge -> {
       // skip duplicates
@@ -332,10 +332,11 @@ public class Database {
       final Edge newEdge = edge.outVertex().addEdge(edge.label(), subjectEntity.vertex);
       edge.properties().forEachRemaining(prop -> newEdge.property(prop.key(), prop.value()));
     });
+  }
 
+  public void purgeEntity(String vreName, Entity objectEntity) {
     org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) objectEntity.vertex.id());
     rdfIndex.remove(neo4jNode, vreName);
     objectEntity.vertex.remove();
-
   }
 }

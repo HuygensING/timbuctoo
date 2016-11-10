@@ -58,7 +58,8 @@ public class SameAsTripleProcessorTest {
     instance.process(vreName, true, triple);
 
 
-    verify(database).copyEdgesFromObjectIntoSubject(vreName, subjectEntity, objectEntity);
     verify(subjectEntity).addProperty(unprefixedPropertyName, propertyValue, propertyType);
+    verify(database).copyEdgesFromObjectIntoSubject(subjectEntity, objectEntity);
+    verify(database).purgeEntity(vreName, objectEntity);
   }
 }
