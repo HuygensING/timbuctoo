@@ -39,6 +39,7 @@ class DefaultMapper
 
   private
   def locate_prop(name, record)
+    return "" if name.nil?
     return record[name] if name.is_a? String
     value = nil
     name.each do |cur_name|
