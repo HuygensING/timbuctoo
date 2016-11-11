@@ -117,6 +117,7 @@ public class Collection {
 
         propertyMap.put(LocalProperty.PROPERTY_TYPE_NAME, propertyType);
         propertyMap.put(LocalProperty.CLIENT_PROPERTY_NAME, propName);
+        propertyMap.put(LocalProperty.DATABASE_PROPERTY_NAME, collectionPropertyName);
         propertyMap.put("value", propertyValue);
         properties.add(propertyMap);
       }

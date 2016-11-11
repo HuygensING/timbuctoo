@@ -41,12 +41,16 @@ public class SameAsTripleProcessor {
       // Merge the properties of the object entity into the reloaded subject entity via Entity model
       mergeEntityProperties(reloadedSubjectEntity , objectEntity);
 
-      // Merge any remaining properties
-      database.mergeRawVertexProperties(subjectEntity, objectEntity);
+      if (LOG.isDebugEnabled()) {
+        final Entity finalSubject = database.findEntity(vreName, triple.getSubject()).get();
+        LOG.debug("Final subject properties: {}", finalSubject.getProperties());
+      }
 
       // purge the object entity from the database and index
       database.purgeEntity(vreName, objectEntity);
 
+      // add the object uri as a synonym to the subject entity
+      database.addRdfSynonym(vreName, subjectEntity, triple.getObject());
     } else if (object.isPresent()) {
       database.addRdfSynonym(vreName, object.get(), triple.getSubject());
     } else if (subject.isPresent()) {

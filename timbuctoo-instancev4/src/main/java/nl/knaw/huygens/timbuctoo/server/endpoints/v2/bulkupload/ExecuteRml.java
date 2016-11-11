@@ -37,6 +37,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
@@ -163,23 +164,31 @@ public class ExecuteRml {
       final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper), vreMappings);
 
       //first save the archetype mappings
+      AtomicLong tripleCount = new AtomicLong(0);
+
       model
         .listStatements(
           null,
           model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
           (String) null
         )
-        .forEachRemaining(statement ->
-          processor.process(vreName, true, new Triple(
-            statement.getSubject().asNode(),
-            statement.getPredicate().asNode(),
-            statement.getObject().asNode()
-          ))
+        .forEachRemaining(statement -> {
+            processor.process(vreName, true, new Triple(
+              statement.getSubject().asNode(),
+              statement.getPredicate().asNode(),
+              statement.getObject().asNode()
+            ));
+            debugLogTripleCount(tripleCount, false);
+          }
         );
 
       rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
-        (triple) -> processor.process(vreName, true, triple));
+        (triple) -> {
+          debugLogTripleCount(tripleCount, false);
+          processor.process(vreName, true, triple);
+        });
 
+      debugLogTripleCount(tripleCount, true);
       //Give the collections a proper name
       graphWrapper
         .getGraph()
@@ -208,5 +217,14 @@ public class ExecuteRml {
                             .hasNext();
 
     return Response.ok().entity(jsnO("success", jsn(!hasError))).build();
+  }
+
+  private void debugLogTripleCount(AtomicLong tripleCount, boolean force) {
+    if (LOG.isDebugEnabled()) {
+      final long curCount = tripleCount.incrementAndGet();
+      if (force || curCount % 1000 == 0) {
+        LOG.debug("Processed {} triples", curCount);
+      }
+    }
   }
 }

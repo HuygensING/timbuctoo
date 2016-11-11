@@ -330,20 +330,6 @@ public class Database {
     });
   }
 
-  public void mergeRawVertexProperties(Entity subjectEntity, Entity objectEntity) {
-    objectEntity.vertex.properties().forEachRemaining(prop -> {
-      if (!subjectEntity.vertex.property(prop.key()).isPresent()) {
-        subjectEntity.vertex.property(prop.key(), prop.value());
-        if (LOG.isDebugEnabled()) {
-          LOG.debug("Property merged into subject vertex {}: {}", prop.key(), prop.value());
-        }
-      } else if (!SYSTEM_PROPERTY_NAMES.contains(prop.key()) &&
-        !subjectEntity.vertex.property(prop.key()).value().equals(prop.value())) {
-        LOG.warn("Property values differ when merging synonymous (<owl:sameAs>) entities: {}", prop.key());
-      }
-    });
-  }
-
   public void purgeEntity(String vreName, Entity objectEntity) {
     org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) objectEntity.vertex.id());
     rdfIndex.remove(neo4jNode, vreName);
