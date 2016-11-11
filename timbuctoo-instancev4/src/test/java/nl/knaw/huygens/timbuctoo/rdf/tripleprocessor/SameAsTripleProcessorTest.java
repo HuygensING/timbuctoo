@@ -17,6 +17,7 @@ import java.util.Optional;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.internal.verification.VerificationModeFactory.atLeast;
 
 public class SameAsTripleProcessorTest {
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
@@ -57,9 +58,13 @@ public class SameAsTripleProcessorTest {
 
     instance.process(vreName, true, triple);
 
-
+    // Verify initial load *and* reload of subject entity
+    verify(database, atLeast(2)).findEntity(vreName, triple.getSubject());
     verify(subjectEntity).addProperty(unprefixedPropertyName, propertyValue, propertyType);
     verify(database).copyEdgesFromObjectIntoSubject(subjectEntity, objectEntity);
     verify(database).purgeEntity(vreName, objectEntity);
+    verify(database).addRdfSynonym(vreName, subjectEntity, triple.getObject());
   }
+
+
 }

@@ -33,7 +33,6 @@ import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCH
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier.SYSTEM_PROPERTY_NAMES;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class Database {
