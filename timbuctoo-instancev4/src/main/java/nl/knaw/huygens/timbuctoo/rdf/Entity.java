@@ -1,9 +1,15 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 public class Entity {
@@ -23,9 +29,59 @@ public class Entity {
     this.propertyHelper = propertyHelper;
   }
 
-  public void addProperty(String propertyName, String value) {
-    collections.forEach(collection -> collection.addProperty(vertex, propertyName, value));
+  public void addProperty(String propertyName, String value, String type) {
+    collections.forEach(collection -> collection.addProperty(vertex, propertyName, value, type));
   }
+
+  public Optional<Property> getProperty(String unprefixedPropertyName) {
+    for (Collection collection : collections) {
+      Optional<Property> property = collection.getProperty(vertex, unprefixedPropertyName);
+      if (property.isPresent()) {
+        return property;
+      }
+    }
+    return Optional.empty();
+  }
+
+
+  public List<Map<String, String>> getProperties() {
+    List<Map<String, String>> properties = Lists.newArrayList();
+
+    for (Collection collection : collections) {
+      final List<Map<String, String>> collectionProperties = collection.getPropertiesFor(vertex);
+      properties.addAll(collectionProperties);
+    }
+
+    return properties;
+  }
+
+  public Optional<String> getPropertyValue(String propertyName) {
+    final Optional<Property> property = getProperty(propertyName);
+    if (property.isPresent()) {
+      return Optional.of((String) property.get().value());
+    } else {
+      return Optional.empty();
+    }
+  }
+
+  public String getPropertyType(String unprefixedPropertyName) {
+    final Optional<Property> property = getProperty(unprefixedPropertyName);
+    if (property.isPresent()) {
+      for (Collection collection : collections) {
+        Optional<String> propertyType = collection.getPropertyType(property.get().key());
+        if (propertyType.isPresent()) {
+          return propertyType.get();
+        }
+      }
+      // Cannot derive type from collection configuration, so default to string type
+      return new StringToStringConverter().getUniqueTypeIdentifier();
+    } else {
+      // Cannot find property, so default to string type
+      return new StringToStringConverter().getUniqueTypeIdentifier();
+    }
+  }
+
+
 
   public void removeProperty(String propertyName) {
     collections.forEach(collection -> collection.removeProperty(vertex, propertyName));
@@ -38,10 +94,10 @@ public class Entity {
 
   public void moveToCollection(Collection oldCollection, Collection newCollection) {
     addToCollection(newCollection);
-    propertyHelper.movePropertiesToNewCollection(vertex, oldCollection, newCollection);
+    propertyHelper.movePropertiesToNewCollection(this, oldCollection, newCollection);
     newCollection.getArchetype().ifPresent(newArchetype -> {
       oldCollection.getArchetype().ifPresent(oldArchetype -> {
-        propertyHelper.movePropertiesToNewCollection(vertex, oldArchetype, newArchetype);
+        propertyHelper.movePropertiesToNewCollection(this, oldArchetype, newArchetype);
       });
     });
     removeFromCollection(oldCollection);

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -32,7 +33,9 @@ public class PropertyHelperTest {
       "vreNameoldCollection2_prop", "value1"
     );
 
-    new PropertyHelper().movePropertiesToNewCollection(vertex, oldCollection, newCollection);
+    Entity entity = new Entity(vertex, Sets.newHashSet(oldCollection, newCollection));
+
+    new PropertyHelper().movePropertiesToNewCollection(entity, oldCollection, newCollection);
 
     assertThat(vertex.value("vreNameoldCollection2_prop"), is("value1"));
     assertThat(vertex.value("vreNamenewCollection_prop"), is("value1"));

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import org.apache.jena.graph.Node;
@@ -19,7 +20,7 @@ class PropertyTripleProcessor {
     String propertyName = triple.getPredicate().getLocalName();
     if (isAssertion) {
       String value = triple.getObject().getLiteralLexicalForm();
-      entity.addProperty(propertyName, value);
+      entity.addProperty(propertyName, value, new StringToStringConverter().getUniqueTypeIdentifier());
     } else {
       entity.removeProperty(propertyName);
     }

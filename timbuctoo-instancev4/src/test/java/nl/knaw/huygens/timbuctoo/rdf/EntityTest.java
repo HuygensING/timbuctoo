@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -20,6 +21,8 @@ import static org.mockito.Mockito.when;
 
 
 public class EntityTest {
+  private static final String type = new StringToStringConverter().getUniqueTypeIdentifier();
+
   @Test
   public void addPropertyAddsThePropertyToTheEntityForEachCollectionTheEntityIsConnectedTo() {
     Vertex vertex = mock(Vertex.class);
@@ -29,10 +32,10 @@ public class EntityTest {
     String propName = "propName";
     String value = "value";
 
-    entity.addProperty(propName, value);
+    entity.addProperty(propName, value, new StringToStringConverter().getUniqueTypeIdentifier());
 
-    verify(collection1).addProperty(vertex, propName, value);
-    verify(collection2).addProperty(vertex, propName, value);
+    verify(collection1).addProperty(vertex, propName, value, type);
+    verify(collection2).addProperty(vertex, propName, value, type);
   }
 
   @Test
@@ -72,7 +75,7 @@ public class EntityTest {
 
     instance.moveToCollection(oldCollection, newCollection);
 
-    verify(propertyHelper).movePropertiesToNewCollection(vertex, oldCollection, newCollection);
+    verify(propertyHelper).movePropertiesToNewCollection(instance, oldCollection, newCollection);
   }
 
   @Test

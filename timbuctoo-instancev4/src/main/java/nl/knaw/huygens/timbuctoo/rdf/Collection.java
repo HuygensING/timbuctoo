@@ -1,22 +1,25 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
-import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
@@ -24,6 +27,7 @@ import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTI
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 
 
@@ -90,15 +94,56 @@ public class Collection {
   }
 
 
-  public void addProperty(Vertex entityVertex, String propName, String value) {
+  public void addProperty(Vertex entityVertex, String propName, String value, String type) {
     String collectionPropertyName = getDescription().createPropertyName(propName);
     entityVertex.property(collectionPropertyName, value);
 
     Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
 
-    addNewPropertyConfig(propName, collectionPropertyName, vertices);
-
+    addNewPropertyConfig(propName, collectionPropertyName, vertices, type);
   }
+
+  public List<Map<String, String>> getPropertiesFor(Vertex entityVertex) {
+    final Iterator<Vertex> propertyConfigs = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
+    final List<Map<String, String>> properties = Lists.newArrayList();
+    propertyConfigs.forEachRemaining(configVertex -> {
+      final String collectionPropertyName = configVertex.<String>property(LocalProperty.DATABASE_PROPERTY_NAME).value();
+
+      if (entityVertex.property(collectionPropertyName).isPresent()) {
+        final String propertyType = configVertex.<String>property(LocalProperty.PROPERTY_TYPE_NAME).value();
+        final String propName = configVertex.<String>property(LocalProperty.CLIENT_PROPERTY_NAME).value();
+        final String propertyValue = entityVertex.<String>property(collectionPropertyName).value();
+        final Map<String, String> propertyMap = Maps.newHashMap();
+
+        propertyMap.put(LocalProperty.PROPERTY_TYPE_NAME, propertyType);
+        propertyMap.put(LocalProperty.CLIENT_PROPERTY_NAME, propName);
+        propertyMap.put(LocalProperty.DATABASE_PROPERTY_NAME, collectionPropertyName);
+        propertyMap.put("value", propertyValue);
+        properties.add(propertyMap);
+      }
+    });
+    return properties;
+  }
+
+
+  public Optional<String> getPropertyType(String collectionPropertyName) {
+    Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
+    final Optional<Vertex> knownProperty = getKnownProperty(collectionPropertyName, vertices);
+    if (knownProperty.isPresent() && knownProperty.get().property(LocalProperty.PROPERTY_TYPE_NAME).isPresent()) {
+      return Optional.of(knownProperty.get().<String>property(LocalProperty.PROPERTY_TYPE_NAME).value());
+    }
+    return Optional.empty();
+  }
+
+
+  public Optional<Property> getProperty(Vertex entityVertex, String propName) {
+    String collectionPropertyName = getDescription().createPropertyName(propName);
+    if (entityVertex.property(collectionPropertyName).isPresent()) {
+      return Optional.of(entityVertex.property(collectionPropertyName));
+    }
+    return Optional.empty();
+  }
+
 
   public Optional<Collection> getArchetype() {
     Iterator<Vertex> archetypeVertex = vertex.vertices(Direction.OUT, HAS_ARCHETYPE_RELATION_NAME);
@@ -161,14 +206,15 @@ public class Collection {
                        .in(HAS_ENTITY_NODE_RELATION_NAME).hasNext();
   }
 
-  private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices) {
+  private void addNewPropertyConfig(String propName, String collectionPropertyName, Iterator<Vertex> vertices,
+                                    String type) {
 
-    if (!isKnownProperty(collectionPropertyName, vertices)) {
+    final Optional<Vertex> knownProperty = getKnownProperty(collectionPropertyName, vertices);
+    if (!knownProperty.isPresent()) {
       Vertex newPropertyConfig = graphWrapper.getGraph().addVertex("property");
       newPropertyConfig.property(LocalProperty.CLIENT_PROPERTY_NAME, propName);
       newPropertyConfig.property(LocalProperty.DATABASE_PROPERTY_NAME, collectionPropertyName);
-      newPropertyConfig
-        .property(LocalProperty.PROPERTY_TYPE_NAME, new StringToStringConverter().getUniqueTypeIdentifier());
+      newPropertyConfig.property(LocalProperty.PROPERTY_TYPE_NAME, type);
 
       vertex.addEdge(HAS_PROPERTY_RELATION_NAME, newPropertyConfig);
       if (!vertex.edges(Direction.OUT, HAS_INITIAL_PROPERTY_RELATION_NAME).hasNext()) {
@@ -177,17 +223,19 @@ public class Collection {
         Vertex lastProperty = getLastProperty();
         lastProperty.addEdge(HAS_NEXT_PROPERTY_RELATION_NAME, newPropertyConfig);
       }
+    } else {
+      knownProperty.get().property(LocalProperty.PROPERTY_TYPE_NAME, type);
     }
   }
 
-  private boolean isKnownProperty(String collectionPropertyName, Iterator<Vertex> vertices) {
+  private Optional<Vertex> getKnownProperty(String collectionPropertyName, Iterator<Vertex> vertices) {
     for (; vertices.hasNext(); ) {
       Vertex relatedProperty = vertices.next();
       if (Objects.equals(relatedProperty.value("dbName"), collectionPropertyName)) {
-        return true;
+        return Optional.of(relatedProperty);
       }
     }
-    return false;
+    return Optional.empty();
   }
 
   private Vertex getLastProperty() {
@@ -230,4 +278,5 @@ public class Collection {
       return Optional.empty();
     }
   }
+
 }
