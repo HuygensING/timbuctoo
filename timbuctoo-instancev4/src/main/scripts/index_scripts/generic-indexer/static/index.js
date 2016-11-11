@@ -84,7 +84,29 @@ var getPrototype = overArg(Object.getPrototypeOf, Object);
 
 module.exports = getPrototype;
 
-},{"./_overArg":5}],5:[function(require,module,exports){
+},{"./_overArg":6}],5:[function(require,module,exports){
+/**
+ * Checks if `value` is a host object in IE < 9.
+ *
+ * @private
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is a host object, else `false`.
+ */
+function isHostObject(value) {
+  // Many host objects are `Object` objects that can coerce to strings
+  // despite having improperly defined `toString` methods.
+  var result = false;
+  if (value != null && typeof value.toString != 'function') {
+    try {
+      result = !!(value + '');
+    } catch (e) {}
+  }
+  return result;
+}
+
+module.exports = isHostObject;
+
+},{}],6:[function(require,module,exports){
 /**
  * Creates a unary function that invokes `func` with its argument transformed.
  *
@@ -101,7 +123,7 @@ function overArg(func, transform) {
 
 module.exports = overArg;
 
-},{}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 /**
  * Checks if `value` is object-like. A value is object-like if it's not `null`
  * and has a `typeof` result of "object".
@@ -127,13 +149,14 @@ module.exports = overArg;
  * // => false
  */
 function isObjectLike(value) {
-  return value != null && typeof value == 'object';
+  return !!value && typeof value == 'object';
 }
 
 module.exports = isObjectLike;
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 var getPrototype = require('./_getPrototype'),
+    isHostObject = require('./_isHostObject'),
     isObjectLike = require('./isObjectLike');
 
 /** `Object#toString` result references. */
@@ -188,7 +211,8 @@ var objectToString = objectProto.toString;
  * // => true
  */
 function isPlainObject(value) {
-  if (!isObjectLike(value) || objectToString.call(value) != objectTag) {
+  if (!isObjectLike(value) ||
+      objectToString.call(value) != objectTag || isHostObject(value)) {
     return false;
   }
   var proto = getPrototype(value);
@@ -202,7 +226,7 @@ function isPlainObject(value) {
 
 module.exports = isPlainObject;
 
-},{"./_getPrototype":4,"./isObjectLike":6}],8:[function(require,module,exports){
+},{"./_getPrototype":4,"./_isHostObject":5,"./isObjectLike":7}],9:[function(require,module,exports){
 var trim = require('trim')
   , forEach = require('for-each')
   , isArray = function(arg) {
@@ -234,7 +258,7 @@ module.exports = function (headers) {
 
   return result
 }
-},{"for-each":1,"trim":21}],9:[function(require,module,exports){
+},{"for-each":1,"trim":22}],10:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -258,7 +282,7 @@ var thunk = createThunkMiddleware();
 thunk.withExtraArgument = createThunkMiddleware;
 
 exports['default'] = thunk;
-},{}],10:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -317,7 +341,7 @@ function applyMiddleware() {
     };
   };
 }
-},{"./compose":13}],11:[function(require,module,exports){
+},{"./compose":14}],12:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -369,7 +393,7 @@ function bindActionCreators(actionCreators, dispatch) {
   }
   return boundActionCreators;
 }
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -514,7 +538,7 @@ function combineReducers(reducers) {
   };
 }
 }).call(this,require('_process'))
-},{"./createStore":14,"./utils/warning":16,"_process":22,"lodash/isPlainObject":7}],13:[function(require,module,exports){
+},{"./createStore":15,"./utils/warning":17,"_process":23,"lodash/isPlainObject":8}],14:[function(require,module,exports){
 "use strict";
 
 exports.__esModule = true;
@@ -553,7 +577,7 @@ function compose() {
     }, last.apply(undefined, arguments));
   };
 }
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -815,7 +839,7 @@ function createStore(reducer, preloadedState, enhancer) {
     replaceReducer: replaceReducer
   }, _ref2[_symbolObservable2['default']] = observable, _ref2;
 }
-},{"lodash/isPlainObject":7,"symbol-observable":18}],15:[function(require,module,exports){
+},{"lodash/isPlainObject":8,"symbol-observable":19}],16:[function(require,module,exports){
 (function (process){
 'use strict';
 
@@ -864,7 +888,7 @@ exports.bindActionCreators = _bindActionCreators2['default'];
 exports.applyMiddleware = _applyMiddleware2['default'];
 exports.compose = _compose2['default'];
 }).call(this,require('_process'))
-},{"./applyMiddleware":10,"./bindActionCreators":11,"./combineReducers":12,"./compose":13,"./createStore":14,"./utils/warning":16,"_process":22}],16:[function(require,module,exports){
+},{"./applyMiddleware":11,"./bindActionCreators":12,"./combineReducers":13,"./compose":14,"./createStore":15,"./utils/warning":17,"_process":23}],17:[function(require,module,exports){
 'use strict';
 
 exports.__esModule = true;
@@ -890,7 +914,7 @@ function warning(message) {
   } catch (e) {}
   /* eslint-enable no-empty */
 }
-},{}],17:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function (global){
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.SolrFacetedSearch = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(_dereq_,module,exports){
 /*!
@@ -4215,10 +4239,10 @@ module.exports = exports["default"];
 },{}]},{},[34])(34)
 });
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{}],18:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 module.exports = require('./lib/index');
 
-},{"./lib/index":19}],19:[function(require,module,exports){
+},{"./lib/index":20}],20:[function(require,module,exports){
 (function (global){
 'use strict';
 
@@ -4243,7 +4267,7 @@ if (typeof global !== 'undefined') {
 var result = (0, _ponyfill2['default'])(root);
 exports['default'] = result;
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./ponyfill":20}],20:[function(require,module,exports){
+},{"./ponyfill":21}],21:[function(require,module,exports){
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -4267,7 +4291,7 @@ function symbolObservablePonyfill(root) {
 
 	return result;
 };
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 
 exports = module.exports = trim;
 
@@ -4283,7 +4307,7 @@ exports.right = function(str){
   return str.replace(/\s*$/, '');
 };
 
-},{}],22:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -4465,7 +4489,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],23:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 "use strict";
 var window = require("global/window")
 var isFunction = require("is-function")
@@ -4702,7 +4726,7 @@ function getXml(xhr) {
 
 function noop() {}
 
-},{"global/window":2,"is-function":3,"parse-headers":8,"xtend":24}],24:[function(require,module,exports){
+},{"global/window":2,"is-function":3,"parse-headers":9,"xtend":25}],25:[function(require,module,exports){
 module.exports = extend
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -4723,7 +4747,7 @@ function extend() {
     return target
 }
 
-},{}],25:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4759,7 +4783,7 @@ function actionsMaker(navigateTo, dispatch) {
 ;
 module.exports = exports["default"];
 
-},{"./actions/solr":27,"xhr":23}],26:[function(require,module,exports){
+},{"./actions/solr":28,"xhr":24}],27:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4810,7 +4834,7 @@ var setVre = function setVre(vreId, afterInit) {
 
 exports.setVre = setVre;
 
-},{"xhr":23}],27:[function(require,module,exports){
+},{"xhr":24}],28:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4859,11 +4883,11 @@ var checkIndex = function checkIndex(afterCheck) {
 };
 
 var getPropSuffix = function getPropSuffix(archetypeType) {
-	return archetypeType === "datable" ? "i" : archetypeType === "text" ? "s" : archetypeType === "relation" ? "ss" : "";
+	return archetypeType === "datable" ? "i" : archetypeType === "text" ? "s" : archetypeType === "relation" || archetypeType === "list-of-strings" ? "ss" : "";
 };
 
 var getFacetType = function getFacetType(archetypeType) {
-	return archetypeType === "datable" ? "range-facet" : archetypeType === "text" ? "list-facet" : archetypeType === "relation" ? "list-facet" : "";
+	return archetypeType === "datable" ? "range-facet" : archetypeType === "text" ? "list-facet" : archetypeType === "relation" || archetypeType === "list-of-strings" ? "list-facet" : "";
 };
 
 var configureSearchClients = function configureSearchClients() {
@@ -4957,7 +4981,7 @@ var createIndexes = function createIndexes() {
 exports["default"] = { checkIndex: checkIndex, createIndexes: createIndexes, getSearchClients: getSearchClients };
 module.exports = exports["default"];
 
-},{"solr-faceted-search-react":17,"xhr":23}],28:[function(require,module,exports){
+},{"solr-faceted-search-react":18,"xhr":24}],29:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5081,7 +5105,7 @@ var App = (function (_React$Component) {
 exports["default"] = App;
 module.exports = exports["default"];
 
-},{"../actions/solr":27,"./faceted-search/faceted-search":32,"./page.jsx":42,"react":"react"}],29:[function(require,module,exports){
+},{"../actions/solr":28,"./faceted-search/faceted-search":33,"./page.jsx":43,"react":"react"}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5098,7 +5122,7 @@ exports["default"] = function (camelCase) {
 
 module.exports = exports["default"];
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5241,7 +5265,7 @@ CurrentQuery.propTypes = {
 exports["default"] = CurrentQuery;
 module.exports = exports["default"];
 
-},{"react":"react"}],31:[function(require,module,exports){
+},{"react":"react"}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5383,7 +5407,7 @@ var Detail = (function (_React$Component) {
                     display: "inline-block", width: "150px", backgroundColor: "#aaa",
                     paddingTop: "40px", fontSize: "3em", color: "#666"
                   } },
-                entity["@displayName"].charAt(0)
+                entity["@displayName"] ? entity["@displayName"].charAt(0) : "?"
               ),
               _react2["default"].createElement(
                 "h1",
@@ -5512,7 +5536,7 @@ var Detail = (function (_React$Component) {
 exports["default"] = Detail;
 module.exports = exports["default"];
 
-},{"../../router":44,"../page.jsx":42,"./camel2label":29,"classnames":"classnames","react":"react","react-router":"react-router"}],32:[function(require,module,exports){
+},{"../../router":45,"../page.jsx":43,"./camel2label":30,"classnames":"classnames","react":"react","react-router":"react-router"}],33:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5659,7 +5683,7 @@ var FacetedSearch = (function (_React$Component) {
                       _react2["default"].createElement(
                         _reactRouter.Link,
                         { to: _router.urls.entity(activeCollection.name, doc.id, vreId) },
-                        doc.displayName_s,
+                        doc.displayName_s && doc.displayName_s.length ? doc.displayName_s : "<No display name found>",
                         doc.birthDate_i ? _react2["default"].createElement(
                           "span",
                           { className: "hi-light-grey pull-right" },
@@ -5716,7 +5740,7 @@ var FacetedSearch = (function (_React$Component) {
 exports["default"] = FacetedSearch;
 module.exports = exports["default"];
 
-},{"../../router":44,"../fields/select-field":40,"../page.jsx":42,"./current-query":30,"./results/pagination":33,"./search-fields":34,"./sort-menu":39,"react":"react","react-router":"react-router"}],33:[function(require,module,exports){
+},{"../../router":45,"../fields/select-field":41,"../page.jsx":43,"./current-query":31,"./results/pagination":34,"./search-fields":35,"./sort-menu":40,"react":"react","react-router":"react-router"}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5864,7 +5888,7 @@ Pagination.propTypes = {
 exports["default"] = Pagination;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react"}],34:[function(require,module,exports){
+},{"classnames":"classnames","react":"react"}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5951,7 +5975,7 @@ var SearchFields = (function (_React$Component) {
 exports["default"] = SearchFields;
 module.exports = exports["default"];
 
-},{"./search-fields/list-facet":35,"./search-fields/range-facet":36,"./search-fields/text-search":38,"react":"react"}],35:[function(require,module,exports){
+},{"./search-fields/list-facet":36,"./search-fields/range-facet":37,"./search-fields/text-search":39,"react":"react"}],36:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5975,6 +5999,10 @@ var _react2 = _interopRequireDefault(_react);
 var _classnames = require("classnames");
 
 var _classnames2 = _interopRequireDefault(_classnames);
+
+var _camel2label = require("../camel2label");
+
+var _camel2label2 = _interopRequireDefault(_camel2label);
 
 var ListFacet = (function (_React$Component) {
   _inherits(ListFacet, _React$Component);
@@ -6029,6 +6057,10 @@ var ListFacet = (function (_React$Component) {
         return i % 2 === 0;
       });
 
+      if (facetValues.length === 0) {
+        return null;
+      }
+
       var facetSortValue = facetSort ? facetSort : query.facetSort ? query.facetSort : query.facetLimit && query.facetLimit > -1 ? "count" : "index";
 
       var expanded = !(collapse || false);
@@ -6051,7 +6083,7 @@ var ListFacet = (function (_React$Component) {
         _react2["default"].createElement(
           "h2",
           { onClick: this.toggleExpand.bind(this), style: { cursor: "pointer" } },
-          label
+          (0, _camel2label2["default"])(label)
         ),
         expanded ? _react2["default"].createElement(
           "div",
@@ -6064,10 +6096,14 @@ var ListFacet = (function (_React$Component) {
             }).map(function (facetValue, i) {
               return _this.state.filter.length === 0 || facetValue.toLowerCase().indexOf(_this.state.filter.toLowerCase()) > -1 ? _react2["default"].createElement(
                 "div",
-                { className: "facet-item downcase-then-capitalize", key: facetValue + "_" + facetCounts[i], onClick: function () {
+                { className: "facet-item", key: facetValue + "_" + facetCounts[i], onClick: function () {
                     return _this.handleClick(facetValue);
                   } },
-                facetValue,
+                _react2["default"].createElement(
+                  "span",
+                  { className: "downcase-then-capitalize", style: { display: "inline-block", maxWidth: "190px" } },
+                  facetValue
+                ),
                 _react2["default"].createElement(
                   "span",
                   { className: "facet-item-amount" },
@@ -6149,7 +6185,7 @@ ListFacet.propTypes = {
 exports["default"] = ListFacet;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react"}],36:[function(require,module,exports){
+},{"../camel2label":30,"classnames":"classnames","react":"react"}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6173,6 +6209,10 @@ var _react2 = _interopRequireDefault(_react);
 var _classnames = require("classnames");
 
 var _classnames2 = _interopRequireDefault(_classnames);
+
+var _camel2label = require("../camel2label");
+
+var _camel2label2 = _interopRequireDefault(_camel2label);
 
 var _rangeSlider = require("./range-slider");
 
@@ -6266,7 +6306,7 @@ var RangeFacet = (function (_React$Component) {
         _react2["default"].createElement(
           "h2",
           { onClick: this.toggleExpand.bind(this), style: { cursor: "pointer" } },
-          label
+          (0, _camel2label2["default"])(label)
         ),
         _react2["default"].createElement(
           "div",
@@ -6307,7 +6347,7 @@ RangeFacet.propTypes = {
 exports["default"] = RangeFacet;
 module.exports = exports["default"];
 
-},{"./range-slider":37,"classnames":"classnames","react":"react"}],37:[function(require,module,exports){
+},{"../camel2label":30,"./range-slider":38,"classnames":"classnames","react":"react"}],38:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6517,7 +6557,7 @@ RangeSlider.propTypes = {
 exports["default"] = RangeSlider;
 module.exports = exports["default"];
 
-},{"react":"react","react-dom":"react-dom"}],38:[function(require,module,exports){
+},{"react":"react","react-dom":"react-dom"}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6623,7 +6663,7 @@ TextSearch.propTypes = {
 exports["default"] = TextSearch;
 module.exports = exports["default"];
 
-},{"react":"react"}],39:[function(require,module,exports){
+},{"react":"react"}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6745,7 +6785,7 @@ SortMenu.propTypes = {
 exports["default"] = SortMenu;
 module.exports = exports["default"];
 
-},{"../fields/select-field":40,"classnames":"classnames","react":"react"}],40:[function(require,module,exports){
+},{"../fields/select-field":41,"classnames":"classnames","react":"react"}],41:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6896,7 +6936,7 @@ SelectField.propTypes = {
 exports["default"] = SelectField;
 module.exports = exports["default"];
 
-},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],41:[function(require,module,exports){
+},{"classnames":"classnames","react":"react","react-dom":"react-dom"}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6972,7 +7012,7 @@ function Footer(props) {
 exports["default"] = Footer;
 module.exports = exports["default"];
 
-},{"react":"react"}],42:[function(require,module,exports){
+},{"react":"react"}],43:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7059,7 +7099,7 @@ function Page(props) {
 exports["default"] = Page;
 module.exports = exports["default"];
 
-},{"./footer":41,"react":"react"}],43:[function(require,module,exports){
+},{"./footer":42,"react":"react"}],44:[function(require,module,exports){
 "use strict";
 
 var _slicedToArray = (function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; })();
@@ -7110,7 +7150,7 @@ document.addEventListener("DOMContentLoaded", function () {
 	_storeStore2["default"].dispatch((0, _actionsMetadata.setVre)(getVreId(), checkForIndex));
 });
 
-},{"./actions/metadata":26,"./actions/solr":27,"./router":44,"./store/store":48,"react-dom":"react-dom"}],44:[function(require,module,exports){
+},{"./actions/metadata":27,"./actions/solr":28,"./router":45,"./store/store":49,"react-dom":"react-dom"}],45:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7197,7 +7237,7 @@ var router = _react2["default"].createElement(
 
 exports["default"] = router;
 
-},{"./actions":25,"./components/app":28,"./components/faceted-search/detail":31,"./store/store":48,"react":"react","react-redux":"react-redux","react-router":"react-router"}],45:[function(require,module,exports){
+},{"./actions":26,"./components/app":29,"./components/faceted-search/detail":32,"./store/store":49,"react":"react","react-redux":"react-redux","react-router":"react-router"}],46:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7226,7 +7266,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7265,7 +7305,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7305,7 +7345,7 @@ exports["default"] = function (state, action) {
 
 module.exports = exports["default"];
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7347,5 +7387,5 @@ var store = (0, _redux.createStore)(data, {}, (0, _redux.applyMiddleware)(_redux
 exports["default"] = store;
 module.exports = exports["default"];
 
-},{"./entity-reducer":45,"./metadata-reducer":46,"./solr-reducer":47,"redux":15,"redux-thunk":9}]},{},[43])(43)
+},{"./entity-reducer":46,"./metadata-reducer":47,"./solr-reducer":48,"redux":16,"redux-thunk":10}]},{},[44])(44)
 });
