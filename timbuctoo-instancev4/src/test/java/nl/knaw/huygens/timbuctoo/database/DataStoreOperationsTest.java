@@ -674,7 +674,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityMapsTheId() throws Exception {
+  public void getEntityMapsTheId() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -701,7 +701,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityOnlyMapsTheKnownProperties() throws Exception {
+  public void getEntityOnlyMapsTheKnownProperties() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -738,7 +738,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityIgnoresThePropertiesWithAWrongValue() throws Exception {
+  public void getEntityIgnoresThePropertiesWithAWrongValue() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -767,7 +767,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityReturnsTheLatestEntityIfTheRefIsNull() throws Exception {
+  public void getEntityReturnsTheLatestEntityIfTheRefIsNull() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -817,7 +817,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityReturnsTheSpecifiedRevision() throws Exception {
+  public void getEntityReturnsTheSpecifiedRevision() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -867,7 +867,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test(expected = NotFoundException.class)
-  public void readEntityThrowsANotFoundExceptionWhenTheDatabaseDoesNotContainTheEntity() throws Exception {
+  public void getEntityThrowsANotFoundExceptionWhenTheDatabaseDoesNotContainTheEntity() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -885,7 +885,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityReturnsTheRelations() throws Exception {
+  public void getEntityReturnsTheRelations() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -929,7 +929,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityUsesTheInverseRelationName() throws Exception {
+  public void getEntityUsesTheInverseRelationName() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -976,7 +976,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityOmitsDeletedRelations() throws Exception {
+  public void getEntityOmitsDeletedRelations() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -1014,7 +1014,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityOnlyReturnsTheLatestRelations() throws Exception {
+  public void getEntityOnlyReturnsTheLatestRelations() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -1057,7 +1057,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityOnlyReturnsAcceptedRelations() throws Exception {
+  public void getEntityOnlyReturnsAcceptedRelations() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -1102,7 +1102,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityReturnsTheTypesOfTheEntity() throws Exception {
+  public void getEntityReturnsTheTypesOfTheEntity() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -1130,7 +1130,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test(expected = NotFoundException.class)
-  public void readEntityThrowsNotFoundIfTheEntityDoesNotContainTheRequestType() throws Exception {
+  public void getEntityThrowsNotFoundIfTheEntityDoesNotContainTheRequestType() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -1155,7 +1155,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test(expected = NotFoundException.class)
-  public void readEntityThrowsNotFoundIfTheEntityIsDeleted() throws Exception {
+  public void getEntityThrowsNotFoundIfTheEntityIsDeleted() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -1181,7 +1181,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityAlwaysReturnsTheDeletedProperty() throws Exception {
+  public void getEntityAlwaysReturnsTheDeletedProperty() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -1208,7 +1208,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityReturnsThePid() throws Exception {
+  public void getEntityReturnsThePid() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
@@ -1236,7 +1236,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void readEntityReturnsANullPidWhenTheEntityDoesNotContainOne() throws Exception {
+  public void getEntityReturnsANullPidWhenTheEntityDoesNotContainOne() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
