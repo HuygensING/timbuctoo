@@ -3,9 +3,9 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
-import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.PersonNamesConverter;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -23,6 +24,16 @@ class PersonNamesTripleProcessor implements TripleProcessor {
   private static final Logger LOG = getLogger(TripleProcessorImpl.class);
   private static final String NAMES_PROPERTY_NAME = "names";
   private static final String NAMES_TYPE_ID = new PersonNamesConverter().getUniqueTypeIdentifier();
+
+  private static final class UriBearingPersonNames {
+    public List<PersonName> list;
+    public Map<String, Integer> nameUris;
+
+    public UriBearingPersonNames() {
+      list = Lists.newArrayList();
+      nameUris = Maps.newHashMap();
+    }
+  }
 
   private final Database database;
   private ObjectMapper objectMapper = new ObjectMapper();
@@ -51,7 +62,7 @@ class PersonNamesTripleProcessor implements TripleProcessor {
 
     if (isAssertion && value.length() > 0) {
       try {
-        addNameComponentToEntity(entity, nameTypePredicate, value);
+        addNameComponentToEntity(entity, nameTypePredicate, value, node.getURI());
       } catch (JsonProcessingException e) {
         LOG.error("Failed to write personNames json for {}.", entity, e);
       } catch (IOException e) {
@@ -60,33 +71,48 @@ class PersonNamesTripleProcessor implements TripleProcessor {
     }
   }
 
-  private void addNameComponentToEntity(Entity entity, String nameTypePredicate, String value)
+  private void addNameComponentToEntity(Entity entity, String nameTypePredicate, String value, String subjectUri)
     throws IOException {
 
     final PersonNameComponent.Type nameType = PersonNameComponent.Type.getInstance(nameTypePredicate);
     final Optional<String> currentRawValue = entity.getPropertyValue("names");
 
     if (currentRawValue.isPresent()) {
-      final PersonNames current = objectMapper.readValue(currentRawValue.get(), PersonNames.class);
-      addNamesProperty(entity, appendToPersonNames(value, nameType, current));
+      final UriBearingPersonNames current = objectMapper.readValue(currentRawValue.get(), UriBearingPersonNames.class);
+      addNamesProperty(entity, appendToPersonNames(value, nameType, current, subjectUri));
     } else {
-      addNamesProperty(entity, makeNewPersonNames(value, nameType));
+      addNamesProperty(entity, makeNewPersonNames(value, nameType, subjectUri));
     }
   }
 
-  private PersonNames makeNewPersonNames(String value, PersonNameComponent.Type nameType) {
-    final PersonNames personNames = new PersonNames();
+  private UriBearingPersonNames makeNewPersonNames(String value, PersonNameComponent.Type nameType, String subjectUri) {
+    final UriBearingPersonNames personNames = new UriBearingPersonNames();
     final PersonName personName = new PersonName();
     personName.addNameComponent(nameType, value);
     personNames.list.add(personName);
+    personNames.nameUris.put(subjectUri, 0);
     return personNames;
   }
 
-  private PersonNames appendToPersonNames(String value, PersonNameComponent.Type nameType, PersonNames current) {
+  private UriBearingPersonNames appendToPersonNames(String value, PersonNameComponent.Type nameType,
+                                                    UriBearingPersonNames current, String subjectUri) {
 
     // FIXME: this will somehow need to become a lookup by URI for alternative names
-    final PersonName currentPersonName = current.list.size() > 0 ? current.list.get(0) : new PersonName();
-    insertNameComponentAtNaturalPosition(nameType, value, currentPersonName);
+    final Integer nameIndex = current.nameUris.getOrDefault(subjectUri, -1);
+    LOG.debug("Processing name uri {} found? {} to -> {}", subjectUri, current.nameUris.containsKey(subjectUri),
+      nameIndex);
+
+    final PersonName newOrUpdatedPersonName = nameIndex > -1 && current.list.size() > nameIndex ?
+      current.list.get(nameIndex) : new PersonName();
+
+
+    insertNameComponentAtNaturalPosition(nameType, value, newOrUpdatedPersonName);
+
+    if (nameIndex < 0) {
+      current.list.add(newOrUpdatedPersonName);
+      current.nameUris.put(subjectUri, current.list.size() - 1);
+    }
+
     return current;
   }
 
@@ -113,8 +139,7 @@ class PersonNamesTripleProcessor implements TripleProcessor {
     return currentPersonNameComponents.size();
   }
 
-
-  private void addNamesProperty(Entity entity, PersonNames personNames) throws JsonProcessingException {
+  private void addNamesProperty(Entity entity, UriBearingPersonNames personNames) throws JsonProcessingException {
     entity.addProperty(NAMES_PROPERTY_NAME, objectMapper.writeValueAsString(personNames), NAMES_TYPE_ID);
   }
 }

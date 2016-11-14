@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.collect.Lists;
 
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.List;
 import static org.apache.commons.lang3.builder.EqualsBuilder.reflectionEquals;
 import static org.apache.commons.lang3.builder.HashCodeBuilder.reflectionHashCode;
 
+@JsonIgnoreProperties(value = { "nameUris" })
 public class PersonNames {
   public List<PersonName> list;
 
