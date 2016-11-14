@@ -4883,11 +4883,11 @@ var checkIndex = function checkIndex(afterCheck) {
 };
 
 var getPropSuffix = function getPropSuffix(archetypeType) {
-	return archetypeType === "datable" ? "i" : archetypeType === "text" ? "s" : archetypeType === "relation" || archetypeType === "list-of-strings" ? "ss" : "";
+	return archetypeType === "datable" ? "i" : archetypeType === "text" ? "s" : archetypeType === "names" ? "t" : archetypeType === "relation" || archetypeType === "list-of-strings" ? "ss" : "";
 };
 
 var getFacetType = function getFacetType(archetypeType) {
-	return archetypeType === "datable" ? "range-facet" : archetypeType === "text" ? "list-facet" : archetypeType === "relation" || archetypeType === "list-of-strings" ? "list-facet" : "";
+	return archetypeType === "datable" ? "range-facet" : archetypeType === "text" ? "list-facet" : archetypeType === "names" ? "text" : archetypeType === "relation" || archetypeType === "list-of-strings" ? "list-facet" : "";
 };
 
 var configureSearchClients = function configureSearchClients() {
@@ -5343,8 +5343,35 @@ var Detail = (function (_React$Component) {
       }
     }
   }, {
+    key: "renderPropPart",
+    value: function renderPropPart(value) {
+      if (typeof value === "string") {
+        return value;
+      } else if (value.components) {
+        return value.components.map(function (com) {
+          return com.value;
+        }).join(" ");
+      }
+    }
+  }, {
+    key: "renderProp",
+    value: function renderProp(propertyValue) {
+      var _this = this;
+
+      if (typeof propertyValue === "string" || typeof propertyValue === "number") {
+        return propertyValue;
+      } else if (Array.isArray(propertyValue)) {
+        return propertyValue.map(function (val) {
+          return _this.renderPropPart(val);
+        }).join(", ");
+      }
+      return "[Object]";
+    }
+  }, {
     key: "render",
     value: function render() {
+      var _this2 = this;
+
       var _props2 = this.props;
       var entity = _props2.entity;
       var collectionMetadata = _props2.collectionMetadata;
@@ -5435,11 +5462,11 @@ var Detail = (function (_React$Component) {
               _react2["default"].createElement(
                 "div",
                 { className: "col-xs-6" },
-                entity[property.name] || entity["@relations"][property.name].filter(function (rel) {
+                entity["@relations"][property.name] ? entity["@relations"][property.name].filter(function (rel) {
                   return rel.displayName.length > 0;
                 }).map(function (rel) {
                   return rel.displayName;
-                }).join(", ")
+                }).join(", ") : _this2.renderProp(entity[property.name])
               )
             );
           })
@@ -7189,7 +7216,7 @@ var urls = {
 		return vreId ? "/?vreId=" + vreId : "/";
 	},
 	entity: function entity(collectionName, id, vreId) {
-		return collectionName && id && vreId ? collectionName + "/" + id + "?vreId=" + vreId : ":collectionName/:id";
+		return collectionName && id && vreId ? "/" + collectionName + "/" + id + "?vreId=" + vreId : "/:collectionName/:id";
 	}
 };
 
