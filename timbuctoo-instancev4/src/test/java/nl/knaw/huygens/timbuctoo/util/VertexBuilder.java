@@ -11,6 +11,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -94,6 +95,11 @@ public class VertexBuilder implements GraphFragmentBuilder {
       vres = Lists.newArrayList();
     }
     this.vres.add(vre);
+    return this;
+  }
+
+  public VertexBuilder withTimId(UUID id) {
+    this.timId = id.toString();
     return this;
   }
 
@@ -231,4 +237,6 @@ public class VertexBuilder implements GraphFragmentBuilder {
   public List<String> getLabels() {
     return labels;
   }
+
+
 }

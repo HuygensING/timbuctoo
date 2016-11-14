@@ -105,7 +105,7 @@ public class RelationData {
       edge.property("deleted", deleted);
     }
     if (typeId != null) {
-      edge.property("typeId", typeId);
+      edge.property("typeId", typeId.toString());
     } else {
       edge.property("typeId", UUID.randomUUID().toString());
     }

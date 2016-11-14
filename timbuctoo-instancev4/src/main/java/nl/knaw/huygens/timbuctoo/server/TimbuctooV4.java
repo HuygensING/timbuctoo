@@ -227,13 +227,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
 
     final CrudServiceFactory crudServiceFactory = new CrudServiceFactory(
-      authorizer,
-      Clock.systemDefaultZone(),
-      handleAdder,
       vres,
       userStore,
-      pathWithoutVersionAndRevision,
-      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null)
+      pathWithoutVersionAndRevision
     );
 
     // register REST endpoints
