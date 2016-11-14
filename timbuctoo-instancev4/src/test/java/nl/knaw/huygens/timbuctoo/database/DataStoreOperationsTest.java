@@ -1,17 +1,23 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
+import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -19,6 +25,8 @@ import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Element;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -30,7 +38,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
@@ -1750,6 +1762,488 @@ public class DataStoreOperationsTest {
     updateEntity.setModified(new Change(timeStamp, "userId", null));
 
     instance.replaceEntity(collection, updateEntity);
+  }
+
+  @Test
+  public void acceptRelationCreatesANewRelationWhenItDoesNotExist() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    UUID relId = instance.acceptRelation(collection, createRelation);
+
+    assertThat(graphWrapper.getGraph().traversal().E().has("tim_id", relId.toString()).next(), is(likeEdge()
+      .withSourceWithId(sourceId)
+      .withTargetWithId(targetId)
+      .withTypeId(typeId)
+    ));
+  }
+
+  @Test
+  public void acceptRelationSetsTheCreatedInformation() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+    long timeStamp = Instant.now().toEpochMilli();
+    String userId = "userId";
+    createRelation.setCreated(new Change(timeStamp, userId, null));
+
+    UUID relId = instance.acceptRelation(collection, createRelation);
+
+    Edge newEdge = graphWrapper.getGraph().traversal().E().has("tim_id", relId.toString()).next();
+    assertThat(getModificationInfo("modified", newEdge), is(jsnO(
+      "timeStamp", jsn(timeStamp),
+      "userId", jsn(userId)
+    )));
+    assertThat(getModificationInfo("created", newEdge), is(jsnO(
+      "timeStamp", jsn(timeStamp),
+      "userId", jsn(userId)
+    )));
+  }
+
+  private ObjectNode getModificationInfo(String prop, Element elm) {
+    return getProp(elm, prop, String.class)
+      .map(data -> Try.of(() -> (ObjectNode) new ObjectMapper().readTree(data)))
+      .orElse(Try.success(null))
+      .get();
+  }
+
+  @Test(expected = RelationNotPossibleException.class)
+  public void acceptRelationThrowsARelationNotPossibleExceptionIfTheSourceIsNotInTheRightVre() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("other")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      ).wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.acceptRelation(collection, createRelation);
+  }
+
+  @Test(expected = RelationNotPossibleException.class)
+  public void acceptRelationThrowsARelationNotPossibleExceptionIfTheTargetIsNotInTheRightVre() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("other")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      ).wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.acceptRelation(collection, createRelation);
+  }
+
+  @Test(expected = RelationNotPossibleException.class)
+  public void acceptRelationsThrowsARelationNotPossibleExceptionIfTheTypeOfTheSourceIsInvalid() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "isRelatedTo")
+        .withProperty("relationtype_sourceTypeName", "teststuff")
+        .withProperty("relationtype_targeTypeName", "testthing")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      ).wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.acceptRelation(collection, createRelation);
+  }
+
+  @Test(expected = RelationNotPossibleException.class)
+  public void acceptRelationsThrowsARelationNotPossibleExceptionIfTheTypeOfTheTargetIsInvalid() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "isRelatedTo")
+        .withProperty("relationtype_sourceTypeName", "testthing")
+        .withProperty("relationtype_targeTypeName", "teststuff")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      ).wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.acceptRelation(collection, createRelation);
+  }
+
+  @Test
+  public void replaceRelationUpdatesTheExistingRelation() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    UUID relId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withOutgoingRelation("regularName", "otherVertex", r -> r
+          .withTim_id(relId)
+          .withAccepted("testrelation", true)
+          .withTypeId(typeId)
+          .withRev(1)
+          .addType("testrelation")
+        )
+      )
+      .withVertex("otherVertex", v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
+    updateRelation.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.replaceRelation(collection, updateRelation);
+
+    assertThat(graphWrapper.getGraph().traversal().E().has("tim_id", relId.toString()).has("isLatest", true).next(),
+      is(likeEdge()
+        .withSourceWithId(sourceId)
+        .withTargetWithId(targetId)
+        .withTypeId(typeId)
+        .withProperty("testrelation_accepted", false)
+      ));
+  }
+
+  @Test
+  public void replaceRelationUpdatesTheModifiedInformation() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    UUID relId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withOutgoingRelation("regularName", "otherVertex", r -> r
+          .withTim_id(relId)
+          .withAccepted("testrelation", true)
+          .withTypeId(typeId)
+          .withRev(1)
+          .addType("testrelation")
+        )
+      )
+      .withVertex("otherVertex", v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
+    long timeStamp = Instant.now().toEpochMilli();
+    String userId = "userId";
+    updateRelation.setModified(new Change(timeStamp, userId, null));
+
+    instance.replaceRelation(collection, updateRelation);
+
+    Edge newEdge = graphWrapper.getGraph().traversal().E().has("tim_id", relId.toString()).has("isLatest", true).next();
+    assertThat(getModificationInfo("modified", newEdge), is(jsnO(
+      "timeStamp", jsn(timeStamp),
+      "userId", jsn(userId)
+    )));
+  }
+
+  @Test
+  public void replaceRelationDuplicatesTheEdge() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    UUID relId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withOutgoingRelation("regularName", "otherVertex", r -> r
+          .withTim_id(relId)
+          .withAccepted("testrelation", true)
+          .withTypeId(typeId)
+          .withRev(1)
+          .addType("testrelation")
+        )
+      )
+      .withVertex("otherVertex", v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
+    long timeStamp = Instant.now().toEpochMilli();
+    String userId = "userId";
+    updateRelation.setModified(new Change(timeStamp, userId, null));
+
+    instance.replaceRelation(collection, updateRelation);
+
+    assertThat(graphWrapper.getGraph().traversal().E().has("tim_id", relId.toString()).count().next(), is(2L));
+  }
+
+  @Test
+  public void replaceRelationUpdatesTheRevisionByOne() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    UUID relId = UUID.randomUUID();
+    int relationRev = 1;
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withOutgoingRelation("regularName", "otherVertex", r -> r
+          .withTim_id(relId)
+          .withAccepted("testrelation", true)
+          .withTypeId(typeId)
+          .withRev(relationRev)
+          .addType("testrelation")
+        )
+      )
+      .withVertex("otherVertex", v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
+    updateRelation.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.replaceRelation(collection, updateRelation);
+
+    assertThat(graphWrapper.getGraph().traversal().E().has("tim_id", relId.toString()).has("isLatest", true).next(), is(
+      likeEdge().withProperty("rev", relationRev + 1))
+    );
   }
 
 }

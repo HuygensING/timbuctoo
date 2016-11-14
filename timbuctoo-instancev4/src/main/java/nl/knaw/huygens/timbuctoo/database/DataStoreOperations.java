@@ -246,7 +246,7 @@ public class DataStoreOperations implements AutoCloseable {
         .orElseThrow(notPossible("Target vertex is not part of the VRE of " + collection.getCollectionName()));
       DirectionalRelationType desc = descs.getForDirection(sourceCollection, targetCollection)
                                           .orElseThrow(notPossible(
-                                            "You can't have a " + descs.getOutName() + " from " +
+                                            "You can't have a " + descs.getOutName() + " relation from " +
                                               sourceCollection.getEntityTypeName() + " to " +
                                               targetCollection.getEntityTypeName() + " or vice versa"));
 

@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
 import java.io.IOException;
+import java.util.UUID;
 
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -79,5 +80,34 @@ public class EdgeMatcher extends CompositeMatcher<Edge> {
     return this;
   }
 
+  public EdgeMatcher withSourceWithId(UUID id) {
+    this.addMatcher(new PropertyEqualityMatcher<Edge, String>("id of source vertex", id.toString()) {
+      @Override
+      protected String getItemValue(Edge item) {
+        return item.outVertex().value("tim_id");
+      }
+    });
+    return this;
+  }
 
+  public EdgeMatcher withTargetWithId(UUID id) {
+    this.addMatcher(new PropertyEqualityMatcher<Edge, String>("id of source vertex", id.toString()) {
+      @Override
+      protected String getItemValue(Edge item) {
+        return item.inVertex().value("tim_id");
+      }
+    });
+    return this;
+  }
+
+
+  public EdgeMatcher withTypeId(UUID id) {
+    this.addMatcher(new PropertyEqualityMatcher<Edge, String>("id of target vertex", id.toString()) {
+      @Override
+      protected String getItemValue(Edge item) {
+        return item.value("typeId");
+      }
+    });
+    return this;
+  }
 }
