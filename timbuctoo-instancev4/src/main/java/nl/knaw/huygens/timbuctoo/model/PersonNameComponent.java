@@ -110,4 +110,11 @@ public class PersonNameComponent {
 
   }
 
+  @Override
+  public String toString() {
+    return "PersonNameComponent{" +
+      "type=" + type +
+      ", value='" + value + '\'' +
+      '}';
+  }
 }

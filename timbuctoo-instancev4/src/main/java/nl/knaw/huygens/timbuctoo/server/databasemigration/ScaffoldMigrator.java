@@ -15,6 +15,8 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.scaffoldPersonDisplayNameProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultFullPersonNameConverter;
+import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
 
 public class ScaffoldMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(ScaffoldMigrator.class);
@@ -36,15 +38,11 @@ public class ScaffoldMigrator {
             vre
               .withCollection("persons", collection ->
                 collection
-                  .withDisplayName(scaffoldPersonDisplayNameProperty(""))
+                  .withDisplayName(localProperty("person_names", defaultFullPersonNameConverter))
+                  .withProperty("names", localProperty("names", personNames))
                   .withProperty("gender", localProperty("person_gender"))
                   .withProperty("birthDate", localProperty("person_birthDate", datable))
                   .withProperty("deathDate", localProperty("person_deathDate", datable))
-                  .withProperty("familyName", localProperty("person_familyName"))
-                  .withProperty("givenName", localProperty("person_givenName"))
-                  .withProperty("preposition", localProperty("person_preposition"))
-                  .withProperty("intraposition", localProperty("person_intraposition"))
-                  .withProperty("postposition", localProperty("person_postposition"))
               )
               .withCollection("locations", collection ->
                 collection
