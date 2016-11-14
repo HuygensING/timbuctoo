@@ -1,11 +1,13 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
@@ -23,6 +25,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -30,6 +33,7 @@ import java.util.UUID;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -40,9 +44,11 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -1409,5 +1415,341 @@ public class DataStoreOperationsTest {
     assertThat(displayNames, containsInAnyOrder("displayName1", "displayName2"));
   }
 
+  @Test
+  public void replaceEntityUpdatesTheRevisionByOne() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withIncomingRelation("VERSION_OF", "orig")
+      )
+      .withVertex("orig", v -> v
+        .withTimId(id.toString())
+        .withProperty("isLatest", false)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
+    updateEntity.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.replaceEntity(collection, updateEntity);
+
+    int rev = (int) graphWrapper.getGraph().traversal().V()
+                                .has("tim_id", id.toString()).has("isLatest", true)
+                                .values("rev").next();
+    assertThat(rev, is(2));
+  }
+
+  @Test
+  public void replaceEntityAddsAType() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id)
+        .withVre("other")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withProperty("otherthing_prop1", "the name")
+        .withIncomingRelation("VERSION_OF", "orig")
+      )
+      .withVertex("orig", v -> v
+        .withTimId(id)
+        .withVre("other")
+        .withType("thing")
+        .withProperty("isLatest", false)
+        .withProperty("rev", 1)
+        .withProperty("otherthing_prop1", "the name")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
+    updateEntity.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.replaceEntity(collection, updateEntity);
+
+    String types = (String) graphWrapper.getGraph().traversal().V()
+                                        .has("tim_id", id.toString())
+                                        .has("isLatest", true)
+                                        .values("types")
+                                        .next();
+    assertThat(types, containsString("\"testthing\""));
+  }
+
+  @Test
+  public void replaceEntityCallTheChangeListenerWithAVertexWithoutPid() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id)
+        .withVre("other")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withProperty("otherthing_prop1", "the name")
+        .withIncomingRelation("VERSION_OF", "orig")
+      )
+      .withVertex("orig", v -> v
+        .withTimId(id)
+        .withVre("other")
+        .withType("thing")
+        .withProperty("isLatest", false)
+        .withProperty("rev", 1)
+        .withProperty("otherthing_prop1", "the name")
+      ).wrap();
+    ChangeListener changeListener = mock(ChangeListener.class);
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres);
+    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
+    updateEntity.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.replaceEntity(collection, updateEntity);
+
+    verify(changeListener).onUpdate(
+      argThat(is(instanceOf(Optional.class))),
+      argThat(likeVertex().withTimId(id.toString()).withProperty("rev", 2).withoutProperty("pid"))
+    );
+  }
+
+  @Test
+  public void replaceEntityUpdatesModified() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
+    long timeStamp = Instant.now().toEpochMilli();
+    updateEntity.setModified(new Change(timeStamp, "userId", null));
+
+    instance.replaceEntity(collection, updateEntity);
+
+    String modified = (String) graphWrapper.getGraph().traversal().V()
+                                           .has("tim_id", id.toString())
+                                           .has("isLatest", true)
+                                           .properties("modified").value()
+                                           .next();
+    assertThat(
+      modified,
+      sameJSONAs(String.format("{\"timeStamp\": %s,\"userId\": \"%s\"}", timeStamp, "userId"))
+    );
+  }
+
+  @Test
+  public void replaceEntityUpdatesTheKnownProperties() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("testthing_prop1", "oldValue")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    ArrayList<TimProperty<?>> properties = Lists.newArrayList(
+      new StringProperty("prop1", "newValue"),
+      new StringProperty("prop2", "prop2Value")
+    );
+    UpdateEntity updateEntity = new UpdateEntity(id, properties, 1);
+    long timeStamp = Instant.now().toEpochMilli();
+    updateEntity.setModified(new Change(timeStamp, "userId", null));
+
+    instance.replaceEntity(collection, updateEntity);
+
+    Vertex vertex = graphWrapper.getGraph().traversal().V().has("tim_id", id.toString()).has("isLatest", true).next();
+    assertThat(vertex, is(
+      likeVertex().withProperty("testthing_prop1", "newValue").withProperty("testthing_prop2", "prop2Value")
+    ));
+  }
+
+  @Test
+  public void replaceEntityRemovesThePropertiesThatAreNotProvided() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("testthing_prop1", "oldValue1")
+        .withProperty("testthing_prop2", "oldValue2")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    ArrayList<TimProperty<?>> properties = Lists.newArrayList(
+      new StringProperty("prop1", "newValue")
+    );
+    UpdateEntity updateEntity = new UpdateEntity(id, properties, 1);
+    long timeStamp = Instant.now().toEpochMilli();
+    updateEntity.setModified(new Change(timeStamp, "userId", null));
+
+    instance.replaceEntity(collection, updateEntity);
+
+    Vertex vertex = graphWrapper.getGraph().traversal().V().has("tim_id", id.toString()).has("isLatest", true).next();
+    assertThat(vertex, is(likeVertex().withoutProperty("testthing_prop2")));
+  }
+
+  @Test
+  public void replaceEntityPreparesABackupCopyAfterMakingTheChanges() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    List<TimProperty<?>> properties = Lists.newArrayList(
+      new StringProperty("prop1", "newValue")
+    );
+    UpdateEntity updateEntity = new UpdateEntity(id, properties, 1);
+    long timeStamp = Instant.now().toEpochMilli();
+    updateEntity.setModified(new Change(timeStamp, "userId", null));
+
+    Vertex beforeUpdate = graphWrapper.getGraph().traversal().V()
+                                      .has("tim_id", id.toString())
+                                      .has("isLatest", true)
+                                      .next();
+
+    instance.replaceEntity(collection, updateEntity);
+
+    Vertex afterUpdate = graphWrapper.getGraph().traversal().V()
+                                     .has("tim_id", id.toString())
+                                     .has("isLatest", true)
+                                     .next();
+
+    assertThat(afterUpdate.id(), is(not(beforeUpdate.id())));
+    assertThat(afterUpdate.edges(Direction.IN).next().outVertex().id(), is(beforeUpdate.id()));
+  }
+
+  @Test
+  public void replaceEntityMovesTheRelationsToTheNewVertex() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 1)
+        .withOutgoingRelation("hasWritten", "stuff")
+        .withIncomingRelation("isFriendOf", "friend")
+      )
+      .withVertex("stuff", v -> v
+        .withVre("test")
+        .withType("stuff")
+        .isLatest(true)
+        .withProperty("rev", 1)
+      )
+      .withVertex("friend", v -> v
+        .withVre("test")
+        .withType("thing")
+        .isLatest(true)
+        .withProperty("rev", 1)
+      )
+      .wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    List<TimProperty<?>> properties = Lists.newArrayList(
+      new StringProperty("prop1", "newValue")
+    );
+    UpdateEntity updateEntity = new UpdateEntity(id, properties, 1);
+    long timeStamp = Instant.now().toEpochMilli();
+    updateEntity.setModified(new Change(timeStamp, "userId", null));
+
+    Vertex origVertex = graphWrapper.getGraph().traversal().V()
+                                    .has("tim_id", id.toString())
+                                    .has("isLatest", true)
+                                    .next();
+    assertThat(stream(origVertex.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(2L));
+
+    instance.replaceEntity(collection, updateEntity);
+
+    Vertex newVertex = graphWrapper.getGraph().traversal().V()
+                                   .has("tim_id", id.toString())
+                                   .has("isLatest", true)
+                                   .next();
+    assertThat(stream(origVertex.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(0L));
+    assertThat(stream(newVertex.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(2L));
+  }
+
+  @Test(expected = NotFoundException.class)
+  public void replaceEntityThrowsANotFoundExceptionWhenTheEntityIsNotInTheDatabase() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper emptyDatabase = newGraph().wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(emptyDatabase, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
+    long timeStamp = Instant.now().toEpochMilli();
+    updateEntity.setModified(new Change(timeStamp, "userId", null));
+
+    instance.replaceEntity(collection, updateEntity);
+  }
+
+  @Test(expected = AlreadyUpdatedException.class)
+  public void replaceEntityThrowsAnAlreadyUpdatedExceptionWhenTheRevDoesNotMatch() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withProperty("rev", 2)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
+    long timeStamp = Instant.now().toEpochMilli();
+    updateEntity.setModified(new Change(timeStamp, "userId", null));
+
+    instance.replaceEntity(collection, updateEntity);
+  }
 
 }
