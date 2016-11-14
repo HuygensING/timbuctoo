@@ -33,8 +33,6 @@ import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -219,39 +217,17 @@ public class DataStoreOperations implements AutoCloseable {
   }
 
   public UUID acceptRelation(Collection collection, CreateRelation createRelation) throws RelationNotPossibleException {
-    return acceptRelation(
-      createRelation.getSourceId(),
-      createRelation.getTypeId(),
-      createRelation.getTargetId(),
-      collection,
-      createRelation.getCreated().getUserId(),
-      Instant.ofEpochMilli(createRelation.getCreated().getTimeStamp())
-    );
-  }
-
-  /**
-   * Creates a relation between two entities.
-   * <p>If a relation already exists, it will not create a new one.</p>
-   *
-   * @param sourceId   Id of the source Entity
-   * @param typeId     Id of the relation type
-   * @param targetId   Id of the target Entity
-   * @param collection the relation collection (not the collection of the source or target vertices)
-   * @param userId     the user under which the relation is created. Will be validated and written to the database
-   * @param instant    the time under which the acceptance should be recorded
-   * @return the UUID of the relation
-   * @throws RelationNotPossibleException      if a relation is not possible
-   * @throws AuthorizationUnavailableException if the relation datafile cannot be read
-   * @throws AuthorizationException            if the user is not authorized
-   */
-  public UUID acceptRelation(UUID sourceId, UUID typeId, UUID targetId, Collection collection, String userId,
-                             Instant instant) throws RelationNotPossibleException {
+    UUID typeId = createRelation.getTypeId();
+    String userId = createRelation.getCreated().getUserId();
+    Instant instant = Instant.ofEpochMilli(createRelation.getCreated().getTimeStamp());
 
     requireCommit = true;
     RelationType descs = getRelationDescription(traversal, typeId)
       .orElseThrow(notPossible("Relation type " + typeId + " does not exist"));
-    Vertex sourceV = getEntityByFullIteration(traversal, sourceId).orElseThrow(notPossible("source is not present"));
-    Vertex targetV = getEntityByFullIteration(traversal, targetId).orElseThrow(notPossible("target is not present"));
+    Vertex sourceV = getEntityByFullIteration(traversal, createRelation.getSourceId())
+      .orElseThrow(notPossible("source is not present"));
+    Vertex targetV = getEntityByFullIteration(traversal, createRelation.getTargetId())
+      .orElseThrow(notPossible("target is not present"));
 
     //check if the relation already exists
     final Optional<EntityRelation> existingEdgeOpt = getEntityRelation(sourceV, targetV, typeId, collection);
