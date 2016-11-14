@@ -359,11 +359,12 @@ public class DataStoreOperations implements AutoCloseable {
       customRelationProperties).mapEntity(entityT, true);
   }
 
-  public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows, boolean withRelations,
+  public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
+                                              boolean withRelations,
                                               CustomEntityProperties customEntityProperties,
                                               CustomRelationProperties customRelationProperties) {
     GraphTraversal<Vertex, Vertex> entities =
-      getCurrentEntitiesFor(collection.getEntityTypeName()).range(rows, rows + start);
+      getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
 
     TinkerPopToEntityMapper tinkerPopToEntityMapper =
       new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties, customRelationProperties);

@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.net.URI;
@@ -22,6 +23,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
@@ -29,13 +31,27 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 // TODO before refactoring this class improve coverage
 public class EntityToJsonMapperTest {
 
+  public static final String USER_ID = "userId";
+  public static final String USER_NAME = "User Name";
+  private UserStore userStore;
+  private EntityToJsonMapper instance;
+
+  @Before
+  public void setUp() throws Exception {
+    userStore = mock(UserStore.class);
+    when(userStore.userForId(USER_ID)).thenReturn(Optional.of(new User(USER_NAME)));
+    instance = new EntityToJsonMapper(
+      userStore,
+      (collection, id1, rev) -> URI.create("www.example.com")
+    );
+  }
+
   @Test
   public void mapEntityMapsTheTypeAndId() throws Exception {
     ReadEntityImpl readEntity = new ReadEntityImpl();
     UUID id = UUID.randomUUID();
     readEntity.setId(id);
-    String userId = "userId";
-    Change change = new Change(Instant.now().toEpochMilli(), userId, null);
+    Change change = new Change(Instant.now().toEpochMilli(), USER_ID, null);
     readEntity.setCreated(change);
     readEntity.setModified(change);
     String type = "otherType";
@@ -44,8 +60,7 @@ public class EntityToJsonMapperTest {
     readEntity.setRev(1);
     readEntity.setPid("pid");
     readEntity.setProperties(Lists.newArrayList());
-    UserStore userStore = mock(UserStore.class);
-    when(userStore.userForId(userId)).thenReturn(Optional.of(new User("User Name")));
+
     EntityToJsonMapper instance = new EntityToJsonMapper(
       userStore,
       (collection, id1, rev) -> URI.create("www.example.com")
@@ -86,9 +101,6 @@ public class EntityToJsonMapperTest {
     ArrayList<TimProperty<?>> properties = Lists.newArrayList();
     properties.add(new StringProperty("name", "Name"));
     readEntity.setProperties(properties);
-    UserStore userStore = mock(UserStore.class);
-    String userName = "User Name";
-    when(userStore.userForId(userId)).thenReturn(Optional.of(new User(userName)));
     EntityToJsonMapper instance = new EntityToJsonMapper(
       userStore,
       (collection, id1, rev) -> URI.create("www.example.com")
@@ -132,13 +144,6 @@ public class EntityToJsonMapperTest {
     String relType = "relType";
     readEntity.setRelations(Lists.newArrayList(new RelationRef(otherEntity, "otherColl", "otherType", true, "relId", 1,
       relType, "displayName")));
-    UserStore userStore = mock(UserStore.class);
-    String userName = "User Name";
-    when(userStore.userForId(userId)).thenReturn(Optional.of(new User(userName)));
-    EntityToJsonMapper instance = new EntityToJsonMapper(
-      userStore,
-      (collection, id1, rev) -> URI.create("www.example.com")
-    );
     Collection collection = mock(Collection.class);
     when(collection.getEntityTypeName()).thenReturn(type);
 
@@ -162,6 +167,73 @@ public class EntityToJsonMapperTest {
         )
       )
     ).toString()).allowingExtraUnexpectedFields());
+  }
+
+  @Test
+  public void mapEntityDoesNotAddADisplayPropertyWhenTheDisplayNameIsNull() {
+    ReadEntityImpl readEntity = new ReadEntityImpl();
+    UUID id = UUID.randomUUID();
+    readEntity.setId(id);
+    String userId = "userId";
+    Change change = new Change(Instant.now().toEpochMilli(), userId, null);
+    readEntity.setCreated(change);
+    readEntity.setModified(change);
+    String type = "otherType";
+    readEntity.setTypes(Lists.newArrayList("type", type));
+    readEntity.setDeleted(false);
+    readEntity.setRev(1);
+    readEntity.setPid("pid");
+    readEntity.setProperties(Lists.newArrayList());
+    readEntity.setRelations(Lists.newArrayList());
+    Collection collection = mock(Collection.class);
+    when(collection.getEntityTypeName()).thenReturn(type);
+
+    ObjectNode resutlJson = instance.mapEntity(
+      collection,
+      readEntity,
+      true,
+      (readEntity1, resultJson) -> {
+      },
+      (relationRef, resultJson) -> {
+      }
+    );
+
+    assertThat(resutlJson.has("@displayName"), is(false));
+  }
+
+  @Test
+  public void mapEntityAddsADisplayNameWhenItIsKnown() {
+    ReadEntityImpl readEntity = new ReadEntityImpl();
+    UUID id = UUID.randomUUID();
+    readEntity.setId(id);
+    String userId = "userId";
+    Change change = new Change(Instant.now().toEpochMilli(), userId, null);
+    readEntity.setCreated(change);
+    readEntity.setModified(change);
+    String type = "otherType";
+    readEntity.setTypes(Lists.newArrayList("type", type));
+    readEntity.setDeleted(false);
+    readEntity.setRev(1);
+    readEntity.setPid("pid");
+    readEntity.setProperties(Lists.newArrayList());
+    readEntity.setRelations(Lists.newArrayList());
+    String displayName = "displayName";
+    readEntity.setDisplayName(displayName);
+    Collection collection = mock(Collection.class);
+    when(collection.getEntityTypeName()).thenReturn(type);
+
+    ObjectNode resutlJson = instance.mapEntity(
+      collection,
+      readEntity,
+      true,
+      (readEntity1, resultJson) -> {
+      },
+      (relationRef, resultJson) -> {
+      }
+    );
+
+    assertThat(resutlJson.has("@displayName"), is(true));
+    assertThat(resutlJson.get("@displayName"), is(jsn(displayName)));
   }
 
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
@@ -1260,5 +1261,153 @@ public class DataStoreOperationsTest {
 
     assertThat(entity.getPid(), is(nullValue()));
   }
+
+  @Test
+  public void getCollectionReturnsAllTheLatestEntitiesOfACollection() {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withLabel("testthing")
+        .withType("thing")
+        .withVre("test")
+        .isLatest(true)
+        .withTimId(id1.toString())
+      )
+      .withVertex(v -> v
+        .withLabel("testthing")
+        .withType("thing")
+        .withVre("test")
+        .isLatest(true)
+        .withTimId(id2.toString())
+      )
+      .withVertex(v -> v
+        .withLabel("testthing")
+        .withType("thing")
+        .withVre("test")
+        .isLatest(false)
+        .withTimId(id2.toString())
+      )
+      .withVertex(v -> v
+        .withLabel("testthing")
+        .withType("thing")
+        .withVre("test")
+        .isLatest(true)
+        .withTimId(id3.toString())
+      )
+      .withVertex(v -> v
+        .withLabel("teststuff")
+        .withType("stuff")
+        .withVre("test")
+        .isLatest(true)
+        .withTimId(UUID.randomUUID().toString())
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    DataStream<ReadEntity> entities = instance.getCollection(
+      collection, 0, 3, false,
+      (readEntity, vertex) -> {
+      }, (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+
+    List<UUID> ids = entities.map(ReadEntity::getId);
+    assertThat(ids, hasSize(3));
+    assertThat(ids, containsInAnyOrder(id1, id2, id3));
+  }
+
+  @Test
+  public void getCollectionReturnsRelationsIfRequested() {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID thingId = UUID.randomUUID();
+    UUID stuffId = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("v1", v -> v
+        .withLabel("testthing")
+        .withVre("test")
+        .withType("thing")
+        .isLatest(true)
+        .withTimId(thingId.toString())
+        .withOutgoingRelation("isCreatorOf", "stuff")
+      )
+      .withVertex("stuff", v -> v
+        .withVre("test")
+        .withType("stuff")
+        .withTimId(stuffId.toString())
+      )
+      .withVertex(v -> v
+        .withProperty("relationtype_regularName", "isCreatedBy")
+        .withProperty("relationtype_inverseName", "isCreatorOf")
+      )
+      .wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    DataStream<ReadEntity> entities = instance.getCollection(collection, 0, 1, true,
+      (readEntity, vertex) -> {
+      }, (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    ReadEntity readEntity = entities.map(entity -> entity).get(0);
+    assertThat(readEntity.getRelations(), contains(
+      allOf(
+        hasProperty("entityId", equalTo(stuffId.toString())),
+        hasProperty("collectionName", equalTo("teststuffs")),
+        hasProperty("entityType", equalTo("teststuff")),
+        hasProperty("relationType", equalTo("isCreatorOf"))
+      )
+    ));
+  }
+
+  @Test
+  public void getCollectionReturnsTheKnowsDisplayNameForEachItem() {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testthings").get();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withLabel("testthing")
+        .withVre("test")
+        .withType("thing")
+        .isLatest(true)
+        .withTimId(id1.toString())
+        .withProperty("testthing_displayName", "displayName1") // configured in JsonCrudServiceBuilder
+      )
+      .withVertex(v -> v
+        .withLabel("testthing")
+        .withVre("test")
+        .withType("thing")
+        .isLatest(true)
+        .withTimId(id2.toString())
+        .withProperty("testthing_displayName", "displayName2") // configured in JsonCrudServiceBuilder
+      )
+      .wrap();
+
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+
+    DataStream<ReadEntity> entities = instance.getCollection(collection, 0, 2, true,
+      (readEntity, vertex) -> {
+      }, (graphTraversalSource, vre, vertex, relationRef) -> {
+      }
+    );
+
+    List<String> displayNames = entities.map(ReadEntity::getDisplayName);
+    assertThat(displayNames, containsInAnyOrder("displayName1", "displayName2"));
+  }
+
 
 }

@@ -133,7 +133,7 @@ public class JsonCrudService {
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
 
-    DataStream<ReadEntity> entities = timDbAccess.getCollection(collection, rows, start, withRelations,
+    DataStream<ReadEntity> entities = timDbAccess.getCollection(collection, start, rows, withRelations,
       (traversalSource, vre) -> {
 
       },
