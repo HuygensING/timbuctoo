@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

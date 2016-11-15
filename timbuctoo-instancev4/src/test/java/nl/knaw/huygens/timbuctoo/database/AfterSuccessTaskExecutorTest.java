@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;

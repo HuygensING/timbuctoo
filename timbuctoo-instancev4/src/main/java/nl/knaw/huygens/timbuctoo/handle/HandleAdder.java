@@ -1,8 +1,9 @@
-package nl.knaw.huygens.timbuctoo.crud;
+package nl.knaw.huygens.timbuctoo.handle;
 
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
+import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.queued.ActiveMqExecutor;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
