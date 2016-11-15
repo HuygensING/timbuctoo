@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.PersonNamesConverter;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNames;
 import org.apache.jena.graph.Triple;
-import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -39,8 +39,8 @@ public class PersonNameVariantTripleProcessor implements TripleProcessor {
         if (theirRawValue.isPresent()) {
           try {
             final UriBearingPersonNames mergedNames = mergeNames(myRawValue.get(), theirRawValue.get());
-            final String sMerged = objectMapper.writeValueAsString(mergedNames);
-            objectEntity.get().addProperty(NAMES_PROPERTY_NAME, sMerged, NAMES_TYPE_ID);
+            objectEntity.get().addProperty(NAMES_PROPERTY_NAME, objectMapper.writeValueAsString(mergedNames),
+              NAMES_TYPE_ID);
           } catch (IOException e) {
             LOG.error("Failed to read/write personNames json", e);
             return;
@@ -60,6 +60,7 @@ public class PersonNameVariantTripleProcessor implements TripleProcessor {
   private UriBearingPersonNames mergeNames(String myRawValue, String theirRawValue) throws IOException {
     final UriBearingPersonNames theirs = objectMapper.readValue(theirRawValue, UriBearingPersonNames.class);
     final UriBearingPersonNames mine = objectMapper.readValue(myRawValue, UriBearingPersonNames.class);
+
     int startIndex = theirs.list.size();
     for (Map.Entry<String, Integer> entry : mine.nameUris.entrySet()) {
       theirs.list.add(mine.list.get(entry.getValue()));
