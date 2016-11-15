@@ -3,19 +3,18 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.PersonNamesConverter;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
+import nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNames;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -24,16 +23,6 @@ class PersonNamesTripleProcessor implements TripleProcessor {
   private static final Logger LOG = getLogger(TripleProcessorImpl.class);
   private static final String NAMES_PROPERTY_NAME = "names";
   private static final String NAMES_TYPE_ID = new PersonNamesConverter().getUniqueTypeIdentifier();
-
-  private static final class UriBearingPersonNames {
-    public List<PersonName> list;
-    public Map<String, Integer> nameUris;
-
-    public UriBearingPersonNames() {
-      list = Lists.newArrayList();
-      nameUris = Maps.newHashMap();
-    }
-  }
 
   private final Database database;
   private ObjectMapper objectMapper = new ObjectMapper();
