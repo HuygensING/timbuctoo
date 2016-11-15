@@ -1,4 +1,5 @@
 require '../lib/mixins/converters/to_year_converter'
+require '../lib/mixins/converters/to_names_converter'
 require '../lib/timbuctoo_solr/default_mapper'
 require '../lib/timbuctoo_solr/timbuctoo_io'
 require '../lib/timbuctoo_solr/solr_io'
@@ -6,6 +7,7 @@ require './generic_configs'
 
 class GenericMapper < DefaultMapper
   include ToYearConverter
+  include ToNamesConverter
 end
 
 class GenericIndexer

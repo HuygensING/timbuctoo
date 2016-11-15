@@ -8,7 +8,7 @@ class GenericConfigs
       :text => [{ :postfix => "_t" }, {:postfix => "_s"}],
       :select => [{ :postfix => "_s" }],
       :multiselect => [{ :postfix => "_ss", }],
-      :names => [{ :postfix => "_s", :converter_type => "names" }],
+      :names => [{ :postfix => "_t", :converter_type => "names" }],
       :datable => [
         { :postfix => "_i", :converter_type => "year" },
         { :postfix => "_s" }
@@ -35,13 +35,12 @@ class GenericConfigs
     properties.reject { |prop| prop["type"].eql?("relation") }.each do |prop|
       GenericConfigs.conversion_configs[prop["type"].to_sym].each do |conf|
         property_configs << {
-          :name => prop[:name],
-          :converted_name => "#{prop[:name]}#{conf[:postfix]}",
+          :name => prop["name"],
+          :converted_name => "#{prop["name"]}#{conf[:postfix]}",
           :type => conf.key?(:converter_type) ? conf[:converter_type] : nil
         }
       end
     end
-
     property_configs
   end
 
