@@ -20,7 +20,7 @@ import java.util.Optional;
 import static org.slf4j.LoggerFactory.getLogger;
 
 class PersonNamesTripleProcessor implements TripleProcessor {
-  private static final Logger LOG = getLogger(TripleProcessorImpl.class);
+  private static final Logger LOG = getLogger(PersonNamesTripleProcessor.class);
   private static final String NAMES_PROPERTY_NAME = "names";
   private static final String NAMES_TYPE_ID = new PersonNamesConverter().getUniqueTypeIdentifier();
 
