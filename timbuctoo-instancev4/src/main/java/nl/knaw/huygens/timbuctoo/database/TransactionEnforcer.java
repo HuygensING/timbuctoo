@@ -14,7 +14,7 @@ public class TransactionEnforcer {
     this(dataStoreOperationsSupplier, timbuctooActionsFactory, new AfterSuccessTaskExecutor());
   }
 
-  public TransactionEnforcer(Supplier<DataStoreOperations> dataStoreOperationsSupplier,
+  TransactionEnforcer(Supplier<DataStoreOperations> dataStoreOperationsSupplier,
                              TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory,
                              AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
 
