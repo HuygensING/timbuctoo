@@ -25,8 +25,8 @@ public class PersonNamesTripleProcessorTest {
   private static final String PERSON_URI = "http://example.com/Jan";
   private static final String TEI_NAMESPACE = "http://www.tei-c.org/ns/1.0/";
   private static final String DIFFERENT_PERSON_URI = "http://example.com/Other_Jan";
-  public static final String NAMES_PROPERTY_NAME = "names";
-  public static final String PERSON_NAMES_TYPE_NAME = "person-names";
+  private static final String NAMES_PROPERTY_NAME = "names";
+  private static final String PERSON_NAMES_TYPE_NAME = "person-names";
 
   private Triple makeTriple(String subject, String predicate, String object) {
     return TripleHelper.createTripleIterator(
