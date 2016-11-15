@@ -86,11 +86,7 @@ class PersonNamesTripleProcessor implements TripleProcessor {
   private UriBearingPersonNames appendToPersonNames(String value, PersonNameComponent.Type nameType,
                                                     UriBearingPersonNames current, String subjectUri) {
 
-    // FIXME: this will somehow need to become a lookup by URI for alternative names
     final Integer nameIndex = current.nameUris.getOrDefault(subjectUri, -1);
-    LOG.debug("Processing name uri {} found? {} to -> {}", subjectUri, current.nameUris.containsKey(subjectUri),
-      nameIndex);
-
     final PersonName newOrUpdatedPersonName = nameIndex > -1 && current.list.size() > nameIndex ?
       current.list.get(nameIndex) : new PersonName();
 
