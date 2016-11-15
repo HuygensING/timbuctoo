@@ -73,7 +73,7 @@ logging:
 #      port: 32768
 #      useMarker: true #
 #      includeFullMDC: true #We put the request information in the MDC
-  level: DEBUG
+  level: INFO
 
 #enable this to send the metrics to graphite
 #metrics:
