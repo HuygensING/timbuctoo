@@ -12,7 +12,6 @@ import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.database.dto.RelationType.relationType;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
-import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.scaffoldPersonDisplayNameProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultFullPersonNameConverter;

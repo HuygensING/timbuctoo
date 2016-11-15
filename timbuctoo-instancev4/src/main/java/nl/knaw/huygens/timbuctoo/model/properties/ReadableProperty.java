@@ -60,8 +60,6 @@ public abstract class ReadableProperty {
       return new WwPersonDisplayName();
     } else if (type.equals(RdfImportedDefaultDisplayname.TYPE)) {
       return new RdfImportedDefaultDisplayname();
-    } else if (type.equals(ScaffoldPersonDisplayName.TYPE)) {
-      return new ScaffoldPersonDisplayName(prefix);
     }
 
     String[] options = null;

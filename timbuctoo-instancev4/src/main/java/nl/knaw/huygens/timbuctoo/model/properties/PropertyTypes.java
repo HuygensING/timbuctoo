@@ -21,7 +21,4 @@ public class PropertyTypes {
     return new WwDocumentDisplayName();
   }
 
-  public static ReadableProperty scaffoldPersonDisplayNameProperty(String vreName) {
-    return new ScaffoldPersonDisplayName(vreName);
-  }
 }
