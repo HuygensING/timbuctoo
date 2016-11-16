@@ -77,9 +77,11 @@ public class TimbuctooActionsReplaceTest {
 
     InOrder inOrder = inOrder(dataStoreOperations, handleAdder, afterSuccessTaskExecutor);
     inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
-    inOrder.verify(afterSuccessTaskExecutor).addHandleTask(
-      handleAdder,
-      new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
+    inOrder.verify(afterSuccessTaskExecutor).addTask(
+      new TimbuctooActions.AddHandleTask(
+        handleAdder,
+        new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
+      )
     );
 
   }

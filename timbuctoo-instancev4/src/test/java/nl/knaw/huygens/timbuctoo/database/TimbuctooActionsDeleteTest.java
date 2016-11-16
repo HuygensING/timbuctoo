@@ -35,6 +35,7 @@ public class TimbuctooActionsDeleteTest {
   private Instant instant;
   private Change change;
   private DataStoreOperations dataStoreOperations;
+  private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   @Before
   public void setUp() throws Exception {
@@ -48,6 +49,7 @@ public class TimbuctooActionsDeleteTest {
     change.setUserId(USER_ID);
     change.setTimeStamp(instant.toEpochMilli());
     dataStoreOperations = mock(DataStoreOperations.class);
+    afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
 
   @Test
@@ -85,12 +87,17 @@ public class TimbuctooActionsDeleteTest {
 
     instance.deleteEntity(collection, ID, USER_ID);
 
-    verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, ID, REV));
+    verify(afterSuccessTaskExecutor).addTask(
+      new TimbuctooActions.AddHandleTask(
+        handleAdder,
+        new HandleAdderParameters(COLLECTION_NAME, ID, REV)
+      )
+    );
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
     return new TimbuctooActions(authorizer, clock, handleAdder,
-      dataStoreOperations, null);
+      dataStoreOperations, afterSuccessTaskExecutor);
   }
 
 

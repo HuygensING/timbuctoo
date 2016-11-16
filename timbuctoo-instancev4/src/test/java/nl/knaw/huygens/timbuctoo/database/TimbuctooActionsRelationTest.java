@@ -40,7 +40,6 @@ public class TimbuctooActionsRelationTest {
   private Collection collection;
   private Instant instant;
   private DataStoreOperations dataStoreOperations;
-  private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   @Before
   public void setUp() throws Exception {
@@ -51,7 +50,6 @@ public class TimbuctooActionsRelationTest {
     createRelation = new CreateRelation(null, null, null);
     collection = mock(Collection.class);
     dataStoreOperations = mock(DataStoreOperations.class);
-    afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
 
   @Test
@@ -140,7 +138,7 @@ public class TimbuctooActionsRelationTest {
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
     return new TimbuctooActions(authorizer, clock, handleAdder,
-      dataStoreOperations, afterSuccessTaskExecutor);
+      dataStoreOperations, null);
   }
 
 }

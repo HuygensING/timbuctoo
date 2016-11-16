@@ -25,7 +25,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -105,7 +104,9 @@ public class TimbuctooActionsCreateTest {
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
-    verify(afterSuccessTaskExecutor).addHandleTask(handleAdder, new HandleAdderParameters(COLLECTION_NAME, id, 1));
+    verify(afterSuccessTaskExecutor).addTask(
+      new TimbuctooActions.AddHandleTask(handleAdder, new HandleAdderParameters(COLLECTION_NAME, id, 1))
+    );
   }
 
   @Test(expected = IOException.class)

@@ -17,6 +17,8 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -55,9 +57,11 @@ public class TimbuctooActions {
 
     dataStoreOperations.createEntity(collection, baseCollection, createEntity);
 
-    afterSuccessTaskExecutor.addHandleTask(
-      handleAdder,
-      new HandleAdderParameters(collection.getCollectionName(), id, 1)
+    afterSuccessTaskExecutor.addTask(
+      new AddHandleTask(
+        handleAdder,
+        new HandleAdderParameters(collection.getCollectionName(), id, 1)
+      )
     );
 
     return id;
@@ -71,9 +75,12 @@ public class TimbuctooActions {
     updateEntity.setModified(createChange(userId));
 
     int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
-    HandleAdderParameters params = new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(),
-      rev);
-    afterSuccessTaskExecutor.addHandleTask(handleAdder, params);
+    afterSuccessTaskExecutor.addTask(
+      new AddHandleTask(
+        handleAdder,
+        new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(), rev)
+      )
+    );
 
   }
 
@@ -83,7 +90,13 @@ public class TimbuctooActions {
 
     int rev = dataStoreOperations.deleteEntity(collection, uuid, createChange(userId));
 
-    handleAdder.add(new HandleAdderParameters(collection.getCollectionName(), uuid, rev));
+
+    afterSuccessTaskExecutor.addTask(
+      new AddHandleTask(
+        handleAdder,
+        new HandleAdderParameters(collection.getCollectionName(), uuid, rev)
+      )
+    );
   }
 
   private Change createChange(String userId) {
@@ -140,6 +153,36 @@ public class TimbuctooActions {
 
   public Vres loadVres() {
     return dataStoreOperations.loadVres();
+  }
+
+  static class AddHandleTask implements AfterSuccessTaskExecutor.Task {
+    private final HandleAdder handleAdder;
+    private final HandleAdderParameters parameters;
+
+    public AddHandleTask(HandleAdder handleAdder, HandleAdderParameters parameters) {
+      this.handleAdder = handleAdder;
+      this.parameters = parameters;
+    }
+
+    @Override
+    public void execute() throws Exception {
+      handleAdder.add(parameters);
+    }
+
+    @Override
+    public String getDescription() {
+      return String.format("Add handle to '%s'", parameters);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      return EqualsBuilder.reflectionEquals(this, obj);
+    }
+
+    @Override
+    public int hashCode() {
+      return HashCodeBuilder.reflectionHashCode(this);
+    }
   }
 
   public static class TimbuctooActionsFactory {

@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,20 +14,8 @@ public class AfterSuccessTaskExecutor {
     tasks = Lists.newArrayList();
   }
 
-
-  public void addHandleTask(HandleAdder handleAdder, HandleAdderParameters handleAdderParameters) {
-    tasks.add(new Task() {
-
-      @Override
-      public void execute() throws Exception {
-        handleAdder.add(handleAdderParameters);
-      }
-
-      @Override
-      public String getDescription() {
-        return String.format("Add handle to '%s'", handleAdderParameters);
-      }
-    });
+  public void addTask(Task task) {
+    tasks.add(task);
   }
 
   public void executeTasks() {
@@ -43,7 +29,7 @@ public class AfterSuccessTaskExecutor {
     );
   }
 
-  private interface Task {
+  public interface Task {
 
     void execute() throws Exception;
 
