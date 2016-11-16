@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
@@ -35,7 +34,6 @@ public class TimbuctooActionsRelationTest {
 
   private static final String USER_ID = "userId";
   private Clock clock;
-  private HandleAdder handleAdder;
   private CreateRelation createRelation;
   private Collection collection;
   private Instant instant;
@@ -46,7 +44,6 @@ public class TimbuctooActionsRelationTest {
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    handleAdder = mock(HandleAdder.class);
     createRelation = new CreateRelation(null, null, null);
     collection = mock(Collection.class);
     dataStoreOperations = mock(DataStoreOperations.class);
@@ -137,8 +134,7 @@ public class TimbuctooActionsRelationTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleAdder,
-      dataStoreOperations, null);
+    return new TimbuctooActions(authorizer, clock, null, dataStoreOperations, null);
   }
 
 }

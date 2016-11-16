@@ -9,10 +9,10 @@ public class ActiveMqExecutor<T> {
 
   private final ActiveMQSender sender;
 
-  public ActiveMqExecutor(ActiveMQBundle mq, String queuename, Consumer<T> consumer, Class<? extends T> clazz) {
-    this.sender = mq.createSender("queue:" + queuename, true);
+  public ActiveMqExecutor(ActiveMQBundle mq, String queueName, Consumer<T> consumer, Class<? extends T> clazz) {
+    this.sender = mq.createSender("queue:" + queueName, true);
     mq.registerReceiver(
-      "queue:" + queuename,
+      "queue:" + queueName,
       consumer::accept,
       clazz,
       false

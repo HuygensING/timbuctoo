@@ -1,9 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -30,7 +29,7 @@ public class TimbuctooActionsDeleteTest {
   public static final int REV = 1;
   public static final String COLLECTION_NAME = "collectionName";
   private Clock clock;
-  private HandleAdder handleAdder;
+  private HandleCreator handleCreator;
   private Collection collection;
   private Instant instant;
   private Change change;
@@ -42,7 +41,7 @@ public class TimbuctooActionsDeleteTest {
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    handleAdder = mock(HandleAdder.class);
+    handleCreator = mock(HandleCreator.class);
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
     change = new Change();
@@ -89,14 +88,14 @@ public class TimbuctooActionsDeleteTest {
 
     verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddHandleTask(
-        handleAdder,
+        handleCreator,
         new HandleAdderParameters(COLLECTION_NAME, ID, REV)
       )
     );
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleAdder,
+    return new TimbuctooActions(authorizer, clock, handleCreator,
       dataStoreOperations, afterSuccessTaskExecutor);
   }
 

@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -19,7 +18,7 @@ public class TransactionEnforcerTest {
     DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
     TransactionEnforcer instance =
       new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactory(mock(
-        Authorizer.class), Clock.systemDefaultZone(), mock(HandleAdder.class)), afterSuccessTaskExecutor);
+        Authorizer.class), Clock.systemDefaultZone(), mock(HandleCreator.class)), afterSuccessTaskExecutor);
 
     instance.executeAndReturn(timbuctooActions -> TransactionStateAndResult.commitAndReturn(""));
 
@@ -35,7 +34,7 @@ public class TransactionEnforcerTest {
     DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
     TransactionEnforcer instance =
       new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactory(mock(
-        Authorizer.class), Clock.systemDefaultZone(), mock(HandleAdder.class)), afterSuccessTaskExecutor);
+        Authorizer.class), Clock.systemDefaultZone(), mock(HandleCreator.class)), afterSuccessTaskExecutor);
 
     instance.executeAndReturn(timbuctooActions -> TransactionStateAndResult.rollbackAndReturn(""));
 
@@ -48,7 +47,7 @@ public class TransactionEnforcerTest {
     DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
     TransactionEnforcer instance =
       new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactory(mock(
-        Authorizer.class), Clock.systemDefaultZone(), mock(HandleAdder.class)), afterSuccessTaskExecutor);
+        Authorizer.class), Clock.systemDefaultZone(), mock(HandleCreator.class)), afterSuccessTaskExecutor);
 
     try {
       instance.executeAndReturn(timbuctooActions -> {

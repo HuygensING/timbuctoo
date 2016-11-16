@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
@@ -12,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -32,16 +31,16 @@ public class TimbuctooActions {
 
   private final Authorizer authorizer;
   private final Clock clock;
-  private final HandleAdder handleAdder;
+  private final HandleCreator handleCreator;
   private final DataStoreOperations dataStoreOperations;
   private final AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   public TimbuctooActions(Authorizer authorizer, Clock clock,
-                          HandleAdder handleAdder, DataStoreOperations dataStoreOperations,
+                          HandleCreator handleCreator, DataStoreOperations dataStoreOperations,
                           AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
     this.authorizer = authorizer;
     this.clock = clock;
-    this.handleAdder = handleAdder;
+    this.handleCreator = handleCreator;
     this.dataStoreOperations = dataStoreOperations;
     this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
   }
@@ -59,7 +58,7 @@ public class TimbuctooActions {
 
     afterSuccessTaskExecutor.addTask(
       new AddHandleTask(
-        handleAdder,
+        handleCreator,
         new HandleAdderParameters(collection.getCollectionName(), id, 1)
       )
     );
@@ -77,7 +76,7 @@ public class TimbuctooActions {
     int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
     afterSuccessTaskExecutor.addTask(
       new AddHandleTask(
-        handleAdder,
+        handleCreator,
         new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(), rev)
       )
     );
@@ -93,7 +92,7 @@ public class TimbuctooActions {
 
     afterSuccessTaskExecutor.addTask(
       new AddHandleTask(
-        handleAdder,
+        handleCreator,
         new HandleAdderParameters(collection.getCollectionName(), uuid, rev)
       )
     );
@@ -156,17 +155,17 @@ public class TimbuctooActions {
   }
 
   static class AddHandleTask implements AfterSuccessTaskExecutor.Task {
-    private final HandleAdder handleAdder;
+    private final HandleCreator handleCreator;
     private final HandleAdderParameters parameters;
 
-    public AddHandleTask(HandleAdder handleAdder, HandleAdderParameters parameters) {
-      this.handleAdder = handleAdder;
+    public AddHandleTask(HandleCreator handleCreator, HandleAdderParameters parameters) {
+      this.handleCreator = handleCreator;
       this.parameters = parameters;
     }
 
     @Override
     public void execute() throws Exception {
-      handleAdder.add(parameters);
+      handleCreator.add(parameters);
     }
 
     @Override
@@ -188,12 +187,12 @@ public class TimbuctooActions {
   public static class TimbuctooActionsFactory {
     private final Authorizer authorizer;
     private final Clock clock;
-    private final HandleAdder handleAdder;
+    private final HandleCreator handleCreator;
 
-    public TimbuctooActionsFactory(Authorizer authorizer, Clock clock, HandleAdder handleAdder) {
+    public TimbuctooActionsFactory(Authorizer authorizer, Clock clock, HandleCreator handleCreator) {
       this.authorizer = authorizer;
       this.clock = clock;
-      this.handleAdder = handleAdder;
+      this.handleCreator = handleCreator;
     }
 
     public TimbuctooActions create(DataStoreOperations dataStoreOperations,
@@ -202,7 +201,7 @@ public class TimbuctooActions {
       return new TimbuctooActions(
         authorizer,
         clock,
-        handleAdder,
+        handleCreator,
         dataStoreOperations,
         afterSuccessTaskExecutor
       );

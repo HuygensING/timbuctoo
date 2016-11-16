@@ -16,7 +16,6 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
@@ -29,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener
 import nl.knaw.huygens.timbuctoo.database.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
+import nl.knaw.huygens.timbuctoo.handle.HandleService;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
@@ -47,8 +47,8 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayN
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
-import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacySingleEntityRedirect;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyIndexRedirect;
+import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacySingleEntityRedirect;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
@@ -72,6 +72,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
+import nl.knaw.huygens.timbuctoo.server.healthchecks.HandleServiceStartedCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
@@ -177,12 +178,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator handleUri = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
-    final HandleAdder handleAdder = new HandleAdder(
+
+    HandleService handleService = new HandleService(
       activeMqBundle,
       HANDLE_QUEUE,
       graphManager,
       persistenceManager,
       handleUri);
+
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
       new AddLabelChangeListener(),
@@ -191,20 +194,23 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
 
-    UrlGenerator pathWithoutVersionAndRevision =
+    final UrlGenerator pathWithoutVersionAndRevision =
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, null).toString().replaceFirst("^/v2.1/", ""));
-    UrlGenerator uriWithoutRev = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
+    final UrlGenerator uriWithoutRev = (coll, id, rev) ->
+      uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-      new TimbuctooActions.TimbuctooActionsFactory(authorizer, Clock.systemDefaultZone(), handleAdder);
+      new TimbuctooActions.TimbuctooActionsFactory(authorizer, Clock.systemDefaultZone(),
+        handleService.newHandleCreator());
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
       () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null),
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
+    handleService.start();
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
 
@@ -287,6 +293,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, "Neo4j database connection", graphManager);
     register(environment, "Database", new DatabaseHealthCheck(databaseValidationRunner));
+    register(environment, "HandleService", new HandleServiceStartedCheck(handleService));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));

@@ -4,15 +4,15 @@ import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
+import nl.knaw.huygens.timbuctoo.database.HandleCreator;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.queued.ActiveMqExecutor;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.slf4j.Logger;
 
 import java.net.URI;
-import java.util.UUID;
 
-public class HandleAdder {
+class HandleAdder implements HandleCreator {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleAdder.class);
 
   private final ActiveMqExecutor<HandleAdderParameters> activeMqExecutor;
@@ -20,12 +20,12 @@ public class HandleAdder {
   private final PersistenceManager manager;
   private final UrlGenerator handleUri;
 
-  public HandleAdder(ActiveMQBundle mq, String queuename, GraphWrapper wrapper, PersistenceManager manager,
+  public HandleAdder(ActiveMQBundle mq, String queueName, GraphWrapper wrapper, PersistenceManager manager,
                      UrlGenerator handleUri) {
     this.wrapper = wrapper;
     this.manager = manager;
     this.handleUri = handleUri;
-    this.activeMqExecutor = new ActiveMqExecutor<>(mq, queuename, this::create, HandleAdderParameters.class);
+    this.activeMqExecutor = new ActiveMqExecutor<>(mq, queueName, this::create, HandleAdderParameters.class);
   }
 
   public void create(HandleAdderParameters params) {
@@ -52,10 +52,7 @@ public class HandleAdder {
     }
   }
 
-  public void add(String collectionName, UUID id, int rev) {
-    this.add(new HandleAdderParameters(collectionName, id, rev));
-  }
-
+  @Override
   public void add(HandleAdderParameters params) {
     LOG.info(String.format("Adding %s%s job to the queue for '%s' '%s' '%s'",
       params.getRetries() + 1, getOrdinalSuffix(params.getRetries() + 1),

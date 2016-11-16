@@ -1,11 +1,10 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -35,9 +34,8 @@ public class TimbuctooActionsReplaceTest {
   public static final UUID ID = UUID.randomUUID();
   private static final String USER_ID = "userId";
   private final DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
-  private TransactionEnforcer transactionEnforcer;
   private Clock clock;
-  private HandleAdder handleAdder;
+  private HandleCreator handleCreator;
   private UpdateEntity updateEntity;
   private Collection collection;
   private Instant instant;
@@ -45,11 +43,10 @@ public class TimbuctooActionsReplaceTest {
 
   @Before
   public void setUp() throws Exception {
-    transactionEnforcer = mock(TransactionEnforcer.class);
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    handleAdder = mock(HandleAdder.class);
+    handleCreator = mock(HandleCreator.class);
     updateEntity = mock(UpdateEntity.class);
     when(updateEntity.getId()).thenReturn(ID);
     collection = mock(Collection.class);
@@ -75,11 +72,11 @@ public class TimbuctooActionsReplaceTest {
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
-    InOrder inOrder = inOrder(dataStoreOperations, handleAdder, afterSuccessTaskExecutor);
+    InOrder inOrder = inOrder(dataStoreOperations, handleCreator, afterSuccessTaskExecutor);
     inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
     inOrder.verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddHandleTask(
-        handleAdder,
+        handleCreator,
         new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
       )
     );
@@ -119,7 +116,7 @@ public class TimbuctooActionsReplaceTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleAdder,
+    return new TimbuctooActions(authorizer, clock, handleCreator,
       dataStoreOperations, afterSuccessTaskExecutor);
   }
 

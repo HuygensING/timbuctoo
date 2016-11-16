@@ -3,11 +3,11 @@ package nl.knaw.huygens.timbuctoo.crud;
 import nl.knaw.huygens.timbuctoo.database.AfterSuccessTaskExecutor;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.HandleCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -32,7 +32,7 @@ import static org.mockito.Mockito.when;
 public class JsonCrudServiceBuilder {
   private Vres vres;
   private Clock clock;
-  private HandleAdder handleAdder;
+  private HandleCreator handleCreator;
   private UrlGenerator relationUrlGenerator;
   private UserStore userStore;
   private Authorizer authorizer;
@@ -76,7 +76,7 @@ public class JsonCrudServiceBuilder {
 
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/");
     clock = Clock.systemDefaultZone();
-    handleAdder = mock(HandleAdder.class);
+    handleCreator = mock(HandleCreator.class);
     relationUrlGenerator = (collection, id, rev) -> URI.create("http://example.com/relationUrl");
     authorizer = anyUserIsAllowedToWriteAnyCollectionAuthorizer();
     userStore = mock(UserStore.class);
@@ -104,7 +104,7 @@ public class JsonCrudServiceBuilder {
       new TimbuctooActions(
         authorizer,
         clock,
-        handleAdder,
+        handleCreator,
         dataStoreOperations,
         new AfterSuccessTaskExecutor()
       )
@@ -134,11 +134,6 @@ public class JsonCrudServiceBuilder {
 
   public JsonCrudServiceBuilder withRelationUrlGenerator(UrlGenerator generator) {
     this.relationUrlGenerator = generator;
-    return this;
-  }
-
-  public JsonCrudServiceBuilder withHandleAdder(HandleAdder handleAdder) {
-    this.handleAdder = handleAdder;
     return this;
   }
 
