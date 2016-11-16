@@ -45,6 +45,7 @@ import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.PrepareForBiaImportMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyIndexRedirect;
@@ -173,6 +174,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     migrations.put("fix-dcarkeywords-displayname-migration", new FixDcarKeywordDisplayNameMigration());
     migrations.put("fix-pids-migration", new MakePidsAbsoluteUrls());
+
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
@@ -213,6 +215,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     handleService.start(transactionEnforcer);
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
+    migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, transactionEnforcer));
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
     final AutocompleteService autocompleteService = new AutocompleteService(

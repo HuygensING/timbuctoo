@@ -538,6 +538,10 @@ public class DataStoreOperations implements AutoCloseable {
     requireCommit = true;
     //FIXME: add security
     saveVres(mappings);
+    saveRelationTypes(relationTypes);
+  }
+
+  public void saveRelationTypes(RelationType... relationTypes) {
     for (RelationType relationType : relationTypes) {
       saveRelationType(relationType);
     }
