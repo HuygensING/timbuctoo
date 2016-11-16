@@ -1,30 +1,29 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.styleawarexlsxloader;
 
-import nl.knaw.huygens.timbuctoo.bulkupload.loaders.ResultHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.RowCellHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
+import org.slf4j.Logger;
 
-import java.util.HashMap;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class StyleAwareRowCellHandler implements RowCellHandler {
   private final Importer importer;
-  private final ResultHandler handler;
   private boolean entityStarted;
   private StylesMapper stylesMapper;
+  private static final Logger LOG = getLogger(StyleAwareRowCellHandler.class);
 
-  public StyleAwareRowCellHandler(Importer importer, ResultHandler handler, StylesMapper stylesMapper) {
+  public StyleAwareRowCellHandler(Importer importer, StylesMapper stylesMapper) {
     this.stylesMapper = stylesMapper;
     this.importer = importer;
-    this.handler = handler;
   }
 
   @Override public void start(String name) {
     entityStarted = false;
-    handler.startSheet(name, importer.startCollection(name));
+    importer.startCollection(name);
   }
 
   @Override public void startRow(int rowNum) {
-    handler.startRow();
+    importer.startEntity();
   }
 
   @Override public void cell(short column, String value, String cellStyleStr) {
@@ -32,15 +31,14 @@ public class StyleAwareRowCellHandler implements RowCellHandler {
 
     switch (style) {
       case PROPERTY_NAME:
-        handler.handle(column, value, importer.registerPropertyName(column, value));
+        importer.registerPropertyName(column, value);
         break;
       case VALUE:
         if (!entityStarted) {
           entityStarted  = true;
-          handler.startValuePart();
           importer.startEntity();
         }
-        handler.handle(column, value, importer.setValue(column, value));
+        importer.setValue(column, value);
         break;
       case NONE:
         break;
@@ -52,15 +50,14 @@ public class StyleAwareRowCellHandler implements RowCellHandler {
   @Override public void endRow(int rowNum) {
     if (entityStarted) {
       entityStarted = false;
-      handler.endRow(importer.finishEntity());
+      importer.finishEntity();
     } else {
-      handler.endRow(new HashMap<>());
+      LOG.error("An entity was finished before it was started");
     }
   }
 
   @Override public void finish() {
     importer.finishCollection();
-    handler.endSheet();
   }
 
 }

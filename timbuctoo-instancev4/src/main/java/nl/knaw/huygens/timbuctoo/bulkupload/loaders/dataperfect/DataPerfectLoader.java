@@ -8,7 +8,7 @@ import nl.knaw.dans.common.dataperfect.NoSuchRecordFieldException;
 import nl.knaw.dans.common.dataperfect.Panel;
 import nl.knaw.dans.common.dataperfect.Record;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
-import nl.knaw.huygens.timbuctoo.bulkupload.loaders.BulkLoader;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import org.slf4j.Logger;
 
@@ -20,7 +20,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -30,13 +29,13 @@ import static com.google.common.io.Files.createTempDir;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.ImportFileInvariant;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class DataPerfectLoader implements BulkLoader {
+public class DataPerfectLoader implements Loader {
 
   private static final Logger LOG = getLogger(DataPerfectLoader.class);
   private final Map<String, Integer> genericNameCounters = new HashMap<>();
 
   @Override
-  public void loadData(byte[] source, Importer importer, Consumer<String> statusUpdate)
+  public void loadData(byte[] source, Importer importer)
     throws InvalidFileException, IOException {
     Database dbPerfectdb = null;
     try {
@@ -46,7 +45,7 @@ public class DataPerfectLoader implements BulkLoader {
       File structureFile = getStructureFile(dirWithDb);
 
       dbPerfectdb = new Database(structureFile);
-      importDbPerfect(importer, dbPerfectdb, statusUpdate);
+      importDbPerfect(importer, dbPerfectdb);
       delete(output);
     } catch (DataPerfectLibException e) {
       throw new InvalidFileException("Not a valid dataperfect file", e);
@@ -71,7 +70,8 @@ public class DataPerfectLoader implements BulkLoader {
   }
 
 
-  private void importDbPerfect(Importer importer, Database dbPerfectdb, Consumer<String> statusUpdate) throws IOException, DataPerfectLibException {
+  private void importDbPerfect(Importer importer, Database dbPerfectdb)
+    throws IOException, DataPerfectLibException {
     dbPerfectdb.open();
     for (Panel panel : dbPerfectdb.getPanels()) {
       importer.startCollection(orGeneric(panel.getName(), "sheet"));
