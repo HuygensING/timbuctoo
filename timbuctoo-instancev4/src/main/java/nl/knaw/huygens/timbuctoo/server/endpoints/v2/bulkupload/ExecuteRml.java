@@ -220,11 +220,9 @@ public class ExecuteRml {
   }
 
   private void debugLogTripleCount(AtomicLong tripleCount, boolean force) {
-    if (LOG.isDebugEnabled()) {
-      final long curCount = tripleCount.incrementAndGet();
-      if (force || curCount % 1000 == 0) {
-        LOG.debug("Processed {} triples", curCount);
-      }
+    final long curCount = tripleCount.incrementAndGet();
+    if (force || curCount % 1000 == 0) {
+      LOG.info("Processed {} triples", curCount);
     }
   }
 }
