@@ -18,6 +18,7 @@ class FederatedIndexer
     @timbuctoo_io = TimbuctooIO.new(options[:timbuctoo_url])
     @index_name = options.key?(:index_name) ? options[:index_name] : "federated"
     @forked = options[:forked]
+    @debug_sample = options[:debug_sample]
   end
 
   def run
@@ -37,16 +38,18 @@ class FederatedIndexer
     datasets.reject{|dataset| dataset.name.eql?("Admin") or dataset.name.eql?("Base")}.each do |dataset|
       dataset.metadata.each do |_, collection|
         # skip scrape for relation collections
-        next if collection[:relationCollection]
-        collection_start = Time.now
+        next if collection[:relationCollection] or collection[:unknown]
         if @forked
           forks << Process.fork do
+            collection_start = Time.now
             process_collection(archetype_configs, collection, dataset)
+            puts "#{collection[:collectionName]} took #{Time.now - collection_start} seconds"
           end
         else
+          collection_start = Time.now
           process_collection(archetype_configs, collection, dataset)
+          puts "#{collection[:collectionName]} took #{Time.now - collection_start} seconds"
         end
-        puts "#{collection[:collectionName]} took #{Time.now - collection_start} seconds"
       end
     end
 
@@ -83,6 +86,7 @@ class FederatedIndexer
     # scrapes the collection and sends each record to the updater
     @timbuctoo_io.scrape_collection(collection[:collectionName],
                                     :with_relations => true,
+                                    :debug_sample => @debug_sample,
                                     :process_record => -> (record) { solr_updater.add(record) })
     # indexes the remaining batch
     solr_updater.flush

@@ -95,7 +95,7 @@ class TimbuctooIO
     uri = URI.parse(location)
     req = Net::HTTP::Get.new(uri)
     http = Net::HTTP.new(uri.hostname, uri.port)
-
+    http.read_timeout = 600
     response = http.request(req)
     raise "http request failed with status #{response.code}: #{location}" unless response.code.eql?('200')
     response.body

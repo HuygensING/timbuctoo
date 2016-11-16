@@ -2,7 +2,8 @@ require 'optparse'
 require './federated_indexer'
 
 options = {
-  :forked => false
+  :forked => false,
+  :debug_sample => false
 }
 
 OptionParser.new do |opts|
@@ -12,7 +13,8 @@ OptionParser.new do |opts|
   opts.on('-s', '--solr-url SOLR_URL', 'Base url for Timbuctoo') {|s| options[:solr_url] = s }
   opts.on('-a', '--solr-auth AUTH', 'Value for Authentication header of solr server') {|a| options[:solr_auth] = a }
   opts.on('-i', '--index-name NAME', 'Name of the index, defaults to "federated"') {|i| options[:index_name] = i }
-  opts.on('-f', '--forked', 'run in forked mode, one fork per collection') {|x| options[:forked] = true }
+  opts.on('-F', '--forked', 'run in forked mode, one fork per collection') {|x| options[:forked] = true }
+  opts.on('-D', '--debug-sample', 'run in forked mode, one fork per collection') {|x| options[:debug_sample] = true }
 end.parse!
 
 

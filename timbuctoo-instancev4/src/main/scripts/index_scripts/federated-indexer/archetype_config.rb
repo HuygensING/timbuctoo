@@ -12,7 +12,8 @@ class ArchetypeConfig
         { :postfix => "_i", :converter_type => "year" },
         { :postfix => "_s" }
       ],
-      :links => [{ :postfix => "_t",  :converter_type => "links" }]
+      :links => [{ :postfix => "_t",  :converter_type => "links" }],
+      "list-of-strings".to_sym => [{ :postfix => "_ss"} ]
     }
   end
 
@@ -35,12 +36,16 @@ class ArchetypeConfig
 
     # looks up the correct solr postfix and converter in conversions_configs
     @properties.reject { |prop| prop[:type].eql?("relation") }.each do |prop|
-      ArchetypeConfig.conversion_configs[prop[:type].to_sym].each do |conf|
-        property_configs << {
-            :name => prop[:name],
-            :converted_name => "#{prop[:name]}#{conf[:postfix]}",
-            :type => conf.key?(:converter_type) ? conf[:converter_type] : nil
-        }
+      begin
+        ArchetypeConfig.conversion_configs[prop[:type].to_sym].each do |conf|
+          property_configs << {
+              :name => prop[:name],
+              :converted_name => "#{prop[:name]}#{conf[:postfix]}",
+              :type => conf.key?(:converter_type) ? conf[:converter_type] : nil
+          }
+        end
+      rescue
+        raise "failure for #{prop[:type]}"
       end
     end
 
