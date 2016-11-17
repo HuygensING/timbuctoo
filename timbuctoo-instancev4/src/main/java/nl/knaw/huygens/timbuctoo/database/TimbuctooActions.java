@@ -20,6 +20,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.Clock;
 import java.util.Optional;
 import java.util.UUID;
@@ -152,6 +153,10 @@ public class TimbuctooActions {
 
   public Vres loadVres() {
     return dataStoreOperations.loadVres();
+  }
+
+  public void addPid(UUID id, int rev, URI pidUri) throws NotFoundException {
+    dataStoreOperations.addPid(id, rev, pidUri);
   }
 
   static class AddHandleTask implements AfterSuccessTaskExecutor.Task {

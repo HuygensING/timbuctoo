@@ -210,7 +210,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
-    handleService.start();
+    handleService.start(transactionEnforcer);
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
 

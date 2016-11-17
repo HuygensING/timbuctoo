@@ -32,6 +32,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -2244,6 +2245,50 @@ public class DataStoreOperationsTest {
     assertThat(graphWrapper.getGraph().traversal().E().has("tim_id", relId.toString()).has("isLatest", true).next(), is(
       likeEdge().withProperty("rev", relationRev + 1))
     );
+  }
+
+  @Test
+  public void addPidAddsAPidToEachVertexInTheCollectionWithTheIdAndRev() throws Exception {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    int rev = 1;
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", rev)
+        .withProperty("isLatest", true)
+        .withIncomingRelation("VERSION_OF", "version")
+      ).withVertex("version", v -> v
+        .withTimId(id.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", rev)
+        .withProperty("isLatest", false)
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    URI pidUri = new URI("http://example.com/pid");
+
+    instance.addPid(id, rev, pidUri);
+
+    assertThat(graphWrapper.getGraph().traversal().V().has("pid", pidUri.toString()).count().next(), is(2L));
+  }
+
+  @Test(expected = NotFoundException.class)
+  public void addPidThrowsANotFoundExceptionWhenNoVertexCanBeFound() throws Exception {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id = UUID.randomUUID();
+    int rev = 1;
+    GraphWrapper emptyDatabase = newGraph().wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(emptyDatabase, mock(ChangeListener.class), entityFetcher, vres);
+    URI pidUri = new URI("http://example.com/pid");
+
+    instance.addPid(id, rev, pidUri);
   }
 
 }

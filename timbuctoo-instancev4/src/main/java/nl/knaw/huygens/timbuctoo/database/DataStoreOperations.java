@@ -54,6 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
@@ -730,4 +731,19 @@ public class DataStoreOperations implements AutoCloseable {
     );
   }
 
+  public void addPid(UUID id, int rev, URI pidUri) throws NotFoundException {
+    /*
+     * EntityFetcher does not work here, because it does not return all the vertices with a certain id en revision. It
+     * will only return the vertex with the revision with "isLatest" set to false.
+     */
+    GraphTraversal<Vertex, Vertex> vertices = traversal.V().has("tim_id", id.toString()).has("rev", rev);
+    if (!vertices.hasNext()) {
+      throw new NotFoundException();
+    }
+    vertices.forEachRemaining(vertex -> {
+        LOG.info("Setting pid for " + vertex.id() + " to " + pidUri.toString());
+        vertex.property("pid", pidUri.toString());
+      }
+    );
+  }
 }
