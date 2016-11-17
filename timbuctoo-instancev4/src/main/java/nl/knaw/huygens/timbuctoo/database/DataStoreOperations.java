@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -55,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.Iterator;
 import java.util.Map;
@@ -85,6 +87,7 @@ public class DataStoreOperations implements AutoCloseable {
   private final GraphTraversalSource latestState;
   private final Vres mappings;
   private final Graph graph;
+  private final SystemPropertyModifier systemPropertyModifier;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
@@ -101,6 +104,7 @@ public class DataStoreOperations implements AutoCloseable {
     this.traversal = graph.traversal();
     this.latestState = graphWrapper.getLatestState();
     this.mappings = mappings == null ? loadVres() : mappings;
+    this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
   }
 
   private static UUID asUuid(String input, Element source) {
@@ -538,6 +542,10 @@ public class DataStoreOperations implements AutoCloseable {
     requireCommit = true;
     //FIXME: add security
     saveVres(mappings);
+    saveRelationTypes(relationTypes);
+  }
+
+  public void saveRelationTypes(RelationType... relationTypes) {
     for (RelationType relationType : relationTypes) {
       saveRelationType(relationType);
     }
@@ -711,7 +719,7 @@ public class DataStoreOperations implements AutoCloseable {
   }
 
   private void saveRelationType(RelationType relationType) {
-    graph.addVertex(
+    final Vertex vertex = graph.addVertex(
       T.label, "relationtype",
       "rev", 1,
       "types", jsnA(jsn("relationtype")).toString(),
@@ -729,6 +737,8 @@ public class DataStoreOperations implements AutoCloseable {
 
       "rdfUri", "http://timbuctoo.com/" + relationType.getOutName()
     );
+
+    systemPropertyModifier.setCreated(vertex, "timbuctoo", "timbuctoo");
   }
 
   public void addPid(UUID id, int rev, URI pidUri) throws NotFoundException {
