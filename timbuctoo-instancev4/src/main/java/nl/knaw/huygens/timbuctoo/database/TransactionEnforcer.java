@@ -14,9 +14,9 @@ public class TransactionEnforcer {
     this(dataStoreOperationsSupplier, timbuctooActionsFactory, new AfterSuccessTaskExecutor());
   }
 
-  public TransactionEnforcer(Supplier<DataStoreOperations> dataStoreOperationsSupplier,
-                             TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory,
-                             AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
+  TransactionEnforcer(Supplier<DataStoreOperations> dataStoreOperationsSupplier,
+                      TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory,
+                      AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
 
     this.dataStoreOperationsSupplier = dataStoreOperationsSupplier;
     this.timbuctooActionsFactory = timbuctooActionsFactory;
@@ -50,6 +50,29 @@ public class TransactionEnforcer {
     }
   }
 
+  public void executeTimbuctooAction(Function<TimbuctooActions, TransactionState> action) {
+    DataStoreOperations db = dataStoreOperationsSupplier.get();
+    TimbuctooActions timbuctooActions = timbuctooActionsFactory.create(db, afterSuccessTaskExecutor);
+
+    try {
+      TransactionState result = action.apply(timbuctooActions);
+      if (result.wasCommitted()) {
+        db.success();
+      } else {
+        db.rollback();
+      }
+    } catch (RuntimeException e) {
+      db.rollback();
+      throw e;
+    } finally {
+      db.close();
+    }
+  }
+
+  /**
+   * @deprecated Use {@link TransactionEnforcer#executeTimbuctooAction(Function)}
+   */
+  @Deprecated
   public void execute(Function<DataStoreOperations, TransactionState> actions) {
     DataStoreOperations db = dataStoreOperationsSupplier.get();
 

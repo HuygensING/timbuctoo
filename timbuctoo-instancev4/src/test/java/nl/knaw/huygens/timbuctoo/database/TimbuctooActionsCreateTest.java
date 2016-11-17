@@ -1,10 +1,9 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -25,7 +24,6 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.inOrder;
@@ -43,7 +41,7 @@ public class TimbuctooActionsCreateTest {
   private CreateEntity createEntity;
   private String userId;
   private Optional<Collection> baseCollection;
-  private HandleAdder handleAdder;
+  private HandleCreator handleCreator;
   private DataStoreOperations dataStoreOperations;
   private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
@@ -57,7 +55,7 @@ public class TimbuctooActionsCreateTest {
     createEntity = mock(CreateEntity.class);
     userId = "userId";
     baseCollection = Optional.empty();
-    handleAdder = mock(HandleAdder.class);
+    handleCreator = mock(HandleCreator.class);
     dataStoreOperations = mock(DataStoreOperations.class);
     afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
@@ -105,7 +103,9 @@ public class TimbuctooActionsCreateTest {
 
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
-    verify(afterSuccessTaskExecutor).addHandleTask(handleAdder, new HandleAdderParameters(COLLECTION_NAME, id, 1));
+    verify(afterSuccessTaskExecutor).addTask(
+      new TimbuctooActions.AddHandleTask(handleCreator, new HandleAdderParameters(COLLECTION_NAME, id, 1))
+    );
   }
 
   @Test(expected = IOException.class)
@@ -119,7 +119,7 @@ public class TimbuctooActionsCreateTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleAdder,
+    return new TimbuctooActions(authorizer, clock, handleCreator,
       dataStoreOperations, afterSuccessTaskExecutor);
   }
 

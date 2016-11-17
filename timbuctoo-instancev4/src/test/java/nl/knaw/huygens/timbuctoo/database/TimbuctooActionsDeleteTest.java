@@ -1,9 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -30,24 +29,26 @@ public class TimbuctooActionsDeleteTest {
   public static final int REV = 1;
   public static final String COLLECTION_NAME = "collectionName";
   private Clock clock;
-  private HandleAdder handleAdder;
+  private HandleCreator handleCreator;
   private Collection collection;
   private Instant instant;
   private Change change;
   private DataStoreOperations dataStoreOperations;
+  private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   @Before
   public void setUp() throws Exception {
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    handleAdder = mock(HandleAdder.class);
+    handleCreator = mock(HandleCreator.class);
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
     change = new Change();
     change.setUserId(USER_ID);
     change.setTimeStamp(instant.toEpochMilli());
     dataStoreOperations = mock(DataStoreOperations.class);
+    afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
 
   @Test
@@ -85,12 +86,17 @@ public class TimbuctooActionsDeleteTest {
 
     instance.deleteEntity(collection, ID, USER_ID);
 
-    verify(handleAdder).add(new HandleAdderParameters(COLLECTION_NAME, ID, REV));
+    verify(afterSuccessTaskExecutor).addTask(
+      new TimbuctooActions.AddHandleTask(
+        handleCreator,
+        new HandleAdderParameters(COLLECTION_NAME, ID, REV)
+      )
+    );
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleAdder,
-      dataStoreOperations, null);
+    return new TimbuctooActions(authorizer, clock, handleCreator,
+      dataStoreOperations, afterSuccessTaskExecutor);
   }
 
 

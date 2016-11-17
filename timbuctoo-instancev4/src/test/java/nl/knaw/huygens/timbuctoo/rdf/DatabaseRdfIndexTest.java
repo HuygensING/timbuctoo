@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.HandleCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -29,7 +29,7 @@ public class DatabaseRdfIndexTest {
       new DataStoreOperations(mgr, mock(ChangeListener.class), null, null);
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleAdder.class));
+        mock(HandleCreator.class));
     final TransactionEnforcer transactionEnforcer =
       new TransactionEnforcer(() -> dataStoreOperations, timbuctooActionsFactory);
 

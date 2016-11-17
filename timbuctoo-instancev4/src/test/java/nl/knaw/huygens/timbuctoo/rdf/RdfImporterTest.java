@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.HandleCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -49,7 +49,7 @@ public class RdfImporterTest {
   private TransactionEnforcer createTransactionEnforcer(DataStoreOperations db) {
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleAdder.class));
+        mock(HandleCreator.class));
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> db, timbuctooActionsFactory);
     return transactionEnforcer;
   }

@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdderParameters;
 import org.junit.Test;
 
 import static org.mockito.Mockito.mock;
@@ -9,14 +7,17 @@ import static org.mockito.Mockito.verify;
 
 public class AfterSuccessTaskExecutorTest {
   @Test
-  public void addHandleTaskAddsATaskToAddAHandle() {
+  public void executesTheAddedTasks() throws Exception {
     AfterSuccessTaskExecutor instance = new AfterSuccessTaskExecutor();
-    HandleAdder handleAdder = mock(HandleAdder.class);
-    HandleAdderParameters handleAdderParameters = new HandleAdderParameters(null, null, 0);
+    AfterSuccessTaskExecutor.Task task1 = mock(AfterSuccessTaskExecutor.Task.class);
+    AfterSuccessTaskExecutor.Task task2 = mock(AfterSuccessTaskExecutor.Task.class);
+    instance.addTask(task1);
+    instance.addTask(task2);
 
-    instance.addHandleTask(handleAdder, handleAdderParameters);
     instance.executeTasks();
 
-    verify(handleAdder).add(handleAdderParameters);
+    verify(task1).execute();
+    verify(task2).execute();
+
   }
 }

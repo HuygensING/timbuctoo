@@ -3,9 +3,9 @@ package nl.knaw.huygens.timbuctoo.rml;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.HandleCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
@@ -214,25 +214,24 @@ public class RmlIntegrationTest {
       karel.asAdmin().clone().values("rdfUri").next(),
       is("http://timbuctoo.com/mapping/someVre/persons/" + timId)
     );
-    assertThat(karel.asAdmin().clone().values("rdfAlternatives").next(), is(new String[] {
+    assertThat(karel.asAdmin().clone().values("rdfAlternatives").next(), is(new String[]{
       "http://timbuctoo.com/mapping/someVre/persons/local/2"
     }));
   }
 
 
-
   public class IntegrationTester {
+    public final GraphTraversalSource traversalSource;
     private final TinkerpopGraphManager graphManager;
     private final TransactionEnforcer transactionEnforcer;
     private final DatabaseConfiguredVres vres;
-    public final GraphTraversalSource traversalSource;
 
     public IntegrationTester() {
       graphManager = newGraph().wrap();
       traversalSource = graphManager.getGraph().traversal();
       TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
         new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-          mock(HandleAdder.class));
+          mock(HandleCreator.class));
       transactionEnforcer = new TransactionEnforcer(
         () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null),
         timbuctooActionsFactory);

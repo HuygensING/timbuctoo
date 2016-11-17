@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
 import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
-import nl.knaw.huygens.timbuctoo.crud.HandleManagerFactory;
+import nl.knaw.huygens.timbuctoo.handle.HandleManagerFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.hibernate.validator.constraints.NotEmpty;
 

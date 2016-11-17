@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.crud.HandleAdder;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
@@ -55,7 +54,7 @@ public class LoadSaveVresTest {
 
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleAdder.class));
+        mock(HandleCreator.class));
 
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
       () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
@@ -80,7 +79,7 @@ public class LoadSaveVresTest {
 
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleAdder.class));
+        mock(HandleCreator.class));
 
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
       () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
