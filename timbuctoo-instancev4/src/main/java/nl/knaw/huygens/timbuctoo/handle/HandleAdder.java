@@ -1,31 +1,29 @@
 package nl.knaw.huygens.timbuctoo.handle;
 
-import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.HandleCreator;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.queued.ActiveMqExecutor;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.slf4j.Logger;
 
 import java.net.URI;
 
-class HandleAdder implements HandleCreator {
+class HandleAdder {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleAdder.class);
 
-  private final ActiveMqExecutor<HandleAdderParameters> activeMqExecutor;
   private final GraphWrapper wrapper;
   private final PersistenceManager manager;
   private final UrlGenerator handleUri;
+  private final HandleCreator retryHandleCreator;
 
-  public HandleAdder(ActiveMQBundle mq, String queueName, GraphWrapper wrapper, PersistenceManager manager,
-                     UrlGenerator handleUri) {
+  public HandleAdder(GraphWrapper wrapper, PersistenceManager manager, UrlGenerator handleUri,
+                     HandleCreator retryHandleCreator) {
     this.wrapper = wrapper;
     this.manager = manager;
     this.handleUri = handleUri;
-    this.activeMqExecutor = new ActiveMqExecutor<>(mq, queueName, this::create, HandleAdderParameters.class);
+    this.retryHandleCreator = retryHandleCreator;
   }
 
   public void create(HandleAdderParameters params) {
@@ -52,19 +50,18 @@ class HandleAdder implements HandleCreator {
     }
   }
 
-  @Override
-  public void add(HandleAdderParameters params) {
+  private void add(HandleAdderParameters params) {
     LOG.info(String.format("Adding %s%s job to the queue for '%s' '%s' '%s'",
       params.getRetries() + 1, getOrdinalSuffix(params.getRetries() + 1),
       params.getVertexId(),
       params.getRev(),
       handleUri.apply(params.getCollectionName(), params.getVertexId(), params.getRev())
     ));
-    activeMqExecutor.add(params);
+    retryHandleCreator.add(params);
   }
 
   // gogo gadgetstackoverflow
-  private static String getOrdinalSuffix(int value) {
+  private String getOrdinalSuffix(int value) {
     int hunRem = value % 100;
     int tenRem = value % 10;
 
@@ -82,6 +79,5 @@ class HandleAdder implements HandleCreator {
         return "th";
     }
   }
-
 
 }

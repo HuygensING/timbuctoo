@@ -5,35 +5,33 @@ import com.kjetland.dropwizard.activemq.ActiveMQSender;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.HandleCreator;
+import nl.knaw.huygens.timbuctoo.queued.ActiveMqQueueCreator;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
 public class HandleService {
 
-  private final ActiveMQBundle activeMqBundle;
-  private final String handleQueue;
   private final TinkerpopGraphManager graphManager;
   private final PersistenceManager persistenceManager;
   private final UrlGenerator handleUri;
   private HandleAdder handleAdder;
+  private final ActiveMqQueueCreator<HandleAdderParameters> queueCreator;
 
   public HandleService(ActiveMQBundle activeMqBundle, String handleQueue, TinkerpopGraphManager graphManager,
                        PersistenceManager persistenceManager, UrlGenerator handleUri) {
-
-    this.activeMqBundle = activeMqBundle;
-    this.handleQueue = handleQueue;
+    this.queueCreator = new ActiveMqQueueCreator<>(HandleAdderParameters.class, handleQueue, activeMqBundle);
     this.graphManager = graphManager;
     this.persistenceManager = persistenceManager;
     this.handleUri = handleUri;
   }
 
   public HandleCreator newHandleCreator() {
-    // TODO Let ActiveMqExecutor create the sender and receiver.
-    ActiveMQSender sender = activeMqBundle.createSender("queue:" + handleQueue, true);
+    ActiveMQSender sender = queueCreator.createSender();
     return sender::send;
   }
 
   public void start() {
-    handleAdder = new HandleAdder(activeMqBundle, handleQueue, graphManager, persistenceManager, handleUri);
+    handleAdder = new HandleAdder(graphManager, persistenceManager, handleUri, newHandleCreator());
+    queueCreator.registerReceiver(handleAdder::create);
   }
 
   public boolean isStarted() {
