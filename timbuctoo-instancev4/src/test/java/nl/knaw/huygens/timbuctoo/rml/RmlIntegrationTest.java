@@ -111,11 +111,6 @@ public class RmlIntegrationTest {
     //with an rdf url
     String rdfUri = locatie.value("rdfUri");
 
-    //Both the own property and the abstract property should be set
-    String locatiesName = locatie.value("locaties_name");
-    String locationName = locatie.value("location_name");
-    assertThat(locatiesName, is(locationName));
-
     tester.executeRawUpload("migraties", "migranten", ImmutableList.of(
       ImmutableMap.of(
         "naam", "Karel",
