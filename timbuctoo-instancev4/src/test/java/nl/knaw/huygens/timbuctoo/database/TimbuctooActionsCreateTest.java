@@ -104,7 +104,7 @@ public class TimbuctooActionsCreateTest {
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
     verify(afterSuccessTaskExecutor).addTask(
-      new TimbuctooActions.AddHandleTask(persistentUrlCreator, new HandleAdderParameters(COLLECTION_NAME, id, 1))
+      new TimbuctooActions.AddPersistentUrlTask(persistentUrlCreator, new HandleAdderParameters(COLLECTION_NAME, id, 1))
     );
   }
 

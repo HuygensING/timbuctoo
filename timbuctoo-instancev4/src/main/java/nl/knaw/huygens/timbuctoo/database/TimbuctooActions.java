@@ -58,7 +58,7 @@ public class TimbuctooActions {
     dataStoreOperations.createEntity(collection, baseCollection, createEntity);
 
     afterSuccessTaskExecutor.addTask(
-      new AddHandleTask(
+      new AddPersistentUrlTask(
         persistentUrlCreator,
         new HandleAdderParameters(collection.getCollectionName(), id, 1)
       )
@@ -76,7 +76,7 @@ public class TimbuctooActions {
 
     int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
     afterSuccessTaskExecutor.addTask(
-      new AddHandleTask(
+      new AddPersistentUrlTask(
         persistentUrlCreator,
         new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(), rev)
       )
@@ -92,7 +92,7 @@ public class TimbuctooActions {
 
 
     afterSuccessTaskExecutor.addTask(
-      new AddHandleTask(
+      new AddPersistentUrlTask(
         persistentUrlCreator,
         new HandleAdderParameters(collection.getCollectionName(), uuid, rev)
       )
@@ -159,11 +159,11 @@ public class TimbuctooActions {
     dataStoreOperations.addPid(id, rev, pidUri);
   }
 
-  static class AddHandleTask implements AfterSuccessTaskExecutor.Task {
+  static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {
     private final PersistentUrlCreator persistentUrlCreator;
     private final HandleAdderParameters parameters;
 
-    public AddHandleTask(PersistentUrlCreator persistentUrlCreator, HandleAdderParameters parameters) {
+    public AddPersistentUrlTask(PersistentUrlCreator persistentUrlCreator, HandleAdderParameters parameters) {
       this.persistentUrlCreator = persistentUrlCreator;
       this.parameters = parameters;
     }

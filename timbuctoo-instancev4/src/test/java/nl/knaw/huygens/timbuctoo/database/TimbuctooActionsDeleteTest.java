@@ -87,7 +87,7 @@ public class TimbuctooActionsDeleteTest {
     instance.deleteEntity(collection, ID, USER_ID);
 
     verify(afterSuccessTaskExecutor).addTask(
-      new TimbuctooActions.AddHandleTask(
+      new TimbuctooActions.AddPersistentUrlTask(
         persistentUrlCreator,
         new HandleAdderParameters(COLLECTION_NAME, ID, REV)
       )

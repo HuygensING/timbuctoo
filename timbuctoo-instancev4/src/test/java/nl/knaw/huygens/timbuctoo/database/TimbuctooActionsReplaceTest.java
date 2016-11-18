@@ -75,7 +75,7 @@ public class TimbuctooActionsReplaceTest {
     InOrder inOrder = inOrder(dataStoreOperations, persistentUrlCreator, afterSuccessTaskExecutor);
     inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
     inOrder.verify(afterSuccessTaskExecutor).addTask(
-      new TimbuctooActions.AddHandleTask(
+      new TimbuctooActions.AddPersistentUrlTask(
         persistentUrlCreator,
         new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
       )
