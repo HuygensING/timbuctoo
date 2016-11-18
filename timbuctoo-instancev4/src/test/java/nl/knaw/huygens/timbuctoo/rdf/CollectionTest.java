@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -37,6 +38,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -53,6 +55,7 @@ public class CollectionTest {
     CollectionDescription description = mock(CollectionDescription.class);
     String collectionPropertyName = "propertyName";
     when(description.createPropertyName(anyString())).thenReturn(collectionPropertyName);
+    when(description.getVreName()).thenReturn(VRE_NAME);
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v.withLabel(DATABASE_LABEL)
                         .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, ENTITY_NAME)
@@ -73,6 +76,7 @@ public class CollectionTest {
     CollectionDescription description = mock(CollectionDescription.class);
     String collectionPropertyName = "propertyName";
     when(description.createPropertyName(anyString())).thenReturn(collectionPropertyName);
+    when(description.getVreName()).thenReturn(VRE_NAME);
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v.withLabel(DATABASE_LABEL)
                         .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, ENTITY_NAME)
@@ -103,6 +107,7 @@ public class CollectionTest {
     CollectionDescription description = mock(CollectionDescription.class);
     String collectionPropertyName = "propertyName";
     when(description.createPropertyName(anyString())).thenReturn(collectionPropertyName);
+    when(description.getVreName()).thenReturn(VRE_NAME);
     String propName = "propName";
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v.withLabel(DATABASE_LABEL)
@@ -164,6 +169,64 @@ public class CollectionTest {
                            .out(HAS_INITIAL_PROPERTY_RELATION_NAME)
                            .count().next(),
       is(1L));
+  }
+
+  @Test
+  public void addPropertyDoesNotAddAPropConfigWhenTheCollectionIsAnArchetype() {
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v.withLabel(DATABASE_LABEL)
+                        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts"))
+      .wrap();
+    Vertex collectionVertex = graphWrapper.getGraph().traversal().V().next();
+    CollectionDescription collectionDescription = CollectionDescription.createForAdmin("concept");
+    Collection instance = new Collection("Admin", collectionVertex, graphWrapper, collectionDescription);
+    Vertex entityVertex = mock(Vertex.class);
+
+    instance.addProperty(entityVertex, "prop1", "val1", type);
+
+
+    assertThat(graphWrapper.getGraph().traversal().V(collectionVertex.id())
+                           .out(HAS_PROPERTY_RELATION_NAME)
+                           .count().next(), is(0L));
+  }
+
+  @Test
+  public void addPropertyDoesNotAddThePropertyWhenTheCollectionIsAnArchetypeAndDoesNotHaveAConfigForTheProperty() {
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v.withLabel(DATABASE_LABEL)
+                        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts"))
+      .wrap();
+    Vertex collectionVertex = graphWrapper.getGraph().traversal().V().next();
+    CollectionDescription collectionDescription = CollectionDescription.createForAdmin("concept");
+    Collection instance = new Collection("Admin", collectionVertex, graphWrapper, collectionDescription);
+    Vertex entityVertex = mock(Vertex.class);
+
+    instance.addProperty(entityVertex, "prop1", "val1", type);
+
+    verify(entityVertex, never()).property("concept_prop1", "val1");
+  }
+
+  @Test
+  public void addPropertyDoesNotEvenAddThePropertyWhenTheCollectionIsAnArchetypeAndDoesHaveAConfigForTheProperty() {
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("concepts", v -> v.withLabel(DATABASE_LABEL)
+                        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
+                        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts"))
+      .withVertex(v -> v.withLabel(LocalProperty.DATABASE_LABEL)
+                        .withProperty(LocalProperty.DATABASE_PROPERTY_NAME, "concept_prop1")
+                        .withIncomingRelation(HAS_PROPERTY_RELATION_NAME, "concepts")
+      )
+      .wrap();
+    Vertex collectionVertex = graphWrapper.getGraph().traversal().V().next();
+    CollectionDescription collectionDescription = CollectionDescription.createForAdmin("concept");
+    Collection instance = new Collection("Admin", collectionVertex, graphWrapper, collectionDescription);
+    Vertex entityVertex = mock(Vertex.class);
+
+    instance.addProperty(entityVertex, "prop1", "val1", type);
+
+    verify(entityVertex, never()).property("concept_prop1", "val1");
   }
 
   @Test

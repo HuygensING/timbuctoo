@@ -95,12 +95,12 @@ public class Collection {
 
 
   public void addProperty(Vertex entityVertex, String propName, String value, String type) {
-    String collectionPropertyName = getDescription().createPropertyName(propName);
-    entityVertex.property(collectionPropertyName, value);
-
-    Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
-
-    addNewPropertyConfig(propName, collectionPropertyName, vertices, type);
+    if (!collectionDescription.getVreName().equals("Admin")) {
+      String collectionPropertyName = getDescription().createPropertyName(propName);
+      Iterator<Vertex> vertices = vertex.vertices(Direction.OUT, HAS_PROPERTY_RELATION_NAME);
+      addNewPropertyConfig(propName, collectionPropertyName, vertices, type);
+      entityVertex.property(collectionPropertyName, value);
+    }
   }
 
   public List<Map<String, String>> getPropertiesFor(Vertex entityVertex) {
