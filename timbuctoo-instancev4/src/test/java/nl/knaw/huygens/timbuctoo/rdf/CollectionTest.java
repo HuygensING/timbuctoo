@@ -209,7 +209,7 @@ public class CollectionTest {
   }
 
   @Test
-  public void addPropertyDoesAddThePropertyWhenTheCollectionIsAnArchetypeAndDoesHaveAConfigForTheProperty() {
+  public void addPropertyDoesNotEvenAddThePropertyWhenTheCollectionIsAnArchetypeAndDoesHaveAConfigForTheProperty() {
     GraphWrapper graphWrapper = newGraph()
       .withVertex("concepts", v -> v.withLabel(DATABASE_LABEL)
                         .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept")
@@ -226,7 +226,7 @@ public class CollectionTest {
 
     instance.addProperty(entityVertex, "prop1", "val1", type);
 
-    verify(entityVertex).property("concept_prop1", "val1");
+    verify(entityVertex, never()).property("concept_prop1", "val1");
   }
 
   @Test
