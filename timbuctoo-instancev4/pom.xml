@@ -230,12 +230,19 @@
       </exclusions>
     </dependency>
 
-    <!-- ### Excel file handling ## -->
+    <!-- ### Uploads file handling ## -->
+    <!-- Excel -->
     <dependency>
       <groupId>org.apache.poi</groupId>
       <artifactId>poi-ooxml</artifactId>
       <version>3.14</version>
     </dependency>
+    <!-- dataperfect -->
+    <dependency>
+	    <groupId>com.github.DANS-KNAW</groupId>
+	    <artifactId>dans-dp-lib</artifactId>
+	    <version>36e6037f4b</version>
+	  </dependency>
 
     <!-- ### Logging and reporting ## -->
     <!--GELF logback handler for sending logs to a remote log server-->
@@ -448,6 +455,10 @@
       <name>mbknor</name>
       <url>https://raw.githubusercontent.com/mbknor/mbknor.github.com/master/m2repo/releases</url>
     </repository>
+		<repository>
+		    <id>jitpack.io</id>
+		    <url>https://jitpack.io</url>
+		</repository>
   </repositories>
 
 

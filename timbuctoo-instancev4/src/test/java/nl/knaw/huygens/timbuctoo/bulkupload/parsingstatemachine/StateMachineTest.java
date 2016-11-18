@@ -17,14 +17,14 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class ImporterTest {
+public class StateMachineTest {
 
   private static final String COLLECTION_NAME = "collectionName";
 
   @Test
   public void startEntitySavesThePropertyDescriptionsOnce() {
     Saver saver = mock(Saver.class);
-    Importer instance = new Importer(saver);
+    StateMachine instance = new StateMachine(saver);
 
     instance.startCollection(COLLECTION_NAME);
     verify(saver, never()).addPropertyDescriptions(any(Vertex.class), any(ImportPropertyDescriptions.class));
@@ -39,7 +39,7 @@ public class ImporterTest {
   @Test
   public void importsEveryEntityForACollection() {
     Saver saver = mock(Saver.class);
-    Importer instance = new Importer(saver);
+    StateMachine instance = new StateMachine(saver);
 
     instance.startCollection(COLLECTION_NAME);
     instance.registerPropertyName(1, "name");
@@ -59,7 +59,7 @@ public class ImporterTest {
   @Test
   public void setsKnownPropertyOnTheEntity() {
     Saver saver = mock(Saver.class);
-    Importer instance = new Importer(saver);
+    StateMachine instance = new StateMachine(saver);
 
     instance.startCollection(COLLECTION_NAME);
     instance.registerPropertyName(1, "test");
@@ -81,7 +81,7 @@ public class ImporterTest {
   @Test
   public void ignoresPropertiesWithoutValue() {
     Saver saver = mock(Saver.class);
-    Importer instance = new Importer(saver);
+    StateMachine instance = new StateMachine(saver);
 
     instance.startCollection(COLLECTION_NAME);
     instance.registerPropertyName(1, "test");

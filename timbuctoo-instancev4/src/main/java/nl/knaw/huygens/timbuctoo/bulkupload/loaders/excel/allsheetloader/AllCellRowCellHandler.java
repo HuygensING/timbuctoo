@@ -1,44 +1,43 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader;
 
-import nl.knaw.huygens.timbuctoo.bulkupload.loaders.ResultHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.RowCellHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
+import org.slf4j.Logger;
 
-import java.util.HashMap;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class AllCellRowCellHandler implements RowCellHandler {
   private final Importer importer;
-  private final ResultHandler handler;
   private boolean entityStarted;
   private boolean headerRow = false;
+  private static final Logger LOG = getLogger(AllCellRowCellHandler.class);
 
-  public AllCellRowCellHandler(Importer importer, ResultHandler handler) {
+  public AllCellRowCellHandler(Importer importer) {
     this.importer = importer;
-    this.handler = handler;
   }
 
   @Override
   public void start(String name) {
     entityStarted = false;
     headerRow = true;
-    handler.startSheet(name, importer.startCollection(name));
+    importer.startCollection(name);
   }
 
   @Override
   public void startRow(int rowNum) {
-    handler.startRow();
+    importer.startEntity();
   }
 
   @Override
   public void cell(short column, String value, String cellStyleStr) {
     if (headerRow) {
-      handler.handle(column, value, importer.registerPropertyName(column, value));
+      importer.registerPropertyName(column, value);
     } else {
       if (!entityStarted) {
         entityStarted  = true;
         importer.startEntity();
       }
-      handler.handle(column, value, importer.setValue(column, value));
+      importer.setValue(column, value);
     }
   }
 
@@ -46,13 +45,12 @@ public class AllCellRowCellHandler implements RowCellHandler {
   public void endRow(int rowNum) {
     if (headerRow) {
       headerRow = false;
-      handler.startValuePart();
     }
     if (entityStarted) {
       entityStarted = false;
-      handler.endRow(importer.finishEntity());
+      importer.finishEntity();
     } else {
-      handler.endRow(new HashMap<>());
+      LOG.error("An entity was finished before it was started");
     }
 
   }
@@ -60,6 +58,5 @@ public class AllCellRowCellHandler implements RowCellHandler {
   @Override
   public void finish() {
     importer.finishCollection();
-    handler.endSheet();
   }
 }

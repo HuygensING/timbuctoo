@@ -1,44 +1,40 @@
-package nl.knaw.huygens.timbuctoo.bulkupload.loaders;
-
-import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Result;
+package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 
 import java.util.HashMap;
 import java.util.function.Consumer;
 
-public class ResultHandler {
+public class ResultReporter {
   private final Consumer<String> statusUpdate;
   private int curRow;
 
-  public ResultHandler(Consumer<String> statusUpdate) {
+  public ResultReporter(Consumer<String> statusUpdate) {
     this.statusUpdate = statusUpdate;
     this.curRow = 1;
   }
 
-  public void startValuePart() {
-  }
-
-  public void startSheet(String name, Result result) {
+  public void startCollection(String name, Result result) {
     statusUpdate.accept("sheet: " + name);
     result.handle(msg -> statusUpdate.accept("failure: " + msg));
   }
 
-  public void startRow() {
+  public void registerPropertyName(int column, String value, Result result) {
+    result.handle(msg -> log(column, msg));
+  }
+
+  public void startEntity() {
     statusUpdate.accept("" + curRow++);
   }
 
-  public void endRow(HashMap<Integer, Result> extraResults) {
+  public void finishEntity(HashMap<Integer, Result> extraResults) {
     extraResults.forEach((column, result) -> result.handle(msg -> log(column, msg)));
   }
 
-  public void endSheet() {
-  }
-
-  public void endImport() {
-  }
-
-  public void handle(int column, String value, Result result) {
+  public void setValue(int column, String value, Result result) {
 
     result.handle(msg -> log(column, msg));
+  }
+
+  public void finishCollection() {
   }
 
   private void log(int columnNumber, String message) {

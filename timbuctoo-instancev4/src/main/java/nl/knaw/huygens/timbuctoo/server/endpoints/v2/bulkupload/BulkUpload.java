@@ -3,8 +3,6 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationCreationException;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
@@ -26,6 +24,7 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.io.ByteStreams.limit;
 import static com.google.common.io.ByteStreams.toByteArray;
@@ -74,52 +73,59 @@ public class BulkUpload {
           return Response.status(Response.Status.FORBIDDEN).entity("Unable to create authorization for user").build();
         }
 
+        byte[] bytes;
         try {
-          byte[] bytes = toByteArray(limit(fileUpload, maxCache));
+          bytes = toByteArray(limit(fileUpload, maxCache));
           if (fileUpload.read() != -1) {
             return Response.status(Response.Status.BAD_REQUEST)
                            .entity("The file may not be larger then " + humanReadableByteCount(maxCache) + " bytes")
                            .build();
           }
-          final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
 
-          final int[] writeErrors = {0};
-          new Thread() {
-            public void run() {
-              try {
-                uploadService.saveToDb(namespacedVre, bytes, fileDetails.getFileName(), i -> {
-                  try {
-                    //write json objects
-                    if (writeErrors[0] < 5) {
-                      output.write(i + "\n");
-                    }
-                  } catch (IOException e) {
-                    e.printStackTrace();
-                    writeErrors[0]++;
-                  }
-                });
-              } catch (AuthorizationUnavailableException | AuthorizationException | InvalidFileException e) {
-                e.printStackTrace();
-              } finally {
+        } catch (IOException e) {
+          LOG.error("Reading upload failed", e);
+          return Response.status(400).build();
+        }
+        final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
+        final AtomicInteger writeErrors = new AtomicInteger(0);
+        new Thread() {
+          public void run() {
+            try {
+              uploadService.saveToDb(namespacedVre, bytes, fileDetails.getFileName(), msg -> {
                 try {
-                  output.close();
+                  //write json objects
+                  if (writeErrors.get() < 5) {
+                    output.write(msg + "\n");
+                  }
                 } catch (IOException e) {
-                  e.printStackTrace();
+                  LOG.error("Could not write to output stream", e);
+                  writeErrors.incrementAndGet();
                 }
+              });
+            } catch (InvalidFileException | IOException e) {
+              LOG.error("Something went wrong while importing a file", e);
+              try {
+                if (writeErrors.get() < 5) {
+                  output.write("failure: " + e.getMessage());
+                }
+              } catch (IOException outputError) {
+                LOG.error("Couldn't write to output stream", outputError);
+              }
+            } finally {
+              try {
+                output.close();
+              } catch (IOException e) {
+                LOG.error("Couldn't close the output stream", e);
               }
             }
-          }.start();
-          // the output will be probably returned even before
-          // a first chunk is written by the new thread
-          return Response.ok()
-                         .entity(output)
-                         .location(bulkUploadVre.createUri(namespacedVre))
-                         .build();
-        } catch (IOException e) {
-
-          e.printStackTrace();
-          return Response.status(500).build();
-        }
+          }
+        }.start();
+        // the output will be probably returned even before
+        // a first chunk is written by the new thread
+        return Response.ok()
+          .entity(output)
+          .location(bulkUploadVre.createUri(namespacedVre))
+          .build();
       }
     }
   }
