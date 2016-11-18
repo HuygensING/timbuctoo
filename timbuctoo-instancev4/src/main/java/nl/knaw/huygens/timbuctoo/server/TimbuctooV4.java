@@ -28,12 +28,14 @@ import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener
 import nl.knaw.huygens.timbuctoo.database.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
-import nl.knaw.huygens.timbuctoo.handle.HandleService;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
+import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
+import nl.knaw.huygens.timbuctoo.queued.ActiveMqQueueCreator;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
@@ -73,7 +75,6 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.HandleServiceStartedCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
@@ -181,13 +182,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator handleUri = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
-    HandleService handleService = new HandleService(
-      activeMqBundle,
-      HANDLE_QUEUE,
-      graphManager,
-      persistenceManager,
-      handleUri);
-
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
       new AddLabelChangeListener(),
@@ -203,16 +197,24 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
 
+    HandleAdder handleAdder = new HandleAdder(persistenceManager, handleUri, new ActiveMqQueueCreator<>(
+      HandleAdderParameters.class,
+      HANDLE_QUEUE,
+      activeMqBundle
+    ));
+
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
-    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-      new TimbuctooActions.TimbuctooActionsFactory(authorizer, Clock.systemDefaultZone(),
-        handleService.newHandleCreator());
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactory(
+      authorizer,
+      Clock.systemDefaultZone(),
+      handleAdder
+    );
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
       () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null),
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
-    handleService.start(transactionEnforcer);
+    handleAdder.init(transactionEnforcer);
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
     migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, transactionEnforcer));
@@ -296,7 +298,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, "Neo4j database connection", graphManager);
     register(environment, "Database", new DatabaseHealthCheck(databaseValidationRunner));
-    register(environment, "HandleService", new HandleServiceStartedCheck(handleService));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));

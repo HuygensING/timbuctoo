@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.handle;
 
+import com.kjetland.dropwizard.activemq.ActiveMQSender;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
@@ -8,32 +9,35 @@ import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionState;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.queued.ActiveMqQueueCreator;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.UUID;
 
-class HandleAdder {
+public class HandleAdder implements PersistentUrlCreator {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleAdder.class);
 
-  private final GraphWrapper wrapper;
   private final PersistenceManager manager;
   private final UrlGenerator handleUri;
-  private final PersistentUrlCreator retryPersistentUrlCreator;
-  private final TransactionEnforcer transactionEnforcer;
+  private final ActiveMQSender sender;
+  private TransactionEnforcer transactionEnforcer;
 
-  public HandleAdder(GraphWrapper wrapper, PersistenceManager manager, UrlGenerator handleUri,
-                     PersistentUrlCreator retryPersistentUrlCreator, TransactionEnforcer transactionEnforcer) {
-    this.wrapper = wrapper;
+  public HandleAdder(PersistenceManager manager, UrlGenerator handleUri,
+                     ActiveMqQueueCreator<HandleAdderParameters> queueCreator) {
     this.manager = manager;
     this.handleUri = handleUri;
-    this.retryPersistentUrlCreator = retryPersistentUrlCreator;
+    this.transactionEnforcer = null;
+    queueCreator.registerReceiver(this::actualExecution);
+    this.sender = queueCreator.createSender();
+  }
+
+  public void init(TransactionEnforcer transactionEnforcer) {
     this.transactionEnforcer = transactionEnforcer;
   }
 
-  public void create(HandleAdderParameters params) {
+  private void actualExecution(HandleAdderParameters params) {
     UUID id = params.getVertexId();
     int rev = params.getRev();
     try {
@@ -68,14 +72,17 @@ class HandleAdder {
     }
   }
 
-  private void add(HandleAdderParameters params) {
+  public void add(HandleAdderParameters params) {
+    if (transactionEnforcer == null) {
+      throw new IllegalStateException("init() must be called before you can add items");
+    }
     LOG.info(String.format("Adding %s%s job to the queue for '%s' '%s' '%s'",
       params.getRetries() + 1, getOrdinalSuffix(params.getRetries() + 1),
       params.getVertexId(),
       params.getRev(),
       handleUri.apply(params.getCollectionName(), params.getVertexId(), params.getRev())
     ));
-    retryPersistentUrlCreator.add(params);
+    this.sender.send(params);
   }
 
   // gogo gadgetstackoverflow
