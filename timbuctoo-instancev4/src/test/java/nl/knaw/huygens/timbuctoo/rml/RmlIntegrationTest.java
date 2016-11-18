@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDe
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.HandleCreator;
+import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
@@ -226,7 +226,7 @@ public class RmlIntegrationTest {
       traversalSource = graphManager.getGraph().traversal();
       TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
         new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-          mock(HandleCreator.class));
+          mock(PersistentUrlCreator.class));
       transactionEnforcer = new TransactionEnforcer(
         () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null),
         timbuctooActionsFactory);

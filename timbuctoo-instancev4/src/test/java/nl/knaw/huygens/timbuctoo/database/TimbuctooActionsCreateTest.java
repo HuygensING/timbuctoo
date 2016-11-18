@@ -41,7 +41,7 @@ public class TimbuctooActionsCreateTest {
   private CreateEntity createEntity;
   private String userId;
   private Optional<Collection> baseCollection;
-  private HandleCreator handleCreator;
+  private PersistentUrlCreator persistentUrlCreator;
   private DataStoreOperations dataStoreOperations;
   private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
@@ -55,7 +55,7 @@ public class TimbuctooActionsCreateTest {
     createEntity = mock(CreateEntity.class);
     userId = "userId";
     baseCollection = Optional.empty();
-    handleCreator = mock(HandleCreator.class);
+    persistentUrlCreator = mock(PersistentUrlCreator.class);
     dataStoreOperations = mock(DataStoreOperations.class);
     afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
@@ -104,7 +104,7 @@ public class TimbuctooActionsCreateTest {
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
     verify(afterSuccessTaskExecutor).addTask(
-      new TimbuctooActions.AddHandleTask(handleCreator, new HandleAdderParameters(COLLECTION_NAME, id, 1))
+      new TimbuctooActions.AddHandleTask(persistentUrlCreator, new HandleAdderParameters(COLLECTION_NAME, id, 1))
     );
   }
 
@@ -119,7 +119,7 @@ public class TimbuctooActionsCreateTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleCreator,
+    return new TimbuctooActions(authorizer, clock, persistentUrlCreator,
       dataStoreOperations, afterSuccessTaskExecutor);
   }
 

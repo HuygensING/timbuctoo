@@ -32,16 +32,16 @@ public class TimbuctooActions {
 
   private final Authorizer authorizer;
   private final Clock clock;
-  private final HandleCreator handleCreator;
+  private final PersistentUrlCreator persistentUrlCreator;
   private final DataStoreOperations dataStoreOperations;
   private final AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
   public TimbuctooActions(Authorizer authorizer, Clock clock,
-                          HandleCreator handleCreator, DataStoreOperations dataStoreOperations,
+                          PersistentUrlCreator persistentUrlCreator, DataStoreOperations dataStoreOperations,
                           AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
     this.authorizer = authorizer;
     this.clock = clock;
-    this.handleCreator = handleCreator;
+    this.persistentUrlCreator = persistentUrlCreator;
     this.dataStoreOperations = dataStoreOperations;
     this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
   }
@@ -59,7 +59,7 @@ public class TimbuctooActions {
 
     afterSuccessTaskExecutor.addTask(
       new AddHandleTask(
-        handleCreator,
+        persistentUrlCreator,
         new HandleAdderParameters(collection.getCollectionName(), id, 1)
       )
     );
@@ -77,7 +77,7 @@ public class TimbuctooActions {
     int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
     afterSuccessTaskExecutor.addTask(
       new AddHandleTask(
-        handleCreator,
+        persistentUrlCreator,
         new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(), rev)
       )
     );
@@ -93,7 +93,7 @@ public class TimbuctooActions {
 
     afterSuccessTaskExecutor.addTask(
       new AddHandleTask(
-        handleCreator,
+        persistentUrlCreator,
         new HandleAdderParameters(collection.getCollectionName(), uuid, rev)
       )
     );
@@ -160,17 +160,17 @@ public class TimbuctooActions {
   }
 
   static class AddHandleTask implements AfterSuccessTaskExecutor.Task {
-    private final HandleCreator handleCreator;
+    private final PersistentUrlCreator persistentUrlCreator;
     private final HandleAdderParameters parameters;
 
-    public AddHandleTask(HandleCreator handleCreator, HandleAdderParameters parameters) {
-      this.handleCreator = handleCreator;
+    public AddHandleTask(PersistentUrlCreator persistentUrlCreator, HandleAdderParameters parameters) {
+      this.persistentUrlCreator = persistentUrlCreator;
       this.parameters = parameters;
     }
 
     @Override
     public void execute() throws Exception {
-      handleCreator.add(parameters);
+      persistentUrlCreator.add(parameters);
     }
 
     @Override
@@ -192,12 +192,12 @@ public class TimbuctooActions {
   public static class TimbuctooActionsFactory {
     private final Authorizer authorizer;
     private final Clock clock;
-    private final HandleCreator handleCreator;
+    private final PersistentUrlCreator persistentUrlCreator;
 
-    public TimbuctooActionsFactory(Authorizer authorizer, Clock clock, HandleCreator handleCreator) {
+    public TimbuctooActionsFactory(Authorizer authorizer, Clock clock, PersistentUrlCreator persistentUrlCreator) {
       this.authorizer = authorizer;
       this.clock = clock;
-      this.handleCreator = handleCreator;
+      this.persistentUrlCreator = persistentUrlCreator;
     }
 
     public TimbuctooActions create(DataStoreOperations dataStoreOperations,
@@ -206,7 +206,7 @@ public class TimbuctooActions {
       return new TimbuctooActions(
         authorizer,
         clock,
-        handleCreator,
+        persistentUrlCreator,
         dataStoreOperations,
         afterSuccessTaskExecutor
       );

@@ -35,7 +35,7 @@ public class TimbuctooActionsReplaceTest {
   private static final String USER_ID = "userId";
   private final DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
   private Clock clock;
-  private HandleCreator handleCreator;
+  private PersistentUrlCreator persistentUrlCreator;
   private UpdateEntity updateEntity;
   private Collection collection;
   private Instant instant;
@@ -46,7 +46,7 @@ public class TimbuctooActionsReplaceTest {
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    handleCreator = mock(HandleCreator.class);
+    persistentUrlCreator = mock(PersistentUrlCreator.class);
     updateEntity = mock(UpdateEntity.class);
     when(updateEntity.getId()).thenReturn(ID);
     collection = mock(Collection.class);
@@ -72,11 +72,11 @@ public class TimbuctooActionsReplaceTest {
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
-    InOrder inOrder = inOrder(dataStoreOperations, handleCreator, afterSuccessTaskExecutor);
+    InOrder inOrder = inOrder(dataStoreOperations, persistentUrlCreator, afterSuccessTaskExecutor);
     inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
     inOrder.verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddHandleTask(
-        handleCreator,
+        persistentUrlCreator,
         new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
       )
     );
@@ -116,7 +116,7 @@ public class TimbuctooActionsReplaceTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleCreator,
+    return new TimbuctooActions(authorizer, clock, persistentUrlCreator,
       dataStoreOperations, afterSuccessTaskExecutor);
   }
 

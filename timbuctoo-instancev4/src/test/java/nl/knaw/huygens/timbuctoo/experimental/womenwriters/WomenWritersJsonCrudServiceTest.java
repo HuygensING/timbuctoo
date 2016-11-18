@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.HandleCreator;
+import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -140,7 +140,7 @@ public class WomenWritersJsonCrudServiceTest {
       (collection, id, rev) -> URI.create("http://example.com/"),
       new TimbuctooActions(null, // no authorizer for get needed
         null, // no clock for get needed
-        mock(HandleCreator.class),
+        mock(PersistentUrlCreator.class),
         dataStoreOperations, null));
   }
 

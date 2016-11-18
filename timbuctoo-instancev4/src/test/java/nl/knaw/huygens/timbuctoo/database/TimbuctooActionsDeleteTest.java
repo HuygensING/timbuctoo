@@ -29,7 +29,7 @@ public class TimbuctooActionsDeleteTest {
   public static final int REV = 1;
   public static final String COLLECTION_NAME = "collectionName";
   private Clock clock;
-  private HandleCreator handleCreator;
+  private PersistentUrlCreator persistentUrlCreator;
   private Collection collection;
   private Instant instant;
   private Change change;
@@ -41,7 +41,7 @@ public class TimbuctooActionsDeleteTest {
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    handleCreator = mock(HandleCreator.class);
+    persistentUrlCreator = mock(PersistentUrlCreator.class);
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
     change = new Change();
@@ -88,14 +88,14 @@ public class TimbuctooActionsDeleteTest {
 
     verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddHandleTask(
-        handleCreator,
+        persistentUrlCreator,
         new HandleAdderParameters(COLLECTION_NAME, ID, REV)
       )
     );
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleCreator,
+    return new TimbuctooActions(authorizer, clock, persistentUrlCreator,
       dataStoreOperations, afterSuccessTaskExecutor);
   }
 

@@ -54,7 +54,7 @@ public class LoadSaveVresTest {
 
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleCreator.class));
+        mock(PersistentUrlCreator.class));
 
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
       () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
@@ -79,7 +79,7 @@ public class LoadSaveVresTest {
 
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleCreator.class));
+        mock(PersistentUrlCreator.class));
 
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
       () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));

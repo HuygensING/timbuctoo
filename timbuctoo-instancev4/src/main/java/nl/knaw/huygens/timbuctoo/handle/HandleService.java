@@ -4,7 +4,7 @@ import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import com.kjetland.dropwizard.activemq.ActiveMQSender;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.HandleCreator;
+import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.queued.ActiveMqQueueCreator;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
@@ -25,7 +25,7 @@ public class HandleService {
     this.handleUri = handleUri;
   }
 
-  public HandleCreator newHandleCreator() {
+  public PersistentUrlCreator newHandleCreator() {
     ActiveMQSender sender = queueCreator.createSender();
     return sender::send;
   }

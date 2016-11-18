@@ -4,7 +4,7 @@ import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.HandleCreator;
+import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionState;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -21,15 +21,15 @@ class HandleAdder {
   private final GraphWrapper wrapper;
   private final PersistenceManager manager;
   private final UrlGenerator handleUri;
-  private final HandleCreator retryHandleCreator;
+  private final PersistentUrlCreator retryPersistentUrlCreator;
   private final TransactionEnforcer transactionEnforcer;
 
   public HandleAdder(GraphWrapper wrapper, PersistenceManager manager, UrlGenerator handleUri,
-                     HandleCreator retryHandleCreator, TransactionEnforcer transactionEnforcer) {
+                     PersistentUrlCreator retryPersistentUrlCreator, TransactionEnforcer transactionEnforcer) {
     this.wrapper = wrapper;
     this.manager = manager;
     this.handleUri = handleUri;
-    this.retryHandleCreator = retryHandleCreator;
+    this.retryPersistentUrlCreator = retryPersistentUrlCreator;
     this.transactionEnforcer = transactionEnforcer;
   }
 
@@ -75,7 +75,7 @@ class HandleAdder {
       params.getRev(),
       handleUri.apply(params.getCollectionName(), params.getVertexId(), params.getRev())
     ));
-    retryHandleCreator.add(params);
+    retryPersistentUrlCreator.add(params);
   }
 
   // gogo gadgetstackoverflow
