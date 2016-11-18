@@ -15,6 +15,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
+import java.net.URI;
 import java.time.Clock;
 import java.util.HashMap;
 
@@ -54,7 +55,8 @@ public class LoadSaveVresTest {
 
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleCreator.class));
+        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
+      );
 
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
       () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
@@ -79,7 +81,8 @@ public class LoadSaveVresTest {
 
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleCreator.class));
+        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
+      );
 
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
       () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));

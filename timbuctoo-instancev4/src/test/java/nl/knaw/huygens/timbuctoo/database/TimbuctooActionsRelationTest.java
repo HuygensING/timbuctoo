@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -134,7 +135,8 @@ public class TimbuctooActionsRelationTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, null, dataStoreOperations, null);
+    return new TimbuctooActions(authorizer, clock, null, (coll, id, rev) -> URI.create("http://example.org/persistent"),
+      dataStoreOperations, null);
   }
 
 }

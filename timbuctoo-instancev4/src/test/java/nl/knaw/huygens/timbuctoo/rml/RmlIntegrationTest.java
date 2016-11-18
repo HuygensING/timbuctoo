@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDe
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.HandleCreator;
+import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
@@ -29,6 +29,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
+import java.net.URI;
 import java.time.Clock;
 import java.util.List;
 import java.util.Map;
@@ -226,7 +227,8 @@ public class RmlIntegrationTest {
       traversalSource = graphManager.getGraph().traversal();
       TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
         new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-          mock(HandleCreator.class));
+          mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
+        );
       transactionEnforcer = new TransactionEnforcer(
         () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null),
         timbuctooActionsFactory);

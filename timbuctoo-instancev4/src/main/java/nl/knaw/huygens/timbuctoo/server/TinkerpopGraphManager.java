@@ -76,6 +76,7 @@ public class TinkerpopGraphManager extends HealthCheck implements Managed, Graph
         .newEmbeddedDatabaseBuilder(databasePath)
         .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
         .newGraphDatabase();
+      LOG.info("Using database at " + databasePath.getAbsolutePath());
     }
   }
 

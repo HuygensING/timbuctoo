@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,14 +25,18 @@ public class TimbuctooActionsAddPidTest {
 
   public void setup() throws Exception {
     dataStoreOperations = mock(DataStoreOperations.class);
-    instance = new TimbuctooActions(null, null, null, dataStoreOperations, null);
+    instance = new TimbuctooActions(null, null, null, (coll, id, rev) -> URI.create("http://example.org/persistent"),
+      dataStoreOperations, null);
     id = UUID.randomUUID();
     pidUri = new URI("http://example.com/pid");
   }
 
   @Test
   public void addPidLetsTheDataStoreOperationsAddAPidToTheEntity() throws Exception {
-    instance.addPid(id, REV, pidUri);
+    instance.addPid(
+      pidUri,
+      ImmutableEntityLookup.builder().collection("someCollection").timId(id).rev(REV).build()
+    );
 
     verify(dataStoreOperations).addPid(id, REV, pidUri);
   }
@@ -40,6 +45,9 @@ public class TimbuctooActionsAddPidTest {
   public void addPidThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
     doThrow(new NotFoundException()).when(dataStoreOperations).addPid(id, REV, pidUri);
 
-    instance.addPid(id, REV, pidUri);
+    instance.addPid(
+      pidUri,
+      ImmutableEntityLookup.builder().collection("someCollection").timId(id).rev(REV).build()
+    );
   }
 }

@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.mockito.InOrder;
 
 import java.io.IOException;
+import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Optional;
@@ -41,7 +42,7 @@ public class TimbuctooActionsCreateTest {
   private CreateEntity createEntity;
   private String userId;
   private Optional<Collection> baseCollection;
-  private HandleCreator handleCreator;
+  private PersistentUrlCreator persistentUrlCreator;
   private DataStoreOperations dataStoreOperations;
   private AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
@@ -55,7 +56,7 @@ public class TimbuctooActionsCreateTest {
     createEntity = mock(CreateEntity.class);
     userId = "userId";
     baseCollection = Optional.empty();
-    handleCreator = mock(HandleCreator.class);
+    persistentUrlCreator = mock(PersistentUrlCreator.class);
     dataStoreOperations = mock(DataStoreOperations.class);
     afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
@@ -104,7 +105,11 @@ public class TimbuctooActionsCreateTest {
     UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
 
     verify(afterSuccessTaskExecutor).addTask(
-      new TimbuctooActions.AddHandleTask(handleCreator, new HandleAdderParameters(COLLECTION_NAME, id, 1))
+      new TimbuctooActions.AddPersistentUrlTask(
+        persistentUrlCreator,
+        URI.create("http://example.org/persistent"),
+        ImmutableEntityLookup.builder().collection(COLLECTION_NAME).timId(id).rev(1).build()
+      )
     );
   }
 
@@ -119,8 +124,8 @@ public class TimbuctooActionsCreateTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleCreator,
-      dataStoreOperations, afterSuccessTaskExecutor);
+    return new TimbuctooActions(authorizer, clock, persistentUrlCreator,
+      (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, afterSuccessTaskExecutor);
   }
 
 }

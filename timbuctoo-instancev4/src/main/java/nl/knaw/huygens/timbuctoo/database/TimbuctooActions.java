@@ -2,15 +2,17 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
+import nl.knaw.huygens.timbuctoo.database.dto.EntityLookup;
+import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
@@ -32,16 +34,18 @@ public class TimbuctooActions {
 
   private final Authorizer authorizer;
   private final Clock clock;
-  private final HandleCreator handleCreator;
+  private final PersistentUrlCreator persistentUrlCreator;
+  private final UrlGenerator uriToRedirectToFromPersistentUrls;
   private final DataStoreOperations dataStoreOperations;
   private final AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
-  public TimbuctooActions(Authorizer authorizer, Clock clock,
-                          HandleCreator handleCreator, DataStoreOperations dataStoreOperations,
+  public TimbuctooActions(Authorizer authorizer, Clock clock, PersistentUrlCreator persistentUrlCreator,
+                          UrlGenerator uriToRedirectToFromPersistentUrls, DataStoreOperations dataStoreOperations,
                           AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
     this.authorizer = authorizer;
     this.clock = clock;
-    this.handleCreator = handleCreator;
+    this.persistentUrlCreator = persistentUrlCreator;
+    this.uriToRedirectToFromPersistentUrls = uriToRedirectToFromPersistentUrls;
     this.dataStoreOperations = dataStoreOperations;
     this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
   }
@@ -58,9 +62,14 @@ public class TimbuctooActions {
     dataStoreOperations.createEntity(collection, baseCollection, createEntity);
 
     afterSuccessTaskExecutor.addTask(
-      new AddHandleTask(
-        handleCreator,
-        new HandleAdderParameters(collection.getCollectionName(), id, 1)
+      new AddPersistentUrlTask(
+        persistentUrlCreator,
+        uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), id, 1),
+        ImmutableEntityLookup.builder()
+          .rev(1)
+          .timId(id)
+          .collection(collection.getCollectionName())
+          .build()
       )
     );
 
@@ -76,13 +85,20 @@ public class TimbuctooActions {
 
     int rev = dataStoreOperations.replaceEntity(collection, updateEntity);
     afterSuccessTaskExecutor.addTask(
-      new AddHandleTask(
-        handleCreator,
-        new HandleAdderParameters(collection.getCollectionName(), updateEntity.getId(), rev)
+      new AddPersistentUrlTask(
+        persistentUrlCreator,
+        uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), updateEntity.getId(), rev),
+        ImmutableEntityLookup.builder()
+          .rev(rev)
+          .timId(updateEntity.getId())
+          .collection(collection.getCollectionName())
+          .build()
       )
     );
-
   }
+  //FIXME: when adding the new datamodel. We need to fix the persistent url generator. It now generates a url per
+  // collection, but writes to a property that exists regardless of the collection. It also generates a new persistent
+  // url after you have deleted an entity (which therefore always 404's)
 
   public void deleteEntity(Collection collection, UUID uuid, String userId)
     throws AuthorizationUnavailableException, AuthorizationException, NotFoundException {
@@ -92,9 +108,14 @@ public class TimbuctooActions {
 
 
     afterSuccessTaskExecutor.addTask(
-      new AddHandleTask(
-        handleCreator,
-        new HandleAdderParameters(collection.getCollectionName(), uuid, rev)
+      new AddPersistentUrlTask(
+        persistentUrlCreator,
+        uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), uuid, rev),
+        ImmutableEntityLookup.builder()
+          .rev(rev)
+          .timId(uuid)
+          .collection(collection.getCollectionName())
+          .build()
       )
     );
   }
@@ -155,27 +176,30 @@ public class TimbuctooActions {
     return dataStoreOperations.loadVres();
   }
 
-  public void addPid(UUID id, int rev, URI pidUri) throws NotFoundException {
-    dataStoreOperations.addPid(id, rev, pidUri);
+  public void addPid(URI pidUri, EntityLookup entityLookup) throws NotFoundException {
+    dataStoreOperations.addPid(entityLookup.getTimId(), entityLookup.getRev(), pidUri); //no collection?
   }
 
-  static class AddHandleTask implements AfterSuccessTaskExecutor.Task {
-    private final HandleCreator handleCreator;
-    private final HandleAdderParameters parameters;
+  static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {
+    private final PersistentUrlCreator persistentUrlCreator;
+    private final URI uriToRedirectTo;
+    private final EntityLookup entityLookup;
 
-    public AddHandleTask(HandleCreator handleCreator, HandleAdderParameters parameters) {
-      this.handleCreator = handleCreator;
-      this.parameters = parameters;
+    public AddPersistentUrlTask(PersistentUrlCreator persistentUrlCreator, URI uriToRedirectTo,
+                                EntityLookup entityLookup) {
+      this.persistentUrlCreator = persistentUrlCreator;
+      this.uriToRedirectTo = uriToRedirectTo;
+      this.entityLookup = entityLookup;
     }
 
     @Override
     public void execute() throws Exception {
-      handleCreator.add(parameters);
+      persistentUrlCreator.add(uriToRedirectTo, entityLookup);
     }
 
     @Override
     public String getDescription() {
-      return String.format("Add handle to '%s'", parameters);
+      return String.format("Add handle to '%s'", entityLookup);
     }
 
     @Override
@@ -192,12 +216,15 @@ public class TimbuctooActions {
   public static class TimbuctooActionsFactory {
     private final Authorizer authorizer;
     private final Clock clock;
-    private final HandleCreator handleCreator;
+    private final PersistentUrlCreator persistentUrlCreator;
+    private final UrlGenerator uriToRedirectToFromPersistentUrls;
 
-    public TimbuctooActionsFactory(Authorizer authorizer, Clock clock, HandleCreator handleCreator) {
+    public TimbuctooActionsFactory(Authorizer authorizer, Clock clock, PersistentUrlCreator persistentUrlCreator,
+                                   UrlGenerator uriToRedirectToFromPersistentUrls) {
       this.authorizer = authorizer;
       this.clock = clock;
-      this.handleCreator = handleCreator;
+      this.persistentUrlCreator = persistentUrlCreator;
+      this.uriToRedirectToFromPersistentUrls = uriToRedirectToFromPersistentUrls;
     }
 
     public TimbuctooActions create(DataStoreOperations dataStoreOperations,
@@ -206,7 +233,8 @@ public class TimbuctooActions {
       return new TimbuctooActions(
         authorizer,
         clock,
-        handleCreator,
+        persistentUrlCreator,
+        uriToRedirectToFromPersistentUrls,
         dataStoreOperations,
         afterSuccessTaskExecutor
       );

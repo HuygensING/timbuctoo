@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
 import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
-import nl.knaw.huygens.timbuctoo.handle.HandleManagerFactory;
+import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -45,7 +45,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private ActiveMQConfig activeMq;
   @JsonProperty
   @NotNull
-  private HandleManagerFactory persistenceManager;
+  private PersistenceManagerFactory persistenceManager;
   @NotNull
   private Path authorizationsPath;
 
@@ -55,7 +55,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty
   private int executeDatabaseInvariantCheckAt = 24;
 
-  public HandleManagerFactory getPersistenceManagerFactory() {
+  public PersistenceManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
   }
 

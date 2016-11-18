@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.HandleCreator;
+import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -15,6 +15,7 @@ import org.mockito.InOrder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 
@@ -49,7 +50,8 @@ public class RdfImporterTest {
   private TransactionEnforcer createTransactionEnforcer(DataStoreOperations db) {
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleCreator.class));
+        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
+      );
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> db, timbuctooActionsFactory);
     return transactionEnforcer;
   }

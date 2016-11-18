@@ -1,32 +1,31 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import java.util.LinkedList;
 
 public class AfterSuccessTaskExecutor {
   public static final Logger LOG = LoggerFactory.getLogger(AfterSuccessTaskExecutor.class);
-  private final List<Task> tasks;
+  private final LinkedList<Task> tasks;
 
   public AfterSuccessTaskExecutor() {
-    tasks = Lists.newArrayList();
+    tasks = new LinkedList<>();
   }
 
   public void addTask(Task task) {
-    tasks.add(task);
+    tasks.push(task);
   }
 
   public void executeTasks() {
-    tasks.forEach(task -> {
-        try {
-          task.execute();
-        } catch (Exception e) {
-          LOG.error("Could not execute task '{}'", task.getDescription());
-        }
+    while (!tasks.isEmpty()) {
+      Task task = tasks.pop();
+      try {
+        task.execute();
+      } catch (Exception e) {
+        LOG.error("Could not execute task '{}'", task.getDescription());
       }
-    );
+    }
   }
 
   public interface Task {

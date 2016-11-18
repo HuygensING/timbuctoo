@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
+import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -35,7 +36,7 @@ public class TimbuctooActionsReplaceTest {
   private static final String USER_ID = "userId";
   private final DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
   private Clock clock;
-  private HandleCreator handleCreator;
+  private PersistentUrlCreator persistentUrlCreator;
   private UpdateEntity updateEntity;
   private Collection collection;
   private Instant instant;
@@ -46,7 +47,7 @@ public class TimbuctooActionsReplaceTest {
     clock = mock(Clock.class);
     instant = Instant.now();
     when(clock.instant()).thenReturn(instant);
-    handleCreator = mock(HandleCreator.class);
+    persistentUrlCreator = mock(PersistentUrlCreator.class);
     updateEntity = mock(UpdateEntity.class);
     when(updateEntity.getId()).thenReturn(ID);
     collection = mock(Collection.class);
@@ -72,12 +73,13 @@ public class TimbuctooActionsReplaceTest {
 
     instance.replaceEntity(collection, updateEntity, USER_ID);
 
-    InOrder inOrder = inOrder(dataStoreOperations, handleCreator, afterSuccessTaskExecutor);
+    InOrder inOrder = inOrder(dataStoreOperations, persistentUrlCreator, afterSuccessTaskExecutor);
     inOrder.verify(dataStoreOperations).replaceEntity(collection, updateEntity);
     inOrder.verify(afterSuccessTaskExecutor).addTask(
-      new TimbuctooActions.AddHandleTask(
-        handleCreator,
-        new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
+      new TimbuctooActions.AddPersistentUrlTask(
+        persistentUrlCreator,
+        URI.create("http://example.org/persistent"),
+        ImmutableEntityLookup.builder().collection(COLLECTION_NAME).timId(ID).rev(NEW_REV).build()
       )
     );
 
@@ -116,8 +118,8 @@ public class TimbuctooActionsReplaceTest {
   }
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, handleCreator,
-      dataStoreOperations, afterSuccessTaskExecutor);
+    return new TimbuctooActions(authorizer, clock, persistentUrlCreator,
+      (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, afterSuccessTaskExecutor);
   }
 
 }

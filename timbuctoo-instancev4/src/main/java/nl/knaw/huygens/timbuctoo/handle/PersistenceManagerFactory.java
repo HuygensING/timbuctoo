@@ -2,14 +2,13 @@ package nl.knaw.huygens.timbuctoo.handle;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Strings;
-import nl.knaw.huygens.persistence.DefaultPersistenceManager;
 import nl.knaw.huygens.persistence.HandleManager;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import org.slf4j.Logger;
 
-public class HandleManagerFactory {
+public class PersistenceManagerFactory {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(Gremlin.class);
 
   @JsonProperty
@@ -47,9 +46,9 @@ public class HandleManagerFactory {
         );
       }
     }
-    if (useDummy != null && useDummy) { //must compare to true because useDummy might be null
+    if (useDummy != null && useDummy) {
       LOG.info("Using dummy persistence manager instead of real handle server");
-      return new DefaultPersistenceManager();
+      return new DummyPersistenceManager();
     } else {
       LOG.info("Using real handle server");
       try {

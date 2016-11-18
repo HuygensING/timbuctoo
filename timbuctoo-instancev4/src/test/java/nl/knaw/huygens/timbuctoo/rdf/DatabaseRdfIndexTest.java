@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.HandleCreator;
+import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.Test;
 
+import java.net.URI;
 import java.time.Clock;
 
 import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
@@ -29,7 +30,8 @@ public class DatabaseRdfIndexTest {
       new DataStoreOperations(mgr, mock(ChangeListener.class), null, null);
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(HandleCreator.class));
+        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
+      );
     final TransactionEnforcer transactionEnforcer =
       new TransactionEnforcer(() -> dataStoreOperations, timbuctooActionsFactory);
 
