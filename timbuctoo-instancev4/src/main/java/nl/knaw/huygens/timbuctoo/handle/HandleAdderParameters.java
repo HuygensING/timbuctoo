@@ -2,41 +2,34 @@ package nl.knaw.huygens.timbuctoo.handle;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.database.dto.EntityLookup;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-import java.util.UUID;
+import java.net.URI;
 
-public class HandleAdderParameters {
-  private final UUID vertexId;
-  private final int rev;
-  private final String collectionName;
+class HandleAdderParameters {
   private final int retries;
+  private final URI urlToRedirectTo;
+  private final EntityLookup entityLookup;
 
 
-  public HandleAdderParameters(String collectionName, UUID vertexId, int rev) {
-    this.vertexId = vertexId;
-    this.rev = rev;
-    this.collectionName = collectionName;
+  public HandleAdderParameters(URI urlToRedirectTo, EntityLookup entityLookup) {
+    this.urlToRedirectTo = urlToRedirectTo;
+    this.entityLookup = entityLookup;
     this.retries = 0;
   }
 
   @JsonCreator
   public HandleAdderParameters(
-    @JsonProperty("collectionName") String collectionName,
-    @JsonProperty("vertexId") UUID vertexId,
-    @JsonProperty("rev") int rev,
+    @JsonProperty("urlToRedirectTo") URI urlToRedirectTo,
+    @JsonProperty("entityLookup") EntityLookup entityLookup,
     @JsonProperty("retries") int retries
   ) {
-    this.vertexId = vertexId;
-    this.collectionName = collectionName;
     this.retries = retries;
-    this.rev = rev;
-  }
-
-  public UUID getVertexId() {
-    return vertexId;
+    this.urlToRedirectTo = urlToRedirectTo;
+    this.entityLookup = entityLookup;
   }
 
   public int getRetries() {
@@ -58,11 +51,15 @@ public class HandleAdderParameters {
     return HashCodeBuilder.reflectionHashCode(this);
   }
 
-  public int getRev() {
-    return rev;
+  public URI getUrlToRedirectTo() {
+    return urlToRedirectTo;
   }
 
-  public String getCollectionName() {
-    return collectionName;
+  public EntityLookup getEntityLookup() {
+    return entityLookup;
+  }
+
+  public HandleAdderParameters nextTry() {
+    return new HandleAdderParameters(urlToRedirectTo, entityLookup, retries + 1);
   }
 }

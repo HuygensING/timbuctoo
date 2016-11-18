@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.Test;
 
+import java.net.URI;
 import java.time.Clock;
 
 import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
@@ -29,7 +30,8 @@ public class DatabaseRdfIndexTest {
       new DataStoreOperations(mgr, mock(ChangeListener.class), null, null);
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
       new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(PersistentUrlCreator.class));
+        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
+      );
     final TransactionEnforcer transactionEnforcer =
       new TransactionEnforcer(() -> dataStoreOperations, timbuctooActionsFactory);
 

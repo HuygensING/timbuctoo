@@ -1,8 +1,9 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
+import nl.knaw.huygens.timbuctoo.database.dto.EntityLookup;
 
-// TODO make more generic PidCreator
+import java.net.URI;
+
 public interface PersistentUrlCreator {
-  void add(HandleAdderParameters params);
+  void add(URI uriToRedirectTo, EntityLookup entityLookup);
 }

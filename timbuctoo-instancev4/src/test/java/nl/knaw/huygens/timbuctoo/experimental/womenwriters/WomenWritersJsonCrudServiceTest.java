@@ -141,7 +141,7 @@ public class WomenWritersJsonCrudServiceTest {
       new TimbuctooActions(null, // no authorizer for get needed
         null, // no clock for get needed
         mock(PersistentUrlCreator.class),
-        dataStoreOperations, null));
+        (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, null));
   }
 
   @Test

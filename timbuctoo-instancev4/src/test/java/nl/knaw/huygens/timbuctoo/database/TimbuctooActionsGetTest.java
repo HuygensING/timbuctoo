@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URI;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
@@ -34,7 +35,8 @@ public class TimbuctooActionsGetTest {
     entityProps = mock(CustomEntityProperties.class);
     relationProps = mock(CustomRelationProperties.class);
     dataStoreOperations = mock(DataStoreOperations.class);
-    instance = new TimbuctooActions(null, null, null, dataStoreOperations, null);
+    instance = new TimbuctooActions(null, null, null, (coll, id, rev) -> URI.create("http://example.org/persistent"),
+      dataStoreOperations, null);
     collection = mock(Collection.class);
   }
 

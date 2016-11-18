@@ -29,13 +29,11 @@ import nl.knaw.huygens.timbuctoo.database.changelistener.DenormalizedSortFieldUp
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
-import nl.knaw.huygens.timbuctoo.queued.ActiveMqQueueCreator;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
@@ -101,12 +99,12 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
+import static nl.knaw.huygens.timbuctoo.handle.HandleAdder.HANDLE_QUEUE;
 import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer;
 
 public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   public static final String ENCRYPTION_ALGORITHM = "SHA-256";
-  public static final String HANDLE_QUEUE = "pids";
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
   private ActiveMQBundle activeMqBundle;
 
@@ -180,7 +178,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
-    UrlGenerator handleUri = (coll, id, rev) -> uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
+    UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
+      uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
@@ -197,17 +196,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
 
-    HandleAdder handleAdder = new HandleAdder(persistenceManager, handleUri, new ActiveMqQueueCreator<>(
-      HandleAdderParameters.class,
-      HANDLE_QUEUE,
-      activeMqBundle
-    ));
+    HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactory(
       authorizer,
       Clock.systemDefaultZone(),
-      handleAdder
+      handleAdder,
+      uriToRedirectToFromPersistentUrls
     );
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
       () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null),

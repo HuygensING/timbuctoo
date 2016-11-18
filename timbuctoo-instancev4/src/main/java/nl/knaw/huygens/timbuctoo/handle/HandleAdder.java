@@ -1,34 +1,37 @@
 package nl.knaw.huygens.timbuctoo.handle;
 
+import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import com.kjetland.dropwizard.activemq.ActiveMQSender;
 import nl.knaw.huygens.persistence.PersistenceException;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
-import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionState;
+import nl.knaw.huygens.timbuctoo.database.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.queued.ActiveMqQueueCreator;
 import org.slf4j.Logger;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.UUID;
 
 public class HandleAdder implements PersistentUrlCreator {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(HandleAdder.class);
+  public static final String HANDLE_QUEUE = "pids";
 
   private final PersistenceManager manager;
-  private final UrlGenerator handleUri;
   private final ActiveMQSender sender;
   private TransactionEnforcer transactionEnforcer;
 
-  public HandleAdder(PersistenceManager manager, UrlGenerator handleUri,
-                     ActiveMqQueueCreator<HandleAdderParameters> queueCreator) {
+  public HandleAdder(PersistenceManager manager, ActiveMQBundle activeMqBundle) {
     this.manager = manager;
-    this.handleUri = handleUri;
     this.transactionEnforcer = null;
+    ActiveMqQueueCreator<HandleAdderParameters> queueCreator = new ActiveMqQueueCreator<>(
+      HandleAdderParameters.class,
+      HANDLE_QUEUE,
+      activeMqBundle
+    );
     queueCreator.registerReceiver(this::actualExecution);
     this.sender = queueCreator.createSender();
   }
@@ -38,22 +41,19 @@ public class HandleAdder implements PersistentUrlCreator {
   }
 
   private void actualExecution(HandleAdderParameters params) {
-    UUID id = params.getVertexId();
-    int rev = params.getRev();
     try {
-      URI uri = handleUri.apply(params.getCollectionName(), id, rev);
-      LOG.info(String.format("Retrieving persistent url for '%s' '%s' '%s'",
-        id, rev, uri));
+      URI uri = params.getUrlToRedirectTo();
+      LOG.info(String.format("Retrieving persistent url for '%s'", uri));
       String persistentId = (manager.persistURL(uri.toString()));
       URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
 
       transactionEnforcer.executeTimbuctooAction(timbuctooActions -> {
           try {
-            timbuctooActions.addPid(id, rev, persistentUrl);
+            timbuctooActions.addPid(persistentUrl, params.getEntityLookup());
             LOG.info("committed pid");
             return TransactionState.commit();
           } catch (NotFoundException e) {
-            LOG.warn("Entity with id '{}' and revision '{}' cannot be found", id, rev);
+            LOG.warn("Entity for entityLookup '{}' cannot be found", params.getEntityLookup());
             try {
               manager.deletePersistentId(persistentId);
             } catch (PersistenceException e1) {
@@ -66,23 +66,22 @@ public class HandleAdder implements PersistentUrlCreator {
     } catch (PersistenceException | URISyntaxException e) {
       LOG.error(Logmarkers.serviceUnavailable, "Could not create handle", e);
       if (params.getRetries() < 5) {
-        add(new HandleAdderParameters(params.getCollectionName(), id, rev,
-          params.getRetries() + 1));
+        LOG.warn(String.format("Re-adding %s%s job to the queue for '%s' '%s'",
+          params.getRetries() + 1, getOrdinalSuffix(params.getRetries() + 1),
+          params.getEntityLookup(),
+          params.getUrlToRedirectTo()
+        ));
+        this.sender.send(params.nextTry());
       }
     }
   }
 
-  public void add(HandleAdderParameters params) {
+  @Override
+  public void add(URI uriToRedirectTo, EntityLookup entityLookup) {
     if (transactionEnforcer == null) {
       throw new IllegalStateException("init() must be called before you can add items");
     }
-    LOG.info(String.format("Adding %s%s job to the queue for '%s' '%s' '%s'",
-      params.getRetries() + 1, getOrdinalSuffix(params.getRetries() + 1),
-      params.getVertexId(),
-      params.getRev(),
-      handleUri.apply(params.getCollectionName(), params.getVertexId(), params.getRev())
-    ));
-    this.sender.send(params);
+    this.sender.send(new HandleAdderParameters(uriToRedirectTo, entityLookup));
   }
 
   // gogo gadgetstackoverflow
@@ -104,5 +103,4 @@ public class HandleAdder implements PersistentUrlCreator {
         return "th";
     }
   }
-
 }

@@ -105,7 +105,7 @@ public class JsonCrudServiceBuilder {
         authorizer,
         clock,
         persistentUrlCreator,
-        dataStoreOperations,
+        (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations,
         new AfterSuccessTaskExecutor()
       )
     );

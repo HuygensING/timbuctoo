@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.handle.HandleAdderParameters;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
 
+import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
@@ -77,7 +78,8 @@ public class TimbuctooActionsReplaceTest {
     inOrder.verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddPersistentUrlTask(
         persistentUrlCreator,
-        new HandleAdderParameters(COLLECTION_NAME, ID, NEW_REV)
+        URI.create("http://example.org/persistent"),
+        ImmutableEntityLookup.builder().collection(COLLECTION_NAME).timId(ID).rev(NEW_REV).build()
       )
     );
 
@@ -117,7 +119,7 @@ public class TimbuctooActionsReplaceTest {
 
   private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
     return new TimbuctooActions(authorizer, clock, persistentUrlCreator,
-      dataStoreOperations, afterSuccessTaskExecutor);
+      (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, afterSuccessTaskExecutor);
   }
 
 }
