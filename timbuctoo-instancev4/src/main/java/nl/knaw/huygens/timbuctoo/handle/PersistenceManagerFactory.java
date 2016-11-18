@@ -9,7 +9,7 @@ import nl.knaw.huygens.persistence.PersistenceManagerCreationException;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import org.slf4j.Logger;
 
-public class HandleManagerFactory {
+public class PersistenceManagerFactory {
   private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(Gremlin.class);
 
   @JsonProperty
