@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.databaselog;
 
-import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
+import nl.knaw.huygens.timbuctoo.database.EdgeManipulator;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
