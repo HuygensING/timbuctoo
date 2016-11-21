@@ -6,7 +6,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.EdgeManipulator;
-import nl.knaw.huygens.timbuctoo.crud.EntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;

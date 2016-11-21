@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.crud.AlreadyUpdatedException;
-import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;

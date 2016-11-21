@@ -16,7 +16,7 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
-import nl.knaw.huygens.timbuctoo.crud.Neo4jLuceneEntityFetcher;
+import nl.knaw.huygens.timbuctoo.database.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
