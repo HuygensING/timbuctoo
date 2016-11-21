@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.crud;
 import nl.knaw.huygens.timbuctoo.database.AfterSuccessTaskExecutor;
 import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.EntityFetcher;
+import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;

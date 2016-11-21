@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.crud;
+package nl.knaw.huygens.timbuctoo.database;
 
 public class NotFoundException extends Exception {
 }

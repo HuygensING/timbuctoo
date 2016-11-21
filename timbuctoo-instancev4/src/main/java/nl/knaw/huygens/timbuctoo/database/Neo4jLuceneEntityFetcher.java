@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.crud;
+package nl.knaw.huygens.timbuctoo.database;
 
 
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;

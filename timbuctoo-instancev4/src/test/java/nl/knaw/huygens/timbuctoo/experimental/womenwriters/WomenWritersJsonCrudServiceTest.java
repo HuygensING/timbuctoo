@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.experimental.womenwriters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import nl.knaw.huygens.timbuctoo.crud.GremlinEntityFetcher;
+import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;

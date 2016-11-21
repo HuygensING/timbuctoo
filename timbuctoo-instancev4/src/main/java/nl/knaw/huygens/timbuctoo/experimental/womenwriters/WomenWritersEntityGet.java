@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 

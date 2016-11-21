@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.graph;
 
-import nl.knaw.huygens.timbuctoo.crud.NotFoundException;
+import nl.knaw.huygens.timbuctoo.database.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.GraphReadUtils;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
