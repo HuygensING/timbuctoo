@@ -34,4 +34,6 @@ public interface ReadEntity {
   UUID getId();
 
   Map<String, Object> getExtraProperties();
+
+  List<String> getRdfAlternatives();
 }

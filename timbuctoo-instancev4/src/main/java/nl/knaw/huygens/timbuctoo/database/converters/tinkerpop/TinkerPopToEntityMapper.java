@@ -21,6 +21,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
@@ -39,6 +40,7 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
@@ -125,6 +127,17 @@ public class TinkerPopToEntityMapper {
       })
       .orElse(null);
     entity.setRdfUri(rdfUri);
+
+    Property<String[]> rdfAlternativesProp = entityVertex.property(RDF_SYNONYM_PROP);
+
+    if (rdfAlternativesProp.isPresent()) {
+      try {
+        entity.setRdfAlternatives(Lists.newArrayList(rdfAlternativesProp.value()));
+      } catch (Exception e) {
+        LOG.error(databaseInvariant, "Error while reading rdfAlternatives", e);
+      }
+    }
+
 
     Optional<String> typesOptional = getProp(entityVertex, "types", String.class);
     if (typesOptional.isPresent()) {

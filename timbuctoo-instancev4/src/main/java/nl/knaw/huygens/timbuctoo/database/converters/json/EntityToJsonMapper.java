@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
+import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.neo4j.helpers.Strings;
 import org.slf4j.Logger;
@@ -61,6 +62,9 @@ public class EntityToJsonMapper {
     mappedEntity.set("^pid", jsn(entity.getPid()));
     if (entity.getRdfUri() != null) {
       mappedEntity.set("^rdfUri", jsn(entity.getRdfUri().toString()));
+    }
+    if (entity.getRdfAlternatives() != null) {
+      mappedEntity.set("^rdfAlternatives", jsnA(entity.getRdfAlternatives().stream().map(JsonBuilder::jsn)));
     }
 
     JsonNode variationRefs = jsnA(entity.getTypes()

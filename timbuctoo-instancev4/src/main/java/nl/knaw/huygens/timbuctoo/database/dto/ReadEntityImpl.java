@@ -23,6 +23,7 @@ public class ReadEntityImpl implements ReadEntity {
   private UUID id;
   private final HashMap<String, Object> extraProperties;
   private URI rdfUri;
+  private List<String> rdfAlternatives;
 
   public ReadEntityImpl() {
     extraProperties = Maps.newHashMap();
@@ -134,5 +135,14 @@ public class ReadEntityImpl implements ReadEntity {
   @Override
   public Map<String, Object> getExtraProperties() {
     return extraProperties;
+  }
+
+  @Override
+  public List<String> getRdfAlternatives() {
+    return rdfAlternatives;
+  }
+
+  public void setRdfAlternatives(List<String> rdfAlternatives) {
+    this.rdfAlternatives = rdfAlternatives;
   }
 }

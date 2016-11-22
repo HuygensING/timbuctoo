@@ -40,7 +40,7 @@ public class Database {
 
   public static final String RDF_URI_PROP = "rdfUri";
   public static final String RDFINDEX_NAME = "rdfUrls";
-  private static final String RDF_SYNONYM_PROP = "rdfAlternatives";
+  public static final String RDF_SYNONYM_PROP = "rdfAlternatives";
   private final TinkerpopGraphManager graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
   private GraphTraversalSource traversal;
