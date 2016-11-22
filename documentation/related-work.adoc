@@ -43,4 +43,12 @@ lodlive
 http://link.springer.com/book/10.1007/978-3-319-13817-6/page/2#page-2
 
 xanadu::
-  rdf heeft geen natural order waardoor editlists ofwel heel gefragmenteerd kunnen worden ofwel niet goed mogelijk zijn.
+  At a distance, Xanadu looks like a well-thought out approach at exchanging and re-using data.
+  The problems that are most similar are (1) keeping track of owner/authorship while having that enables and foster's re-use (2) keeping control of the data that was cited without having to depose snapshots at digital heritage institutions.
+  However, RDF probably differs too much from text to be able to apply these ideas.
+  You usually exchange it in some serialised, textual, form, but it has no predefined sort-order and re-use/transclusion is not necessarily in a few blocks.
+  We're not aware of any research for building a system that fulfills the xanadu requirements for structured data
+Pelagios::
+  http://dlib.nyu.edu/awdl/isaw/isaw-papers/7/simon-barker-desoto-isaksen/ We're thinking about providing the pelagios API's from withing timbuctoo.
+Salt::
+  Salt (http://dl.acm.org/citation.cfm?id=2785528)
