@@ -27,7 +27,7 @@ public class TimbuctooActionsStubs {
       Clock.systemDefaultZone(),
       mock(PersistentUrlCreator.class),
       (coll, id, rev) -> URI.create("http://example.org/persistent"),
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), new GremlinEntityFetcher(), null),
+      DataStoreOperationsStubs.forGraphWrapper(graphWrapper),
       new AfterSuccessTaskExecutor()
     );
   }

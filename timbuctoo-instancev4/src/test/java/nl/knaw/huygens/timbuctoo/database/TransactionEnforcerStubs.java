@@ -8,7 +8,7 @@ public class TransactionEnforcerStubs {
 
   public static TransactionEnforcer forGraphWrapper(GraphWrapper graphWrapper) {
     return new TransactionEnforcer(
-      () -> new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, null),
+      () -> DataStoreOperationsStubs.forGraphWrapper(graphWrapper),
       TimbuctooActionsStubs::withDataStoreAndAfterSucces
     );
   }
