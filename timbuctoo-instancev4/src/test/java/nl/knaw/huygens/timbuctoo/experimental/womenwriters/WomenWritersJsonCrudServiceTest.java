@@ -1,18 +1,14 @@
 package nl.knaw.huygens.timbuctoo.experimental.womenwriters;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.database.NotFoundException;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.TimbuctooActionsStubs;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
+import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -33,49 +29,6 @@ import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 
 public class WomenWritersJsonCrudServiceTest {
-
-  private final Vres vres;
-  private UserStore userStore;
-
-  public WomenWritersJsonCrudServiceTest() {
-    vres = new VresBuilder()
-      .withVre("WomenWriters", "ww", vre -> vre
-        .withCollection("wwdocuments", c -> c
-          .withProperty("title", localProperty("wwdocument_title"))
-          .withProperty("date", localProperty("wwdocument_date"))
-        )
-        .withCollection("wwkeywords", c -> c
-          .withDisplayName(localProperty("displayName"))
-          .withProperty("value", localProperty("wwkeyword_value"))
-          .withProperty("type", localProperty("wwkeyword_type"))
-        )
-        .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
-        .withCollection("wwlanguages", c -> c
-          .withDisplayName(localProperty("wwlanguage_name"))
-          .withProperty("name", localProperty("wwlanguage_name"))
-        )
-        .withCollection("wwcollectives", c -> c
-          .withDisplayName(localProperty("wwcollective_name"))
-          .withProperty("name", localProperty("wwcollective_name"))
-        )
-        .withCollection("wwdisplaynames", c -> c
-          .withDisplayName(localProperty("wwperson_displayName"))
-        )
-        .withCollection("wwpersons", c -> c
-          .withProperty("name", localProperty("wwperson_name"))
-          .withProperty("names", localProperty("wwperson_names", personNames))
-          .withDisplayName(localProperty("displayName"))
-        )
-      )
-      .build();
-  }
-
-
-  @Before
-  public void setUp() throws Exception {
-    userStore = mock(UserStore.class);
-    Mockito.when(userStore.userForId(anyString())).thenReturn(Optional.empty());
-  }
 
   @Test
   public void getReturnsAJsonNodeWithARelationsPropertyWithTheGenderOfTheAuthors()
@@ -117,8 +70,7 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isCreatorOf")
       )
       .wrap();
-    final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    WomenWritersJsonCrudService instance = createInstance(graphWrapper, entityFetcher);
+    WomenWritersJsonCrudService instance = createInstance(graphWrapper);
 
     JsonNode result = instance.get("wwdocuments", workId);
 
@@ -131,17 +83,48 @@ public class WomenWritersJsonCrudServiceTest {
     );
   }
 
-  private WomenWritersJsonCrudService createInstance(GraphWrapper graphWrapper, GremlinEntityFetcher entityFetcher) {
-    DataStoreOperations dataStoreOperations =
-      new DataStoreOperations(graphWrapper, null, entityFetcher, vres);
+  private WomenWritersJsonCrudService createInstance(GraphWrapper graphWrapper) {
+    final UserStore userStore = mock(UserStore.class);
+    try {
+      Mockito.when(userStore.userForId(anyString())).thenReturn(Optional.empty());
+    } catch (AuthenticationUnavailableException e) {
+      //exception won't really happen (cause we;re not calling the method. We're mocking it)
+    }
+
     return new WomenWritersJsonCrudService(
-      vres,
+      new VresBuilder()
+        .withVre("WomenWriters", "ww", vre -> vre
+          .withCollection("wwdocuments", c -> c
+            .withProperty("title", localProperty("wwdocument_title"))
+            .withProperty("date", localProperty("wwdocument_date"))
+          )
+          .withCollection("wwkeywords", c -> c
+            .withDisplayName(localProperty("displayName"))
+            .withProperty("value", localProperty("wwkeyword_value"))
+            .withProperty("type", localProperty("wwkeyword_type"))
+          )
+          .withCollection("wwrelations", CollectionBuilder::isRelationCollection)
+          .withCollection("wwlanguages", c -> c
+            .withDisplayName(localProperty("wwlanguage_name"))
+            .withProperty("name", localProperty("wwlanguage_name"))
+          )
+          .withCollection("wwcollectives", c -> c
+            .withDisplayName(localProperty("wwcollective_name"))
+            .withProperty("name", localProperty("wwcollective_name"))
+          )
+          .withCollection("wwdisplaynames", c -> c
+            .withDisplayName(localProperty("wwperson_displayName"))
+          )
+          .withCollection("wwpersons", c -> c
+            .withProperty("name", localProperty("wwperson_name"))
+            .withProperty("names", localProperty("wwperson_names", personNames))
+            .withDisplayName(localProperty("displayName"))
+          )
+        )
+        .build(),
       userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
-      new TimbuctooActions(null, // no authorizer for get needed
-        null, // no clock for get needed
-        mock(PersistentUrlCreator.class),
-        (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, null));
+      TimbuctooActionsStubs.forGraphWrapper(graphWrapper));
   }
 
   @Test
@@ -192,8 +175,7 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isCreatorOf")
       )
       .wrap();
-    final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    WomenWritersJsonCrudService instance = createInstance(graphWrapper, entityFetcher);
+    WomenWritersJsonCrudService instance = createInstance(graphWrapper);
 
     JsonNode result = instance.get("wwpersons", pers1Id);
 
@@ -272,8 +254,7 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isWorkLanguageOf")
       )
       .wrap();
-    final GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    WomenWritersJsonCrudService instance = createInstance(graphWrapper, entityFetcher);
+    WomenWritersJsonCrudService instance = createInstance(graphWrapper);
 
     JsonNode result = instance.get("wwpersons", pers1Id);
 

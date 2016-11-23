@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 
 import java.net.URI;
 import java.time.Clock;
@@ -19,4 +20,16 @@ public class TimbuctooActionsStubs {
       afterSuccessTaskExecutor
     );
   }
+
+  public static TimbuctooActions forGraphWrapper(GraphWrapper graphWrapper) {
+    return new TimbuctooActions(
+      mock(Authorizer.class),
+      Clock.systemDefaultZone(),
+      mock(PersistentUrlCreator.class),
+      (coll, id, rev) -> URI.create("http://example.org/persistent"),
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), new GremlinEntityFetcher(), null),
+      new AfterSuccessTaskExecutor()
+    );
+  }
+
 }
