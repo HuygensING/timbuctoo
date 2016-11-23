@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 public class AuthorizerBuilder {
@@ -23,7 +23,7 @@ public class AuthorizerBuilder {
     Authorizer authorizer = Mockito.mock(Authorizer.class);
     Authorization authorization = Mockito.mock(Authorization.class);
     Mockito.when(authorization.isAllowedToWrite()).thenReturn(allowedToWrite);
-    Mockito.when(authorizer.authorizationFor(Matchers.any(Collection.class), Matchers.anyString()))
+    Mockito.when(authorizer.authorizationFor(ArgumentMatchers.any(Collection.class), ArgumentMatchers.anyString()))
            .thenReturn(authorization);
     return authorizer;
   }

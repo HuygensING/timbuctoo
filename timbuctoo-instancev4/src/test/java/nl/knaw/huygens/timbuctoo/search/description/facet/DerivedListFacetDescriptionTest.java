@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyParser;
 import org.junit.Before;
 
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.anyString;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 
 public class DerivedListFacetDescriptionTest {
