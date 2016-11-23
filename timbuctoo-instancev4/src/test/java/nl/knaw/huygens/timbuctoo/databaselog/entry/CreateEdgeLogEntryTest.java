@@ -7,7 +7,7 @@ import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.util.EdgeMockBuilder.edge;
 import static nl.knaw.huygens.timbuctoo.util.PropertyMatcher.likeProperty;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
