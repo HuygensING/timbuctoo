@@ -30,6 +30,7 @@ class ArchetypeConfig
       {:name => "_id", :converted_name => "id", :type => "collection_bound_id"},
       {:name => '_id', :converted_name => 'uuid_s'},
       {:name => "^rdfUri", :converted_name => 'rdfUri_s'},
+      {:name => "^rdfAlternatives", :converted_name => 'rdfAlternatives_ss'},
       {:name => '@displayName', :converted_name => 'displayName_s'},
       {:name => '@displayName', :converted_name => 'displayName_t'},
     ]
