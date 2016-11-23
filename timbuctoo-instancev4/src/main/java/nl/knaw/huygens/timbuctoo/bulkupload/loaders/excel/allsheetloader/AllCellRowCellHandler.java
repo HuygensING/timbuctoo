@@ -25,7 +25,6 @@ public class AllCellRowCellHandler implements RowCellHandler {
 
   @Override
   public void startRow(int rowNum) {
-    importer.startEntity();
   }
 
   @Override
