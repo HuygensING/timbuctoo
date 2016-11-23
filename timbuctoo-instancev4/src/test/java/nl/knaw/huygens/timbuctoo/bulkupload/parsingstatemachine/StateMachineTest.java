@@ -33,7 +33,7 @@ public class StateMachineTest {
     instance.finishEntity();
     instance.startEntity();
     instance.finishEntity();
-    verify(saver, times(1)).addPropertyDescriptions(any(Vertex.class), any(ImportPropertyDescriptions.class));
+    verify(saver, times(1)).addPropertyDescriptions(any(), any(ImportPropertyDescriptions.class));
   }
 
   @Test
@@ -53,7 +53,7 @@ public class StateMachineTest {
 
     InOrder inOrder = inOrder(saver);
     inOrder.verify(saver).addCollection(COLLECTION_NAME);
-    inOrder.verify(saver, times(2)).addEntity(any(Vertex.class), any(/*hashmap*/));
+    inOrder.verify(saver, times(2)).addEntity(any(), any(/*hashmap*/));
   }
 
   @Test
@@ -72,7 +72,7 @@ public class StateMachineTest {
     instance.finishEntity();
     instance.finishCollection();
 
-    verify(saver).addEntity(any(Vertex.class), argThat(allOf(
+    verify(saver).addEntity(any(), argThat(allOf(
       hasEntry("test", (Object) value1),
       hasEntry("test2", (Object) value2)
     )));
@@ -92,7 +92,7 @@ public class StateMachineTest {
     instance.finishEntity();
     instance.finishCollection();
 
-    verify(saver).addEntity(any(Vertex.class), argThat(allOf(hasEntry("test", (Object) value1))));
+    verify(saver).addEntity(any(), argThat(allOf(hasEntry("test", (Object) value1))));
   }
 
   @Test
