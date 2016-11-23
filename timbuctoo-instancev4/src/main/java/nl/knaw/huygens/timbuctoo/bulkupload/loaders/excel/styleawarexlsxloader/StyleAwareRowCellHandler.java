@@ -23,7 +23,6 @@ public class StyleAwareRowCellHandler implements RowCellHandler {
   }
 
   @Override public void startRow(int rowNum) {
-    importer.startEntity();
   }
 
   @Override public void cell(short column, String value, String cellStyleStr) {
