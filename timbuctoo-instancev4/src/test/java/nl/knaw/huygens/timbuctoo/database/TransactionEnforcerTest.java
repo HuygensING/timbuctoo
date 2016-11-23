@@ -18,7 +18,7 @@ public class TransactionEnforcerTest {
     AfterSuccessTaskExecutor afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
     DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
     TransactionEnforcer instance =
-      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactory(mock(
+      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactoryImpl(mock(
         Authorizer.class), Clock.systemDefaultZone(), mock(PersistentUrlCreator.class),
         (coll, id, rev) -> URI.create("http://example.org/persistent")), afterSuccessTaskExecutor);
 
@@ -35,7 +35,7 @@ public class TransactionEnforcerTest {
     AfterSuccessTaskExecutor afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
     DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
     TransactionEnforcer instance =
-      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactory(mock(
+      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactoryImpl(mock(
         Authorizer.class), Clock.systemDefaultZone(), mock(PersistentUrlCreator.class),
         (coll, id, rev) -> URI.create("http://example.org/persistent")), afterSuccessTaskExecutor);
 
@@ -49,7 +49,7 @@ public class TransactionEnforcerTest {
     AfterSuccessTaskExecutor afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
     DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
     TransactionEnforcer instance =
-      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactory(mock(
+      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactoryImpl(mock(
         Authorizer.class), Clock.systemDefaultZone(), mock(PersistentUrlCreator.class),
         (coll, id, rev) -> URI.create("http://example.org/persistent")), afterSuccessTaskExecutor);
 

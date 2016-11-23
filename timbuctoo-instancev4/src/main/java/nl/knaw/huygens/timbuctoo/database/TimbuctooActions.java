@@ -237,20 +237,21 @@ public class TimbuctooActions {
     }
   }
 
-  public static class TimbuctooActionsFactory {
+  public static class TimbuctooActionsFactoryImpl implements TimbuctooActionsFactory {
     private final Authorizer authorizer;
     private final Clock clock;
     private final PersistentUrlCreator persistentUrlCreator;
     private final UrlGenerator uriToRedirectToFromPersistentUrls;
 
-    public TimbuctooActionsFactory(Authorizer authorizer, Clock clock, PersistentUrlCreator persistentUrlCreator,
-                                   UrlGenerator uriToRedirectToFromPersistentUrls) {
+    public TimbuctooActionsFactoryImpl(Authorizer authorizer, Clock clock, PersistentUrlCreator persistentUrlCreator,
+                                       UrlGenerator uriToRedirectToFromPersistentUrls) {
       this.authorizer = authorizer;
       this.clock = clock;
       this.persistentUrlCreator = persistentUrlCreator;
       this.uriToRedirectToFromPersistentUrls = uriToRedirectToFromPersistentUrls;
     }
 
+    @Override
     public TimbuctooActions create(DataStoreOperations dataStoreOperations,
                                    AfterSuccessTaskExecutor afterSuccessTaskExecutor
     ) {
@@ -263,6 +264,13 @@ public class TimbuctooActions {
         afterSuccessTaskExecutor
       );
     }
+  }
+
+  @FunctionalInterface
+  public interface TimbuctooActionsFactory {
+    TimbuctooActions create(DataStoreOperations dataStoreOperations,
+                            AfterSuccessTaskExecutor afterSuccessTaskExecutor
+    );
   }
 }
 

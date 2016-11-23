@@ -29,7 +29,7 @@ public class DatabaseRdfIndexTest {
     final DataStoreOperations dataStoreOperations =
       new DataStoreOperations(mgr, mock(ChangeListener.class), null, null);
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
+      new TimbuctooActions.TimbuctooActionsFactoryImpl(mock(Authorizer.class), Clock.systemDefaultZone(),
         mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
       );
     final TransactionEnforcer transactionEnforcer =
