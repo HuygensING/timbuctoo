@@ -64,10 +64,10 @@ public class TimbuctooActions {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), id, 1),
         ImmutableEntityLookup.builder()
-          .rev(1)
-          .timId(id)
-          .collection(collection.getCollectionName())
-          .build()
+                             .rev(1)
+                             .timId(id)
+                             .collection(collection.getCollectionName())
+                             .build()
       )
     );
 
@@ -87,10 +87,10 @@ public class TimbuctooActions {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), updateEntity.getId(), rev),
         ImmutableEntityLookup.builder()
-          .rev(rev)
-          .timId(updateEntity.getId())
-          .collection(collection.getCollectionName())
-          .build()
+                             .rev(rev)
+                             .timId(updateEntity.getId())
+                             .collection(collection.getCollectionName())
+                             .build()
       )
     );
   }
@@ -110,10 +110,10 @@ public class TimbuctooActions {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), uuid, rev),
         ImmutableEntityLookup.builder()
-          .rev(rev)
-          .timId(uuid)
-          .collection(collection.getCollectionName())
-          .build()
+                             .rev(rev)
+                             .timId(uuid)
+                             .collection(collection.getCollectionName())
+                             .build()
       )
     );
   }
@@ -144,6 +144,14 @@ public class TimbuctooActions {
     return dataStoreOperations.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 
+  public DataStream<ReadEntity> findByDisplayName(Collection collection, String query, int limit) {
+    return dataStoreOperations.findByDisplayName(collection, query, limit);
+  }
+
+  public DataStream<ReadEntity> findKeywordByDisplayName(Collection collection, String keywordType, String query,
+                                                         int limit) {
+    return dataStoreOperations.findKeywordByDisplayName(collection, keywordType, query, limit);
+  }
 
   public UUID createRelation(Collection collection, CreateRelation createRelation, String userId)
     throws AuthorizationUnavailableException, AuthorizationException, IOException {
@@ -177,6 +185,7 @@ public class TimbuctooActions {
   public void addPid(URI pidUri, EntityLookup entityLookup) throws NotFoundException {
     dataStoreOperations.addPid(entityLookup.getTimId(), entityLookup.getRev(), pidUri); //no collection?
   }
+
 
   static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {
     private final PersistentUrlCreator persistentUrlCreator;

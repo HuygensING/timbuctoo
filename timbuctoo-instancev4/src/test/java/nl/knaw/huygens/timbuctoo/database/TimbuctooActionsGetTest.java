@@ -71,6 +71,31 @@ public class TimbuctooActionsGetTest {
     assertThat(result, is(sameInstance(entities)));
   }
 
+  @Test
+  public void findByDisplayNameReturnsTheValueOfDataStoreOperations() {
+    DataStream<ReadEntity> entities = mockDataStream();
+    String query = "";
+    int limit = 1;
+    when(dataStoreOperations.findByDisplayName(collection, query, limit)).thenReturn(entities);
+
+    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, query, limit);
+
+    assertThat(searchResult, is(sameInstance(entities)));
+  }
+
+  @Test
+  public void findKeywordByDisplayNameReturnsTheValueOfDataStoreOperations() {
+    DataStream<ReadEntity> entities = mockDataStream();
+    String query = "";
+    String keywordType = "";
+    int limit = 1;
+    when(dataStoreOperations.findKeywordByDisplayName(collection, keywordType, query, limit)).thenReturn(entities);
+
+    DataStream<ReadEntity> searchResult = instance.findKeywordByDisplayName(collection, keywordType, query, limit);
+
+    assertThat(searchResult, is(sameInstance(entities)));
+  }
+
   private DataStream<ReadEntity> mockDataStream() {
     return new DataStream<ReadEntity>() {
       @Override

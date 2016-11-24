@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -44,6 +45,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
+import static org.apache.tinkerpop.gremlin.process.traversal.P.within;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
@@ -58,9 +60,12 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class DataStoreOperationsTest {
@@ -184,6 +189,10 @@ public class DataStoreOperationsTest {
         )
         .withCollection("teststuffs")
         .withCollection("testrelations", CollectionBuilder::isRelationCollection)
+        .withCollection("testkeywords", col -> col
+          .withDisplayName(localProperty("testkeyword_displayName"))
+          .withProperty("type", localProperty("testkeyword_type"))
+        )
       )
       .withVre("otherVre", "other", vre -> vre
         .withCollection("otherthings", col -> col
@@ -2287,5 +2296,414 @@ public class DataStoreOperationsTest {
 
     instance.addPid(id, rev, pidUri);
   }
+
+  @Test
+  public void findByDisplayNameReturnsTheEntitiesWithAMatchingDisplayName() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "matching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "also matching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "different name")
+        .isLatest(true)
+        .withLabel("testthing")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    Collection collection = vres.getCollection("testthings").get();
+
+    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, "matching", 3);
+
+    assertThat(searchResult.map(readEntity -> readEntity.getId()), containsInAnyOrder(id1, id2));
+  }
+
+  @Test
+  public void findByDisplayNameIgnoresTheAskterisksAtTheBeginningAndTheEnd() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "ma*tching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "also ma*tching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "different name")
+        .isLatest(true)
+        .withLabel("testthing")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    Collection collection = vres.getCollection("testthings").get();
+
+    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, "*ma*tching*", 3);
+
+    assertThat(searchResult.map(readEntity -> readEntity.getId()), containsInAnyOrder(id1, id2));
+  }
+
+  @Test
+  public void findByDisplayReturnsLetsTheLimitLimitTheAmountOfResultsToReturn() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "matching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "also matching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("stuff")
+        .withVre("test")
+        .withProperty("teststuff_displayName", "different name")
+        .isLatest(true)
+        .withLabel("teststuff")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    Collection collection = vres.getCollection("testthings").get();
+
+    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, "", 1);
+
+    assertThat(searchResult.map(readEntity -> readEntity.getId()), hasSize(1));
+  }
+
+  // FIXME find a better way to test if the index is used
+  @Test
+  public void findByDisplayNameUsesAnIndexIfItIsAvailable() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "matching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "also matching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "different name")
+        .isLatest(true)
+        .withLabel("testthing")
+      ).wrap();
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
+    when(indexHandler.getVerticesByDisplayName(any(Collection.class), anyString()))
+      .thenReturn(graphWrapper.getGraph().traversal().V().has("tim_id",
+        within(id1.toString(), id2.toString())));
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
+    Collection collection = vres.getCollection("testthings").get();
+    String query = "matching";
+
+    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, query, 3);
+
+    assertThat(searchResult.map(readEntity -> readEntity.getId()), containsInAnyOrder(id1, id2));
+
+    verify(indexHandler).hasIndexFor(collection);
+    verify(indexHandler).getVerticesByDisplayName(collection, query);
+  }
+
+  @Test
+  public void findKeywordByDisplayNameFiltersOnKeywordType() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    String keywordType = "keywordType";
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "also matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "different name")
+        .isLatest(true)
+        .withLabel("testthing")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    Collection collection = vres.getCollection("testkeywords").get();
+
+    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "", 3);
+
+    assertThat(result.map(e -> e.getId()), contains(id1, id2));
+  }
+
+  @Test
+  public void findKeywordByDisplayNameQueryFiltersOnTheDisplayName() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    String keywordType = "keywordType";
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "also matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "different name")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    Collection collection = vres.getCollection("testkeywords").get();
+
+    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "matching", 3);
+
+    assertThat(result.map(e -> e.getId()), contains(id1, id2));
+  }
+
+  @Test
+  public void findKeywordIgnoresTheAsterisksAtTheBeginningAndTheEnd() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    String keywordType = "keywordType";
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "ma*tching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "also ma*tching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "different name")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    Collection collection = vres.getCollection("testkeywords").get();
+
+    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "*ma*tching*", 3);
+
+    assertThat(result.map(e -> e.getId()), contains(id1, id2));
+  }
+
+  @Test
+  public void findKeywordByDisplayNameLimitLimitsTheAmountOfResults() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    String keywordType = "keywordType";
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "also matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "different name")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      ).wrap();
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    Collection collection = vres.getCollection("testkeywords").get();
+
+    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "", 1);
+
+    assertThat(result.map(e -> e.getId()), hasSize(1));
+  }
+
+  // FIXME find a better way to test if the index is used
+  @Test
+  public void findKeywordByDisplayNameUsesAnIndexIfItIsAvailable() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    String keywordType = "keywordType";
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "also matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "different name")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      ).wrap();
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
+    when(indexHandler.getKeywordVertices(any(Collection.class), anyString(), anyString())).thenReturn(
+      graphWrapper.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
+    );
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
+    Collection collection = vres.getCollection("testkeywords").get();
+
+    String query = "matching";
+    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, query, 3);
+
+    assertThat(result.map(e -> e.getId()), contains(id1, id2));
+
+    verify(indexHandler).hasIndexFor(collection);
+    verify(indexHandler).getKeywordVertices(collection, query, keywordType);
+  }
+
 
 }
