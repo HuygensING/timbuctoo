@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
@@ -71,31 +72,6 @@ public class TimbuctooActionsGetTest {
     assertThat(result, is(sameInstance(entities)));
   }
 
-  @Test
-  public void findByDisplayNameReturnsTheValueOfDataStoreOperations() {
-    DataStream<ReadEntity> entities = mockDataStream();
-    String query = "";
-    int limit = 1;
-    when(dataStoreOperations.findByDisplayName(collection, query, limit)).thenReturn(entities);
-
-    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, query, limit);
-
-    assertThat(searchResult, is(sameInstance(entities)));
-  }
-
-  @Test
-  public void findKeywordByDisplayNameReturnsTheValueOfDataStoreOperations() {
-    DataStream<ReadEntity> entities = mockDataStream();
-    String query = "";
-    String keywordType = "";
-    int limit = 1;
-    when(dataStoreOperations.findKeywordByDisplayName(collection, keywordType, query, limit)).thenReturn(entities);
-
-    DataStream<ReadEntity> searchResult = instance.findKeywordByDisplayName(collection, keywordType, query, limit);
-
-    assertThat(searchResult, is(sameInstance(entities)));
-  }
-
   private DataStream<ReadEntity> mockDataStream() {
     return new DataStream<ReadEntity>() {
       @Override
@@ -104,6 +80,32 @@ public class TimbuctooActionsGetTest {
       }
     };
   }
+
+  @Test
+  public void findByDisplayNameReturnsTheValueOfDataStoreOperations() {
+    List<ReadEntity> entities = Lists.newArrayList();
+    String query = "";
+    int limit = 1;
+    when(dataStoreOperations.findByDisplayName(collection, query, limit)).thenReturn(entities);
+
+    List<ReadEntity> searchResult = instance.findByDisplayName(collection, query, limit);
+
+    assertThat(searchResult, is(sameInstance(entities)));
+  }
+
+  @Test
+  public void findKeywordByDisplayNameReturnsTheValueOfDataStoreOperations() {
+    List<ReadEntity> entities = Lists.newArrayList();
+    String query = "";
+    String keywordType = "";
+    int limit = 1;
+    when(dataStoreOperations.findKeywordByDisplayName(collection, keywordType, query, limit)).thenReturn(entities);
+
+    List<ReadEntity> searchResult = instance.findKeywordByDisplayName(collection, keywordType, query, limit);
+
+    assertThat(searchResult, is(sameInstance(entities)));
+  }
+
 
   @Test
   public void loadVresDelegatesToDataStoreOperationsLoadVres() {

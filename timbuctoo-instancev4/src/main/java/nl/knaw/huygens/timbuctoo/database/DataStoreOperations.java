@@ -58,6 +58,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -392,10 +393,15 @@ public class DataStoreOperations implements AutoCloseable {
     GraphTraversal<Vertex, Vertex> entities =
       getCurrentEntitiesFor(collection.getEntityTypeName()).range(start, start + rows);
 
-    return asDataStream(collection, entities, withRelations, customEntityProperties, customRelationProperties);
+    TinkerPopToEntityMapper tinkerPopToEntityMapper =
+      new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties, customRelationProperties);
+
+    return new TinkerPopGetCollection(
+      entities.toStream().map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex, withRelations))
+    );
   }
 
-  public DataStream<ReadEntity> findByDisplayName(Collection collection, String query, int limit) {
+  public List<ReadEntity> findByDisplayName(Collection collection, String query, int limit) {
     GraphTraversal<Vertex, Vertex> result;
     if (indexHandler.hasIndexFor(collection)) {
       result = indexHandler.getVerticesByDisplayName(collection, query);
@@ -409,24 +415,13 @@ public class DataStoreOperations implements AutoCloseable {
         .as("displayName")
         .filter(x -> x.get().toLowerCase().contains(cleanQuery))
         .select("vertex")
-        .map(x -> (Vertex) x.get())
-        .limit(limit);
+        .map(x -> (Vertex) x.get());
     }
 
-    return asDataStream(
-      collection,
-      result,
-      false,
-      (traversalSource, vre) -> {
-
-      },
-      (entity1, entityVertex, target, relationRef) -> {
-
-      }
-    );
+    return asReadEntityList(collection, result.limit(limit));
   }
 
-  public DataStream<ReadEntity> findKeywordByDisplayName(Collection collection, String keywordType, String query,
+  public List<ReadEntity> findKeywordByDisplayName(Collection collection, String keywordType, String query,
                                                          int limit) {
     GraphTraversal<Vertex, Vertex> result;
     if (indexHandler.hasIndexFor(collection)) {
@@ -442,21 +437,25 @@ public class DataStoreOperations implements AutoCloseable {
         .as("displayName")
         .filter(x -> x.get().toLowerCase().contains(cleanQuery))
         .select("vertex")
-        .map(x -> (Vertex) x.get())
-        .limit(limit);
+        .map(x -> (Vertex) x.get());
     }
 
+    return asReadEntityList(collection, result.limit(limit));
+  }
 
-    return asDataStream(
+  private List<ReadEntity> asReadEntityList(Collection collection, GraphTraversal<Vertex, Vertex> result) {
+    TinkerPopToEntityMapper tinkerPopToEntityMapper = new TinkerPopToEntityMapper(
       collection,
-      result,
-      false,
+      traversal,
+      mappings,
       (traversalSource, vre) -> {
 
       },
       (entity1, entityVertex, target, relationRef) -> {
 
       });
+
+    return result.map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex.get(), false)).toList();
   }
 
   private String cleanQuery(String query) {
@@ -468,18 +467,6 @@ public class DataStoreOperations implements AutoCloseable {
       query = query.substring(0, query.length() - 2);
     }
     return query;
-  }
-
-  private DataStream<ReadEntity> asDataStream(Collection collection, GraphTraversal<Vertex, Vertex> entities,
-                                              boolean withRelations,
-                                              CustomEntityProperties customEntityProperties,
-                                              CustomRelationProperties customRelationProperties) {
-    TinkerPopToEntityMapper tinkerPopToEntityMapper =
-      new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties, customRelationProperties);
-
-    return new TinkerPopGetCollection(
-      entities.toStream().map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex, withRelations))
-    );
   }
 
   /**

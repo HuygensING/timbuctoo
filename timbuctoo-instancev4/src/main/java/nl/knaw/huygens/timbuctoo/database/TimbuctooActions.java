@@ -22,6 +22,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -144,11 +145,11 @@ public class TimbuctooActions {
     return dataStoreOperations.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 
-  public DataStream<ReadEntity> findByDisplayName(Collection collection, String query, int limit) {
+  public List<ReadEntity> findByDisplayName(Collection collection, String query, int limit) {
     return dataStoreOperations.findByDisplayName(collection, query, limit);
   }
 
-  public DataStream<ReadEntity> findKeywordByDisplayName(Collection collection, String keywordType, String query,
+  public List<ReadEntity> findKeywordByDisplayName(Collection collection, String keywordType, String query,
                                                          int limit) {
     return dataStoreOperations.findKeywordByDisplayName(collection, keywordType, query, limit);
   }

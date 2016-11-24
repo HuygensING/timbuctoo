@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
@@ -2333,9 +2334,9 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testthings").get();
 
-    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, "matching", 3);
+    List<ReadEntity> result = instance.findByDisplayName(collection, "matching", 3);
 
-    assertThat(searchResult.map(readEntity -> readEntity.getId()), containsInAnyOrder(id1, id2));
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
   }
 
   @Test
@@ -2374,9 +2375,9 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testthings").get();
 
-    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, "*ma*tching*", 3);
+    List<ReadEntity> result = instance.findByDisplayName(collection, "*ma*tching*", 3);
 
-    assertThat(searchResult.map(readEntity -> readEntity.getId()), containsInAnyOrder(id1, id2));
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
   }
 
   @Test
@@ -2415,9 +2416,9 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testthings").get();
 
-    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, "", 1);
+    List<ReadEntity> result = instance.findByDisplayName(collection, "", 1);
 
-    assertThat(searchResult.map(readEntity -> readEntity.getId()), hasSize(1));
+    assertThat(result, hasSize(1));
   }
 
   // FIXME find a better way to test if the index is used
@@ -2463,9 +2464,59 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     String query = "matching";
 
-    DataStream<ReadEntity> searchResult = instance.findByDisplayName(collection, query, 3);
+    List<ReadEntity> result = instance.findByDisplayName(collection, query, 3);
 
-    assertThat(searchResult.map(readEntity -> readEntity.getId()), containsInAnyOrder(id1, id2));
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
+
+    verify(indexHandler).hasIndexFor(collection);
+    verify(indexHandler).getVerticesByDisplayName(collection, query);
+  }
+
+  @Test
+  public void findByDisplayNameLetsLimitTheAmountOfIndexResults() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "matching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "also matching")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("testthing_displayName", "different name")
+        .isLatest(true)
+        .withLabel("testthing")
+      ).wrap();
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
+    when(indexHandler.getVerticesByDisplayName(any(Collection.class), anyString()))
+      .thenReturn(graphWrapper.getGraph().traversal().V().has("tim_id",
+        within(id1.toString(), id2.toString())));
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
+    Collection collection = vres.getCollection("testthings").get();
+    String query = "matching";
+
+    List<ReadEntity> result = instance.findByDisplayName(collection, query, 1);
+
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), hasSize(1));
 
     verify(indexHandler).hasIndexFor(collection);
     verify(indexHandler).getVerticesByDisplayName(collection, query);
@@ -2510,9 +2561,9 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testkeywords").get();
 
-    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "", 3);
+    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "", 3);
 
-    assertThat(result.map(e -> e.getId()), contains(id1, id2));
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
   }
 
   @Test
@@ -2555,9 +2606,9 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testkeywords").get();
 
-    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "matching", 3);
+    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "matching", 3);
 
-    assertThat(result.map(e -> e.getId()), contains(id1, id2));
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
   }
 
   @Test
@@ -2600,9 +2651,9 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testkeywords").get();
 
-    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "*ma*tching*", 3);
+    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "*ma*tching*", 3);
 
-    assertThat(result.map(e -> e.getId()), contains(id1, id2));
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
   }
 
   @Test
@@ -2645,9 +2696,9 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testkeywords").get();
 
-    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "", 1);
+    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "", 1);
 
-    assertThat(result.map(e -> e.getId()), hasSize(1));
+    assertThat(result, hasSize(1));
   }
 
   // FIXME find a better way to test if the index is used
@@ -2697,13 +2748,65 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testkeywords").get();
 
     String query = "matching";
-    DataStream<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, query, 3);
+    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, query, 3);
 
-    assertThat(result.map(e -> e.getId()), contains(id1, id2));
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
 
     verify(indexHandler).hasIndexFor(collection);
     verify(indexHandler).getKeywordVertices(collection, query, keywordType);
   }
 
+  @Test
+  public void findKeywordByDisplayLetsLimitLimitTheAmountOfIndexResults() {
+    Vres vres = createConfiguration();
+    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    String keywordType = "keywordType";
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "also matching")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      )
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withType("keyword")
+        .withVre("test")
+        .withProperty("testkeyword_displayName", "different name")
+        .isLatest(true)
+        .withProperty("keyword_type", keywordType)
+        .withLabel("testkeyword")
+      ).wrap();
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
+    when(indexHandler.getKeywordVertices(any(Collection.class), anyString(), anyString())).thenReturn(
+      graphWrapper.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
+    );
+    DataStoreOperations instance =
+      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
+    Collection collection = vres.getCollection("testkeywords").get();
 
+    String query = "matching";
+    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, query, 1);
+
+    assertThat(result.stream().map(e -> e.getId()).collect(toList()), hasSize(1));
+
+    verify(indexHandler).hasIndexFor(collection);
+    verify(indexHandler).getKeywordVertices(collection, query, keywordType);
+  }
 }

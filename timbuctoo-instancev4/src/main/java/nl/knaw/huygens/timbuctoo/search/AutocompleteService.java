@@ -5,11 +5,11 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.model.TempName;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
@@ -50,7 +50,7 @@ public class AutocompleteService {
 
   public AutocompleteService(TinkerpopGraphManager graphManager, UrlGenerator autoCompleteUrlFor, Vres mappings) {
     final PropertyDescriptorFactory propertyDescriptorFactory =
-            new PropertyDescriptorFactory(new PropertyParserFactory());
+      new PropertyDescriptorFactory(new PropertyParserFactory());
 
     this.graphManager = graphManager;
     this.autoCompleteUrlFor = autoCompleteUrlFor;
@@ -59,8 +59,8 @@ public class AutocompleteService {
     displayNameDescriptors = Maps.newHashMap();
     displayNameDescriptors.put("wwdocuments", new WwDocumentDisplayNameDescriptor());
     displayNameDescriptors.put("wwpersons", propertyDescriptorFactory.getComposite(
-            propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
-            propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class)));
+      propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
+      propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class)));
     displayNameDescriptors.put("wwkeywords", propertyDescriptorFactory.getLocal("wwkeyword_value", String.class));
     displayNameDescriptors.put("wwlanguages", propertyDescriptorFactory.getLocal("wwlanguage_name", String.class));
     displayNameDescriptors.put("wwlocations", propertyDescriptorFactory.getLocal("names", LocationNames.class));
@@ -68,9 +68,9 @@ public class AutocompleteService {
   }
 
   public JsonNode search(String collectionName, Optional<String> query, Optional<String> type)
-          throws InvalidCollectionException {
+    throws InvalidCollectionException {
 
-    final GraphDatabaseService graphDatabase =   graphManager.getGraphDatabase();
+    final GraphDatabaseService graphDatabase = graphManager.getGraphDatabase();
 
     Transaction transaction = graphManager.getGraph().tx();
 
@@ -91,20 +91,26 @@ public class AutocompleteService {
     IndexHits<Node> hits = index.query("displayName", parsedQuery);
 
     List<ObjectNode> results = StreamSupport.stream(hits.spliterator(), false)
-      // FIXME: filtering on the result set is safer (no compound lucene query needed),
-      // FIXME: however, it only works when it is sure the result set contains all results (like for keywords)
-      .filter(hit -> !(type.isPresent() && !type.get().equals(hit.getProperty("keyword_type"))))
-      .map(hit -> {
-        Vertex vertex = graphManager.getGraph().traversal().V(hit.getId()).next();
-        String timId = (String) vertex.property("tim_id").value();
-        int rev = (Integer) vertex.property("rev").value();
+                                            // FIXME: filtering on the result set is safer (no compound lucene query
+                                            // needed),
+                                            // FIXME: however, it only works when it is sure the result set contains
+                                            // all results (like for keywords)
+                                            .filter(hit -> !(type.isPresent() &&
+                                              !type.get().equals(hit.getProperty("keyword_type"))))
+                                            .map(hit -> {
+                                              Vertex vertex = graphManager.getGraph().traversal().V(hit.getId()).next();
+                                              String timId = (String) vertex.property("tim_id").value();
+                                              int rev = (Integer) vertex.property("rev").value();
 
-        return jsnO(
-              "key", jsn(autoCompleteUrlFor.apply(collectionName, UUID.fromString(timId), rev).toString()),
-              "value", jsn(displayNameDescriptors.get(collectionName).get(vertex)));
-      })
-      .limit(collectionName.equals("wwkeywords") ? 1000 : 50) // FIXME: expose param to client again
-      .collect(Collectors.toList());
+                                              return jsnO(
+                                                "key", jsn(
+                                                  autoCompleteUrlFor.apply(collectionName, UUID.fromString(timId), rev)
+                                                                    .toString()),
+                                                "value", jsn(displayNameDescriptors.get(collectionName).get(vertex)));
+                                            })
+                                            .limit(collectionName.equals("wwkeywords") ? 1000 :
+                                              50) // FIXME: expose param to client again
+                                            .collect(Collectors.toList());
 
     hits.close();
     transaction.close();
@@ -216,7 +222,23 @@ public class AutocompleteService {
     }
 
     return queryParam.get()
-            .replaceAll("^\\*", "")
-            .replaceAll("\\s", " AND ");
+                     .replaceAll("^\\*", "")
+                     .replaceAll("\\s", " AND ");
+  }
+
+  public static class AutocompleteServiceFactory {
+    private final TinkerpopGraphManager graphManager;
+    private final UrlGenerator autoCompleteUri;
+    private final Vres vres;
+
+    public AutocompleteServiceFactory(TinkerpopGraphManager graphManager, UrlGenerator autoCompleteUri, Vres vres) {
+      this.graphManager = graphManager;
+      this.autoCompleteUri = autoCompleteUri;
+      this.vres = vres;
+    }
+
+    public AutocompleteService create() {
+      return new AutocompleteService(graphManager, autoCompleteUri, vres);
+    }
   }
 }
