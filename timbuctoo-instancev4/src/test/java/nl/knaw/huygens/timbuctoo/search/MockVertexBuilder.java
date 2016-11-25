@@ -17,13 +17,12 @@ import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.search.SearchDescription.ID_DB_PROP;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.anyVararg;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class MockVertexBuilder {
 
@@ -100,7 +99,7 @@ public class MockVertexBuilder {
     // Problem: with thenReturn iterator() is invoked at creation time,
     // fixed by using thenAnswer() because iterator() is now invoked on vertices
     // Problem2: vertices accepts a vararg, to support the vararg the vertices of all the relations should be combined
-    when(vertex.vertices(argThat(is(direction)), anyVararg())).thenAnswer(invocationOnMock -> {
+    when(vertex.vertices(argThat(is(direction)), any())).thenAnswer(invocationOnMock -> {
       List<Object> vertices = Lists.newArrayList();
       boolean isFirst = true;
 
@@ -116,7 +115,7 @@ public class MockVertexBuilder {
 
       return vertices.iterator();
     });
-    when(vertex.edges(argThat(is(direction)), anyVararg())).thenAnswer(invocationOnMock -> {
+    when(vertex.edges(argThat(is(direction)), any())).thenAnswer(invocationOnMock -> {
       List<Object> edges = Lists.newArrayList();
       boolean isFirst = true;
 

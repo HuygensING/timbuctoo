@@ -8,9 +8,9 @@ import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import static nl.knaw.huygens.timbuctoo.util.CollectionMatcher.likeCollection;
 import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

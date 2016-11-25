@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.security.UserCreationException;
 import nl.knaw.huygens.timbuctoo.server.security.UserInfoKeys;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 
 import java.io.PrintWriter;
 import java.util.Map;
@@ -16,7 +16,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.not;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -129,7 +129,7 @@ public class UserCreationTaskTest {
 
   @Test(expected = UserCreationException.class)
   public void executeRethrowsTheExceptionsOfTheLocalUserCreator() throws Exception {
-    doThrow(new UserCreationException("")).when(localUserCreator).create(Matchers.any());
+    doThrow(new UserCreationException("")).when(localUserCreator).create(ArgumentMatchers.any());
     ImmutableMultimap<String, String> immutableMultimap = ImmutableMultimap.<String, String>builder()
       .put(UserInfoKeys.USER_PID, PID)
       .put(UserInfoKeys.USER_NAME, USER_NAME)
