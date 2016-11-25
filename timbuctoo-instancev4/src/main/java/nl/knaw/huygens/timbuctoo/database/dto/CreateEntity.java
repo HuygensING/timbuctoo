@@ -2,36 +2,18 @@ package nl.knaw.huygens.timbuctoo.database.dto;
 
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import org.immutables.value.Value;
 
 import java.util.UUID;
 
 
-public class CreateEntity {
-  private final Iterable<TimProperty<?>> properties;
-  private UUID id;
-  private Change created;
+@Value.Immutable
+public interface CreateEntity {
 
-  public CreateEntity(Iterable<TimProperty<?>> properties) {
-    this.properties = properties;
-  }
+  Iterable<TimProperty<?>> getProperties();
 
-  public Iterable<TimProperty<?>> getProperties() {
-    return properties;
-  }
+  UUID getId();
 
-  public UUID getId() {
-    return id;
-  }
+  Change getCreated();
 
-  public void setId(UUID id) {
-    this.id = id;
-  }
-
-  public Change getCreated() {
-    return created;
-  }
-
-  public void setCreated(Change created) {
-    this.created = created;
-  }
 }

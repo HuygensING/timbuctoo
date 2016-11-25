@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.database.converters.json;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
@@ -23,11 +22,6 @@ public class JsonToEntityMapper {
 
   public static final Logger LOG = LoggerFactory.getLogger(JsonToEntityMapper.class);
 
-  public CreateEntity newCreateEntity(Collection collection, ObjectNode input) throws IOException {
-    List<TimProperty<?>> properties = getDataProperties(collection, input);
-    return new CreateEntity(properties);
-  }
-
   public UpdateEntity newUpdateEntity(Collection collection, UUID id, ObjectNode data)
     throws IOException {
     if (data.get("^rev") == null) {
@@ -43,7 +37,7 @@ public class JsonToEntityMapper {
   /**
    * Retrieve all the properties that contain client data.
    */
-  private List<TimProperty<?>> getDataProperties(Collection collection, ObjectNode input) throws IOException {
+  public List<TimProperty<?>> getDataProperties(Collection collection, ObjectNode input) throws IOException {
     JsonPropertyConverter converter = new JsonPropertyConverter(collection);
 
     Set<String> fieldNames = getDataFields(input);
