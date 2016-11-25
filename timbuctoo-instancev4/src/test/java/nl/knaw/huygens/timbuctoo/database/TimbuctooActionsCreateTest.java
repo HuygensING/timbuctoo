@@ -1,15 +1,14 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.ImmutableCreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import java.io.IOException;
 import java.net.URI;
@@ -18,16 +17,15 @@ import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static nl.knaw.huygens.timbuctoo.database.AuthorizerBuilder.allowedToWrite;
 import static nl.knaw.huygens.timbuctoo.database.AuthorizerBuilder.notAllowedToWrite;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
@@ -39,7 +37,6 @@ public class TimbuctooActionsCreateTest {
   private Clock clock;
   private Instant instant;
   private Collection collection;
-  private CreateEntity createEntity;
   private String userId;
   private Optional<Collection> baseCollection;
   private PersistentUrlCreator persistentUrlCreator;
@@ -53,7 +50,6 @@ public class TimbuctooActionsCreateTest {
     when(clock.instant()).thenReturn(instant);
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
-    createEntity = mock(CreateEntity.class);
     userId = "userId";
     baseCollection = Optional.empty();
     persistentUrlCreator = mock(PersistentUrlCreator.class);
@@ -67,7 +63,7 @@ public class TimbuctooActionsCreateTest {
     TimbuctooActions instance = createInstance(notAllowedToWrite());
 
     try {
-      instance.createEntity(mock(Collection.class), baseCollection, new CreateEntity(Lists.newArrayList()), "userId");
+      instance.createEntity(mock(Collection.class), baseCollection, newArrayList(), "userId");
     } finally {
       verifyZeroInteractions(dataStoreOperations);
     }
@@ -77,23 +73,28 @@ public class TimbuctooActionsCreateTest {
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
     TimbuctooActions instance = createInstance(allowedToWrite());
 
-    UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
 
-    InOrder inOrder = inOrder(dataStoreOperations, createEntity);
-    inOrder.verify(createEntity).setId(id);
-    inOrder.verify(createEntity).setCreated(argThat(allOf(
-      hasProperty("userId", is(userId)),
-      hasProperty("timeStamp", is(instant.toEpochMilli()))
-      ))
+    verify(dataStoreOperations).createEntity(
+      collection,
+      baseCollection,
+      ImmutableCreateEntity.builder()
+        .properties(newArrayList())
+        .id(id)
+        .created(new Change(
+          instant.toEpochMilli(),
+          userId,
+          null
+        ))
+        .build()
     );
-    inOrder.verify(dataStoreOperations).createEntity(collection, baseCollection, this.createEntity);
   }
 
   @Test
   public void createEntityReturnsTheId() throws Exception {
     TimbuctooActions instance = createInstance(allowedToWrite());
 
-    UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
 
     assertThat(id, is(notNullValue()));
   }
@@ -102,7 +103,7 @@ public class TimbuctooActionsCreateTest {
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
     TimbuctooActions instance = createInstance(allowedToWrite());
 
-    UUID id = instance.createEntity(collection, baseCollection, this.createEntity, userId);
+    UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
 
     verify(afterSuccessTaskExecutor).addTask(
       new TimbuctooActions.AddPersistentUrlTask(
@@ -115,10 +116,10 @@ public class TimbuctooActionsCreateTest {
 
   @Test(expected = IOException.class)
   public void createEntityDoesNotCallTheAfterSuccessTaskExecutor() throws Exception {
-    doThrow(IOException.class).when(dataStoreOperations).createEntity(collection, baseCollection, createEntity);
+    doThrow(IOException.class).when(dataStoreOperations).createEntity(eq(collection), eq(baseCollection), any());
     TimbuctooActions instance = createInstance(allowedToWrite());
 
-    instance.createEntity(collection, baseCollection, this.createEntity, userId);
+    instance.createEntity(collection, baseCollection, newArrayList(), userId);
 
     verifyZeroInteractions(afterSuccessTaskExecutor);
   }

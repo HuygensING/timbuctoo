@@ -1,14 +1,15 @@
 package nl.knaw.huygens.timbuctoo.database.converters.json;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
@@ -38,9 +39,9 @@ public class JsonToEntityMapperTest {
     );
     JsonToEntityMapper instance = new JsonToEntityMapper();
 
-    CreateEntity createEntity = instance.newCreateEntity(collection, input);
+    List<TimProperty<?>> properties = instance.getDataProperties(collection, input);
 
-    assertThat(createEntity.getProperties(), containsInAnyOrder(
+    assertThat(properties, containsInAnyOrder(
       allOf(hasProperty("name", equalTo("name")), hasProperty("value", equalTo("Hans"))),
       allOf(hasProperty("name", equalTo("age")), hasProperty("value", equalTo("12")))
     ));
@@ -62,7 +63,7 @@ public class JsonToEntityMapperTest {
 
     JsonToEntityMapper instance = new JsonToEntityMapper();
 
-    instance.newCreateEntity(collection, input);
+    instance.getDataProperties(collection, input);
   }
 
   @Test(expected = IOException.class)
@@ -81,7 +82,7 @@ public class JsonToEntityMapperTest {
 
     JsonToEntityMapper instance = new JsonToEntityMapper();
 
-    instance.newCreateEntity(collection, input);
+    instance.getDataProperties(collection, input);
   }
 
   @Test
@@ -98,9 +99,9 @@ public class JsonToEntityMapperTest {
 
     JsonToEntityMapper instance = new JsonToEntityMapper();
 
-    CreateEntity createEntity = instance.newCreateEntity(collection, input);
+    List<TimProperty<?>> properties = instance.getDataProperties(collection, input);
 
-    assertThat(createEntity.getProperties(), not(containsInAnyOrder(
+    assertThat(properties, not(containsInAnyOrder(
       hasProperty("name", equalTo("_id")),
       hasProperty("name", equalTo("^rev")),
       hasProperty("name", equalTo("@type"))
