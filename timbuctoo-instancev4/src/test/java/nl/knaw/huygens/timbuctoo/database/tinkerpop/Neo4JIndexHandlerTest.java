@@ -5,10 +5,7 @@ import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
-import org.neo4j.graphdb.GraphDatabaseService;
-import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.Transaction;
-import org.neo4j.graphdb.index.Index;
 
 import java.util.UUID;
 
@@ -56,7 +53,7 @@ public class Neo4JIndexHandlerTest {
   }
 
   @Test
-  public void getVerticesRetrievesTheVerticesFromTheIndexAndCreatesTraversalForThem() {
+  public void findByDisplayNameRetrievesTheVerticesFromTheIndexAndCreatesTraversalForThem() {
     String id1 = UUID.randomUUID().toString();
     String id2 = UUID.randomUUID().toString();
     TinkerpopGraphManager tinkerpopGraphManager = newGraph()
@@ -71,28 +68,23 @@ public class Neo4JIndexHandlerTest {
         .withProperty("displayName", "notmatching")
       )
       .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Collection collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION);
-    createIndexFor(tinkerpopGraphManager, collection);
-    addToIndex(tinkerpopGraphManager, collection, id1);
-    addToIndex(tinkerpopGraphManager, collection, id2);
-    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
 
-    GraphTraversal<Vertex, Vertex> vertices = instance.getVerticesByDisplayName(collection, "query*");
+    GraphTraversal<Vertex, Vertex> vertices = instance.findByQuickSearch(collection, "query*");
 
     assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1, id2));
   }
 
-  private void addToIndex(TinkerpopGraphManager tinkerpopGraphManager, Collection collection, String id) {
-    GraphDatabaseService graphDatabase = tinkerpopGraphManager.getGraphDatabase();
-    Index<Node> nodeIndex = graphDatabase.index().forNodes(collection.getCollectionName());
-    Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id).next();
-
-    nodeIndex.add(graphDatabase.getNodeById((long) vertex.id()), "displayName", vertex.value("displayName"));
+  private void addToIndex(Neo4jIndexHandler instance, Collection collection, Vertex vertex) {
+    instance.addToQuickSearchIndex(collection, vertex.value("displayName"), vertex);
   }
 
   @Test
-  public void getKeywordVerticesFiltersTheIndexResultsOnTheRightKeywordType() {
+  public void findKeywordsByDisplayNameFiltersTheIndexResultsOnTheRightKeywordType() {
     String id1 = UUID.randomUUID().toString();
     String id2 = UUID.randomUUID().toString();
     TinkerpopGraphManager tinkerpopGraphManager = newGraph()
@@ -108,14 +100,13 @@ public class Neo4JIndexHandlerTest {
         .withProperty("displayName", "notmatching")
       )
       .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Collection collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION);
-    createIndexFor(tinkerpopGraphManager, collection);
-    addToIndex(tinkerpopGraphManager, collection, id1);
-    addToIndex(tinkerpopGraphManager, collection, id2);
-    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
 
-    GraphTraversal<Vertex, Vertex> vertices = instance.getKeywordVertices(collection, "query", "keywordType");
+    GraphTraversal<Vertex, Vertex> vertices = instance.findKeywordsByQuickSearch(collection, "query", "keywordType");
 
     assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1));
   }

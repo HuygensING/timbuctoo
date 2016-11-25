@@ -2456,7 +2456,7 @@ public class DataStoreOperationsTest {
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
     when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
-    when(indexHandler.getVerticesByDisplayName(any(Collection.class), anyString()))
+    when(indexHandler.findByQuickSearch(any(Collection.class), anyString()))
       .thenReturn(graphWrapper.getGraph().traversal().V().has("tim_id",
         within(id1.toString(), id2.toString())));
     DataStoreOperations instance =
@@ -2469,7 +2469,7 @@ public class DataStoreOperationsTest {
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
 
     verify(indexHandler).hasIndexFor(collection);
-    verify(indexHandler).getVerticesByDisplayName(collection, query);
+    verify(indexHandler).findByQuickSearch(collection, query);
   }
 
   @Test
@@ -2740,7 +2740,7 @@ public class DataStoreOperationsTest {
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
     when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
-    when(indexHandler.getKeywordVertices(any(Collection.class), anyString(), anyString())).thenReturn(
+    when(indexHandler.findKeywordsByQuickSearch(any(Collection.class), anyString(), anyString())).thenReturn(
       graphWrapper.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
     );
     DataStoreOperations instance =
@@ -2753,7 +2753,7 @@ public class DataStoreOperationsTest {
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
 
     verify(indexHandler).hasIndexFor(collection);
-    verify(indexHandler).getKeywordVertices(collection, query, keywordType);
+    verify(indexHandler).findKeywordsByQuickSearch(collection, query, keywordType);
   }
 
   @Test

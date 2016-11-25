@@ -228,13 +228,18 @@ public class DataStoreOperations implements AutoCloseable {
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> getVerticesByDisplayName(Collection collection, String query) {
+        public GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, String query) {
           throw new UnsupportedOperationException("Not implemented yet");
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> getKeywordVertices(Collection collection, String query,
-                                                                 String keywordType) {
+        public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, String query,
+                                                                        String keywordType) {
+          throw new UnsupportedOperationException("Not implemented yet");
+        }
+
+        @Override
+        public void addToQuickSearchIndex(Collection collection, String displayName, Vertex vertex) {
           throw new UnsupportedOperationException("Not implemented yet");
         }
       };
@@ -404,7 +409,7 @@ public class DataStoreOperations implements AutoCloseable {
   public List<ReadEntity> findByDisplayName(Collection collection, String query, int limit) {
     GraphTraversal<Vertex, Vertex> result;
     if (indexHandler.hasIndexFor(collection)) {
-      result = indexHandler.getVerticesByDisplayName(collection, query);
+      result = indexHandler.findByQuickSearch(collection, query);
     } else {
       String cleanQuery = cleanQuery(query);
       result = getCurrentEntitiesFor(collection.getEntityTypeName())
@@ -425,7 +430,7 @@ public class DataStoreOperations implements AutoCloseable {
                                                          int limit) {
     GraphTraversal<Vertex, Vertex> result;
     if (indexHandler.hasIndexFor(collection)) {
-      result = indexHandler.getKeywordVertices(collection, query, keywordType);
+      result = indexHandler.findKeywordsByQuickSearch(collection, query, keywordType);
     } else {
       String cleanQuery = cleanQuery(query);
       result = getCurrentEntitiesFor(collection.getEntityTypeName())
