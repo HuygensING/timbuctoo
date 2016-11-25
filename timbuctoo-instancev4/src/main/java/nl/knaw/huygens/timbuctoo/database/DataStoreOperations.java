@@ -553,7 +553,7 @@ public class DataStoreOperations implements AutoCloseable {
       Instant.ofEpochMilli(updateRelation.getModified().getTimeStamp()));
   }
 
-  public void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
+  private void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
                               Instant instant)
     throws NotFoundException {
 
