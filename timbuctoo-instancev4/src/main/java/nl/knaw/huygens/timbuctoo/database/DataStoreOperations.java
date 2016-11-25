@@ -327,7 +327,6 @@ public class DataStoreOperations implements AutoCloseable {
     GraphTraversal<Vertex, Vertex> traversalWithVertex = traversal.addV();
 
     Vertex vertex = traversalWithVertex.next();
-
     for (TimProperty<?> property : input.getProperties()) {
       String fieldName = property.getName();
       if (mapping.containsKey(fieldName)) {
@@ -759,6 +758,7 @@ public class DataStoreOperations implements AutoCloseable {
   }
 
   private void setAdministrativeProperties(Collection col, Vertex vertex, CreateEntity input) {
+    vertex.property("isLatest", true);
     vertex.property("tim_id", input.getId().toString());
     vertex.property("rev", 1);
     vertex.property("types", String.format(

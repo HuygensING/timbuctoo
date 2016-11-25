@@ -60,7 +60,6 @@ import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -70,8 +69,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class DataStoreOperationsTest {
@@ -250,34 +247,11 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void createEntityNotifiesTheChangeListener() throws Exception {
-    GraphWrapper graphWrapper = newGraph().wrap();
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    ChangeListener changeListener = mock(ChangeListener.class);
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, changeListener, null, vres);
-    List<TimProperty<?>> properties = Lists.newArrayList();
-    UUID id = UUID.randomUUID();
-    CreateEntity createEntity = withProperties(properties);
-
-    instance.createEntity(collection, Optional.empty(), createEntity);
-
-    Vertex vertex =
-      graphWrapper.getGraph().traversal()
-        .V()
-        .has("tim_id", createEntity.getId().toString())
-        .in("VERSION_OF")
-        .next();
-    verify(changeListener).onCreate(vertex);
-  }
-
-  @Test
   public void createEntityMarksOneVertexAsLatest() throws Exception {
     GraphWrapper graphWrapper = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    ChangeListener changeListener = mock(ChangeListener.class);
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, changeListener, null, vres);
+    DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     UUID id = UUID.randomUUID();
     CreateEntity createEntity = withProperties(properties);
@@ -501,42 +475,6 @@ public class DataStoreOperationsTest {
     assertThat(afterUpdate.id(), is(not(beforeUpdate.id())));
     //single edge, containing the VERSION_OF pointer
     assertThat(afterUpdate.edges(Direction.IN).next().outVertex().id(), is(beforeUpdate.id()));
-  }
-
-  @Test
-  public void deleteEntityNotifiesTheChangeListenerBeforeDuplicatingTheVertex() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    UUID id = UUID.randomUUID();
-    String idString = id.toString();
-    GraphWrapper graphWrapper = newGraph()
-      .withVertex("orig", v -> v
-        .withTimId(idString)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("isLatest", false)
-        .withProperty("rev", 1)
-      )
-      .withVertex(v -> v
-        .withTimId(idString)
-        .withProperty("isLatest", true)
-        .withVre("test")
-        .withType("thing")
-        .withProperty("rev", 1)
-        .withIncomingRelation("VERSION_OF", "orig")
-      ).wrap();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    ChangeListener changeListener = mock(ChangeListener.class);
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres);
-
-    instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
-
-    Vertex latestAfterDuplication = graphWrapper.getGraph()
-                                                .traversal().V()
-                                                .has("tim_id", idString).has("isLatest", true).next();
-    Vertex newVertex = latestAfterDuplication.vertices(Direction.IN, "VERSION_OF").next();
-    Vertex oldVertex = newVertex.vertices(Direction.IN, "VERSION_OF").next();
-    verify(changeListener).onUpdate(Optional.of(oldVertex), newVertex);
   }
 
   @Test
@@ -1492,44 +1430,6 @@ public class DataStoreOperationsTest {
                                         .values("types")
                                         .next();
     assertThat(types, containsString("\"testthing\""));
-  }
-
-  @Test
-  public void replaceEntityCallTheChangeListenerWithAVertexWithoutPid() throws Exception {
-    Vres vres = createConfiguration();
-    Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    UUID id = UUID.randomUUID();
-    GraphWrapper graphWrapper = newGraph()
-      .withVertex(v -> v
-        .withTimId(id)
-        .withVre("other")
-        .withType("thing")
-        .withProperty("isLatest", true)
-        .withProperty("rev", 1)
-        .withProperty("otherthing_prop1", "the name")
-        .withIncomingRelation("VERSION_OF", "orig")
-      )
-      .withVertex("orig", v -> v
-        .withTimId(id)
-        .withVre("other")
-        .withType("thing")
-        .withProperty("isLatest", false)
-        .withProperty("rev", 1)
-        .withProperty("otherthing_prop1", "the name")
-      ).wrap();
-    ChangeListener changeListener = mock(ChangeListener.class);
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, changeListener, entityFetcher, vres);
-    UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
-    updateEntity.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
-
-    instance.replaceEntity(collection, updateEntity);
-
-    verify(changeListener).onUpdate(
-      argThat(is(instanceOf(Optional.class))),
-      argThat(likeVertex().withTimId(id.toString()).withProperty("rev", 2).withoutProperty("pid"))
-    );
   }
 
   @Test
