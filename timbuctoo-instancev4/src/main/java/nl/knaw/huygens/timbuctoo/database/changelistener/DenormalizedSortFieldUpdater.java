@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.ChangeListener;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import org.apache.tinkerpop.gremlin.structure.Vertex;

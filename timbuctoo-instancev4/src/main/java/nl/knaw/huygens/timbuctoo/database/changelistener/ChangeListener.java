@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 

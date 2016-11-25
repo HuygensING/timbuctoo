@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;

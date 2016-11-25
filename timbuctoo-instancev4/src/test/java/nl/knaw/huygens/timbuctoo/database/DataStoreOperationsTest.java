@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
