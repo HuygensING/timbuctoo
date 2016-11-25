@@ -61,7 +61,7 @@ public class Autocomplete {
                       @QueryParam("type") Optional<String> type) {
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       try {
-        JsonNode result = autocompleteServiceFactory.create().search(collectionName, query, type);
+        JsonNode result = autocompleteServiceFactory.create(timbuctooActions).search(collectionName, query, type);
         return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());
       } catch (InvalidCollectionException e) {
         return TransactionStateAndResult.commitAndReturn(
@@ -77,7 +77,7 @@ public class Autocomplete {
                               @QueryParam("query") Optional<String> query, @PathParam("type") Optional<String> type) {
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       try {
-        JsonNode result = autocompleteServiceFactory.create().search(collectionName, query, type);
+        JsonNode result = autocompleteServiceFactory.create(timbuctooActions).search(collectionName, query, type);
         return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());
       } catch (InvalidCollectionException e) {
         return TransactionStateAndResult.commitAndReturn(

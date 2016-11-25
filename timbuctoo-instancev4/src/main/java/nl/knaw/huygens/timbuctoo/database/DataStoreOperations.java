@@ -219,7 +219,7 @@ public class DataStoreOperations implements AutoCloseable {
 
   private IndexHandler createIndexHandler(GraphWrapper graphWrapper) {
     if (graphWrapper instanceof TinkerpopGraphManager) {
-      return new Neo4jIndexHandler(((TinkerpopGraphManager) graphWrapper).getGraphDatabase().index(), graphWrapper);
+      return new Neo4jIndexHandler((TinkerpopGraphManager) graphWrapper);
     } else {
       return new IndexHandler() {
         @Override
