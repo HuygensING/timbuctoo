@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.IndexHandler;
 import nl.knaw.huygens.timbuctoo.database.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
@@ -36,7 +37,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
@@ -181,7 +181,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new AddLabelChangeListener(),
-      new FulltextIndexChangeListener(graphManager.getGraphDatabase(), new IndexDescriptionFactory()),
+      new FulltextIndexChangeListener(new IndexHandler(), graphManager),
       new CollectionHasEntityRelationChangeListener(graphManager)
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
