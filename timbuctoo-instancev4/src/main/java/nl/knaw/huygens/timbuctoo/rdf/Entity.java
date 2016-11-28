@@ -107,7 +107,7 @@ public class Entity {
     collections.add(newCollection);
     newCollection.add(vertex);
 
-    typesHelper.updateTypeInformation(vertex, collections);
+    typesHelper.addTypeInformation(vertex, collections, newCollection);
   }
 
   public Relation addRelation(RelationType relationType, Entity other) {
@@ -132,7 +132,7 @@ public class Entity {
   private void handleCollectionRemove(Collection collection) {
     collection.remove(vertex);
     collections.remove(collection);
-    typesHelper.updateTypeInformation(vertex, collections);
+    typesHelper.removeTypeInformation(vertex, collections, collection);
   }
 
   public void removeRelation(RelationType relationType, Entity other) {

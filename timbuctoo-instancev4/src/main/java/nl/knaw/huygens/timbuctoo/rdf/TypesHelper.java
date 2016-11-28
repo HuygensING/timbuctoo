@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -21,11 +20,19 @@ public class TypesHelper {
     this.labelChangeListener = labelChangeListener;
   }
 
-  public void updateTypeInformation(Vertex vertex, Set<Collection> collections) {
+  public void addTypeInformation(Vertex vertex, Set<Collection> collections, Collection newCollection) {
     Stream<String> typesStream =
       collections.stream().map(collection -> collection.getDescription().getEntityTypeName());
 
     vertex.property("types", jsnA(typesStream.map(JsonBuilder::jsn)).toString());
-    labelChangeListener.onUpdate(Optional.empty(), vertex);
+    labelChangeListener.handleRdfLabelAdd(vertex, newCollection.getDescription().getEntityTypeName());
+  }
+
+  public void removeTypeInformation(Vertex vertex, Set<Collection> collections, Collection removedCollection) {
+    Stream<String> typesStream =
+      collections.stream().map(collection -> collection.getDescription().getEntityTypeName());
+
+    vertex.property("types", jsnA(typesStream.map(JsonBuilder::jsn)).toString());
+    labelChangeListener.handleRdfLabelRemove(vertex, removedCollection.getDescription().getEntityTypeName());
   }
 }

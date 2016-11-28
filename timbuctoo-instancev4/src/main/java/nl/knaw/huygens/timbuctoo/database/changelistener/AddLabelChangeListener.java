@@ -33,4 +33,13 @@ public class AddLabelChangeListener implements ChangeListener {
 
     labelsToRemove.forEach(((Neo4jVertex) newVertex)::removeLabel);
   }
+
+  public void handleRdfLabelAdd(Vertex vertex, String entityTypeName) {
+    ((Neo4jVertex) vertex).addLabel(entityTypeName);
+  }
+
+  public void handleRdfLabelRemove(Vertex vertex, String entityTypeName) {
+    ((Neo4jVertex) vertex).removeLabel(entityTypeName);
+  }
+
 }
