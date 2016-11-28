@@ -7,6 +7,7 @@ import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
@@ -62,11 +63,11 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class DataStoreOperationsTest {
@@ -2334,48 +2335,7 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testthings").get();
 
-    List<ReadEntity> result = instance.findByDisplayName(collection, "matching", 3);
-
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
-  }
-
-  @Test
-  public void findByDisplayNameIgnoresTheAskterisksAtTheBeginningAndTheEnd() {
-    Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    UUID id1 = UUID.randomUUID();
-    UUID id2 = UUID.randomUUID();
-    UUID id3 = UUID.randomUUID();
-    GraphWrapper graphWrapper = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "ma*tching")
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .withVertex(v -> v
-        .withTimId(id2)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "also ma*tching")
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .withVertex(v -> v
-        .withTimId(id3)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "different name")
-        .isLatest(true)
-        .withLabel("testthing")
-      ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
-    Collection collection = vres.getCollection("testthings").get();
-
-    List<ReadEntity> result = instance.findByDisplayName(collection, "*ma*tching*", 3);
+    List<ReadEntity> result = instance.doQuickSearch(collection, QuickSearch.fromQueryString("matching"), 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
   }
@@ -2416,7 +2376,7 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testthings").get();
 
-    List<ReadEntity> result = instance.findByDisplayName(collection, "", 1);
+    List<ReadEntity> result = instance.doQuickSearch(collection, QuickSearch.fromQueryString(""), 1);
 
     assertThat(result, hasSize(1));
   }
@@ -2456,20 +2416,20 @@ public class DataStoreOperationsTest {
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
     when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
-    when(indexHandler.findByQuickSearch(any(Collection.class), anyString()))
+    when(indexHandler.findByQuickSearch(any(Collection.class), any()))
       .thenReturn(graphWrapper.getGraph().traversal().V().has("tim_id",
         within(id1.toString(), id2.toString())));
     DataStoreOperations instance =
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
     Collection collection = vres.getCollection("testthings").get();
-    String query = "matching";
+    QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    List<ReadEntity> result = instance.findByDisplayName(collection, query, 3);
+    List<ReadEntity> result = instance.doQuickSearch(collection, quickSearch, 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
 
     verify(indexHandler).hasIndexFor(collection);
-    verify(indexHandler).findByQuickSearch(collection, query);
+    verify(indexHandler).findByQuickSearch(collection, quickSearch);
   }
 
   @Test
@@ -2506,20 +2466,17 @@ public class DataStoreOperationsTest {
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
     when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
-    when(indexHandler.getVerticesByDisplayName(any(Collection.class), anyString()))
+    when(indexHandler.findByQuickSearch(any(Collection.class), any()))
       .thenReturn(graphWrapper.getGraph().traversal().V().has("tim_id",
         within(id1.toString(), id2.toString())));
     DataStoreOperations instance =
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
     Collection collection = vres.getCollection("testthings").get();
-    String query = "matching";
+    QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    List<ReadEntity> result = instance.findByDisplayName(collection, query, 1);
+    List<ReadEntity> result = instance.doQuickSearch(collection, quickSearch, 1);
 
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), hasSize(1));
-
-    verify(indexHandler).hasIndexFor(collection);
-    verify(indexHandler).getVerticesByDisplayName(collection, query);
+    assertThat(result, hasSize(1));
   }
 
   @Test
@@ -2561,7 +2518,8 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testkeywords").get();
 
-    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "", 3);
+    List<ReadEntity> result =
+      instance.doKeywordQuickSearch(collection, keywordType, QuickSearch.fromQueryString(""), 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
   }
@@ -2605,55 +2563,11 @@ public class DataStoreOperationsTest {
     DataStoreOperations instance =
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testkeywords").get();
+    QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "matching", 3);
+    List<ReadEntity> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
-  }
-
-  @Test
-  public void findKeywordIgnoresTheAsterisksAtTheBeginningAndTheEnd() {
-    Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    UUID id1 = UUID.randomUUID();
-    UUID id2 = UUID.randomUUID();
-    UUID id3 = UUID.randomUUID();
-    String keywordType = "keywordType";
-    GraphWrapper graphWrapper = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "ma*tching")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      )
-      .withVertex(v -> v
-        .withTimId(id2)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "also ma*tching")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      )
-      .withVertex(v -> v
-        .withTimId(id3)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "different name")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
-    Collection collection = vres.getCollection("testkeywords").get();
-
-    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "*ma*tching*", 3);
-
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
   }
 
   @Test
@@ -2696,7 +2610,8 @@ public class DataStoreOperationsTest {
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
     Collection collection = vres.getCollection("testkeywords").get();
 
-    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, "", 1);
+    List<ReadEntity> result =
+      instance.doKeywordQuickSearch(collection, keywordType, QuickSearch.fromQueryString(""), 1);
 
     assertThat(result, hasSize(1));
   }
@@ -2740,20 +2655,19 @@ public class DataStoreOperationsTest {
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
     when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
-    when(indexHandler.findKeywordsByQuickSearch(any(Collection.class), anyString(), anyString())).thenReturn(
+    when(indexHandler.findKeywordsByQuickSearch(any(Collection.class), any(), anyString())).thenReturn(
       graphWrapper.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
     );
     DataStoreOperations instance =
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
     Collection collection = vres.getCollection("testkeywords").get();
+    QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    String query = "matching";
-    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, query, 3);
+    List<ReadEntity> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
-
     verify(indexHandler).hasIndexFor(collection);
-    verify(indexHandler).findKeywordsByQuickSearch(collection, query, keywordType);
+    verify(indexHandler).findKeywordsByQuickSearch(collection, quickSearch, keywordType);
   }
 
   @Test
@@ -2794,19 +2708,16 @@ public class DataStoreOperationsTest {
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
     when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
-    when(indexHandler.getKeywordVertices(any(Collection.class), anyString(), anyString())).thenReturn(
+    when(indexHandler.findKeywordsByQuickSearch(any(Collection.class), any(), anyString())).thenReturn(
       graphWrapper.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
     );
     DataStoreOperations instance =
       new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
     Collection collection = vres.getCollection("testkeywords").get();
+    QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    String query = "matching";
-    List<ReadEntity> result = instance.findKeywordByDisplayName(collection, keywordType, query, 1);
+    List<ReadEntity> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 1);
 
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), hasSize(1));
-
-    verify(indexHandler).hasIndexFor(collection);
-    verify(indexHandler).getKeywordVertices(collection, query, keywordType);
+    assertThat(result, hasSize(1));
   }
 }

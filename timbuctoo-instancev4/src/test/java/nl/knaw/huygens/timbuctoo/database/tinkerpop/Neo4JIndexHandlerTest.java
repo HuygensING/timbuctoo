@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -53,7 +54,7 @@ public class Neo4JIndexHandlerTest {
   }
 
   @Test
-  public void findByDisplayNameRetrievesTheVerticesFromTheIndexAndCreatesTraversalForThem() {
+  public void findByQuickSearchRetrievesTheVerticesFromTheIndexAndCreatesTraversalForThem() {
     String id1 = UUID.randomUUID().toString();
     String id2 = UUID.randomUUID().toString();
     TinkerpopGraphManager tinkerpopGraphManager = newGraph()
@@ -73,8 +74,10 @@ public class Neo4JIndexHandlerTest {
     when(collection.getCollectionName()).thenReturn(COLLECTION);
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
+    QuickSearch quickSearch = QuickSearch.fromQueryString("query*");
 
-    GraphTraversal<Vertex, Vertex> vertices = instance.findByQuickSearch(collection, "query*");
+    GraphTraversal<Vertex, Vertex> vertices = instance.findByQuickSearch(collection,
+      quickSearch);
 
     assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1, id2));
   }
@@ -84,7 +87,7 @@ public class Neo4JIndexHandlerTest {
   }
 
   @Test
-  public void findKeywordsByDisplayNameFiltersTheIndexResultsOnTheRightKeywordType() {
+  public void findKeywordsByQuickSearchFiltersTheIndexResultsOnTheRightKeywordType() {
     String id1 = UUID.randomUUID().toString();
     String id2 = UUID.randomUUID().toString();
     TinkerpopGraphManager tinkerpopGraphManager = newGraph()
@@ -105,8 +108,10 @@ public class Neo4JIndexHandlerTest {
     when(collection.getCollectionName()).thenReturn(COLLECTION);
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
+    QuickSearch quickSearch = QuickSearch.fromQueryString("query");
 
-    GraphTraversal<Vertex, Vertex> vertices = instance.findKeywordsByQuickSearch(collection, "query", "keywordType");
+    GraphTraversal<Vertex, Vertex> vertices =
+      instance.findKeywordsByQuickSearch(collection, quickSearch, "keywordType");
 
     assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1));
   }

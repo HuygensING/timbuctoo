@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
@@ -145,13 +146,13 @@ public class TimbuctooActions {
     return dataStoreOperations.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 
-  public List<ReadEntity> findByDisplayName(Collection collection, String query, int limit) {
-    return dataStoreOperations.findByDisplayName(collection, query, limit);
+  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
+    return dataStoreOperations.doQuickSearch(collection, quickSearch, limit);
   }
 
-  public List<ReadEntity> findKeywordByDisplayName(Collection collection, String keywordType, String query,
-                                                         int limit) {
-    return dataStoreOperations.findKeywordByDisplayName(collection, keywordType, query, limit);
+  public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
+                                               int limit) {
+    return dataStoreOperations.doKeywordQuickSearch(collection, keywordType, quickSearch, limit);
   }
 
   public UUID createRelation(Collection collection, CreateRelation createRelation, String userId)

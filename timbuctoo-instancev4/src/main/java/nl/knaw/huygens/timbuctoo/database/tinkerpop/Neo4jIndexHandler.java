@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -32,14 +33,14 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, String query) {
-    return traversalFromIndex(collection, query);
+  public GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, QuickSearch quickSearch) {
+    return traversalFromIndex(collection, quickSearch);
   }
 
   @Override
-  public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, String query,
+  public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, QuickSearch quickSearch,
                                                                   String keywordType) {
-    return traversalFromIndex(collection, query).has("keyword_type", keywordType);
+    return traversalFromIndex(collection, quickSearch).has("keyword_type", keywordType);
   }
 
   @Override
@@ -49,12 +50,18 @@ public class Neo4jIndexHandler implements IndexHandler {
     index.add(graphDatabase.getNodeById((long) vertex.id()), QUICK_SEARCH, displayName);
   }
 
-  private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, String query) {
+  private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {
     Index<Node> index = indexManager().forNodes(getIndexName(collection));
-    IndexHits<Node> hits = index.query(QUICK_SEARCH, query);
+    IndexHits<Node> hits = index.query(QUICK_SEARCH, createQuery(quickSearch));
     List<Long> ids = StreamSupport.stream(hits.spliterator(), false).map(h -> h.getId()).collect(toList());
 
     return traversal.V(ids);
+  }
+
+  private Object createQuery(QuickSearch quickSearch) {
+    String fullMatches = String.join(" ", quickSearch.fullMatches());
+    String partialMatches = String.join("* ", quickSearch.partialMatches());
+    return fullMatches + " " + partialMatches + "*";
   }
 
   private IndexManager indexManager() {

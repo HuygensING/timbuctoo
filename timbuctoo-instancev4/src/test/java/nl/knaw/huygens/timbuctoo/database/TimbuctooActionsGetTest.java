@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -82,26 +83,26 @@ public class TimbuctooActionsGetTest {
   }
 
   @Test
-  public void findByDisplayNameReturnsTheValueOfDataStoreOperations() {
+  public void doQuickSearchReturnsTheValueOfDataStoreOperations() {
     List<ReadEntity> entities = Lists.newArrayList();
-    String query = "";
+    QuickSearch query = QuickSearch.fromQueryString("");
     int limit = 1;
-    when(dataStoreOperations.findByDisplayName(collection, query, limit)).thenReturn(entities);
+    when(dataStoreOperations.doQuickSearch(collection, query, limit)).thenReturn(entities);
 
-    List<ReadEntity> searchResult = instance.findByDisplayName(collection, query, limit);
+    List<ReadEntity> searchResult = instance.doQuickSearch(collection, query, limit);
 
     assertThat(searchResult, is(sameInstance(entities)));
   }
 
   @Test
-  public void findKeywordByDisplayNameReturnsTheValueOfDataStoreOperations() {
+  public void doKeywordQuickSearchReturnsTheValueOfDataStoreOperations() {
     List<ReadEntity> entities = Lists.newArrayList();
-    String query = "";
+    QuickSearch query = QuickSearch.fromQueryString("");
     String keywordType = "";
     int limit = 1;
-    when(dataStoreOperations.findKeywordByDisplayName(collection, keywordType, query, limit)).thenReturn(entities);
+    when(dataStoreOperations.doKeywordQuickSearch(collection, keywordType, query, limit)).thenReturn(entities);
 
-    List<ReadEntity> searchResult = instance.findKeywordByDisplayName(collection, keywordType, query, limit);
+    List<ReadEntity> searchResult = instance.doKeywordQuickSearch(collection, keywordType, query, limit);
 
     assertThat(searchResult, is(sameInstance(entities)));
   }

@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
@@ -228,12 +229,12 @@ public class DataStoreOperations implements AutoCloseable {
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, String query) {
+        public GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, QuickSearch quickSearch) {
           throw new UnsupportedOperationException("Not implemented yet");
         }
 
         @Override
-        public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, String query,
+        public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, QuickSearch quickSearch,
                                                                         String keywordType) {
           throw new UnsupportedOperationException("Not implemented yet");
         }
@@ -406,12 +407,12 @@ public class DataStoreOperations implements AutoCloseable {
     );
   }
 
-  public List<ReadEntity> findByDisplayName(Collection collection, String query, int limit) {
+  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
     GraphTraversal<Vertex, Vertex> result;
     if (indexHandler.hasIndexFor(collection)) {
-      result = indexHandler.findByQuickSearch(collection, query);
+      result = indexHandler.findByQuickSearch(collection, quickSearch);
     } else {
-      String cleanQuery = cleanQuery(query);
+      String cleanQuery = createQuery(quickSearch);
       result = getCurrentEntitiesFor(collection.getEntityTypeName())
         .as("vertex")
         .union(collection.getDisplayName().traversalJson())
@@ -426,13 +427,13 @@ public class DataStoreOperations implements AutoCloseable {
     return asReadEntityList(collection, result.limit(limit));
   }
 
-  public List<ReadEntity> findKeywordByDisplayName(Collection collection, String keywordType, String query,
-                                                         int limit) {
+  public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
+                                               int limit) {
     GraphTraversal<Vertex, Vertex> result;
     if (indexHandler.hasIndexFor(collection)) {
-      result = indexHandler.findKeywordsByQuickSearch(collection, query, keywordType);
+      result = indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType);
     } else {
-      String cleanQuery = cleanQuery(query);
+      String cleanQuery = createQuery(quickSearch);
       result = getCurrentEntitiesFor(collection.getEntityTypeName())
         .has("keyword_type", keywordType)
         .as("vertex")
@@ -463,15 +464,10 @@ public class DataStoreOperations implements AutoCloseable {
     return result.map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex.get(), false)).toList();
   }
 
-  private String cleanQuery(String query) {
-    if (query.startsWith("*")) {
-      query = query.substring(1);
-    }
-
-    if (query.endsWith("*")) {
-      query = query.substring(0, query.length() - 2);
-    }
-    return query;
+  private String createQuery(QuickSearch quickSearch) {
+    String fullMatches = String.join(" ", quickSearch.fullMatches());
+    String partialMatches = String.join(" ", quickSearch.partialMatches());
+    return fullMatches.isEmpty() ? partialMatches : fullMatches + " " + partialMatches;
   }
 
   /**

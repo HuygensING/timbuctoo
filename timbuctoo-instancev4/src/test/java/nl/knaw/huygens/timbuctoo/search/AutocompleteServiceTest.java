@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
@@ -25,7 +26,6 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -53,7 +53,7 @@ public class AutocompleteServiceTest {
     UUID id = UUID.randomUUID();
     ReadEntity entity = ReadEntityStubs.readEntityWithDisplayNameIdAndRev("[TEMP] An author", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
-    given(timbuctooActions.findByDisplayName(any(), anyString(), anyInt())).willReturn(Lists.newArrayList(entity));
+    given(timbuctooActions.doQuickSearch(any(), any(), anyInt())).willReturn(Lists.newArrayList(entity));
     AutocompleteService instance = new AutocompleteService(
       (collection, id1, rev) -> URI.create("http://example.com/" + collection + "/" + id1 + "?rev=" + rev),
       HuygensIng.mappings,
@@ -67,9 +67,9 @@ public class AutocompleteServiceTest {
     assertThat(result.toString(), sameJSONAs(jsnA(
       jsnO("value", jsn("[TEMP] An author"), "key", jsn("http://example.com/wwpersons/" + id.toString() + "?rev=2"))
     ).toString()));
-    verify(timbuctooActions).findByDisplayName(
+    verify(timbuctooActions).doQuickSearch(
       argThat(hasProperty("collectionName", equalTo(collectionName))),
-      argThat(is(query)),
+      any(QuickSearch.class),
       intThat(is(50))
     );
   }
@@ -82,7 +82,7 @@ public class AutocompleteServiceTest {
     UUID id = UUID.randomUUID();
     ReadEntity readEntity = ReadEntityStubs.readEntityWithDisplayNameIdAndRev("a keyword", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
-    given(timbuctooActions.findKeywordByDisplayName(any(), anyString(), anyString(), anyInt()))
+    given(timbuctooActions.doKeywordQuickSearch(any(), anyString(), any(), anyInt()))
       .willReturn(Lists.newArrayList(readEntity));
     UrlGenerator urlGenerator =
       (coll, id1, rev) -> URI.create("http://example.com/" + coll + "/" + id1 + "?rev=" + rev);
@@ -96,10 +96,10 @@ public class AutocompleteServiceTest {
     assertThat(result.toString(), sameJSONAs(jsnA(
       jsnO("value", jsn("a keyword"), "key", jsn("http://example.com/wwkeywords/" + id.toString() + "?rev=2"))
     ).toString()));
-    verify(timbuctooActions).findKeywordByDisplayName(
+    verify(timbuctooActions).doKeywordQuickSearch(
       argThat(hasProperty("collectionName", equalTo(collectionName))),
       argThat(is(keywordType)),
-      argThat(is(query)),
+      any(QuickSearch.class),
       intThat(is(50))
     );
   }
@@ -109,7 +109,7 @@ public class AutocompleteServiceTest {
     UUID id = UUID.randomUUID();
     ReadEntity entity = ReadEntityStubs.readEntityWithDisplayNameIdAndRev("[TEMP] An author", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
-    given(timbuctooActions.findByDisplayName(any(), anyString(), anyInt())).willReturn(Lists.newArrayList(entity));
+    given(timbuctooActions.doQuickSearch(any(), any(), anyInt())).willReturn(Lists.newArrayList(entity));
     AutocompleteService instance = new AutocompleteService(
       (collection, id1, rev) -> URI.create("http://example.com/" + collection + "/" + id1 + "?rev=" + rev),
       HuygensIng.mappings,
@@ -117,17 +117,16 @@ public class AutocompleteServiceTest {
     );
 
     String collectionName = "wwpersons";
-    String query = "*author*";
-    JsonNode result = instance.search(collectionName, Optional.empty(), Optional.empty());
+    instance.search(collectionName, Optional.empty(), Optional.empty());
 
-    verify(timbuctooActions).findByDisplayName(
+    verify(timbuctooActions).doQuickSearch(
       argThat(hasProperty("collectionName", equalTo(collectionName))),
-      argThat(is(nullValue(String.class))),
+      any(QuickSearch.class),
       intThat(is(1000))
     );
   }
 
-  // TODO move to database.dto package
+  // TODO move to database.dto test package
   private static class ReadEntityStubs {
     public static ReadEntity readEntityWithDisplayNameIdAndRev(String displayName, UUID id, int rev) {
       return new ReadEntity() {

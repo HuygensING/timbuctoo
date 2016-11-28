@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -36,14 +37,15 @@ public class AutocompleteService {
 
     int limit = query.isPresent() ? 50 : 1000;
     String queryString = query.orElse(null);
+    QuickSearch quickSearch = QuickSearch.fromQueryString(queryString);
     if (collection.getAbstractType().equals("keyword")) {
-      List<ReadEntity> results = timbuctooActions.findKeywordByDisplayName(collection, type.get(), queryString, limit);
+      List<ReadEntity> results = timbuctooActions.doKeywordQuickSearch(collection, type.get(), quickSearch, limit);
       return jsnA(results.stream().map(entity -> jsnO(
         "value", jsn(entity.getDisplayName()),
         "key", jsn(autoCompleteUrlFor.apply(collectionName, entity.getId(), entity.getRev()).toString())
       )));
     } else {
-      List<ReadEntity> results = timbuctooActions.findByDisplayName(collection, queryString, limit);
+      List<ReadEntity> results = timbuctooActions.doQuickSearch(collection, quickSearch, limit);
       return jsnA(results.stream().map(entity -> jsnO(
         "value", jsn(entity.getDisplayName()),
         "key", jsn(autoCompleteUrlFor.apply(collectionName, entity.getId(), entity.getRev()).toString())
