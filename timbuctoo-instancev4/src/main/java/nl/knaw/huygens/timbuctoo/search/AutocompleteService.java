@@ -7,8 +7,6 @@ import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,21 +17,17 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 public class AutocompleteService {
   private final UrlGenerator autoCompleteUrlFor;
-  private final Vres mappings;
   private final TimbuctooActions timbuctooActions;
 
-  public AutocompleteService(UrlGenerator autoCompleteUrlFor, Vres mappings,
-                             TimbuctooActions timbuctooActions) {
+  public AutocompleteService(UrlGenerator autoCompleteUrlFor,TimbuctooActions timbuctooActions) {
     this.timbuctooActions = timbuctooActions;
     this.autoCompleteUrlFor = autoCompleteUrlFor;
-    this.mappings = mappings;
   }
 
   public JsonNode search(String collectionName, Optional<String> query, Optional<String> type)
     throws InvalidCollectionException {
 
-    final Collection collection = mappings.getCollection(collectionName)
-                                          .orElseThrow(() -> new InvalidCollectionException(collectionName));
+    final Collection collection = timbuctooActions.getCollectionMetadata(collectionName);
 
     int limit = query.isPresent() ? 50 : 1000;
     String queryString = query.orElse(null);
@@ -53,30 +47,15 @@ public class AutocompleteService {
     }
   }
 
-  // TODO move to use with DisplayNameSearch dto
-  private String parseQuery(Optional<String> queryParam) {
-    if (!queryParam.isPresent()) {
-      return "*";
-    }
-
-    return queryParam.get()
-                     .replaceAll("^\\*", "")
-                     .replaceAll("\\s", " AND ");
-  }
-
   public static class AutocompleteServiceFactory {
-    private final TinkerpopGraphManager graphManager;
     private final UrlGenerator autoCompleteUri;
-    private final Vres vres;
 
-    public AutocompleteServiceFactory(TinkerpopGraphManager graphManager, UrlGenerator autoCompleteUri, Vres vres) {
-      this.graphManager = graphManager;
+    public AutocompleteServiceFactory(UrlGenerator autoCompleteUri) {
       this.autoCompleteUri = autoCompleteUri;
-      this.vres = vres;
     }
 
     public AutocompleteService create(TimbuctooActions timbuctooActions) {
-      return new AutocompleteService(autoCompleteUri, vres, timbuctooActions);
+      return new AutocompleteService(autoCompleteUri, timbuctooActions);
     }
   }
 }

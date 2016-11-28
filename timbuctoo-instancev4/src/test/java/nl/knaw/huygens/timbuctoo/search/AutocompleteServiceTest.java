@@ -2,16 +2,16 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.server.HuygensIng;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.junit.Test;
 
 import java.net.URI;
@@ -41,25 +41,25 @@ public class AutocompleteServiceTest {
 
   @Test(expected = InvalidCollectionException.class)
   public void searchThrowsWhenTheCollectionNameDoesNotExist() throws InvalidCollectionException {
-    TinkerpopGraphManager mockGraphManager = mock(TinkerpopGraphManager.class);
-
-    AutocompleteService underTest = new AutocompleteService(null, HuygensIng.mappings,
-      mock(TimbuctooActions.class));
+    TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
+    given(timbuctooActions.getCollectionMetadata(anyString())).willThrow(new InvalidCollectionException(""));
+    AutocompleteService underTest = new AutocompleteService(null, timbuctooActions);
     underTest.search("nonexistent", Optional.empty(), Optional.empty());
   }
 
   @Test
   public void searchConvertsTheReadEntityToJson() throws Exception {
     UUID id = UUID.randomUUID();
+    String collectionName = "wwpersons";
     ReadEntity entity = ReadEntityStubs.readEntityWithDisplayNameIdAndRev("[TEMP] An author", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
+    given(timbuctooActions.getCollectionMetadata(anyString()))
+      .willReturn(CollectionStubs.collWithCollectionName(collectionName));
     given(timbuctooActions.doQuickSearch(any(), any(), anyInt())).willReturn(Lists.newArrayList(entity));
     AutocompleteService instance = new AutocompleteService(
       (collection, id1, rev) -> URI.create("http://example.com/" + collection + "/" + id1 + "?rev=" + rev),
-      HuygensIng.mappings,
       timbuctooActions
     );
-    String collectionName = "wwpersons";
 
     String query = "*author*";
     JsonNode result = instance.search(collectionName, Optional.of(query), Optional.empty());
@@ -82,13 +82,14 @@ public class AutocompleteServiceTest {
     UUID id = UUID.randomUUID();
     ReadEntity readEntity = ReadEntityStubs.readEntityWithDisplayNameIdAndRev("a keyword", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
+    given(timbuctooActions.getCollectionMetadata(anyString()))
+      .willReturn(CollectionStubs.keywordCollWithCollectionName(collectionName));
     given(timbuctooActions.doKeywordQuickSearch(any(), anyString(), any(), anyInt()))
       .willReturn(Lists.newArrayList(readEntity));
     UrlGenerator urlGenerator =
       (coll, id1, rev) -> URI.create("http://example.com/" + coll + "/" + id1 + "?rev=" + rev);
     AutocompleteService instance = new AutocompleteService(
       urlGenerator,
-      HuygensIng.mappings,
       timbuctooActions);
 
     JsonNode result = instance.search(collectionName, Optional.of(query), Optional.of(keywordType));
@@ -107,16 +108,17 @@ public class AutocompleteServiceTest {
   @Test
   public void searchRequests1000ResultsWhenTheQueryIsEmpty() throws Exception {
     UUID id = UUID.randomUUID();
+    String collectionName = "wwpersons";
     ReadEntity entity = ReadEntityStubs.readEntityWithDisplayNameIdAndRev("[TEMP] An author", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
+    given(timbuctooActions.getCollectionMetadata(anyString()))
+      .willReturn(CollectionStubs.collWithCollectionName(collectionName));
     given(timbuctooActions.doQuickSearch(any(), any(), anyInt())).willReturn(Lists.newArrayList(entity));
     AutocompleteService instance = new AutocompleteService(
       (collection, id1, rev) -> URI.create("http://example.com/" + collection + "/" + id1 + "?rev=" + rev),
-      HuygensIng.mappings,
       timbuctooActions
     );
 
-    String collectionName = "wwpersons";
     instance.search(collectionName, Optional.empty(), Optional.empty());
 
     verify(timbuctooActions).doQuickSearch(
@@ -195,6 +197,18 @@ public class AutocompleteServiceTest {
           throw new UnsupportedOperationException("Not implemented yet");
         }
       };
+    }
+  }
+
+  private static class CollectionStubs {
+    public static Collection collWithCollectionName(String collectionName) {
+      // TODO find a better way to create a collection for a test
+      return new Collection(null, collectionName, null, Maps.newLinkedHashMap(), collectionName, null, null, false,
+        false);
+    }
+
+    public static Collection keywordCollWithCollectionName(String collectionName) {
+      return new Collection(null, "keyword", null, Maps.newLinkedHashMap(), collectionName, null, null, false, false);
     }
   }
 }

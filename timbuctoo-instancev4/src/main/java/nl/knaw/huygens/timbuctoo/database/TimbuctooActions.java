@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
@@ -180,12 +181,21 @@ public class TimbuctooActions {
     dataStoreOperations.replaceRelation(collection, updateRelation);
   }
 
+
+  public void addPid(URI pidUri, EntityLookup entityLookup) throws NotFoundException {
+    dataStoreOperations.addPid(entityLookup.getTimId(), entityLookup.getRev(), pidUri); //no collection?
+  }
+
+  //================== Metdata ==================
   public Vres loadVres() {
     return dataStoreOperations.loadVres();
   }
 
-  public void addPid(URI pidUri, EntityLookup entityLookup) throws NotFoundException {
-    dataStoreOperations.addPid(entityLookup.getTimId(), entityLookup.getRev(), pidUri); //no collection?
+  public Collection getCollectionMetadata(String collectionName) throws InvalidCollectionException {
+    Vres vres = loadVres();
+    Optional<Collection> collection = vres.getCollection(collectionName);
+
+    return collection.orElseThrow(() -> new InvalidCollectionException(collectionName));
   }
 
 

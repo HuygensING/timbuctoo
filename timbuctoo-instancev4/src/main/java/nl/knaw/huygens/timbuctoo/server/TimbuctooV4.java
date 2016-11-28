@@ -219,9 +219,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final AutocompleteService.AutocompleteServiceFactory autocompleteServiceFactory =
       new AutocompleteService.AutocompleteServiceFactory(
-        graphManager,
-        uriWithoutRev,
-        vres);
+        uriWithoutRev
+      );
 
     environment.lifecycle().manage(graphManager);
     // database validator
