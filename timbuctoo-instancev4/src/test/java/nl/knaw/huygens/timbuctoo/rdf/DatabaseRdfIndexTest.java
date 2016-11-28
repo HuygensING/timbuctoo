@@ -1,39 +1,24 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.database.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.Test;
 
-import java.net.URI;
-import java.time.Clock;
-
+import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
 
 public class DatabaseRdfIndexTest {
   @Test
   public void indexTest() throws Exception {
     final TinkerpopGraphManager mgr = newGraph().wrap();
     final Database database = new Database(mgr);
-    final DataStoreOperations dataStoreOperations =
-      new DataStoreOperations(mgr, mock(ChangeListener.class), null, null);
-    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
-      );
-    final TransactionEnforcer transactionEnforcer =
-      new TransactionEnforcer(() -> dataStoreOperations, timbuctooActionsFactory);
+    TransactionEnforcer transactionEnforcer = forGraphWrapper(mgr);
 
     new ScaffoldMigrator(transactionEnforcer).execute();
     transactionEnforcer.execute(db -> {

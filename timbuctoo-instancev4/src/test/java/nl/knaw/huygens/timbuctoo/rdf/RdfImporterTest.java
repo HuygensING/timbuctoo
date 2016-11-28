@@ -1,13 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.riot.Lang;
 import org.junit.Test;
@@ -15,10 +13,9 @@ import org.mockito.InOrder;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.time.Clock;
 
+import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forDataStoreOperations;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -36,7 +33,7 @@ public class RdfImporterTest {
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
     TinkerpopGraphManager graphWrapper = newGraph().wrap();
     DataStoreOperations db = mock(DataStoreOperations.class);
-    TransactionEnforcer transactionEnforcer = createTransactionEnforcer(db);
+    TransactionEnforcer transactionEnforcer = forDataStoreOperations(db);
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), transactionEnforcer, processor);
 
@@ -47,18 +44,9 @@ public class RdfImporterTest {
     inOrder.verify(processor).process(eq(VRE_NAME), eq(true), any());
   }
 
-  private TransactionEnforcer createTransactionEnforcer(DataStoreOperations db) {
-    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
-      );
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(() -> db, timbuctooActionsFactory);
-    return transactionEnforcer;
-  }
-
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
-    TransactionEnforcer transactionEnforcer = createTransactionEnforcer(mock(DataStoreOperations.class));
+    TransactionEnforcer transactionEnforcer = forDataStoreOperations(mock(DataStoreOperations.class));
     TinkerpopGraphManager graphWrapper = newGraph().wrap();
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);

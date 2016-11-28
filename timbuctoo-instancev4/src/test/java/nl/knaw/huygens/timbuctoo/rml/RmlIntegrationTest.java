@@ -3,14 +3,9 @@ package nl.knaw.huygens.timbuctoo.rml;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
-import nl.knaw.huygens.timbuctoo.database.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.PersistentUrlCreator;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
@@ -29,11 +24,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
-import java.net.URI;
-import java.time.Clock;
 import java.util.List;
 import java.util.Map;
 
+import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -225,13 +219,7 @@ public class RmlIntegrationTest {
     public IntegrationTester() {
       graphManager = newGraph().wrap();
       traversalSource = graphManager.getGraph().traversal();
-      TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-        new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-          mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
-        );
-      transactionEnforcer = new TransactionEnforcer(
-        () -> new DataStoreOperations(graphManager, mock(ChangeListener.class), null, null),
-        timbuctooActionsFactory);
+      transactionEnforcer = forGraphWrapper(graphManager);
       new ScaffoldMigrator(transactionEnforcer).execute();
 
       vres = new DatabaseConfiguredVres(transactionEnforcer);

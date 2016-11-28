@@ -16,9 +16,9 @@ import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
-import nl.knaw.huygens.timbuctoo.database.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
@@ -199,7 +199,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
-    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactory(
+    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
       authorizer,
       Clock.systemDefaultZone(),
       handleAdder,

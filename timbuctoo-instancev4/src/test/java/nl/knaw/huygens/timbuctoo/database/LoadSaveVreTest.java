@@ -35,7 +35,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.mock;
 
 public class LoadSaveVreTest {
 
@@ -49,7 +48,7 @@ public class LoadSaveVreTest {
     init.accept(testGraphBuilder);
     GraphWrapper wrap = testGraphBuilder.wrap();
     return tuple(
-      new DataStoreOperations(wrap, null, null, null),
+      DataStoreOperationsStubs.forGraphWrapper(wrap),
       wrap.getGraph());
   }
 

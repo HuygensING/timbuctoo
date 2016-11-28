@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -15,10 +14,9 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-import java.net.URI;
-import java.time.Clock;
 import java.util.HashMap;
 
+import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -53,13 +51,8 @@ public class LoadSaveVresTest {
     GraphWrapper graphWrapper = mock(GraphWrapper.class);
     given(graphWrapper.getGraph()).willReturn(graph);
 
-    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
-      );
-
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
-      () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
+    TransactionEnforcer transactionEnforcer = forGraphWrapper(graphWrapper);
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(transactionEnforcer);
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getCollection("documents").get(), instanceOf(Collection.class));
@@ -79,13 +72,8 @@ public class LoadSaveVresTest {
     MockWrapper graphWrapper = new MockWrapper();
     graphWrapper.graph = graph;
 
-    TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory =
-      new TimbuctooActions.TimbuctooActionsFactory(mock(Authorizer.class), Clock.systemDefaultZone(),
-        mock(PersistentUrlCreator.class), (coll, id, rev) -> URI.create("http://example.org/persistent")
-      );
-
-    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(new TransactionEnforcer(
-      () -> new DataStoreOperations(graphWrapper, null, null, null), timbuctooActionsFactory));
+    TransactionEnforcer transactionEnforcer = TransactionEnforcerStubs.forGraphWrapper(graphWrapper);
+    DatabaseConfiguredVres instance = new DatabaseConfiguredVres(transactionEnforcer);
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));
