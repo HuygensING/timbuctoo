@@ -193,15 +193,20 @@
 	color:#269075;
 	}
 	
-.from-excel {
+.from-excel,
+.to-timbuctoo {
 	color:#486B61;
 }
 
-.from-excel img {
+.from-excel img,
+.to-timbuctoo img {
 	height:1em;
 	width:auto;
 }
 
+.to-timbuctoo img {
+	background-color: #486b61;
+}
 
 .excel-tab {
 	display:block;
