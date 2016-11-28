@@ -87,3 +87,69 @@ Note the following:
    To load data in a different database you'd add your own implementation of link:savers/Saver.java[Saver] here. 
    To change how the data is stored in the graph you'd change the code in link:savers/TinkerpopSaver.java[TinkerpopSaver] 
   
+== List of known bugs / issues
+
+Some issues are described from user perspective, from the link:https://github.com/HuygensING/timbuctoo-default-frontend[excel mapping frontend]
+The problem analyses and suggested solutions, however, are written from a backend implementation perspective.
+
+==== Self referencing entity
+1. When I map a new relation for data sheet, and I use the same column as the source column and the target column,
+I get no errors and I see in the edit interface two relations on the same entity, pointing to the same entity.
+
+Solution: RML mapper should add an error: "child and parent column are the same in join condition".
+
+
+==== Error reporting not refreshed
+1. Double reporting of the same error: When I make a mapping mistake and click publish, I see my error correctly. When I make the same mistake again, I see same error twice.
+
+2. After fixing the mapping, import still fails: When I make a mapping mistake and click publish, I see my error correctly. When I then fix the mapping problem, I still see my old error.
+
+Solution: when (re-)publishing a mapping to the RML execution endpoint, all old errors should be deleted before executing the mapping.
+
+
+==== Mapping of data types
+1. Basic type inheritance of archetype: When I map (for instance) a column to a datable field, the field is not mapped as a datable, but as text.
+
+2. Mapping to types of limited values: When I map (for instance) a column to the 'gender' field, the field is mapped as text and may have any value I want.
+
+3. Mapping to lists: I can only map one column to a list. The field is mapped as text and I cannot add new values to this property after the import.
+
+4. The links data type is not supported yet.
+
+There are multiple interconnected issues here, so no clear solution presents itself:
+
+ * One part of the solution must be to start using rdf types for dates and numbers
+ * Another might be to make a list of 'known' predicates, which makes the rdf importer treat values correctly (i.e. with lists)
+ * One can also imagine the rml mapping frontend generating triples describing the types of certain predicates (i.e. <documentType> <isA> <Admin/documents/list-of-strings-of-limited-values>)
+   -- which would mean that property configurations need to be interpreted more by the rdf importer
+
+
+==== Linking to an entity in an existing dataset via URI
+1. The linking fails when rdfUri is not indexed.
+2. Database edge is created, but linked entity is not visible for frontends via CrudService, unless an empty collection of the correct archetype is added
+3. No validation of the relationType takes place: I can easily create a relation like this:
+--
+<some person> <hasBirthPlace> <some other person>
+--
+
+Solution suggestions:
+
+1. All entities (especially the ones in older datasets) should obtain an rdfUri prop. Ideally they are also indexed (without synchronisation issues), so the rdf imported will find them without modifications. This could be done by a migration script
+2. Either the entity linked to should be added to the imported dataset, or cross-dataset links should be valid and manageable for the frontends
+3. We need to discuss how to fix this. When reusing a relationType, the source and target entity type should match the Timbuctoo requirements, or should the requirements be dropped? Or something inbetween.
+3a. Relationtype configurations should be part of a vre (dataset); they may inherit from an archetypal form, but they should not have to.
+
+
+==== Existing relationTypes are not used
+1. When I try to reuse an existing relationType via the mapping frontend, a new one is created anyway
+
+2. Inverse names are not checked for in the rdf importer
+
+Solutions:
+
+1. The old database relationTypes do not have an rdfUri prop yet. This could be fixed in a database migration.
+
+2. The rdfAlternatives property would ideally be used to store inverseNames in a uri, so those are found as well.
+
+==== Uncertainties about rdfUri lucene index
+We have not verified yet whether lucene index entries are thrown away, when the vertices they refer to are deleted. I have seen no indications that this potential problem actually occurs, but this could cause serious sync issues.
