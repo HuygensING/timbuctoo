@@ -1,9 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 
-import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.IndexHandler;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -11,9 +10,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class FulltextIndexChangeListener implements ChangeListener {
@@ -33,27 +30,17 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    Set<String> newTypes = Sets.newHashSet(getEntityTypesOrDefault(newVertex));
-    Set<String> oldTypes = oldVertex.isPresent() ?
-            Sets.newHashSet(getEntityTypesOrDefault(oldVertex.get())) :
-            Sets.newHashSet(getEntityTypesOrDefault(newVertex));
-
-    Set<String> typesToRemoveFromIndex = Sets.difference(oldTypes, newTypes);
-
-    if (typesToRemoveFromIndex.size() > 0) {
-      handleRemove(collection, oldVertex.get());
-    }
     handleChange(collection, newVertex);
   }
 
   @Override
   public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    onPropertyUpdate(collection, oldVertex, newVertex);
+    handleRemove(collection, newVertex);
   }
 
   @Override
   public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
+    handleChange(collection, newVertex);
   }
 
   private void handleChange(Collection collection, Vertex vertex) {

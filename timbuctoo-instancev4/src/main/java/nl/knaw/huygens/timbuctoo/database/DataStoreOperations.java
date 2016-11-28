@@ -605,16 +605,19 @@ public class DataStoreOperations implements AutoCloseable {
 
     Vertex entity = entityTraversal.next();
     String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
+    boolean wasRemoved = false;
     if (entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
       try {
         ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
         if (entityTypes.size() == 1) {
           entity.property("deleted", true);
+          wasRemoved = true;
         } else {
           for (int i = entityTypes.size() - 1; i >= 0; i--) {
             JsonNode val = entityTypes.get(i);
             if (val != null && val.asText("").equals(collection.getEntityTypeName())) {
               entityTypes.remove(i);
+              wasRemoved = true;
             }
           }
           entity.property("types", entityTypes.toString());
@@ -638,7 +641,9 @@ public class DataStoreOperations implements AutoCloseable {
 
     setModified(entity, modified);
     entity.property("pid").remove();
-    listener.onRemoveFromCollection(collection, getPrevVertex(collection, entity), entity);
+    if (wasRemoved) {
+      listener.onRemoveFromCollection(collection, getPrevVertex(collection, entity), entity);
+    }
 
     duplicateVertex(traversal, entity);
 
