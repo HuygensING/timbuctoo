@@ -17,6 +17,7 @@ import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.mockito.Mockito.mock;
 
 public class CollectionHasEntityRelationChangeListenerTest {
 
@@ -59,7 +60,7 @@ public class CollectionHasEntityRelationChangeListenerTest {
     final GraphWrapper graphWrapper = builder.wrap();
     Vertex createdVertex = graphWrapper.getGraph().traversal().V().has("tim_id", createThisVertexName).next();
 
-    new CollectionHasEntityRelationChangeListener(graphWrapper).onCreate(createdVertex);
+    new CollectionHasEntityRelationChangeListener(graphWrapper).onCreate(mock(Collection.class), createdVertex);
 
     final List<Vertex> actualLinkingNodes = Lists.newArrayList(
       createdVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME));
@@ -115,7 +116,7 @@ public class CollectionHasEntityRelationChangeListenerTest {
     Vertex updatedVertex = graphWrapper.getGraph().traversal().V().has("tim_id", updateThisVertexName).next();
 
     new CollectionHasEntityRelationChangeListener(graphWrapper)
-      .onUpdate(Optional.empty(), updatedVertex);
+      .onUpdate(mock(Collection.class), Optional.empty(), updatedVertex);
 
     final List<Vertex> actualLinkingNodes = Lists.newArrayList(
       updatedVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME));
@@ -170,7 +171,7 @@ public class CollectionHasEntityRelationChangeListenerTest {
     Vertex updatedVertex = graphWrapper.getGraph().traversal().V().has("tim_id", updateThisVertexName).next();
 
     new CollectionHasEntityRelationChangeListener(graphWrapper)
-      .onUpdate(Optional.empty(), updatedVertex);
+      .onUpdate(mock(Collection.class), Optional.empty(), updatedVertex);
 
     final List<Vertex> actualLinkingNodes = Lists.newArrayList(
       updatedVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME));

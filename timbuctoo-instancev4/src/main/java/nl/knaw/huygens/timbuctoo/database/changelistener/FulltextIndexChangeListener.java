@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
 import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 
@@ -26,12 +27,12 @@ public class FulltextIndexChangeListener implements ChangeListener {
   }
 
   @Override
-  public void onCreate(Vertex vertex) {
+  public void onCreate(Collection collection, Vertex vertex) {
     handleChange(vertex);
   }
 
   @Override
-  public void onUpdate(Optional<Vertex> oldVertex, Vertex newVertex) {
+  public void onUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
     Set<String> newTypes = Sets.newHashSet(getEntityTypesOrDefault(newVertex));
     Set<String> oldTypes = oldVertex.isPresent() ?
             Sets.newHashSet(getEntityTypesOrDefault(oldVertex.get())) :

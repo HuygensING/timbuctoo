@@ -30,6 +30,7 @@ import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -50,9 +51,10 @@ public class ChangeListenerTest {
     ChangeListener spy = spy(changeListener);
     DataStoreOperations instance = DataStoreOperationsStubs.forChangeListenerMock(spy);
 
-    instance.createEntity(mock(Collection.class), Optional.empty(), CreateEntityStubs.dummy());
+    Collection collectionMock = mock(Collection.class);
+    instance.createEntity(collectionMock, Optional.empty(), CreateEntityStubs.dummy());
 
-    verify(spy).onCreate(any());
+    verify(spy).onCreate(eq(collectionMock), any());
   }
 
   @Test
@@ -73,9 +75,10 @@ public class ChangeListenerTest {
     UpdateEntity updateEntity = new UpdateEntity(id, newArrayList(), 1);
     updateEntity.setModified(new Change());
 
-    instance.replaceEntity(mock(Collection.class), updateEntity);
+    Collection collectionMock = mock(Collection.class);
+    instance.replaceEntity(collectionMock, updateEntity);
 
-    verify(spy).onUpdate(any(), any());
+    verify(spy).onUpdate(eq(collectionMock), any(), any());
   }
 
   @Test
@@ -100,7 +103,7 @@ public class ChangeListenerTest {
     when(collection.getVre()).thenReturn(mock(Vre.class));
     instance.deleteEntity(collection, id, new Change());
 
-    verify(spy).onUpdate(any(), any());
+    verify(spy).onUpdate(eq(collection), any(), any());
   }
 
   @Test
@@ -148,14 +151,13 @@ public class ChangeListenerTest {
       this.validateVertex = validateVertex;
     }
 
-
     @Override
-    public void onCreate(Vertex vertex) {
+    public void onCreate(Collection collection, Vertex vertex) {
       validateVertex.accept(vertex);
     }
 
     @Override
-    public void onUpdate(Optional<Vertex> oldVertex, Vertex newVertex) {
+    public void onUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
       validateVertex.accept(newVertex);
     }
   }

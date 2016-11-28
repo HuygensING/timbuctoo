@@ -357,7 +357,7 @@ public class DataStoreOperations implements AutoCloseable {
 
     setAdministrativeProperties(col, vertex, input);
 
-    listener.onCreate(vertex);
+    listener.onCreate(col, vertex);
 
     duplicateVertex(traversal, vertex);
   }
@@ -541,7 +541,7 @@ public class DataStoreOperations implements AutoCloseable {
     setModified(entityVertex, updateEntity.getModified());
     entityVertex.property("pid").remove();
 
-    callUpdateListener(entityVertex);
+    callUpdateListener(collection, entityVertex);
 
     duplicateVertex(traversal, entityVertex);
     return newRev;
@@ -630,7 +630,7 @@ public class DataStoreOperations implements AutoCloseable {
 
     setModified(entity, modified);
     entity.property("pid").remove();
-    callUpdateListener(entity);
+    callUpdateListener(collection, entity);
     duplicateVertex(traversal, entity);
 
     return newRev;
@@ -811,7 +811,7 @@ public class DataStoreOperations implements AutoCloseable {
     }
   }
 
-  private void callUpdateListener(Vertex entity) {
+  private void callUpdateListener(Collection collection, Vertex entity) {
     final Iterator<Edge> prevEdges = entity.edges(Direction.IN, "VERSION_OF");
     Optional<Vertex> old = Optional.empty();
     if (prevEdges.hasNext()) {
@@ -819,7 +819,7 @@ public class DataStoreOperations implements AutoCloseable {
     } else {
       LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
     }
-    listener.onUpdate(old, entity);
+    listener.onUpdate(collection, old, entity);
   }
 
   private void saveVres(Vres mappings) {

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;
@@ -15,12 +16,12 @@ public class CompositeChangeListener implements ChangeListener {
   }
 
   @Override
-  public void onCreate(Vertex vertex) {
-    subListeners.forEach(l -> l.onCreate(vertex));
+  public void onCreate(Collection collection, Vertex vertex) {
+    subListeners.forEach(l -> l.onCreate(collection, vertex));
   }
 
   @Override
-  public void onUpdate(Optional<Vertex> oldVertex, Vertex newVertex) {
-    subListeners.forEach(l -> l.onUpdate(oldVertex, newVertex));
+  public void onUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    subListeners.forEach(l -> l.onUpdate(collection, oldVertex, newVertex));
   }
 }

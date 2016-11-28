@@ -26,7 +26,7 @@ public class CollectionHasEntityRelationChangeListener implements ChangeListener
   }
 
   @Override
-  public void onCreate(Vertex vertex) {
+  public void onCreate(Collection collection, Vertex vertex) {
     String[] types = getEntityTypesOrDefault(vertex);
 
     addCollectionRelations(vertex, Sets.newHashSet(types));
@@ -34,7 +34,7 @@ public class CollectionHasEntityRelationChangeListener implements ChangeListener
 
 
   @Override
-  public void onUpdate(Optional<Vertex> ignored, Vertex vertexToUpdate) {
+  public void onUpdate(Collection collection, Optional<Vertex> ignored, Vertex vertexToUpdate) {
     final Set<String> desiredEntityTypes = Sets.newHashSet(getEntityTypesOrDefault(vertexToUpdate));
     final Set<String> currentEntityTypes = graphWrapper
       .getGraph().traversal().V(vertexToUpdate)
