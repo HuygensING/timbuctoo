@@ -25,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
-import nl.knaw.huygens.timbuctoo.database.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
@@ -77,7 +76,6 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -182,7 +180,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
-      new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
       new AddLabelChangeListener(),
       new FulltextIndexChangeListener(graphManager.getGraphDatabase(), new IndexDescriptionFactory()),
       new CollectionHasEntityRelationChangeListener(graphManager)
@@ -354,7 +351,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   private DatabaseValidator getDatabaseValidator(Vres vres, TinkerpopGraphManager graphManager) {
     return new DatabaseValidator(
       new LabelsAddedToVertexDatabaseCheck(),
-      new SortIndexesDatabaseCheck(),
       new InvariantsCheck(vres),
       new FullTextIndexCheck(graphManager)
     );

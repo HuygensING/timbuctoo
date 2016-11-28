@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.search.description.indexes;
 
 
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
@@ -10,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParse
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 
-import java.util.List;
 import java.util.Map;
 
 public class WwLocationIndexDescription extends AbstractFulltextIndexDescription {
@@ -24,16 +22,6 @@ public class WwLocationIndexDescription extends AbstractFulltextIndexDescription
     displayNameDescriptor = propertyDescriptorFactory.getLocal("names", LocationNames.class);
   }
 
-
-  @Override
-  public List<IndexerSortFieldDescription> getSortFieldDescriptions() {
-    return Lists.newArrayList();
-  }
-
-  @Override
-  public void addIndexedSortProperties(Vertex vertex) {
-    // No custom sort fields for keywords necessary
-  }
 
   @Override
   public void addToFulltextIndex(Vertex vertex, GraphDatabaseService graphDatabase) {
