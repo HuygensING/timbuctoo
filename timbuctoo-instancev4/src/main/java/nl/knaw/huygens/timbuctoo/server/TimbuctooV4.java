@@ -252,7 +252,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new LegacyIndexRedirect(uriHelper));
 
     if (configuration.isAllowGremlinEndpoint()) {
-      register(environment, new Gremlin(graphManager, vres));
+      register(environment, new Gremlin(graphManager));
     }
     register(environment, new Graph(graphManager, vres));
     // Bulk upload
