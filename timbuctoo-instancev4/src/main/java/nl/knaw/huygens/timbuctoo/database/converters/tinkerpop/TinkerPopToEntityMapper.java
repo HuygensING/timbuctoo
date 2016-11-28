@@ -24,6 +24,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.apache.tinkerpop.gremlin.structure.util.empty.EmptyGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,7 @@ import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
 public class TinkerPopToEntityMapper {
 
+  private static final UUID DEFAULT_ID = UUID.fromString("0000000-0000-0000-0000-000000000000");
   private static final Logger LOG = LoggerFactory.getLogger(TinkerPopToEntityMapper.class);
   private final Collection collection;
   private final GraphTraversalSource traversalSource;
@@ -178,7 +180,7 @@ public class TinkerPopToEntityMapper {
     }
 
     entity.setDisplayName(DisplayNameHelper.getDisplayname(traversalSource, entityVertex, collection).orElse(""));
-    entity.setId(UUID.fromString(entityVertex.value("tim_id")));
+    entity.setId(getIdOrDefault(entityVertex));
 
     if (withRelations) {
       entity.setRelations(getRelations(entityVertex, traversalSource, collection));
@@ -187,6 +189,11 @@ public class TinkerPopToEntityMapper {
     customEntityProperties.execute(entity, entityVertex);
 
     return entity;
+  }
+
+  private UUID getIdOrDefault(Vertex entityVertex) {
+    VertexProperty<String> idProperty = entityVertex.property("tim_id");
+    return idProperty.isPresent() ? UUID.fromString(entityVertex.value("tim_id")) : DEFAULT_ID;
   }
 
   private List<RelationRef> getRelations(Vertex entity, GraphTraversalSource traversalSource,
