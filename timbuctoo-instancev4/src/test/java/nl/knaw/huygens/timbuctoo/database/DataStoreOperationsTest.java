@@ -39,6 +39,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.database.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
@@ -67,6 +68,8 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
@@ -121,16 +124,13 @@ public class DataStoreOperationsTest {
     List<TimProperty<?>> properties = Lists.newArrayList();
     properties.add(new StringProperty("prop1", "val1"));
     properties.add(new StringProperty("prop2", "val2"));
-    CreateEntity createEntity = new CreateEntity(properties);
-    UUID id = UUID.randomUUID();
-    createEntity.setId(id);
-    createEntity.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+    CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
 
     assertThat(graphWrapper.getGraph()
                            .traversal().V()
-                           .has("tim_id", id.toString())
+                           .has("tim_id", createEntity.getId().toString())
                            .has("testthing_prop1", "val1")
                            .has("testthing_prop2", "val2")
                            .hasNext(),
@@ -144,16 +144,13 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
-    CreateEntity createEntity = new CreateEntity(properties);
-    UUID id = UUID.randomUUID();
-    createEntity.setId(id);
-    createEntity.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+    CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
 
     assertThat(graphWrapper.getGraph()
                            .traversal().V()
-                           .has("tim_id", id.toString())
+                           .has("tim_id", createEntity.getId().toString())
                            .has("rev", 1)
                            .hasNext(),
       is(true));
@@ -166,16 +163,13 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
-    CreateEntity createEntity = new CreateEntity(properties);
-    UUID id = UUID.randomUUID();
-    createEntity.setId(id);
-    createEntity.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+    CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
 
     assertThat(graphWrapper.getGraph()
                            .traversal().V()
-                           .has("tim_id", id.toString())
+                           .has("tim_id", createEntity.getId().toString())
                            .next().value("types"),
       allOf(containsString("testthing"), containsString("thing"))
     );
@@ -211,25 +205,22 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
-    CreateEntity createEntity = new CreateEntity(properties);
-    UUID id = UUID.randomUUID();
-    createEntity.setId(id);
     String userId = "userId";
     long timeStamp = Instant.now().toEpochMilli();
-    createEntity.setCreated(new Change(timeStamp, userId, null));
+    CreateEntity createEntity = withProperties(properties, userId, timeStamp);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
 
     assertThat(graphWrapper.getGraph()
                            .traversal().V()
-                           .has("tim_id", id.toString())
+                           .has("tim_id", createEntity.getId().toString())
                            .next().value("created"),
       sameJSONAs(String.format("{\"timeStamp\": %s,\"userId\": \"%s\"}", timeStamp, userId))
     );
 
     assertThat(graphWrapper.getGraph()
                            .traversal().V()
-                           .has("tim_id", id.toString())
+                           .has("tim_id", createEntity.getId().toString())
                            .next().value("modified"),
       sameJSONAs(String.format("{\"timeStamp\": %s,\"userId\": \"%s\"}", timeStamp, userId))
     );
@@ -242,16 +233,19 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
-    CreateEntity createEntity = new CreateEntity(properties);
     UUID id = UUID.randomUUID();
-    createEntity.setId(id);
-    String userId = "userId";
-    long timeStamp = Instant.now().toEpochMilli();
-    createEntity.setCreated(new Change(timeStamp, userId, null));
+    CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
 
-    assertThat(graphWrapper.getGraph().traversal().V().has("tim_id", id.toString()).count().next(), is(2L));
+    assertThat(
+      graphWrapper.getGraph().traversal()
+        .V()
+        .has("tim_id", createEntity.getId().toString())
+        .count()
+        .next(),
+      is(2L)
+    );
   }
 
   @Test
@@ -262,17 +256,17 @@ public class DataStoreOperationsTest {
     ChangeListener changeListener = mock(ChangeListener.class);
     DataStoreOperations instance = new DataStoreOperations(graphWrapper, changeListener, null, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
-    CreateEntity createEntity = new CreateEntity(properties);
     UUID id = UUID.randomUUID();
-    createEntity.setId(id);
-    String userId = "userId";
-    long timeStamp = Instant.now().toEpochMilli();
-    createEntity.setCreated(new Change(timeStamp, userId, null));
+    CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
 
     Vertex vertex =
-      graphWrapper.getGraph().traversal().V().has("tim_id", id.toString()).in("VERSION_OF").next();
+      graphWrapper.getGraph().traversal()
+        .V()
+        .has("tim_id", createEntity.getId().toString())
+        .in("VERSION_OF")
+        .next();
     verify(changeListener).onCreate(vertex);
   }
 
@@ -284,19 +278,15 @@ public class DataStoreOperationsTest {
     ChangeListener changeListener = mock(ChangeListener.class);
     DataStoreOperations instance = new DataStoreOperations(graphWrapper, changeListener, null, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
-    CreateEntity createEntity = new CreateEntity(properties);
     UUID id = UUID.randomUUID();
-    createEntity.setId(id);
-    String userId = "userId";
-    long timeStamp = Instant.now().toEpochMilli();
-    createEntity.setCreated(new Change(timeStamp, userId, null));
+    CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
 
 
     assertThat(graphWrapper.getGraph()
                            .traversal().V()
-                           .has("tim_id", id.toString())
+                           .has("tim_id", createEntity.getId().toString())
                            .has("isLatest", true)
                            .count().next(),
       is(1L));
@@ -312,10 +302,7 @@ public class DataStoreOperationsTest {
     List<TimProperty<?>> properties = Lists.newArrayList();
     properties.add(new StringProperty("prop1", "val1"));
     properties.add(new StringProperty("unknowProp", "val2"));
-    CreateEntity createEntity = new CreateEntity(properties);
-    UUID id = UUID.randomUUID();
-    createEntity.setId(id);
-    createEntity.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+    CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
   }

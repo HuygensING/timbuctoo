@@ -7,13 +7,13 @@ import nl.knaw.huygens.timbuctoo.database.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.converters.json.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.database.converters.json.JsonToEntityMapper;
-import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -84,11 +84,11 @@ public class JsonCrudService {
   private UUID createEntity(Collection collection, ObjectNode input, String userId)
     throws IOException, AuthorizationException, AuthorizationUnavailableException {
 
-    CreateEntity createEntity = jsonToEntityMapper.newCreateEntity(collection, input);
+    List<TimProperty<?>> timProperties = jsonToEntityMapper.getDataProperties(collection, input);
 
     Optional<Collection> baseCollection = mappings.getCollectionForType(collection.getAbstractType());
 
-    UUID id = timDbAccess.createEntity(collection, baseCollection, createEntity, userId);
+    UUID id = timDbAccess.createEntity(collection, baseCollection, timProperties, userId);
 
     return id;
   }

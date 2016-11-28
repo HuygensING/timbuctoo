@@ -6,12 +6,14 @@ import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityLookup;
+import nl.knaw.huygens.timbuctoo.database.dto.ImmutableCreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -51,14 +53,17 @@ public class TimbuctooActions {
     this.afterSuccessTaskExecutor = afterSuccessTaskExecutor;
   }
 
-  public UUID createEntity(Collection collection, Optional<Collection> baseCollection, CreateEntity createEntity,
-                           String userId)
+  public UUID createEntity(Collection collection, Optional<Collection> baseCollection,
+                           Iterable<TimProperty<?>> properties, String userId)
     throws AuthorizationUnavailableException, AuthorizationException, IOException {
     checkIfAllowedToWrite(userId, collection);
     UUID id = UUID.randomUUID();
-    createEntity.setId(id);
     Change created = createChange(userId);
-    createEntity.setCreated(created);
+    CreateEntity createEntity = ImmutableCreateEntity.builder()
+      .properties(properties)
+      .id(id)
+      .created(created)
+      .build();
 
     dataStoreOperations.createEntity(collection, baseCollection, createEntity);
 
