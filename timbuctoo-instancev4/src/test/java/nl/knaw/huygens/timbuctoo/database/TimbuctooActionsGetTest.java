@@ -1,9 +1,13 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,6 +85,32 @@ public class TimbuctooActionsGetTest {
   }
 
   @Test
+  public void doQuickSearchReturnsTheValueOfDataStoreOperations() {
+    List<ReadEntity> entities = Lists.newArrayList();
+    QuickSearch query = QuickSearch.fromQueryString("");
+    int limit = 1;
+    when(dataStoreOperations.doQuickSearch(collection, query, limit)).thenReturn(entities);
+
+    List<ReadEntity> searchResult = instance.doQuickSearch(collection, query, limit);
+
+    assertThat(searchResult, is(sameInstance(entities)));
+  }
+
+  @Test
+  public void doKeywordQuickSearchReturnsTheValueOfDataStoreOperations() {
+    List<ReadEntity> entities = Lists.newArrayList();
+    QuickSearch query = QuickSearch.fromQueryString("");
+    String keywordType = "";
+    int limit = 1;
+    when(dataStoreOperations.doKeywordQuickSearch(collection, keywordType, query, limit)).thenReturn(entities);
+
+    List<ReadEntity> searchResult = instance.doKeywordQuickSearch(collection, keywordType, query, limit);
+
+    assertThat(searchResult, is(sameInstance(entities)));
+  }
+
+  //================== Metdata ==================
+  @Test
   public void loadVresDelegatesToDataStoreOperationsLoadVres() {
     Vres vres = mock(Vres.class);
     when(dataStoreOperations.loadVres()).thenReturn(vres);
@@ -90,4 +120,26 @@ public class TimbuctooActionsGetTest {
     assertThat(actualVres, is(sameInstance(vres)));
   }
 
+  @Test(expected = InvalidCollectionException.class)
+  public void getCollectionMetadataThrowsAnInvalidCollectionExceptionWhenTheCollectionCannotBeFound() throws Exception {
+    Vres vres = mock(Vres.class);
+    when(dataStoreOperations.loadVres()).thenReturn(vres);
+
+    instance.getCollectionMetadata("unknowncollections");
+  }
+
+  @Test
+  public void getCollectionMetadataReturnsTheCollectionThatIsRequested() throws Exception {
+    when(dataStoreOperations.loadVres()).thenReturn(vresWithCollection("knowncollections"));
+
+    Collection knownCollection = instance.getCollectionMetadata("knowncollections");
+
+    assertThat(knownCollection.getCollectionName(), is("knowncollections"));
+  }
+
+  private Vres vresWithCollection(String collectionName) {
+    return new VresBuilder()
+      .withVre("knownVre", "known", vre -> vre.withCollection(collectionName))
+      .build();
+  }
 }

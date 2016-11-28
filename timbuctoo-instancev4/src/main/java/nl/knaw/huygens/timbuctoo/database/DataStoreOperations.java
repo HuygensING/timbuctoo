@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityRelation;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
@@ -22,6 +23,8 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.ImmutableVresDto;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetCollection;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -31,6 +34,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -55,6 +59,7 @@ import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -73,6 +78,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public class DataStoreOperations implements AutoCloseable {
   private static final Logger LOG = LoggerFactory.getLogger(DataStoreOperations.class);
@@ -83,6 +89,7 @@ public class DataStoreOperations implements AutoCloseable {
   private final GraphTraversalSource latestState;
   private final Vres mappings;
   private final Graph graph;
+  private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
@@ -90,6 +97,26 @@ public class DataStoreOperations implements AutoCloseable {
   public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener,
                              EntityFetcher entityFetcher, Vres mappings) {
     graph = graphWrapper.getGraph();
+    this.transaction = graph.tx();
+    this.listener = listener;
+    this.entityFetcher = entityFetcher;
+
+    if (!transaction.isOpen()) {
+      transaction.open();
+    }
+    this.traversal = graph.traversal();
+    this.latestState = graphWrapper.getLatestState();
+    this.mappings = mappings == null ? loadVres() : mappings;
+    this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
+
+    this.indexHandler = createIndexHandler(graphWrapper);
+  }
+
+  DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener, GremlinEntityFetcher entityFetcher,
+                      Vres mappings,
+                      IndexHandler indexHandler) {
+    graph = graphWrapper.getGraph();
+    this.indexHandler = indexHandler;
     this.transaction = graph.tx();
     this.listener = listener;
     this.entityFetcher = entityFetcher;
@@ -145,7 +172,7 @@ public class DataStoreOperations implements AutoCloseable {
     return getFirst(traversal
       .V()
       .has("tim_id", id.toString())
-      .not(__.has("deleted", true))
+      .not(has("deleted", true))
       .has("isLatest", true));
   }
 
@@ -188,6 +215,35 @@ public class DataStoreOperations implements AutoCloseable {
     } catch (IOException e) {
       LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
       return new String[0];
+    }
+  }
+
+  private IndexHandler createIndexHandler(GraphWrapper graphWrapper) {
+    if (graphWrapper instanceof TinkerpopGraphManager) {
+      return new Neo4jIndexHandler((TinkerpopGraphManager) graphWrapper);
+    } else {
+      return new IndexHandler() {
+        @Override
+        public boolean hasIndexFor(Collection collection) {
+          return false;
+        }
+
+        @Override
+        public GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, QuickSearch quickSearch) {
+          throw new UnsupportedOperationException("Not implemented yet");
+        }
+
+        @Override
+        public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, QuickSearch quickSearch,
+                                                                        String keywordType) {
+          throw new UnsupportedOperationException("Not implemented yet");
+        }
+
+        @Override
+        public void addToQuickSearchIndex(Collection collection, String displayName, Vertex vertex) {
+          throw new UnsupportedOperationException("Not implemented yet");
+        }
+      };
     }
   }
 
@@ -349,6 +405,69 @@ public class DataStoreOperations implements AutoCloseable {
     return new TinkerPopGetCollection(
       entities.toStream().map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex, withRelations))
     );
+  }
+
+  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
+    GraphTraversal<Vertex, Vertex> result;
+    if (indexHandler.hasIndexFor(collection)) {
+      result = indexHandler.findByQuickSearch(collection, quickSearch);
+    } else {
+      String cleanQuery = createQuery(quickSearch);
+      result = getCurrentEntitiesFor(collection.getEntityTypeName())
+        .as("vertex")
+        .union(collection.getDisplayName().traversalJson())
+        .filter(x -> x.get().isSuccess())
+        .map(x -> x.get().get().asText())
+        .as("displayName")
+        .filter(x -> x.get().toLowerCase().contains(cleanQuery))
+        .select("vertex")
+        .map(x -> (Vertex) x.get());
+    }
+
+    return asReadEntityList(collection, result.limit(limit));
+  }
+
+  public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
+                                               int limit) {
+    GraphTraversal<Vertex, Vertex> result;
+    if (indexHandler.hasIndexFor(collection)) {
+      result = indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType);
+    } else {
+      String cleanQuery = createQuery(quickSearch);
+      result = getCurrentEntitiesFor(collection.getEntityTypeName())
+        .has("keyword_type", keywordType)
+        .as("vertex")
+        .union(collection.getDisplayName().traversalJson())
+        .filter(x -> x.get().isSuccess())
+        .map(x -> x.get().get().asText())
+        .as("displayName")
+        .filter(x -> x.get().toLowerCase().contains(cleanQuery))
+        .select("vertex")
+        .map(x -> (Vertex) x.get());
+    }
+
+    return asReadEntityList(collection, result.limit(limit));
+  }
+
+  private List<ReadEntity> asReadEntityList(Collection collection, GraphTraversal<Vertex, Vertex> result) {
+    TinkerPopToEntityMapper tinkerPopToEntityMapper = new TinkerPopToEntityMapper(
+      collection,
+      traversal,
+      mappings,
+      (traversalSource, vre) -> {
+
+      },
+      (entity1, entityVertex, target, relationRef) -> {
+
+      });
+
+    return result.map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex.get(), false)).toList();
+  }
+
+  private String createQuery(QuickSearch quickSearch) {
+    String fullMatches = String.join(" ", quickSearch.fullMatches());
+    String partialMatches = String.join(" ", quickSearch.partialMatches());
+    return fullMatches.isEmpty() ? partialMatches : fullMatches + " " + partialMatches;
   }
 
   /**
@@ -530,7 +649,7 @@ public class DataStoreOperations implements AutoCloseable {
 
   public boolean databaseIsEmptyExceptForMigrations() {
     return !traversal.V()
-                     .not(__.has("type", DatabaseMigrator.EXECUTED_MIGRATIONS_TYPE))
+                     .not(has("type", DatabaseMigrator.EXECUTED_MIGRATIONS_TYPE))
                      .hasNext();
   }
 
@@ -565,7 +684,7 @@ public class DataStoreOperations implements AutoCloseable {
       .hasLabel(Vre.DATABASE_LABEL)
       .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
       .out("hasCollection")
-      .not(__.has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true))
+      .not(has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true))
       .union(
         __.out("hasDisplayName"),
         __.out("hasProperty"),

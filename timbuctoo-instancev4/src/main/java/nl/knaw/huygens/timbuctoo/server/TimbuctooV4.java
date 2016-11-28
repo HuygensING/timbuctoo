@@ -216,12 +216,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, transactionEnforcer));
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
-    final AutocompleteService autocompleteService = new AutocompleteService(
-      graphManager,
-      uriWithoutRev,
-      vres
-    );
 
+    final AutocompleteService.AutocompleteServiceFactory autocompleteServiceFactory =
+      new AutocompleteService.AutocompleteServiceFactory(
+        uriWithoutRev
+      );
 
     environment.lifecycle().manage(graphManager);
     // database validator
@@ -245,7 +244,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Authenticate(loggedInUserStore));
     register(environment, new Me(loggedInUserStore));
     register(environment, new Search(configuration, graphManager));
-    register(environment, new Autocomplete(autocompleteService));
+    register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
     register(environment, new Index(loggedInUserStore, crudServiceFactory, transactionEnforcer));
     register(environment, new SingleEntity(loggedInUserStore, crudServiceFactory, transactionEnforcer));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));

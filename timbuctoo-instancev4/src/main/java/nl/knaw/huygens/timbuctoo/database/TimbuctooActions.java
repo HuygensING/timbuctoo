@@ -1,11 +1,13 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.database.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.database.dto.ImmutableEntityLookup;
+import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateRelation;
@@ -22,6 +24,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -64,10 +67,10 @@ public class TimbuctooActions {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), id, 1),
         ImmutableEntityLookup.builder()
-          .rev(1)
-          .timId(id)
-          .collection(collection.getCollectionName())
-          .build()
+                             .rev(1)
+                             .timId(id)
+                             .collection(collection.getCollectionName())
+                             .build()
       )
     );
 
@@ -87,10 +90,10 @@ public class TimbuctooActions {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), updateEntity.getId(), rev),
         ImmutableEntityLookup.builder()
-          .rev(rev)
-          .timId(updateEntity.getId())
-          .collection(collection.getCollectionName())
-          .build()
+                             .rev(rev)
+                             .timId(updateEntity.getId())
+                             .collection(collection.getCollectionName())
+                             .build()
       )
     );
   }
@@ -110,10 +113,10 @@ public class TimbuctooActions {
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls.apply(collection.getCollectionName(), uuid, rev),
         ImmutableEntityLookup.builder()
-          .rev(rev)
-          .timId(uuid)
-          .collection(collection.getCollectionName())
-          .build()
+                             .rev(rev)
+                             .timId(uuid)
+                             .collection(collection.getCollectionName())
+                             .build()
       )
     );
   }
@@ -144,6 +147,14 @@ public class TimbuctooActions {
     return dataStoreOperations.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 
+  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
+    return dataStoreOperations.doQuickSearch(collection, quickSearch, limit);
+  }
+
+  public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
+                                               int limit) {
+    return dataStoreOperations.doKeywordQuickSearch(collection, keywordType, quickSearch, limit);
+  }
 
   public UUID createRelation(Collection collection, CreateRelation createRelation, String userId)
     throws AuthorizationUnavailableException, AuthorizationException, IOException {
@@ -170,13 +181,23 @@ public class TimbuctooActions {
     dataStoreOperations.replaceRelation(collection, updateRelation);
   }
 
-  public Vres loadVres() {
-    return dataStoreOperations.loadVres();
-  }
 
   public void addPid(URI pidUri, EntityLookup entityLookup) throws NotFoundException {
     dataStoreOperations.addPid(entityLookup.getTimId(), entityLookup.getRev(), pidUri); //no collection?
   }
+
+  //================== Metdata ==================
+  public Vres loadVres() {
+    return dataStoreOperations.loadVres();
+  }
+
+  public Collection getCollectionMetadata(String collectionName) throws InvalidCollectionException {
+    Vres vres = loadVres();
+    Optional<Collection> collection = vres.getCollection(collectionName);
+
+    return collection.orElseThrow(() -> new InvalidCollectionException(collectionName));
+  }
+
 
   static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {
     private final PersistentUrlCreator persistentUrlCreator;
