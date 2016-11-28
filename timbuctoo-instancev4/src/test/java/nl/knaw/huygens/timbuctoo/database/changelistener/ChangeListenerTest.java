@@ -31,6 +31,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
@@ -38,7 +40,7 @@ import static org.mockito.Mockito.when;
 
 public class ChangeListenerTest {
   @Test
-  public void callsOnCreateOnCreateEntity() throws Exception {
+  public void callsOnCreateAndOnAddToCollectionOnCreateEntity() throws Exception {
     ChangeListener changeListener = new ChangeListenerImpl(vertex -> {
       assertThat(vertex, likeVertex()
         .withProperty(IS_LATEST, true)
@@ -52,13 +54,16 @@ public class ChangeListenerTest {
     DataStoreOperations instance = DataStoreOperationsStubs.forChangeListenerMock(spy);
 
     Collection collectionMock = mock(Collection.class);
-    instance.createEntity(collectionMock, Optional.empty(), CreateEntityStubs.dummy());
+    Collection baseCollectionMock = mock(Collection.class);
+    instance.createEntity(collectionMock, Optional.of(baseCollectionMock), CreateEntityStubs.dummy());
 
-    verify(spy).onCreate(eq(collectionMock), any());
+    verify(spy).onCreate(same(collectionMock), any());
+    verify(spy).onAddToCollection(same(collectionMock), eq(Optional.empty()), any());
+    verify(spy).onAddToCollection(same(baseCollectionMock), eq(Optional.empty()), any());
   }
 
   @Test
-  public void callsOnUpdateOnReplaceEntity() throws Exception {
+  public void callsOnPropertyUpdateOnReplaceEntity() throws Exception {
     ChangeListener changeListener = new ChangeListenerImpl(vertex -> {
       assertThat(vertex, likeVertex()
         .withProperty("isLatest", true)
@@ -78,11 +83,36 @@ public class ChangeListenerTest {
     Collection collectionMock = mock(Collection.class);
     instance.replaceEntity(collectionMock, updateEntity);
 
-    verify(spy).onUpdate(eq(collectionMock), any(), any());
+    verify(spy).onPropertyUpdate(same(collectionMock), any(), any());
   }
 
   @Test
-  public void callsOnUpdateOnDeleteEntity() throws Exception {
+  public void callsOnAddToCollectionOnReplaceEntityWithNewCollection() throws Exception {
+    ChangeListener changeListener = new ChangeListenerImpl(vertex -> {
+      assertThat(vertex, likeVertex()
+        .withProperty("isLatest", true)
+        .withProperty("rev", 2)
+      );
+
+      Long prevVersions = stream(vertex.vertices(Direction.BOTH, VERSION_OF)).collect(Collectors.counting());
+      assertThat(prevVersions, is(1L));
+    });
+    UUID id = UUID.randomUUID();
+    ChangeListener spy = spy(changeListener);
+    DataStoreOperations instance = forReplaceCall(spy, id, 1);
+
+    UpdateEntity updateEntity = new UpdateEntity(id, newArrayList(), 1);
+    updateEntity.setModified(new Change());
+
+    Collection collectionMock = mock(Collection.class);
+    given(collectionMock.getEntityTypeName()).willReturn("something");
+    instance.replaceEntity(collectionMock, updateEntity);
+
+    verify(spy).onAddToCollection(same(collectionMock), any(), any());
+  }
+
+  @Test
+  public void callsOnRemoveFromCollectionOnDeleteEntity() throws Exception {
     ChangeListener changeListener = new ChangeListenerImpl(vertex -> {
       assertThat(vertex, likeVertex()
         .withProperty("isLatest", true)
@@ -103,17 +133,18 @@ public class ChangeListenerTest {
     when(collection.getVre()).thenReturn(mock(Vre.class));
     instance.deleteEntity(collection, id, new Change());
 
-    verify(spy).onUpdate(eq(collection), any(), any());
+    verify(spy).onRemoveFromCollection(same(collection), any(), any());
   }
 
   @Test
   public void isCalledForAllMethods() {
-    Set<String> expectations = Sets.newHashSet(
+    Set<String> knownMethods = Sets.newHashSet(
+      //these should have implementations
       "createEntity",
       "replaceEntity",
       "deleteEntity",
 
-      //FIXME should these also be implemented?
+      //these are ignored
       "removeCollectionsAndEntities",
       "replaceRelation",
       "acceptRelation",
@@ -136,7 +167,7 @@ public class ChangeListenerTest {
     Method[] allMethods = DataStoreOperations.class.getDeclaredMethods();
     for (Method method : allMethods) {
       if (Modifier.isPublic(method.getModifiers())) {
-        if (!expectations.contains(method.getName())) {
+        if (!knownMethods.contains(method.getName())) {
           throw new IllegalStateException("This test is not implemented for #" + method.getName());
         }
       }
@@ -157,7 +188,17 @@ public class ChangeListenerTest {
     }
 
     @Override
-    public void onUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+      validateVertex.accept(newVertex);
+    }
+
+    @Override
+    public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+      validateVertex.accept(newVertex);
+    }
+
+    @Override
+    public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
       validateVertex.accept(newVertex);
     }
   }

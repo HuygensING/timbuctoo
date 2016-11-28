@@ -22,7 +22,7 @@ public class AddLabelChangeListener implements ChangeListener {
   }
 
   @Override
-  public void onUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+  public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
     Set<String> desiredLabels = Sets.newHashSet(getEntityTypesOrDefault(newVertex));
     Set<String> currentLabels = Sets.newHashSet(((Neo4jVertex) newVertex).labels());
 
@@ -33,6 +33,16 @@ public class AddLabelChangeListener implements ChangeListener {
     labelsToAdd.forEach(((Neo4jVertex) newVertex)::addLabel);
 
     labelsToRemove.forEach(((Neo4jVertex) newVertex)::removeLabel);
+  }
+
+  @Override
+  public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    onPropertyUpdate(collection, oldVertex, newVertex);
+  }
+
+  @Override
+  public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+
   }
 
   public void handleRdfLabelAdd(Vertex vertex, String entityTypeName) {

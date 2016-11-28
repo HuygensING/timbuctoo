@@ -21,7 +21,17 @@ public class CompositeChangeListener implements ChangeListener {
   }
 
   @Override
-  public void onUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    subListeners.forEach(l -> l.onUpdate(collection, oldVertex, newVertex));
+  public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    subListeners.forEach(l -> l.onPropertyUpdate(collection, oldVertex, newVertex));
+  }
+
+  @Override
+  public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    subListeners.forEach(l -> l.onRemoveFromCollection(collection, oldVertex, newVertex));
+  }
+
+  @Override
+  public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    subListeners.forEach(l -> l.onAddToCollection(collection, oldVertex, newVertex));
   }
 }

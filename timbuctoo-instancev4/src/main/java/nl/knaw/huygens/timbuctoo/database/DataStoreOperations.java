@@ -358,6 +358,8 @@ public class DataStoreOperations implements AutoCloseable {
     setAdministrativeProperties(col, vertex, input);
 
     listener.onCreate(col, vertex);
+    listener.onAddToCollection(col, Optional.empty(), vertex);
+    baseCollection.ifPresent(baseCol -> listener.onAddToCollection(baseCol, Optional.empty(), vertex));
 
     duplicateVertex(traversal, vertex);
   }
@@ -526,12 +528,14 @@ public class DataStoreOperations implements AutoCloseable {
     }
 
     String entityTypesStr = getProp(entityVertex, "types", String.class).orElse("[]");
+    boolean wasAddedToCollection = false;
     if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
       try {
         ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
         entityTypes.add(collection.getEntityTypeName());
 
         entityVertex.property("types", entityTypes.toString());
+        wasAddedToCollection = true;
       } catch (IOException e) {
         // FIXME potential bug?
         LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
@@ -541,7 +545,11 @@ public class DataStoreOperations implements AutoCloseable {
     setModified(entityVertex, updateEntity.getModified());
     entityVertex.property("pid").remove();
 
-    callUpdateListener(collection, entityVertex);
+    Optional<Vertex> prevVertex = getPrevVertex(collection, entityVertex);
+    listener.onPropertyUpdate(collection, prevVertex, entityVertex);
+    if (wasAddedToCollection) {
+      listener.onAddToCollection(collection, prevVertex, entityVertex);
+    }
 
     duplicateVertex(traversal, entityVertex);
     return newRev;
@@ -630,7 +638,8 @@ public class DataStoreOperations implements AutoCloseable {
 
     setModified(entity, modified);
     entity.property("pid").remove();
-    callUpdateListener(collection, entity);
+    listener.onRemoveFromCollection(collection, getPrevVertex(collection, entity), entity);
+
     duplicateVertex(traversal, entity);
 
     return newRev;
@@ -811,7 +820,7 @@ public class DataStoreOperations implements AutoCloseable {
     }
   }
 
-  private void callUpdateListener(Collection collection, Vertex entity) {
+  private Optional<Vertex> getPrevVertex(Collection collection, Vertex entity) {
     final Iterator<Edge> prevEdges = entity.edges(Direction.IN, "VERSION_OF");
     Optional<Vertex> old = Optional.empty();
     if (prevEdges.hasNext()) {
@@ -819,7 +828,7 @@ public class DataStoreOperations implements AutoCloseable {
     } else {
       LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
     }
-    listener.onUpdate(collection, old, entity);
+    return old;
   }
 
   private void saveVres(Vres mappings) {

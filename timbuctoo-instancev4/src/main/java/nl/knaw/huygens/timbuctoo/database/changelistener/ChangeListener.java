@@ -8,5 +8,9 @@ import java.util.Optional;
 public interface ChangeListener {
   void onCreate(Collection collection, Vertex vertex);
 
-  void onUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex);
+  void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex);
+
+  void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex);
+
+  void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex);
 }

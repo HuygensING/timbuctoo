@@ -116,7 +116,7 @@ public class CollectionHasEntityRelationChangeListenerTest {
     Vertex updatedVertex = graphWrapper.getGraph().traversal().V().has("tim_id", updateThisVertexName).next();
 
     new CollectionHasEntityRelationChangeListener(graphWrapper)
-      .onUpdate(mock(Collection.class), Optional.empty(), updatedVertex);
+      .onPropertyUpdate(mock(Collection.class), Optional.empty(), updatedVertex);
 
     final List<Vertex> actualLinkingNodes = Lists.newArrayList(
       updatedVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME));
@@ -171,7 +171,7 @@ public class CollectionHasEntityRelationChangeListenerTest {
     Vertex updatedVertex = graphWrapper.getGraph().traversal().V().has("tim_id", updateThisVertexName).next();
 
     new CollectionHasEntityRelationChangeListener(graphWrapper)
-      .onUpdate(mock(Collection.class), Optional.empty(), updatedVertex);
+      .onPropertyUpdate(mock(Collection.class), Optional.empty(), updatedVertex);
 
     final List<Vertex> actualLinkingNodes = Lists.newArrayList(
       updatedVertex.vertices(Direction.IN, Collection.HAS_ENTITY_RELATION_NAME));

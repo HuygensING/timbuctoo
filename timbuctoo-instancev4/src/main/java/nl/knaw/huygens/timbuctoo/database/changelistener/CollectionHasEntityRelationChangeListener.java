@@ -34,7 +34,7 @@ public class CollectionHasEntityRelationChangeListener implements ChangeListener
 
 
   @Override
-  public void onUpdate(Collection collection, Optional<Vertex> ignored, Vertex vertexToUpdate) {
+  public void onPropertyUpdate(Collection collection, Optional<Vertex> ignored, Vertex vertexToUpdate) {
     final Set<String> desiredEntityTypes = Sets.newHashSet(getEntityTypesOrDefault(vertexToUpdate));
     final Set<String> currentEntityTypes = graphWrapper
       .getGraph().traversal().V(vertexToUpdate)
@@ -60,6 +60,16 @@ public class CollectionHasEntityRelationChangeListener implements ChangeListener
         edgeToRemove.next().remove();
       }
     }
+  }
+
+  @Override
+  public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    onPropertyUpdate(collection, oldVertex, newVertex);
+  }
+
+  @Override
+  public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+
   }
 
   private void addCollectionRelations(Vertex vertex, Set<String> types) {

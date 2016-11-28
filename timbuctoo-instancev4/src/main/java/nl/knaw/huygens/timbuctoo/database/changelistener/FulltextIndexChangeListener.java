@@ -32,7 +32,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
   }
 
   @Override
-  public void onUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+  public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
     Set<String> newTypes = Sets.newHashSet(getEntityTypesOrDefault(newVertex));
     Set<String> oldTypes = oldVertex.isPresent() ?
             Sets.newHashSet(getEntityTypesOrDefault(oldVertex.get())) :
@@ -44,6 +44,16 @@ public class FulltextIndexChangeListener implements ChangeListener {
       handleRemove(collection, oldVertex.get());
     }
     handleChange(collection, newVertex);
+  }
+
+  @Override
+  public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    onPropertyUpdate(collection, oldVertex, newVertex);
+  }
+
+  @Override
+  public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+
   }
 
   private void handleChange(Collection collection, Vertex vertex) {
