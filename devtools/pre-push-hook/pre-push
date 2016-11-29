@@ -27,6 +27,7 @@ url="$2"
 z40=0000000000000000000000000000000000000000
 
 while read local_ref local_sha remote_ref remote_sha; do
+	echo "testing $local_ref"
 	if [ "$local_sha" != $z40 ]; then #local_sha is 000.. when we're deleting a remote branch
 		if [ "$remote_sha" = $z40 ]; then
       # New branch, find which commits are new for the remote
@@ -63,7 +64,7 @@ while read local_ref local_sha remote_ref remote_sha; do
       # Check for WIP commit
       commit=`git rev-list --pretty=short -i -E --grep '\b(WIP|stash|fixup)\b' $range`
       if [ -n "$commit" ]; then
-        echo >&2 "Found commits containing the word WIP, stash or prefix in range $range, not pushing"
+        echo >&2 "Found commits containing the word 'WIP', 'stash' or 'fixup' in range $range, not pushing"
         echo
         echo "$commit"
         exit 1
@@ -71,17 +72,12 @@ while read local_ref local_sha remote_ref remote_sha; do
     fi
 		if git diff --name-only $range | grep -q pom.xml; then
 			#pom was changed, do a full rebuild without maven cache
-			mavencache=
+			./devtools/verify/cleanverify.sh -cb ${local_ref#refs/heads/} verify > prepushresult.txt && rm prepushresult.txt || exit 1
 		else
 			#pom was not changed, do a quick rebuild
-			mavencache="-v $HOME/.m2:/root/.m2"
+			./devtools/verify/cleanverify.sh -b ${local_ref#refs/heads/} verify > prepushresult.txt && rm prepushresult.txt || exit 1
 		fi
 
-		set -o pipefail
-		#run the maven container
-		#check out the local ref into a clean empty directory, without a ~/.m2 directory present
-		#do a test (verify doesn't work on empty databases yet and a verify fail should correlate 1 tot 1 with a test fail)
-		docker run --rm $mavencache -v "$(git rev-parse --show-toplevel)":/root/timbuctoo maven:3.3-jdk-8 bash -c "git clone -b ${local_ref#refs/heads/} /root/timbuctoo /root/build && cd /root/build && mvn test" | tee prepushresult.txt && rm prepushresult.txt || exit 1
 	fi
 done
 
