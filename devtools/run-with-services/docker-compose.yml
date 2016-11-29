@@ -1,4 +1,4 @@
-version: '2' # version of this docker-compose file, unrelated to the langident version
+version: '2' # version of this docker-compose file
 
 services:
   timbuctoodata:

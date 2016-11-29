@@ -10,7 +10,7 @@ if git status --porcelain | grep -q .; then
 fi
 
 #add output index (use -f because output is ignored)
-git add -f documentation/asciidoc-pipeline/output
+git add -f documentation/output
 #create a tree of it
 treehash=$(git write-tree --prefix=documentation/asciidoc-pipeline/output/)
 # clear index again
