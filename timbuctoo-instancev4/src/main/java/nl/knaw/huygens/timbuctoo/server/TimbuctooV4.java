@@ -48,6 +48,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllEntityIds;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllTheDisplaynames;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.PrepareForBiaImportMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyIndexRedirect;
@@ -224,6 +225,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
     migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, transactionEnforcer));
+    migrations.put("give-existing-relationtypes-rdf-uris", new RelationTypeRdfUriMigration());
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
 
