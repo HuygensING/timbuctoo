@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
@@ -57,6 +58,7 @@ public class Neo4JIndexHandlerTest {
   public void findByQuickSearchRetrievesTheVerticesFromTheIndexAndCreatesTraversalForThem() {
     String id1 = UUID.randomUUID().toString();
     String id2 = UUID.randomUUID().toString();
+    String id3 = UUID.randomUUID().toString();
     TinkerpopGraphManager tinkerpopGraphManager = newGraph()
       .withVertex(v -> v
         .withTimId(id1)
@@ -65,7 +67,7 @@ public class Neo4JIndexHandlerTest {
         .withTimId(id2)
         .withProperty("displayName", "query2"))
       .withVertex(v -> v
-        .withTimId(UUID.randomUUID())
+        .withTimId(id3)
         .withProperty("displayName", "notmatching")
       )
       .wrap();
@@ -74,32 +76,61 @@ public class Neo4JIndexHandlerTest {
     when(collection.getCollectionName()).thenReturn(COLLECTION);
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id3).next());
     QuickSearch quickSearch = QuickSearch.fromQueryString("query*");
 
-    GraphTraversal<Vertex, Vertex> vertices = instance.findByQuickSearch(collection,
-      quickSearch);
+    GraphTraversal<Vertex, Vertex> vertices = instance.findByQuickSearch(collection,       quickSearch);
 
     assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1, id2));
   }
 
-  private void addToIndex(Neo4jIndexHandler instance, Collection collection, Vertex vertex) {
-    instance.addToQuickSearchIndex(collection, vertex.value("displayName"), vertex);
+  @Test
+  public void findByQuickSearchReturnsAnEmtptyTraversalWhenNoVerticesAreFound() {
+    String id1 = UUID.randomUUID().toString();
+    String id2 = UUID.randomUUID().toString();
+    String id3 = UUID.randomUUID().toString();
+    TinkerpopGraphManager tinkerpopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withProperty("displayName", "query"))
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withProperty("displayName", "query2"))
+      .withVertex(v -> v
+        .withTimId(id3)
+        .withProperty("displayName", "other")
+      )
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
+    Collection collection = mock(Collection.class);
+    when(collection.getCollectionName()).thenReturn(COLLECTION);
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id3).next());
+    QuickSearch quickSearch = QuickSearch.fromQueryString("queryWithoutResult");
+
+    GraphTraversal<Vertex, Vertex> vertices = instance.findByQuickSearch(collection, quickSearch);
+
+    assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), is(empty()));
   }
 
   @Test
   public void findKeywordsByQuickSearchFiltersTheIndexResultsOnTheRightKeywordType() {
     String id1 = UUID.randomUUID().toString();
     String id2 = UUID.randomUUID().toString();
+    String id3 = UUID.randomUUID().toString();
     TinkerpopGraphManager tinkerpopGraphManager = newGraph()
       .withVertex(v -> v
         .withTimId(id1)
         .withProperty("keyword_type", "keywordType")
         .withProperty("displayName", "query"))
       .withVertex(v -> v
+        .withProperty("keyword_type", "otherType")
         .withTimId(id2)
         .withProperty("displayName", "query2"))
       .withVertex(v -> v
-        .withTimId(UUID.randomUUID())
+        .withProperty("keyword_type", "otherType")
+        .withTimId(id3)
         .withProperty("displayName", "notmatching")
       )
       .wrap();
@@ -108,11 +139,16 @@ public class Neo4JIndexHandlerTest {
     when(collection.getCollectionName()).thenReturn(COLLECTION);
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
+    addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id3).next());
     QuickSearch quickSearch = QuickSearch.fromQueryString("query");
 
     GraphTraversal<Vertex, Vertex> vertices =
       instance.findKeywordsByQuickSearch(collection, quickSearch, "keywordType");
 
     assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1));
+  }
+
+  private void addToIndex(Neo4jIndexHandler instance, Collection collection, Vertex vertex) {
+    instance.addToQuickSearchIndex(collection, vertex.value("displayName"), vertex);
   }
 }

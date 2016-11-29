@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.EmptyGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -55,7 +56,7 @@ public class Neo4jIndexHandler implements IndexHandler {
     IndexHits<Node> hits = index.query(QUICK_SEARCH, createQuery(quickSearch));
     List<Long> ids = StreamSupport.stream(hits.spliterator(), false).map(h -> h.getId()).collect(toList());
 
-    return traversal.V(ids);
+    return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal.V(ids);
   }
 
   private Object createQuery(QuickSearch quickSearch) {
