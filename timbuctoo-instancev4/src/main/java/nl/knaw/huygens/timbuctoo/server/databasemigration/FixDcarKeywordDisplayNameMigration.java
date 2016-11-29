@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -18,12 +18,7 @@ public class FixDcarKeywordDisplayNameMigration implements DatabaseMigration {
   private static final Logger LOG = LoggerFactory.getLogger(FixDcarKeywordDisplayNameMigration.class);
 
   @Override
-  public void beforeMigration(GraphWrapper graphManager) {
-
-  }
-
-  @Override
-  public void execute(GraphWrapper graphWrapper) throws IOException {
+  public void execute(TinkerpopGraphManager graphWrapper) throws IOException {
     final Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> dcarDisplayNameT = graph.traversal().V()
       .has(T.label, LabelP.of(Vre.DATABASE_LABEL))

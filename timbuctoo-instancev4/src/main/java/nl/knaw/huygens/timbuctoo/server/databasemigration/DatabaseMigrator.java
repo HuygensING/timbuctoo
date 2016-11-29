@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -18,10 +18,10 @@ public class DatabaseMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(DatabaseMigrator.class);
   //FIXME: move migrator to database package and make this private again
   public static final String EXECUTED_MIGRATIONS_TYPE = "executed-migrations";
-  private final GraphWrapper graphWrapper;
+  private final TinkerpopGraphManager graphWrapper;
   private final Map<String, DatabaseMigration> migrations;
 
-  public DatabaseMigrator(GraphWrapper graphWrapper, Map<String, DatabaseMigration> migrations) {
+  public DatabaseMigrator(TinkerpopGraphManager graphWrapper, Map<String, DatabaseMigration> migrations) {
     this.graphWrapper = graphWrapper;
     this.migrations = migrations;
   }
