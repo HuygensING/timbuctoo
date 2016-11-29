@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class Tuple<T, U> {

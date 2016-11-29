@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.Datable;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetGetter;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.text.SimpleDateFormat;

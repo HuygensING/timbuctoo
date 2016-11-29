@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -111,7 +111,7 @@ public class LoadSaveVresTest {
 
     @Override
     public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
-      throw new NotImplementedException();
+      throw new NotImplementedException("Not yet implemented");
     }
   }
 }

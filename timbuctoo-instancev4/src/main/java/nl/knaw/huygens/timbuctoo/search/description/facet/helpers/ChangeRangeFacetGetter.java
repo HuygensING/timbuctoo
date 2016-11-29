@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import nl.knaw.huygens.timbuctoo.search.description.facet.FacetGetter;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
