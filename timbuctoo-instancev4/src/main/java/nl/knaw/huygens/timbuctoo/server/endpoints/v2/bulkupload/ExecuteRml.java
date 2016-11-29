@@ -151,7 +151,7 @@ public class ExecuteRml {
         tx.open();
       }
       Map<String, String> vreMappings = new HashMap<>();
-      Property collectionRefProp = model.getProperty("http://timbuctoo.com/mapping/existingTimbuctooVre");
+      Property collectionRefProp = model.getProperty("http://timbuctoo.huygens.knaw.nl/mapping/existingTimbuctooVre");
       Property predicatProp = model.getProperty("http://www.w3.org/ns/r2rml#predicate");
       model.listResourcesWithProperty(collectionRefProp)
            .forEachRemaining(resource -> {

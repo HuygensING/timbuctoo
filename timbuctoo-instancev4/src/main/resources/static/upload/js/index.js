@@ -11432,7 +11432,7 @@ var _propertyMappings = require("../accessors/property-mappings");
 
 var _uniq = require("./uniq");
 
-var defaultNamespace = "http://timbuctoo.com/";
+var defaultNamespace = "http://timbuctoo.huygens.knaw.nl/";
 
 var nameSpaces = {
   surname: "http://www.tei-c.org/ns/1.0/",
@@ -11446,7 +11446,7 @@ var rmlTemplate = {
   "@context": {
     "@vocab": "http://www.w3.org/ns/r2rml#",
     "rml": "http://semweb.mmlab.be/ns/rml#",
-    "tim": "http://timbuctoo.com/mapping#",
+    "tim": "http://timbuctoo.huygens.knaw.nl/mapping#",
     "http://www.w3.org/2000/01/rdf-schema#subClassOf": {
       "@type": "@id"
     },
@@ -11473,7 +11473,7 @@ var getNameSpaceFor = function getNameSpaceFor(predicate) {
 };
 
 var makeMapName = function makeMapName(vre, localName) {
-  return "http://timbuctoo.com/mapping/" + vre + "/" + localName;
+  return "http://timbuctoo.huygens.knaw.nl/mapping/" + vre + "/" + localName;
 };
 
 var mapBasicProperty = function mapBasicProperty(predicateObjectMap) {
@@ -11489,7 +11489,7 @@ var mapRelationProperty = function mapRelationProperty(vre, predicateObjectMap) 
   return {
     "objectMap": {
       "joinCondition": predicateObjectMap.objectMap.joinCondition,
-      "parentTriplesMap": "http://timbuctoo.com/mapping/" + vre + "/" + predicateObjectMap.objectMap.parentTriplesMap
+      "parentTriplesMap": "http://timbuctoo.huygens.knaw.nl/mapping/" + vre + "/" + predicateObjectMap.objectMap.parentTriplesMap
     },
     "predicate": "" + getNameSpaceFor(predicateObjectMap.predicate) + predicateObjectMap.predicate
   };
@@ -11502,7 +11502,7 @@ var mapRelationToExistingProperty = function mapRelationToExistingProperty(vre, 
       "termType": "http://www.w3.org/ns/r2rml#IRI"
     },
     "predicate": "" + getNameSpaceFor(predicateObjectMap.predicate) + predicateObjectMap.predicate,
-    "http://timbuctoo.com/mapping/existingTimbuctooVre": predicateObjectMap.dataset
+    "http://timbuctoo.huygens.knaw.nl/mapping/existingTimbuctooVre": predicateObjectMap.dataset
   };
 };
 
@@ -11524,7 +11524,7 @@ var makePredicateObjectMap = function makePredicateObjectMap(vre, predicateObjec
 var mapCollection = function mapCollection(vre, archetypeName, collectionName, predicateObjectMaps) {
   return {
     "@id": makeMapName(vre, collectionName),
-    "http://www.w3.org/2000/01/rdf-schema#subClassOf": "http://timbuctoo.com/" + archetypeName.replace(/s$/, ""),
+    "http://www.w3.org/2000/01/rdf-schema#subClassOf": "http://timbuctoo.huygens.knaw.nl/" + archetypeName.replace(/s$/, ""),
     "rml:logicalSource": {
       "rml:source": {
         "tim:rawCollection": collectionName,

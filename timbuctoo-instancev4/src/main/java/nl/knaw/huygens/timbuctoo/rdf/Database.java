@@ -110,7 +110,7 @@ public class Database {
 
     systemPropertyModifier.setCreated(vertex, "rdf-importer");
     systemPropertyModifier.setModified(vertex, "rdf-importer");
-    if (nodeUri.startsWith("http://timbuctoo.com/mapping/" + vreName)) {
+    if (nodeUri.startsWith("http://timbuctoo.huygens.knaw.nl/mapping/" + vreName)) {
       String timId = nodeUri.substring(nodeUri.lastIndexOf("/") + 1);
       systemPropertyModifier.setTimId(vertex, timId);
     } else {

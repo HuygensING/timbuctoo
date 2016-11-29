@@ -44,7 +44,7 @@ public class RmlIntegrationTest {
   public static final ObjectNode RML_JSON_LD_CONTEXT = jsnO(
     tuple("@vocab", jsn("http://www.w3.org/ns/r2rml#")),
     tuple("rml", jsn("http://semweb.mmlab.be/ns/rml#")),
-    tuple("tim", jsn("http://timbuctoo.com/mapping#")),
+    tuple("tim", jsn("http://timbuctoo.huygens.knaw.nl/mapping#")),
     tuple("http://www.w3.org/2000/01/rdf-schema#subClassOf", jsnO(
       "@type", jsn("@id")
     )),
@@ -73,8 +73,8 @@ public class RmlIntegrationTest {
       "@context", RML_JSON_LD_CONTEXT,
       "@graph", jsnA(
         jsnO(
-          "@id", jsn("http://timbuctoo.com/mapping/locaties/locaties"),
-          "http://www.w3.org/2000/01/rdf-schema#subClassOf", jsn("http://timbuctoo.com/location"),
+          "@id", jsn("http://timbuctoo.huygens.knaw.nl/mapping/locaties/locaties"),
+          "http://www.w3.org/2000/01/rdf-schema#subClassOf", jsn("http://timbuctoo.huygens.knaw.nl/location"),
           "rml:logicalSource", jsnO(
             "rml:source", jsnO(
               "tim:rawCollection", jsn("locaties"),
@@ -82,15 +82,15 @@ public class RmlIntegrationTest {
             )
           ),
           "subjectMap", jsnO(
-            "class", jsn("http://timbuctoo.com/mapping/locaties/locaties"),
-            "template", jsn("http://timbuctoo.com/mapping/locaties/locaties/{tim_id}")
+            "class", jsn("http://timbuctoo.huygens.knaw.nl/mapping/locaties/locaties"),
+            "template", jsn("http://timbuctoo.huygens.knaw.nl/mapping/locaties/locaties/{tim_id}")
           ),
           "predicateObjectMap", jsnA(
             jsnO(
               "objectMap", jsnO(
                 "column", jsn("naam")
               ),
-              "predicate", jsn("http://timbuctoo.com/name")
+              "predicate", jsn("http://timbuctoo.huygens.knaw.nl/name")
             )
           )
         )
@@ -116,8 +116,8 @@ public class RmlIntegrationTest {
       "@context", RML_JSON_LD_CONTEXT,
       "@graph", jsnA(
         jsnO(
-          "@id", jsn("http://timbuctoo.com/mapping/migraties/migranten"),
-          "http://www.w3.org/2000/01/rdf-schema#subClassOf", jsn("http://timbuctoo.com/person"),
+          "@id", jsn("http://timbuctoo.huygens.knaw.nl/mapping/migraties/migranten"),
+          "http://www.w3.org/2000/01/rdf-schema#subClassOf", jsn("http://timbuctoo.huygens.knaw.nl/person"),
           "rml:logicalSource", jsnO(
             "rml:source", jsnO(
               "tim:rawCollection", jsn("migranten"),
@@ -125,8 +125,8 @@ public class RmlIntegrationTest {
             )
           ),
           "subjectMap", jsnO(
-            "class", jsn("http://timbuctoo.com/mapping/migraties/migranten"),
-            "template", jsn("http://timbuctoo.com/mapping/migraties/migranten/{tim_id}")
+            "class", jsn("http://timbuctoo.huygens.knaw.nl/mapping/migraties/migranten"),
+            "template", jsn("http://timbuctoo.huygens.knaw.nl/mapping/migraties/migranten/{tim_id}")
           ),
           "predicateObjectMap", jsnA(
             jsnO(
@@ -134,8 +134,8 @@ public class RmlIntegrationTest {
                 "column", jsn("geboorteplaats"),
                 "termType", jsn("http://www.w3.org/ns/r2rml#IRI")
               ),
-              "predicate", jsn("http://timbuctoo.com/hasBirthPlace"),
-              "http://timbuctoo.com/mapping/existingTimbuctooVre", jsn("locaties")
+              "predicate", jsn("http://timbuctoo.huygens.knaw.nl/hasBirthPlace"),
+              "http://timbuctoo.huygens.knaw.nl/mapping/existingTimbuctooVre", jsn("locaties")
             )
           )
         )
@@ -167,8 +167,8 @@ public class RmlIntegrationTest {
       "@context", RML_JSON_LD_CONTEXT,
       "@graph", jsnA(
         jsnO(
-          "@id", jsn("http://timbuctoo.com/mapping/someVre/persons"),
-          "http://www.w3.org/2000/01/rdf-schema#subClassOf", jsn("http://timbuctoo.com/person"),
+          "@id", jsn("http://timbuctoo.huygens.knaw.nl/mapping/someVre/persons"),
+          "http://www.w3.org/2000/01/rdf-schema#subClassOf", jsn("http://timbuctoo.huygens.knaw.nl/person"),
           "rml:logicalSource", jsnO(
             "rml:source", jsnO(
               "tim:vreName", jsn("someVre"),
@@ -176,12 +176,12 @@ public class RmlIntegrationTest {
             )
           ),
           "subjectMap", jsnO(
-            "class", jsn("http://timbuctoo.com/mapping/someVre/persons"),
-            "template", jsn("http://timbuctoo.com/mapping/someVre/persons/{tim_id}")
+            "class", jsn("http://timbuctoo.huygens.knaw.nl/mapping/someVre/persons"),
+            "template", jsn("http://timbuctoo.huygens.knaw.nl/mapping/someVre/persons/{tim_id}")
           ),
           "predicateObjectMap", jsnA(
             jsnO(
-              "predicate", jsn("http://timbuctoo.com/hasBirthPlace"),
+              "predicate", jsn("http://timbuctoo.huygens.knaw.nl/hasBirthPlace"),
               "objectMap", jsnO(
                 "column", jsn("geboorteplaats")
               )
@@ -189,7 +189,7 @@ public class RmlIntegrationTest {
             jsnO(
               "predicate", jsn("http://www.w3.org/2002/07/owl#sameAs"),
               "objectMap", jsnO(
-                "template", jsn("http://timbuctoo.com/mapping/someVre/persons/local/{id}")
+                "template", jsn("http://timbuctoo.huygens.knaw.nl/mapping/someVre/persons/local/{id}")
               )
             )
           )
@@ -202,10 +202,10 @@ public class RmlIntegrationTest {
     String timId = (String) karel.asAdmin().clone().values("tim_id").next();
     assertThat(
       karel.asAdmin().clone().values("rdfUri").next(),
-      is("http://timbuctoo.com/mapping/someVre/persons/" + timId)
+      is("http://timbuctoo.huygens.knaw.nl/mapping/someVre/persons/" + timId)
     );
     assertThat(karel.asAdmin().clone().values("rdfAlternatives").next(), is(new String[]{
-      "http://timbuctoo.com/mapping/someVre/persons/local/2"
+      "http://timbuctoo.huygens.knaw.nl/mapping/someVre/persons/local/2"
     }));
   }
 

@@ -815,7 +815,7 @@ public class DataStoreOperations implements AutoCloseable {
       "relationtype_symmetric", relationType.isSymmetric(),
       "relationtype_derived", relationType.isDerived(),
 
-      "rdfUri", "http://timbuctoo.com/" + relationType.getOutName()
+      "rdfUri", "http://timbuctoo.huygens.knaw.nl/" + relationType.getOutName()
     );
 
     systemPropertyModifier.setCreated(vertex, "timbuctoo", "timbuctoo");
