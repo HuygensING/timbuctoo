@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.graph.Node;
@@ -18,6 +19,7 @@ import org.neo4j.graphdb.index.IndexHits;
 import org.slf4j.Logger;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
@@ -218,6 +220,21 @@ public class Database {
 
     if (relationTypeT.hasNext()) {
       return new RelationType(relationTypeT.next());
+    } else {
+      final GraphTraversal<Vertex, Vertex> inverseTypes = graphWrapper
+        .getGraph().traversal().V()
+        .hasLabel("relationtype")
+        .has(RDF_SYNONYM_PROP);
+
+      while (inverseTypes.hasNext()) {
+        final Vertex relationTypeV = inverseTypes.next();
+        final ArrayList<String> synonyms = Lists.newArrayList(
+          relationTypeV.<String[]>property(RDF_SYNONYM_PROP).value());
+        if (synonyms.contains(predicate.getURI())) {
+          return new RelationType(relationTypeV, true);
+        }
+      }
+
     }
 
     final String relationTypePrefix = "relationtype_";

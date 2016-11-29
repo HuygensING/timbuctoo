@@ -46,8 +46,13 @@ class RelationTripleProcessor {
     }
 
     if (isAssertion) {
-      final Relation relation = subject.addRelation(relationType, object);
-      relation.setCommonVreProperties(vreName);
+      if (relationType.isInverted()) {
+        final Relation relation = object.addRelation(relationType, subject);
+        relation.setCommonVreProperties(vreName);
+      } else {
+        final Relation relation = subject.addRelation(relationType, object);
+        relation.setCommonVreProperties(vreName);
+      }
     } else {
       subject.removeRelation(relationType, object);
     }

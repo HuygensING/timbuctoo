@@ -6,10 +6,20 @@ import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 
 public class RelationType {
 
+  private final boolean inverted;
   private Vertex relationTypeVertex;
 
   public RelationType(Vertex relationTypeVertex) {
+    this(relationTypeVertex, false);
+  }
+
+  public boolean isInverted() {
+    return inverted;
+  }
+
+  public RelationType(Vertex relationTypeVertex, boolean isInverted) {
     this.relationTypeVertex = relationTypeVertex;
+    this.inverted = isInverted;
   }
 
   public String getRegularName() {
