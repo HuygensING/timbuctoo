@@ -12,8 +12,10 @@ import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.helpers.collection.MapUtil;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
@@ -46,17 +48,23 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   @Override
   public void addToQuickSearchIndex(Collection collection, String displayName, Vertex vertex) {
-    Index<Node> index = indexManager().forNodes(collection.getCollectionName());
+    Index<Node> index = getFulltextIndex(collection.getCollectionName());
 
     index.add(graphDatabase.getNodeById((long) vertex.id()), QUICK_SEARCH, displayName);
   }
 
   private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {
-    Index<Node> index = indexManager().forNodes(getIndexName(collection));
+    Index<Node> index = getFulltextIndex(getIndexName(collection));
     IndexHits<Node> hits = index.query(QUICK_SEARCH, createQuery(quickSearch));
     List<Long> ids = StreamSupport.stream(hits.spliterator(), false).map(h -> h.getId()).collect(toList());
 
     return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal.V(ids);
+  }
+
+  private Index<Node> getFulltextIndex(String collectionName) {
+    // Add the config below, to make sure the index is case insensitive.
+    Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
+    return indexManager().forNodes(collectionName, indexConfig);
   }
 
   private Object createQuery(QuickSearch quickSearch) {
