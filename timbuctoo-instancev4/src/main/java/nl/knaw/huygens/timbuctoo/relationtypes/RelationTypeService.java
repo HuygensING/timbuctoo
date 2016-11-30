@@ -13,6 +13,7 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 public class RelationTypeService {
+  public static final String RELATIONTYPE_INDEX_NAME = "relationtypes";
   private final GraphWrapper graphWrapper;
 
   public RelationTypeService(GraphWrapper wrapper) {
