@@ -21,14 +21,8 @@ public class RelationTypeRdfUriMigration implements DatabaseMigration {
   private static final Logger LOG = LoggerFactory.getLogger(RelationTypeRdfUriMigration.class);
   private static final String TIMBUCTOO_NAMESPACE = "http://timbuctoo.huygens.knaw.nl/";
 
-
   @Override
-  public void beforeMigration(GraphWrapper graphManager) {
-
-  }
-
-  @Override
-  public void execute(GraphWrapper graphWrapper) throws IOException {
+  public void execute(TinkerpopGraphManager graphWrapper) throws IOException {
     final Graph graph = graphWrapper.getGraph();
     final Transaction transaction = graph.tx();
 
@@ -36,10 +30,8 @@ public class RelationTypeRdfUriMigration implements DatabaseMigration {
       transaction.open();
     }
 
-    final GraphDatabaseService graphDatabase = graphWrapper instanceof TinkerpopGraphManager ?
-      ((TinkerpopGraphManager) graphWrapper).getGraphDatabase() : null;
-    final Index<Node> rdfIndex = graphDatabase != null ?
-      graphDatabase.index().forNodes(RDFINDEX_NAME) :  null;
+    final GraphDatabaseService graphDatabase = graphWrapper.getGraphDatabase();
+    final Index<Node> rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
 
     final String regularNameProp = "relationtype_regularName";
     final String inverseNameProp = "relationtype_inverseName";
@@ -58,12 +50,10 @@ public class RelationTypeRdfUriMigration implements DatabaseMigration {
       vertex.property(RDF_URI_PROP, rdfUri);
       vertex.property(RDF_SYNONYM_PROP, rdfAlternatives);
 
-      if (graphDatabase != null && rdfIndex != null) {
-        LOG.info("indexing rdfUri: \"{}\" and rdfAlternatives [{}] for relationType", rdfUri, rdfAlternatives);
-        org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
-        rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfUri);
-        rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfAlternatives[0]);
-      }
+      LOG.info("indexing rdfUri: \"{}\" and rdfAlternatives [{}] for relationType", rdfUri, rdfAlternatives);
+      org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
+      rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfUri);
+      rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfAlternatives[0]);
     });
 
     transaction.commit();

@@ -203,6 +203,11 @@ public class TimbuctooActions {
     return collection.orElseThrow(() -> new InvalidCollectionException(collectionName));
   }
 
+  public boolean hasMappingErrors(String vreName) {
+    return dataStoreOperations.hasMappingErrors(vreName);
+
+  }
+
 
   static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {
     private final PersistentUrlCreator persistentUrlCreator;

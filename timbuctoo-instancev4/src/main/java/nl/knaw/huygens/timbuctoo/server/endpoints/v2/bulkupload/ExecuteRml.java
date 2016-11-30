@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
@@ -16,7 +17,6 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -140,7 +140,7 @@ public class ExecuteRml {
     }
 
     transactionEnforcer.execute(db -> {
-      purgeErrors(vreName, graphWrapper.getGraph());
+      db.clearMappingErrors(vreName);
       db.ensureVreExists(vreName);
       db.removeCollectionsAndEntities(vreName);
       return commit();
@@ -198,28 +198,8 @@ public class ExecuteRml {
 
     vres.reload();
 
-    boolean hasError = getRawCollectionsTraversal(vreName, graph).out(HAS_NEXT_ERROR).hasNext();
-    return Response.ok().entity(jsnO("success", jsn(!hasError))).build();
-  }
-
-  private void purgeErrors(String vreName, Graph graph) {
-    final GraphTraversal<Vertex, Vertex> collectionT = getRawCollectionsTraversal(vreName, graph);
-    while (collectionT.hasNext()) {
-      final Vertex collection = collectionT.next();
-      collection.vertices(Direction.OUT, HAS_NEXT_ERROR).forEachRemaining(this::purgeErrors);
-    }
-  }
-
-  private void purgeErrors(Vertex errorVertex) {
-    errorVertex.vertices(Direction.OUT, HAS_NEXT_ERROR).forEachRemaining(this::purgeErrors);
-    errorVertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
-  }
-
-  private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName, Graph graph) {
-    return graph.traversal().V()
-                .hasLabel(Vre.DATABASE_LABEL)
-                .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-                .out(RAW_COLLECTION_EDGE_NAME);
+    return transactionEnforcer.executeAndReturn(db -> TransactionStateAndResult
+      .commitAndReturn(Response.ok().entity(jsnO("success", jsn(!db.hasMappingErrors(vreName)))).build()));
   }
 
   private void debugLogTripleCount(AtomicLong tripleCount, boolean force) {

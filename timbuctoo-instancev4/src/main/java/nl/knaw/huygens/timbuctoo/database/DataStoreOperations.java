@@ -67,12 +67,14 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.database.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
+import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -196,6 +198,30 @@ public class DataStoreOperations implements AutoCloseable {
       LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
       return new String[0];
     }
+  }
+
+  public void clearMappingErrors(String vreName) {
+    final GraphTraversal<Vertex, Vertex> collectionT = getRawCollectionsTraversal(vreName);
+    while (collectionT.hasNext()) {
+      final Vertex collection = collectionT.next();
+      collection.vertices(Direction.OUT, HAS_NEXT_ERROR).forEachRemaining(this::clearMappingErrors);
+    }
+  }
+
+  private void clearMappingErrors(Vertex errorVertex) {
+    errorVertex.vertices(Direction.OUT, HAS_NEXT_ERROR).forEachRemaining(this::clearMappingErrors);
+    errorVertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
+  }
+
+  private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
+    return traversal.V()
+                .hasLabel(Vre.DATABASE_LABEL)
+                .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+                .out(RAW_COLLECTION_EDGE_NAME);
+  }
+
+  boolean hasMappingErrors(String vreName) {
+    return getRawCollectionsTraversal(vreName).outE(HAS_NEXT_ERROR).hasNext();
   }
 
   public void success() {
@@ -836,4 +862,5 @@ public class DataStoreOperations implements AutoCloseable {
       }
     );
   }
+
 }
