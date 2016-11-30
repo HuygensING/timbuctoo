@@ -25,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetCollection;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -35,7 +34,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -95,27 +93,8 @@ public class DataStoreOperations implements AutoCloseable {
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
-  public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener,
-                             EntityFetcher entityFetcher, Vres mappings) {
-    graph = graphWrapper.getGraph();
-    this.transaction = graph.tx();
-    this.listener = listener;
-    this.entityFetcher = entityFetcher;
-
-    if (!transaction.isOpen()) {
-      transaction.open();
-    }
-    this.traversal = graph.traversal();
-    this.latestState = graphWrapper.getLatestState();
-    this.mappings = mappings == null ? loadVres() : mappings;
-    this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
-
-    this.indexHandler = createIndexHandler(graphWrapper);
-  }
-
-  DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener, GremlinEntityFetcher entityFetcher,
-                      Vres mappings,
-                      IndexHandler indexHandler) {
+  public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener, GremlinEntityFetcher entityFetcher,
+                             Vres mappings, IndexHandler indexHandler) {
     graph = graphWrapper.getGraph();
     this.indexHandler = indexHandler;
     this.transaction = graph.tx();
@@ -216,45 +195,6 @@ public class DataStoreOperations implements AutoCloseable {
     } catch (IOException e) {
       LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
       return new String[0];
-    }
-  }
-
-  private IndexHandler createIndexHandler(GraphWrapper graphWrapper) {
-    if (graphWrapper instanceof TinkerpopGraphManager) {
-      return new Neo4jIndexHandler((TinkerpopGraphManager) graphWrapper);
-    } else {
-      return new IndexHandler() {
-        @Override
-        public boolean hasIndexFor(Collection collection) {
-          return false;
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, QuickSearch quickSearch) {
-          throw new UnsupportedOperationException("Not implemented yet");
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, QuickSearch quickSearch,
-                                                                        String keywordType) {
-          throw new UnsupportedOperationException("Not implemented yet");
-        }
-
-        @Override
-        public void addToQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
-          throw new UnsupportedOperationException("Not implemented yet");
-        }
-
-        @Override
-        public void addToOrUpdateQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
-          throw new UnsupportedOperationException("Not implemented yet");
-        }
-
-        @Override
-        public void removeFromQuickSearchIndex(Collection collection, Vertex vertex) {
-          throw new UnsupportedOperationException("Not implemented yet");
-        }
-      };
     }
   }
 
@@ -572,7 +512,7 @@ public class DataStoreOperations implements AutoCloseable {
   }
 
   private void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
-                              Instant instant)
+                               Instant instant)
     throws NotFoundException {
 
     requireCommit = true;

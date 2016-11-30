@@ -22,12 +22,10 @@ import static java.util.stream.Collectors.toList;
 
 public class Neo4jIndexHandler implements IndexHandler {
   private static final String QUICK_SEARCH = "quickSearch";
-  private final GraphDatabaseService graphDatabase;
-  private final GraphTraversalSource traversal;
+  private final TinkerpopGraphManager tinkerpopGraphManager;
 
   public Neo4jIndexHandler(TinkerpopGraphManager tinkerpopGraphManager) {
-    this.graphDatabase = tinkerpopGraphManager.getGraphDatabase();
-    this.traversal = tinkerpopGraphManager.getGraph().traversal();
+    this.tinkerpopGraphManager = tinkerpopGraphManager;
   }
 
   @Override
@@ -50,7 +48,11 @@ public class Neo4jIndexHandler implements IndexHandler {
   public void addToQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
     Index<Node> index = getFulltextIndex(collection.getCollectionName());
 
-    index.add(graphDatabase.getNodeById((long) vertex.id()), QUICK_SEARCH, quickSearchValue);
+    index.add(graphDatabase().getNodeById((long) vertex.id()), QUICK_SEARCH, quickSearchValue);
+  }
+
+  private GraphDatabaseService graphDatabase() {
+    return tinkerpopGraphManager.getGraphDatabase();
   }
 
   @Override
@@ -64,7 +66,7 @@ public class Neo4jIndexHandler implements IndexHandler {
   public void removeFromQuickSearchIndex(Collection collection, Vertex vertex) {
     Index<Node> index = getFulltextIndex(collection.getCollectionName());
 
-    index.remove(graphDatabase.getNodeById((long) vertex.id()), QUICK_SEARCH);
+    index.remove(graphDatabase().getNodeById((long) vertex.id()), QUICK_SEARCH);
   }
 
   private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {
@@ -72,7 +74,11 @@ public class Neo4jIndexHandler implements IndexHandler {
     IndexHits<Node> hits = index.query(QUICK_SEARCH, createQuery(quickSearch));
     List<Long> ids = StreamSupport.stream(hits.spliterator(), false).map(h -> h.getId()).collect(toList());
 
-    return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal.V(ids);
+    return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal().V(ids);
+  }
+
+  private GraphTraversalSource traversal() {
+    return tinkerpopGraphManager.getGraph().traversal();
   }
 
   private Index<Node> getFulltextIndex(String collectionName) {
@@ -88,8 +94,8 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   private IndexManager indexManager() {
-    graphDatabase.beginTx();
-    return graphDatabase.index();
+    graphDatabase().beginTx();
+    return graphDatabase().index();
   }
 
   private String getIndexName(Collection collection) {

@@ -40,6 +40,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.database.DataStoreOperationsStubs.forGraphWrapper;
+import static nl.knaw.huygens.timbuctoo.database.DataStoreOperationsStubs.forGraphWrapperAndMappings;
 import static nl.knaw.huygens.timbuctoo.database.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
@@ -68,14 +70,13 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.mock;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class DataStoreOperationsTest {
 
   @Test
   public void emptyDatabaseIsShownAsEmpty() throws Exception {
-    DataStoreOperations instance = new DataStoreOperations(newGraph().wrap(), null, null, null);
+    DataStoreOperations instance = forGraphWrapper(newGraph().wrap());
 
     boolean isEmpty = instance.databaseIsEmptyExceptForMigrations();
 
@@ -88,7 +89,7 @@ public class DataStoreOperationsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, null, null, null);
+    DataStoreOperations instance = forGraphWrapper(graphWrapper);
 
     boolean isEmpty = instance.databaseIsEmptyExceptForMigrations();
 
@@ -101,7 +102,7 @@ public class DataStoreOperationsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, null, null, null);
+    DataStoreOperations instance = forGraphWrapper(graphWrapper);
 
     instance.ensureVreExists("SomeVre");
     assertThat(
@@ -118,7 +119,7 @@ public class DataStoreOperationsTest {
     GraphWrapper graphWrapper = newGraph().wrap();
     Vres vres = createConfiguration();
     final Collection collection = vres.getCollection("testthings").get();
-    final DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
+    final DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     properties.add(new StringProperty("prop1", "val1"));
     properties.add(new StringProperty("prop2", "val2"));
@@ -140,7 +141,7 @@ public class DataStoreOperationsTest {
     GraphWrapper graphWrapper = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     CreateEntity createEntity = withProperties(properties);
 
@@ -159,7 +160,7 @@ public class DataStoreOperationsTest {
     GraphWrapper graphWrapper = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     CreateEntity createEntity = withProperties(properties);
 
@@ -201,7 +202,7 @@ public class DataStoreOperationsTest {
     GraphWrapper graphWrapper = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     String userId = "userId";
     long timeStamp = Instant.now().toEpochMilli();
@@ -229,19 +230,18 @@ public class DataStoreOperationsTest {
     GraphWrapper graphWrapper = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
-    UUID id = UUID.randomUUID();
     CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
 
     assertThat(
       graphWrapper.getGraph().traversal()
-        .V()
-        .has("tim_id", createEntity.getId().toString())
-        .count()
-        .next(),
+                  .V()
+                  .has("tim_id", createEntity.getId().toString())
+                  .count()
+                  .next(),
       is(2L)
     );
   }
@@ -251,9 +251,8 @@ public class DataStoreOperationsTest {
     GraphWrapper graphWrapper = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
-    UUID id = UUID.randomUUID();
     CreateEntity createEntity = withProperties(properties);
 
     instance.createEntity(collection, Optional.empty(), createEntity);
@@ -273,7 +272,7 @@ public class DataStoreOperationsTest {
     GraphWrapper graphWrapper = newGraph().wrap();
     Vres vres = createConfiguration();
     final Collection collection = vres.getCollection("testthings").get();
-    final DataStoreOperations instance = new DataStoreOperations(graphWrapper, mock(ChangeListener.class), null, vres);
+    final DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     properties.add(new StringProperty("prop1", "val1"));
     properties.add(new StringProperty("unknowProp", "val2"));
@@ -306,9 +305,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     int rev = instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -334,8 +331,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -383,9 +379,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -417,9 +411,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
 
@@ -455,10 +447,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
-
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     Vertex beforeUpdate = graphWrapper.getGraph().traversal().V()
                                       .has("tim_id", idString)
@@ -506,9 +495,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     Vertex orig = graphWrapper.getGraph().traversal().V().has("tim_id", idString).has("isLatest", true).next();
     assertThat(stream(orig.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(2L));
 
@@ -528,7 +515,7 @@ public class DataStoreOperationsTest {
     final String testOnlyId = "10000000-0000-0000-0000-000000000000";
     final String otherOnlyId = "20000000-0000-0000-0000-000000000000";
     final String inBothId = "30000000-0000-0000-0000-000000000000";
-    GraphWrapper graphManager = newGraph()
+    GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
         .withTimId(idString)
         .withVre("test")
@@ -565,24 +552,21 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
 
-    assertThat(graphManager.getGraph().traversal().E()
+    assertThat(graphWrapper.getGraph().traversal().E()
                            .has("tim_id", testOnlyId)
                            .has("isLatest", true)
                            .has("testrelation_accepted", false).not(has("otherrelation_accepted"))
                            .hasNext(), is(true));
-    assertThat(graphManager.getGraph().traversal().E()
+    assertThat(graphWrapper.getGraph().traversal().E()
                            .has("tim_id", inBothId)
                            .has("isLatest", true)
                            .has("testrelation_accepted", false).has("otherrelation_accepted", true)
                            .hasNext(), is(true));
-    assertThat(graphManager.getGraph().traversal().E()
+    assertThat(graphWrapper.getGraph().traversal().E()
                            .has("tim_id", otherOnlyId)
                            .has("isLatest", true)
                            .not(has("testrelation_accepted")).has("otherrelation_accepted", true)
@@ -606,9 +590,7 @@ public class DataStoreOperationsTest {
         .withProperty("deleted", false)
       )
       .wrap();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     instance.deleteEntity(collection, id, null);
   }
@@ -619,9 +601,7 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph().wrap();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     instance.deleteEntity(collection, id, null);
   }
@@ -630,7 +610,6 @@ public class DataStoreOperationsTest {
   public void getEntityMapsTheId() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -640,8 +619,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -657,7 +635,6 @@ public class DataStoreOperationsTest {
   public void getEntityOnlyMapsTheKnownProperties() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -671,8 +648,7 @@ public class DataStoreOperationsTest {
         .withProperty("testthing_unknownProp", "val")
       )
       .wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -694,7 +670,6 @@ public class DataStoreOperationsTest {
   public void getEntityIgnoresThePropertiesWithAWrongValue() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -706,8 +681,7 @@ public class DataStoreOperationsTest {
         .withProperty("testthing_prop2", 42) // should be a string
       )
       .wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -723,7 +697,6 @@ public class DataStoreOperationsTest {
   public void getEntityReturnsTheLatestEntityIfTheRefIsNull() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -753,8 +726,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -773,7 +745,6 @@ public class DataStoreOperationsTest {
   public void getEntityReturnsTheSpecifiedRevision() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -803,8 +774,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, 1, collection,
       (readEntity, vertex) -> {
@@ -823,11 +793,9 @@ public class DataStoreOperationsTest {
   public void getEntityThrowsANotFoundExceptionWhenTheDatabaseDoesNotContainTheEntity() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph().wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -860,8 +828,7 @@ public class DataStoreOperationsTest {
         .withTimId(relatedId.toString())
         .withProperty("testthing_displayName", "displayName")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -885,7 +852,6 @@ public class DataStoreOperationsTest {
   public void getEntityUsesTheInverseRelationName() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     UUID stuffId = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
@@ -913,8 +879,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -932,7 +897,6 @@ public class DataStoreOperationsTest {
   public void getEntityOmitsDeletedRelations() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     UUID relatedId = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
@@ -952,8 +916,7 @@ public class DataStoreOperationsTest {
         .withTimId(relatedId.toString())
         .withProperty("testthing_displayName", "displayName")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -970,7 +933,6 @@ public class DataStoreOperationsTest {
   public void getEntityOnlyReturnsTheLatestRelations() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     UUID relatedId = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
@@ -989,8 +951,7 @@ public class DataStoreOperationsTest {
         .withType("thing")
         .withTimId(relatedId.toString())
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1013,7 +974,6 @@ public class DataStoreOperationsTest {
   public void getEntityOnlyReturnsAcceptedRelations() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     UUID relatedId = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
@@ -1040,8 +1000,7 @@ public class DataStoreOperationsTest {
         .withType("thing")
         .withTimId(relatedId.toString())
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1058,7 +1017,6 @@ public class DataStoreOperationsTest {
   public void getEntityReturnsTheTypesOfTheEntity() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1069,8 +1027,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1086,7 +1043,6 @@ public class DataStoreOperationsTest {
   public void getEntityThrowsNotFoundIfTheEntityDoesNotContainTheRequestType() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1096,8 +1052,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1111,7 +1066,6 @@ public class DataStoreOperationsTest {
   public void getEntityThrowsNotFoundIfTheEntityIsDeleted() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1122,8 +1076,7 @@ public class DataStoreOperationsTest {
         .withProperty("deleted", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1137,7 +1090,6 @@ public class DataStoreOperationsTest {
   public void getEntityAlwaysReturnsTheDeletedProperty() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1147,8 +1099,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1164,7 +1115,6 @@ public class DataStoreOperationsTest {
   public void getEntityReturnsThePid() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1175,8 +1125,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
         .withProperty("pid", "pidValue")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1192,7 +1141,6 @@ public class DataStoreOperationsTest {
   public void getEntityReturnsANullPidWhenTheEntityDoesNotContainOne() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1202,8 +1150,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1219,7 +1166,6 @@ public class DataStoreOperationsTest {
   public void getCollectionReturnsAllTheLatestEntitiesOfACollection() {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     UUID id3 = UUID.randomUUID();
@@ -1261,8 +1207,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     DataStream<ReadEntity> entities = instance.getCollection(
       collection, 0, 3, false,
@@ -1281,7 +1226,6 @@ public class DataStoreOperationsTest {
   public void getCollectionReturnsRelationsIfRequested() {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID thingId = UUID.randomUUID();
     UUID stuffId = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
@@ -1303,8 +1247,7 @@ public class DataStoreOperationsTest {
         .withProperty("relationtype_inverseName", "isCreatorOf")
       )
       .wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     DataStream<ReadEntity> entities = instance.getCollection(collection, 0, 1, true,
       (readEntity, vertex) -> {
@@ -1327,7 +1270,6 @@ public class DataStoreOperationsTest {
   public void getCollectionReturnsTheKnowsDisplayNameForEachItem() {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
@@ -1349,8 +1291,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
 
     DataStream<ReadEntity> entities = instance.getCollection(collection, 0, 2, true,
       (readEntity, vertex) -> {
@@ -1366,7 +1307,6 @@ public class DataStoreOperationsTest {
   public void replaceEntityUpdatesTheRevisionByOne() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1380,8 +1320,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", false)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     updateEntity.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1397,7 +1336,6 @@ public class DataStoreOperationsTest {
   public void replaceEntityAddsAType() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1417,8 +1355,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
         .withProperty("otherthing_prop1", "the name")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     updateEntity.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1436,7 +1373,6 @@ public class DataStoreOperationsTest {
   public void replaceEntityUpdatesModified() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1446,8 +1382,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     long timeStamp = Instant.now().toEpochMilli();
     updateEntity.setModified(new Change(timeStamp, "userId", null));
@@ -1469,7 +1404,6 @@ public class DataStoreOperationsTest {
   public void replaceEntityUpdatesTheKnownProperties() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1480,8 +1414,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     ArrayList<TimProperty<?>> properties = Lists.newArrayList(
       new StringProperty("prop1", "newValue"),
       new StringProperty("prop2", "prop2Value")
@@ -1502,7 +1435,6 @@ public class DataStoreOperationsTest {
   public void replaceEntityRemovesThePropertiesThatAreNotProvided() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1514,8 +1446,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     ArrayList<TimProperty<?>> properties = Lists.newArrayList(
       new StringProperty("prop1", "newValue")
     );
@@ -1533,7 +1464,6 @@ public class DataStoreOperationsTest {
   public void replaceEntityPreparesABackupCopyAfterMakingTheChanges() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1543,8 +1473,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList(
       new StringProperty("prop1", "newValue")
     );
@@ -1572,7 +1501,6 @@ public class DataStoreOperationsTest {
   public void replaceEntityMovesTheRelationsToTheNewVertex() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1597,8 +1525,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     List<TimProperty<?>> properties = Lists.newArrayList(
       new StringProperty("prop1", "newValue")
     );
@@ -1626,11 +1553,9 @@ public class DataStoreOperationsTest {
   public void replaceEntityThrowsANotFoundExceptionWhenTheEntityIsNotInTheDatabase() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper emptyDatabase = newGraph().wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(emptyDatabase, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     long timeStamp = Instant.now().toEpochMilli();
     updateEntity.setModified(new Change(timeStamp, "userId", null));
@@ -1642,7 +1567,6 @@ public class DataStoreOperationsTest {
   public void replaceEntityThrowsAnAlreadyUpdatedExceptionWhenTheRevDoesNotMatch() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     GraphWrapper graphWrapper = newGraph()
       .withVertex(v -> v
@@ -1652,8 +1576,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 2)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     long timeStamp = Instant.now().toEpochMilli();
     updateEntity.setModified(new Change(timeStamp, "userId", null));
@@ -1665,7 +1588,6 @@ public class DataStoreOperationsTest {
   public void acceptRelationCreatesANewRelationWhenItDoesNotExist() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -1693,8 +1615,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1711,7 +1632,6 @@ public class DataStoreOperationsTest {
   public void acceptRelationSetsTheCreatedInformation() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -1739,8 +1659,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -1770,7 +1689,6 @@ public class DataStoreOperationsTest {
   public void acceptRelationThrowsARelationNotPossibleExceptionIfTheSourceIsNotInTheRightVre() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -1797,8 +1715,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       ).wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1809,7 +1726,6 @@ public class DataStoreOperationsTest {
   public void acceptRelationThrowsARelationNotPossibleExceptionIfTheTargetIsNotInTheRightVre() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -1836,8 +1752,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       ).wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1848,7 +1763,6 @@ public class DataStoreOperationsTest {
   public void acceptRelationsThrowsARelationNotPossibleExceptionIfTheTypeOfTheSourceIsInvalid() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -1877,8 +1791,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       ).wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1889,7 +1802,6 @@ public class DataStoreOperationsTest {
   public void acceptRelationsThrowsARelationNotPossibleExceptionIfTheTypeOfTheTargetIsInvalid() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -1917,9 +1829,7 @@ public class DataStoreOperationsTest {
         .withType("thing")
         .withProperty("isLatest", true)
       ).wrap();
-
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1930,7 +1840,6 @@ public class DataStoreOperationsTest {
   public void replaceRelationUpdatesTheExistingRelation() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -1966,8 +1875,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     updateRelation.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1986,7 +1894,6 @@ public class DataStoreOperationsTest {
   public void replaceRelationUpdatesTheModifiedInformation() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -2022,8 +1929,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -2042,7 +1948,6 @@ public class DataStoreOperationsTest {
   public void replaceRelationDuplicatesTheEdge() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -2077,9 +1982,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -2094,7 +1997,6 @@ public class DataStoreOperationsTest {
   public void replaceRelationUpdatesTheRevisionByOne() throws Exception {
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testrelations").get();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID typeId = UUID.randomUUID();
     UUID sourceId = UUID.randomUUID();
     UUID targetId = UUID.randomUUID();
@@ -2130,9 +2032,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     updateRelation.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -2146,7 +2046,6 @@ public class DataStoreOperationsTest {
   @Test
   public void addPidAddsAPidToEachVertexInTheCollectionWithTheIdAndRev() throws Exception {
     Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id = UUID.randomUUID();
     int rev = 1;
     GraphWrapper graphWrapper = newGraph()
@@ -2164,8 +2063,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", rev)
         .withProperty("isLatest", false)
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     URI pidUri = new URI("http://example.com/pid");
 
     instance.addPid(id, rev, pidUri);
@@ -2180,8 +2078,7 @@ public class DataStoreOperationsTest {
     UUID id = UUID.randomUUID();
     int rev = 1;
     GraphWrapper emptyDatabase = newGraph().wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(emptyDatabase, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
     URI pidUri = new URI("http://example.com/pid");
 
     instance.addPid(id, rev, pidUri);
@@ -2190,7 +2087,6 @@ public class DataStoreOperationsTest {
   @Test
   public void findByDisplayNameReturnsTheEntitiesWithAMatchingDisplayName() {
     Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     UUID id3 = UUID.randomUUID();
@@ -2219,8 +2115,7 @@ public class DataStoreOperationsTest {
         .isLatest(true)
         .withLabel("testthing")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     Collection collection = vres.getCollection("testthings").get();
 
     List<ReadEntity> result = instance.doQuickSearch(collection, QuickSearch.fromQueryString("matching"), 3);
@@ -2231,7 +2126,6 @@ public class DataStoreOperationsTest {
   @Test
   public void findByDisplayReturnsLetsTheLimitLimitTheAmountOfResultsToReturn() {
     Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     UUID id3 = UUID.randomUUID();
@@ -2260,8 +2154,7 @@ public class DataStoreOperationsTest {
         .isLatest(true)
         .withLabel("teststuff")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     Collection collection = vres.getCollection("testthings").get();
 
     List<ReadEntity> result = instance.doQuickSearch(collection, QuickSearch.fromQueryString(""), 1);
@@ -2370,7 +2263,6 @@ public class DataStoreOperationsTest {
   @Test
   public void findKeywordByDisplayNameFiltersOnKeywordType() {
     Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     UUID id3 = UUID.randomUUID();
@@ -2402,8 +2294,7 @@ public class DataStoreOperationsTest {
         .isLatest(true)
         .withLabel("testthing")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     Collection collection = vres.getCollection("testkeywords").get();
 
     List<ReadEntity> result =
@@ -2415,7 +2306,6 @@ public class DataStoreOperationsTest {
   @Test
   public void findKeywordByDisplayNameQueryFiltersOnTheDisplayName() {
     Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     UUID id3 = UUID.randomUUID();
@@ -2448,8 +2338,7 @@ public class DataStoreOperationsTest {
         .withProperty("keyword_type", keywordType)
         .withLabel("testkeyword")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     Collection collection = vres.getCollection("testkeywords").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
@@ -2461,7 +2350,6 @@ public class DataStoreOperationsTest {
   @Test
   public void findKeywordByDisplayNameLimitLimitsTheAmountOfResults() {
     Vres vres = createConfiguration();
-    GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
     UUID id2 = UUID.randomUUID();
     UUID id3 = UUID.randomUUID();
@@ -2494,8 +2382,7 @@ public class DataStoreOperationsTest {
         .withProperty("keyword_type", keywordType)
         .withLabel("testkeyword")
       ).wrap();
-    DataStoreOperations instance =
-      new DataStoreOperations(graphWrapper, mock(ChangeListener.class), entityFetcher, vres);
+    DataStoreOperations instance = forGraphWrapperAndMappings(graphWrapper, vres);
     Collection collection = vres.getCollection("testkeywords").get();
 
     List<ReadEntity> result =

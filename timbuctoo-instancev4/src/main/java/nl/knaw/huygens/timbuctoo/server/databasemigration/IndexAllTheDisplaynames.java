@@ -26,8 +26,13 @@ public class IndexAllTheDisplaynames implements DatabaseMigration {
 
   @Override
   public void execute(TinkerpopGraphManager graphManager) throws IOException {
-    DataStoreOperations dataStoreOperations =
-      new DataStoreOperations(graphManager, new DeafListener(), new GremlinEntityFetcher(), null);
+    DataStoreOperations dataStoreOperations = new DataStoreOperations(
+      graphManager,
+      new DeafListener(),
+      new GremlinEntityFetcher(),
+      null,
+      new Neo4jIndexHandler(graphManager)
+    );
 
     Vres vres = dataStoreOperations.loadVres();
 

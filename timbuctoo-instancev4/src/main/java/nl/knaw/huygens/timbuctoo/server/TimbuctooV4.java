@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -205,7 +206,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriToRedirectToFromPersistentUrls
     );
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
-      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null),
+      () -> new DataStoreOperations(
+        graphManager,
+        changeListeners,
+        entityFetcher,
+        null,
+        new Neo4jIndexHandler(graphManager)
+      ),
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());

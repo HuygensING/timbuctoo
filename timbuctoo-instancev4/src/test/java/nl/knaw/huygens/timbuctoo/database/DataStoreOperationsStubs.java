@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 
@@ -12,11 +14,14 @@ import static org.mockito.Mockito.mock;
 
 public class DataStoreOperationsStubs {
   public static DataStoreOperations forGraphWrapper(GraphWrapper graphWrapper) {
-    return new DataStoreOperations(graphWrapper, mock(ChangeListener.class), new GremlinEntityFetcher(), null);
+
+    return new DataStoreOperations(graphWrapper, mock(ChangeListener.class), new GremlinEntityFetcher(), null,
+      mock(IndexHandler.class));
   }
 
   public static DataStoreOperations forChangeListenerMock(ChangeListener changeListener) {
-    return new DataStoreOperations(newGraph().wrap(), changeListener, new GremlinEntityFetcher(), null);
+    return new DataStoreOperations(newGraph().wrap(), changeListener, new GremlinEntityFetcher(), null,
+      mock(IndexHandler.class));
   }
 
   public static DataStoreOperations forReplaceCall(ChangeListener changeListener, UUID id, int rev) {
@@ -33,11 +38,11 @@ public class DataStoreOperationsStubs {
         .withIncomingRelation(VERSION_OF, "old")
       )
       .wrap();
-    return new DataStoreOperations(wrap, changeListener, new GremlinEntityFetcher(), null);
+    return new DataStoreOperations(wrap, changeListener, new GremlinEntityFetcher(), null, mock(IndexHandler.class));
   }
 
   public static DataStoreOperations forDeleteCall(ChangeListener changeListener, UUID id, int rev,
-                                                   String entityTypeName) {
+                                                  String entityTypeName) {
     TinkerpopGraphManager wrap = newGraph()
       .withVertex("old", vertexBuilder -> vertexBuilder
         .withTimId(id.toString())
@@ -53,7 +58,11 @@ public class DataStoreOperationsStubs {
         .withIncomingRelation(VERSION_OF, "old")
       )
       .wrap();
-    return new DataStoreOperations(wrap, changeListener, new GremlinEntityFetcher(), null);
+    return new DataStoreOperations(wrap, changeListener, new GremlinEntityFetcher(), null, mock(IndexHandler.class));
   }
 
+  public static DataStoreOperations forGraphWrapperAndMappings(GraphWrapper graphWrapper, Vres mappings) {
+    return new DataStoreOperations(graphWrapper, mock(ChangeListener.class), new GremlinEntityFetcher(), mappings,
+      mock(IndexHandler.class));
+  }
 }
