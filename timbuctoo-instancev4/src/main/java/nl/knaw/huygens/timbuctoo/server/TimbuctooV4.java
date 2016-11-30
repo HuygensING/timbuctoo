@@ -43,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllEntityIds;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllTheDisplaynames;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.PrepareForBiaImportMigration;
@@ -173,6 +174,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("fix-dcarkeywords-displayname-migration", new FixDcarKeywordDisplayNameMigration());
     migrations.put("fix-pids-migration", new MakePidsAbsoluteUrls());
     migrations.put("index-all-displaynames", new IndexAllTheDisplaynames());
+    migrations.put("index-all-entity-ids", new IndexAllEntityIds());
 
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
