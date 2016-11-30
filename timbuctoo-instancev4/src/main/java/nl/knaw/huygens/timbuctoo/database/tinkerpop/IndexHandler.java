@@ -6,7 +6,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 public interface IndexHandler {
-  boolean hasIndexFor(Collection collection);
+  boolean hasQuickSearchIndexFor(Collection collection);
 
   GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, QuickSearch quickSearch);
 

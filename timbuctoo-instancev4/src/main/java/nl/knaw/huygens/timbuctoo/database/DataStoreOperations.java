@@ -361,7 +361,7 @@ public class DataStoreOperations implements AutoCloseable {
 
   public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
     GraphTraversal<Vertex, Vertex> result;
-    if (indexHandler.hasIndexFor(collection)) {
+    if (indexHandler.hasQuickSearchIndexFor(collection)) {
       result = indexHandler.findByQuickSearch(collection, quickSearch);
     } else {
       String cleanQuery = createQuery(quickSearch);
@@ -382,7 +382,7 @@ public class DataStoreOperations implements AutoCloseable {
   public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
                                                int limit) {
     GraphTraversal<Vertex, Vertex> result;
-    if (indexHandler.hasIndexFor(collection)) {
+    if (indexHandler.hasQuickSearchIndexFor(collection)) {
       result = indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType);
     } else {
       String cleanQuery = createQuery(quickSearch);

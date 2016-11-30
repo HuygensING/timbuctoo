@@ -29,7 +29,7 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public boolean hasIndexFor(Collection collection) {
+  public boolean hasQuickSearchIndexFor(Collection collection) {
     return indexManager().existsForNodes(getIndexName(collection));
   }
 

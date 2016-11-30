@@ -2196,7 +2196,7 @@ public class DataStoreOperationsTest {
         .withLabel("testthing")
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
-    when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
+    when(indexHandler.hasQuickSearchIndexFor(any(Collection.class))).thenReturn(true);
     when(indexHandler.findByQuickSearch(any(Collection.class), any()))
       .thenReturn(graphWrapper.getGraph().traversal().V().has("tim_id",
         within(id1.toString(), id2.toString())));
@@ -2209,7 +2209,7 @@ public class DataStoreOperationsTest {
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
 
-    verify(indexHandler).hasIndexFor(collection);
+    verify(indexHandler).hasQuickSearchIndexFor(collection);
     verify(indexHandler).findByQuickSearch(collection, quickSearch);
   }
 
@@ -2246,7 +2246,7 @@ public class DataStoreOperationsTest {
         .withLabel("testthing")
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
-    when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
+    when(indexHandler.hasQuickSearchIndexFor(any(Collection.class))).thenReturn(true);
     when(indexHandler.findByQuickSearch(any(Collection.class), any()))
       .thenReturn(graphWrapper.getGraph().traversal().V().has("tim_id",
         within(id1.toString(), id2.toString())));
@@ -2429,7 +2429,7 @@ public class DataStoreOperationsTest {
         .withLabel("testkeyword")
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
-    when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
+    when(indexHandler.hasQuickSearchIndexFor(any(Collection.class))).thenReturn(true);
     when(indexHandler.findKeywordsByQuickSearch(any(Collection.class), any(), anyString())).thenReturn(
       graphWrapper.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
     );
@@ -2441,7 +2441,7 @@ public class DataStoreOperationsTest {
     List<ReadEntity> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
-    verify(indexHandler).hasIndexFor(collection);
+    verify(indexHandler).hasQuickSearchIndexFor(collection);
     verify(indexHandler).findKeywordsByQuickSearch(collection, quickSearch, keywordType);
   }
 
@@ -2482,7 +2482,7 @@ public class DataStoreOperationsTest {
         .withLabel("testkeyword")
       ).wrap();
     IndexHandler indexHandler = mock(IndexHandler.class);
-    when(indexHandler.hasIndexFor(any(Collection.class))).thenReturn(true);
+    when(indexHandler.hasQuickSearchIndexFor(any(Collection.class))).thenReturn(true);
     when(indexHandler.findKeywordsByQuickSearch(any(Collection.class), any(), anyString())).thenReturn(
       graphWrapper.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
     );
