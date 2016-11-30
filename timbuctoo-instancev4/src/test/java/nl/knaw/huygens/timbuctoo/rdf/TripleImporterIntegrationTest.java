@@ -220,7 +220,7 @@ public class TripleImporterIntegrationTest {
     );
   }
 
-  @Ignore // should now be tested using rdf Index
+  @Ignore // FIXME: should now be tested using rdf Index
   @Test
   public void importTripleShouldAddANewRelationTypeForANewlyCreatedRelation() {
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);

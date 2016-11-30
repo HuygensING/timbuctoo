@@ -291,7 +291,7 @@ public class DatabaseTest {
     ));
   }
 
-  @Ignore
+  @Ignore // FIXME: should now be tested using rdf Index
   @Test
   public void findOrCreateRelationTypeReturnsAnExistingRelationType() {
     final String relationtypePrefix = "relationtype_";
