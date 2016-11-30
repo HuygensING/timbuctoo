@@ -21,9 +21,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class IndexAllEntityIds implements DatabaseMigration {
-  private static final ArrayList<String> TYPES_TO_IGNORE = Lists.newArrayList("relationtype", "searchresult");
-  private static final String validUUIDRegex =
-    "/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/";
+  public static final ArrayList<String> TYPES_TO_IGNORE = Lists.newArrayList("relationtype", "searchresult");
   private static final Logger LOG = LoggerFactory.getLogger(IndexAllEntityIds.class);
 
   @Override
