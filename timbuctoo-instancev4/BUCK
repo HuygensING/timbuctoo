@@ -1,4 +1,5 @@
 java_library(
+  tests = [':tests'],
   name = 'timbuctoo-instancev4',
   annotation_processors=['org.immutables.value.internal.$processor$.$Processor'],
   annotation_processor_deps=['//buckbuild/jars/org/immutables:value'],
@@ -89,7 +90,9 @@ java_library(
     '//buckbuild/jars/org/neo4j:neo4j-tinkerpop-api',
     '//buckbuild/jars/org/neo4j:neo4j-tinkerpop-api-impl',
     '//buckbuild/jars/commons-configuration:commons-configuration',
+    '//buckbuild/jars/org/neo4j:neo4j-kernel_jar',
     '//buckbuild/jars/org/neo4j:neo4j-kernel-tests',
+    '//buckbuild/jars/org/neo4j:neo4j-io-tests',
     ':timbuctoo-instancev4',
     '//buckbuild/jars/com/google/code/gson:gson',
   ]

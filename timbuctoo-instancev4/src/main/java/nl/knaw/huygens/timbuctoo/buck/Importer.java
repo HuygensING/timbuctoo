@@ -217,7 +217,7 @@ public class Importer {
       new DependencyRequest(new CollectRequest(Lists.newArrayList(dependencies), null, repositories), null)
     ).getArtifactResults();
 
-    System.out.println("Resolving dependencies: done");
+    System.out.println("Resolving dependencies: done\n");
     reporter.setSilent();
     return getDependenciesPerArtifact(dependencyResult, artifact -> {
       ArtifactDescriptorRequest descriptorRequest = new ArtifactDescriptorRequest();
@@ -345,10 +345,10 @@ public class Importer {
           Artifact resolvedVersion =
             artifactPerName.get(makeMavenCoordsWithoutVersion(dependency.getArtifact()));
           if (resolvedVersion != null) {
-            //     System.err.println("Dependency " + dependency + " of " + artifact +
-            //       " was left out of resolved transitive dependencies");
-            // } else {
             dependencies.add(resolvedVersion);
+          } else {
+            System.err.println("Dependency " + dependency + " of " + artifact +
+              " was left out of resolved transitive dependencies");
           }
         }
       }

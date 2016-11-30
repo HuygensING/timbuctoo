@@ -1,0 +1,26 @@
+java_library(
+  name = 'bucktest',
+  srcs = ['Support.java'],
+  deps = [
+  ],
+  exported_deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-kernel_jar',
+    '//buckbuild/jars/org/neo4j:neo4j-kernel-tests_jar',
+    '//buckbuild/jars/org/neo4j:neo4j-io-tests'
+  ],
+  tests = [':tests']
+)
+
+
+java_test(
+  name = 'tests',
+  srcs = ['ToolTest.java'],
+  deps = [
+    '//buckbuild/jars/org/neo4j:neo4j-unsafe',
+    "//buckbuild/jars/junit:junit",
+    ':bucktest',
+  ],
+  visibility = [
+    "PUBLIC"
+  ]
+)
