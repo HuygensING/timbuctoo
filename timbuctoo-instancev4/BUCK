@@ -83,7 +83,15 @@ java_library(
   deps = [
   ],
   exported_deps = [
+    '//buckbuild/jars/org/mockito:mockito-core',
+    '//timbuctoo-test-services:timbuctoo-test-services',
+    '//buckbuild/jars/org/hamcrest:hamcrest-all',
+    '//buckbuild/jars/org/neo4j:neo4j-tinkerpop-api',
+    '//buckbuild/jars/org/neo4j:neo4j-tinkerpop-api-impl',
+    '//buckbuild/jars/commons-configuration:commons-configuration',
+    '//buckbuild/jars/org/neo4j:neo4j-kernel-tests',
     ':timbuctoo-instancev4',
+    '//buckbuild/jars/com/google/code/gson:gson',
   ]
 )
 
@@ -92,13 +100,21 @@ java_test(
   srcs = glob(
     ['src/test/java/**/*Test.java'],
   ),
-  resources = glob(['src/main/resources/**/*']),
+  resources = glob(['src/test/resources/**/*']),
   deps = [
+    '//buckbuild/jars/org/mockito:mockito-core',
     "//buckbuild/jars/com/google/guava:guava",
     "//buckbuild/jars/junit:junit",
     '//buckbuild/jars/org/hamcrest:hamcrest-all',
     '//timbuctoo-test-services:timbuctoo-test-services',
-    ':app-with-test-stubs'
+    ':app-with-test-stubs',
+    '//buckbuild/jars/org/apache/commons:commons-lang3',
+    '//buckbuild/jars/org/apache/jena:jena-shaded-guava',
+    '//buckbuild/jars/org/apache/poi:poi',
+    '//buckbuild/jars/org/neo4j:neo4j-tinkerpop-api',
+    '//security-client-agnostic:security-client-agnostic',
+    "//buckbuild/jars/io/dropwizard:dropwizard-testing",
+    "//buckbuild/jars/uk/co/datumedge:hamcrest-json",
   ],
   visibility = [
     "PUBLIC"

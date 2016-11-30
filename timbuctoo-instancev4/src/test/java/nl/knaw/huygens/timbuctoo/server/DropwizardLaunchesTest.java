@@ -11,7 +11,8 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 public class DropwizardLaunchesTest {
 
@@ -33,6 +34,6 @@ public class DropwizardLaunchesTest {
 
     Response response = target.request().get();
 
-    assertThat(response.getStatus()).isEqualTo(200);
+    assertThat(response.getStatus(), is(200));
   }
 }
