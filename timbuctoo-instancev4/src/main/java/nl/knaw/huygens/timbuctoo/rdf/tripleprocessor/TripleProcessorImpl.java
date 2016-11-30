@@ -18,7 +18,7 @@ public class TripleProcessorImpl implements TripleProcessor {
   private static final String OWL_SAME_AS = "http://www.w3.org/2002/07/owl#sameAs";
   private static final String SKOS_ALT_LABEL = "http://www.w3.org/2004/02/skos/core#altLabel";
   private static final String TEI_NAMESPACE = "http://www.tei-c.org/ns/1.0/";
-  private static final String TIM_IS_NAME_VARIANT_OF = "http://timbuctoo.huygens.knaw.nl/isNameVariantOf";
+  static final String TIM_IS_NAME_VARIANT_OF = "http://timbuctoo.huygens.knaw.nl/isNameVariantOf";
   private static final Set<String> TEI_NAMES_COMPONENTS = Sets.newHashSet(
     "surname", "forename", "genName", "roleName", "addName", "nameLink"
   );
