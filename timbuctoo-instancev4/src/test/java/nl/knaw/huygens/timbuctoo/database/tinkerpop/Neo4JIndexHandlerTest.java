@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
@@ -21,12 +22,17 @@ import static org.mockito.Mockito.when;
 public class Neo4JIndexHandlerTest {
 
   public static final String COLLECTION = "collection";
+  private Collection collection;
+
+  @Before
+  public void setUp() throws Exception {
+    collection = mock(Collection.class);
+    when(collection.getCollectionName()).thenReturn(COLLECTION);
+  }
 
   @Test
   public void hasIndexForReturnsTrueIfTheIndexExists() {
     TinkerpopGraphManager tinkerpopGraphManager = newGraph().wrap();
-    Collection collection = mock(Collection.class);
-    when(collection.getCollectionName()).thenReturn(COLLECTION);
     createIndexFor(tinkerpopGraphManager, collection);
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
 
@@ -72,14 +78,12 @@ public class Neo4JIndexHandlerTest {
       )
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
-    Collection collection = mock(Collection.class);
-    when(collection.getCollectionName()).thenReturn(COLLECTION);
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id3).next());
     QuickSearch quickSearch = QuickSearch.fromQueryString("query*");
 
-    GraphTraversal<Vertex, Vertex> vertices = instance.findByQuickSearch(collection,       quickSearch);
+    GraphTraversal<Vertex, Vertex> vertices = instance.findByQuickSearch(collection, quickSearch);
 
     assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1, id2));
   }
@@ -102,8 +106,6 @@ public class Neo4JIndexHandlerTest {
       )
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
-    Collection collection = mock(Collection.class);
-    when(collection.getCollectionName()).thenReturn(COLLECTION);
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id3).next());
@@ -132,8 +134,6 @@ public class Neo4JIndexHandlerTest {
       )
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
-    Collection collection = mock(Collection.class);
-    when(collection.getCollectionName()).thenReturn(COLLECTION);
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id3).next());
@@ -165,8 +165,6 @@ public class Neo4JIndexHandlerTest {
       )
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
-    Collection collection = mock(Collection.class);
-    when(collection.getCollectionName()).thenReturn(COLLECTION);
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
     addToIndex(instance, collection, tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id3).next());
@@ -176,6 +174,47 @@ public class Neo4JIndexHandlerTest {
       instance.findKeywordsByQuickSearch(collection, quickSearch, "keywordType");
 
     assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1));
+  }
+
+  @Test
+  public void removeFromQuickSearchIndexRemovesTheVertexFromTheIndex() {
+    String id1 = UUID.randomUUID().toString();
+    TinkerpopGraphManager tinkerpopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+      )
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
+    Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next();
+    instance.addToOrUpdateQuickSearchIndex(collection, "query", vertex);
+    GraphTraversal<Vertex, Vertex> beforeRemoval =
+      instance.findByQuickSearch(collection, QuickSearch.fromQueryString("query"));
+    assertThat(beforeRemoval.hasNext(), is(true));
+
+    instance.removeFromQuickSearchIndex(collection, vertex);
+
+    GraphTraversal<Vertex, Vertex> afterRemoval =
+      instance.findByQuickSearch(collection, QuickSearch.fromQueryString("query"));
+    assertThat(afterRemoval.hasNext(), is(false));
+  }
+
+  @Test
+  public void addToOrUpdateQuickSearchIndexMakesSureTheExistingEntryIsUpdated() {
+    String id1 = UUID.randomUUID().toString();
+    TinkerpopGraphManager tinkerpopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+      )
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
+    Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next();
+    instance.addToOrUpdateQuickSearchIndex(collection, "firstValue", vertex);
+    assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("firstValue")).hasNext(), is(true));
+
+    instance.addToOrUpdateQuickSearchIndex(collection, "secondValue", vertex);
+
+    assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("firstValue")).hasNext(), is(false));
+    assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("secondValue")).hasNext(), is(true));
   }
 
   private void addToIndex(Neo4jIndexHandler instance, Collection collection, Vertex vertex) {

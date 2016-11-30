@@ -241,7 +241,17 @@ public class DataStoreOperations implements AutoCloseable {
         }
 
         @Override
-        public void addToQuickSearchIndex(Collection collection, String displayName, Vertex vertex) {
+        public void addToQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
+          throw new UnsupportedOperationException("Not implemented yet");
+        }
+
+        @Override
+        public void addToOrUpdateQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
+          throw new UnsupportedOperationException("Not implemented yet");
+        }
+
+        @Override
+        public void removeFromQuickSearchIndex(Collection collection, Vertex vertex) {
           throw new UnsupportedOperationException("Not implemented yet");
         }
       };

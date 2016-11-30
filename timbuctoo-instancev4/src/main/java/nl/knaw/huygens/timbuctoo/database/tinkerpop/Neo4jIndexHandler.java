@@ -47,10 +47,24 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public void addToQuickSearchIndex(Collection collection, String displayName, Vertex vertex) {
+  public void addToQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
     Index<Node> index = getFulltextIndex(collection.getCollectionName());
 
-    index.add(graphDatabase.getNodeById((long) vertex.id()), QUICK_SEARCH, displayName);
+    index.add(graphDatabase.getNodeById((long) vertex.id()), QUICK_SEARCH, quickSearchValue);
+  }
+
+  @Override
+  public void addToOrUpdateQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
+    this.removeFromQuickSearchIndex(collection, vertex);
+
+    this.addToQuickSearchIndex(collection, quickSearchValue, vertex);
+  }
+
+  @Override
+  public void removeFromQuickSearchIndex(Collection collection, Vertex vertex) {
+    Index<Node> index = getFulltextIndex(collection.getCollectionName());
+
+    index.remove(graphDatabase.getNodeById((long) vertex.id()), QUICK_SEARCH);
   }
 
   private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {

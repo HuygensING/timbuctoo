@@ -13,5 +13,17 @@ public interface IndexHandler {
   GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, QuickSearch quickSearch,
                                                            String keywordType);
 
-  void addToQuickSearchIndex(Collection collection, String displayName, Vertex vertex);
+  /**
+   * This method does not prevent multiple entries for a vertex.
+   * Use {@link #addToOrUpdateQuickSearchIndex(Collection, String, Vertex)} if you want to update the existing entry
+   * or a new entry for unknown vertices.
+   */
+  void addToQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
+
+  /**
+   * This method adds or update a index entry and makes shure the index have only one entry for each vertex.
+   */
+  void addToOrUpdateQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
+
+  void removeFromQuickSearchIndex(Collection collection, Vertex vertex);
 }
