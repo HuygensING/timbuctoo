@@ -38,7 +38,7 @@ public class JsonBasedUserStore implements UserStore, UserCreator {
       throw new AuthenticationUnavailableException(e.getMessage());
     }
 
-    return users.stream().filter(user -> user.getPersistentId().equals(pid)).findFirst();
+    return users.stream().filter(user -> Objects.equals(user.getPersistentId(),pid)).findFirst();
   }
 
   @Override
