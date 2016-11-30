@@ -152,18 +152,8 @@ public class ExecuteRml {
       if (!tx.isOpen()) {
         tx.open();
       }
-      Map<String, String> vreMappings = new HashMap<>();
-      Property collectionRefProp = model.getProperty("http://timbuctoo.huygens.knaw.nl/mapping/existingTimbuctooVre");
-      Property predicatProp = model.getProperty("http://www.w3.org/ns/r2rml#predicate");
-      model.listResourcesWithProperty(collectionRefProp)
-           .forEachRemaining(resource -> {
-             vreMappings.put(
-               resource.getProperty(predicatProp).getObject().asResource().getURI(),
-               resource.getProperty(collectionRefProp).getObject().asLiteral().toString()
-             );
-           });
 
-      final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper), vreMappings);
+      final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper));
 
       //first save the archetype mappings
       AtomicLong tripleCount = new AtomicLong(0);

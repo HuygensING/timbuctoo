@@ -35,15 +35,11 @@ public class TripleProcessorImpl implements TripleProcessor {
   private PersonNameVariantTripleProcessor personNameVariant;
 
   public TripleProcessorImpl(Database database) {
-    this(database, new HashMap<>());
-  }
-
-  public TripleProcessorImpl(Database database, Map<String, String> mappings) {
     this.database = database;
     this.collectionMembership = new CollectionMembershipTripleProcessor(database);
     this.archetype = new ArchetypeTripleProcessor(database);
     this.property = new PropertyTripleProcessor(database);
-    this.relation = new RelationTripleProcessor(database, mappings);
+    this.relation = new RelationTripleProcessor(database);
     this.sameAs = new SameAsTripleProcessor(database);
     this.altLabel = new AltLabelTripleProcessor(database);
     this.personNames = new PersonNamesTripleProcessor(database);
