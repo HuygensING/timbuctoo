@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.commons.lang.NotImplementedException;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -20,8 +21,6 @@ import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forGra
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 
 public class LoadSaveVresTest {
@@ -32,7 +31,7 @@ public class LoadSaveVresTest {
     keywordTypes.put("key", "value");
     final String keywordTypesJson = new ObjectMapper().writeValueAsString(keywordTypes);
 
-    final Graph graph = newGraph()
+    final TinkerPopGraphManager graphManager = newGraph()
       .withVertex("documents", v -> {
         v.withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "documents")
           .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "document")
@@ -46,12 +45,9 @@ public class LoadSaveVresTest {
            keywordTypesJson)
           .withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "documents");
       })
-      .build();
+      .wrap();
 
-    GraphWrapper graphWrapper = mock(GraphWrapper.class);
-    given(graphWrapper.getGraph()).willReturn(graph);
-
-    TransactionEnforcer transactionEnforcer = forGraphWrapper(graphWrapper);
+    TransactionEnforcer transactionEnforcer = forGraphWrapper(graphManager);
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(transactionEnforcer);
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
@@ -62,29 +58,25 @@ public class LoadSaveVresTest {
 
   @Test
   public void onlyReloadReloadsTheConfigurationsFromTheGraph() throws JsonProcessingException {
-    Graph graph = newGraph()
+    TinkerPopGraphManager graphManager = newGraph()
       .withVertex(v -> {
         v.withLabel(Vre.DATABASE_LABEL)
           .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreA");
       })
-      .build();
+      .wrap();
 
-    MockWrapper graphWrapper = new MockWrapper();
-    graphWrapper.graph = graph;
-
-    TransactionEnforcer transactionEnforcer = TransactionEnforcerStubs.forGraphWrapper(graphWrapper);
+    TransactionEnforcer transactionEnforcer = TransactionEnforcerStubs.forGraphWrapper(graphManager);
     DatabaseConfiguredVres instance = new DatabaseConfiguredVres(transactionEnforcer);
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));
 
-    graph = newGraph()
+    graphManager = newGraph()
       .withVertex(v -> {
         v.withLabel(Vre.DATABASE_LABEL)
           .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "VreB");
       })
-      .build();
-    graphWrapper.graph = graph;
+      .wrap();
 
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));

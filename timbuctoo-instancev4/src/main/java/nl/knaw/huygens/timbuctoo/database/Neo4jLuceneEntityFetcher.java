@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -20,7 +20,7 @@ public class Neo4jLuceneEntityFetcher extends GremlinEntityFetcher {
   private final GraphDatabaseService graphDatabase;
   private final IndexHandler indexHandler;
 
-  public Neo4jLuceneEntityFetcher(TinkerpopGraphManager graphManager, IndexHandler indexHandler) {
+  public Neo4jLuceneEntityFetcher(TinkerPopGraphManager graphManager, IndexHandler indexHandler) {
     this.graphDatabase = graphManager.getGraphDatabase();
     this.indexHandler = indexHandler;
   }

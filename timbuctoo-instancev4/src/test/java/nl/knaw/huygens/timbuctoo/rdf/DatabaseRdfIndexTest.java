@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import static org.hamcrest.core.Is.is;
 public class DatabaseRdfIndexTest {
   @Test
   public void indexTest() throws Exception {
-    final TinkerpopGraphManager mgr = newGraph().wrap();
+    final TinkerPopGraphManager mgr = newGraph().wrap();
     final Database database = new Database(mgr);
     TransactionEnforcer transactionEnforcer = forGraphWrapper(mgr);
 

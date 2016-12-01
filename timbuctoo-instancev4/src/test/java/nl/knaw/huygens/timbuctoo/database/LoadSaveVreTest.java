@@ -6,7 +6,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
@@ -46,10 +46,10 @@ public class LoadSaveVreTest {
   private Tuple<DataStoreOperations, Graph> initGraph(Consumer<TestGraphBuilder> init) {
     TestGraphBuilder testGraphBuilder = newGraph();
     init.accept(testGraphBuilder);
-    GraphWrapper wrap = testGraphBuilder.wrap();
+    TinkerPopGraphManager graphManager = testGraphBuilder.wrap();
     return tuple(
-      DataStoreOperationsStubs.forGraphWrapper(wrap),
-      wrap.getGraph());
+      DataStoreOperationsStubs.forGraphWrapper(graphManager),
+      graphManager.getGraph());
   }
 
   private List<Vertex> save(Vre vre, Tuple<DataStoreOperations, Graph> dataAccess) {

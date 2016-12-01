@@ -11,10 +11,10 @@ import java.util.LinkedHashMap;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class TestableTinkerpopGraphManager extends TinkerpopGraphManager {
-  private static final Logger LOG = getLogger(TestableTinkerpopGraphManager.class);
+public class TestableTinkerPopGraphManager extends TinkerPopGraphManager {
+  private static final Logger LOG = getLogger(TestableTinkerPopGraphManager.class);
 
-  public TestableTinkerpopGraphManager(GraphDatabaseService graphDatabaseService, Neo4jGraph graph) {
+  public TestableTinkerPopGraphManager(GraphDatabaseService graphDatabaseService, Neo4jGraph graph) {
     super(new TimbuctooConfiguration(), new LinkedHashMap<>());
     this.graphDatabase = graphDatabaseService;
     this.graph = graph;

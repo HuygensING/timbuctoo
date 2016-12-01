@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMultimap;
 import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.server.BackgroundRunner;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import org.slf4j.Logger;
@@ -18,12 +18,12 @@ import java.util.Optional;
 public class DatabaseValidationTask extends Task {
 
   private final DatabaseValidator databaseValidator;
-  private final TinkerpopGraphManager graphManager;
+  private final TinkerPopGraphManager graphManager;
   private BackgroundRunner<ValidationResult> validationRunner;
   private static final Logger LOG = LoggerFactory.getLogger(DatabaseValidationTask.class);
 
   public DatabaseValidationTask(BackgroundRunner<ValidationResult> validator, DatabaseValidator databaseValidator,
-                                TinkerpopGraphManager graphManager) {
+                                TinkerPopGraphManager graphManager) {
     super("databasevalidation");
     this.validationRunner = validator;
     this.databaseValidator = databaseValidator;
