@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.junit.Test;
 
 import java.net.URI;
@@ -25,6 +26,7 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
@@ -50,7 +52,7 @@ public class AutocompleteServiceTest {
     ReadEntity entity = readEntityWithDisplayNameIdAndRev("[TEMP] An author", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
     given(timbuctooActions.getCollectionMetadata(anyString())).willReturn(collWithCollectionName(collectionName));
-    given(timbuctooActions.doQuickSearch(any(), any(), anyInt())).willReturn(Lists.newArrayList(entity));
+    given(timbuctooActions.doQuickSearch(any(), any(), isNull(), anyInt())).willReturn(Lists.newArrayList(entity));
     AutocompleteService instance = new AutocompleteService(
       (collection, id1, rev) -> URI.create("http://example.com/" + collection + "/" + id1 + "?rev=" + rev),
       timbuctooActions
@@ -65,6 +67,7 @@ public class AutocompleteServiceTest {
     verify(timbuctooActions).doQuickSearch(
       argThat(hasProperty("collectionName", equalTo(collectionName))),
       any(QuickSearch.class),
+      isNull(),
       intThat(is(50))
     );
   }
@@ -79,7 +82,7 @@ public class AutocompleteServiceTest {
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
     given(timbuctooActions.getCollectionMetadata(anyString()))
       .willReturn(keywordCollWithCollectionName(collectionName));
-    given(timbuctooActions.doKeywordQuickSearch(any(), anyString(), any(), anyInt()))
+    given(timbuctooActions.doQuickSearch(any(), any(), anyString(), anyInt()))
       .willReturn(Lists.newArrayList(readEntity));
     UrlGenerator urlGenerator =
       (coll, id1, rev) -> URI.create("http://example.com/" + coll + "/" + id1 + "?rev=" + rev);
@@ -92,10 +95,10 @@ public class AutocompleteServiceTest {
     assertThat(result.toString(), sameJSONAs(jsnA(
       jsnO("value", jsn("a keyword"), "key", jsn("http://example.com/wwkeywords/" + id.toString() + "?rev=2"))
     ).toString()));
-    verify(timbuctooActions).doKeywordQuickSearch(
+    verify(timbuctooActions).doQuickSearch(
       argThat(hasProperty("collectionName", equalTo(collectionName))),
-      argThat(is(keywordType)),
       any(QuickSearch.class),
+      argThat(is(keywordType)),
       intThat(is(50))
     );
   }
@@ -107,7 +110,7 @@ public class AutocompleteServiceTest {
     ReadEntity entity = readEntityWithDisplayNameIdAndRev("[TEMP] An author", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
     given(timbuctooActions.getCollectionMetadata(anyString())).willReturn(collWithCollectionName(collectionName));
-    given(timbuctooActions.doQuickSearch(any(), any(), anyInt())).willReturn(Lists.newArrayList(entity));
+    given(timbuctooActions.doQuickSearch(any(), any(), anyString(), anyInt())).willReturn(Lists.newArrayList(entity));
     AutocompleteService instance = new AutocompleteService(
       (collection, id1, rev) -> URI.create("http://example.com/" + collection + "/" + id1 + "?rev=" + rev),
       timbuctooActions
@@ -116,8 +119,9 @@ public class AutocompleteServiceTest {
     instance.search(collectionName, Optional.empty(), Optional.empty());
 
     verify(timbuctooActions).doQuickSearch(
-      argThat(hasProperty("collectionName", equalTo(collectionName))),
+      any(Collection.class),
       any(QuickSearch.class),
+      any(),
       intThat(is(1000))
     );
   }

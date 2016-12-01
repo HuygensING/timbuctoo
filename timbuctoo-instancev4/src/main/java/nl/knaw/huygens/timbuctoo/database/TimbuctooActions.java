@@ -60,10 +60,10 @@ public class TimbuctooActions {
     UUID id = UUID.randomUUID();
     Change created = createChange(userId);
     CreateEntity createEntity = ImmutableCreateEntity.builder()
-      .properties(properties)
-      .id(id)
-      .created(created)
-      .build();
+                                                     .properties(properties)
+                                                     .id(id)
+                                                     .created(created)
+                                                     .build();
 
     dataStoreOperations.createEntity(collection, baseCollection, createEntity);
 
@@ -152,13 +152,11 @@ public class TimbuctooActions {
     return dataStoreOperations.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 
-  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
+  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, String keywordType, int limit) {
+    if (collection.getAbstractType().equals("keyword")) {
+      return dataStoreOperations.doKeywordQuickSearch(collection, keywordType, quickSearch, limit);
+    }
     return dataStoreOperations.doQuickSearch(collection, quickSearch, limit);
-  }
-
-  public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
-                                               int limit) {
-    return dataStoreOperations.doKeywordQuickSearch(collection, keywordType, quickSearch, limit);
   }
 
   public UUID createRelation(Collection collection, CreateRelation createRelation, String userId)
@@ -203,6 +201,12 @@ public class TimbuctooActions {
     return collection.orElseThrow(() -> new InvalidCollectionException(collectionName));
   }
 
+  @FunctionalInterface
+  public interface TimbuctooActionsFactory {
+    TimbuctooActions create(DataStoreOperations dataStoreOperations,
+                            AfterSuccessTaskExecutor afterSuccessTaskExecutor
+    );
+  }
 
   static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {
     private final PersistentUrlCreator persistentUrlCreator;
@@ -264,13 +268,6 @@ public class TimbuctooActions {
         afterSuccessTaskExecutor
       );
     }
-  }
-
-  @FunctionalInterface
-  public interface TimbuctooActionsFactory {
-    TimbuctooActions create(DataStoreOperations dataStoreOperations,
-                            AfterSuccessTaskExecutor afterSuccessTaskExecutor
-    );
   }
 }
 
