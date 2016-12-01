@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionStubs.collWithCollectionName;
+import static nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionStubs.keywordCollWithCollectionName;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.sameInstance;
@@ -88,23 +90,25 @@ public class TimbuctooActionsGetTest {
   public void doQuickSearchReturnsTheValueOfDataStoreOperations() {
     List<ReadEntity> entities = Lists.newArrayList();
     QuickSearch query = QuickSearch.fromQueryString("");
+    Collection collection = collWithCollectionName("coll");
     int limit = 1;
     when(dataStoreOperations.doQuickSearch(collection, query, limit)).thenReturn(entities);
 
-    List<ReadEntity> searchResult = instance.doQuickSearch(collection, query, limit);
+    List<ReadEntity> searchResult = instance.doQuickSearch(collection, query, null, limit);
 
     assertThat(searchResult, is(sameInstance(entities)));
   }
 
   @Test
-  public void doKeywordQuickSearchReturnsTheValueOfDataStoreOperations() {
+  public void doQuickSearchCallsDoKeywordQuickSearchWhenTheCollectionIsAKeywordCollection() {
     List<ReadEntity> entities = Lists.newArrayList();
     QuickSearch query = QuickSearch.fromQueryString("");
     String keywordType = "";
+    Collection collection = keywordCollWithCollectionName("coll");
     int limit = 1;
     when(dataStoreOperations.doKeywordQuickSearch(collection, keywordType, query, limit)).thenReturn(entities);
 
-    List<ReadEntity> searchResult = instance.doKeywordQuickSearch(collection, keywordType, query, limit);
+    List<ReadEntity> searchResult = instance.doQuickSearch(collection, query, keywordType, limit);
 
     assertThat(searchResult, is(sameInstance(entities)));
   }
