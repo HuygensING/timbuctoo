@@ -180,7 +180,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
-    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
+    final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(configuration, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
@@ -333,7 +333,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   private BackgroundRunner<ValidationResult> setUpDatabaseValidator(TimbuctooConfiguration configuration,
                                                                     Environment environment, Vres vres,
                                                                     GraphWaiter graphWaiter,
-                                                                    TinkerpopGraphManager graphManager) {
+                                                                    TinkerPopGraphManager graphManager) {
 
     final ScheduledExecutorService executor = environment.lifecycle()
                                                          .scheduledExecutorService("databaseCheckExecutor")
@@ -363,7 +363,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     return healthCheckRunner;
   }
 
-  private DatabaseValidator getDatabaseValidator(Vres vres, TinkerpopGraphManager graphManager) {
+  private DatabaseValidator getDatabaseValidator(Vres vres, TinkerPopGraphManager graphManager) {
     return new DatabaseValidator(
       new LabelsAddedToVertexDatabaseCheck(),
       new InvariantsCheck(vres),

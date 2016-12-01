@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.server.BackgroundRunner;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import org.junit.Test;
@@ -28,7 +28,7 @@ public class DatabaseValidationTaskTest {
     BackgroundRunner<ValidationResult> runner = mock(BackgroundRunner.class);
     PrintWriter printWriter = mock(PrintWriter.class);
     DatabaseValidator databaseValidation = mock(DatabaseValidator.class);
-    TinkerpopGraphManager graphManager = mock(TinkerpopGraphManager.class);
+    TinkerPopGraphManager graphManager = mock(TinkerPopGraphManager.class);
 
     ValidationResult validationResult = new ValidationResult() {
       @Override
@@ -61,7 +61,7 @@ public class DatabaseValidationTaskTest {
     BackgroundRunner<ValidationResult> runner = mock(BackgroundRunner.class);
     PrintWriter printWriter = mock(PrintWriter.class);
     DatabaseValidator databaseValidation = mock(DatabaseValidator.class);
-    TinkerpopGraphManager graphManager = mock(TinkerpopGraphManager.class);
+    TinkerPopGraphManager graphManager = mock(TinkerPopGraphManager.class);
     DatabaseValidationTask instance = new DatabaseValidationTask(runner, databaseValidation, graphManager);
     Map<String, String> params = Maps.newHashMap();
 

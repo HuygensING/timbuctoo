@@ -1,14 +1,12 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-
-import static org.mockito.Mockito.mock;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
 public class TransactionEnforcerStubs {
 
-  public static TransactionEnforcer forGraphWrapper(GraphWrapper graphWrapper) {
+  public static TransactionEnforcer forGraphWrapper(TinkerPopGraphManager graphManager) {
     return new TransactionEnforcer(
-      () -> DataStoreOperationsStubs.forGraphWrapper(graphWrapper),
+      () -> DataStoreOperationsStubs.forGraphWrapper(graphManager),
       TimbuctooActionsStubs::withDataStoreAndAfterSucces
     );
   }

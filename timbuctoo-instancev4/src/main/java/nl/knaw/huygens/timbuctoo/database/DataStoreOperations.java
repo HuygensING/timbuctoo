@@ -33,7 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -96,9 +96,9 @@ public class DataStoreOperations implements AutoCloseable {
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
-  public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener, GremlinEntityFetcher entityFetcher,
-                             Vres mappings, IndexHandler indexHandler) {
-    graph = graphWrapper.getGraph();
+  public DataStoreOperations(TinkerPopGraphManager graphManager, ChangeListener listener,
+                             GremlinEntityFetcher entityFetcher, Vres mappings, IndexHandler indexHandler) {
+    graph = graphManager.getGraph();
     this.indexHandler = indexHandler;
     this.transaction = graph.tx();
     this.listener = listener;
@@ -108,7 +108,7 @@ public class DataStoreOperations implements AutoCloseable {
       transaction.open();
     }
     this.traversal = graph.traversal();
-    this.latestState = graphWrapper.getLatestState();
+    this.latestState = graphManager.getLatestState();
     this.mappings = mappings == null ? loadVres() : mappings;
     this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
   }

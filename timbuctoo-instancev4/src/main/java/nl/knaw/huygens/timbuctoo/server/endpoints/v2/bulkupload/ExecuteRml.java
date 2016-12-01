@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
@@ -51,14 +51,14 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class ExecuteRml {
   public static final Logger LOG = LoggerFactory.getLogger(ExecuteRml.class);
   private final UriHelper uriHelper;
-  private final TinkerpopGraphManager graphWrapper;
+  private final TinkerPopGraphManager graphWrapper;
   private final Vres vres;
   private final UserPermissionChecker permissionChecker;
   private final JenaBasedReader rmlBuilder;
   private final DataSourceFactory dataSourceFactory;
   private final TransactionEnforcer transactionEnforcer;
 
-  public ExecuteRml(UriHelper uriHelper, TinkerpopGraphManager graphWrapper, Vres vres, JenaBasedReader rmlBuilder,
+  public ExecuteRml(UriHelper uriHelper, TinkerPopGraphManager graphWrapper, Vres vres, JenaBasedReader rmlBuilder,
                     UserPermissionChecker permissionChecker, DataSourceFactory dataSourceFactory,
                     TransactionEnforcer transactionEnforcer) {
     this.uriHelper = uriHelper;

@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -86,7 +86,7 @@ public class TripleImporterIntegrationTest {
       "<http://www.w3.org/2000/01/rdf-schema#subClassOf> " +
       "<http://www.example.com/location> .";
 
-  private TinkerpopGraphManager graphWrapper;
+  private TinkerPopGraphManager graphWrapper;
 
   @Before
   public void setUp() throws Exception {

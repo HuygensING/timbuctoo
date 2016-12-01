@@ -6,7 +6,7 @@ import io.dropwizard.servlets.tasks.Task;
 import nl.knaw.huygens.timbuctoo.databaselog.DatabaseFixer;
 import nl.knaw.huygens.timbuctoo.databaselog.DatabaseLog;
 import nl.knaw.huygens.timbuctoo.databaselog.GraphLogValidator;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,12 +14,12 @@ import java.io.PrintWriter;
 
 public class DbLogCreatorTask extends Task {
   public static final Logger LOG = LoggerFactory.getLogger(DbLogCreatorTask.class);
-  private final TinkerpopGraphManager graphManager;
+  private final TinkerPopGraphManager graphManager;
   private final DatabaseLog logGenerator;
   private final DatabaseFixer databaseFixer;
   private final GraphLogValidator graphLogValidator;
 
-  public DbLogCreatorTask(TinkerpopGraphManager graphManager) {
+  public DbLogCreatorTask(TinkerPopGraphManager graphManager) {
     super("createlog");
     this.graphManager = graphManager;
     logGenerator = new DatabaseLog(graphManager);
