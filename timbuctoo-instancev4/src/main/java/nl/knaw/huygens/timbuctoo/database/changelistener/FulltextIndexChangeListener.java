@@ -30,6 +30,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    oldVertex.ifPresent(vertex -> handleRemove(collection, vertex));
     handleChange(collection, newVertex);
   }
 
@@ -63,7 +64,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
       );
       docCaption = authorCaption + " " + docCaption;
     }
-    indexHandler.addToOrUpdateQuickSearchIndex(collection, docCaption, vertex);
+    indexHandler.addToQuickSearchIndex(collection, docCaption, vertex);
   }
 
   private void handleRemove(Collection collection, Vertex vertex) {
