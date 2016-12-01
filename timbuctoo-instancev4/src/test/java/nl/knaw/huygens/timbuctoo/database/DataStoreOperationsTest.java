@@ -2085,86 +2085,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void findByDisplayNameReturnsTheEntitiesWithAMatchingDisplayName() {
-    Vres vres = createConfiguration();
-    UUID id1 = UUID.randomUUID();
-    UUID id2 = UUID.randomUUID();
-    UUID id3 = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "matching")
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .withVertex(v -> v
-        .withTimId(id2)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "also matching")
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .withVertex(v -> v
-        .withTimId(id3)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "different name")
-        .isLatest(true)
-        .withLabel("testthing")
-      ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    Collection collection = vres.getCollection("testthings").get();
-
-    List<ReadEntity> result = instance.doQuickSearch(collection, QuickSearch.fromQueryString("matching"), 3);
-
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
-  }
-
-  @Test
-  public void findByDisplayReturnsLetsTheLimitLimitTheAmountOfResultsToReturn() {
-    Vres vres = createConfiguration();
-    UUID id1 = UUID.randomUUID();
-    UUID id2 = UUID.randomUUID();
-    UUID id3 = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "matching")
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .withVertex(v -> v
-        .withTimId(id2)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "also matching")
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .withVertex(v -> v
-        .withTimId(id3)
-        .withType("stuff")
-        .withVre("test")
-        .withProperty("teststuff_displayName", "different name")
-        .isLatest(true)
-        .withLabel("teststuff")
-      ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    Collection collection = vres.getCollection("testthings").get();
-
-    List<ReadEntity> result = instance.doQuickSearch(collection, QuickSearch.fromQueryString(""), 1);
-
-    assertThat(result, hasSize(1));
-  }
-
-  // FIXME find a better way to test if the index is used
-  @Test
-  public void findByDisplayNameUsesAnIndexIfItIsAvailable() {
+  public void doQuickSearchUsesTheIndexToSearchTheEntity() {
     Vres vres = createConfiguration();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
@@ -2209,12 +2130,11 @@ public class DataStoreOperationsTest {
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
 
-    verify(indexHandler).hasQuickSearchIndexFor(collection);
     verify(indexHandler).findByQuickSearch(collection, quickSearch);
   }
 
   @Test
-  public void findByDisplayNameLetsLimitTheAmountOfIndexResults() {
+  public void doQuickSearchLetsLimitTheAmountOfResults() {
     Vres vres = createConfiguration();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
@@ -2261,139 +2181,7 @@ public class DataStoreOperationsTest {
   }
 
   @Test
-  public void findKeywordByDisplayNameFiltersOnKeywordType() {
-    Vres vres = createConfiguration();
-    UUID id1 = UUID.randomUUID();
-    UUID id2 = UUID.randomUUID();
-    UUID id3 = UUID.randomUUID();
-    String keywordType = "keywordType";
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "matching")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      )
-      .withVertex(v -> v
-        .withTimId(id2)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "also matching")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      )
-      .withVertex(v -> v
-        .withTimId(id3)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("testthing_displayName", "different name")
-        .isLatest(true)
-        .withLabel("testthing")
-      ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    Collection collection = vres.getCollection("testkeywords").get();
-
-    List<ReadEntity> result =
-      instance.doKeywordQuickSearch(collection, keywordType, QuickSearch.fromQueryString(""), 3);
-
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
-  }
-
-  @Test
-  public void findKeywordByDisplayNameQueryFiltersOnTheDisplayName() {
-    Vres vres = createConfiguration();
-    UUID id1 = UUID.randomUUID();
-    UUID id2 = UUID.randomUUID();
-    UUID id3 = UUID.randomUUID();
-    String keywordType = "keywordType";
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "matching")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      )
-      .withVertex(v -> v
-        .withTimId(id2)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "also matching")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      )
-      .withVertex(v -> v
-        .withTimId(id3)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "different name")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    Collection collection = vres.getCollection("testkeywords").get();
-    QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
-
-    List<ReadEntity> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 3);
-
-    assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
-  }
-
-  @Test
-  public void findKeywordByDisplayNameLimitLimitsTheAmountOfResults() {
-    Vres vres = createConfiguration();
-    UUID id1 = UUID.randomUUID();
-    UUID id2 = UUID.randomUUID();
-    UUID id3 = UUID.randomUUID();
-    String keywordType = "keywordType";
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "matching")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      )
-      .withVertex(v -> v
-        .withTimId(id2)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "also matching")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      )
-      .withVertex(v -> v
-        .withTimId(id3)
-        .withType("keyword")
-        .withVre("test")
-        .withProperty("testkeyword_displayName", "different name")
-        .isLatest(true)
-        .withProperty("keyword_type", keywordType)
-        .withLabel("testkeyword")
-      ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
-    Collection collection = vres.getCollection("testkeywords").get();
-
-    List<ReadEntity> result =
-      instance.doKeywordQuickSearch(collection, keywordType, QuickSearch.fromQueryString(""), 1);
-
-    assertThat(result, hasSize(1));
-  }
-
-  // FIXME find a better way to test if the index is used
-  @Test
-  public void findKeywordByDisplayNameUsesAnIndexIfItIsAvailable() {
+  public void doKeywordQuickSearchUsesAnIndexToRetrieveTheResults() {
     Vres vres = createConfiguration();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
@@ -2441,12 +2229,11 @@ public class DataStoreOperationsTest {
     List<ReadEntity> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
-    verify(indexHandler).hasQuickSearchIndexFor(collection);
     verify(indexHandler).findKeywordsByQuickSearch(collection, quickSearch, keywordType);
   }
 
   @Test
-  public void findKeywordByDisplayLetsLimitLimitTheAmountOfIndexResults() {
+  public void doKeywordQuickSearchLetsLimitLimitTheAmountOfResults() {
     Vres vres = createConfiguration();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
     UUID id1 = UUID.randomUUID();
