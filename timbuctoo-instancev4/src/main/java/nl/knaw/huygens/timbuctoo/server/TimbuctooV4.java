@@ -198,7 +198,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final UrlGenerator uriWithoutRev = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
-    final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
+    final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
 
     HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
 

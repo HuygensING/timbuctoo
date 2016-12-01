@@ -8,6 +8,8 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 
+import java.util.UUID;
+
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
 
@@ -44,6 +46,10 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
     });
 
     return this;
+  }
+
+  public VertexMatcher withTimId(UUID timId) {
+    return this.withTimId(timId.toString());
   }
 
   public VertexMatcher withoutProperty(String propName) {
@@ -86,7 +92,6 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
 
     return this;
   }
-
 
   private static class WithoutPropertyMatcher extends TypeSafeMatcher<Vertex> {
     private final String propertyName;
