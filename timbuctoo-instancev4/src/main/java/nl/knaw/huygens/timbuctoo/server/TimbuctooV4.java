@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.changelistener.IdIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
@@ -183,9 +184,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
+    final Neo4jIndexHandler indexHandler = new Neo4jIndexHandler(graphManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new AddLabelChangeListener(),
-      new FulltextIndexChangeListener(new Neo4jIndexHandler(graphManager), graphManager),
+      new FulltextIndexChangeListener(indexHandler, graphManager),
+      new IdIndexChangeListener(indexHandler),
       new CollectionHasEntityRelationChangeListener(graphManager)
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
@@ -212,7 +215,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         changeListeners,
         entityFetcher,
         null,
-        new Neo4jIndexHandler(graphManager)
+        indexHandler
       ),
       timbuctooActionsFactory
     );
