@@ -3,14 +3,12 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
-import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.DisplayNameHelper;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,28 +62,5 @@ public class IndexAllTheDisplaynames implements DatabaseMigration {
           LOG.error("And exception occurred while indexing vertex with vertex id '{}'.", vertex.id());
         }
       });
-  }
-
-  private class DeafListener implements ChangeListener {
-
-    @Override
-    public void onCreate(Collection collection, Vertex vertex) {
-
-    }
-
-    @Override
-    public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
-    }
-
-    @Override
-    public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
-    }
-
-    @Override
-    public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
-    }
   }
 }
