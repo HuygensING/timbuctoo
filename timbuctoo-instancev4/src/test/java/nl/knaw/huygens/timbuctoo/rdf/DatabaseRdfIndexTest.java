@@ -20,7 +20,7 @@ public class DatabaseRdfIndexTest {
     final Database database = new Database(mgr);
     TransactionEnforcer transactionEnforcer = forGraphWrapper(mgr);
 
-    new ScaffoldMigrator(transactionEnforcer).execute();
+    new ScaffoldMigrator(mgr).execute();
     transactionEnforcer.execute(db -> {
       db.ensureVreExists("myVre");
       return commit();

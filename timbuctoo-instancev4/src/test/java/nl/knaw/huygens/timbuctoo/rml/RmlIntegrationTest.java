@@ -130,7 +130,7 @@ public class RmlIntegrationTest {
       graphManager = newGraph().wrap();
       traversalSource = graphManager.getGraph().traversal();
       transactionEnforcer = forGraphWrapper(graphManager);
-      new ScaffoldMigrator(transactionEnforcer).execute();
+      new ScaffoldMigrator(graphManager).execute();
 
       vres = new DatabaseConfiguredVres(transactionEnforcer);
     }

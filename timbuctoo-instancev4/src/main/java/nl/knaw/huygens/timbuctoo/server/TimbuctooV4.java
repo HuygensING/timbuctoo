@@ -220,11 +220,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       ),
       timbuctooActionsFactory
     );
-    graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
+    graphManager.onGraph(g -> new ScaffoldMigrator(graphManager).execute());
     handleAdder.init(transactionEnforcer);
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
-    migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, transactionEnforcer));
+    migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, graphManager));
     migrations.put("give-existing-relationtypes-rdf-uris", new RelationTypeRdfUriMigration());
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);

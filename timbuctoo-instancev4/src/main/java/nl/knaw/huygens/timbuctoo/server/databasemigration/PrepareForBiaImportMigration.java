@@ -1,9 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionState;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -22,12 +23,11 @@ import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProp
 public class PrepareForBiaImportMigration implements DatabaseMigration {
   private static final Logger LOG = LoggerFactory.getLogger(PrepareForBiaImportMigration.class);
   private final Vres mappings;
-  private TransactionEnforcer transactionEnforcer;
+  private final TinkerPopGraphManager graphManager;
 
-
-  public PrepareForBiaImportMigration(Vres vres, TransactionEnforcer transactionEnforcer) {
+  public PrepareForBiaImportMigration(Vres vres, TinkerPopGraphManager graphManager) {
     this.mappings = vres;
-    this.transactionEnforcer = transactionEnforcer;
+    this.graphManager = graphManager;
   }
 
   @Override
@@ -43,56 +43,57 @@ public class PrepareForBiaImportMigration implements DatabaseMigration {
   }
 
   private void addRelationTypes() {
-    transactionEnforcer.execute(db -> {
-      db.saveRelationTypes(
-        // TODO+FIXME, these BIA relationTypes should be made VRE specific and editable before mapping
-        // person to person relations
-        relationType("concept", "hasFirstPerson", "person", "isFirstPersonInRelation",
-          false, false, false, UUID.randomUUID()),
-        relationType("concept", "hasSecondPerson", "person", "isSecondPersonInRelation",
-          false, false, false, UUID.randomUUID()),
-        relationType("concept", "hasPersonToPersonRelationType", "concept", "isPersonToPersonRelationTypeOf",
-          false, false, false, UUID.randomUUID()),
+    DataStoreOperations db = new DataStoreOperations(
+      graphManager,
+      new DeafListener(),
+      new GremlinEntityFetcher(),
+      null,
+      new Neo4jIndexHandler(graphManager)
+    );
 
-        // states of persons
-        relationType("concept", "hasStateType", "concept", "isStateTypeOf", false, false, false, UUID.randomUUID()),
-        relationType("concept", "isStateOfPerson", "person", "hasPersonState",
-          false, false, false, UUID.randomUUID()),
-        relationType("concept", "isStateLinkedToInstitute", "collective", "isInstituteLinkedToState",
-          false, false, false, UUID.randomUUID()),
-        relationType("concept", "isStateLinkedToLocation", "location", "isLocationLinkedToState",
-          false, false, false, UUID.randomUUID()),
+    db.saveRelationTypes(
+      // TODO+FIXME, these BIA relationTypes should be made VRE specific and editable before mapping
+      // person to person relations
+      relationType("concept", "hasFirstPerson", "person", "isFirstPersonInRelation",
+        false, false, false, UUID.randomUUID()),
+      relationType("concept", "hasSecondPerson", "person", "isSecondPersonInRelation",
+        false, false, false, UUID.randomUUID()),
+      relationType("concept", "hasPersonToPersonRelationType", "concept", "isPersonToPersonRelationTypeOf",
+        false, false, false, UUID.randomUUID()),
 
-        // data lines for persons
-        relationType("concept", "hasDataLineType", "concept", "isDataLineTypeOf",
-          false, false, false, UUID.randomUUID()),
-        relationType("concept", "isDataLineForPerson", "person", "hasDataLine",
-          false, false, false, UUID.randomUUID()),
+      // states of persons
+      relationType("concept", "hasStateType", "concept", "isStateTypeOf", false, false, false, UUID.randomUUID()),
+      relationType("concept", "isStateOfPerson", "person", "hasPersonState",
+        false, false, false, UUID.randomUUID()),
+      relationType("concept", "isStateLinkedToInstitute", "collective", "isInstituteLinkedToState",
+        false, false, false, UUID.randomUUID()),
+      relationType("concept", "isStateLinkedToLocation", "location", "isLocationLinkedToState",
+        false, false, false, UUID.randomUUID()),
 
-        // scientist_bios for persons
-        relationType("concept", "hasFieldOfInterest", "concept", "isFieldOfInterestOf",
-          false, false, false, UUID.randomUUID()),
-        relationType("concept", "isScientistBioOf", "person", "hasScientistBio",
-          false, false, false, UUID.randomUUID())
-      );
-      return TransactionState.commit();
-    });
+      // data lines for persons
+      relationType("concept", "hasDataLineType", "concept", "isDataLineTypeOf",
+        false, false, false, UUID.randomUUID()),
+      relationType("concept", "isDataLineForPerson", "person", "hasDataLine",
+        false, false, false, UUID.randomUUID()),
+
+      // scientist_bios for persons
+      relationType("concept", "hasFieldOfInterest", "concept", "isFieldOfInterestOf",
+        false, false, false, UUID.randomUUID()),
+      relationType("concept", "isScientistBioOf", "person", "hasScientistBio",
+        false, false, false, UUID.randomUUID())
+    );
   }
 
   private void addConceptsCollectionToAdminVre(Graph graph) {
-    transactionEnforcer.execute(db -> {
+    final Vre adminVre = mappings.getVre("Admin");
+    final LinkedHashMap<String, ReadableProperty> conceptProperties = Maps.newLinkedHashMap();
+    conceptProperties.put("label", localProperty("label"));
 
-      final Vre adminVre = mappings.getVre("Admin");
-      final LinkedHashMap<String, ReadableProperty> conceptProperties = Maps.newLinkedHashMap();
-      conceptProperties.put("label", localProperty("label"));
+    final Collection conceptsCollection =
+      new Collection("concept", "concept", localProperty("label"), conceptProperties, "concepts",
+        mappings.getVre("Admin"), "concepts", false, false);
 
-      final Collection conceptsCollection =
-        new Collection("concept", "concept", localProperty("label"), conceptProperties, "concepts",
-          mappings.getVre("Admin"), "concepts", false, false);
-
-      adminVre.addCollection(conceptsCollection);
-      adminVre.save(graph);
-      return TransactionState.commit();
-    });
+    adminVre.addCollection(conceptsCollection);
+    adminVre.save(graph);
   }
 }
