@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.Optional;
 import java.util.UUID;
 
 public interface IndexHandler {
@@ -31,7 +32,7 @@ public interface IndexHandler {
   void removeFromQuickSearchIndex(Collection collection, Vertex vertex);
 
   //=====================tim_id index=====================
-  GraphTraversal<Vertex, Vertex> findById(UUID timId);
+  Optional<Vertex> findById(UUID timId);
 
   /**
    * This method does not prevent multiple entries for a vertex.

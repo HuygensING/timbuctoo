@@ -39,17 +39,17 @@ public class Neo4jLuceneEntityFetcher extends GremlinEntityFetcher {
 
   private Optional<Vertex> getVertexByIndex(GraphTraversalSource source, UUID id, String collectionName) {
     // Look up the vertex for this neo4j Node
-    GraphTraversal<Vertex, Vertex> vertexT = indexHandler.findById(id);
+    Optional<Vertex> vertexOpt = indexHandler.findById(id);
 
     // Return if the neo4j Node ID matches no vertex (extreme edge case)
-    if (!vertexT.hasNext()) {
+    if (!vertexOpt.isPresent()) {
       LOG.error(Logmarkers.databaseInvariant,
         "Vertex with tim_id {} is found in index with id {}L but not in graph database", id);
       return Optional.empty();
     }
 
     // Get the latest version of the found Vertex
-    Vertex foundVertex = vertexT.next();
+    Vertex foundVertex = vertexOpt.get();
     int infinityGuard = 0;
     while (foundVertex.vertices(Direction.OUT, "VERSION_OF").hasNext()) {
       // The neo4j index Node is one version_of behind the actual node

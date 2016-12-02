@@ -17,6 +17,7 @@ import org.neo4j.helpers.collection.MapUtil;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
@@ -92,11 +93,12 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   //=====================tim_id index=====================
   @Override
-  public GraphTraversal<Vertex, Vertex> findById(UUID timId) {
+  public Optional<Vertex> findById(UUID timId) {
     IndexHits<Node> hits = getIdIndex(ID_INDEX).query(TIM_ID, timId.toString());
     List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
+    GraphTraversal<Vertex, Vertex> vertexT = traversal().V(ids);
 
-    return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal().V(ids);
+    return !ids.isEmpty() && vertexT.hasNext() ? Optional.of(vertexT.next()) : Optional.empty();
   }
 
   @Override

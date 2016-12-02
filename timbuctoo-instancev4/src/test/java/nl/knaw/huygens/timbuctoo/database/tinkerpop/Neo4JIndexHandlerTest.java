@@ -9,10 +9,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.neo4j.graphdb.Transaction;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -250,9 +250,9 @@ public class Neo4JIndexHandlerTest {
     Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
     instance.insertIntoIdIndex(id1, vertex);
 
-    GraphTraversal<Vertex, Vertex> result = instance.findById(id1);
+    Optional<Vertex> result = instance.findById(id1);
 
-    assertThat(result.map(v -> v.get().value("tim_id")).toList(), contains(id1.toString()));
+    assertThat(result.get().value("tim_id"), is(id1.toString()));
   }
 
   @Test
@@ -267,9 +267,9 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
 
-    GraphTraversal<Vertex, Vertex> result = instance.findById(id1);
+    Optional<Vertex> result = instance.findById(id1);
 
-    assertThat(result.hasNext(), is(false));
+    assertThat(result.isPresent(), is(false));
   }
 
   @Test
@@ -286,12 +286,12 @@ public class Neo4JIndexHandlerTest {
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
     instance.insertIntoIdIndex(id1, vertex);
-    assertThat(instance.findById(id1).hasNext(), is(true));
+    assertThat(instance.findById(id1).isPresent(), is(true));
 
     instance.upsertIntoIdIndex(newId, vertex);
 
-    assertThat(instance.findById(id1).hasNext(), is(false));
-    assertThat(instance.findById(newId).hasNext(), is(true));
+    assertThat(instance.findById(id1).isPresent(), is(false));
+    assertThat(instance.findById(newId).isPresent(), is(true));
   }
 
   @Test
@@ -307,11 +307,11 @@ public class Neo4JIndexHandlerTest {
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
     instance.insertIntoIdIndex(id1, vertex);
-    assertThat(instance.findById(id1).hasNext(), is(true));
+    assertThat(instance.findById(id1).isPresent(), is(true));
 
     instance.removeFromIdIndex(vertex);
 
-    assertThat(instance.findById(id1).hasNext(), is(false));
+    assertThat(instance.findById(id1).isPresent(), is(false));
   }
 
 

@@ -2,13 +2,13 @@ package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.EmptyGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -46,7 +46,7 @@ public class Neo4jLuceneEntityFetcherTest {
                                                                      .traversal().V()
                                                                      .has("tim_id", timId.toString())
                                                                      .has("isLatest", false);
-    given(indexHandler.findById(timId)).willReturn(secondLatestVertexT);
+    given(indexHandler.findById(timId)).willReturn(Optional.of(secondLatestVertexT.next()));
     Neo4jLuceneEntityFetcher instance = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
     GraphTraversalSource traversal = graphManager.getGraph().traversal();
 
@@ -70,7 +70,7 @@ public class Neo4jLuceneEntityFetcherTest {
         .withOutgoingRelation("VERSION_OF", "latest")
       )
       .wrap();
-    given(indexHandler.findById(timId)).willReturn(EmptyGraphTraversal.instance());
+    given(indexHandler.findById(timId)).willReturn(Optional.empty());
     Neo4jLuceneEntityFetcher instance = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
     GraphTraversalSource traversal = graphManager.getGraph().traversal();
 
