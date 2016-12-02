@@ -10,15 +10,14 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class TypesHelperTest {
 
@@ -42,17 +41,18 @@ public class TypesHelperTest {
     CollectionDescription desc2 = CollectionDescription.createCollectionDescription("otherEntityType", "vreName");
     when(collection2.getDescription()).thenReturn(desc2);
 
-    instance.updateTypeInformation(vertex, Sets.newHashSet(collection1, collection2));
+    instance.addTypeInformation(vertex, Sets.newHashSet(collection1, collection2), collection1);
 
     ArgumentCaptor<String> typesCaptor = ArgumentCaptor.forClass(String.class);
     verify(vertex).property(argThat(is("types")), typesCaptor.capture());
     List<String> typesList = new ObjectMapper().readValue(typesCaptor.getValue(), new TypeReference<List<String>>() {
     });
     assertThat(typesList, containsInAnyOrder(desc1.getEntityTypeName(), desc2.getEntityTypeName()));
+    verify(labelChangeListener).handleRdfLabelAdd(vertex, "vreNameentityTypeName");
   }
 
   @Test
-  public void updateTypeInformationUpdatesTheLabels() {
+  public void updateTypeInformationUpdatesTheLabels() throws Exception {
     Collection collection1 = mock(Collection.class);
     when(collection1.getDescription()).thenReturn(
       CollectionDescription.createCollectionDescription("entityTypeName", "vreName"));
@@ -62,8 +62,11 @@ public class TypesHelperTest {
 
     Vertex vertex = mock(Vertex.class);
 
-    instance.updateTypeInformation(vertex, Sets.newHashSet(collection1, collection2));
+    instance.removeTypeInformation(vertex, Sets.newHashSet(collection1), collection2);
 
-    verify(labelChangeListener).onUpdate(Optional.empty(), vertex);
+    ArgumentCaptor<String> typesCaptor = ArgumentCaptor.forClass(String.class);
+    verify(vertex).property(argThat(is("types")), typesCaptor.capture());
+    assertThat(typesCaptor.getValue(), is("[\"vreNameentityTypeName\"]"));
+    verify(labelChangeListener).handleRdfLabelRemove(vertex, "vreNameotherEntityType");
   }
 }

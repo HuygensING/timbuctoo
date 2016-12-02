@@ -13,6 +13,10 @@ import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import java.util.Iterator;
 
 public class VertexDuplicator {
+
+  public static final String VERSION_OF = "VERSION_OF";
+  public static final String IS_LATEST = "isLatest";
+
   public static void duplicateVertex(Graph graph, Vertex vertex) {
     GraphTraversalSource traversal = graph.traversal();
     duplicateVertex(traversal, vertex);
@@ -33,15 +37,15 @@ public class VertexDuplicator {
     moveIncomingEdges(vertex, duplicate);
     moveOutgoingEdges(vertex, duplicate);
 
-    vertex.property("isLatest", false);
-    duplicate.property("isLatest", true);
-    vertex.addEdge("VERSION_OF", duplicate);
+    vertex.property(IS_LATEST, false);
+    duplicate.property(IS_LATEST, true);
+    vertex.addEdge(VERSION_OF, duplicate);
   }
 
   static void moveOutgoingEdges(Vertex vertex, Vertex duplicate) {
     for (Iterator<Edge> edges = vertex.edges(Direction.OUT); edges.hasNext(); ) {
       Edge edge = edges.next();
-      if (edge.label().equals("VERSION_OF")) {
+      if (edge.label().equals(VERSION_OF)) {
         continue;
       }
 
@@ -59,7 +63,7 @@ public class VertexDuplicator {
   static void moveIncomingEdges(Vertex vertex, Vertex duplicate) {
     for (Iterator<Edge> edges = vertex.edges(Direction.IN); edges.hasNext(); ) {
       Edge edge = edges.next();
-      if (edge.label().equals("VERSION_OF")) {
+      if (edge.label().equals(VERSION_OF)) {
         continue;
       }
       Edge duplicateEdge = edge.outVertex().addEdge(edge.label(), duplicate);

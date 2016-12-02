@@ -54,7 +54,11 @@ public class EntityTest {
     verify(newCollection).add(argThat(is(vertex)));
     assertThat(collections, containsInAnyOrder(newCollection, otherCollection));
     ArgumentCaptor<Set> collectionsCaptor = ArgumentCaptor.forClass(Set.class);
-    verify(typesHelper).updateTypeInformation(argThat(is(vertex)), (Set<Collection>) collectionsCaptor.capture());
+    verify(typesHelper).addTypeInformation(
+      argThat(is(vertex)),
+      (Set<Collection>) collectionsCaptor.capture(),
+      argThat(is(newCollection))
+    );
     assertThat((Set<Collection>) collectionsCaptor.getValue(),
       containsInAnyOrder(otherCollection, newCollection));
   }
@@ -114,7 +118,11 @@ public class EntityTest {
     entity.removeFromCollection(collectionToRemoveFrom);
 
     ArgumentCaptor<Set> collectionCaptor = ArgumentCaptor.forClass(Set.class);
-    verify(typesHelper).updateTypeInformation(argThat(is(vertex)), collectionCaptor.capture());
+    verify(typesHelper).removeTypeInformation(
+      argThat(is(vertex)),
+      collectionCaptor.capture(),
+      argThat(is(collectionToRemoveFrom))
+    );
     assertThat((Set<Collection>) collectionCaptor.getValue(), contains(otherCollection));
   }
 }

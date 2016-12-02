@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
 
@@ -12,12 +12,9 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class MakePidsAbsoluteUrls implements DatabaseMigration {
   private static final Logger LOG = getLogger(MakePidsAbsoluteUrls.class);
 
-  @Override
-  public void beforeMigration(GraphWrapper graphManager) {
-  }
 
   @Override
-  public void execute(GraphWrapper graphWrapper) throws IOException {
+  public void execute(TinkerpopGraphManager graphWrapper) throws IOException {
     Transaction tx = graphWrapper.getGraph().tx();
     if (!tx.isOpen()) {
       tx.open();

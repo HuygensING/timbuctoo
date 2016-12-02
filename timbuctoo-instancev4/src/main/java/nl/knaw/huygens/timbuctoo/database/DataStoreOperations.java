@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.converters.tinkerpop.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
@@ -24,7 +25,6 @@ import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.ObjectSuddenlyDisappearedException;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopGetCollection;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -34,7 +34,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -94,27 +93,8 @@ public class DataStoreOperations implements AutoCloseable {
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
-  public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener,
-                             EntityFetcher entityFetcher, Vres mappings) {
-    graph = graphWrapper.getGraph();
-    this.transaction = graph.tx();
-    this.listener = listener;
-    this.entityFetcher = entityFetcher;
-
-    if (!transaction.isOpen()) {
-      transaction.open();
-    }
-    this.traversal = graph.traversal();
-    this.latestState = graphWrapper.getLatestState();
-    this.mappings = mappings == null ? loadVres() : mappings;
-    this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
-
-    this.indexHandler = createIndexHandler(graphWrapper);
-  }
-
-  DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener, GremlinEntityFetcher entityFetcher,
-                      Vres mappings,
-                      IndexHandler indexHandler) {
+  public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener, GremlinEntityFetcher entityFetcher,
+                             Vres mappings, IndexHandler indexHandler) {
     graph = graphWrapper.getGraph();
     this.indexHandler = indexHandler;
     this.transaction = graph.tx();
@@ -218,35 +198,6 @@ public class DataStoreOperations implements AutoCloseable {
     }
   }
 
-  private IndexHandler createIndexHandler(GraphWrapper graphWrapper) {
-    if (graphWrapper instanceof TinkerpopGraphManager) {
-      return new Neo4jIndexHandler((TinkerpopGraphManager) graphWrapper);
-    } else {
-      return new IndexHandler() {
-        @Override
-        public boolean hasIndexFor(Collection collection) {
-          return false;
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> findByQuickSearch(Collection collection, QuickSearch quickSearch) {
-          throw new UnsupportedOperationException("Not implemented yet");
-        }
-
-        @Override
-        public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, QuickSearch quickSearch,
-                                                                        String keywordType) {
-          throw new UnsupportedOperationException("Not implemented yet");
-        }
-
-        @Override
-        public void addToQuickSearchIndex(Collection collection, String displayName, Vertex vertex) {
-          throw new UnsupportedOperationException("Not implemented yet");
-        }
-      };
-    }
-  }
-
   public void success() {
     isSuccess = Optional.of(true);
   }
@@ -326,7 +277,6 @@ public class DataStoreOperations implements AutoCloseable {
     GraphTraversal<Vertex, Vertex> traversalWithVertex = traversal.addV();
 
     Vertex vertex = traversalWithVertex.next();
-
     for (TimProperty<?> property : input.getProperties()) {
       String fieldName = property.getName();
       if (mapping.containsKey(fieldName)) {
@@ -357,7 +307,9 @@ public class DataStoreOperations implements AutoCloseable {
 
     setAdministrativeProperties(col, vertex, input);
 
-    listener.onCreate(vertex);
+    listener.onCreate(col, vertex);
+    listener.onAddToCollection(col, Optional.empty(), vertex);
+    baseCollection.ifPresent(baseCol -> listener.onAddToCollection(baseCol, Optional.empty(), vertex));
 
     duplicateVertex(traversal, vertex);
   }
@@ -409,7 +361,7 @@ public class DataStoreOperations implements AutoCloseable {
 
   public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
     GraphTraversal<Vertex, Vertex> result;
-    if (indexHandler.hasIndexFor(collection)) {
+    if (indexHandler.hasQuickSearchIndexFor(collection)) {
       result = indexHandler.findByQuickSearch(collection, quickSearch);
     } else {
       String cleanQuery = createQuery(quickSearch);
@@ -430,7 +382,7 @@ public class DataStoreOperations implements AutoCloseable {
   public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
                                                int limit) {
     GraphTraversal<Vertex, Vertex> result;
-    if (indexHandler.hasIndexFor(collection)) {
+    if (indexHandler.hasQuickSearchIndexFor(collection)) {
       result = indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType);
     } else {
       String cleanQuery = createQuery(quickSearch);
@@ -526,12 +478,14 @@ public class DataStoreOperations implements AutoCloseable {
     }
 
     String entityTypesStr = getProp(entityVertex, "types", String.class).orElse("[]");
+    boolean wasAddedToCollection = false;
     if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
       try {
         ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
         entityTypes.add(collection.getEntityTypeName());
 
         entityVertex.property("types", entityTypes.toString());
+        wasAddedToCollection = true;
       } catch (IOException e) {
         // FIXME potential bug?
         LOG.error(Logmarkers.databaseInvariant, "property 'types' was not parseable: " + entityTypesStr);
@@ -541,7 +495,11 @@ public class DataStoreOperations implements AutoCloseable {
     setModified(entityVertex, updateEntity.getModified());
     entityVertex.property("pid").remove();
 
-    callUpdateListener(entityVertex);
+    Optional<Vertex> prevVertex = getPrevVertex(collection, entityVertex);
+    listener.onPropertyUpdate(collection, prevVertex, entityVertex);
+    if (wasAddedToCollection) {
+      listener.onAddToCollection(collection, prevVertex, entityVertex);
+    }
 
     duplicateVertex(traversal, entityVertex);
     return newRev;
@@ -553,8 +511,8 @@ public class DataStoreOperations implements AutoCloseable {
       Instant.ofEpochMilli(updateRelation.getModified().getTimeStamp()));
   }
 
-  public void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
-                              Instant instant)
+  private void replaceRelation(Collection collection, UUID id, int rev, boolean accepted, String userId,
+                               Instant instant)
     throws NotFoundException {
 
     requireCommit = true;
@@ -597,16 +555,19 @@ public class DataStoreOperations implements AutoCloseable {
 
     Vertex entity = entityTraversal.next();
     String entityTypesStr = getProp(entity, "types", String.class).orElse("[]");
+    boolean wasRemoved = false;
     if (entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
       try {
         ArrayNode entityTypes = arrayToEncodedArray.tinkerpopToJson(entityTypesStr);
         if (entityTypes.size() == 1) {
           entity.property("deleted", true);
+          wasRemoved = true;
         } else {
           for (int i = entityTypes.size() - 1; i >= 0; i--) {
             JsonNode val = entityTypes.get(i);
             if (val != null && val.asText("").equals(collection.getEntityTypeName())) {
               entityTypes.remove(i);
+              wasRemoved = true;
             }
           }
           entity.property("types", entityTypes.toString());
@@ -630,7 +591,10 @@ public class DataStoreOperations implements AutoCloseable {
 
     setModified(entity, modified);
     entity.property("pid").remove();
-    callUpdateListener(entity);
+    if (wasRemoved) {
+      listener.onRemoveFromCollection(collection, getPrevVertex(collection, entity), entity);
+    }
+
     duplicateVertex(traversal, entity);
 
     return newRev;
@@ -758,6 +722,7 @@ public class DataStoreOperations implements AutoCloseable {
   }
 
   private void setAdministrativeProperties(Collection col, Vertex vertex, CreateEntity input) {
+    vertex.property("isLatest", true);
     vertex.property("tim_id", input.getId().toString());
     vertex.property("rev", 1);
     vertex.property("types", String.format(
@@ -810,7 +775,7 @@ public class DataStoreOperations implements AutoCloseable {
     }
   }
 
-  private void callUpdateListener(Vertex entity) {
+  private Optional<Vertex> getPrevVertex(Collection collection, Vertex entity) {
     final Iterator<Edge> prevEdges = entity.edges(Direction.IN, "VERSION_OF");
     Optional<Vertex> old = Optional.empty();
     if (prevEdges.hasNext()) {
@@ -818,7 +783,7 @@ public class DataStoreOperations implements AutoCloseable {
     } else {
       LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
     }
-    listener.onUpdate(old, entity);
+    return old;
   }
 
   private void saveVres(Vres mappings) {

@@ -26,7 +26,7 @@ public class WwDocumentDisplayName extends ReadableProperty {
             Try<JsonNode> title = (Try<JsonNode>) x.get().get("title");
             return Try.success((JsonNode) jsn(
               title.getOrElse(jsn("")).asText() +
-                " (" + date.getOrElse(jsn("<date>")).asText() + ")"
+                " (" + date.getOrElse(jsn("")).asText() + ")"
             ));
           }),
       () ->
@@ -41,7 +41,7 @@ public class WwDocumentDisplayName extends ReadableProperty {
             Try<Object> date = (Try<Object>) x.get().get("date");
             Try<Object> title = (Try<Object>) x.get().get("title");
             return Try.success((Object) (title.getOrElse("") +
-              " (" + date.getOrElse(jsn("<date>")) + ")"
+              " (" + date.getOrElse(jsn("")) + ")"
             ));
           })
     );

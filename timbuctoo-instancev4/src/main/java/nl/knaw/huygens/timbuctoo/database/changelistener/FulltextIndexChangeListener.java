@@ -1,63 +1,73 @@
 package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.database.ChangeListener;
-import nl.knaw.huygens.timbuctoo.search.description.IndexDescription;
-import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
+import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
+import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.neo4j.graphdb.GraphDatabaseService;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDefault;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 
 public class FulltextIndexChangeListener implements ChangeListener {
 
-  private final GraphDatabaseService graphDatabase;
-  private final IndexDescriptionFactory indexDescriptionFactory;
+  private final IndexHandler indexHandler;
+  private final GraphWrapper graphWrapper;
 
-  public FulltextIndexChangeListener(GraphDatabaseService graphDatabase,
-                                     IndexDescriptionFactory indexDescriptionFactory) {
-    this.graphDatabase = graphDatabase;
-    this.indexDescriptionFactory = indexDescriptionFactory;
+  public FulltextIndexChangeListener(IndexHandler indexHandler, GraphWrapper graphWrapper) {
+    this.indexHandler = indexHandler;
+    this.graphWrapper = graphWrapper;
   }
 
   @Override
-  public void onCreate(Vertex vertex) {
-    handleChange(vertex);
+  public void onCreate(Collection collection, Vertex vertex) {
+    handleChange(collection, vertex);
   }
 
   @Override
-  public void onUpdate(Optional<Vertex> oldVertex, Vertex newVertex) {
-    Set<String> newTypes = Sets.newHashSet(getEntityTypesOrDefault(newVertex));
-    Set<String> oldTypes = oldVertex.isPresent() ?
-            Sets.newHashSet(getEntityTypesOrDefault(oldVertex.get())) :
-            Sets.newHashSet(getEntityTypesOrDefault(newVertex));
-
-    Set<String> typesToRemoveFromIndex = Sets.difference(oldTypes, newTypes);
-
-    if (typesToRemoveFromIndex.size() > 0) {
-      handleRemove(oldVertex.get(), Lists.newArrayList(typesToRemoveFromIndex));
-    }
-    handleChange(newVertex);
+  public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    oldVertex.ifPresent(vertex -> handleRemove(collection, vertex));
+    handleChange(collection, newVertex);
   }
 
-  private void handleChange(Vertex vertex) {
-    List<String> types = Lists.newArrayList(getEntityTypesOrDefault(vertex));
-    List<IndexDescription> indexers = indexDescriptionFactory.getIndexersForTypes(types);
-    for (IndexDescription indexer : indexers) {
-      indexer.addToFulltextIndex(vertex, graphDatabase);
-    }
+  @Override
+  public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    handleRemove(collection, newVertex);
   }
 
-  private void handleRemove(Vertex vertex, List<String> types) {
-    List<IndexDescription> indexers = indexDescriptionFactory.getIndexersForTypes(types);
-    for (IndexDescription indexer : indexers) {
-      indexer.removeFromFulltextIndex(vertex, graphDatabase);
+  @Override
+  public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    handleChange(collection, newVertex);
+  }
+
+  private void handleChange(Collection collection, Vertex vertex) {
+    GraphTraversal<Vertex, Vertex> traversal = graphWrapper.getGraph().traversal().V(vertex.id());
+    String docCaption = traversal.asAdmin().clone()
+                                 .union(collection.getDisplayName().traversalJson())
+                                 .next()
+                                 .getOrElse(jsn(""))
+                                 .asText();
+    if (collection.getEntityTypeName().equals("wwdocument")) {
+      Collection wwpersons = collection.getVre().getCollectionForCollectionName("wwpersons").get();
+      List<String> authors = traversal.out("isCreatedBy")
+                                      .union(wwpersons.getDisplayName().traversalJson())
+                                      .map(x -> x.get().getOrElse(jsn("")).asText())
+                                      .toList();
+      Collections.sort(authors);
+      String authorCaption = String.join(
+        "; ",
+        authors
+      );
+      docCaption = authorCaption + " " + docCaption;
     }
+    indexHandler.insertIntoQuickSearchIndex(collection, docCaption, vertex);
+  }
+
+  private void handleRemove(Collection collection, Vertex vertex) {
+    indexHandler.removeFromQuickSearchIndex(collection, vertex);
   }
 }

@@ -1,37 +1,37 @@
 package nl.knaw.huygens.timbuctoo.database.changelistener;
 
-import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;
-import java.util.Set;
+import java.util.UUID;
 
-public class CompositeChangeListener implements ChangeListener {
+public class IdIndexChangeListener implements ChangeListener {
+  private final IndexHandler indexHandler;
 
-  private final Set<ChangeListener> subListeners;
-
-  public CompositeChangeListener(ChangeListener... listeners) {
-    subListeners = Sets.newHashSet(listeners);
+  public IdIndexChangeListener(IndexHandler indexHandler) {
+    this.indexHandler = indexHandler;
   }
 
   @Override
   public void onCreate(Collection collection, Vertex vertex) {
-    subListeners.forEach(l -> l.onCreate(collection, vertex));
+    indexHandler.insertIntoIdIndex(UUID.fromString(vertex.value("tim_id")), vertex);
   }
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    subListeners.forEach(l -> l.onPropertyUpdate(collection, oldVertex, newVertex));
+    oldVertex.ifPresent(vertex -> indexHandler.removeFromIdIndex(vertex));
+    indexHandler.insertIntoIdIndex(UUID.fromString(newVertex.value("tim_id")), newVertex);
   }
 
   @Override
   public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    subListeners.forEach(l -> l.onRemoveFromCollection(collection, oldVertex, newVertex));
+
   }
 
   @Override
   public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    subListeners.forEach(l -> l.onAddToCollection(collection, oldVertex, newVertex));
+
   }
 }

@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +31,7 @@ public class PrepareForBiaImportMigration implements DatabaseMigration {
   }
 
   @Override
-  public void beforeMigration(GraphWrapper graphManager) {
-
-  }
-
-  @Override
-  public void execute(GraphWrapper graphWrapper) throws IOException {
+  public void execute(TinkerpopGraphManager graphWrapper) throws IOException {
     final Graph graph = graphWrapper.getGraph();
 
 

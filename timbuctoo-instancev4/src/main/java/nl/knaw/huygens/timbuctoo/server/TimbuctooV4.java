@@ -25,8 +25,9 @@ import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
 import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
-import nl.knaw.huygens.timbuctoo.database.changelistener.DenormalizedSortFieldUpdater;
 import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.changelistener.IdIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -37,13 +38,14 @@ import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.search.description.indexes.IndexDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllEntityIds;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllTheDisplaynames;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.PrepareForBiaImportMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
@@ -77,7 +79,6 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.SortIndexesDatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -173,6 +174,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     migrations.put("fix-dcarkeywords-displayname-migration", new FixDcarKeywordDisplayNameMigration());
     migrations.put("fix-pids-migration", new MakePidsAbsoluteUrls());
+    migrations.put("index-all-displaynames", new IndexAllTheDisplaynames());
+    migrations.put("index-all-entity-ids", new IndexAllEntityIds());
 
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
@@ -181,10 +184,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
+    final Neo4jIndexHandler indexHandler = new Neo4jIndexHandler(graphManager);
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
-      new DenormalizedSortFieldUpdater(new IndexDescriptionFactory()),
       new AddLabelChangeListener(),
-      new FulltextIndexChangeListener(graphManager.getGraphDatabase(), new IndexDescriptionFactory()),
+      new FulltextIndexChangeListener(indexHandler, graphManager),
+      new IdIndexChangeListener(indexHandler),
       new CollectionHasEntityRelationChangeListener(graphManager)
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
@@ -194,7 +198,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final UrlGenerator uriWithoutRev = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
 
-    final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager);
+    final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
 
     HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
 
@@ -206,7 +210,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriToRedirectToFromPersistentUrls
     );
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
-      () -> new DataStoreOperations(graphManager, changeListeners, entityFetcher, null),
+      () -> new DataStoreOperations(
+        graphManager,
+        changeListeners,
+        entityFetcher,
+        null,
+        indexHandler
+      ),
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
@@ -354,7 +364,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   private DatabaseValidator getDatabaseValidator(Vres vres, TinkerpopGraphManager graphManager) {
     return new DatabaseValidator(
       new LabelsAddedToVertexDatabaseCheck(),
-      new SortIndexesDatabaseCheck(),
       new InvariantsCheck(vres),
       new FullTextIndexCheck(graphManager)
     );
