@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database;
 
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -32,7 +32,7 @@ public class Neo4jLuceneEntityFetcherTest {
   public void getEntityRetrievesTheLatestFromTheGraphEvenIfTheIndexIsNotUpToDate() {
     final UUID timId = UUID.randomUUID();
     final String collectionName = "things";
-    TinkerpopGraphManager graphManager = newGraph()
+    TinkerPopGraphManager graphManager = newGraph()
       .withVertex("latest", v -> v
         .withTimId(timId)
         .isLatest(true))
@@ -60,7 +60,7 @@ public class Neo4jLuceneEntityFetcherTest {
   public void getEntityRetrievesTheVertexDirectFromTheDatabaseWhenTheIndexDoesNotContainIt() {
     final UUID timId = UUID.randomUUID();
     final String things = "things";
-    TinkerpopGraphManager graphManager = newGraph()
+    TinkerPopGraphManager graphManager = newGraph()
       .withVertex("latest", v -> v
         .withTimId(timId)
         .isLatest(true))

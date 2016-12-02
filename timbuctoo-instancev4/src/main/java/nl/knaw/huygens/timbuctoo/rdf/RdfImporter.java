@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
@@ -24,18 +24,18 @@ import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
 
 public class RdfImporter {
   public static final Logger LOG = LoggerFactory.getLogger(RdfImporter.class);
-  private final TinkerpopGraphManager graphWrapper;
+  private final TinkerPopGraphManager graphWrapper;
   private final String vreName;
   private final TransactionEnforcer transactionEnforcer;
   private final TripleProcessorImpl processor;
   private Vres vres;
 
-  public RdfImporter(TinkerpopGraphManager graphWrapper, String vreName, Vres vres,
+  public RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres,
                      TransactionEnforcer transactionEnforcer) {
     this(graphWrapper, vreName, vres, transactionEnforcer, new TripleProcessorImpl(new Database(graphWrapper)));
   }
 
-  RdfImporter(TinkerpopGraphManager graphWrapper, String vreName, Vres vres, TransactionEnforcer transactionEnforcer,
+  RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, TransactionEnforcer transactionEnforcer,
               TripleProcessorImpl tripleImporter) {
     this.graphWrapper = graphWrapper;
     this.vreName = vreName;

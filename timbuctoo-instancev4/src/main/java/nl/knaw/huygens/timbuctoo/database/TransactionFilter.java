@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,9 +17,9 @@ public class TransactionFilter implements ContainerRequestFilter, ContainerRespo
 
   public static final Logger LOG = LoggerFactory.getLogger(TransactionFilter.class);
 
-  private final TinkerpopGraphManager graphWrapper;
+  private final TinkerPopGraphManager graphWrapper;
 
-  public TransactionFilter(TinkerpopGraphManager graphWrapper) {
+  public TransactionFilter(TinkerPopGraphManager graphWrapper) {
     this.graphWrapper = graphWrapper;
   }
 

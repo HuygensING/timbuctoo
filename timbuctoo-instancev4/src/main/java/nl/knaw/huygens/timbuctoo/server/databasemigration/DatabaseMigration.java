@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
 import java.io.IOException;
 
 public interface DatabaseMigration {
-  void execute(TinkerpopGraphManager graphWrapper) throws IOException;
+  void execute(TinkerPopGraphManager graphWrapper) throws IOException;
 }

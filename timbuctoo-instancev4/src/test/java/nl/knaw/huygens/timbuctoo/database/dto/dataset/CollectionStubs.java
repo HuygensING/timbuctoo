@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.dto.dataset;
 
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 
@@ -23,4 +24,13 @@ public class CollectionStubs {
     );
   }
 
+  public static Collection collWithCollectionName(String collectionName) {
+    // TODO find a better way to create a collection for a test
+    return new Collection(null, collectionName, null, Maps.newLinkedHashMap(), collectionName, null, null, false,
+      false);
+  }
+
+  public static Collection keywordCollWithCollectionName(String collectionName) {
+    return new Collection(null, "keyword", null, Maps.newLinkedHashMap(), collectionName, null, null, false, false);
+  }
 }

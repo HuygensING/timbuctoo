@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -34,7 +34,7 @@ public class WomenWritersJsonCrudServiceTest {
   public void getReturnsAJsonNodeWithARelationsPropertyWithTheGenderOfTheAuthors()
     throws InvalidCollectionException, NotFoundException {
     UUID workId = UUID.randomUUID();
-    GraphWrapper graphWrapper = newGraph()
+    TinkerPopGraphManager graphManager = newGraph()
       .withVertex("work1", v -> {
           v.withOutgoingRelation("isCreatedBy", "pers1")
            .withOutgoingRelation("isCreatedBy", "pers2")
@@ -70,7 +70,7 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isCreatorOf")
       )
       .wrap();
-    WomenWritersJsonCrudService instance = createInstance(graphWrapper);
+    WomenWritersJsonCrudService instance = createInstance(graphManager);
 
     JsonNode result = instance.get("wwdocuments", workId);
 
@@ -83,7 +83,7 @@ public class WomenWritersJsonCrudServiceTest {
     );
   }
 
-  private WomenWritersJsonCrudService createInstance(GraphWrapper graphWrapper) {
+  private WomenWritersJsonCrudService createInstance(TinkerPopGraphManager graphManager) {
     final UserStore userStore = mock(UserStore.class);
     try {
       Mockito.when(userStore.userForId(anyString())).thenReturn(Optional.empty());
@@ -124,7 +124,7 @@ public class WomenWritersJsonCrudServiceTest {
         .build(),
       userStore,
       (collection, id, rev) -> URI.create("http://example.com/"),
-      TimbuctooActionsStubs.forGraphWrapper(graphWrapper));
+      TimbuctooActionsStubs.forGraphWrapper(graphManager));
   }
 
   @Test
@@ -132,7 +132,7 @@ public class WomenWritersJsonCrudServiceTest {
     throws Exception {
     UUID pers1Id = UUID.randomUUID();
 
-    GraphWrapper graphWrapper = newGraph()
+    TinkerPopGraphManager graphManager = newGraph()
       .withVertex("work1", v ->
         v.withOutgoingRelation("isCreatedBy", "pers1", r -> r.withIsLatest(true).withAccepted("wwrelation", true))
          .withVre("ww")
@@ -175,7 +175,7 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isCreatorOf")
       )
       .wrap();
-    WomenWritersJsonCrudService instance = createInstance(graphWrapper);
+    WomenWritersJsonCrudService instance = createInstance(graphManager);
 
     JsonNode result = instance.get("wwpersons", pers1Id);
 
@@ -197,7 +197,7 @@ public class WomenWritersJsonCrudServiceTest {
     throws InvalidCollectionException, NotFoundException {
     UUID pers1Id = UUID.randomUUID();
 
-    GraphWrapper graphWrapper = newGraph()
+    TinkerPopGraphManager graphManager = newGraph()
       .withVertex("work1", v ->
         v.withOutgoingRelation("isCreatedBy", "pers1", r -> r.withIsLatest(true).withAccepted("wwrelation", true))
          .withOutgoingRelation("hasWorkLanguage", "lang1", r -> r.withIsLatest(true).withAccepted("wwrelation", true))
@@ -254,7 +254,7 @@ public class WomenWritersJsonCrudServiceTest {
          .withProperty("relationtype_inverseName", "isWorkLanguageOf")
       )
       .wrap();
-    WomenWritersJsonCrudService instance = createInstance(graphWrapper);
+    WomenWritersJsonCrudService instance = createInstance(graphManager);
 
     JsonNode result = instance.get("wwpersons", pers1Id);
 

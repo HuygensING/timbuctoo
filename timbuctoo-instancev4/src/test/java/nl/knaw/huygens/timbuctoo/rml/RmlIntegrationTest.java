@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
@@ -212,7 +212,7 @@ public class RmlIntegrationTest {
 
   public class IntegrationTester {
     public final GraphTraversalSource traversalSource;
-    private final TinkerpopGraphManager graphManager;
+    private final TinkerPopGraphManager graphManager;
     private final TransactionEnforcer transactionEnforcer;
     private final DatabaseConfiguredVres vres;
 

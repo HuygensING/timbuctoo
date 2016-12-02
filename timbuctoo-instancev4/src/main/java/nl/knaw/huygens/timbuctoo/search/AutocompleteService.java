@@ -19,12 +19,12 @@ public class AutocompleteService {
   private final UrlGenerator autoCompleteUrlFor;
   private final TimbuctooActions timbuctooActions;
 
-  public AutocompleteService(UrlGenerator autoCompleteUrlFor,TimbuctooActions timbuctooActions) {
+  public AutocompleteService(UrlGenerator autoCompleteUrlFor, TimbuctooActions timbuctooActions) {
     this.timbuctooActions = timbuctooActions;
     this.autoCompleteUrlFor = autoCompleteUrlFor;
   }
 
-  public JsonNode search(String collectionName, Optional<String> query, Optional<String> type)
+  public JsonNode search(String collectionName, Optional<String> query, Optional<String> keywordType)
     throws InvalidCollectionException {
 
     final Collection collection = timbuctooActions.getCollectionMetadata(collectionName);
@@ -32,19 +32,12 @@ public class AutocompleteService {
     int limit = query.isPresent() ? 50 : 1000;
     String queryString = query.orElse(null);
     QuickSearch quickSearch = QuickSearch.fromQueryString(queryString);
-    if (collection.getAbstractType().equals("keyword")) {
-      List<ReadEntity> results = timbuctooActions.doKeywordQuickSearch(collection, type.get(), quickSearch, limit);
-      return jsnA(results.stream().map(entity -> jsnO(
-        "value", jsn(entity.getDisplayName()),
-        "key", jsn(autoCompleteUrlFor.apply(collectionName, entity.getId(), entity.getRev()).toString())
-      )));
-    } else {
-      List<ReadEntity> results = timbuctooActions.doQuickSearch(collection, quickSearch, limit);
-      return jsnA(results.stream().map(entity -> jsnO(
-        "value", jsn(entity.getDisplayName()),
-        "key", jsn(autoCompleteUrlFor.apply(collectionName, entity.getId(), entity.getRev()).toString())
-      )));
-    }
+    List<ReadEntity> results = timbuctooActions.doQuickSearch(collection, quickSearch, keywordType.orElse(null), limit);
+
+    return jsnA(results.stream().map(entity -> jsnO(
+      "value", jsn(entity.getDisplayName()),
+      "key", jsn(autoCompleteUrlFor.apply(collectionName, entity.getId(), entity.getRev()).toString())
+    )));
   }
 
   public static class AutocompleteServiceFactory {

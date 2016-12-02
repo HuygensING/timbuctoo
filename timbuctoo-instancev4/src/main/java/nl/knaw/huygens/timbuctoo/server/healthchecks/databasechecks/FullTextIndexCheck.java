@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentDisplayNameDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ElementValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
@@ -31,9 +31,9 @@ public class FullTextIndexCheck implements DatabaseCheck {
 
 
   private final HashMap<String, PropertyDescriptor> displayNameDescriptors;
-  private final TinkerpopGraphManager graphManager;
+  private final TinkerPopGraphManager graphManager;
 
-  public FullTextIndexCheck(TinkerpopGraphManager graphManager) {
+  public FullTextIndexCheck(TinkerPopGraphManager graphManager) {
     final PropertyDescriptorFactory propertyDescriptorFactory = new PropertyDescriptorFactory(
             new PropertyParserFactory());
 

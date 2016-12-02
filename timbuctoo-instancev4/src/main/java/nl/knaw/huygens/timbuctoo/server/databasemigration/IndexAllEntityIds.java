@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -21,13 +21,11 @@ import java.util.Optional;
 import java.util.UUID;
 
 public class IndexAllEntityIds implements DatabaseMigration {
-  private static final ArrayList<String> TYPES_TO_IGNORE = Lists.newArrayList("relationtype", "searchresult");
-  private static final String validUUIDRegex =
-    "/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/";
+  public static final ArrayList<String> TYPES_TO_IGNORE = Lists.newArrayList("relationtype", "searchresult");
   private static final Logger LOG = LoggerFactory.getLogger(IndexAllEntityIds.class);
 
   @Override
-  public void execute(TinkerpopGraphManager graphManager) throws IOException {
+  public void execute(TinkerPopGraphManager graphManager) throws IOException {
     DataStoreOperations dataStoreOperations = new DataStoreOperations(
       graphManager,
       new DeafListener(),

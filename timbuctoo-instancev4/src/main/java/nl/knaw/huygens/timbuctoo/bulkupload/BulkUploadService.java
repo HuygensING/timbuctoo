@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -16,9 +16,9 @@ import java.util.function.Consumer;
 public class BulkUploadService {
 
   private final Vres vres;
-  private final TinkerpopGraphManager graphwrapper;
+  private final TinkerPopGraphManager graphwrapper;
 
-  public BulkUploadService(Vres vres, TinkerpopGraphManager graphwrapper/*, Authorizer authorizer*/) {
+  public BulkUploadService(Vres vres, TinkerPopGraphManager graphwrapper/*, Authorizer authorizer*/) {
     this.vres = vres;
     this.graphwrapper = graphwrapper;
   }

@@ -33,7 +33,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -93,9 +93,9 @@ public class DataStoreOperations implements AutoCloseable {
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
-  public DataStoreOperations(GraphWrapper graphWrapper, ChangeListener listener, GremlinEntityFetcher entityFetcher,
-                             Vres mappings, IndexHandler indexHandler) {
-    graph = graphWrapper.getGraph();
+  public DataStoreOperations(TinkerPopGraphManager graphManager, ChangeListener listener,
+                             GremlinEntityFetcher entityFetcher, Vres mappings, IndexHandler indexHandler) {
+    graph = graphManager.getGraph();
     this.indexHandler = indexHandler;
     this.transaction = graph.tx();
     this.listener = listener;
@@ -105,7 +105,7 @@ public class DataStoreOperations implements AutoCloseable {
       transaction.open();
     }
     this.traversal = graph.traversal();
-    this.latestState = graphWrapper.getLatestState();
+    this.latestState = graphManager.getLatestState();
     this.mappings = mappings == null ? loadVres() : mappings;
     this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
   }
@@ -360,43 +360,15 @@ public class DataStoreOperations implements AutoCloseable {
   }
 
   public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
-    GraphTraversal<Vertex, Vertex> result;
-    if (indexHandler.hasQuickSearchIndexFor(collection)) {
-      result = indexHandler.findByQuickSearch(collection, quickSearch);
-    } else {
-      String cleanQuery = createQuery(quickSearch);
-      result = getCurrentEntitiesFor(collection.getEntityTypeName())
-        .as("vertex")
-        .union(collection.getDisplayName().traversalJson())
-        .filter(x -> x.get().isSuccess())
-        .map(x -> x.get().get().asText())
-        .as("displayName")
-        .filter(x -> x.get().toLowerCase().contains(cleanQuery))
-        .select("vertex")
-        .map(x -> (Vertex) x.get());
-    }
+    GraphTraversal<Vertex, Vertex> result = indexHandler.findByQuickSearch(collection, quickSearch);
 
     return asReadEntityList(collection, result.limit(limit));
   }
 
   public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
                                                int limit) {
-    GraphTraversal<Vertex, Vertex> result;
-    if (indexHandler.hasQuickSearchIndexFor(collection)) {
-      result = indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType);
-    } else {
-      String cleanQuery = createQuery(quickSearch);
-      result = getCurrentEntitiesFor(collection.getEntityTypeName())
-        .has("keyword_type", keywordType)
-        .as("vertex")
-        .union(collection.getDisplayName().traversalJson())
-        .filter(x -> x.get().isSuccess())
-        .map(x -> x.get().get().asText())
-        .as("displayName")
-        .filter(x -> x.get().toLowerCase().contains(cleanQuery))
-        .select("vertex")
-        .map(x -> (Vertex) x.get());
-    }
+    GraphTraversal<Vertex, Vertex> result =
+      indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType);
 
     return asReadEntityList(collection, result.limit(limit));
   }
@@ -414,12 +386,6 @@ public class DataStoreOperations implements AutoCloseable {
       });
 
     return result.map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex.get(), false)).toList();
-  }
-
-  private String createQuery(QuickSearch quickSearch) {
-    String fullMatches = String.join(" ", quickSearch.fullMatches());
-    String partialMatches = String.join(" ", quickSearch.partialMatches());
-    return fullMatches.isEmpty() ? partialMatches : fullMatches + " " + partialMatches;
   }
 
   /**
