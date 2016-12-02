@@ -200,7 +200,7 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next();
-    instance.addToOrUpdateQuickSearchIndex(collection, "query", vertex);
+    instance.upsertIntoQuickSearchIndex(collection, "query", vertex);
     GraphTraversal<Vertex, Vertex> beforeRemoval =
       instance.findByQuickSearch(collection, QuickSearch.fromQueryString("query"));
     assertThat(beforeRemoval.hasNext(), is(true));
@@ -213,7 +213,7 @@ public class Neo4JIndexHandlerTest {
   }
 
   @Test
-  public void addToOrUpdateQuickSearchIndexMakesSureTheExistingEntryIsUpdated() {
+  public void upsertIntoQuickSearchIndexMakesSureTheExistingEntryIsUpdated() {
     String id1 = UUID.randomUUID().toString();
     TinkerpopGraphManager tinkerpopGraphManager = newGraph()
       .withVertex(v -> v
@@ -222,17 +222,17 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1).next();
-    instance.addToOrUpdateQuickSearchIndex(collection, "firstValue", vertex);
+    instance.upsertIntoQuickSearchIndex(collection, "firstValue", vertex);
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("firstValue")).hasNext(), is(true));
 
-    instance.addToOrUpdateQuickSearchIndex(collection, "secondValue", vertex);
+    instance.upsertIntoQuickSearchIndex(collection, "secondValue", vertex);
 
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("firstValue")).hasNext(), is(false));
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("secondValue")).hasNext(), is(true));
   }
 
   private void addToQuickSearchIndex(Neo4jIndexHandler instance, Collection collection, Vertex vertex) {
-    instance.addToQuickSearchIndex(collection, vertex.value("displayName"), vertex);
+    instance.insertIntoQuickSearchIndex(collection, vertex.value("displayName"), vertex);
   }
 
   //=====================tim_id index=====================
@@ -248,7 +248,7 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
-    instance.addToIdIndex(id1, vertex);
+    instance.insertIntoIdIndex(id1, vertex);
 
     GraphTraversal<Vertex, Vertex> result = instance.findById(id1);
 
@@ -273,7 +273,7 @@ public class Neo4JIndexHandlerTest {
   }
 
   @Test
-  public void addToOrUpdateIdIndexRemovesTheOldIndexEntryAndAddsANewOne() {
+  public void upsertIntoIdIndexRemovesTheOldIndexEntryAndAddsANewOne() {
     UUID id1 = UUID.randomUUID();
     UUID newId = UUID.randomUUID();
     TinkerpopGraphManager tinkerpopGraphManager = newGraph()
@@ -285,10 +285,10 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
-    instance.addToIdIndex(id1, vertex);
+    instance.insertIntoIdIndex(id1, vertex);
     assertThat(instance.findById(id1).hasNext(), is(true));
 
-    instance.addToOrUpdateIdIndex(newId, vertex);
+    instance.upsertIntoIdIndex(newId, vertex);
 
     assertThat(instance.findById(id1).hasNext(), is(false));
     assertThat(instance.findById(newId).hasNext(), is(true));
@@ -306,7 +306,7 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerpopGraphManager);
     Vertex vertex = tinkerpopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
-    instance.addToIdIndex(id1, vertex);
+    instance.insertIntoIdIndex(id1, vertex);
     assertThat(instance.findById(id1).hasNext(), is(true));
 
     instance.removeFromIdIndex(vertex);

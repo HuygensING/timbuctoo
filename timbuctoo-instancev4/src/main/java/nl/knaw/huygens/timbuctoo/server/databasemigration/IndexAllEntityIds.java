@@ -56,7 +56,7 @@ public class IndexAllEntityIds implements DatabaseMigration {
               if (timIdProp.isPresent()) {
                 try {
                   UUID timId = UUID.fromString(timIdProp.value());
-                  indexHandler.addToIdIndex(timId, vertex);
+                  indexHandler.insertIntoIdIndex(timId, vertex);
                 } catch (IllegalArgumentException e) {
                   // This exception should not happen, but we do not want our migration to fail on it.
                   LOG.error("'{}' is not a valid id", timIdProp.value());

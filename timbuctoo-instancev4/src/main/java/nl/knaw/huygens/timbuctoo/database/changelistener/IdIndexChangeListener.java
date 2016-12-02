@@ -16,13 +16,13 @@ public class IdIndexChangeListener implements ChangeListener {
 
   @Override
   public void onCreate(Collection collection, Vertex vertex) {
-    indexHandler.addToIdIndex(UUID.fromString(vertex.value("tim_id")), vertex);
+    indexHandler.insertIntoIdIndex(UUID.fromString(vertex.value("tim_id")), vertex);
   }
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
     oldVertex.ifPresent(vertex -> indexHandler.removeFromIdIndex(vertex));
-    indexHandler.addToIdIndex(UUID.fromString(newVertex.value("tim_id")), newVertex);
+    indexHandler.insertIntoIdIndex(UUID.fromString(newVertex.value("tim_id")), newVertex);
   }
 
   @Override

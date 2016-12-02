@@ -49,7 +49,7 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public void addToQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
+  public void insertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
     Index<Node> index = getQuickSearchIndex(collection);
 
     index.add(vertexToNode(vertex), QUICK_SEARCH, quickSearchValue);
@@ -84,10 +84,10 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public void addToOrUpdateQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
+  public void upsertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
     this.removeFromQuickSearchIndex(collection, vertex);
 
-    this.addToQuickSearchIndex(collection, quickSearchValue, vertex);
+    this.insertIntoQuickSearchIndex(collection, quickSearchValue, vertex);
   }
 
   //=====================tim_id index=====================
@@ -100,16 +100,16 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public void addToIdIndex(UUID timId, Vertex vertex) {
+  public void insertIntoIdIndex(UUID timId, Vertex vertex) {
     Index<Node> index = getIdIndex(ID_INDEX);
     index.add(vertexToNode(vertex), TIM_ID, timId.toString());
   }
 
 
   @Override
-  public void addToOrUpdateIdIndex(UUID timId, Vertex vertex) {
+  public void upsertIntoIdIndex(UUID timId, Vertex vertex) {
     removeFromIdIndex(vertex);
-    addToIdIndex(timId, vertex);
+    insertIntoIdIndex(timId, vertex);
   }
 
   @Override

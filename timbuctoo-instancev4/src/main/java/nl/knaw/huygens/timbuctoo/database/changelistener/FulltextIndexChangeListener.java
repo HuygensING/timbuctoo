@@ -64,7 +64,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
       );
       docCaption = authorCaption + " " + docCaption;
     }
-    indexHandler.addToQuickSearchIndex(collection, docCaption, vertex);
+    indexHandler.insertIntoQuickSearchIndex(collection, docCaption, vertex);
   }
 
   private void handleRemove(Collection collection, Vertex vertex) {

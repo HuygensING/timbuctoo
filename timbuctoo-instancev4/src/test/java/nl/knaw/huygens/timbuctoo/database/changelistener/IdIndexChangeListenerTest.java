@@ -40,7 +40,7 @@ public class IdIndexChangeListenerTest {
 
     instance.onCreate(NULL_COLLECTION, vertex);
 
-    verify(indexHandler).addToIdIndex(timId, vertex);
+    verify(indexHandler).insertIntoIdIndex(timId, vertex);
   }
 
   private Vertex vertexWithId(UUID timId) {
@@ -58,7 +58,7 @@ public class IdIndexChangeListenerTest {
 
     InOrder inOrder = inOrder(indexHandler);
     inOrder.verify(indexHandler).removeFromIdIndex(oldVertex);
-    verify(indexHandler).addToIdIndex(timId, newVertex);
+    verify(indexHandler).insertIntoIdIndex(timId, newVertex);
   }
 
   @Test

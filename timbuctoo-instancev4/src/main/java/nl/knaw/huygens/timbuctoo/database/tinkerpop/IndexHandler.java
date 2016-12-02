@@ -18,15 +18,15 @@ public interface IndexHandler {
 
   /**
    * This method does not prevent multiple entries for a vertex.
-   * Use {@link #addToOrUpdateQuickSearchIndex(Collection, String, Vertex)} if you want to update the existing entry
-   * or a new entry for unknown vertices.
+   * Use {@link #upsertIntoQuickSearchIndex(Collection, String, Vertex)} if you want to update the existing
+   * entry or a new entry for unknown vertices.
    */
-  void addToQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
+  void insertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
 
   /**
    * This method adds or update a index entry and makes shure the index have only one entry for each vertex.
    */
-  void addToOrUpdateQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
+  void upsertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
 
   void removeFromQuickSearchIndex(Collection collection, Vertex vertex);
 
@@ -35,15 +35,15 @@ public interface IndexHandler {
 
   /**
    * This method does not prevent multiple entries for a vertex.
-   * Use {@link #addToOrUpdateIdIndex(UUID, Vertex)} if you want to update the existing entry
+   * Use {@link #upsertIntoIdIndex(UUID, Vertex)} if you want to update the existing entry
    * or a new entry for unknown vertices.
    */
-  void addToIdIndex(UUID timId, Vertex vertex);
+  void insertIntoIdIndex(UUID timId, Vertex vertex);
 
   /**
    * This method adds or update a index entry and makes shure the index have only one entry for each vertex.
    */
-  void addToOrUpdateIdIndex(UUID timId, Vertex vertex);
+  void upsertIntoIdIndex(UUID timId, Vertex vertex);
 
   void removeFromIdIndex(Vertex vertex);
 }
