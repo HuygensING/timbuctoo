@@ -21,6 +21,6 @@ COPY ./pom.xml ./pom.xml
 RUN mvn clean package
 
 COPY ./timbuctoo-instancev4/docker_config.yaml ./timbuctoo-instancev4/docker_config.yaml
-COPY ./timbuctoo-instancev4/debugrun.sh ./timbuctoo-instancev4/debugrun.sh
+COPY ./devtools/debugrun/debugrun.sh ./timbuctoo-instancev4/debugrun.sh
 
 CMD ["./timbuctoo-instancev4/target/appassembler/bin/timbuctoo", "server", "./timbuctoo-instancev4/docker_config.yaml"]
