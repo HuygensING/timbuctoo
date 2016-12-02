@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database.changelistener;
 
-import nl.knaw.huygens.timbuctoo.database.IndexHandler;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -34,7 +34,7 @@ public class FulltextIndexChangeListenerTest {
     Vertex vertex = graphWrapper.getGraph().traversal().V().next();
     instance.onCreate(collection, vertex);
 
-    verify(indexHandler).setDisplayNameIndex(collection, "foo", vertex);
+    verify(indexHandler).addToOrUpdateQuickSearchIndex(collection, "foo", vertex);
   }
 
   @Test
@@ -68,7 +68,7 @@ public class FulltextIndexChangeListenerTest {
     Vertex vertex = graphWrapper.getGraph().traversal().V().next();
     instance.onCreate(collection, vertex);
 
-    verify(indexHandler).setDisplayNameIndex(collection, "authorA; authorB foo", vertex);
+    verify(indexHandler).addToOrUpdateQuickSearchIndex(collection, "authorA; authorB foo", vertex);
   }
 
 }

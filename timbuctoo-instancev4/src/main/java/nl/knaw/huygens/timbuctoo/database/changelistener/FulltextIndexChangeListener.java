@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 
-import nl.knaw.huygens.timbuctoo.database.IndexHandler;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -46,15 +46,16 @@ public class FulltextIndexChangeListener implements ChangeListener {
   private void handleChange(Collection collection, Vertex vertex) {
     GraphTraversal<Vertex, Vertex> traversal = graphWrapper.getGraph().traversal().V(vertex.id());
     String docCaption = traversal.asAdmin().clone()
-      .union(collection.getDisplayName().traversalJson())
-      .next()
-      .getOrElse(jsn(""))
-      .asText();
+                                 .union(collection.getDisplayName().traversalJson())
+                                 .next()
+                                 .getOrElse(jsn(""))
+                                 .asText();
     if (collection.getEntityTypeName().equals("wwdocument")) {
       Collection wwpersons = collection.getVre().getCollectionForCollectionName("wwpersons").get();
       List<String> authors = traversal.out("isCreatedBy")
-        .union(wwpersons.getDisplayName().traversalJson()).map(x -> x.get().getOrElse(jsn("")).asText())
-        .toList();
+                                      .union(wwpersons.getDisplayName().traversalJson())
+                                      .map(x -> x.get().getOrElse(jsn("")).asText())
+                                      .toList();
       Collections.sort(authors);
       String authorCaption = String.join(
         "; ",
@@ -62,10 +63,10 @@ public class FulltextIndexChangeListener implements ChangeListener {
       );
       docCaption = authorCaption + " " + docCaption;
     }
-    indexHandler.setDisplayNameIndex(collection, docCaption, vertex);
+    indexHandler.addToOrUpdateQuickSearchIndex(collection, docCaption, vertex);
   }
 
   private void handleRemove(Collection collection, Vertex vertex) {
-    indexHandler.removeFromDisplayNameIndex(collection, vertex);
+    indexHandler.removeFromQuickSearchIndex(collection, vertex);
   }
 }

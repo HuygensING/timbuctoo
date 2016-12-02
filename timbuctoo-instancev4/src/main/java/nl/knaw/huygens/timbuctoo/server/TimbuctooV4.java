@@ -18,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.IndexHandler;
 import nl.knaw.huygens.timbuctoo.database.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
@@ -184,7 +183,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final CompositeChangeListener changeListeners = new CompositeChangeListener(
       new AddLabelChangeListener(),
-      new FulltextIndexChangeListener(new IndexHandler(), graphManager),
+      new FulltextIndexChangeListener(new Neo4jIndexHandler(graphManager), graphManager),
       new CollectionHasEntityRelationChangeListener(graphManager)
     );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
