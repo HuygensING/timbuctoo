@@ -21,7 +21,7 @@ import static org.mockito.Mockito.when;
 
 public class Neo4JIndexHandlerTest {
 
-  public static final String COLLECTION = "collection";
+  private static final String COLLECTION = "collection";
   private Collection collection;
 
   @Before
