@@ -79,7 +79,6 @@ public class Neo4jIndexHandler implements IndexHandler {
   @Override
   public void removeFromQuickSearchIndex(Collection collection, Vertex vertex) {
     Index<Node> index = getQuickSearchIndex(collection);
-
     // make sure only this field is removed from the index.
     index.remove(vertexToNode(vertex), QUICK_SEARCH);
   }
@@ -134,7 +133,6 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   private IndexManager indexManager() {
-    graphDatabase().beginTx();
     return graphDatabase().index();
   }
 
