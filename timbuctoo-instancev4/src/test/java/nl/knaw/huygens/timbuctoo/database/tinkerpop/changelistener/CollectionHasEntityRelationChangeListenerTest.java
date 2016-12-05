@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database.changelistener;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;

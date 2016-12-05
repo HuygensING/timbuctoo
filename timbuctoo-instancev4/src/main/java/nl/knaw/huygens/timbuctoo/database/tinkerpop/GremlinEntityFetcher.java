@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;

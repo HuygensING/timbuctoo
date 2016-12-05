@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;

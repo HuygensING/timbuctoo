@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database.changelistener;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;

@@ -1,14 +1,13 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
+import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.VERSION_OF;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.mockito.Mockito.mock;
 

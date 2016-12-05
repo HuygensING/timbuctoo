@@ -1,8 +1,8 @@
-package nl.knaw.huygens.timbuctoo.database.changelistener;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.TinkerPopOperationsStubs;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntityStubs;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
@@ -22,10 +22,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static nl.knaw.huygens.timbuctoo.database.TinkerPopOperationsStubs.forDeleteCall;
-import static nl.knaw.huygens.timbuctoo.database.TinkerPopOperationsStubs.forReplaceCall;
-import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.IS_LATEST;
-import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.VERSION_OF;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forDeleteCall;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forReplaceCall;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.IS_LATEST;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;

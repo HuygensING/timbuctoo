@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database;
 
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
 import static org.mockito.Mockito.mock;

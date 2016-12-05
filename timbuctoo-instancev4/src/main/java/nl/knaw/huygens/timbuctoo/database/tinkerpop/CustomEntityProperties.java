@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import nl.knaw.huygens.timbuctoo.database.dto.ReadEntityImpl;
 import org.apache.tinkerpop.gremlin.structure.Vertex;

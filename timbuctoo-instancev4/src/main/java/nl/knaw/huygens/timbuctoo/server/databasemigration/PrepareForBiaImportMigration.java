@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
