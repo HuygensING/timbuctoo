@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
@@ -15,15 +15,15 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.DATABASE_LABEL;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder.timbuctooCollection;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.DATABASE_LABEL;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder.timbuctooCollection;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;

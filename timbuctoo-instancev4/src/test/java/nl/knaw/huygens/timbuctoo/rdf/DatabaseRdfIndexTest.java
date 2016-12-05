@@ -1,13 +1,13 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import org.apache.jena.graph.NodeFactory;
 import org.junit.Test;
 
-import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forGraphWrapper;
-import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
+import static nl.knaw.huygens.timbuctoo.core.TransactionEnforcerStubs.forGraphWrapper;
+import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;

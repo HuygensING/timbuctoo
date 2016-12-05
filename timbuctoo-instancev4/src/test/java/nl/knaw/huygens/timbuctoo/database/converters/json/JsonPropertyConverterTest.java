@@ -2,8 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.converters.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.converters.json.JsonPropertyConverter;
-import nl.knaw.huygens.timbuctoo.database.dto.property.AltNamesProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.AltNamesProperty;
 import nl.knaw.huygens.timbuctoo.model.AltName;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
 import nl.knaw.huygens.timbuctoo.util.Tuple;

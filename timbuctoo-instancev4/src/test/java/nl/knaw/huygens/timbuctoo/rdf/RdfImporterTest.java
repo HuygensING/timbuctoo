@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
@@ -14,7 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forDataStoreOperations;
+import static nl.knaw.huygens.timbuctoo.core.TransactionEnforcerStubs.forDataStoreOperations;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;

@@ -2,11 +2,11 @@ package nl.knaw.huygens.timbuctoo.database.converters.json;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.dto.ReadEntityImpl;
-import nl.knaw.huygens.timbuctoo.database.dto.RelationRef;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.ReadEntityImpl;
+import nl.knaw.huygens.timbuctoo.core.dto.RelationRef;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;

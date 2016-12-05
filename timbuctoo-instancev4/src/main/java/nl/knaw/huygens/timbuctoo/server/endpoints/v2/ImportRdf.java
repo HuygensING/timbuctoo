@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;

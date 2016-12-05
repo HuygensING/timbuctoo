@@ -2,10 +2,10 @@ package nl.knaw.huygens.timbuctoo.database.converters.json;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.database.exceptions.UnknownPropertyException;
+import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.core.UnknownPropertyException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

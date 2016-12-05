@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.GremlinEntityFetcher;
-import nl.knaw.huygens.timbuctoo.database.dto.DisplayNameHelper;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.DisplayNameHelper;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;

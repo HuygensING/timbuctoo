@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcerStubs;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -13,7 +13,7 @@ import org.junit.Test;
 
 import java.util.HashMap;
 
-import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forGraphWrapper;
+import static nl.knaw.huygens.timbuctoo.core.TransactionEnforcerStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;

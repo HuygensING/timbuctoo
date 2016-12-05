@@ -5,9 +5,9 @@ import com.google.common.collect.ImmutableMap;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.database.NotFoundException;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
+import nl.knaw.huygens.timbuctoo.core.NotFoundException;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

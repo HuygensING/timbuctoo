@@ -3,10 +3,10 @@ package nl.knaw.huygens.timbuctoo.search;
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
-import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
-import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 
 import java.util.List;
 import java.util.Optional;

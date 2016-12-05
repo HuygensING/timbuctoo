@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -12,7 +12,7 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionStubs.forEntitytypeName;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionStubs.forEntitytypeName;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;

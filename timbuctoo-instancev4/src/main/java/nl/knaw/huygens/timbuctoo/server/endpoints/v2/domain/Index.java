@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.commitAndReturn;
-import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.rollbackAndReturn;
+import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAndReturn;
+import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.rollbackAndReturn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import io.dropwizard.jersey.params.UUIDParam;
-import nl.knaw.huygens.timbuctoo.database.NotFoundException;
+import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.graph.D3Graph;
 import nl.knaw.huygens.timbuctoo.graph.GraphService;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;

@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.experimental.womenwriters;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.database.NotFoundException;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActionsStubs;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.core.NotFoundException;
+import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;

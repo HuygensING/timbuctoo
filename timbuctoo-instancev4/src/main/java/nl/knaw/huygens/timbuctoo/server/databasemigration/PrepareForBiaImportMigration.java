@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.GremlinEntityFetcher;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
@@ -17,7 +17,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.database.dto.RelationType.relationType;
+import static nl.knaw.huygens.timbuctoo.core.dto.RelationType.relationType;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 
 public class PrepareForBiaImportMigration implements DatabaseMigration {

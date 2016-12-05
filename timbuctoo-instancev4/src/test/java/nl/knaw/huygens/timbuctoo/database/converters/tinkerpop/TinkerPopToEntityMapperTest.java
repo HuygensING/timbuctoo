@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database.converters.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;

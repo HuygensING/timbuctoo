@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;

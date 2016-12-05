@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.jersey.params.UUIDParam;
-import nl.knaw.huygens.timbuctoo.database.AlreadyUpdatedException;
+import nl.knaw.huygens.timbuctoo.core.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
-import nl.knaw.huygens.timbuctoo.database.NotFoundException;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.NotFoundException;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -31,8 +31,8 @@ import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.commitAndReturn;
-import static nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult.rollbackAndReturn;
+import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAndReturn;
+import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.rollbackAndReturn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 

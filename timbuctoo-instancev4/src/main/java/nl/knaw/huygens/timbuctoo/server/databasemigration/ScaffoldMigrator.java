@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Optional;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.database.dto.RelationType.relationType;
+import static nl.knaw.huygens.timbuctoo.core.dto.RelationType.relationType;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;

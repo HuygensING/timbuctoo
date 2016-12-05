@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
+import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
 
 public class RdfImporter {
   public static final Logger LOG = LoggerFactory.getLogger(RdfImporter.class);

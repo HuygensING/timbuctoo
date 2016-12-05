@@ -1,22 +1,22 @@
 package nl.knaw.huygens.timbuctoo.database.converters.tinkerpop;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.database.dto.property.AltNamesProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayOfLimitedValuesProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.ArrayProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.DatableProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultFullPersonNameProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.DefaultLocationNameProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.EncodedStringOfLimitedValuesProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.HyperLinksProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.PersonNamesProperty;
-import nl.knaw.huygens.timbuctoo.database.converters.PropertyConverter;
-import nl.knaw.huygens.timbuctoo.database.dto.property.StringOfLimitedValuesProperty;
-import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.AltNamesProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.ArrayOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.ArrayProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.DatableProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.DefaultFullPersonNameProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.DefaultLocationNameProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.EncodedStringOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.HyperLinksProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.PersonNamesProperty;
+import nl.knaw.huygens.timbuctoo.core.PropertyConverter;
+import nl.knaw.huygens.timbuctoo.core.dto.property.StringOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.io.IOException;

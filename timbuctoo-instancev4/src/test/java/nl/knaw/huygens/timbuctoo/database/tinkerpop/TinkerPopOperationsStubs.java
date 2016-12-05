@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;

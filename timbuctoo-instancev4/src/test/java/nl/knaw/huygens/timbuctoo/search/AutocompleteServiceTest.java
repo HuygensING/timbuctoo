@@ -4,19 +4,19 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
-import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
-import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import org.junit.Test;
 
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.database.dto.ReadEntityStubs.readEntityWithDisplayNameIdAndRev;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionStubs.collWithCollectionName;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionStubs.keywordCollWithCollectionName;
+import static nl.knaw.huygens.timbuctoo.core.dto.ReadEntityStubs.readEntityWithDisplayNameIdAndRev;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionStubs.collWithCollectionName;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionStubs.keywordCollWithCollectionName;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;

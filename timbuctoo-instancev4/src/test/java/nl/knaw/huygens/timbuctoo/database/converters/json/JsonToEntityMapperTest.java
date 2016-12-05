@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.database.converters.json;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.junit.Test;

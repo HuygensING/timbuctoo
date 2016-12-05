@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.EmptyGraphTraversal;
