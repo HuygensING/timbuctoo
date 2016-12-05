@@ -5,7 +5,7 @@ check process timbuctoo with pidfile /data/timbuctoo/app/logs/timbuctoo_daemon.p
 	if failed
 		port 9080
 		protocol http
-	then restart
+	then alert
 
 	if failed
 		port 9081
