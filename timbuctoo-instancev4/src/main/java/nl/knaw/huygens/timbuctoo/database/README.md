@@ -1,6 +1,3 @@
-# DataAccess
-> Wrapper around data access methods
-
 ## Context
 We are using a database, but we're not convinced that it's the best one.
 We would like to be able to switch to other databases and the *evaluate* whether other databases make more sense.
@@ -9,39 +6,38 @@ Furthermore TinkerPop requires us to handle transactions thoughtfully but provid
 We'd like to access the database only in a correct manner.
 
 ## Goal
-DataAccess will solve both problems by becoming the only way to access the database and by guaranteeing the following attributes.
+We add three classes
 
- * The methods are only accessible while inside an AutoCloseable wrapper that manages the transaction. 
-   (So that the client code is forced to think about transaction lifetime)
- * ~~no two transaction may run at the same time~~ (will be possible once no code uses graphWrapper directly anymore)
- * Each method returns an Immutable Value object without TinkerPop or Neo4j references. 
-   (So that Timbuctoo is less dependent on one database implementation)
- * A value object will never hit the database to lazy load more data.
-   (so that the client code can more easily reason about performance. Only db.something() calls will hit the database)
- * A method is quite tightly coupled to the client. While a method may be used by more then one client is has a very tightly defined implementation and re-use is not expected to be the rule. 
-   (So that removing some client code will also clearly remove their constraints on the data model)
-    * of course, internally methods may re-use each other freely (so that we do not have code duplication)
- * A mutation is a separate method adhering to the same practices as a retrieval method. 
-   (a second requirement to make only db.something() calls hit the database)
- * You might have a mutation method that also retrieves data, but this is not the norm.
-   (explicitly mentioned for people who expect full Command Query Separation) 
- * The dataAccess methods will only get or mutate state. They will not trigger or calculate state (i.e. they will not generate handle id's etc, they might require a parameter containing a handle id though)
-   (This prevents scope creep because everything could be in dataAccess. It also makes the dataAccess methods easier to test)
-     * But: The dataAccess class will perform authorization.
-       (This prevents code duplication, and prevents security bugs)
-     * But: The dataAccess class will generate the unique ID's
-       (because otherwise it would still need to verify uniqueness and throw exceptions which would make the code needlessly complex)
- * ~~You may add a custom DataAccess implementation which only implements a few methods that will then be run in an experiment. So you can try out a new database without having to write a full implementation~~ might be added once we have one full implementation. 
- * initially there is no interface and only one implementation to facilitate easier refactoring
- 
-## Issues
- * DataAccess
-    * replaceRelation
-        * throw an AlreadyUpdatedException when the rev of the client is not the latest
-            * this is to prevent update wars.
-        * throw a distinct Exception when the client tries to save a relation with different source, target or type.
-            * we want to be sure the client updates the right relation.
-            * throw a new custom exception.
+ 1. TransactionEnforcer that helps to wrap all database using work in a transaction.
+    The transactionEnforcer API makes it clear to the client code when transaction starts and makes it impossible to forget to close it.
+ 2. TimbuctooActions that is autocloseable around a transaction.
+    It contains the business logic (authorization, UUID generation etc.)
+ 3. DataStoreOperations that is autocloseable around a transaction and performs the actual database work
+
+These classes have the following constraints:
+
+   * ~~no two transaction may run at the same time~~ (will be possible once no code uses graphWrapper directly anymore)
+   * Each method returns an Immutable Value object without TinkerPop or Neo4j references. 
+     (So that Timbuctoo is less dependent on one database implementation)
+   * A value object will never hit the database to lazy load more data.
+     (so that the client code can more easily reason about performance. Only db.something() calls will hit the database)
+   * A method is quite tightly coupled to the client. While a method may be used by more then one client is has a very tightly defined implementation and re-use is not expected to be the rule. 
+     (So that removing some client code will also clearly remove their constraints on the data model)
+      * of course, internally methods may re-use each other freely (so that we do not have code duplication)
+   * A mutation is a separate method adhering to the same practices as a retrieval method. 
+     (a second requirement to make only db.something() calls hit the database)
+   * You might have a mutation method that also retrieves data, but this is not the norm.
+     (explicitly mentioned for people who expect full Command Query Separation) 
+   * The DataStoreOperations methods will only get or mutate state. 
+     Triggering or calculating state (such as UUID's or changeLog information) is done by the TimbuctooActions.
+   * You may add a custom DataStoreOperations implementation.
+   * todo:feature[We might add code to TimbuctooActions that runs several DataStoreOperation implementations in parallel and reports their performance so we can do experiments on that]
+   
+## Known issues
+ * TinkerPopOperations.replaceRelation
+    * throws a NotFoundException instead of an AlreadyUpdatedException when the rev of the relation client is not the latest
+    * throw a distinct Exception when the client tries to save a relation with different source, target or type. 
+      Currently these properties are simply ignored.
             
 ## Dataflow
 The picture below describes the data flow of the update or the retrieval of an entity.
@@ -111,7 +107,7 @@ public interface Entity {
 Contains the information of the property of an Entity.
 The TimProperty interface has implementations for all property types used in Timbuctoo.
 A TimProperty can be a wrapper around a Java type like String, int, boolean or a Timbuctoo custom type like PersonNamesValue and Datable. 
-This way we can provide an implementation (e.g a [DataAccessMethods](./DataAccess.java) implementation, a jersey serializer, or a js client of the API) with a finite list of types that they should be able to handle.
+This way we can provide an implementation (e.g a [TinkerPopPropertyConverter](./tinkerpop/conversion/TinkerPopPropertyConverter.java) implementation, a jersey serializer, or a js client of the API) with a finite list of types that they should be able to handle.
 
 #### Example
 If this is the interface
@@ -248,7 +244,6 @@ Only these RelationRefs.
 Is a way to represent a relation between two Entities. 
 This representation is used when a relation is saved in the database.
  
-
 # TransactionFilter
 > closes transactions at the end of a request
 
