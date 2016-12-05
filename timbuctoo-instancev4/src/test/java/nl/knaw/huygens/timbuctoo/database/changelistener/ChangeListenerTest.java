@@ -150,6 +150,8 @@ public class ChangeListenerTest {
       "acceptRelation",
       "doQuickSearch",
       "doKeywordQuickSearch",
+      "clearMappingErrors",
+      "hasMappingErrors",
 
       "close",
       "success",
