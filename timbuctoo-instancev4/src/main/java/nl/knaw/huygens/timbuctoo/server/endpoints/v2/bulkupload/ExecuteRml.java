@@ -42,7 +42,6 @@ import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -139,10 +138,10 @@ public class ExecuteRml {
                      .build();
     }
 
-    transactionEnforcer.execute(db -> {
-      db.clearMappingErrors(vreName);
-      db.ensureVreExists(vreName);
-      db.removeCollectionsAndEntities(vreName);
+    transactionEnforcer.executeTimbuctooAction(timbuctooActions -> {
+      timbuctooActions.clearMappingErrors(vreName);
+      timbuctooActions.ensureVreExists(vreName);
+      timbuctooActions.removeCollectionsAndEntities(vreName);
       return commit();
     });
     try (Transaction tx = graphWrapper.getGraph().tx()) {

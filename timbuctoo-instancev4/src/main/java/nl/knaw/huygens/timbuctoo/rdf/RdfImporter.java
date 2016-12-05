@@ -60,8 +60,8 @@ public class RdfImporter {
   }
 
   private void prepare() {
-    transactionEnforcer.execute(db -> {
-      db.ensureVreExists(vreName);
+    transactionEnforcer.executeTimbuctooAction(timbuctooActions -> {
+      timbuctooActions.ensureVreExists(vreName);
       return commit();
     });
     LOG.info("Starting import...");

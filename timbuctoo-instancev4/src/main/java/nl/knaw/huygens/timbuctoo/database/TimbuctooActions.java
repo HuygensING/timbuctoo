@@ -206,6 +206,18 @@ public class TimbuctooActions {
 
   }
   
+  public void ensureVreExists(String vreName) {
+    dataStoreOperations.ensureVreExists(vreName);
+  }
+
+  public void removeCollectionsAndEntities(String vreName) {
+    dataStoreOperations.removeCollectionsAndEntities(vreName);
+  }
+
+  public void clearMappingErrors(String vreName) {
+    dataStoreOperations.clearMappingErrors(vreName);
+  }
+
   //================== Inner classes =================
   @FunctionalInterface
   public interface TimbuctooActionsFactory {

@@ -69,26 +69,4 @@ public class TransactionEnforcer {
     }
   }
 
-  /**
-   * @deprecated Use {@link TransactionEnforcer#executeTimbuctooAction(Function)}
-   */
-  @Deprecated
-  public void execute(Function<DataStoreOperations, TransactionState> actions) {
-    DataStoreOperations db = dataStoreOperationsSupplier.get();
-
-    try {
-      TransactionState result = actions.apply(db);
-      if (result.wasCommitted()) {
-        db.success();
-      } else {
-        db.rollback();
-      }
-    } catch (RuntimeException e) {
-      db.rollback();
-      throw e;
-    } finally {
-      db.close();
-    }
-  }
-
 }
