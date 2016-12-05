@@ -189,7 +189,7 @@ public class TimbuctooActions {
     dataStoreOperations.addPid(entityLookup.getTimId(), entityLookup.getRev(), pidUri); //no collection?
   }
 
-  //================== Metdata ==================
+  //================== Metadata ==================
   public Vres loadVres() {
     return dataStoreOperations.loadVres();
   }
@@ -205,7 +205,8 @@ public class TimbuctooActions {
     return dataStoreOperations.hasMappingErrors(vreName);
 
   }
-
+  
+  //================== Inner classes =================
   @FunctionalInterface
   public interface TimbuctooActionsFactory {
     TimbuctooActions create(DataStoreOperations dataStoreOperations,
