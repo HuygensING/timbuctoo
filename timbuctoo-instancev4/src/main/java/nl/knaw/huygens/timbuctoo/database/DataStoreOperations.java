@@ -67,6 +67,7 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.database.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
@@ -201,17 +202,19 @@ public class DataStoreOperations implements AutoCloseable {
   }
 
   public void clearMappingErrors(String vreName) {
-    final GraphTraversal<Vertex, Vertex> collectionT = getRawCollectionsTraversal(vreName);
-    while (collectionT.hasNext()) {
-      final Vertex collection = collectionT.next();
-      collection.vertices(Direction.OUT, HAS_NEXT_ERROR).forEachRemaining(this::clearMappingErrors);
-    }
+    getRawCollectionsTraversal(vreName)
+      .emit()
+      .repeat(__.out(HAS_NEXT_ERROR))
+      .forEachRemaining(vertex -> {
+        vertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
+        vertex.properties().forEachRemaining(property -> {
+          if (property.key().startsWith(ERROR_PREFIX)) {
+            property.remove();
+          }
+        });
+      });
   }
 
-  private void clearMappingErrors(Vertex errorVertex) {
-    errorVertex.vertices(Direction.OUT, HAS_NEXT_ERROR).forEachRemaining(this::clearMappingErrors);
-    errorVertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
-  }
 
   private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
     return traversal.V()
@@ -220,7 +223,7 @@ public class DataStoreOperations implements AutoCloseable {
                 .out(RAW_COLLECTION_EDGE_NAME);
   }
 
-  boolean hasMappingErrors(String vreName) {
+  public boolean hasMappingErrors(String vreName) {
     return getRawCollectionsTraversal(vreName).outE(HAS_NEXT_ERROR).hasNext();
   }
 
