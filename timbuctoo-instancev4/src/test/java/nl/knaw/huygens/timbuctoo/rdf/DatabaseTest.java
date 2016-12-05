@@ -9,6 +9,7 @@ import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -290,6 +291,7 @@ public class DatabaseTest {
     ));
   }
 
+  @Ignore // FIXME: should now be tested using rdf Index
   @Test
   public void findOrCreateRelationTypeReturnsAnExistingRelationType() {
     final String relationtypePrefix = "relationtype_";

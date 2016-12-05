@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
@@ -14,7 +15,6 @@ import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Property;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
@@ -35,8 +35,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
@@ -142,6 +140,7 @@ public class ExecuteRml {
     }
 
     transactionEnforcer.execute(db -> {
+      db.clearMappingErrors(vreName);
       db.ensureVreExists(vreName);
       db.removeCollectionsAndEntities(vreName);
       return commit();
@@ -150,18 +149,8 @@ public class ExecuteRml {
       if (!tx.isOpen()) {
         tx.open();
       }
-      Map<String, String> vreMappings = new HashMap<>();
-      Property collectionRefProp = model.getProperty("http://timbuctoo.com/mapping/existingTimbuctooVre");
-      Property predicatProp = model.getProperty("http://www.w3.org/ns/r2rml#predicate");
-      model.listResourcesWithProperty(collectionRefProp)
-           .forEachRemaining(resource -> {
-             vreMappings.put(
-               resource.getProperty(predicatProp).getObject().asResource().getURI(),
-               resource.getProperty(collectionRefProp).getObject().asLiteral().toString()
-             );
-           });
 
-      final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper), vreMappings);
+      final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper));
 
       //first save the archetype mappings
       AtomicLong tripleCount = new AtomicLong(0);
@@ -209,14 +198,8 @@ public class ExecuteRml {
 
     vres.reload();
 
-    boolean hasError = graph.traversal().V()
-                            .hasLabel(Vre.DATABASE_LABEL)
-                            .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-                            .out(RAW_COLLECTION_EDGE_NAME)
-                            .out(HAS_NEXT_ERROR)
-                            .hasNext();
-
-    return Response.ok().entity(jsnO("success", jsn(!hasError))).build();
+    return transactionEnforcer.executeAndReturn(db -> TransactionStateAndResult
+      .commitAndReturn(Response.ok().entity(jsnO("success", jsn(!db.hasMappingErrors(vreName)))).build()));
   }
 
   private void debugLogTripleCount(AtomicLong tripleCount, boolean force) {

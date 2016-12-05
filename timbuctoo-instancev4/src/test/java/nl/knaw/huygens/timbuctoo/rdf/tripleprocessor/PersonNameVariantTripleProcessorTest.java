@@ -16,6 +16,7 @@ import org.mockito.ArgumentCaptor;
 import java.io.IOException;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl.TIM_IS_NAME_VARIANT_OF;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.BDDMockito.given;
@@ -24,7 +25,6 @@ import static org.mockito.Mockito.verify;
 
 public class PersonNameVariantTripleProcessorTest {
   private static final String PERSON_URI = "http://example.com/Jan";
-  private static final String TIM_IS_NAME_VARIANT_OF = "http://timbuctoo.com/isNameVariantOf";
   private static final String DIFFERENT_PERSON_URI = "http://example.com/Other_Jan";
   private static final String NAMES_PROPERTY_NAME = "names";
   private static final String PERSON_NAMES_TYPE_NAME = "person-names";

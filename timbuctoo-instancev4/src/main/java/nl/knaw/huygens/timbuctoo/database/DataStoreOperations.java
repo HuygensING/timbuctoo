@@ -67,12 +67,15 @@ import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.database.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
+import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -196,6 +199,32 @@ public class DataStoreOperations implements AutoCloseable {
       LOG.error(databaseInvariant, "Could not parse entitytypes property on vertex with ID " + element.id());
       return new String[0];
     }
+  }
+
+  public void clearMappingErrors(String vreName) {
+    getRawCollectionsTraversal(vreName)
+      .emit()
+      .repeat(__.out(HAS_NEXT_ERROR))
+      .forEachRemaining(vertex -> {
+        vertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
+        vertex.properties().forEachRemaining(property -> {
+          if (property.key().startsWith(ERROR_PREFIX)) {
+            property.remove();
+          }
+        });
+      });
+  }
+
+
+  private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
+    return traversal.V()
+                .hasLabel(Vre.DATABASE_LABEL)
+                .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+                .out(RAW_COLLECTION_EDGE_NAME);
+  }
+
+  public boolean hasMappingErrors(String vreName) {
+    return getRawCollectionsTraversal(vreName).outE(HAS_NEXT_ERROR).hasNext();
   }
 
   public void success() {
@@ -815,7 +844,7 @@ public class DataStoreOperations implements AutoCloseable {
       "relationtype_symmetric", relationType.isSymmetric(),
       "relationtype_derived", relationType.isDerived(),
 
-      "rdfUri", "http://timbuctoo.com/" + relationType.getOutName()
+      "rdfUri", "http://timbuctoo.huygens.knaw.nl/" + relationType.getOutName()
     );
 
     systemPropertyModifier.setCreated(vertex, "timbuctoo", "timbuctoo");
@@ -836,4 +865,5 @@ public class DataStoreOperations implements AutoCloseable {
       }
     );
   }
+
 }

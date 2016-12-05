@@ -14,6 +14,7 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.DATABASE_LABEL;
@@ -219,6 +220,7 @@ public class TripleImporterIntegrationTest {
     );
   }
 
+  @Ignore // FIXME: should now be tested using rdf Index
   @Test
   public void importTripleShouldAddANewRelationTypeForANewlyCreatedRelation() {
     TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);

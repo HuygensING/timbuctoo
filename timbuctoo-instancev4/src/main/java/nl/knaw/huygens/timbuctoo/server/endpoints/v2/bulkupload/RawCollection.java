@@ -128,6 +128,7 @@ public class RawCollection {
       .emit()
       .repeat(__.out(edgeLabel))
       .times(numberOfItems - 1)
+      .dedup()
       .toStream()
       //construct array of results
       .peek(vertex -> {

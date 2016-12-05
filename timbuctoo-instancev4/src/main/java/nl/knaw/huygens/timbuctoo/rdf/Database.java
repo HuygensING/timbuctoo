@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
 import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
@@ -18,6 +20,7 @@ import org.neo4j.graphdb.index.IndexHits;
 import org.slf4j.Logger;
 
 import java.time.Clock;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
@@ -77,27 +80,34 @@ public class Database {
   }
 
   private Optional<Entity> findEntity(String vreName, String nodeUri) {
-    IndexHits<org.neo4j.graphdb.Node> rdfurls = rdfIndex.get(vreName, nodeUri);
+    final Optional<Vertex> entityV = findVertexInRdfIndex(vreName, nodeUri);
+    return entityV.isPresent() ?
+      Optional.of(new Entity(entityV.get(), getCollections(entityV.get(), vreName)))
+      : Optional.empty();
+  }
+
+  private Optional<Vertex> findVertexInRdfIndex(String indexName, String nodeUri) {
+    IndexHits<org.neo4j.graphdb.Node> rdfurls = rdfIndex.get(indexName, nodeUri);
     if (rdfurls.hasNext()) {
       long vertexId = rdfurls.next().getId();
       if (rdfurls.hasNext()) {
         StringBuilder errorMessage = new StringBuilder().append("There is more then one node in ")
-                             .append(vreName)
-                             .append(" for the rdfUrl ")
-                             .append(nodeUri)
-                             .append(" ")
-                             .append("namely ")
-                             .append(vertexId);
+                                                        .append(indexName)
+                                                        .append(" for the rdfUrl ")
+                                                        .append(nodeUri)
+                                                        .append(" ")
+                                                        .append("namely ")
+                                                        .append(vertexId);
         rdfurls.forEachRemaining(x -> errorMessage.append(", ").append(x.getId()));
         LOG.error(errorMessage.toString());
       }
-      GraphTraversal<Vertex, Vertex> entityLookup = traversal.V(vertexId);
-      if (entityLookup.hasNext()) {
-        Vertex entityV = entityLookup.next();
-        return Optional.of(new Entity(entityV, getCollections(entityV, vreName)));
+      GraphTraversal<Vertex, Vertex> vertexLookup = traversal.V(vertexId);
+      if (vertexLookup.hasNext()) {
+        Vertex vertex = vertexLookup.next();
+        return Optional.of(vertex);
       } else {
-        LOG.error("Index returned a Node for " + vreName + " - " + nodeUri + " but the node id " + vertexId + " could" +
-          " not be found using Tinkerpop.");
+        LOG.error("Index returned a Node for " + indexName + " - " + nodeUri + " but the node id " + vertexId +
+          "could not be found using Tinkerpop.");
       }
     }
     return Optional.empty();
@@ -110,7 +120,7 @@ public class Database {
 
     systemPropertyModifier.setCreated(vertex, "rdf-importer");
     systemPropertyModifier.setModified(vertex, "rdf-importer");
-    if (nodeUri.startsWith("http://timbuctoo.com/mapping/" + vreName)) {
+    if (nodeUri.startsWith("http://timbuctoo.huygens.knaw.nl/mapping/" + vreName)) {
       String timId = nodeUri.substring(nodeUri.lastIndexOf("/") + 1);
       systemPropertyModifier.setTimId(vertex, timId);
     } else {
@@ -213,11 +223,15 @@ public class Database {
   }
 
   public RelationType findOrCreateRelationType(Node predicate) {
-    final GraphTraversal<Vertex, Vertex> relationTypeT =
-      graphWrapper.getGraph().traversal().V().hasLabel("relationtype").has(RDF_URI_PROP, predicate.getURI());
 
-    if (relationTypeT.hasNext()) {
-      return new RelationType(relationTypeT.next());
+    final Optional<Vertex> relationTypeV =
+      findVertexInRdfIndex(RelationTypeService.RELATIONTYPE_INDEX_NAME, predicate.getURI());
+
+    if (relationTypeV.isPresent()) {
+      final Vertex relationTypeVertex = relationTypeV.get();
+      boolean isInverse = relationTypeVertex.<String>property("relationtype_inverseName")
+        .value().equals(predicate.getLocalName());
+      return new RelationType(relationTypeVertex, isInverse);
     }
 
     final String relationTypePrefix = "relationtype_";

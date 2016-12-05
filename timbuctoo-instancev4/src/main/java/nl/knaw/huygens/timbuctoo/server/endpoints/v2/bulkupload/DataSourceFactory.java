@@ -19,8 +19,8 @@ public class DataSourceFactory implements Function<RdfResource, Optional<DataSou
   @Override
   public Optional<DataSource> apply(RdfResource rdfResource) {
     for (RdfResource resource : rdfResource.out(NS_RML + "source")) {
-      Set<RdfResource> rawCollection = resource.out("http://timbuctoo.com/mapping#rawCollection");
-      Set<RdfResource> vreName = resource.out("http://timbuctoo.com/mapping#vreName");
+      Set<RdfResource> rawCollection = resource.out("http://timbuctoo.huygens.knaw.nl/mapping#rawCollection");
+      Set<RdfResource> vreName = resource.out("http://timbuctoo.huygens.knaw.nl/mapping#vreName");
 
       if (rawCollection.size() == 1 && vreName.size() == 1) {
         return Optional.of(new BulkUploadedDataSource(
