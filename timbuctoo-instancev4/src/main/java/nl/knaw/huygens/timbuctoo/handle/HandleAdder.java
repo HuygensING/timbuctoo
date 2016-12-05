@@ -47,7 +47,7 @@ public class HandleAdder implements PersistentUrlCreator {
       String persistentId = (manager.persistURL(uri.toString()));
       URI persistentUrl = new URI(manager.getPersistentURL(persistentId));
 
-      transactionEnforcer.executeTimbuctooAction(timbuctooActions -> {
+      transactionEnforcer.execute(timbuctooActions -> {
           try {
             timbuctooActions.addPid(persistentUrl, params.getEntityLookup());
             LOG.info("committed pid");

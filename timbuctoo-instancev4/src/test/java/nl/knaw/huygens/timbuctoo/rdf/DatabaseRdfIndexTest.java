@@ -21,7 +21,7 @@ public class DatabaseRdfIndexTest {
     TransactionEnforcer transactionEnforcer = forGraphWrapper(mgr);
 
     new ScaffoldMigrator(mgr).execute();
-    transactionEnforcer.executeTimbuctooAction(timbuctooActions -> {
+    transactionEnforcer.execute(timbuctooActions -> {
       timbuctooActions.ensureVreExists("myVre");
       return commit();
     });

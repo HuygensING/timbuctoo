@@ -138,7 +138,7 @@ public class ExecuteRml {
                      .build();
     }
 
-    transactionEnforcer.executeTimbuctooAction(timbuctooActions -> {
+    transactionEnforcer.execute(timbuctooActions -> {
       timbuctooActions.clearMappingErrors(vreName);
       timbuctooActions.ensureVreExists(vreName);
       timbuctooActions.removeCollectionsAndEntities(vreName);

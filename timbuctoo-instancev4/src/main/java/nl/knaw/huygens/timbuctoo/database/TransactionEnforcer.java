@@ -50,7 +50,7 @@ public class TransactionEnforcer {
     }
   }
 
-  public void executeTimbuctooAction(Function<TimbuctooActions, TransactionState> action) {
+  public void execute(Function<TimbuctooActions, TransactionState> action) {
     DataStoreOperations db = dataStoreOperationsSupplier.get();
     TimbuctooActions timbuctooActions = timbuctooActionsFactory.create(db, afterSuccessTaskExecutor);
 

@@ -60,7 +60,7 @@ public class RdfImporter {
   }
 
   private void prepare() {
-    transactionEnforcer.executeTimbuctooAction(timbuctooActions -> {
+    transactionEnforcer.execute(timbuctooActions -> {
       timbuctooActions.ensureVreExists(vreName);
       return commit();
     });
