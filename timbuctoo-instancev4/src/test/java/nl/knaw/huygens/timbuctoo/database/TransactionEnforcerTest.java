@@ -1,14 +1,11 @@
 package nl.knaw.huygens.timbuctoo.database;
 
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.junit.Test;
 import org.mockito.InOrder;
 
-import java.net.URI;
-import java.time.Clock;
-
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class TransactionEnforcerTest {
@@ -16,42 +13,36 @@ public class TransactionEnforcerTest {
   @Test
   public void executeAndReturnExecutesTheAfterSuccessTaskExecutorAfterTheTransactionIsCommitted() {
     AfterSuccessTaskExecutor afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
-    DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
+    TimbuctooActions actions = mock(TimbuctooActions.class);
     TransactionEnforcer instance =
-      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactoryImpl(mock(
-        Authorizer.class), Clock.systemDefaultZone(), mock(PersistentUrlCreator.class),
-        (coll, id, rev) -> URI.create("http://example.org/persistent")), afterSuccessTaskExecutor);
+      TransactionEnforcerStubs.withAfterSuccessExecutorAndTimbuctooActions(afterSuccessTaskExecutor, actions);
 
     instance.executeAndReturn(timbuctooActions -> TransactionStateAndResult.commitAndReturn(""));
 
-    InOrder inOrder = inOrder(dataStoreOperations, afterSuccessTaskExecutor);
-    inOrder.verify(dataStoreOperations).success();
-    inOrder.verify(dataStoreOperations).close();
+    InOrder inOrder = inOrder(actions, afterSuccessTaskExecutor);
+    inOrder.verify(actions).success();
+    inOrder.verify(actions).close();
     inOrder.verify(afterSuccessTaskExecutor).executeTasks();
   }
 
   @Test
   public void executeAndReturnDoesNotExecuteTheAfterSuccessTaskExecutorAfterTheTransactionIsRolledBack() {
     AfterSuccessTaskExecutor afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
-    DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
-    TransactionEnforcer instance =
-      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactoryImpl(mock(
-        Authorizer.class), Clock.systemDefaultZone(), mock(PersistentUrlCreator.class),
-        (coll, id, rev) -> URI.create("http://example.org/persistent")), afterSuccessTaskExecutor);
+    TimbuctooActions actions = mock(TimbuctooActions.class);
+    TransactionEnforcer instance = TransactionEnforcerStubs
+      .withAfterSuccessExecutorAndTimbuctooActions(afterSuccessTaskExecutor, actions);
 
     instance.executeAndReturn(timbuctooActions -> TransactionStateAndResult.rollbackAndReturn(""));
 
+    verify(actions).rollback();
     verifyZeroInteractions(afterSuccessTaskExecutor);
   }
+
 
   @Test(expected = RuntimeException.class)
   public void executeAndReturnDoesNotExecuteTheAfterSuccessTaskExecutorWhenAnExceptionIsThrown() {
     AfterSuccessTaskExecutor afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
-    DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
-    TransactionEnforcer instance =
-      new TransactionEnforcer(() -> dataStoreOperations, new TimbuctooActions.TimbuctooActionsFactoryImpl(mock(
-        Authorizer.class), Clock.systemDefaultZone(), mock(PersistentUrlCreator.class),
-        (coll, id, rev) -> URI.create("http://example.org/persistent")), afterSuccessTaskExecutor);
+    TransactionEnforcer instance = TransactionEnforcerStubs.withAfterSuccessExecutor(afterSuccessTaskExecutor);
 
     try {
       instance.executeAndReturn(timbuctooActions -> {
@@ -63,4 +54,5 @@ public class TransactionEnforcerTest {
 
 
   }
+
 }

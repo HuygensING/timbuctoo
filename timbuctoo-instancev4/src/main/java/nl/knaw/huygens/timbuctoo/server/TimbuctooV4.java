@@ -208,16 +208,16 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       authorizer,
       Clock.systemDefaultZone(),
       handleAdder,
-      uriToRedirectToFromPersistentUrls
-    );
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
+      uriToRedirectToFromPersistentUrls,
       () -> new DataStoreOperations(
         graphManager,
         changeListeners,
         entityFetcher,
         null,
         indexHandler
-      ),
+      )
+    );
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
       timbuctooActionsFactory
     );
     graphManager.onGraph(g -> new ScaffoldMigrator(graphManager).execute());

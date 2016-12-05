@@ -29,11 +29,12 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Supplier;
 
 /**
  * This class is performs all the steps needed to save entities relations, etc.
  */
-public class TimbuctooActions {
+public class TimbuctooActions implements AutoCloseable {
 
   private final Authorizer authorizer;
   private final Clock clock;
@@ -203,7 +204,6 @@ public class TimbuctooActions {
 
   public boolean hasMappingErrors(String vreName) {
     return dataStoreOperations.hasMappingErrors(vreName);
-
   }
   
   public void ensureVreExists(String vreName) {
@@ -218,11 +218,24 @@ public class TimbuctooActions {
     dataStoreOperations.clearMappingErrors(vreName);
   }
 
-  //================== Inner classes =================
+  //================== Transaction methods ==================
+  @Override
+  public void close() {
+    dataStoreOperations.close();
+  }
+
+  public void success() {
+    dataStoreOperations.success();
+  }
+
+  public void rollback() {
+    dataStoreOperations.rollback();
+  }
+
+  //================== Inner classes ==================
   @FunctionalInterface
   public interface TimbuctooActionsFactory {
-    TimbuctooActions create(DataStoreOperations dataStoreOperations,
-                            AfterSuccessTaskExecutor afterSuccessTaskExecutor
+    TimbuctooActions create(AfterSuccessTaskExecutor afterSuccessTaskExecutor
     );
   }
 
@@ -264,25 +277,26 @@ public class TimbuctooActions {
     private final Clock clock;
     private final PersistentUrlCreator persistentUrlCreator;
     private final UrlGenerator uriToRedirectToFromPersistentUrls;
+    private final Supplier<DataStoreOperations> dataStoreOperationsSupplier;
 
     public TimbuctooActionsFactoryImpl(Authorizer authorizer, Clock clock, PersistentUrlCreator persistentUrlCreator,
-                                       UrlGenerator uriToRedirectToFromPersistentUrls) {
+                                       UrlGenerator uriToRedirectToFromPersistentUrls,
+                                       Supplier<DataStoreOperations> dataStoreOperationsSupplier) {
       this.authorizer = authorizer;
       this.clock = clock;
       this.persistentUrlCreator = persistentUrlCreator;
       this.uriToRedirectToFromPersistentUrls = uriToRedirectToFromPersistentUrls;
+      this.dataStoreOperationsSupplier = dataStoreOperationsSupplier;
     }
 
     @Override
-    public TimbuctooActions create(DataStoreOperations dataStoreOperations,
-                                   AfterSuccessTaskExecutor afterSuccessTaskExecutor
-    ) {
+    public TimbuctooActions create(AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
       return new TimbuctooActions(
         authorizer,
         clock,
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls,
-        dataStoreOperations,
+        dataStoreOperationsSupplier.get(),
         afterSuccessTaskExecutor
       );
     }
