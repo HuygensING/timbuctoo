@@ -5,13 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
@@ -71,6 +65,8 @@ public class LoadSaveVresTest {
     assertThat(instance.getVre("VreA"), instanceOf(Vre.class));
     assertThat(instance.getVre("VreB"), CoreMatchers.equalTo(null));
 
+    // TODO find a clearer way to write this test.
+    // This call overrides the GraphManager pointer, so the DatabaseConfiguredVres has an empty database again.
     graphManager = newGraph()
       .withVertex(v -> {
         v.withLabel(Vre.DATABASE_LABEL)
@@ -87,23 +83,4 @@ public class LoadSaveVresTest {
     assertThat(instance.getVre("VreA"), CoreMatchers.equalTo(null));
   }
 
-
-  private class MockWrapper implements GraphWrapper {
-    private Graph graph;
-
-    @Override
-    public Graph getGraph() {
-      return graph;
-    }
-
-    @Override
-    public GraphTraversalSource getLatestState() {
-      return graph.traversal();
-    }
-
-    @Override
-    public GraphTraversal<Vertex, Vertex> getCurrentEntitiesFor(String... entityTypeNames) {
-      throw new NotImplementedException();
-    }
-  }
 }
