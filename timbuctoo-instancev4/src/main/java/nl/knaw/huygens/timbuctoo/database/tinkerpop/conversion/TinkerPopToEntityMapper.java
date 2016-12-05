@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database.converters.tinkerpop;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;

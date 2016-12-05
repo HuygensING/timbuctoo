@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database.converters.json;
+package nl.knaw.huygens.timbuctoo.crud.converters;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;

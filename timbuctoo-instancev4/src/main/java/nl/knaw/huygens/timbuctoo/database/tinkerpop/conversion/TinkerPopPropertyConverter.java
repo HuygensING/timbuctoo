@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.database.converters.tinkerpop;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.core.dto.property.AltNamesProperty;
