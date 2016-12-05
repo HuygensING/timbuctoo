@@ -9,7 +9,7 @@ public class TransactionEnforcerStubs {
   public static TransactionEnforcer forGraphWrapper(TinkerPopGraphManager graphManager) {
     return new TransactionEnforcer(
       (afterSuccessTaskExecutor) -> TimbuctooActionsStubs
-        .withDataStoreAndAfterSucces(DataStoreOperationsStubs.forGraphWrapper(graphManager), afterSuccessTaskExecutor)
+        .withDataStoreAndAfterSucces(TinkerPopOperationsStubs.forGraphWrapper(graphManager), afterSuccessTaskExecutor)
     );
   }
 

@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -35,7 +35,7 @@ public class ScaffoldMigrator {
   public void execute() {
     //The migrations are executed first, so those vertices _will_ be present, even on a new empty database
     //The code below will add vertices, so a second launch will not run this code
-    DataStoreOperations db = new DataStoreOperations(
+    TinkerPopOperations db = new TinkerPopOperations(
       graphManager,
       new DeafListener(),
       new GremlinEntityFetcher(),

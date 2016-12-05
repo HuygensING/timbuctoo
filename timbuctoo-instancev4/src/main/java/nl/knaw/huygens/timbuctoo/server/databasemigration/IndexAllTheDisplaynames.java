@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.dto.DisplayNameHelper;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -24,7 +24,7 @@ public class IndexAllTheDisplaynames implements DatabaseMigration {
 
   @Override
   public void execute(TinkerPopGraphManager graphManager) throws IOException {
-    DataStoreOperations dataStoreOperations = new DataStoreOperations(
+    TinkerPopOperations dataStoreOperations = new TinkerPopOperations(
       graphManager,
       new DeafListener(),
       new GremlinEntityFetcher(),

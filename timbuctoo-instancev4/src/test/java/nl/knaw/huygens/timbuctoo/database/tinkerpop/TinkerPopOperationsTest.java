@@ -1,9 +1,12 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import javaslang.control.Try;
+import nl.knaw.huygens.timbuctoo.database.AlreadyUpdatedException;
+import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
+import nl.knaw.huygens.timbuctoo.database.NotFoundException;
 import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateRelation;
@@ -17,7 +20,6 @@ import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.database.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.database.exceptions.RelationNotPossibleException;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -40,8 +42,8 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.timbuctoo.database.DataStoreOperationsStubs.forGraphWrapper;
-import static nl.knaw.huygens.timbuctoo.database.DataStoreOperationsStubs.forGraphWrapperAndMappings;
+import static nl.knaw.huygens.timbuctoo.database.TinkerPopOperationsStubs.forGraphWrapper;
+import static nl.knaw.huygens.timbuctoo.database.TinkerPopOperationsStubs.forGraphWrapperAndMappings;
 import static nl.knaw.huygens.timbuctoo.database.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
@@ -72,11 +74,11 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
-public class DataStoreOperationsTest {
+public class TinkerPopOperationsTest {
 
   @Test
   public void emptyDatabaseIsShownAsEmpty() throws Exception {
-    DataStoreOperations instance = forGraphWrapper(newGraph().wrap());
+    TinkerPopOperations instance = forGraphWrapper(newGraph().wrap());
 
     boolean isEmpty = instance.databaseIsEmptyExceptForMigrations();
 
@@ -89,7 +91,7 @@ public class DataStoreOperationsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
-    DataStoreOperations instance = forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
 
     boolean isEmpty = instance.databaseIsEmptyExceptForMigrations();
 
@@ -102,7 +104,7 @@ public class DataStoreOperationsTest {
       .withVertex(v -> v
         .withTimId(UUID.randomUUID().toString())
       ).wrap();
-    DataStoreOperations instance = forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
 
     instance.ensureVreExists("SomeVre");
     assertThat(
@@ -119,7 +121,7 @@ public class DataStoreOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     Vres vres = createConfiguration();
     final Collection collection = vres.getCollection("testthings").get();
-    final DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    final TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     properties.add(new StringProperty("prop1", "val1"));
     properties.add(new StringProperty("prop2", "val2"));
@@ -141,7 +143,7 @@ public class DataStoreOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     CreateEntity createEntity = withProperties(properties);
 
@@ -160,7 +162,7 @@ public class DataStoreOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     CreateEntity createEntity = withProperties(properties);
 
@@ -202,7 +204,7 @@ public class DataStoreOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     String userId = "userId";
     long timeStamp = Instant.now().toEpochMilli();
@@ -230,7 +232,7 @@ public class DataStoreOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     CreateEntity createEntity = withProperties(properties);
 
@@ -251,7 +253,7 @@ public class DataStoreOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     Vres vres = createConfiguration();
     Collection collection = vres.getCollection("testthings").get();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     CreateEntity createEntity = withProperties(properties);
 
@@ -272,7 +274,7 @@ public class DataStoreOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     Vres vres = createConfiguration();
     final Collection collection = vres.getCollection("testthings").get();
-    final DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    final TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList();
     properties.add(new StringProperty("prop1", "val1"));
     properties.add(new StringProperty("unknowProp", "val2"));
@@ -305,7 +307,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     int rev = instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -331,7 +333,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
     GremlinEntityFetcher entityFetcher = new GremlinEntityFetcher();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -379,7 +381,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -411,7 +413,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
 
@@ -447,7 +449,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     Vertex beforeUpdate = graphManager.getGraph().traversal().V()
                                       .has("tim_id", idString)
@@ -495,7 +497,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     Vertex orig = graphManager.getGraph().traversal().V().has("tim_id", idString).has("isLatest", true).next();
     assertThat(stream(orig.edges(Direction.BOTH, "hasWritten", "isFriendOf")).count(), is(2L));
 
@@ -552,7 +554,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     instance.deleteEntity(collection, id, new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -590,7 +592,7 @@ public class DataStoreOperationsTest {
         .withProperty("deleted", false)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     instance.deleteEntity(collection, id, null);
   }
@@ -601,7 +603,7 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     UUID id = UUID.randomUUID();
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     instance.deleteEntity(collection, id, null);
   }
@@ -619,7 +621,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -648,7 +650,7 @@ public class DataStoreOperationsTest {
         .withProperty("testthing_unknownProp", "val")
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -681,7 +683,7 @@ public class DataStoreOperationsTest {
         .withProperty("testthing_prop2", 42) // should be a string
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -726,7 +728,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -774,7 +776,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, 1, collection,
       (readEntity, vertex) -> {
@@ -795,7 +797,7 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     UUID id = UUID.randomUUID();
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -828,7 +830,7 @@ public class DataStoreOperationsTest {
         .withTimId(relatedId.toString())
         .withProperty("testthing_displayName", "displayName")
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -879,7 +881,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -916,7 +918,7 @@ public class DataStoreOperationsTest {
         .withTimId(relatedId.toString())
         .withProperty("testthing_displayName", "displayName")
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -951,7 +953,7 @@ public class DataStoreOperationsTest {
         .withType("thing")
         .withTimId(relatedId.toString())
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1000,7 +1002,7 @@ public class DataStoreOperationsTest {
         .withType("thing")
         .withTimId(relatedId.toString())
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1027,7 +1029,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1052,7 +1054,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1076,7 +1078,7 @@ public class DataStoreOperationsTest {
         .withProperty("deleted", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1099,7 +1101,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1125,7 +1127,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
         .withProperty("pid", "pidValue")
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1150,7 +1152,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     ReadEntity entity = instance.getEntity(id, null, collection,
       (readEntity, vertex) -> {
@@ -1207,7 +1209,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     DataStream<ReadEntity> entities = instance.getCollection(
       collection, 0, 3, false,
@@ -1247,7 +1249,7 @@ public class DataStoreOperationsTest {
         .withProperty("relationtype_inverseName", "isCreatorOf")
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     DataStream<ReadEntity> entities = instance.getCollection(collection, 0, 1, true,
       (readEntity, vertex) -> {
@@ -1291,7 +1293,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     DataStream<ReadEntity> entities = instance.getCollection(collection, 0, 2, true,
       (readEntity, vertex) -> {
@@ -1320,7 +1322,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", false)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     updateEntity.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1355,7 +1357,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
         .withProperty("otherthing_prop1", "the name")
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     updateEntity.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1382,7 +1384,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     long timeStamp = Instant.now().toEpochMilli();
     updateEntity.setModified(new Change(timeStamp, "userId", null));
@@ -1414,7 +1416,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     ArrayList<TimProperty<?>> properties = Lists.newArrayList(
       new StringProperty("prop1", "newValue"),
       new StringProperty("prop2", "prop2Value")
@@ -1446,7 +1448,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     ArrayList<TimProperty<?>> properties = Lists.newArrayList(
       new StringProperty("prop1", "newValue")
     );
@@ -1473,7 +1475,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 1)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList(
       new StringProperty("prop1", "newValue")
     );
@@ -1525,7 +1527,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", 1)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     List<TimProperty<?>> properties = Lists.newArrayList(
       new StringProperty("prop1", "newValue")
     );
@@ -1555,7 +1557,7 @@ public class DataStoreOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     UUID id = UUID.randomUUID();
     TinkerPopGraphManager emptyDatabase = newGraph().wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     long timeStamp = Instant.now().toEpochMilli();
     updateEntity.setModified(new Change(timeStamp, "userId", null));
@@ -1576,7 +1578,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
         .withProperty("rev", 2)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     UpdateEntity updateEntity = new UpdateEntity(id, Lists.newArrayList(), 1);
     long timeStamp = Instant.now().toEpochMilli();
     updateEntity.setModified(new Change(timeStamp, "userId", null));
@@ -1615,7 +1617,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1659,7 +1661,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -1715,7 +1717,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       ).wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1752,7 +1754,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       ).wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1791,7 +1793,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       ).wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1829,7 +1831,7 @@ public class DataStoreOperationsTest {
         .withType("thing")
         .withProperty("isLatest", true)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
     createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1875,7 +1877,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     updateRelation.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1929,7 +1931,7 @@ public class DataStoreOperationsTest {
       )
       .wrap();
 
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -1982,7 +1984,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -2032,7 +2034,7 @@ public class DataStoreOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     updateRelation.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -2063,7 +2065,7 @@ public class DataStoreOperationsTest {
         .withProperty("rev", rev)
         .withProperty("isLatest", false)
       ).wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
     URI pidUri = new URI("http://example.com/pid");
 
     instance.addPid(id, rev, pidUri);
@@ -2078,7 +2080,7 @@ public class DataStoreOperationsTest {
     UUID id = UUID.randomUUID();
     int rev = 1;
     TinkerPopGraphManager emptyDatabase = newGraph().wrap();
-    DataStoreOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(emptyDatabase, vres);
     URI pidUri = new URI("http://example.com/pid");
 
     instance.addPid(id, rev, pidUri);
@@ -2121,8 +2123,8 @@ public class DataStoreOperationsTest {
     when(indexHandler.findByQuickSearch(any(Collection.class), any()))
       .thenReturn(graphManager.getGraph().traversal().V().has("tim_id",
         within(id1.toString(), id2.toString())));
-    DataStoreOperations instance =
-      new DataStoreOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
+    TinkerPopOperations instance =
+      new TinkerPopOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
     Collection collection = vres.getCollection("testthings").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
@@ -2170,8 +2172,8 @@ public class DataStoreOperationsTest {
     when(indexHandler.findByQuickSearch(any(Collection.class), any()))
       .thenReturn(graphManager.getGraph().traversal().V().has("tim_id",
         within(id1.toString(), id2.toString())));
-    DataStoreOperations instance =
-      new DataStoreOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
+    TinkerPopOperations instance =
+      new TinkerPopOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
     Collection collection = vres.getCollection("testthings").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
@@ -2221,8 +2223,8 @@ public class DataStoreOperationsTest {
     when(indexHandler.findKeywordsByQuickSearch(any(Collection.class), any(), anyString())).thenReturn(
       graphManager.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
     );
-    DataStoreOperations instance =
-      new DataStoreOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
+    TinkerPopOperations instance =
+      new TinkerPopOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
     Collection collection = vres.getCollection("testkeywords").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
@@ -2273,8 +2275,8 @@ public class DataStoreOperationsTest {
     when(indexHandler.findKeywordsByQuickSearch(any(Collection.class), any(), anyString())).thenReturn(
       graphManager.getGraph().traversal().V().has("tim_id", within(id1.toString(), id2.toString()))
     );
-    DataStoreOperations instance =
-      new DataStoreOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
+    TinkerPopOperations instance =
+      new TinkerPopOperations(graphManager, mock(ChangeListener.class), entityFetcher, vres, indexHandler);
     Collection collection = vres.getCollection("testkeywords").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 

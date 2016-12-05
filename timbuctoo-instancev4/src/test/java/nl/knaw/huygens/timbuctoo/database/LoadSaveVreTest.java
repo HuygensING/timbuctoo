@@ -48,7 +48,7 @@ public class LoadSaveVreTest {
     init.accept(testGraphBuilder);
     TinkerPopGraphManager graphManager = testGraphBuilder.wrap();
     return tuple(
-      DataStoreOperationsStubs.forGraphWrapper(graphManager),
+      TinkerPopOperationsStubs.forGraphWrapper(graphManager),
       graphManager.getGraph());
   }
 

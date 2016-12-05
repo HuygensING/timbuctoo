@@ -20,11 +20,11 @@ import static nl.knaw.huygens.timbuctoo.database.AuthorizerBuilder.notAllowedToW
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class TimbuctooActionsReplaceTest {
 
@@ -32,7 +32,7 @@ public class TimbuctooActionsReplaceTest {
   public static final String COLLECTION_NAME = "collection";
   public static final UUID ID = UUID.randomUUID();
   private static final String USER_ID = "userId";
-  private final DataStoreOperations dataStoreOperations = mock(DataStoreOperations.class);
+  private DataStoreOperations dataStoreOperations;
   private Clock clock;
   private PersistentUrlCreator persistentUrlCreator;
   private UpdateEntity updateEntity;
@@ -51,6 +51,7 @@ public class TimbuctooActionsReplaceTest {
     collection = mock(Collection.class);
     when(collection.getCollectionName()).thenReturn(COLLECTION_NAME);
     afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
+    dataStoreOperations = mock(DataStoreOperations.class);
   }
 
   @Test(expected = AuthorizationException.class)

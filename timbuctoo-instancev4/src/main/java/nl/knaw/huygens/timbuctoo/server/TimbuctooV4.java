@@ -17,9 +17,9 @@ import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.Neo4jLuceneEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
@@ -209,7 +209,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       Clock.systemDefaultZone(),
       handleAdder,
       uriToRedirectToFromPersistentUrls,
-      () -> new DataStoreOperations(
+      () -> new TinkerPopOperations(
         graphManager,
         changeListeners,
         entityFetcher,

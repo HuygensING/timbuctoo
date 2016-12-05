@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -43,7 +43,7 @@ public class PrepareForBiaImportMigration implements DatabaseMigration {
   }
 
   private void addRelationTypes() {
-    DataStoreOperations db = new DataStoreOperations(
+    TinkerPopOperations db = new TinkerPopOperations(
       graphManager,
       new DeafListener(),
       new GremlinEntityFetcher(),

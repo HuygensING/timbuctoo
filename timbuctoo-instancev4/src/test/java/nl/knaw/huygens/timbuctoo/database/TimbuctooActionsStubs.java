@@ -7,7 +7,7 @@ import java.net.URI;
 import java.time.Clock;
 
 import static org.mockito.Mockito.mock;
-
+  
 public class TimbuctooActionsStubs {
   public static TimbuctooActions withDataStoreAndAfterSucces(DataStoreOperations dataStoreOperations,
                                                              AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
@@ -27,7 +27,7 @@ public class TimbuctooActionsStubs {
       Clock.systemDefaultZone(),
       mock(PersistentUrlCreator.class),
       (coll, id, rev) -> URI.create("http://example.org/persistent"),
-      DataStoreOperationsStubs.forGraphWrapper(graphManager),
+      TinkerPopOperationsStubs.forGraphWrapper(graphManager),
       new AfterSuccessTaskExecutor()
     );
   }

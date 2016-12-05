@@ -2,7 +2,8 @@ package nl.knaw.huygens.timbuctoo.database.changelistener;
 
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperationsStubs;
+import nl.knaw.huygens.timbuctoo.database.TinkerPopOperationsStubs;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.dto.CreateEntityStubs;
 import nl.knaw.huygens.timbuctoo.database.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
@@ -21,8 +22,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static nl.knaw.huygens.timbuctoo.database.DataStoreOperationsStubs.forDeleteCall;
-import static nl.knaw.huygens.timbuctoo.database.DataStoreOperationsStubs.forReplaceCall;
+import static nl.knaw.huygens.timbuctoo.database.TinkerPopOperationsStubs.forDeleteCall;
+import static nl.knaw.huygens.timbuctoo.database.TinkerPopOperationsStubs.forReplaceCall;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.IS_LATEST;
 import static nl.knaw.huygens.timbuctoo.database.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
@@ -51,7 +52,7 @@ public class ChangeListenerTest {
       assertThat(prevVersions, is(0L));
     });
     ChangeListener spy = spy(changeListener);
-    DataStoreOperations instance = DataStoreOperationsStubs.forChangeListenerMock(spy);
+    DataStoreOperations instance = TinkerPopOperationsStubs.forChangeListenerMock(spy);
 
     Collection collectionMock = mock(Collection.class);
     Collection baseCollectionMock = mock(Collection.class);
@@ -166,7 +167,7 @@ public class ChangeListenerTest {
       "ensureVreExists",
       "addPid"
     );
-    Method[] allMethods = DataStoreOperations.class.getDeclaredMethods();
+    Method[] allMethods = TinkerPopOperations.class.getDeclaredMethods();
     for (Method method : allMethods) {
       if (Modifier.isPublic(method.getModifiers())) {
         if (!knownMethods.contains(method.getName())) {
