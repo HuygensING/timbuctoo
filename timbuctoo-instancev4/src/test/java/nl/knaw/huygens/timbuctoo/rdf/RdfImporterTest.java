@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs;
+import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.riot.Lang;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -15,7 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forDataStoreOperations;
+import static nl.knaw.huygens.timbuctoo.core.TransactionEnforcerStubs.forDataStoreOperations;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,7 +30,7 @@ public class RdfImporterTest {
 
   @Test
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
-    TinkerpopGraphManager graphWrapper = newGraph().wrap();
+    TinkerPopGraphManager graphWrapper = newGraph().wrap();
     DataStoreOperations db = mock(DataStoreOperations.class);
     TransactionEnforcer transactionEnforcer = forDataStoreOperations(db);
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
@@ -47,7 +46,7 @@ public class RdfImporterTest {
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
     TransactionEnforcer transactionEnforcer = forDataStoreOperations(mock(DataStoreOperations.class));
-    TinkerpopGraphManager graphWrapper = newGraph().wrap();
+    TinkerPopGraphManager graphWrapper = newGraph().wrap();
     TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, transactionEnforcer, processor);

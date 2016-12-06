@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import nl.knaw.huygens.timbuctoo.server.TestableTinkerpopGraphManager;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TestableTinkerPopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -71,9 +71,9 @@ public class TestGraphBuilder {
     return neo4jGraph;
   }
 
-  public TinkerpopGraphManager wrap() {
+  public TinkerPopGraphManager wrap() {
     final Neo4jGraph graph = build();
-    return new TestableTinkerpopGraphManager(neo4jDb, graph);
+    return new TestableTinkerPopGraphManager(neo4jDb, graph);
   }
 
   public TestGraphBuilder withVertex(String id, Consumer<VertexBuilder> vertexBuilderConfig) {

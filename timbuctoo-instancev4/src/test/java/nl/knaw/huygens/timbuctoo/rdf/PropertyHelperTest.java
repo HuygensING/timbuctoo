@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -17,7 +17,7 @@ public class PropertyHelperTest {
   public void movePropertiesMovesThePropertiesToTheNewCollection() {
     String vreName = "vreName";
 
-    TinkerpopGraphManager graphManager = newGraph().wrap();
+    TinkerPopGraphManager graphManager = newGraph().wrap();
     Vertex oldColVertex = graphManager.getGraph().addVertex(
       ENTITY_TYPE_NAME_PROPERTY_NAME, "oldCollection"
     );

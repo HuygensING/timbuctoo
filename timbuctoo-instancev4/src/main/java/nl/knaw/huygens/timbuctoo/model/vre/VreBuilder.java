@@ -1,13 +1,13 @@
 package nl.knaw.huygens.timbuctoo.model.vre;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.CollectionBuilder.timbuctooCollection;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder.timbuctooCollection;
 
 public class VreBuilder {
   private final String vreName;

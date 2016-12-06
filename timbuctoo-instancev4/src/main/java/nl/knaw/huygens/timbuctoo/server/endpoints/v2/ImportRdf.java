@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.riot.Lang;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -20,12 +20,12 @@ import java.util.concurrent.ExecutorService;
 @Path("/v2.1/rdf/import")
 public class ImportRdf {
 
-  private final TinkerpopGraphManager graphWrapper;
+  private final TinkerPopGraphManager graphWrapper;
   private Vres vres;
   private ExecutorService rfdExecutorService;
   private final TransactionEnforcer transactionEnforcer;
 
-  public ImportRdf(TinkerpopGraphManager graphWrapper, Vres vres, ExecutorService rfdExecutorService,
+  public ImportRdf(TinkerPopGraphManager graphWrapper, Vres vres, ExecutorService rfdExecutorService,
                    TransactionEnforcer transactionEnforcer) {
     this.graphWrapper = graphWrapper;
     this.vres = vres;

@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.crud;
 
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudService;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;

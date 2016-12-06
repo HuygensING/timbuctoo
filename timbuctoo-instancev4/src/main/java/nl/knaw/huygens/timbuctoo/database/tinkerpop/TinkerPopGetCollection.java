@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.database.dto.DataStream;
-import nl.knaw.huygens.timbuctoo.database.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
+import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 
 import java.util.List;
 import java.util.function.Function;

@@ -1,14 +1,14 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionStateAndResult;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
@@ -38,11 +38,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
-import static nl.knaw.huygens.timbuctoo.database.TransactionState.commit;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -51,14 +50,14 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class ExecuteRml {
   public static final Logger LOG = LoggerFactory.getLogger(ExecuteRml.class);
   private final UriHelper uriHelper;
-  private final TinkerpopGraphManager graphWrapper;
+  private final TinkerPopGraphManager graphWrapper;
   private final Vres vres;
   private final UserPermissionChecker permissionChecker;
   private final JenaBasedReader rmlBuilder;
   private final DataSourceFactory dataSourceFactory;
   private final TransactionEnforcer transactionEnforcer;
 
-  public ExecuteRml(UriHelper uriHelper, TinkerpopGraphManager graphWrapper, Vres vres, JenaBasedReader rmlBuilder,
+  public ExecuteRml(UriHelper uriHelper, TinkerPopGraphManager graphWrapper, Vres vres, JenaBasedReader rmlBuilder,
                     UserPermissionChecker permissionChecker, DataSourceFactory dataSourceFactory,
                     TransactionEnforcer transactionEnforcer) {
     this.uriHelper = uriHelper;
@@ -139,10 +138,10 @@ public class ExecuteRml {
                      .build();
     }
 
-    transactionEnforcer.execute(db -> {
-      db.clearMappingErrors(vreName);
-      db.ensureVreExists(vreName);
-      db.removeCollectionsAndEntities(vreName);
+    transactionEnforcer.execute(timbuctooActions -> {
+      timbuctooActions.clearMappingErrors(vreName);
+      timbuctooActions.ensureVreExists(vreName);
+      timbuctooActions.removeCollectionsAndEntities(vreName);
       return commit();
     });
     try (Transaction tx = graphWrapper.getGraph().tx()) {

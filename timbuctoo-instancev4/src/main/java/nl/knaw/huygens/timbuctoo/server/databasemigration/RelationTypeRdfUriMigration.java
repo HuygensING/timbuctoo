@@ -1,8 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
-import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -22,7 +21,7 @@ public class RelationTypeRdfUriMigration implements DatabaseMigration {
   private static final String TIMBUCTOO_NAMESPACE = "http://timbuctoo.huygens.knaw.nl/";
 
   @Override
-  public void execute(TinkerpopGraphManager graphWrapper) throws IOException {
+  public void execute(TinkerPopGraphManager graphWrapper) throws IOException {
     final Graph graph = graphWrapper.getGraph();
     final Transaction transaction = graph.tx();
 

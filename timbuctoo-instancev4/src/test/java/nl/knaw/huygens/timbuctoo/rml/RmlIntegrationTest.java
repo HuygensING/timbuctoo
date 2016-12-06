@@ -3,10 +3,10 @@ package nl.knaw.huygens.timbuctoo.rml;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
@@ -17,7 +17,6 @@ import org.apache.jena.ext.com.google.common.collect.ImmutableMap;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Ignore;
@@ -27,7 +26,7 @@ import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.database.TransactionEnforcerStubs.forGraphWrapper;
+import static nl.knaw.huygens.timbuctoo.core.TransactionEnforcerStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -122,7 +121,7 @@ public class RmlIntegrationTest {
 
   public class IntegrationTester {
     public final GraphTraversalSource traversalSource;
-    private final TinkerpopGraphManager graphManager;
+    private final TinkerPopGraphManager graphManager;
     private final TransactionEnforcer transactionEnforcer;
     private final DatabaseConfiguredVres vres;
 
@@ -130,7 +129,7 @@ public class RmlIntegrationTest {
       graphManager = newGraph().wrap();
       traversalSource = graphManager.getGraph().traversal();
       transactionEnforcer = forGraphWrapper(graphManager);
-      new ScaffoldMigrator(transactionEnforcer).execute();
+      new ScaffoldMigrator(graphManager).execute();
 
       vres = new DatabaseConfiguredVres(transactionEnforcer);
     }

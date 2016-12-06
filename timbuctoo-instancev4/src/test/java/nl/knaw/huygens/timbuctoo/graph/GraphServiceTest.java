@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.graph;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.NotFoundException;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.NotFoundException;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.HuygensIng;

@@ -1,9 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -20,22 +19,21 @@ import org.neo4j.graphdb.index.IndexHits;
 import org.slf4j.Logger;
 
 import java.time.Clock;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_ENTITIES_LABEL;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_IS_UNKNOWN_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.DATABASE_LABEL;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_ENTITIES_LABEL;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_IS_UNKNOWN_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.DATABASE_LABEL;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class Database {
@@ -44,17 +42,17 @@ public class Database {
   public static final String RDF_URI_PROP = "rdfUri";
   public static final String RDFINDEX_NAME = "rdfUrls";
   public static final String RDF_SYNONYM_PROP = "rdfAlternatives";
-  private final TinkerpopGraphManager graphWrapper;
+  private final TinkerPopGraphManager graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
   private GraphTraversalSource traversal;
   private Index<org.neo4j.graphdb.Node> rdfIndex;
   private GraphDatabaseService graphDatabase;
 
-  public Database(TinkerpopGraphManager graphWrapper) {
+  public Database(TinkerPopGraphManager graphWrapper) {
     this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()));
   }
 
-  Database(TinkerpopGraphManager graphWrapper, SystemPropertyModifier systemPropertyModifier) {
+  Database(TinkerPopGraphManager graphWrapper, SystemPropertyModifier systemPropertyModifier) {
     this.graphWrapper = graphWrapper;
     this.systemPropertyModifier = systemPropertyModifier;
     graphDatabase = graphWrapper.getGraphDatabase();

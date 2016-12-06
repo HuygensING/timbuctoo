@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Sets;
-import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.AddLabelChangeListener;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.database.dto.QuickSearch;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.EmptyGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -26,10 +26,10 @@ public class Neo4jIndexHandler implements IndexHandler {
   private static final String QUICK_SEARCH = "quickSearch";
   private static final String ID_INDEX = "idIndex";
   private static final String TIM_ID = "tim_id";
-  private final TinkerpopGraphManager tinkerpopGraphManager;
+  private final TinkerPopGraphManager tinkerPopGraphManager;
 
-  public Neo4jIndexHandler(TinkerpopGraphManager tinkerpopGraphManager) {
-    this.tinkerpopGraphManager = tinkerpopGraphManager;
+  public Neo4jIndexHandler(TinkerPopGraphManager tinkerPopGraphManager) {
+    this.tinkerPopGraphManager = tinkerPopGraphManager;
   }
 
   //=====================quick search index=====================
@@ -125,11 +125,11 @@ public class Neo4jIndexHandler implements IndexHandler {
   //=====================general helper methods=====================
 
   private GraphTraversalSource traversal() {
-    return tinkerpopGraphManager.getGraph().traversal();
+    return tinkerPopGraphManager.getGraph().traversal();
   }
 
   private GraphDatabaseService graphDatabase() {
-    return tinkerpopGraphManager.getGraphDatabase();
+    return tinkerPopGraphManager.getGraphDatabase();
   }
 
   private IndexManager indexManager() {

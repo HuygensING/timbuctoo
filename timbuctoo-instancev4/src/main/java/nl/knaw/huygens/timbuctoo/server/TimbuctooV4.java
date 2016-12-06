@@ -17,16 +17,16 @@ import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.Neo4jLuceneEntityFetcher;
-import nl.knaw.huygens.timbuctoo.database.TimbuctooActions;
-import nl.knaw.huygens.timbuctoo.database.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.database.TransactionFilter;
-import nl.knaw.huygens.timbuctoo.database.changelistener.AddLabelChangeListener;
-import nl.knaw.huygens.timbuctoo.database.changelistener.CollectionHasEntityRelationChangeListener;
-import nl.knaw.huygens.timbuctoo.database.changelistener.CompositeChangeListener;
-import nl.knaw.huygens.timbuctoo.database.changelistener.FulltextIndexChangeListener;
-import nl.knaw.huygens.timbuctoo.database.changelistener.IdIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jLuceneEntityFetcher;
+import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.AddLabelChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CollectionHasEntityRelationChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CompositeChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.IdIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
@@ -180,7 +180,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
-    final TinkerpopGraphManager graphManager = new TinkerpopGraphManager(configuration, migrations);
+    final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(configuration, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
@@ -208,23 +208,23 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       authorizer,
       Clock.systemDefaultZone(),
       handleAdder,
-      uriToRedirectToFromPersistentUrls
-    );
-    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
-      () -> new DataStoreOperations(
+      uriToRedirectToFromPersistentUrls,
+      () -> new TinkerPopOperations(
         graphManager,
         changeListeners,
         entityFetcher,
         null,
         indexHandler
-      ),
+      )
+    );
+    TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
       timbuctooActionsFactory
     );
-    graphManager.onGraph(g -> new ScaffoldMigrator(transactionEnforcer).execute());
+    graphManager.onGraph(g -> new ScaffoldMigrator(graphManager).execute());
     handleAdder.init(transactionEnforcer);
 
     final Vres vres = new DatabaseConfiguredVres(transactionEnforcer);
-    migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, transactionEnforcer));
+    migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, graphManager));
     migrations.put("give-existing-relationtypes-rdf-uris", new RelationTypeRdfUriMigration());
 
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
@@ -333,7 +333,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
   private BackgroundRunner<ValidationResult> setUpDatabaseValidator(TimbuctooConfiguration configuration,
                                                                     Environment environment, Vres vres,
                                                                     GraphWaiter graphWaiter,
-                                                                    TinkerpopGraphManager graphManager) {
+                                                                    TinkerPopGraphManager graphManager) {
 
     final ScheduledExecutorService executor = environment.lifecycle()
                                                          .scheduledExecutorService("databaseCheckExecutor")
@@ -363,7 +363,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     return healthCheckRunner;
   }
 
-  private DatabaseValidator getDatabaseValidator(Vres vres, TinkerpopGraphManager graphManager) {
+  private DatabaseValidator getDatabaseValidator(Vres vres, TinkerPopGraphManager graphManager) {
     return new DatabaseValidator(
       new LabelsAddedToVertexDatabaseCheck(),
       new InvariantsCheck(vres),

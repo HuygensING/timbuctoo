@@ -1,16 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.GremlinEntityFetcher;
-import nl.knaw.huygens.timbuctoo.database.changelistener.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.dto.DisplayNameHelper;
-import nl.knaw.huygens.timbuctoo.database.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.DisplayNameHelper;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.server.TinkerpopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.shaded.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,22 +15,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.server.databasemigration.TinkerPopOperationsForMigrations.getVres;
+
 public class IndexAllTheDisplaynames implements DatabaseMigration {
 
   public static final ArrayList<String> TYPES_TO_IGNORE = Lists.newArrayList("relationtype", "searchresult");
   private static final Logger LOG = LoggerFactory.getLogger(IndexAllTheDisplaynames.class);
 
   @Override
-  public void execute(TinkerpopGraphManager graphManager) throws IOException {
-    DataStoreOperations dataStoreOperations = new DataStoreOperations(
-      graphManager,
-      new DeafListener(),
-      new GremlinEntityFetcher(),
-      null,
-      new Neo4jIndexHandler(graphManager)
-    );
-
-    Vres vres = dataStoreOperations.loadVres();
+  public void execute(TinkerPopGraphManager graphManager) throws IOException {
+    Vres vres = getVres(graphManager);
 
     Neo4jIndexHandler indexHandler = new Neo4jIndexHandler(graphManager);
     ObjectMapper mapper = new ObjectMapper();
@@ -64,28 +54,5 @@ public class IndexAllTheDisplaynames implements DatabaseMigration {
           LOG.error("And exception occurred while indexing vertex with vertex id '{}'.", vertex.id());
         }
       });
-  }
-
-  private class DeafListener implements ChangeListener {
-
-    @Override
-    public void onCreate(Collection collection, Vertex vertex) {
-
-    }
-
-    @Override
-    public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
-    }
-
-    @Override
-    public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
-    }
-
-    @Override
-    public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
-    }
   }
 }
