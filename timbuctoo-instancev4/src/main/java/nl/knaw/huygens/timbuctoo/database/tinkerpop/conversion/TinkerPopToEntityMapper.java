@@ -3,15 +3,15 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
+import nl.knaw.huygens.timbuctoo.core.UnknownPropertyException;
 import nl.knaw.huygens.timbuctoo.core.dto.DisplayNameHelper;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntityImpl;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.core.UnknownPropertyException;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -266,16 +266,16 @@ public class TinkerPopToEntityMapper {
 
             String displayName = DisplayNameHelper.getDisplayname(traversalSource, target, targetCollection)
                                                   .orElse("<No displayname found>");
-            String uuid = getProp(target, "tim_id", String.class).orElse("");
+            String targetId = getProp(target, "tim_id", String.class).orElse("");
+            String targetRdfUri = getProp(target, "rdfUri", String.class).orElse("");
             boolean accepted = getProp(edge, "accepted", Boolean.class).orElse(true);
-            String relationId =
-              getProp(edge, "tim_id", String.class)
-                .orElse("");
+            String relationId = getProp(edge, "tim_id", String.class).orElse("");
+            String relationRdfUri = getProp(edge, "rdfUri", String.class).orElse("");
             int relationRev = getProp(edge, "rev", Integer.class).orElse(1);
 
             RelationRef relationRef =
-              new RelationRef(uuid, targetCollection.getCollectionName(), targetEntityType, accepted, relationId,
-                relationRev, label, displayName);
+              new RelationRef(targetId, targetRdfUri, targetCollection.getCollectionName(), targetEntityType, accepted,
+                relationId, relationRdfUri, relationRev, label, displayName);
             customRelationProperties.execute(traversalSource, vre, target, relationRef);
             return relationRef;
           } catch (Exception e) {

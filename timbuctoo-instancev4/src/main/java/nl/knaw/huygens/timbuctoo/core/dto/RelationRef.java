@@ -6,25 +6,29 @@ import java.util.Map;
 import java.util.Optional;
 
 public class RelationRef {
-  private String entityId;
-  private String collectionName;
-  private String entityType;
-  private boolean relationAccepted;
-  private String relationId;
-  private int relationRev;
-  private String relationType;
-  private String displayName;
+  private final String entityId;
+  private final String entityRdfUri;
+  private final String collectionName;
+  private final String entityType;
+  private final boolean relationAccepted;
+  private final String relationId;
+  private final String relationRdfUri;
+  private final int relationRev;
+  private final String relationType;
+  private final String displayName;
   private final Map<String, Object> extraProperties;
 
 
-  public RelationRef(String entityId, String collectionName, String entityType, boolean relationAccepted,
-                     String relationId,
-                     int relationRev, String relationType, String displayName) {
+  public RelationRef(String entityId, String entityRdfUri, String collectionName, String entityType,
+                     boolean relationAccepted, String relationId, String relationRdfUri, int relationRev,
+                     String relationType, String displayName) {
     this.entityId = entityId;
+    this.entityRdfUri = entityRdfUri;
     this.collectionName = collectionName;
     this.entityType = entityType;
     this.relationAccepted = relationAccepted;
     this.relationId = relationId;
+    this.relationRdfUri = relationRdfUri;
     this.relationRev = relationRev;
     this.relationType = relationType;
     this.displayName = displayName;
@@ -33,6 +37,10 @@ public class RelationRef {
 
   public String getEntityId() {
     return entityId;
+  }
+
+  public String getEntityRdfUri() {
+    return entityRdfUri;
   }
 
   public String getCollectionName() {
@@ -49,6 +57,10 @@ public class RelationRef {
 
   public String getRelationId() {
     return relationId;
+  }
+
+  public String getRelationRdfUri() {
+    return relationRdfUri;
   }
 
   public int getRelationRev() {
