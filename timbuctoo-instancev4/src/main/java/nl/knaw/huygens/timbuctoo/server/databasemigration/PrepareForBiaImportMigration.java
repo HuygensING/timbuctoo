@@ -1,10 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -19,6 +16,7 @@ import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.core.dto.RelationType.relationType;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.server.databasemigration.TinkerPopOperationsForMigrations.saveRelationTypes;
 
 public class PrepareForBiaImportMigration implements DatabaseMigration {
   private static final Logger LOG = LoggerFactory.getLogger(PrepareForBiaImportMigration.class);
@@ -43,15 +41,7 @@ public class PrepareForBiaImportMigration implements DatabaseMigration {
   }
 
   private void addRelationTypes() {
-    TinkerPopOperations db = new TinkerPopOperations(
-      graphManager,
-      new DeafListener(),
-      new GremlinEntityFetcher(),
-      null,
-      new Neo4jIndexHandler(graphManager)
-    );
-
-    db.saveRelationTypes(
+    saveRelationTypes(graphManager,
       // TODO+FIXME, these BIA relationTypes should be made VRE specific and editable before mapping
       // person to person relations
       relationType("concept", "hasFirstPerson", "person", "isFirstPersonInRelation",

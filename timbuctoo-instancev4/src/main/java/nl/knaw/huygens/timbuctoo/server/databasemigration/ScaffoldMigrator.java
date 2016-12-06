@@ -1,19 +1,13 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.GremlinEntityFetcher;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
-import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.core.dto.RelationType.relationType;
@@ -22,6 +16,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.a
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.datable;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.defaultFullPersonNameConverter;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.personNames;
+import static nl.knaw.huygens.timbuctoo.server.databasemigration.TinkerPopOperationsForMigrations.forInitDb;
 
 public class ScaffoldMigrator {
   private static final Logger LOG = LoggerFactory.getLogger(ScaffoldMigrator.class);
@@ -35,13 +30,7 @@ public class ScaffoldMigrator {
   public void execute() {
     //The migrations are executed first, so those vertices _will_ be present, even on a new empty database
     //The code below will add vertices, so a second launch will not run this code
-    TinkerPopOperations db = new TinkerPopOperations(
-      graphManager,
-      new DeafListener(),
-      new GremlinEntityFetcher(),
-      null,
-      new Neo4jIndexHandler(graphManager)
-    );
+    TinkerPopOperations db = forInitDb(graphManager);
 
     if (db.databaseIsEmptyExceptForMigrations()) {
       LOG.info("Setting up a new scaffold for empty database");
@@ -121,29 +110,6 @@ public class ScaffoldMigrator {
         relationType("concept", "isScientistBioOf", "person", "hasScientistBio",
           false, false, false, UUID.randomUUID())
       );
-    }
-  }
-
-  private static class DeafListener implements ChangeListener {
-
-    @Override
-    public void onCreate(Collection collection, Vertex vertex) {
-
-    }
-
-    @Override
-    public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
-    }
-
-    @Override
-    public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
-    }
-
-    @Override
-    public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-
     }
   }
 }

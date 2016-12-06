@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.databasemigration;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.GremlinEntityFetcher;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -16,21 +14,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.server.databasemigration.TinkerPopOperationsForMigrations.getVres;
+
 public class IndexAllEntityIds implements DatabaseMigration {
   public static final ArrayList<String> TYPES_TO_IGNORE = Lists.newArrayList("relationtype", "searchresult");
   private static final Logger LOG = LoggerFactory.getLogger(IndexAllEntityIds.class);
 
   @Override
   public void execute(TinkerPopGraphManager graphManager) throws IOException {
-    TinkerPopOperations dataStoreOperations = new TinkerPopOperations(
-      graphManager,
-      new DeafListener(),
-      new GremlinEntityFetcher(),
-      null,
-      new Neo4jIndexHandler(graphManager)
-    );
-
-    Vres vres = dataStoreOperations.loadVres();
+    Vres vres = getVres(graphManager);
 
     Neo4jIndexHandler indexHandler = new Neo4jIndexHandler(graphManager);
     ObjectMapper mapper = new ObjectMapper();
