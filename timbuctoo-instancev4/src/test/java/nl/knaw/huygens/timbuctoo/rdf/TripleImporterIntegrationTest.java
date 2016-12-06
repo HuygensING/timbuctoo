@@ -1,9 +1,16 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConverter;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.util.iterator.ExtendedIterator;
@@ -17,7 +24,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.DATABASE_LABEL;
+import java.util.Optional;
+
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
@@ -29,6 +37,7 @@ import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createTripleIterator;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
+import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -36,11 +45,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.arrayContainingInAnyOrder;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 
 public class TripleImporterIntegrationTest {
   public static final String LOCATION_ARCH = "location";
 
   private static final String VRE_NAME = "vreName";
+  public static final String RELATION_COLLECTION_NAME = VRE_NAME + "relations";
   public static final String DEFAULT_COLLECTION_NAME = VRE_NAME + "unknowns";
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
@@ -87,40 +98,50 @@ public class TripleImporterIntegrationTest {
       "<http://www.example.com/location> .";
 
   private TinkerPopGraphManager graphWrapper;
+  private TinkerPopOperations tinkerPopOperations;
+  private TripleImporter instance;
 
   @Before
   public void setUp() throws Exception {
-    graphWrapper = newGraph()
-      .withVertex(v -> {
-        v.withLabel(Vre.DATABASE_LABEL);
-        v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME);
-      })
-      .withVertex(v -> {
-        v.withLabel(Vre.DATABASE_LABEL);
-        v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
-        v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "defaultArchetype");
-        v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME, "locationArchetype");
-      })
-      .withVertex("defaultArchetype", v -> {
-        v.withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
-        v.withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "concepts");
-      })
-      .withVertex("archetypeHolder", v ->
-        v.withIncomingRelation(Collection.HAS_ENTITY_NODE_RELATION_NAME, "defaultArchetype"))
-      .withVertex("locationArchetype", v -> v.withLabel(DATABASE_LABEL)
-                                             .withProperty(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, LOCATION_ARCH)
-                                             .withProperty(Collection.COLLECTION_NAME_PROPERTY_NAME, "locations")
-                                             .withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "locationHolder"))
-      .withVertex("locationHolder", v -> v.withLabel(DATABASE_LABEL))
-      .wrap();
+    // Timbuctoo needs at least an Admin VRE.
+    Vres vres = new VresBuilder()
+      .withVre("Admin", "", v -> v
+        .withCollection("concepts", c -> c
+          .withEntityTypeName("concept")
+        )
+        .withCollection("relations", CollectionBuilder::isRelationCollection)
+        .withCollection("locations", c -> c
+          .withEntityTypeName("location")
+        )
+      ).build();
+    graphWrapper = newGraph().wrap();
+    tinkerPopOperations = TinkerPopOperationsStubs.forGraphWrapper(graphWrapper);
+    tinkerPopOperations.saveVre(vres.getVre("Admin"));
+
+    instance = new TripleImporter(
+      new TransactionEnforcer(
+        afterSuccessTaskExecutor -> TimbuctooActionsStubs.withDataStore(tinkerPopOperations)
+      ),
+      graphWrapper,
+      VRE_NAME
+    );
+    instance.prepare();
+  }
+
+  @Test
+  public void prepareAddsANewVreWithARelationsCollectionToTheDatabase() {
+    Vres vres = tinkerPopOperations.loadVres();
+    Vre vre = vres.getVre(VRE_NAME);
+    assertThat(vre, is(notNullValue()));
+    Optional<Collection> relationsOpt = vre.getCollectionForCollectionName(RELATION_COLLECTION_NAME);
+    assertThat(relationsOpt, is(present()));
   }
 
   @Test
   public void importTripleShouldCreateAVertexFromATripleAddedToTheUnknownCollection() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(ABADAN_POINT_TRIPLE);
 
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
 
     GraphTraversal<Vertex, Vertex> entityT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI);
     assertThat(entityT.hasNext(), is(true));
@@ -129,12 +150,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldReuseTheExistingNodeWithUriFromSubject() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
-    instance.importTriple(tripleExtendedIterator.next());
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).count().next(),
       equalTo(1L));
@@ -142,12 +162,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldMapATripleDescribingAPropertyToAVertexProperty() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
-    instance.importTriple(tripleExtendedIterator.next());
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
       .withProperty(DEFAULT_ENTITY_TYPE_NAME + "_" + "point", "30.35 48.28333333333333")
@@ -157,12 +176,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldSetThePrefixBasedOnTheActualCollectionOfTheSubjectVertex() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanHasTypeFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanPointTriple = createTripleIterator(ABADAN_POINT_TRIPLE).next();
 
-    instance.importTriple(abadanHasTypeFeature);
-    instance.importTriple(abadanPointTriple);
+    instance.importTriple(true, abadanHasTypeFeature);
+    instance.importTriple(true, abadanPointTriple);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
       .withoutProperty(DEFAULT_ENTITY_TYPE_NAME + "_" + "point")
@@ -175,11 +193,10 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldMapToARelationBetweenTheSubjectAndANewObjectVertex() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
 
     assertThat(graphWrapper.getGraph().traversal().V().both(IS_PART_OF_NAME).toList(), containsInAnyOrder(
       likeVertex().withProperty("rdfUri", ABADAN_URI),
@@ -189,14 +206,13 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldMapToARelationBetweenTheSubjectAndAnExistingObjectVertex() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_POINT_TRIPLE).next();
     final Triple iran = createTripleIterator(IRAN_POINT_TRIPLE).next();
     final Triple relation = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
 
-    instance.importTriple(abadan);
-    instance.importTriple(iran);
-    instance.importTriple(relation);
+    instance.importTriple(true, abadan);
+    instance.importTriple(true, iran);
+    instance.importTriple(true, relation);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(
       RDF_URI_PROP, P.within(ABADAN_URI, IRAN_URI)).count().next(),
@@ -205,11 +221,10 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldAddTheRdfUriPropToANewlyCreatedRelation() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
 
     assertThat(graphWrapper
         .getGraph().traversal().V()
@@ -223,12 +238,13 @@ public class TripleImporterIntegrationTest {
   @Ignore // FIXME: should now be tested using rdf Index
   @Test
   public void importTripleShouldAddANewRelationTypeForANewlyCreatedRelation() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
+
+
     final ExtendedIterator<Triple> abadanInIran = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE);
     final ExtendedIterator<Triple> iranInAsia = createTripleIterator(IRAN_IS_PART_OF_ASIA_TRIPLE);
 
-    instance.importTriple(abadanInIran.next());
-    instance.importTriple(iranInAsia.next());
+    instance.importTriple(true, abadanInIran.next());
+    instance.importTriple(true, iranInAsia.next());
 
     final GraphTraversal<Vertex, Vertex> relationtypeT = graphWrapper
       .getGraph().traversal().V()
@@ -250,11 +266,10 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldAddTheSystemPropertiesToANewRelation() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
     assertThat(graphWrapper.getGraph().traversal().E().has(RDF_URI_PROP, IS_PART_OF_URI).next(), likeEdge()
       .withProperty("rev", 1)
       .withProperty("isLatest", true)
@@ -267,11 +282,10 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldAddTheCollectionPropertiesToANewRelation() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
     assertThat(graphWrapper.getGraph().traversal().E().has(RDF_URI_PROP, IS_PART_OF_URI).next(), likeEdge()
       .withProperty(VRE_NAME + "relation_accepted", true)
       .withProperty("relation_accepted", true)
@@ -280,11 +294,10 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldAddTheTypesPropertyToANewRelation() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
     assertThat(graphWrapper.getGraph().traversal().E().has(RDF_URI_PROP, IS_PART_OF_URI).next(), likeEdge()
       .withProperty("types", jsnA(jsn("relation"), jsn(VRE_NAME + "relation")).toString())
     );
@@ -292,11 +305,10 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldAddTheSystemPropertiesToANewEntity() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final String tripleString = ABADAN_IS_PART_OF_IRAN_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
-    instance.importTriple(tripleExtendedIterator.next());
+    instance.importTriple(true, tripleExtendedIterator.next());
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next(), likeVertex()
       .withProperty("rev", 1)
       .withProperty("isLatest", true)
@@ -309,10 +321,9 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldConnectResultingSubjectEntityToTheUnknownCollection() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_POINT_TRIPLE).next();
 
-    instance.importTriple(abadan);
+    instance.importTriple(true, abadan);
 
     GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper
       .getGraph().traversal().V()
@@ -332,10 +343,9 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldConnectResultingObjectEntityToACollection() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
 
-    instance.importTriple(abadan);
+    instance.importTriple(true, abadan);
 
     GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper
       .getGraph().traversal().V()
@@ -355,10 +365,9 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldConnectResultingCollectionToVreOnlyOnce() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsPartOfIran = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
 
-    instance.importTriple(abadanIsPartOfIran);
+    instance.importTriple(true, abadanIsPartOfIran);
 
     Long numberOfVreCollectionRelations = graphWrapper
       .getGraph().traversal().V()
@@ -371,10 +380,9 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldConnectResultingCollectionToItsArchetypeOnlyOnce() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsPartOfIran = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE).next();
 
-    instance.importTriple(abadanIsPartOfIran);
+    instance.importTriple(true, abadanIsPartOfIran);
 
     Long numberOfVreCollectionRelations = graphWrapper
       .getGraph()
@@ -387,10 +395,9 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldConnectTheSubjectEntityToTheCollectionNamedByTheObject() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadan = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
 
-    instance.importTriple(abadan);
+    instance.importTriple(true, abadan);
 
     GraphTraversal<Vertex, Vertex> collectionVertex = graphWrapper
       .getGraph().traversal().V()
@@ -409,12 +416,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldConnectTheSubjectToMultipleCollectionsNamedByTheObject() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(abadanIsAFictionalFeature);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanIsAFictionalFeature);
 
     GraphTraversal<Vertex, Vertex> collectionVertices = graphWrapper
       .getGraph().traversal().V()
@@ -430,12 +436,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleConnectsTheSubjectToTheConceptsArchetype() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(abadanIsAFictionalFeature);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanIsAFictionalFeature);
 
     assertThat(graphWrapper
         .getGraph().traversal().V()
@@ -455,12 +460,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleConnectsNewCollectionsToTheConceptsArchetype() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(abadanIsAFictionalFeature);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanIsAFictionalFeature);
 
     assertThat(graphWrapper
         .getGraph().traversal().V()
@@ -488,10 +492,9 @@ public class TripleImporterIntegrationTest {
   public void importTripleAddsTheSubjectAndItsEntitiesToAKnownArchetype() {
     Triple abadanIsAFeature = createSingleTriple(ABADAN_HAS_TYPE_FEATURE_TRIPLE);
     Triple featureIsLocation = createSingleTriple(FEATURE_SUBCLASS_OF_LOCATION_TRIPLE);
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(featureIsLocation);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, featureIsLocation);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, TYPE_URI)
                            .out(HAS_ARCHETYPE_RELATION_NAME).has(ENTITY_TYPE_NAME_PROPERTY_NAME, "location").hasNext(),
@@ -506,10 +509,9 @@ public class TripleImporterIntegrationTest {
   public void importTripleRemovesTheSubjectAndItsEntitiesFromTheDefaultArchetype() {
     Triple abadanIsAFeature = createSingleTriple(ABADAN_HAS_TYPE_FEATURE_TRIPLE);
     Triple featureIsLocation = createSingleTriple(FEATURE_SUBCLASS_OF_LOCATION_TRIPLE);
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(featureIsLocation);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, featureIsLocation);
 
     assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, TYPE_URI)
                            .out(HAS_ARCHETYPE_RELATION_NAME).has(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept").hasNext(),
@@ -522,12 +524,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleAddsTheCollectionsAndTheArchetypeToTheTypesPropOfTheSubject() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(abadanIsAFictionalFeature);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanIsAFictionalFeature);
 
     String[] entityTypesOrDefault =
       getEntityTypesOrDefault(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next());
@@ -538,12 +539,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleAddsTheCollectionsAndTheArchetypeToLabelsOfTheSubject() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(abadanIsAFictionalFeature);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanIsAFictionalFeature);
 
 
     assertThat(graphWrapper
@@ -560,14 +560,13 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldSetThePropertiesForAllCollections() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
     final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(abadanIsAFictionalFeature);
-    instance.importTriple(abadanHasPoint);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanIsAFictionalFeature);
+    instance.importTriple(true, abadanHasPoint);
 
     final Vertex abadanVertex = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI).next();
     assertThat(abadanVertex, likeVertex()
@@ -578,14 +577,13 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldAddPropertyConfigurationsForAllCollections() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
     final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(abadanIsAFictionalFeature);
-    instance.importTriple(abadanHasPoint);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanIsAFictionalFeature);
+    instance.importTriple(true, abadanHasPoint);
 
     final GraphTraversal<Vertex, Vertex> propT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI)
                                                              .in(Collection.HAS_ENTITY_RELATION_NAME)
@@ -608,14 +606,13 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldCreateOneDisplayNameConfigurationForAllCollections() {
-    TripleImporter instance = new TripleImporter(graphWrapper, VRE_NAME);
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
     final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
 
-    instance.importTriple(abadanIsAFeature);
-    instance.importTriple(abadanIsAFictionalFeature);
-    instance.importTriple(abadanHasPoint);
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanIsAFictionalFeature);
+    instance.importTriple(true, abadanHasPoint);
 
     final GraphTraversal<Vertex, Vertex> propT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ABADAN_URI)
                                                              .in(Collection.HAS_ENTITY_RELATION_NAME)

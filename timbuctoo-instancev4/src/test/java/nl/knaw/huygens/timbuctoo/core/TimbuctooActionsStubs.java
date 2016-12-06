@@ -1,11 +1,8 @@
 package nl.knaw.huygens.timbuctoo.core;
 
-import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudServiceTest;
-import nl.knaw.huygens.timbuctoo.core.AfterSuccessTaskExecutor;
-import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.core.PersistentUrlCreator;
-import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
+import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudServiceTest;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
@@ -15,6 +12,18 @@ import java.time.Clock;
 import static org.mockito.Mockito.mock;
 
 public class TimbuctooActionsStubs {
+
+  public static TimbuctooActions withDataStore(TinkerPopOperations tinkerPopOperations) {
+    return new TimbuctooActions(
+      mock(Authorizer.class),
+      Clock.systemDefaultZone(),
+      mock(PersistentUrlCreator.class),
+      (coll, id, rev) -> URI.create("http://example.org/persistent"),
+      tinkerPopOperations,
+      new AfterSuccessTaskExecutor()
+    );
+  }
+
   public static TimbuctooActions withDataStoreAndAfterSucces(DataStoreOperations dataStoreOperations,
                                                              AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
     return new TimbuctooActions(
@@ -42,5 +51,6 @@ public class TimbuctooActionsStubs {
       new AfterSuccessTaskExecutor()
     );
   }
+
 
 }

@@ -4,10 +4,10 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
+import nl.knaw.huygens.timbuctoo.rdf.TripleImporter;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
@@ -44,10 +44,11 @@ public class RmlExecutorService {
   }
 
   public void execute(Consumer<String> statusUpdate) {
+    final TripleImporter importer = new TripleImporter(transactionEnforcer, graphWrapper, vreName);
 
     transactionEnforcer.execute(timbuctooActions -> {
+      importer.prepare();
       timbuctooActions.clearMappingErrors(vreName);
-      timbuctooActions.ensureVreExists(vreName);
       timbuctooActions.removeCollectionsAndEntities(vreName);
       return commit();
     });
@@ -68,7 +69,7 @@ public class RmlExecutorService {
           (String) null
         )
         .forEachRemaining(statement -> {
-            processor.process(vreName, true, new Triple(
+            importer.importTriple(true, new Triple(
               statement.getSubject().asNode(),
               statement.getPredicate().asNode(),
               statement.getObject().asNode()
@@ -80,7 +81,7 @@ public class RmlExecutorService {
       rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
         (triple) -> {
           reportTripleCount(tripleCount, false, statusUpdate);
-          processor.process(vreName, true, triple);
+          importer.importTriple(true, triple);
         });
 
       reportTripleCount(tripleCount, true, statusUpdate);

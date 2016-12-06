@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.graph.Triple;
@@ -20,29 +19,25 @@ import org.slf4j.LoggerFactory;
 import java.io.InputStream;
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
-
 public class RdfImporter {
   public static final Logger LOG = LoggerFactory.getLogger(RdfImporter.class);
   private final TinkerPopGraphManager graphWrapper;
   private final String vreName;
-  private final TransactionEnforcer transactionEnforcer;
-  private final TripleProcessorImpl processor;
+  private final TripleImporter importer;
   private Vres vres;
 
   public RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres,
                      TransactionEnforcer transactionEnforcer) {
-    this(graphWrapper, vreName, vres, transactionEnforcer, new TripleProcessorImpl(new Database(graphWrapper)));
+    this(graphWrapper, vreName, vres, new TripleImporter(transactionEnforcer,graphWrapper, vreName));
   }
 
-  RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, TransactionEnforcer transactionEnforcer,
-              TripleProcessorImpl tripleImporter) {
+  RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, TripleImporter tripleImporter) {
     this.graphWrapper = graphWrapper;
     this.vreName = vreName;
-    this.processor = tripleImporter;
-    this.transactionEnforcer = transactionEnforcer;
+    this.importer = tripleImporter;
     this.vres = vres;
   }
+
 
   public void importRdf(InputStream rdf, Lang lang) {
     final Stopwatch stopwatch = Stopwatch.createStarted();
@@ -60,10 +55,7 @@ public class RdfImporter {
   }
 
   private void prepare() {
-    transactionEnforcer.execute(timbuctooActions -> {
-      timbuctooActions.ensureVreExists(vreName);
-      return commit();
-    });
+    importer.prepare();
     LOG.info("Starting import...");
   }
 
@@ -92,7 +84,7 @@ public class RdfImporter {
 
     private void flushBatch(int size) {
       if (size < 0 || batch.size() >= size) {
-        batch.forEach((triple) -> processor.process(vreName, true, triple));
+        batch.forEach((triple) -> importer.importTriple(true, triple));
         graphWrapper.getGraph().tx().commit();
         count += batch.size();
         LOG.debug("Currently loaded {} triples", count);

@@ -1,11 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
-import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
-import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
+import org.apache.jena.graph.Triple;
 import org.apache.jena.riot.Lang;
 import org.junit.Test;
 import org.mockito.InOrder;
@@ -14,7 +12,6 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import static nl.knaw.huygens.timbuctoo.core.TransactionEnforcerStubs.forDataStoreOperations;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -31,30 +28,27 @@ public class RdfImporterTest {
   @Test
   public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
     TinkerPopGraphManager graphWrapper = newGraph().wrap();
-    DataStoreOperations db = mock(DataStoreOperations.class);
-    TransactionEnforcer transactionEnforcer = forDataStoreOperations(db);
-    TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), transactionEnforcer, processor);
+    TripleImporter tripleImporter = mock(TripleImporter.class);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), tripleImporter);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
-    InOrder inOrder = inOrder(db, processor);
-    inOrder.verify(db).ensureVreExists(VRE_NAME);
-    inOrder.verify(processor).process(eq(VRE_NAME), eq(true), any());
+    InOrder inOrder = inOrder(tripleImporter);
+    inOrder.verify(tripleImporter).prepare();
+    inOrder.verify(tripleImporter).importTriple(eq(true), any(Triple.class));
   }
 
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
-    TransactionEnforcer transactionEnforcer = forDataStoreOperations(mock(DataStoreOperations.class));
     TinkerPopGraphManager graphWrapper = newGraph().wrap();
-    TripleProcessorImpl processor = mock(TripleProcessorImpl.class);
+    TripleImporter tripleImporter = mock(TripleImporter.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, transactionEnforcer, processor);
+    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, tripleImporter);
 
     instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
 
-    InOrder inOrder = inOrder(processor, vres);
-    inOrder.verify(processor).process(eq(VRE_NAME), eq(true), any());
+    InOrder inOrder = inOrder(tripleImporter, vres);
+    inOrder.verify(tripleImporter).importTriple(eq(true), any(Triple.class));
     inOrder.verify(vres).reload();
   }
 
