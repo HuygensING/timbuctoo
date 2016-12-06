@@ -8,6 +8,15 @@ require './generic_configs'
 class GenericMapper < DefaultMapper
   include ToYearConverter
   include ToNamesConverter
+
+  def convert_value(input_value, type)
+    begin
+      return super(input_value, type)
+    rescue Exception => e
+      puts "convert error: #{e.inspect}"
+      return nil
+    end
+  end
 end
 
 class GenericIndexer

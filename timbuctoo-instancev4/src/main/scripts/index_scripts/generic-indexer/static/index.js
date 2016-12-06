@@ -4883,11 +4883,11 @@ var checkIndex = function checkIndex(afterCheck) {
 };
 
 var getPropSuffix = function getPropSuffix(archetypeType) {
-	return archetypeType === "datable" ? "i" : archetypeType === "text" ? "s" : archetypeType === "names" ? "t" : archetypeType === "relation" || archetypeType === "list-of-strings" ? "ss" : "";
+	return archetypeType === "datable" ? "i" : archetypeType === "text" || archetypeType === "select" ? "s" : archetypeType === "names" ? "t" : archetypeType === "relation" || archetypeType === "list-of-strings" || archetypeType === "multiselect" ? "ss" : "";
 };
 
 var getFacetType = function getFacetType(archetypeType) {
-	return archetypeType === "datable" ? "range-facet" : archetypeType === "text" ? "list-facet" : archetypeType === "names" ? "text" : archetypeType === "relation" || archetypeType === "list-of-strings" ? "list-facet" : "";
+	return archetypeType === "datable" ? "range-facet" : archetypeType === "text" || archetypeType === "select" ? "list-facet" : archetypeType === "names" ? "text" : archetypeType === "relation" || archetypeType === "list-of-strings" || archetypeType === "multiselect" ? "list-facet" : "";
 };
 
 var configureSearchClients = function configureSearchClients() {
@@ -7341,6 +7341,8 @@ Object.defineProperty(exports, "__esModule", {
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
+
 var initialState = {
 	indexPresent: false,
 	indexesPending: false,
@@ -7362,9 +7364,10 @@ exports["default"] = function (state, action) {
 			});
 
 		case "SET_SEARCH_STATE":
-			var newState = _extends({}, state);
-			newState.searchStates[action.collectionName] = action.searchState;
-			return newState;
+			return _extends({}, state, {
+				searchStates: _extends({}, state.searchStates, _defineProperty({}, action.collectionName, action.searchState))
+			});
+
 		default:
 			return state;
 	}
