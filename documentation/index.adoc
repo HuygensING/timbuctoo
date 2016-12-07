@@ -116,6 +116,8 @@ These are all the user facing components. Other packages are supporting these co
 
 :leveloffset: +2
 
+include::{javasourcesdir}/database/README.adoc[]
+
 include::{javasourcesdir}/crud/README.adoc[]
 
 include::{javasourcesdir}/bulkupload/README.adoc[]
