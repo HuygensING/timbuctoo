@@ -12,7 +12,7 @@ fi
 #add output index (use -f because output is ignored)
 git add -f documentation/output
 #create a tree of it
-treehash=$(git write-tree --prefix=documentation/asciidoc-pipeline/output/)
+treehash=$(git write-tree --prefix=documentation/output/)
 # clear index again
 git reset HEAD 
 
