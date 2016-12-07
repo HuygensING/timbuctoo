@@ -1,10 +1,17 @@
 version: '2' # version of this docker-compose file
 
 services:
+#  timbuctoodata:
+#    image: huygensing/timbuctoo:verifysrc
+#    command: "true"
+#    volumes:
+#      - /root/timbuctoo-prod-db
+#  timbuctoo:
+#    image: huygensing/timbuctoo:latest
   timbuctoodata:
     image: huygensing/timbuctoo:demodata
   timbuctoo:
-    image: huygensing/timbuctoo:latest
+    image: huygensing/timbuctoo:demo
     environment:
       BASE_URI: http://localhost:8080
       TIMBUCTOO_SEARCH_URL: http://localhost:8082

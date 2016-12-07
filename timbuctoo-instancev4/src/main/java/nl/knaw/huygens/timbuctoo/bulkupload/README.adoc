@@ -92,13 +92,13 @@ Note the following:
 Some issues are described from user perspective, from the link:https://github.com/HuygensING/timbuctoo-default-frontend[excel mapping frontend]
 The problem analyses and suggested solutions, however, are written from a backend implementation perspective.
 
-==== Self referencing entity
+=== Self referencing entity
 1. When I map a new relation for data sheet, and I use the same column as the source column and the target column,
 I get no errors and I see in the edit interface two relations on the same entity, pointing to the same entity.
 
 Solution: RML mapper should add an error: "child and parent column are the same in join condition".
 
-==== Mapping of data types
+=== Mapping of data types
 1. Basic type inheritance of archetype: When I map (for instance) a column to a datable field, the field is not mapped as a datable, but as text.
 
 2. Mapping to types of limited values: When I map (for instance) a column to the 'gender' field, the field is mapped as text and may have any value I want.
@@ -115,7 +115,7 @@ There are multiple interconnected issues here, so no clear solution presents its
    -- which would mean that property configurations need to be interpreted more by the rdf importer
 
 
-==== No validation of the relationType takes place
+=== No validation of the relationType takes place
 1. No validation of the relationType takes place: I can easily create a relation like this:
 --
 <some person> <hasBirthPlace> <some other person>
@@ -127,5 +127,5 @@ Solution suggestions:
 1a. Relationtype configurations should be part of a vre (dataset); they may inherit from an archetypal form, but they should not have to.
 
 
-==== Uncertainties about rdfUri lucene index
+=== Uncertainties about rdfUri lucene index
 We have not verified yet whether lucene index entries are thrown away, when the vertices they refer to are deleted. I have seen no indications that this potential problem actually occurs, but this could cause serious sync issues.

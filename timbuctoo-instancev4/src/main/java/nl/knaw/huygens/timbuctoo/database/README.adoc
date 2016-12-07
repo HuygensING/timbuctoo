@@ -1,11 +1,12 @@
-## Context
+= Database access / core
+== Context
 We are using a database, but we're not convinced that it's the best one.
 We would like to be able to switch to other databases and the *evaluate* whether other databases make more sense.
 
 Furthermore TinkerPop requires us to handle transactions thoughtfully but provides a rather lax API.
 We'd like to access the database only in a correct manner.
 
-## Goal
+== Goal
 We add three classes
 
  1. TransactionEnforcer that helps to wrap all database using work in a transaction.
@@ -33,15 +34,17 @@ These classes have the following constraints:
    * You may add a custom DataStoreOperations implementation.
    * todo:feature[We might add code to TimbuctooActions that runs several DataStoreOperation implementations in parallel and reports their performance so we can do experiments on that]
    
-## Known issues
+== Known issues
  * TinkerPopOperations.replaceRelation
     * throws a NotFoundException instead of an AlreadyUpdatedException when the rev of the relation client is not the latest
     * throw a distinct Exception when the client tries to save a relation with different source, target or type. 
       Currently these properties are simply ignored.
             
-## Dataflow
+== Dataflow
 The picture below describes the data flow of the update or the retrieval of an entity.
-```
+
+[ditaa]
+--
 +-----------------------------------------------------------+------------------------------------------------------------------+--------------------------------------+
 |                                                           |                                                                  |                                      |
 |                                                           |                                                                  |                                      |
@@ -54,9 +57,9 @@ The picture below describes the data flow of the update or the retrieval of an e
 | +----------+-------+                                      |           |                      |                               |                                      |
 |            |                                              |           +----^----------+------+                               |                                      |
 |            |        +---------------------+               |                |          |                                      |                                      |
-|            |        |                     +--------------------------------+          |     +-------------------------+      |      +-------------------------+     |
+|            |        |                     +---------------+----------------+          |     +-------------------------+      |      +-------------------------+     |
 |            +-------->   JsonCrudService   |               |                           |     |                         |  Implements |                         |     |
-|                     |                     |               |                           +----->   DataStoreOperations   <-------------+   TinkerPopOperations   |     |
+|                     |                     |               |                           +----->   DataStoreOperations   <------+------+   TinkerPopOperations   |     |
 |                     +---------------------+               |                                 |                         |      |      |                         |     |
 |                                                           |                                 +-------------------------+      |      +-------------------------+     |
 |                                                           |                                                                  |                                      |
@@ -66,29 +69,29 @@ The picture below describes the data flow of the update or the retrieval of an e
 |                                                           |                                                                  |                                      |
 |                                                           |                                                                  |                                      |
 +-----------------------------------------------------------+------------------------------------------------------------------+--------------------------------------+
-```
+--
 
-### Client API
+=== Client API
 The client API is our REST API. This where the client request arrive
-#### SingleEntity
+==== SingleEntity
 'SingleEntity' is the REST endpoint that is used for updating an retrieving entities. 
-#### JsonCrudService
+==== JsonCrudService
 'JsonCrudService' translates the Json input of the REST endpoints to Entity (a data transfer object).
 
-### Domain
+=== Domain
 Domain contains all the actions that are specific for Timbuctoo. 
-#### TimbuctooActions
+==== TimbuctooActions
 'TimbuctooActions' is the interface for interacting with the database from the client.
 This class manages the Timbuctoo specific information, for example the way the id's look.
-#### DataStoreOperations
+==== DataStoreOperations
 'DataStoreOperations' is an interface that contains all the methods needed by 'TimbuctooActions'.
 To support a new database this class should be implemented.
 
-### Database
+=== Database
 'TinkerPopOperations' is our implementation of DataStoreOperations.
  
-## Data model
-### Entity
+== Data model
+=== Entity
 Contains the information of the Entity saved in the database. 
 For example a person or a document.
 Each Entity has properties.
@@ -103,14 +106,15 @@ public interface Entity {
 } 
 ```
 
-### TimProperty
+=== TimProperty
 Contains the information of the property of an Entity.
 The TimProperty interface has implementations for all property types used in Timbuctoo.
 A TimProperty can be a wrapper around a Java type like String, int, boolean or a Timbuctoo custom type like PersonNamesValue and Datable. 
-This way we can provide an implementation (e.g a [TinkerPopPropertyConverter](./tinkerpop/conversion/TinkerPopPropertyConverter.java) implementation, a jersey serializer, or a js client of the API) with a finite list of types that they should be able to handle.
+This way we can provide an implementation (e.g a link:./tinkerpop/conversion/TinkerPopPropertyConverter.java[TinkerPopPropertyConverter] implementation, a jersey serializer, or a js client of the API) with a finite list of types that they should be able to handle.
 
-#### Example
+==== Example
 If this is the interface
+
 ```java
 public abstract class TimProperty {
   private final String name;
@@ -132,6 +136,7 @@ public abstract class TimProperty {
    }
 }
 ```
+
 Then we can implement it for two property types like so:
 
 ```java
@@ -158,7 +163,7 @@ public class StringProperty extends TimProperty<String> {
 }
 ```
 
-### PropertyConverter
+=== PropertyConverter
 A PropertyConverter converts a Timbuctoo specific type to an output type.
 It will also convert an output type to a timbuctoo specific type (and thus function like a factory method).
 The input of PropertyConverter#from is a the property's name and it's value, so you can choose which converter to use based on the property name.
@@ -168,6 +173,7 @@ The to methods all return the same result type because we don't think adding a t
 They return a Tuple of String, Type where the left contains the propertyName as defined by the converter. 
 This allows a converter to change the name as well.
 This is currently needed for our database (which prefixes all properties with the collection and dataset name)
+
 ```java
 public abstract class PropertyConverter<Type>{
   public TimProperty from(String name, Type value){
@@ -184,7 +190,7 @@ public abstract class PropertyConverter<Type>{
 }
 ```
  
-#### Example
+==== Example
 
 ```java
 public class JsonPropertyConverter implements TimPropertyConverter<JsonNode> {
@@ -234,18 +240,18 @@ public class TinkerPopPropertyConverter implements TimPropertyConverter<Object> 
 }
 ```
 
-### RelationRef
+=== RelationRef
 Represents a reference of another Entity. 
 It contains information like the name of the relation and the display name of the other Entity. 
 An Entity does not contain teh related entities.
 Only these RelationRefs.
 
-### EntityRelation
+=== EntityRelation
 Is a way to represent a relation between two Entities. 
 This representation is used when a relation is saved in the database.
  
-# TransactionFilter
-> closes transactions at the end of a request
+=== TransactionFilter
+closes transactions at the end of a request.
 
 This is a stopgap method that should prevent the problems that will be really fixed by the DataAccess class.
 
