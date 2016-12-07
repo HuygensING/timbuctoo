@@ -692,6 +692,7 @@ table.tableblock.grid-all th.tableblock, table.tableblock.grid-all td.tableblock
 <li><a href="#_software_components">Software Components</a>
 <ul class="sectlevel2">
 <li><a href="#_overview">Overview</a></li>
+<li><a href="#_database_access_core">Database access / core</a></li>
 <li><a href="#_crud">CRUD</a></li>
 <li><a href="#_tabular_data_importer">Tabular data importer</a></li>
 <li><a href="#_rml_implementation">RML implementation</a></li>
@@ -1040,6 +1041,367 @@ We&#8217;re not sure if we&#8217;re keeping this around.</p>
 </div>
 </div>
 <div class="sect2">
+<h3 id="_database_access_core">Database access / core</h3>
+<div class="sect3">
+<h4 id="_context">Context</h4>
+<div class="paragraph">
+<p>We are using a database, but we&#8217;re not convinced that it&#8217;s the best one.
+We would like to be able to switch to other databases and the <strong>evaluate</strong> whether other databases make more sense.</p>
+</div>
+<div class="paragraph">
+<p>Furthermore TinkerPop requires us to handle transactions thoughtfully but provides a rather lax API.
+We&#8217;d like to access the database only in a correct manner.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_goal">Goal</h4>
+<div class="paragraph">
+<p>We add three classes</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>TransactionEnforcer that helps to wrap all database using work in a transaction.
+The transactionEnforcer API makes it clear to the client code when transaction starts and makes it impossible to forget to close it.</p>
+</li>
+<li>
+<p>TimbuctooActions that is autocloseable around a transaction.
+It contains the business logic (authorization, UUID generation etc.)</p>
+</li>
+<li>
+<p>DataStoreOperations that is autocloseable around a transaction and performs the actual database work</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>These classes have the following constraints:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>~~no two transaction may run at the same time~~ (will be possible once no code uses graphWrapper directly anymore)</p>
+</li>
+<li>
+<p>Each method returns an Immutable Value object without TinkerPop or Neo4j references.
+(So that Timbuctoo is less dependent on one database implementation)</p>
+</li>
+<li>
+<p>A value object will never hit the database to lazy load more data.
+(so that the client code can more easily reason about performance. Only db.something() calls will hit the database)</p>
+</li>
+<li>
+<p>A method is quite tightly coupled to the client. While a method may be used by more then one client is has a very tightly defined implementation and re-use is not expected to be the rule.
+(So that removing some client code will also clearly remove their constraints on the data model)</p>
+</li>
+<li>
+<p>of course, internally methods may re-use each other freely (so that we do not have code duplication)</p>
+</li>
+<li>
+<p>A mutation is a separate method adhering to the same practices as a retrieval method.
+(a second requirement to make only db.something() calls hit the database)</p>
+</li>
+<li>
+<p>You might have a mutation method that also retrieves data, but this is not the norm.
+(explicitly mentioned for people who expect full Command Query Separation)</p>
+</li>
+<li>
+<p>The DataStoreOperations methods will only get or mutate state.
+Triggering or calculating state (such as UUID&#8217;s or changeLog information) is done by the TimbuctooActions.</p>
+</li>
+<li>
+<p>You may add a custom DataStoreOperations implementation.</p>
+</li>
+<li>
+<p><span class="feature">We might add code to TimbuctooActions that runs several DataStoreOperation implementations in parallel and reports their performance so we can do experiments on that</span></p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_known_issues">Known issues</h4>
+<div class="ulist">
+<ul>
+<li>
+<p>TinkerPopOperations.replaceRelation</p>
+</li>
+<li>
+<p>throws a NotFoundException instead of an AlreadyUpdatedException when the rev of the relation client is not the latest</p>
+</li>
+<li>
+<p>throw a distinct Exception when the client tries to save a relation with different source, target or type.
+Currently these properties are simply ignored.</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_dataflow">Dataflow</h4>
+<div class="paragraph">
+<p>The picture below describes the data flow of the update or the retrieval of an entity.</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-b162f6094d662c16298209fd6e49a4c8.png" alt="diag b162f6094d662c16298209fd6e49a4c8" width="1710" height="392">
+</div>
+</div>
+<div class="sect4">
+<h5 id="_client_api">Client API</h5>
+<div class="paragraph">
+<p>The client API is our REST API. This where the client request arrive
+==== SingleEntity
+'SingleEntity' is the REST endpoint that is used for updating an retrieving entities.
+==== JsonCrudService
+'JsonCrudService' translates the Json input of the REST endpoints to Entity (a data transfer object).</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_domain">Domain</h5>
+<div class="paragraph">
+<p>Domain contains all the actions that are specific for Timbuctoo.
+==== TimbuctooActions
+'TimbuctooActions' is the interface for interacting with the database from the client.
+This class manages the Timbuctoo specific information, for example the way the id&#8217;s look.
+==== DataStoreOperations
+'DataStoreOperations' is an interface that contains all the methods needed by 'TimbuctooActions'.
+To support a new database this class should be implemented.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_database">Database</h5>
+<div class="paragraph">
+<p>'TinkerPopOperations' is our implementation of DataStoreOperations.</p>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_data_model">Data model</h4>
+<div class="sect4">
+<h5 id="_entity">Entity</h5>
+<div class="paragraph">
+<p>Contains the information of the Entity saved in the database.
+For example a person or a document.
+Each Entity has properties.
+Most Entities have relations.</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">public interface Entity {
+  List&lt;TimProperty&gt; getProperties();
+
+  List&lt;RelationRef&gt; getRelations();
+  //...
+}</code></pre>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_timproperty">TimProperty</h5>
+<div class="paragraph">
+<p>Contains the information of the property of an Entity.
+The TimProperty interface has implementations for all property types used in Timbuctoo.
+A TimProperty can be a wrapper around a Java type like String, int, boolean or a Timbuctoo custom type like PersonNamesValue and Datable.
+This way we can provide an implementation (e.g a <a href="./tinkerpop/conversion/TinkerPopPropertyConverter.java">TinkerPopPropertyConverter</a> implementation, a jersey serializer, or a js client of the API) with a finite list of types that they should be able to handle.</p>
+</div>
+<div class="sect5">
+<h6 id="_example">Example</h6>
+<div class="paragraph">
+<p>If this is the interface</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">public abstract class TimProperty {
+  private final String name;
+  private final Value value;
+
+  public TimProperty(String name, Value value){
+     this.name = name;
+     this.value = value;
+   }
+
+   public abstract &lt;Type&gt; Tuple&lt;String, Type&gt; convert(PropertyConverter&lt;Type&gt; propertyConverter) throws IOException;
+
+   public String getName() {
+     return name;
+   }
+
+   public Value getValue() {
+     return value;
+   }
+}</code></pre>
+</div>
+</div>
+<div class="paragraph">
+<p>Then we can implement it for two property types like so:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">public class PersonNamesProperty extends TimProperty&lt;PersonNames&gt; {
+  public PersonNamesProperty(String name, PersonNames value) {
+    super(name, value);
+  }
+
+  @Override
+  public &lt;Type&gt; Tuple&lt;String, Type&gt; convert(PropertyConverter&lt;Type&gt; propertyConverter) throws IOException {
+    return propertyConverter.to(this);
+  }
+}
+
+public class StringProperty extends TimProperty&lt;String&gt; {
+  public StringProperty(String name, String value) {
+    super(name, value);
+  }
+
+  @Override
+  public &lt;Type&gt; Tuple&lt;String, Type&gt; convert(PropertyConverter&lt;Type&gt; propertyConverter) throws IOException {
+    return propertyConverter.to(this);
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_propertyconverter">PropertyConverter</h5>
+<div class="paragraph">
+<p>A PropertyConverter converts a Timbuctoo specific type to an output type.
+It will also convert an output type to a timbuctoo specific type (and thus function like a factory method).
+The input of PropertyConverter#from is a the property&#8217;s name and it&#8217;s value, so you can choose which converter to use based on the property name.
+The from method is responsible for determining what the input value contains and picking the right TimProperty implementation to return.</p>
+</div>
+<div class="paragraph">
+<p>The to methods all return the same result type because we don&#8217;t think adding a type parameter for each result value is needed.
+They return a Tuple of String, Type where the left contains the propertyName as defined by the converter.
+This allows a converter to change the name as well.
+This is currently needed for our database (which prefixes all properties with the collection and dataset name)</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">public abstract class PropertyConverter&lt;Type&gt;{
+  public TimProperty from(String name, Type value){
+    //...
+  }
+
+  protected abstract PersonNamesProperty createPersonNamesProperty(String name, Type value);
+
+  protected abstract StringProperty createStringProperty(String name, Type value);
+
+  protected abstract Tuple&lt;String, Type&gt; to(PersonNamesProperty property);
+
+  protected abstract Tuple&lt;String, Type&gt; to(StringProperty property);
+}</code></pre>
+</div>
+</div>
+<div class="sect5">
+<h6 id="_example_2">Example</h6>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">public class JsonPropertyConverter implements TimPropertyConverter&lt;JsonNode&gt; {
+  public TinkerPopPropertyConverter(Collection collection) {
+    //store the collection for later use in deciding what property type
+  }
+
+  protected PersonNamesProperty createPersonNamesProperty(String name, JsonNode value) {
+    //...
+  }
+
+  protected StringProperty createStringProperty(String name, JsonNode value) {
+    //...
+  }
+
+  protected Tuple&lt;String, JsonNode&gt; to(PersonNamesProperty property){
+    //...
+  }
+
+  protected Tuple&lt;String, JsonNode&gt; to(StringProperty property){
+    //...
+  }
+}</code></pre>
+</div>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code class="language-java" data-lang="java">public class TinkerPopPropertyConverter implements TimPropertyConverter&lt;Object&gt; {
+  public TinkerPopPropertyConverter(Collection collection) {
+
+  }
+
+  protected PersonNamesProperty createPersonNamesProperty(String name, Object value) {
+    //...
+  }
+
+  protected StringProperty createStringProperty(String name, Object value) {
+    //...
+  }
+
+  protected Tuple&lt;String, Object&gt; to(PersonNamesProperty property){
+    //...
+  }
+
+  protected Tuple&lt;String, Object&gt; to(StringProperty propertyName){
+    //...
+  }
+}</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_relationref">RelationRef</h5>
+<div class="paragraph">
+<p>Represents a reference of another Entity.
+It contains information like the name of the relation and the display name of the other Entity.
+An Entity does not contain teh related entities.
+Only these RelationRefs.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_entityrelation">EntityRelation</h5>
+<div class="paragraph">
+<p>Is a way to represent a relation between two Entities.
+This representation is used when a relation is saved in the database.</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_transactionfilter">TransactionFilter</h5>
+<div class="paragraph">
+<p>closes transactions at the end of a request.</p>
+</div>
+<div class="paragraph">
+<p>This is a stopgap method that should prevent the problems that will be really fixed by the DataAccess class.</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Dropwizard re-uses threads between requests.</p>
+</li>
+<li>
+<p>neo4j needs a transaction for read actions</p>
+</li>
+<li>
+<p>tinkerpop automatically creates a thread local transaction when
+needed. (also for read actions)</p>
+</li>
+<li>
+<p>we did not know so we don&#8217;t close read transactions at the end of
+a read action</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Together this results in a thread that will not see the changes of
+another thread. If it had a transaction open since before the other
+thread had a transaction open.</p>
+</div>
+<div class="paragraph">
+<p>I do not completely understand it though, because an open transaction
+should be able to see committed data from another transaction (and I
+have verified that the data was indeed committed). However this filter
+does fix the bug.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="sect2">
 <h3 id="_crud">CRUD</h3>
 <div class="admonitionblock warning">
 <table>
@@ -1077,7 +1439,7 @@ Provenance information is included as part of the entity it belongs to.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_context">Context</h4>
+<h4 id="_context_2">Context</h4>
 <div class="paragraph">
 <p>Timbuctoo offers a REST interface to edit data within different datasets.
 This API precedes the RDF data model and even the graph database underpinnings.
@@ -1126,7 +1488,7 @@ Recently we have performed a clean re-implementation of the crud API based on th
 </div>
 </div>
 <div class="sect3">
-<h4 id="_data_model">Data model</h4>
+<h4 id="_data_model_2">Data model</h4>
 <div class="paragraph">
 <p>The timbuctoo database is divided into datasets.
 Each Virtual Research Environment used to have it&#8217;s own dataset and each dataset would be solely for a specific VRE.
@@ -1175,7 +1537,7 @@ Types are namespaced by the VRE name, making properties also namespaced by their
 <div class="sect4">
 <h5 id="_versioning">Versioning</h5>
 <div class="paragraph">
-<p><span class="image"><img src="../../../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/crud/versioning.png" alt="versioning"></span></p>
+<p><span class="image"><img src="versioning.png" alt="versioning"></span></p>
 </div>
 <div class="paragraph">
 <p>(A, B, C &amp; D) The light blue square represents a vertex and thus one version of the entity. In A and B there is only 1 versie of Maria and Pieter, in C there are 2 versions of Maria and 1 of Pieter and in D there are 2 versies of both Maria and Pieter. The set of vertices with the same value for the property tim_id form a singly linked list through edges of the type isVersionOf. These are grouped in a darker blue square and labeled “version series”</p>
@@ -1221,7 +1583,7 @@ There is also data that is not domain related, such as the isLatest property. Th
 </div>
 </div>
 <div class="sect3">
-<h4 id="_context_2">Context</h4>
+<h4 id="_context_3">Context</h4>
 <div class="paragraph">
 <p>Timbuctoo should allow users to upload datasets.
 We find that most of our users produce datasets in a tabular format (as opposed to a tree format or a graph format).
@@ -1251,7 +1613,7 @@ This has been removed and replaced with an RML implementation.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_data_model_2">Data model</h4>
+<h4 id="_data_model_3">Data model</h4>
 <div class="paragraph">
 <p>Given a dataset called <code>movie information</code> containing a table called <code>actors</code> with the following data:</p>
 </div>
@@ -1332,6 +1694,96 @@ To change how the data is stored in the graph you&#8217;d change the code in <a 
 </ul>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_list_of_known_bugs_issues">List of known bugs / issues</h4>
+<div class="paragraph">
+<p>Some issues are described from user perspective, from the <a href="https://github.com/HuygensING/timbuctoo-default-frontend">excel mapping frontend</a>
+The problem analyses and suggested solutions, however, are written from a backend implementation perspective.</p>
+</div>
+<div class="sect4">
+<h5 id="_self_referencing_entity">Self referencing entity</h5>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>When I map a new relation for data sheet, and I use the same column as the source column and the target column,
+I get no errors and I see in the edit interface two relations on the same entity, pointing to the same entity.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>Solution: RML mapper should add an error: "child and parent column are the same in join condition".</p>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_mapping_of_data_types">Mapping of data types</h5>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Basic type inheritance of archetype: When I map (for instance) a column to a datable field, the field is not mapped as a datable, but as text.</p>
+</li>
+<li>
+<p>Mapping to types of limited values: When I map (for instance) a column to the 'gender' field, the field is mapped as text and may have any value I want.</p>
+</li>
+<li>
+<p>Mapping to lists: I can only map one column to a list. The field is mapped as text and I cannot add new values to this property after the import.</p>
+</li>
+<li>
+<p>The links data type is not supported yet.</p>
+</li>
+</ol>
+</div>
+<div class="paragraph">
+<p>There are multiple interconnected issues here, so no clear solution presents itself:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>One part of the solution must be to start using rdf types for dates and numbers</p>
+</li>
+<li>
+<p>Another might be to make a list of 'known' predicates, which makes the rdf importer treat values correctly (i.e. with lists)</p>
+</li>
+<li>
+<p>One can also imagine the rml mapping frontend generating triples describing the types of certain predicates (i.e. &lt;documentType&gt; &lt;isA&gt; &lt;Admin/documents/list-of-strings-of-limited-values&gt;)&#8201;&#8212;&#8201;which would mean that property configurations need to be interpreted more by the rdf importer</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_no_validation_of_the_relationtype_takes_place">No validation of the relationType takes place</h5>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>No validation of the relationType takes place: I can easily create a relation like this:</p>
+</li>
+</ol>
+</div>
+<div class="openblock">
+<div class="content">
+<div class="paragraph">
+<p>&lt;some person&gt; &lt;hasBirthPlace&gt; &lt;some other person&gt;</p>
+</div>
+</div>
+</div>
+<div class="paragraph">
+<p>Solution suggestions:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>We need to discuss how to fix this. When reusing a relationType, the source and target entity type should match the Timbuctoo requirements, or should the requirements be dropped? Or something inbetween.
+1a. Relationtype configurations should be part of a vre (dataset); they may inherit from an archetypal form, but they should not have to.</p>
+</li>
+</ol>
+</div>
+</div>
+<div class="sect4">
+<h5 id="_uncertainties_about_rdfuri_lucene_index">Uncertainties about rdfUri lucene index</h5>
+<div class="paragraph">
+<p>We have not verified yet whether lucene index entries are thrown away, when the vertices they refer to are deleted. I have seen no indications that this potential problem actually occurs, but this could cause serious sync issues.</p>
+</div>
+</div>
+</div>
 </div>
 <div class="sect2">
 <h3 id="_rml_implementation">RML implementation</h3>
@@ -1344,7 +1796,7 @@ The processor calls the RDF importer in the background with the generated triple
 It does not implement any of the datasources itself, but allows you to provide your own implementations.</p>
 </div>
 <div class="sect3">
-<h4 id="_context_3">Context</h4>
+<h4 id="_context_4">Context</h4>
 <div class="paragraph">
 <p>In timbuctoo we import data in tabular form as a "raw import" and then use a <a href="http://github.com/huygensING/timbuctoo-default-frontend">GUI</a> to generate an RML mapping that converts it into RDF.
 We then import the RDF using our generic RDF importer.</p>
@@ -1624,7 +2076,7 @@ For our own datasource the results will be written to neo4j as follows:</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_known_issues">Known issues</h4>
+<h4 id="_known_issues_2">Known issues</h4>
 <div class="dlist">
 <dl>
 <dt class="hdlist1">Mapping columns</dt>
@@ -1666,7 +2118,7 @@ I can imagine that intuitively the datasource that provides the data also stores
 </div>
 </div>
 <div class="sect3">
-<h4 id="_context_4">Context</h4>
+<h4 id="_context_5">Context</h4>
 <div class="paragraph">
 <p>RDF is a widely used linked data format.
 Therefore Timbuctoo has to communicate with a with services through the RDF data format.
@@ -1787,7 +2239,7 @@ The structure will be transformed to the following structure.</p>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_known_issues_2">Known issues</h4>
+<h4 id="_known_issues_3">Known issues</h4>
 <div class="paragraph">
 <p>Timbuctoo supports edges with inverse names for inverse directions in a data structure called RelationType.
 Currently mapping via URI of an rdf predicate only works for the regular name of a relation type.</p>
@@ -1855,7 +2307,7 @@ v[65] --[hasBirthPlace]--&gt; v[73]</code></pre>
 </div>
 </div>
 <div class="sect3">
-<h4 id="_context_5">Context</h4>
+<h4 id="_context_6">Context</h4>
 <div class="paragraph">
 <p>We want to be able expose Timbuctoo collections through solr/lucene in a flexible way,
 enabling indexes on both the direct properties of records in a collection, as well as
@@ -1871,58 +2323,67 @@ collection, which was linked to a document from a document collection (like genr
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>[Scrape](#scraping) Timbuctoo data</p>
+<p><a href="#scraping">Scrape Timbuctoo data</a></p>
 </li>
 <li>
-<p>[Convert](#converting) to solr docs</p>
+<p><a href="#converting">Convert it to solr docs</a></p>
 </li>
 <li>
-<p>Send [solr](#solr) docs to solr server</p>
+<p><a href="#solr">Send solr docs to solr server</a></p>
 </li>
 </ol>
 </div>
 <div class="paragraph">
-<p>For the impatient: [skip to complete example](#indexing).</p>
+<p>For the impatient: <a href="#indexing">skip to complete example</a>.</p>
 </div>
 <div class="sect4">
 <h5 id="_libraries">Libraries</h5>
 <div class="paragraph">
-<p>For that purpose there are three classes in the dir <code><code>lib/timbuctoo_solr</code></code>.</p>
+<p>For that purpose there are three classes in the dir <code>lib/timbuctoo_solr</code>.</p>
 </div>
 <div class="olist arabic">
 <ol class="arabic">
 <li>
-<p>TimbuctooIO <code><code>lib/timbuctoo_solr/timbuctoo_io.rb</code></code></p>
+<p>TimbuctooIO <code>lib/timbuctoo_solr/timbuctoo_io.rb</code></p>
 </li>
 <li>
-<p>DefaultMapper <code><code>lib/timbuctoo_solr/default_mapper.rb</code></code></p>
+<p>DefaultMapper <code>lib/timbuctoo_solr/default_mapper.rb</code></p>
 </li>
 <li>
-<p>SolrIO <code><code>lib/timbuctoo_solr/solr_io.rb</code></code></p>
+<p>SolrIO <code>lib/timbuctoo_solr/solr_io.rb</code></p>
 </li>
 </ol>
 </div>
 <div class="paragraph">
 <p>The next sections will explain the 3-step process in more detail, using examples which
-can be found in the <code><code>samples</code></code> dir.</p>
+can be found in the <code>samples</code> dir.</p>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_scraping">Scraping</h5>
+<h5 id="__a_id_scraping_a_scraping"><a id="scraping"></a>Scraping</h5>
 <div class="paragraph">
-<p>A scrape of a Timbuctoo collection is done in batches using the method</p>
+<p>A scrape of a Timbuctoo collection is done in batches using the method
+<code>scrape_collection</code> in TimbuctooIO. This can either be done with or without
+direct relations:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p><a href="http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10">Sample scrape response without relations</a></p>
+</li>
+<li>
+<p><a href="http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10&amp;withRelations=true">Sample with relations</a></p>
+</li>
+</ol>
+</div>
+<div class="sect5">
+<h6 id="_basic_scrape">Basic scrape</h6>
+<div class="paragraph">
+<p>This script above scrapes the collection 'dcararchives' from the Timbuctoo test repository:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scrape_collection```inTimbuctooIO.Thiscaneitherbedonewithorwithout" data-lang="scrape_collection```inTimbuctooIO.Thiscaneitherbedonewithorwithout">direct relations:
-
-1. [Sample scrape response without relations](http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10)
-2. [Sample with relations](http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10&amp;withRelations=true)
-
-==== Basic scrape
-This script above scrapes the collection 'dcararchives' from the Timbuctoo test repository:
-```ruby
-# samples/basic-scrape.rb
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/basic-scrape.rb
 require '../lib/timbuctoo_solr/timbuctoo_io'
 
 timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
@@ -1938,8 +2399,84 @@ each record individually to standard output.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code>{"beginDate"=&gt;"1700", "countries"=&gt;["NL"], "endDate"=&gt;"1800", "extent"=&gt;"1 folder", "itemNo"=&gt;"9169", "madeBy"=&gt;"MS", "notes"=&gt;"18th century.", "origFilename"=&gt;"/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD9_9169", "refCode"=&gt;"AD.9", "refCodeArchive"=&gt;"Archief Nederlandse Jezuieten", "reminders"=&gt;"Gegevens ontvangen van Hans de Valk, 19-4-2007", "titleEng"=&gt;"Documents relating to the RC mission on Curaçao in the 18th century", "titleNld"=&gt;"Stukken betreffende de missie op Curaçao in de 18e eeuw", "@displayName"=&gt;"Stukken betreffende de missie op Curaçao in de 18e eeuw", "^rev"=&gt;1, "^modified"=&gt;{"timeStamp"=&gt;1411642687699, "userId"=&gt;"importer", "vreId"=&gt;"dcar"}, "^created"=&gt;{"timeStamp"=&gt;1411642687699, "userId"=&gt;"importer", "vreId"=&gt;"dcar"}, "@variationRefs"=&gt;[{"id"=&gt;"778bb9f8-a4fa-4a55-aed3-997da73112a0", "type"=&gt;"archive"}, {"id"=&gt;"778bb9f8-a4fa-4a55-aed3-997da73112a0", "type"=&gt;"dcararchive"}], "^deleted"=&gt;false, "_id"=&gt;"778bb9f8-a4fa-4a55-aed3-997da73112a0"}
-{"beginDate"=&gt;"1670", "countries"=&gt;["NL"], "endDate"=&gt;"1870", "extent"=&gt;"1 folder", "itemNo"=&gt;"9170", "madeBy"=&gt;"MS", "notes"=&gt;"Undated.", "origFilename"=&gt;"/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD10_9170", "refCode"=&gt;"AD.10", "refCodeArchive"=&gt;"Archief Nederlandse Jezuieten", "reminders"=&gt;"Gegevens ontvangen van Hans de Valk, 19-4-2007", "titleEng"=&gt;"(Handwritten) notes concerning the Jesuit mission and missionaries in Suriname and Curaçao during the Republic and in the 19th century", "titleNld"=&gt;"(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw", "@displayName"=&gt;"(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw", "^rev"=&gt;1, "^modified"=&gt;{"timeStamp"=&gt;1411642687699, "userId"=&gt;"importer", "vreId"=&gt;"dcar"}, "^created"=&gt;{"timeStamp"=&gt;1411642687699, "userId"=&gt;"importer", "vreId"=&gt;"dcar"}, "@variationRefs"=&gt;[{"id"=&gt;"bead3064-ada9-4ee5-aad0-e5a926026574", "type"=&gt;"archive"}, {"id"=&gt;"bead3064-ada9-4ee5-aad0-e5a926026574", "type"=&gt;"dcararchive"}], "^deleted"=&gt;false, "_id"=&gt;"bead3064-ada9-4ee5-aad0-e5a926026574"}</code></pre>
+<pre class="highlight"><code class="language-ruby" data-lang="ruby">{
+  "beginDate" =&gt; "1700",
+  "countries" =&gt; ["NL"],
+  "endDate" =&gt; "1800",
+  "extent" =&gt; "1 folder",
+  "itemNo" =&gt; "9169",
+  "madeBy" =&gt; "MS",
+  "notes" =&gt; "18th century.",
+  "origFilename" =&gt; "/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD9_9169",
+  "refCode" =&gt; "AD.9",
+  "refCodeArchive" =&gt; "Archief Nederlandse Jezuieten",
+  "reminders" =&gt; "Gegevens ontvangen van Hans de Valk, 19-4-2007",
+  "titleEng" =&gt; "Documents relating to the RC mission on Curaçao in the 18th century",
+  "titleNld" =&gt; "Stukken betreffende de missie op Curaçao in de 18e eeuw",
+  "@displayName" =&gt; "Stukken betreffende de missie op Curaçao in de 18e eeuw",
+  "^rev" =&gt; 1,
+  "^modified" =&gt; {
+    "timeStamp" =&gt; 1411642687699,
+    "userId" =&gt; "importer",
+    "vreId" =&gt; "dcar"
+  },
+  "^created" =&gt; {
+    "timeStamp" =&gt; 1411642687699,
+    "userId" =&gt; "importer",
+    "vreId" =&gt; "dcar"
+  },
+  "@variationRefs" =&gt; [
+    {
+      "id" =&gt; "778bb9f8-a4fa-4a55-aed3-997da73112a0",
+      "type" =&gt; "archive"
+    },
+    {
+      "id" =&gt; "778bb9f8-a4fa-4a55-aed3-997da73112a0",
+      "type" =&gt; "dcararchive"
+    }
+  ],
+  "^deleted" =&gt; false,
+  "_id" =&gt; "778bb9f8-a4fa-4a55-aed3-997da73112a0"
+}
+{
+  "beginDate" =&gt; "1670",
+  "countries" =&gt; ["NL"],
+  "endDate" =&gt; "1870",
+  "extent" =&gt; "1 folder",
+  "itemNo" =&gt; "9170",
+  "madeBy" =&gt; "MS",
+  "notes" =&gt; "Undated.",
+  "origFilename" =&gt; "/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD10_9170",
+  "refCode" =&gt; "AD.10",
+  "refCodeArchive" =&gt; "Archief Nederlandse Jezuieten",
+  "reminders" =&gt; "Gegevens ontvangen van Hans de Valk, 19-4-2007",
+  "titleEng" =&gt; "(Handwritten) notes concerning the Jesuit mission and missionaries in Suriname and Curaçao during the Republic and in the 19th century",
+  "titleNld" =&gt; "(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw",
+  "@displayName" =&gt; "(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw",
+  "^rev" =&gt; 1,
+  "^modified" =&gt; {
+    "timeStamp" =&gt; 1411642687699,
+    "userId" =&gt; "importer",
+    "vreId" =&gt; "dcar"
+  },
+  "^created" =&gt; {
+    "timeStamp" =&gt; 1411642687699,
+    "userId" =&gt; "importer",
+    "vreId" =&gt; "dcar"
+  },
+  "@variationRefs" =&gt; [
+    {
+      "id" =&gt; "bead3064-ada9-4ee5-aad0-e5a926026574",
+      "type" =&gt; "archive"
+    }, {
+      "id" =&gt; "bead3064-ada9-4ee5-aad0-e5a926026574",
+      "type" =&gt; "dcararchive"
+    }
+  ],
+  "^deleted" =&gt; false,
+  "_id" =&gt; "bead3064-ada9-4ee5-aad0-e5a926026574"
+}</code></pre>
+</div>
 </div>
 </div>
 <div class="sect5">
@@ -1965,20 +2502,20 @@ timbuctoo_io.scrape_collection('dcararchives', {
 <div class="paragraph">
 <p>Dumping files has the advantage of not having to re-scrape the collection during development.
 The filenames of the dump files have a signature reflecting the parameters of the scrape.
-For instance, the above example outputs files with this format: <code><code>dcararchives_rows_1000_start_1000_with_relations.json</code></code></p>
+For instance, the above example outputs files with this format: <code>dcararchives_rows_1000_start_1000_with_relations.json</code></p>
 </div>
 </div>
 <div class="sect5">
 <h6 id="_re_scraping_from_locally_dumped_files">Re-scraping from locally dumped files</h6>
 <div class="paragraph">
-<p>To scrape from the locally dumped files in stead of Timbuctoo, add the <code><code>:from_file</code></code> flag to the</p>
+<p>To scrape from the locally dumped files in stead of Timbuctoo, add the <code>:from_file</code> flag to the
+<code>scrape_collection</code> method. In this case the value of <code>:dump_dir</code> in the constructor must
+match the location of the dumped files. If the (some of the) files are not present, TimbuctooIO
+will fall back on scraping the Timbuctoo server.</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-scrape_collection```method.Inthiscasethevalueof```:dump_dir```intheconstructormust" data-lang="scrape_collection```method.Inthiscasethevalueof```:dump_dir```intheconstructormust">match the location of the dumped files. If the (some of the) files are not present, TimbuctooIO
-will fall back on scraping the Timbuctoo server.
-```ruby
-# samples/basic-scrape.rb
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/basic-scrape.rb
 
 timbuctoo_io.scrape_collection('dcararchives', {
     :with_relations =&gt; true, # also scrape direct relations
@@ -1991,10 +2528,10 @@ timbuctoo_io.scrape_collection('dcararchives', {
 <div class="sect5">
 <h6 id="_the_process_record_callback">The 'process_record' callback</h6>
 <div class="paragraph">
-<p>Each record scraped by <code><code>scrape_collection</code></code> is passed to a callback function, identified by
-the <code><code>:process_record</code></code> keyword argument. The default behaviour of <code><code>process_record</code></code> is
+<p>Each record scraped by <code>scrape_collection</code> is passed to a callback function, identified by
+the <code>:process_record</code> keyword argument. The default behaviour of <code>process_record</code> is
 to dump the (json deserialized) record to standard output (as seen above).
-The way to access the records in order to convert them is to set the <code><code>:process_record</code></code>
+The way to access the records in order to convert them is to set the <code>:process_record</code>
 parameter to a lambda function. The next examples illustrate this:</p>
 </div>
 <div class="listingblock">
@@ -2038,7 +2575,7 @@ timbuctoo_io.scrape_collection('dcararchives', {
 </div>
 </div>
 <div class="sect4">
-<h5 id="_converting">Converting</h5>
+<h5 id="__a_id_converting_a_converting"><a id="converting"></a>Converting</h5>
 <div class="paragraph">
 <p>To convert records from Timbuctoo format to a format that can be indexed into solr the DefaultMapper can be used.
 The DefaultMapper expects a configuration upon construction, telling it which properties to map to a solr field.</p>
@@ -2046,7 +2583,7 @@ The DefaultMapper expects a configuration upon construction, telling it which pr
 <div class="sect5">
 <h6 id="_mapping_direct_properties_using_defaultmapper">Mapping direct properties using DefaultMapper</h6>
 <div class="paragraph">
-<p>This example shows how to map Timbuctoo record properties to a solr format using the [data_driven_schema_configs](<a href="https://cwiki.apache.org/confluence/display/solr/Schemaless+Mode" class="bare">cwiki.apache.org/confluence/display/solr/Schemaless+Mode</a>)
+<p>This example shows how to map Timbuctoo record properties to a solr format using the <a href="https://cwiki.apache.org/confluence/display/solr/Schemaless+Mode">data_driven_schema_configs</a>
 config set of Solr 6. This format uses field name suffixes to identify data types, and the field named 'id' as
 for  uniqueness constraint.</p>
 </div>
@@ -2100,7 +2637,7 @@ timbuctoo_io.scrape_collection('wwcollectives', :process_record =&gt; method(:pr
 <h6 id="_converting_the_value_of_a_timbuctoo_property">Converting the value of a Timbuctoo property</h6>
 <div class="paragraph">
 <p>The DefaultMapper configuration can be supplied with a type parameter per property. It ships one supported data type (int)
-which will pass the property value to the <code><code>convert_to_int</code></code> method, which attempts to cast the value using <code><code>to_i</code></code>.</p>
+which will pass the property value to the <code>convert_to_int</code> method, which attempts to cast the value using <code>to_i</code>.</p>
 </div>
 <div class="paragraph">
 <p>This example converts the string value of 'birthDate' into the int value of 'birthDate_i'</p>
@@ -2127,7 +2664,7 @@ which will pass the property value to the <code><code>convert_to_int</code></cod
 </div>
 </div>
 <div class="paragraph">
-<p>As illustrated in <code><code>samples/conversion-raise.rb</code></code>.</p>
+<p>As illustrated in <code>samples/conversion-raise.rb</code>.</p>
 </div>
 <div class="paragraph">
 <p>To remedy this we recommend inheriting from DefaultMapper and implementing the method 'convert_to_your_type':</p>
@@ -2151,8 +2688,8 @@ end
 </div>
 </div>
 <div class="paragraph">
-<p>For some common data types modules are provided in <code><code>lib/mixins/converters</code></code>, delegating the responsibility of hand-writing
-type converters. Ruby modules can be used as mixins inside a class using the <code><code>include</code></code> instruction.</p>
+<p>For some common data types modules are provided in <code>lib/mixins/converters</code>, delegating the responsibility of hand-writing
+type converters. Ruby modules can be used as mixins inside a class using the <code>include</code> instruction.</p>
 </div>
 <div class="listingblock">
 <div class="content">
@@ -2179,19 +2716,21 @@ end
 </div>
 <div class="paragraph">
 <p>When writing a custom converter which has a good chance of being reused by another indexer, we recommend
-adding this converter in a similar module under <code><code>lib/mixins/converters</code></code>.</p>
+adding this converter in a similar module under <code>lib/mixins/converters</code>.</p>
 </div>
 </div>
 <div class="sect5">
 <h6 id="_mapping_properties_of_direct_relations">Mapping properties of direct relations</h6>
 <div class="paragraph">
-<p>The DefaultMapper can also be configured with properties derived from directly related objects. This requires that</p>
+<p>The DefaultMapper can also be configured with properties derived from directly related objects. This requires that
+<code>TimbuctooIO.scrape_collection</code> is invoked with <code>{ :with_relations &#8658; true }</code>.</p>
+</div>
+<div class="paragraph">
+<p>Example:</p>
 </div>
 <div class="listingblock">
 <div class="content">
-<pre class="highlight"><code class="language-TimbuctooIO.scrape_collection```isinvokedwith```{:with_relations=>true}```." data-lang="TimbuctooIO.scrape_collection```isinvokedwith```{:with_relations=>true}```.">Example:
-```ruby
-# samples/conversion-with-relations.rb
+<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/conversion-with-relations.rb
 
 @collectives_mapper = DefaultMapper.new({
   :properties =&gt; [
@@ -2224,34 +2763,34 @@ adding this converter in a similar module under <code><code>lib/mixins/converter
 </div>
 </div>
 <div class="paragraph">
-<p>The same type conversion rules apply to properties derived from relations (see: <code><code>samples/type-conversion-1.rb</code></code>).</p>
+<p>The same type conversion rules apply to properties derived from relations (see: <code>samples/type-conversion-1.rb</code>).</p>
 </div>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_solr">Solr</h5>
+<h5 id="__a_id_solr_a_solr"><a id="solr"></a>Solr</h5>
 <div class="paragraph">
-<p>The class SolrIO exposes a few basic CRUD methods. The samples in this section assume a local running solr 6 server ([quickstart](<a href="http://lucene.apache.org/solr/quickstart.html)" class="bare">lucene.apache.org/solr/quickstart.html)</a>).
+<p>The class SolrIO exposes a few basic CRUD methods. The samples in this section assume a local running solr 6 server (<a href="http://lucene.apache.org/solr/quickstart.html">quickstart</a>).
 The constructor is invoked with the solr url (usually including /solr without trailing slash). Optionally a value for the header 'Authorization'
 can be added in the constructor as well.</p>
 </div>
 <div class="sect5">
 <h6 id="_crud_methods_of_solrio">CRUD methods of SolrIO</h6>
 <div class="paragraph">
-<p>Use the <code><code>create</code></code> method to create an index. By default an index is created with the config set 'data_driven_schema_configs'
+<p>Use the <code>create</code> method to create an index. By default an index is created with the config set 'data_driven_schema_configs'
 If the index already exists, this method will raise an exception.</p>
 </div>
 <div class="paragraph">
-<p>Use the <code><code>update</code></code> method to send a batch of data to be indexed.</p>
+<p>Use the <code>update</code> method to send a batch of data to be indexed.</p>
 </div>
 <div class="paragraph">
-<p>Use the <code><code>delete_data</code></code> method to delete all contents of an index</p>
+<p>Use the <code>delete_data</code> method to delete all contents of an index</p>
 </div>
 <div class="paragraph">
-<p>Use the <code><code>commit</code></code> method to commit the changes that were sent.</p>
+<p>Use the <code>commit</code> method to commit the changes that were sent.</p>
 </div>
 <div class="paragraph">
-<p>Use the <code><code>delete_index</code></code> method to purge the entire index from solr.</p>
+<p>Use the <code>delete_index</code> method to purge the entire index from solr.</p>
 </div>
 <div class="paragraph">
 <p>Example:</p>
@@ -2282,7 +2821,7 @@ solr_io.delete_index('testing')</code></pre>
 </div>
 </div>
 <div class="sect4">
-<h5 id="_indexing">Indexing</h5>
+<h5 id="__a_id_indexing_a_indexing"><a id="indexing"></a>Indexing</h5>
 <div class="paragraph">
 <p>This sample code integrates most of the pieces listed above into one sample indexer. If you skipped directly to this section,
 please be aware that this sample does not illustrate all the possibilities.</p>
@@ -2331,7 +2870,7 @@ Indexer.new.run</code></pre>
 </div>
 </div>
 <div class="paragraph">
-<p>A more elaborate example is in <code><code>samples/complete-sample-runner.rb</code></code>.</p>
+<p>A more elaborate example is in <code>samples/complete-sample-runner.rb</code>.</p>
 </div>
 </div>
 </div>
@@ -2505,7 +3044,19 @@ lodlive</p>
 <dl>
 <dt class="hdlist1">xanadu</dt>
 <dd>
-<p>rdf heeft geen natural order waardoor editlists ofwel heel gefragmenteerd kunnen worden ofwel niet goed mogelijk zijn.</p>
+<p>At a distance, Xanadu looks like a well-thought out approach at exchanging and re-using data.
+The problems that are most similar are (1) keeping track of owner/authorship while having that enables and foster&#8217;s re-use (2) keeping control of the data that was cited without having to depose snapshots at digital heritage institutions.
+However, RDF probably differs too much from text to be able to apply these ideas.
+You usually exchange it in some serialised, textual, form, but it has no predefined sort-order and re-use/transclusion is not necessarily in a few blocks.
+We&#8217;re not aware of any research for building a system that fulfills the xanadu requirements for structured data</p>
+</dd>
+<dt class="hdlist1">Pelagios</dt>
+<dd>
+<p><a href="http://dlib.nyu.edu/awdl/isaw/isaw-papers/7/simon-barker-desoto-isaksen/" class="bare">dlib.nyu.edu/awdl/isaw/isaw-papers/7/simon-barker-desoto-isaksen/</a> We&#8217;re thinking about providing the pelagios API&#8217;s from withing timbuctoo.</p>
+</dd>
+<dt class="hdlist1">Salt</dt>
+<dd>
+<p>Salt (<a href="http://dl.acm.org/citation.cfm?id=2785528" class="bare">dl.acm.org/citation.cfm?id=2785528</a>)</p>
 </dd>
 </dl>
 </div>
@@ -2516,7 +3067,7 @@ lodlive</p>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-11-01 15:38:11 UTC
+Last updated 2016-12-07 12:22:32 UTC
 </div>
 </div>
 </body>
