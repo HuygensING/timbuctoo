@@ -15,4 +15,4 @@ docker run -it --rm -v "$rootsrcdir":/documents/ -v "$PWD":/devtools/ asciidocto
   documentation/index.adoc
 
 cd "$rootsrcdir"/documentation
-cp readthedocs.css concordion.css api.html ./output
+cp readthedocs.css concordion.css api.html *.png ./output

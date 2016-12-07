@@ -69,7 +69,7 @@ The current data model is based on the lowest common denominator of the data abs
 Vertices represent a version of an entity. Properties represent the values of that entity that do not warrant their own identifier. Edges represent the relations between vertices and might have properties of their own (though this happens rarely)
 
 === Versioning
-image:../../../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/crud/versioning.png[]
+image:versioning.png[]
 
 (A, B, C & D) The light blue square represents a vertex and thus one version of the entity. In A and B there is only 1 versie of Maria and Pieter, in C there are 2 versions of Maria and 1 of Pieter and in D there are 2 versies of both Maria and Pieter. The set of vertices with the same value for the property tim_id form a singly linked list through edges of the type isVersionOf. These are grouped in a darker blue square and labeled “version series”
 
