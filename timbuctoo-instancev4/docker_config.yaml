@@ -3,7 +3,7 @@
 
 
 #database files
-databasePath: "/data/database" #do not refer to a soft link
+databasePath: "/root/timbuctoo-prod-db" #do not refer to a soft link
 # JSON files
 # This directory Timbuctoo reads and writes the authorizations a file for each vre.
 authorizationsPath: "/data/auth/authorizations"
