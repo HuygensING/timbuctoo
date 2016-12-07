@@ -26,6 +26,8 @@ public interface DataStoreOperations extends AutoCloseable {
 
   boolean hasMappingErrors(String vreName);
 
+  void saveRmlMappingState(String vreName, String rdfData);
+
   void success();
 
   void rollback();

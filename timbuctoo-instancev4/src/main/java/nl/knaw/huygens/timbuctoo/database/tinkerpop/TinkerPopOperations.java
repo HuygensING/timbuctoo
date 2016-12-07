@@ -69,6 +69,7 @@ import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
@@ -227,6 +228,16 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public boolean hasMappingErrors(String vreName) {
     return getRawCollectionsTraversal(vreName).outE(HAS_NEXT_ERROR).hasNext();
+  }
+
+  @Override
+  public void saveRmlMappingState(String vreName, String rdfData) {
+    final GraphTraversal<Vertex, Vertex> vreT = traversal.V()
+                                                        .hasLabel(Vre.DATABASE_LABEL)
+                                                        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+    if (vreT.hasNext()) {
+      vreT.next().property(SAVED_MAPPING_STATE, rdfData);
+    }
   }
 
   @Override

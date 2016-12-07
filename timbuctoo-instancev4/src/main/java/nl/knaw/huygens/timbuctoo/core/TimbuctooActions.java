@@ -219,6 +219,10 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.clearMappingErrors(vreName);
   }
 
+  public void saveRmlMappingState(String vreName, String rdfData) {
+    dataStoreOperations.saveRmlMappingState(vreName, rdfData);
+  }
+
   //================== Transaction methods ==================
   @Override
   public void close() {
@@ -232,6 +236,8 @@ public class TimbuctooActions implements AutoCloseable {
   public void rollback() {
     dataStoreOperations.rollback();
   }
+
+
 
   //================== Inner classes ==================
   @FunctionalInterface

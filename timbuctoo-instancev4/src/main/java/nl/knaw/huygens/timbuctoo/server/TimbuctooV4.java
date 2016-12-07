@@ -67,6 +67,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
@@ -274,8 +275,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
       new DataSourceFactory(graphManager), transactionEnforcer);
     register(environment, executeRml);
+    SaveRml saveRml = new SaveRml(uriHelper, graphManager, permissionChecker, transactionEnforcer);
+    register(environment, saveRml);
+
     BulkUploadVre bulkUploadVre =
-      new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker);
+      new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker, saveRml);
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper, bulkUploadVre,
       loggedInUserStore, authorizer, 20 * 1024 * 1024));

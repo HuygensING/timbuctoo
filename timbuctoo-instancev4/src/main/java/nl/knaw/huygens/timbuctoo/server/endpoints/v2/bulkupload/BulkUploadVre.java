@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.util.RawValue;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -24,6 +25,7 @@ import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.FIRST_R
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RAW_PROPERTY_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
@@ -34,14 +36,16 @@ public class BulkUploadVre {
   private final RawCollection rawCollection;
   private final ExecuteRml executeRml;
   private final UserPermissionChecker permissionChecker;
+  private SaveRml saveRml;
 
   public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection,
-                       ExecuteRml executeRml, UserPermissionChecker permissionChecker) {
+                       ExecuteRml executeRml, UserPermissionChecker permissionChecker, SaveRml saveRml) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.rawCollection = rawCollection;
     this.executeRml = executeRml;
     this.permissionChecker = permissionChecker;
+    this.saveRml = saveRml;
   }
 
   public URI createUri(String vre) {
@@ -79,7 +83,11 @@ public class BulkUploadVre {
 
     ObjectNode result = jsnO("vre", jsn(vreName));
     result.put("executeMapping", executeRml.makeUri(vreName).toString());
-
+    result.put("saveMapping", saveRml.makeUri(vreName).toString());
+    if (vreVertex.property(SAVED_MAPPING_STATE).isPresent()) {
+      RawValue rawMappingState = new RawValue(vreVertex.<String>property(SAVED_MAPPING_STATE).value());
+      result.putRawValue(SAVED_MAPPING_STATE, rawMappingState);
+    }
     ArrayNode collectionArrayNode = result.putArray("collections");
     vreVertex.vertices(Direction.OUT, RAW_COLLECTION_EDGE_NAME)
              .forEachRemaining(v -> addCollection(collectionArrayNode, v, vreName));

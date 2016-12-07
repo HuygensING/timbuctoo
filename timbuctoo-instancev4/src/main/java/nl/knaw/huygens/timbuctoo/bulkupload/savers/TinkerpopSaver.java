@@ -27,6 +27,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String RAW_PROPERTY_NAME = "name";
   public static final String VALUE_PREFIX = "value:";
   public static final String ERROR_PREFIX = "error:";
+  public static final String SAVED_MAPPING_STATE = "savedMappingState";
   private final Vres vres;
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
@@ -57,6 +58,9 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
                                                              .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
       if (vre.hasNext()) {
         result = vre.next();
+        if (result.property(SAVED_MAPPING_STATE).isPresent()) {
+          result.property(SAVED_MAPPING_STATE).remove();
+        }
         graphWrapper.getGraph().traversal().V(result.id())
                     .out(RAW_COLLECTION_EDGE_NAME)
                     .union(

@@ -153,6 +153,7 @@ public class ChangeListenerTest {
       "doKeywordQuickSearch",
       "clearMappingErrors",
       "hasMappingErrors",
+      "saveRmlMappingState",
 
       "close",
       "success",
