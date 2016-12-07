@@ -12,7 +12,6 @@ public class TripleImporter {
 
   private final TransactionEnforcer transactionEnforcer;
   private final TripleProcessor processor;
-  private final TinkerPopGraphManager graphWrapper;
   private final String vreName;
   private boolean prepareWasCalled;
 
@@ -20,7 +19,6 @@ public class TripleImporter {
   public TripleImporter(TransactionEnforcer transactionEnforcer, TinkerPopGraphManager graphWrapper, String vreName) {
     this.transactionEnforcer = transactionEnforcer;
     this.processor = new TripleProcessorImpl(new Database(graphWrapper));
-    this.graphWrapper = graphWrapper;
     this.vreName = vreName;
     this.prepareWasCalled = false;
   }

@@ -38,6 +38,7 @@ public class TimbuctooActionsStubs {
 
   /**
    * Currently only used by {@link WomenWritersJsonCrudServiceTest}
+   *
    * @deprecated mock TimbuctooActions or create one with one of the other stubs.
    */
   @Deprecated

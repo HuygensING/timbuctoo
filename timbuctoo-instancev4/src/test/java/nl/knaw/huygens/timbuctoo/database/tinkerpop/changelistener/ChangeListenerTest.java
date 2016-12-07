@@ -166,7 +166,9 @@ public class ChangeListenerTest {
       "saveRelationTypes",
       "saveVre",
       "ensureVreExists",
-      "addPid"
+      "addPid",
+      "searchEntityByRdfUri",
+      "getRelationTypes"
     );
     Method[] allMethods = TinkerPopOperations.class.getDeclaredMethods();
     for (Method method : allMethods) {

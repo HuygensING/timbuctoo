@@ -6,19 +6,20 @@ import com.google.common.collect.Lists;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.core.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
+import nl.knaw.huygens.timbuctoo.core.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.core.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -41,14 +42,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapperAndMappings;
-import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
@@ -2283,4 +2285,112 @@ public class TinkerPopOperationsTest {
 
     assertThat(result, hasSize(1));
   }
+
+  @Test
+  public void searchEntityByRdfUriReturnsAnEmptyOptionalIfTheEntityCannotBeFound() {
+    Vres vres = createConfiguration();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(newGraph().wrap(), vres);
+    Collection collection = vres.getCollection("testthings").get();
+
+    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
+
+    assertThat(readEntity, is(not(present())));
+  }
+
+  @Test
+  public void searchEntityByRdfUriReturnsTheEntityWhenFound() {
+    UUID id1 = UUID.randomUUID();
+    TinkerPopGraphManager graphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("rdfUri", "http://example.com/entity")
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .wrap();
+    Vres vres = createConfiguration();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(graphManager, vres);
+    Collection collection = vres.getCollection("testthings").get();
+
+    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
+
+    assertThat(readEntity, is(present()));
+    assertThat(readEntity.get(), hasProperty("id", equalTo(id1)));
+  }
+
+  @Test
+  public void searchEntityByRdfUriReturnsTheLatestEntity() {
+    UUID id1 = UUID.randomUUID();
+    TinkerPopGraphManager graphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("rdfUri", "http://example.com/entity")
+        .withProperty("rev", 2)
+        .isLatest(true)
+        .withLabel("testthing")
+      )
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("thing")
+        .withVre("test")
+        .withProperty("rdfUri", "http://example.com/entity")
+        .isLatest(false)
+        .withProperty("rev", 1)
+        .withLabel("testthing")
+      )
+      .wrap();
+    Vres vres = createConfiguration();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(graphManager, vres);
+    Collection collection = vres.getCollection("testthings").get();
+
+    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
+
+    assertThat(readEntity, is(present()));
+    assertThat(readEntity.get(), hasProperty("rev", equalTo(2)));
+  }
+
+  @Test
+  public void getRelationTypesReturnsAllTheRelationTypesInTheDatabase() {
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    TinkerPopGraphManager graphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withType("relationtype")
+        .withProperty("rdfUri", "http://example.com/entity1")
+        .withProperty("rev", 2)
+        .isLatest(true)
+        .withLabel("relationtype")
+      )
+      .withVertex(v -> v
+        .withTimId(id2)
+        .withType("relationstype")
+        .withVre("test")
+        .withProperty("rdfUri", "http://example.com/entity1")
+        .isLatest(false)
+        .withProperty("rev", 1)
+        .withLabel("relationtype")
+      )
+      .withVertex(v -> v
+        .withTimId(UUID.randomUUID())
+        .withType("othertype")
+        .withVre("test")
+        .withProperty("rdfUri", "http://example.com/entity1")
+        .isLatest(false)
+        .withProperty("rev", 1)
+        .withLabel("othertype")
+      )
+      .wrap();
+    Vres vres = createConfiguration();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(graphManager, vres);
+
+    List<RelationType> relationTypes = instance.getRelationTypes();
+
+    assertThat(relationTypes, hasSize(2));
+  }
+
 }

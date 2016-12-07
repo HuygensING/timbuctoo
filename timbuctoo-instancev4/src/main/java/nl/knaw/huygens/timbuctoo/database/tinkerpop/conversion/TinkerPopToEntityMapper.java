@@ -55,6 +55,19 @@ public class TinkerPopToEntityMapper {
   private final CustomEntityProperties customEntityProperties;
   private final CustomRelationProperties customRelationProperties;
 
+  public TinkerPopToEntityMapper(Collection collection, GraphTraversalSource traversalSource, Vres mappings) {
+    this(
+      collection,
+      traversalSource,
+      mappings, (entity1, entityVertex) -> {
+
+      },
+      (traversal, vre, target, relationRef) -> {
+
+      }
+    );
+  }
+
   public TinkerPopToEntityMapper(Collection collection, GraphTraversalSource traversalSource, Vres mappings,
                                  CustomEntityProperties customEntityProperties,
                                  CustomRelationProperties customRelationProperties) {
