@@ -33,7 +33,8 @@ public class ListVres {
   public Response get() {
     final ArrayNode result = jsnA(vres.getVres().values().stream().map(vre -> jsnO(
       "name", jsn(vre.getVreName()),
-      "metadata", jsn(createUri(vre.getVreName()).toString())
+      "metadata", jsn(createUri(vre.getVreName()).toString()),
+      "isPublished", jsn(vre.getCollections().size() > 0)
     )));
     return Response.ok(result).build();
   }
