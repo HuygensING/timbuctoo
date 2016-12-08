@@ -7,10 +7,13 @@ import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -21,7 +24,7 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 
 public class RmlExecutorService {
-
+  public static final Logger LOG = LoggerFactory.getLogger(RmlExecutorService.class);
 
   private final TransactionEnforcer transactionEnforcer;
   private final String vreName;
@@ -105,7 +108,9 @@ public class RmlExecutorService {
   private void reportTripleCount(AtomicLong tripleCount, boolean force, Consumer<String> statusUpdate) {
     final long curCount = tripleCount.incrementAndGet();
     if (force || curCount % 100 == 0) {
-      statusUpdate.accept(String.format("Processed %d triples", curCount));
+      final String message = String.format("Processed %d triples", curCount);
+      statusUpdate.accept(message);
+      LOG.info(message);
     }
   }
 }
