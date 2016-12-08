@@ -56,6 +56,7 @@ public class BulkUpload {
   public Response uploadExcelFile(
     @FormDataParam("file") InputStream fileUpload,
     @FormDataParam("file") FormDataContentDisposition fileDetails,
+    @FormDataParam("vreName") String vreName,
     @HeaderParam("Authorization") String authorization) {
     if (fileUpload == null) {
       return Response.status(Response.Status.BAD_REQUEST).entity("The file is missing").build();
@@ -64,7 +65,8 @@ public class BulkUpload {
       if (!user.isPresent()) {
         return Response.status(Response.Status.FORBIDDEN).entity("User not known").build();
       } else {
-        String namespacedVre = user.get().getPersistentId() + "_" + stripFunnyCharacters(fileDetails.getFileName());
+        final String unNamespacedVreName = vreName == null ? fileDetails.getFileName() : vreName;
+        String namespacedVre = user.get().getPersistentId() + "_" + stripFunnyCharacters(unNamespacedVreName);
         try {
           authorizationCreator.createAuthorization(namespacedVre, user.get().getId(), UserRoles.ADMIN_ROLE);
         } catch (AuthorizationCreationException e) {
