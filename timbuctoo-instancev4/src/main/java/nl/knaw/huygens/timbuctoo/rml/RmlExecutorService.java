@@ -107,9 +107,9 @@ public class RmlExecutorService {
 
   private void reportTripleCount(AtomicLong tripleCount, boolean force, Consumer<String> statusUpdate) {
     final long curCount = tripleCount.incrementAndGet();
-    if (force || curCount % 100 == 0) {
-      final String message = String.format("Processed %d triples", curCount);
-      statusUpdate.accept(message);
+    final String message = String.format("Processed %d triples", curCount);
+    statusUpdate.accept(message);
+    if (LOG.isDebugEnabled()) {
       LOG.debug(message);
     }
   }
