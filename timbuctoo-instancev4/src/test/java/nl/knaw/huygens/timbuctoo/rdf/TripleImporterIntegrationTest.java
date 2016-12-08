@@ -17,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -216,7 +215,6 @@ public class TripleImporterIntegrationTest {
     assertThat(result.map(readEntity -> readEntity), hasSize(2));
   }
 
-  @Ignore // FIXME: should now be tested using rdf Index
   @Test
   public void importTripleShouldAddANewRelationTypeForARelationWithANewType() {
     final ExtendedIterator<Triple> abadanInIran = createTripleIterator(ABADAN_IS_PART_OF_IRAN_TRIPLE);
