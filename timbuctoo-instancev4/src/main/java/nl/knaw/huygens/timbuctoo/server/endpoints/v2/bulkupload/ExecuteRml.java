@@ -159,9 +159,9 @@ public class ExecuteRml {
             transactionEnforcer.execute(timbuctooActions -> {
               try {
                 if (timbuctooActions.hasMappingErrors(vreName)) {
-                  output.write("failure\n");
+                  output.write("failure");
                 } else {
-                  output.write("success\n");
+                  output.write("success");
                 }
               } catch (IOException e) {
                 LOG.error("Could not write to output stream", e);
