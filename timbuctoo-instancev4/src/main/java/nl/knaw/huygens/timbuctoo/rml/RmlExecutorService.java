@@ -110,7 +110,7 @@ public class RmlExecutorService {
     if (force || curCount % 100 == 0) {
       final String message = String.format("Processed %d triples", curCount);
       statusUpdate.accept(message);
-      LOG.info(message);
+      LOG.debug(message);
     }
   }
 }
