@@ -294,7 +294,6 @@ public class TripleImporterIntegrationTest {
     assertThat(getReadEntity(CONCEPTS_COLLECTION, ABADAN_URI), is(present()));
   }
 
-  @Ignore
   @Test
   public void importTripleAddsTheSubjectAndItsEntitiesToAKnownArchetype() throws Exception {
     Triple abadanIsAFeature = createSingleTriple(ABADAN_HAS_TYPE_FEATURE_TRIPLE);
