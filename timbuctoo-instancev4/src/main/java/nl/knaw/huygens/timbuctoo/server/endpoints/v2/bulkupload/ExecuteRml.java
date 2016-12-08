@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
+import nl.knaw.huygens.timbuctoo.rml.RmlExecutorService;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -20,6 +21,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.glassfish.jersey.server.ChunkedOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,6 +35,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.atomic.AtomicLong;
@@ -77,7 +80,7 @@ public class ExecuteRml {
 
   @POST
   @Consumes("application/ld+json")
-  @Produces(MediaType.APPLICATION_JSON)
+  @Produces("text/plain")
   public Response post(String rdfData, @PathParam("vre") String vreName,
                        @HeaderParam("Authorization") String authorizationHeader) {
     UserPermissionChecker.UserPermission permission = permissionChecker.check(vreName, authorizationHeader);
@@ -102,7 +105,7 @@ public class ExecuteRml {
                      .build();
     }
 
-    Model model = ModelFactory.createDefaultModel() ;
+    final Model model = ModelFactory.createDefaultModel() ;
     model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");
     final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(model, dataSourceFactory);
     if (rmlMappingDocument.getErrors().size() > 0) {
@@ -138,73 +141,42 @@ public class ExecuteRml {
                      .build();
     }
 
-    transactionEnforcer.execute(timbuctooActions -> {
-      timbuctooActions.clearMappingErrors(vreName);
-      timbuctooActions.ensureVreExists(vreName);
-      timbuctooActions.removeCollectionsAndEntities(vreName);
-      return commit();
-    });
-    try (Transaction tx = graphWrapper.getGraph().tx()) {
-      if (!tx.isOpen()) {
-        tx.open();
+    final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
+
+    new Thread() {
+      public void run() {
+        try {
+          new RmlExecutorService(transactionEnforcer, vreName, graphWrapper, model, rmlMappingDocument, vres)
+            .execute(msg -> {
+              try {
+                output.write(msg + "\n");
+              } catch (IOException e) {
+                LOG.error("Could not write to output stream", e);
+              }
+            });
+        } finally {
+          try {
+            transactionEnforcer.execute(timbuctooActions -> {
+              try {
+                if (timbuctooActions.hasMappingErrors(vreName)) {
+                  output.write("failure");
+                } else {
+                  output.write("success");
+                }
+              } catch (IOException e) {
+                LOG.error("Could not write to output stream", e);
+              }
+              return commit();
+            });
+            output.close();
+          } catch (IOException e) {
+            LOG.error("Couldn't close the output stream", e);
+          }
+        }
       }
+    }.start();
 
-      final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper));
+    return Response.ok().entity(output).build();
 
-      //first save the archetype mappings
-      AtomicLong tripleCount = new AtomicLong(0);
-
-      model
-        .listStatements(
-          null,
-          model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
-          (String) null
-        )
-        .forEachRemaining(statement -> {
-            processor.process(vreName, true, new Triple(
-              statement.getSubject().asNode(),
-              statement.getPredicate().asNode(),
-              statement.getObject().asNode()
-            ));
-            debugLogTripleCount(tripleCount, false);
-          }
-        );
-
-      rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
-        (triple) -> {
-          debugLogTripleCount(tripleCount, false);
-          processor.process(vreName, true, triple);
-        });
-
-      debugLogTripleCount(tripleCount, true);
-      //Give the collections a proper name
-      graphWrapper
-        .getGraph()
-        .traversal()
-        .V()
-        .hasLabel(Vre.DATABASE_LABEL)
-        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-        .out(HAS_COLLECTION_RELATION_NAME)
-        .forEachRemaining(v -> {
-          if (!v.property(COLLECTION_LABEL_PROPERTY_NAME).isPresent()) {
-            String typeName = v.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
-            v.property(COLLECTION_LABEL_PROPERTY_NAME, typeName.substring(vreName.length()));
-          }
-        });
-
-      tx.commit();
-    }
-
-    vres.reload();
-
-    return transactionEnforcer.executeAndReturn(db -> TransactionStateAndResult
-      .commitAndReturn(Response.ok().entity(jsnO("success", jsn(!db.hasMappingErrors(vreName)))).build()));
-  }
-
-  private void debugLogTripleCount(AtomicLong tripleCount, boolean force) {
-    final long curCount = tripleCount.incrementAndGet();
-    if (force || curCount % 1000 == 0) {
-      LOG.info("Processed {} triples", curCount);
-    }
   }
 }
