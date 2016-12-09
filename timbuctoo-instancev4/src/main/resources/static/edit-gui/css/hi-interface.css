@@ -322,7 +322,7 @@ svg.facet-check-box.checked {
 	}
 
 .result-list li{
-	padding:.5em 0 .5em 0;
+	padding: 0;
 	counter-increment: step-counter;
 	border-top:1px solid #eeeeee;
 	cursor:pointer;
