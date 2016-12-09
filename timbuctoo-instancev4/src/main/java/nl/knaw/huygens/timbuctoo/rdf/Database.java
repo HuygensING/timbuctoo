@@ -12,6 +12,7 @@ import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.index.Index;
@@ -56,7 +57,12 @@ public class Database {
     this.graphWrapper = graphWrapper;
     this.systemPropertyModifier = systemPropertyModifier;
     graphDatabase = graphWrapper.getGraphDatabase();
+    final Transaction transaction = graphWrapper.getGraph().tx();
+    if (!transaction.isOpen()) {
+      transaction.open();
+    }
     rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
+    transaction.close();
   }
 
   private String getNodeUri(Node node, String vreName) {
