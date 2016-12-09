@@ -87,10 +87,8 @@ public class TripleImporterIntegrationTest {
     "<" + TYPE_URI + "> " +
       "<http://www.w3.org/2000/01/rdf-schema#subClassOf> " +
       "<http://www.example.com/location> .";
-  private TinkerPopGraphManager graphWrapper;
   private TimbuctooActions timbuctooActions;
   private TripleImporter instance;
-  private RelationType relationTypes;
 
   @Before
   public void setUp() throws Exception {
@@ -105,7 +103,7 @@ public class TripleImporterIntegrationTest {
           .withEntityTypeName("location")
         )
       ).build();
-    graphWrapper = newGraph().wrap();
+    TinkerPopGraphManager graphWrapper = newGraph().wrap();
     TinkerPopOperations tinkerPopOperations = TinkerPopOperationsStubs.forGraphWrapper(graphWrapper);
     tinkerPopOperations.saveVre(vres.getVre("Admin"));
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
