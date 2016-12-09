@@ -251,6 +251,9 @@ public class Database {
     systemPropertyModifier.setIsLatest(relationTypeVertex, true);
     systemPropertyModifier.setRev(relationTypeVertex, 1);
 
+    org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) relationTypeVertex.id());
+    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, predicate.getURI());
+
     return new RelationType(relationTypeVertex);
   }
 

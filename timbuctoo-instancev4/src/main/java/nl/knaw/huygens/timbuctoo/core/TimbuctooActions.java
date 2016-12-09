@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.core;
 
-import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -10,13 +8,17 @@ import nl.knaw.huygens.timbuctoo.core.dto.ImmutableCreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
+import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -203,10 +205,37 @@ public class TimbuctooActions implements AutoCloseable {
     return collection.orElseThrow(() -> new InvalidCollectionException(collectionName));
   }
 
+  //================== Transaction methods ==================
+  @Override
+  public void close() {
+    dataStoreOperations.close();
+  }
+
+  public void success() {
+    dataStoreOperations.success();
+  }
+
+  public void rollback() {
+    dataStoreOperations.rollback();
+  }
+
+  //================== RDF ==================
+  public Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
+    return dataStoreOperations.searchEntityByRdfUri(collection, uri, withRelations);
+  }
+
+  public Vre getVre(String vreName) {
+    return loadVres().getVre(vreName);
+  }
+
+  public List<RelationType> getRelationTypes() {
+    return dataStoreOperations.getRelationTypes();
+  }
+
   public boolean hasMappingErrors(String vreName) {
     return dataStoreOperations.hasMappingErrors(vreName);
   }
-  
+
   public void ensureVreExists(String vreName) {
     dataStoreOperations.ensureVreExists(vreName);
   }
@@ -222,22 +251,6 @@ public class TimbuctooActions implements AutoCloseable {
   public void saveRmlMappingState(String vreName, String rdfData) {
     dataStoreOperations.saveRmlMappingState(vreName, rdfData);
   }
-
-  //================== Transaction methods ==================
-  @Override
-  public void close() {
-    dataStoreOperations.close();
-  }
-
-  public void success() {
-    dataStoreOperations.success();
-  }
-
-  public void rollback() {
-    dataStoreOperations.rollback();
-  }
-
-
 
   //================== Inner classes ==================
   @FunctionalInterface

@@ -7,9 +7,7 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopPropertyConverter;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
+import nl.knaw.huygens.timbuctoo.core.RelationNotPossibleException;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -25,7 +23,9 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.ImmutableVresDto;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.core.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopPropertyConverter;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
@@ -389,6 +389,28 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     return new TinkerPopToEntityMapper(collection, traversal, mappings, customEntityProperties,
       customRelationProperties).mapEntity(entityT, true);
+  }
+
+  @Override
+  public Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
+    GraphTraversal<Vertex, Vertex> entityT = latestState.V().has("rdfUri", uri).has("isLatest", true);
+
+    if (!entityT.asAdmin().clone().hasNext()) {
+      return Optional.empty();
+    }
+
+    String entityTypesStr = getProp(entityT.asAdmin().clone().next(), "types", String.class).orElse("[]");
+    if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
+      return Optional.empty();
+    }
+
+    return Optional.of(new TinkerPopToEntityMapper(collection, traversal, mappings).mapEntity(entityT, withRelations));
+  }
+
+  @Override
+  public List<RelationType> getRelationTypes() {
+    return traversal.V().has(T.label, LabelP.of("relationtype")).toList().stream()
+                    .map(RelationType::relationType).collect(Collectors.toList());
   }
 
   @Override

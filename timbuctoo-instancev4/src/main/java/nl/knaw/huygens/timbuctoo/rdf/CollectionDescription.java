@@ -65,7 +65,11 @@ class CollectionDescription {
   }
 
   private static String createEntityTypeName(String entityTypeName, String vreName) {
-    return entityTypeName.startsWith(vreName) ? entityTypeName : vreName + entityTypeName;
+    return shouldPrefixEntityTypeName(entityTypeName, vreName) ? vreName + entityTypeName : entityTypeName;
+  }
+
+  private static boolean shouldPrefixEntityTypeName(String entityTypeName, String vreName) {
+    return !("Admin".equals(vreName) || entityTypeName.startsWith(vreName));
   }
 
   private static String createRdfUri(String entityTypeName) {

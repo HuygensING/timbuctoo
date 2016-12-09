@@ -1,11 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.rdf.Database;
-import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.rml.RmlExecutorService;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
@@ -13,13 +10,11 @@ import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.glassfish.jersey.server.ChunkedOutput;
 import org.slf4j.Logger;
@@ -31,20 +26,15 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.atomic.AtomicLong;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -105,7 +95,7 @@ public class ExecuteRml {
                      .build();
     }
 
-    final Model model = ModelFactory.createDefaultModel() ;
+    final Model model = ModelFactory.createDefaultModel();
     model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");
     final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(model, dataSourceFactory);
     if (rmlMappingDocument.getErrors().size() > 0) {

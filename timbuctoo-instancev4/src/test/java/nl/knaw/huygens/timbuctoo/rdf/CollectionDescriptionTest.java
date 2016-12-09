@@ -61,4 +61,18 @@ public class CollectionDescriptionTest {
       is(VRE_NAME + ENTITY_TYPE_NAME));
   }
 
+  @Test
+  public void createCollectionDescriptionPrefixesTheEntityTypeNameWithTheVre() {
+    CollectionDescription collectionDescription = CollectionDescription.createCollectionDescription("person", "vre");
+
+    assertThat(collectionDescription.getEntityTypeName(), is("vreperson"));
+  }
+
+  @Test
+  public void createCollectionDescriptionDoesNotPrefixTheEntityTypeNameWithTheVreWhenTheVreIsAdmin() {
+    CollectionDescription collectionDescription = CollectionDescription.createCollectionDescription("person", "Admin");
+
+    assertThat(collectionDescription.getEntityTypeName(), is("person"));
+  }
+
 }
