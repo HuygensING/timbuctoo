@@ -70,7 +70,9 @@ import java.util.stream.Collectors;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.EdgeManipulator.duplicateEdge;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
@@ -617,6 +619,10 @@ public class TinkerPopOperations implements DataStoreOperations {
     entity.property("rev", newRev);
 
     entity.edges(Direction.BOTH).forEachRemaining(edge -> {
+      // Skip the hasEntity and the VERSION_OF edge, which are not real relations, but system edges
+      if (edge.label().equals(HAS_ENTITY_RELATION_NAME) || edge.label().equals(VERSION_OF)) {
+        return;
+      }
       Optional<Collection> ownEdgeCol = getOwnCollectionOfElement(collection.getVre(), edge);
       if (ownEdgeCol.isPresent()) {
         edge.property(ownEdgeCol.get().getEntityTypeName() + "_accepted", false);
