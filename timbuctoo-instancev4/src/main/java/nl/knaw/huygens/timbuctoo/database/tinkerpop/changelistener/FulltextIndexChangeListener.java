@@ -36,6 +36,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   @Override
   public void onRemoveFromCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
+    oldVertex.ifPresent(vertex -> handleRemove(collection, vertex));
     handleRemove(collection, newVertex);
   }
 
