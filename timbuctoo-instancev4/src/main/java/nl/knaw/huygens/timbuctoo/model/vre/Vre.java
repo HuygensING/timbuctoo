@@ -30,8 +30,9 @@ public class Vre {
   public static final String KEYWORD_TYPES_PROPERTY_NAME = "keywordTypes";
   public static final String DATABASE_LABEL = "VRE";
   public static final String PUBLISH_STATE_PROPERTY_NAME = "publishState";
+  private final PublishState publishState;
 
-  public enum PublishStates {
+  public enum PublishState {
     UPLOADING,
     MAPPING_CREATION,
     MAPPING_EXECUTION,
@@ -43,13 +44,18 @@ public class Vre {
   private Map<String, String> keywordTypes = Maps.newHashMap();
   private final LinkedHashMap<String, Collection> collections = Maps.newLinkedHashMap();
 
-  public Vre(String vreName, Map<String, String> keywordTypes) {
+  public Vre(String vreName, Map<String, String> keywordTypes, PublishState publishState) {
     this.vreName = vreName;
     this.keywordTypes = keywordTypes;
+    this.publishState = publishState;
+  }
+
+  public Vre(String vreName, Map<String, String> keywordTypes) {
+    this(vreName, keywordTypes, PublishState.AVAILABLE);
   }
 
   public Vre(String vreName) {
-    this.vreName = vreName;
+    this(vreName, Maps.newHashMap());
   }
 
   public Collection getCollectionForTypeName(String entityTypeName) {
@@ -109,8 +115,16 @@ public class Vre {
     return collections;
   }
 
+  public PublishState getPublishState() {
+    return publishState;
+  }
+
   public static Vre load(Vertex vreVertex) {
-    final Vre vre = new Vre(vreVertex.value(VRE_NAME_PROPERTY_NAME), loadKeywordTypes(vreVertex));
+    final Vre vre = new Vre(
+      vreVertex.value(VRE_NAME_PROPERTY_NAME),
+      loadKeywordTypes(vreVertex),
+      loadPublishState(vreVertex)
+    );
 
     vreVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME).forEachRemaining(collectionV -> {
       Collection collection = Collection.load(collectionV, vre);
@@ -118,6 +132,15 @@ public class Vre {
     });
 
     return vre;
+  }
+
+  private static PublishState loadPublishState(Vertex vreVertex) {
+    if (vreVertex.property(PUBLISH_STATE_PROPERTY_NAME).isPresent()) {
+      return PublishState.valueOf(vreVertex.<String>property(PUBLISH_STATE_PROPERTY_NAME).value());
+    } else {
+      // Default to available when publishState property is not set (it is an old VRE)
+      return PublishState.AVAILABLE;
+    }
   }
 
   private static Map<String, String> loadKeywordTypes(Vertex vreVertex) {

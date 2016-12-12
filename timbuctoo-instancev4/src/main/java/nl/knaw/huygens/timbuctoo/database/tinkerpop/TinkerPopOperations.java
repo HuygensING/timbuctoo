@@ -228,7 +228,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public void setVrePublishState(String vreName, Vre.PublishStates publishState) {
+  public void setVrePublishState(String vreName, Vre.PublishState publishState) {
     final GraphTraversal<Vertex, Vertex> vreT = traversal
       .V()
       .hasLabel(Vre.DATABASE_LABEL)

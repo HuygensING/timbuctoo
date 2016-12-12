@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -27,14 +30,15 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class MyVres {
   private final LoggedInUserStore loggedInUserStore;
   private final Authorizer authorizer;
-  private final Vres vres;
   private final BulkUploadVre bulkUploadVre;
+  private TransactionEnforcer transactionEnforcer;
 
-  public MyVres(LoggedInUserStore loggedInUserStore, Authorizer authorizer, Vres vres, BulkUploadVre bulkUploadVre) {
+  public MyVres(LoggedInUserStore loggedInUserStore, Authorizer authorizer, BulkUploadVre bulkUploadVre,
+                TransactionEnforcer transactionEnforcer) {
     this.loggedInUserStore = loggedInUserStore;
     this.authorizer = authorizer;
-    this.vres = vres;
     this.bulkUploadVre = bulkUploadVre;
+    this.transactionEnforcer = transactionEnforcer;
   }
 
   @GET
@@ -46,48 +50,58 @@ public class MyVres {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
 
-    final Map<String, Map<String, ObjectNode>> result = vres.getVres().values().stream()
-      .map(vre -> {
-        boolean isAllowedToWrite;
-        try {
-          isAllowedToWrite = authorizer
-            .authorizationFor(vre.getVreName(), user.get().getId())
-            .isAllowedToWrite();
-        } catch (AuthorizationUnavailableException e) {
-          isAllowedToWrite = false;
-        }
-        boolean isPublished = vre.getCollections().size() > 0;
-        return new VreJson(vre.getVreName(), isAllowedToWrite, isPublished);
-      })
-      .filter(x -> x.isMine() || x.isPublished())
-      .collect(groupingBy(
-        x -> x.isMine() ? "mine" : "public",
-        mapping(x -> {
-          if (x.isMine()) {
-            return jsnO(
-              "name", jsn(x.getVreName()),
-              "published", jsn(x.isPublished),
-              "rmlUri", jsn(bulkUploadVre.createUri(x.getVreName()).toASCIIString())
-            );
-          } else {
-            return jsnO(
-              "name", jsn(x.getVreName())
-            );
+    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+      final Map<String, Map<String, ObjectNode>> result = timbuctooActions
+        .loadVres().getVres().values().stream()
+        .map(vre -> {
+          boolean isAllowedToWrite;
+          try {
+            isAllowedToWrite = authorizer
+              .authorizationFor(vre.getVreName(),
+                user.get().getId())
+              .isAllowedToWrite();
+          } catch (AuthorizationUnavailableException e) {
+            isAllowedToWrite = false;
           }
-        }, toMap(x -> x.get("name").asText(), x -> x))));
+          boolean isPublished = vre.getPublishState().equals(Vre.PublishState.AVAILABLE);
+          return new VreJson(vre.getVreName(), isAllowedToWrite,
+            isPublished, vre.getPublishState());
+        })
+        .filter(x -> x.isMine() || x.isPublished())
+        .collect(groupingBy(
+          x -> x.isMine() ? "mine" : "public",
+          mapping(x -> {
+            if (x.isMine()) {
+              return jsnO(
+                "name", jsn(x.getVreName()),
+                "published", jsn(x.isPublished),
+                "publishState", jsn(x.getPublishState().toString()),
+                "rmlUri", jsn(
+                  bulkUploadVre.createUri(x.getVreName())
+                               .toASCIIString())
+              );
+            } else {
+              return jsnO(
+                "name", jsn(x.getVreName())
+              );
+            }
+          }, toMap(x -> x.get("name").asText(), x -> x))));
 
-    return Response.ok(result).build();
+      return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());
+    });
   }
 
   private class VreJson {
     private final boolean isMine;
     private final boolean isPublished;
+    private Vre.PublishState publishState;
     private final String vreName;
 
-    public VreJson(String vreName, boolean isMine, boolean isPublished) {
+    public VreJson(String vreName, boolean isMine, boolean isPublished, Vre.PublishState publishState) {
       this.vreName = vreName;
       this.isMine = isMine;
       this.isPublished = isPublished;
+      this.publishState = publishState;
     }
 
     public String getVreName() {
@@ -100,6 +114,10 @@ public class MyVres {
 
     public boolean isPublished() {
       return isPublished;
+    }
+
+    private Vre.PublishState getPublishState() {
+      return publishState;
     }
   }
 }

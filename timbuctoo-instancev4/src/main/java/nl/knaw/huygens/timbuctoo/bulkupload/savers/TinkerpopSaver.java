@@ -70,7 +70,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
       } else {
         result = graphWrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
       }
-      result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishStates.UPLOADING.toString());
+      result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishState.UPLOADING.toString());
       tx.commit();
     }
 
@@ -144,7 +144,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
 
       final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
       if (vreT.hasNext()) {
-        vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishStates.MAPPING_CREATION.toString());
+        vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishState.MAPPING_CREATION.toString());
       }
       tx.commit();
     }

@@ -252,7 +252,7 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.saveRmlMappingState(vreName, rdfData);
   }
 
-  public void setVrePublishState(String vreName, Vre.PublishStates publishState) {
+  public void setVrePublishState(String vreName, Vre.PublishState publishState) {
     dataStoreOperations.setVrePublishState(vreName, publishState);
   }
 

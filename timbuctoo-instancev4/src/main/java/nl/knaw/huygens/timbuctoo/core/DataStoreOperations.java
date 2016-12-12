@@ -81,7 +81,7 @@ public interface DataStoreOperations extends AutoCloseable {
 
   Vre ensureVreExists(String vreName);
 
-  void setVrePublishState(String vreName, Vre.PublishStates publishState);
+  void setVrePublishState(String vreName, Vre.PublishState publishState);
 
   void removeCollectionsAndEntities(String vreName);
 
