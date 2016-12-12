@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.core.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -70,7 +71,14 @@ import java.util.stream.Collectors;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_ENTITIES_LABEL;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_IS_UNKNOWN_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.DATABASE_LABEL;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.duplicateVertex;
@@ -86,6 +94,7 @@ import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
 
 public class TinkerPopOperations implements DataStoreOperations {
+  private static final String RDF_URI_PROP = "rdfUri";
   private static final Logger LOG = LoggerFactory.getLogger(TinkerPopOperations.class);
   private final Transaction transaction;
   private final ChangeListener listener;
@@ -235,8 +244,8 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public void saveRmlMappingState(String vreName, String rdfData) {
     final GraphTraversal<Vertex, Vertex> vreT = traversal.V()
-                                                        .hasLabel(Vre.DATABASE_LABEL)
-                                                        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+                                                         .hasLabel(Vre.DATABASE_LABEL)
+                                                         .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
     if (vreT.hasNext()) {
       vreT.next().property(SAVED_MAPPING_STATE, rdfData);
     }
@@ -414,6 +423,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     return traversal.V().has(T.label, LabelP.of("relationtype")).toList().stream()
                     .map(RelationType::relationType).collect(Collectors.toList());
   }
+
 
   @Override
   public DataStream<ReadEntity> getCollection(Collection collection, int start, int rows,
@@ -883,6 +893,39 @@ public class TinkerPopOperations implements DataStoreOperations {
         vertex.property("pid", pidUri.toString());
       }
     );
+  }
+
+  @Override
+  public void addCollectionToVre(Vre vre, CreateCollection createCollection) {
+    // FIXME think of a default way to add collections to VRE's.
+    boolean vreHasCollection = graph.traversal().V()
+                                    .hasLabel(Vre.DATABASE_LABEL)
+                                    .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
+                                    .outE(Vre.HAS_COLLECTION_RELATION_NAME).otherV()
+                                    .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre))
+                                    .hasNext();
+
+    if (vreHasCollection) {
+      return;
+    }
+
+    Vertex collectionVertex = graph.addVertex(DATABASE_LABEL);
+    collectionVertex.property(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre));
+    collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, createCollection.getEntityTypeName(vre));
+    collectionVertex.property(RDF_URI_PROP, createCollection.getRdfUri(vre));
+    collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
+    collectionVertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME, createCollection.isUknownCollection());
+
+    // add entities vertex
+    Vertex containerVertex = graph.addVertex(COLLECTION_ENTITIES_LABEL);
+    collectionVertex.addEdge(HAS_ENTITY_NODE_RELATION_NAME, containerVertex);
+
+    // add collection to VRE
+    Vertex vreVertex = graph.traversal().V()
+                            .hasLabel(Vre.DATABASE_LABEL)
+                            .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
+                            .next();
+    vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
   }
 
 }

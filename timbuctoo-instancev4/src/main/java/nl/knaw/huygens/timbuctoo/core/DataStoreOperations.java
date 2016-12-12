@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.core;
 
+import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -67,7 +68,7 @@ public interface DataStoreOperations extends AutoCloseable {
   void replaceRelation(Collection collection, UpdateRelation updateRelation) throws NotFoundException;
 
   int deleteEntity(Collection collection, UUID id, Change modified)
-      throws NotFoundException;
+    throws NotFoundException;
 
   Vres loadVres();
 
@@ -91,4 +92,9 @@ public interface DataStoreOperations extends AutoCloseable {
   Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations);
 
   List<RelationType> getRelationTypes();
+
+  /**
+   * Only adds the collection to the VRE when the VRE does not contain a collection with the same entity type name.
+   */
+  void addCollectionToVre(Vre vre, CreateCollection createCollection);
 }
