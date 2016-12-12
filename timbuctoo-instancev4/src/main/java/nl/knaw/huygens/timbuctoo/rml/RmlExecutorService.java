@@ -44,66 +44,67 @@ public class RmlExecutorService {
   }
 
   public void execute(Consumer<String> statusUpdate) {
-    final TripleImporter importer = new TripleImporter(transactionEnforcer, graphWrapper, vreName);
-
     transactionEnforcer.execute(timbuctooActions -> {
+      final TripleImporter importer = new TripleImporter(graphWrapper, vreName, timbuctooActions);
+
       importer.prepare();
       timbuctooActions.clearMappingErrors(vreName);
       timbuctooActions.removeCollectionsAndEntities(vreName);
-      return commit();
-    });
-    try (Transaction tx = graphWrapper.getGraph().tx()) {
-      if (!tx.isOpen()) {
-        tx.open();
+
+      try (Transaction tx = graphWrapper.getGraph().tx()) {
+        if (!tx.isOpen()) {
+          tx.open();
+        }
+
+        final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper));
+
+        //first save the archetype mappings
+        AtomicLong tripleCount = new AtomicLong(0);
+
+        model
+          .listStatements(
+            null,
+            model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
+            (String) null
+          )
+          .forEachRemaining(statement -> {
+              importer.importTriple(true, new Triple(
+                statement.getSubject().asNode(),
+                statement.getPredicate().asNode(),
+                statement.getObject().asNode()
+              ));
+              reportTripleCount(tripleCount, false, statusUpdate);
+            }
+          );
+
+        rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
+          (triple) -> {
+            reportTripleCount(tripleCount, false, statusUpdate);
+            importer.importTriple(true, triple);
+          });
+
+        reportTripleCount(tripleCount, true, statusUpdate);
+        //Give the collections a proper name
+        graphWrapper
+          .getGraph()
+          .traversal()
+          .V()
+          .hasLabel(Vre.DATABASE_LABEL)
+          .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+          .out(HAS_COLLECTION_RELATION_NAME)
+          .forEachRemaining(v -> {
+            if (!v.property(COLLECTION_LABEL_PROPERTY_NAME).isPresent()) {
+              String typeName = v.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
+              v.property(COLLECTION_LABEL_PROPERTY_NAME, typeName.substring(vreName.length()));
+            }
+          });
+
+        tx.commit();
       }
 
-      final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper));
-
-      //first save the archetype mappings
-      AtomicLong tripleCount = new AtomicLong(0);
-
-      model
-        .listStatements(
-          null,
-          model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
-          (String) null
-        )
-        .forEachRemaining(statement -> {
-            importer.importTriple(true, new Triple(
-              statement.getSubject().asNode(),
-              statement.getPredicate().asNode(),
-              statement.getObject().asNode()
-            ));
-            reportTripleCount(tripleCount, false, statusUpdate);
-          }
-        );
-
-      rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
-        (triple) -> {
-          reportTripleCount(tripleCount, false, statusUpdate);
-          importer.importTriple(true, triple);
-        });
-
-      reportTripleCount(tripleCount, true, statusUpdate);
-      //Give the collections a proper name
-      graphWrapper
-        .getGraph()
-        .traversal()
-        .V()
-        .hasLabel(Vre.DATABASE_LABEL)
-        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-        .out(HAS_COLLECTION_RELATION_NAME)
-        .forEachRemaining(v -> {
-          if (!v.property(COLLECTION_LABEL_PROPERTY_NAME).isPresent()) {
-            String typeName = v.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
-            v.property(COLLECTION_LABEL_PROPERTY_NAME, typeName.substring(vreName.length()));
-          }
-        });
-
-      tx.commit();
-    }
-
-    vres.reload();
+      vres.reload();
+      return commit();
+    });
   }
 
   private void reportTripleCount(AtomicLong tripleCount, boolean force, Consumer<String> statusUpdate) {

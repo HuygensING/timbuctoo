@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -26,9 +26,8 @@ public class RdfImporter {
   private final TripleImporter importer;
   private Vres vres;
 
-  public RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres,
-                     TransactionEnforcer transactionEnforcer) {
-    this(graphWrapper, vreName, vres, new TripleImporter(transactionEnforcer,graphWrapper, vreName));
+  public RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, TimbuctooActions timbuctooActions) {
+    this(graphWrapper, vreName, vres, new TripleImporter(graphWrapper, vreName, timbuctooActions));
   }
 
   RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, TripleImporter tripleImporter) {
