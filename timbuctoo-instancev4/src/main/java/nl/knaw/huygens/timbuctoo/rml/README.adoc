@@ -274,3 +274,42 @@ Join handling is done by the wrong datasource::
 The index for joining is stored by the datasource that will use the join values.
 This is perhaps a bit confusing.
 I can imagine that intuitively the datasource that provides the data also stores the index (technicaly there's no clear preference).
+
+=== Upload and mapping states
+
+[ditaa]
+--
+   **non-exsistent** ----------------------+
+                                           |
+        ^                                  |
+        |                                  |
+        |                                  v
+        |                           +-----------+
+        |                           |           |
+        |                           | uploading |
+        |                           |           |
+  +------------+                    +-----------+
+  |            |                           |
+  |  available |                           |
+  |            |                           |
+  +------------+                           v
+        ^                            +------------------+
+        |                            |                  |
+        |             +--------------+ mapping creation |
+        |             |              |                  |
+        |             |              +------------------+
+        |             |
+        |             |
+        |             v
+        |  +-------------------+
+        |  |                   |
+        +--+ mapping execution +--------------+
+           |                   |              |
+           +-------------------+              v
+                      ^             +-------------------+
+                      |             |                   |
+                      +-------------+ mapping creation  |
+                                    | after errors      |
+                                    |                   |
+                                    +-------------------+
+--
