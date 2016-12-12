@@ -88,6 +88,7 @@ public class TripleImporterIntegrationTest {
       "<http://www.example.com/location> .";
   private TimbuctooActions timbuctooActions;
   private TripleImporter instance;
+  private TinkerPopGraphManager graphWrapper;
 
   @Before
   public void setUp() throws Exception {
@@ -102,7 +103,7 @@ public class TripleImporterIntegrationTest {
           .withEntityTypeName("location")
         )
       ).build();
-    TinkerPopGraphManager graphWrapper = newGraph().wrap();
+    graphWrapper = newGraph().wrap();
     TinkerPopOperations tinkerPopOperations = TinkerPopOperationsStubs.forGraphWrapper(graphWrapper);
     tinkerPopOperations.saveVre(vres.getVre("Admin"));
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
@@ -111,16 +112,18 @@ public class TripleImporterIntegrationTest {
       graphWrapper,
       VRE_NAME,
       timbuctooActions);
-
+    System.out.println("SETUP");
     instance.prepare();
   }
 
   @Test
-  public void prepareAddsANewVreWithARelationsCollectionToTheDatabase() {
+  public void prepareAddsANewVreWithDefaultCollectionsToTheDatabase() {
     Vre vre = timbuctooActions.getVre(VRE_NAME);
     assertThat(vre, is(notNullValue()));
     Optional<Collection> relationsOpt = vre.getCollectionForCollectionName(RELATION_COLLECTION_NAME);
     assertThat(relationsOpt, is(present()));
+    Optional<Collection> unknownsCollection = vre.getCollectionForCollectionName(DEFAULT_COLLECTION_NAME);
+    assertThat(unknownsCollection, is(present()));
   }
 
   @Test
@@ -138,11 +141,14 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldAddATripleDescribingAPropertyToTheExistingEntity() throws Exception {
+    System.out.println("BEGIN importTripleShouldAddATripleDescribingAPropertyToTheExistingEntity");
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
     instance.importTriple(true, tripleExtendedIterator.next());
     instance.importTriple(true, tripleExtendedIterator.next());
+
+    System.out.println("END importTripleShouldAddATripleDescribingAPropertyToTheExistingEntity");
 
     Optional<ReadEntity> entityOpt = getReadEntity(DEFAULT_COLLECTION_NAME, ABADAN_URI);
     assertThat(entityOpt.get().getProperties(), containsInAnyOrder(

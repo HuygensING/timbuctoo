@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -62,6 +61,11 @@ public class TinkerPopOperationsStubs {
 
   public static TinkerPopOperations forGraphWrapperAndMappings(TinkerPopGraphManager graphManager, Vres mappings) {
     return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), mappings,
+      mock(IndexHandler.class));
+  }
+
+  public static TinkerPopOperations newInstance() {
+    return new TinkerPopOperations(newGraph().wrap(), mock(ChangeListener.class), new GremlinEntityFetcher(), null,
       mock(IndexHandler.class));
   }
 }

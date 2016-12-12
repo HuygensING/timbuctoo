@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.core;
 
+import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -240,6 +241,10 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.ensureVreExists(vreName);
   }
 
+  public void addCollectionToVre(String vreName, CreateCollection createCollection) {
+    dataStoreOperations.addCollectionToVre(getVre(vreName), createCollection);
+  }
+
   public void removeCollectionsAndEntities(String vreName) {
     dataStoreOperations.removeCollectionsAndEntities(vreName);
   }
@@ -252,11 +257,11 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.saveRmlMappingState(vreName, rdfData);
   }
 
+
   //================== Inner classes ==================
   @FunctionalInterface
   public interface TimbuctooActionsFactory {
-    TimbuctooActions create(AfterSuccessTaskExecutor afterSuccessTaskExecutor
-    );
+    TimbuctooActions create(AfterSuccessTaskExecutor afterSuccessTaskExecutor);
   }
 
   static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {

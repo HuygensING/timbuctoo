@@ -7,6 +7,7 @@ import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.core.AlreadyUpdatedException;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -2391,6 +2392,35 @@ public class TinkerPopOperationsTest {
     List<RelationType> relationTypes = instance.getRelationTypes();
 
     assertThat(relationTypes, hasSize(2));
+  }
+
+  @Test
+  public void addCollectionToVreAddsACollectionToTheVre() {
+    TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
+    Vre vre = instance.ensureVreExists("vre");
+
+    CreateCollection collection = CreateCollection.forEntityTypeName("entityTypeName");
+    instance.addCollectionToVre(vre, collection);
+
+    Vres vres = instance.loadVres();
+    Vre vre1 = vres.getVre("vre");
+    assertThat(vre1.getCollectionForCollectionName(collection.getCollectionName(vre1)), is(present()));
+  }
+
+  @Test
+  public void addCollectionToVreDoesNotAddTheCollectionWhenTheVreAlreadyHasACollectionWithTheSameName() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = instance.ensureVreExists("vre");
+
+    CreateCollection collection = CreateCollection.forEntityTypeName("entityTypeName");
+    instance.addCollectionToVre(vre, collection);
+    instance.addCollectionToVre(vre, collection);
+
+    assertThat(graphManager.getGraph().traversal().V().hasLabel(Collection.DATABASE_LABEL)
+                           .has(Collection.ENTITY_TYPE_NAME_PROPERTY_NAME, collection.getEntityTypeName(vre)).count()
+                           .next(),
+      is(1L));
   }
 
 }

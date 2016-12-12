@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessor;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -23,6 +24,9 @@ public class TripleImporter {
 
   public void prepare() {
     timbuctooActions.ensureVreExists(vreName);
+    // add the unknown collection to the vre
+    // this collection is used the default collection by the rdf importer.
+    timbuctooActions.addCollectionToVre(vreName, CreateCollection.forEntityTypeName("unknown"));
     prepareWasCalled = true;
   }
 
@@ -32,4 +36,5 @@ public class TripleImporter {
     }
     processor.process(vreName, isAssertion, triple);
   }
+
 }
