@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.RawValue;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -87,6 +88,9 @@ public class BulkUploadVre {
     if (vreVertex.property(SAVED_MAPPING_STATE).isPresent()) {
       RawValue rawMappingState = new RawValue(vreVertex.<String>property(SAVED_MAPPING_STATE).value());
       result.putRawValue(SAVED_MAPPING_STATE, rawMappingState);
+    }
+    if (vreVertex.property(Vre.PUBLISH_STATE_PROPERTY_NAME).isPresent()) {
+      result.put(Vre.PUBLISH_STATE_PROPERTY_NAME, vreVertex.<String>property(Vre.PUBLISH_STATE_PROPERTY_NAME).value());
     }
     ArrayNode collectionArrayNode = result.putArray("collections");
     vreVertex.vertices(Direction.OUT, RAW_COLLECTION_EDGE_NAME)
