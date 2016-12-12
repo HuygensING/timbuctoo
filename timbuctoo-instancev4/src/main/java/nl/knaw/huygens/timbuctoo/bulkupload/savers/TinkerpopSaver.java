@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -53,9 +52,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   private Vertex initVre(String vreName) {
     final Vertex result;
     try (Transaction tx = graphWrapper.getGraph().tx()) {
-      final GraphTraversal<Vertex, Vertex> vre = graphWrapper.getGraph().traversal().V()
-                                                             .hasLabel(Vre.DATABASE_LABEL)
-                                                             .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+      final GraphTraversal<Vertex, Vertex> vre = getVreTraversal(vreName);
       if (vre.hasNext()) {
         result = vre.next();
         if (result.property(SAVED_MAPPING_STATE).isPresent()) {
@@ -73,11 +70,18 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
       } else {
         result = graphWrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
       }
+      result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishStates.UPLOADING.toString());
       tx.commit();
     }
 
     vres.reload();
     return result;
+  }
+
+  private GraphTraversal<Vertex, Vertex> getVreTraversal(String vreName) {
+    return graphWrapper.getGraph().traversal().V()
+                                                           .hasLabel(Vre.DATABASE_LABEL)
+                                                           .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
   }
 
   private void allowCommit() {
@@ -133,7 +137,16 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
 
       previousPropertyDesc = propertyDesc;
     }
-
   }
 
+  public void setUploadFinished(String vreName) {
+    try (Transaction tx = graphWrapper.getGraph().tx()) {
+
+      final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+      if (vreT.hasNext()) {
+        vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishStates.MAPPING_CREATION.toString());
+      }
+      tx.commit();
+    }
+  }
 }

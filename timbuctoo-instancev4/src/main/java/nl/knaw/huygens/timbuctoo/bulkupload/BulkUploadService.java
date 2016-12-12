@@ -34,6 +34,7 @@ public class BulkUploadService {
         loader = new DataPerfectLoader();
       }
       loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
+      saver.setUploadFinished(vreName);
     }
   }
 

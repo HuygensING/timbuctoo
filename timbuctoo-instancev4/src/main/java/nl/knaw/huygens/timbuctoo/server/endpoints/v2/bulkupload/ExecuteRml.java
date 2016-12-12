@@ -149,8 +149,10 @@ public class ExecuteRml {
             transactionEnforcer.execute(timbuctooActions -> {
               try {
                 if (timbuctooActions.hasMappingErrors(vreName)) {
+                  timbuctooActions.setVrePublishState(vreName, Vre.PublishStates.MAPPING_CREATION_AFTER_ERRORS);
                   output.write("failure");
                 } else {
+                  timbuctooActions.setVrePublishState(vreName, Vre.PublishStates.AVAILABLE);
                   output.write("success");
                 }
               } catch (IOException e) {

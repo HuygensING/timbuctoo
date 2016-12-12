@@ -228,6 +228,18 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
+  public void setVrePublishState(String vreName, Vre.PublishStates publishState) {
+    final GraphTraversal<Vertex, Vertex> vreT = traversal
+      .V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+
+    if (vreT.hasNext()) {
+      vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
+    }
+  }
+
+  @Override
   public boolean hasMappingErrors(String vreName) {
     return getRawCollectionsTraversal(vreName).outE(HAS_NEXT_ERROR).hasNext();
   }

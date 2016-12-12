@@ -154,6 +154,7 @@ public class ChangeListenerTest {
       "clearMappingErrors",
       "hasMappingErrors",
       "saveRmlMappingState",
+      "setVrePublishState",
 
       "close",
       "success",

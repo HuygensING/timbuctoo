@@ -29,6 +29,15 @@ public class Vre {
   public static final String VRE_NAME_PROPERTY_NAME = "name";
   public static final String KEYWORD_TYPES_PROPERTY_NAME = "keywordTypes";
   public static final String DATABASE_LABEL = "VRE";
+  public static final String PUBLISH_STATE_PROPERTY_NAME = "publishState";
+
+  public enum PublishStates {
+    UPLOADING,
+    MAPPING_CREATION,
+    MAPPING_EXECUTION,
+    MAPPING_CREATION_AFTER_ERRORS,
+    AVAILABLE
+  }
 
   private final String vreName;
   private Map<String, String> keywordTypes = Maps.newHashMap();

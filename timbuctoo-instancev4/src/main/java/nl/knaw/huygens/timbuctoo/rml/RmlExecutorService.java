@@ -50,6 +50,7 @@ public class RmlExecutorService {
       importer.prepare();
       timbuctooActions.clearMappingErrors(vreName);
       timbuctooActions.removeCollectionsAndEntities(vreName);
+      timbuctooActions.setVrePublishState(vreName, Vre.PublishStates.MAPPING_EXECUTION);
       return commit();
     });
     try (Transaction tx = graphWrapper.getGraph().tx()) {

@@ -81,6 +81,8 @@ public interface DataStoreOperations extends AutoCloseable {
 
   Vre ensureVreExists(String vreName);
 
+  void setVrePublishState(String vreName, Vre.PublishStates publishState);
+
   void removeCollectionsAndEntities(String vreName);
 
   void addPid(UUID id, int rev, URI pidUri) throws NotFoundException;
@@ -91,4 +93,5 @@ public interface DataStoreOperations extends AutoCloseable {
   Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations);
 
   List<RelationType> getRelationTypes();
+
 }
