@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
-import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
@@ -109,12 +108,10 @@ public class TripleImporterIntegrationTest {
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
 
     instance = new TripleImporter(
-      new TransactionEnforcer(
-        afterSuccessTaskExecutor -> timbuctooActions
-      ),
       graphWrapper,
-      VRE_NAME
-    );
+      VRE_NAME,
+      timbuctooActions);
+
     instance.prepare();
   }
 

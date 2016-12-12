@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionState;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -36,11 +37,15 @@ public class ImportRdf {
   @Consumes("application/n-quads")
   @POST
   public void post(String rdfString, @HeaderParam("VRE_ID") String vreName) {
-    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, transactionEnforcer);
-    final ByteArrayInputStream rdfInputStream = new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8));
-    final ImportRunner importRunner = new ImportRunner(rdfImporter, rdfInputStream);
+    transactionEnforcer.execute(timbuctooActions -> {
+      final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres,
+        timbuctooActions);
+      final ByteArrayInputStream rdfInputStream = new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8));
+      final ImportRunner importRunner = new ImportRunner(rdfImporter, rdfInputStream);
 
-    rfdExecutorService.submit(importRunner);
+      rfdExecutorService.submit(importRunner);
+      return TransactionState.commit();
+    });
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -48,9 +53,13 @@ public class ImportRdf {
   public void upload(@FormDataParam("file") final InputStream rdfInputStream,
                      @FormDataParam("VRE_ID") String vreNameInput) {
 
-    final String vreName = vreNameInput != null && vreNameInput.length() > 0 ? vreNameInput : "RdfImport";
-    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, transactionEnforcer);
-    rdfImporter.importRdf(rdfInputStream, Lang.NQUADS);
+    transactionEnforcer.execute(timbuctooActions -> {
+      final String vreName = vreNameInput != null && vreNameInput.length() > 0 ? vreNameInput : "RdfImport";
+      final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres,
+        timbuctooActions);
+      rdfImporter.importRdf(rdfInputStream, Lang.NQUADS);
+      return TransactionState.commit();
+    });
   }
 
   private static final class ImportRunner implements Runnable {
