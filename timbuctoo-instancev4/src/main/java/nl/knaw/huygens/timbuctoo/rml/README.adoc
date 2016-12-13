@@ -123,13 +123,13 @@ Given these tables:
 
 [ditaa]
 --
-+---------------+                         +--------------+
-|Persons        |                         |Locations     |
-+---------------+                         +--------------+
-| ID            |                         | name         |
-| name          |                         | country      |
-| birthplace_id |-----hasBirthPlace------>| ID           |
-+---------------+                         +--------------+
+    +---------------+                         +--------------+
+    |Persons        |                         |Locations     |
+    +---------------+                         +--------------+
+    | ID            |                         | name         |
+    | name          |                         | country      |
+    | birthplace_id |-----hasBirthPlace------>| ID           |
+    +---------------+                         +--------------+
 --
 
 And this original order of mappers:
@@ -160,15 +160,15 @@ Given this table:
 
 [ditaa]
 --
-     +----------+
-     |Persons   |
-     +----------+
-+--> |ID        |
-|    |name      |
-|    |mother_id |-+
-|    +----------+ |
-|                 |
-+----hasMother----+
+         +----------+
+         |Persons   |
+         +----------+
+    +--> |ID        |
+    |    |name      |
+    |    |mother_id |-+
+    |    +----------+ |
+    |                 |
+    +----hasMother----+
 --
 
 And this mapper list:
@@ -198,19 +198,19 @@ Given this data structure:
 
 [ditaa]
 --
-   +------+                +------+                           +------+
-   |x     |                |y     |                           |a     |
-   +------+                +------+                           +------+
-   | y_id |---dependsOn-+->| ID   |                           |      |
-+->| ID   |             |  | a_id |-------dependsOn---------->| ID   |
-|  +------+             |  | z_id |-------dependsOn-----+     +------+
-|                       |  | y_id |---+                 |
-|                       |  +------+   |                 |     +------+
-|                       |             |                 |     |z     |
-|                       +--dependsOn--+                 |     +------+
-|                                                       +---->| ID   |
-+--------------------------dependsOn--------------------------| x_id |
-                                                              +------+
+       +------+                +------+                           +------+
+       |x     |                |y     |                           |a     |
+       +------+                +------+                           +------+
+       | y_id |---dependsOn-+->| ID   |                           |      |
+    +->| ID   |             |  | a_id |-------dependsOn---------->| ID   |
+    |  +------+             |  | z_id |-------dependsOn-----+     +------+
+    |                       |  | y_id |---+                 |
+    |                       |  +------+   |                 |     +------+
+    |                       |             |                 |     |z     |
+    |                       +--dependsOn--+                 |     +------+
+    |                                                       +---->| ID   |
+    +--------------------------dependsOn--------------------------| x_id |
+                                                                  +------+
 --
 
 And this original order of mappers:
@@ -244,21 +244,21 @@ For our own datasource the results will be written to neo4j as follows:
 
 [graphviz]
 --
-digraph {
-  VRE
-  RawCollection
-  VRE -> RawCollection [label="hasRawCollection"]
-  RawItem1 [label="prop1_value=\"val\""]
-  RawCollection -> RawItem1 [label="hasNextItem"]
-  RawItem2 [label="prop1_value=\"val1\"\nprop1_error=\"Exception message\""]
-  RawItem1 -> RawItem2 [label="hasNextItem"]
-  RawCollection -> RawItem2 [label="hasNextError"]
-  RawItem3 [label="prop2_value=\"val\""]
-  RawItem2 -> RawItem3 [label="hasNextItem"]
-  RawItem4 [label="prop2_value=\"val1\"\n`prop2_error=\"Exception message\""]
-  RawItem3 -> RawItem4 [label="hasNextItem"]
-  RawItem2 -> RawItem4 [label="hasNextError"]
-}
+    digraph {
+      VRE
+      RawCollection
+      VRE -> RawCollection [label="hasRawCollection"]
+      RawItem1 [label="prop1_value=\"val\""]
+      RawCollection -> RawItem1 [label="hasNextItem"]
+      RawItem2 [label="prop1_value=\"val1\"\nprop1_error=\"Exception message\""]
+      RawItem1 -> RawItem2 [label="hasNextItem"]
+      RawCollection -> RawItem2 [label="hasNextError"]
+      RawItem3 [label="prop2_value=\"val\""]
+      RawItem2 -> RawItem3 [label="hasNextItem"]
+      RawItem4 [label="prop2_value=\"val1\"\n`prop2_error=\"Exception message\""]
+      RawItem3 -> RawItem4 [label="hasNextItem"]
+      RawItem2 -> RawItem4 [label="hasNextError"]
+    }
 --
 
 == Known issues
