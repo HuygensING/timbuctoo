@@ -16,6 +16,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -48,18 +49,13 @@ public class SaveRml {
   @Produces(MediaType.APPLICATION_JSON)
   public Response post(String rdfData, @PathParam("vre") String vreName,
                        @HeaderParam("Authorization") String authorizationHeader) {
-    UserPermissionChecker.UserPermission permission = permissionChecker.check(vreName, authorizationHeader);
 
-    switch (permission) {
-      case UNKNOWN_USER:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-      case NO_PERMISSION:
-        return Response.status(Response.Status.FORBIDDEN).build();
-      case ALLOWED_TO_WRITE:
-        break;
-      default:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
+    Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
+
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
     }
+
 
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       timbuctooActions.saveRmlMappingState(vreName, rdfData);

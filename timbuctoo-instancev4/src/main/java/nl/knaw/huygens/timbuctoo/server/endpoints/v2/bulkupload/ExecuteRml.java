@@ -32,6 +32,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
@@ -73,17 +74,11 @@ public class ExecuteRml {
   @Produces("text/plain")
   public Response post(String rdfData, @PathParam("vre") String vreName,
                        @HeaderParam("Authorization") String authorizationHeader) {
-    UserPermissionChecker.UserPermission permission = permissionChecker.check(vreName, authorizationHeader);
 
-    switch (permission) {
-      case UNKNOWN_USER:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-      case NO_PERMISSION:
-        return Response.status(Response.Status.FORBIDDEN).build();
-      case ALLOWED_TO_WRITE:
-        break;
-      default:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
+    Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
+
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
     }
 
     if (rdfData == null || rdfData.length() == 0) {
