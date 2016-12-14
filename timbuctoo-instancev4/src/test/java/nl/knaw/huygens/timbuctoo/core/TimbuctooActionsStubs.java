@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.core;
 
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudServiceTest;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
@@ -13,13 +12,13 @@ import static org.mockito.Mockito.mock;
 
 public class TimbuctooActionsStubs {
 
-  public static TimbuctooActions withDataStore(TinkerPopOperations tinkerPopOperations) {
+  public static TimbuctooActions withDataStore(DataStoreOperations dataStoreOperations) {
     return new TimbuctooActions(
       mock(Authorizer.class),
       Clock.systemDefaultZone(),
       mock(PersistentUrlCreator.class),
       (coll, id, rev) -> URI.create("http://example.org/persistent"),
-      tinkerPopOperations,
+      dataStoreOperations,
       new AfterSuccessTaskExecutor()
     );
   }
