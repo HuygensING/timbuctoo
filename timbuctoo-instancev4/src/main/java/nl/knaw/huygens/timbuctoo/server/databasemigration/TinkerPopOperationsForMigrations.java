@@ -9,27 +9,28 @@ import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 class TinkerPopOperationsForMigrations {
   static Vres getVres(TinkerPopGraphManager graphManager) {
     //we're only going to call one method that will not call most of the dependencies that TinkerPopOperations needs
-    TinkerPopOperations dataStoreOperations = new TinkerPopOperations(
+    try (TinkerPopOperations dataStoreOperations = new TinkerPopOperations(
       graphManager,
       null,
       null,
       null,
       null
-    );
-
-    return dataStoreOperations.loadVres();
+    )) {
+      return dataStoreOperations.loadVres();
+    }
   }
 
   static void saveRelationTypes(TinkerPopGraphManager graphManager, RelationType... relationTypes) {
-    TinkerPopOperations dataStoreOperations = new TinkerPopOperations(
+    try (TinkerPopOperations dataStoreOperations = new TinkerPopOperations(
       graphManager,
       null,
       null,
       null,
       new Neo4jIndexHandler(graphManager)
-    );
-
-    dataStoreOperations.saveRelationTypes(relationTypes);
+    )) {
+      dataStoreOperations.saveRelationTypes(relationTypes);
+      dataStoreOperations.success();
+    }
   }
 
   static TinkerPopOperations forInitDb(TinkerPopGraphManager graphManager) {
