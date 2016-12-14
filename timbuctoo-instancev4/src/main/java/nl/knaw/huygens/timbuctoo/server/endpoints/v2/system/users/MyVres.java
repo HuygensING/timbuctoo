@@ -65,7 +65,7 @@ public class MyVres {
           }
           boolean isPublished = vre.getPublishState().equals(Vre.PublishState.AVAILABLE);
           return new VreJson(vre.getVreName(), isAllowedToWrite,
-            isPublished, vre.getPublishState());
+            isPublished, vre.getPublishState(), vre.getLabel());
         })
         .filter(x -> x.isMine() || x.isPublished())
         .collect(groupingBy(
@@ -74,6 +74,7 @@ public class MyVres {
             if (x.isMine()) {
               return jsnO(
                 "name", jsn(x.getVreName()),
+                "label", jsn(x.getLabel()),
                 "published", jsn(x.isPublished),
                 "publishState", jsn(x.getPublishState().toString()),
                 "rmlUri", jsn(
@@ -82,7 +83,8 @@ public class MyVres {
               );
             } else {
               return jsnO(
-                "name", jsn(x.getVreName())
+                "name", jsn(x.getVreName()),
+                "label", jsn(x.getLabel())
               );
             }
           }, toMap(x -> x.get("name").asText(), x -> x))));
@@ -94,14 +96,16 @@ public class MyVres {
   private class VreJson {
     private final boolean isMine;
     private final boolean isPublished;
-    private Vre.PublishState publishState;
+    private final Vre.PublishState publishState;
+    private final String label;
     private final String vreName;
 
-    public VreJson(String vreName, boolean isMine, boolean isPublished, Vre.PublishState publishState) {
+    public VreJson(String vreName, boolean isMine, boolean isPublished, Vre.PublishState publishState, String label) {
       this.vreName = vreName;
       this.isMine = isMine;
       this.isPublished = isPublished;
       this.publishState = publishState;
+      this.label = label;
     }
 
     public String getVreName() {
@@ -118,6 +122,10 @@ public class MyVres {
 
     private Vre.PublishState getPublishState() {
       return publishState;
+    }
+
+    private String getLabel() {
+      return label;
     }
   }
 }

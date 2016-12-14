@@ -135,7 +135,7 @@ public class RmlIntegrationTest {
     }
 
     public void executeRawUpload(String vreName, String collectionName, List<Map<String, String>> data) {
-      try (TinkerpopSaver rawSaver = new TinkerpopSaver(vres, graphManager, vreName, 100)) {
+      try (TinkerpopSaver rawSaver = new TinkerpopSaver(vres, graphManager, vreName, vreName, 100)) {
         Vertex rawCollection = rawSaver.addCollection(collectionName);
         ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
         int count = 0;

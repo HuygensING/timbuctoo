@@ -35,21 +35,22 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   private int saveCounter;
   private Transaction tx;
 
-  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, int maxVerticesPerTransaction) {
-    this(vres, graphWrapper, vreName, maxVerticesPerTransaction, new CollectionAdder(graphWrapper));
+  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
+                        int maxVerticesPerTransaction) {
+    this(vres, graphWrapper, vreName, vreLabel, maxVerticesPerTransaction, new CollectionAdder(graphWrapper));
   }
 
-  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, int maxVerticesPerTransaction,
-                        CollectionAdder collectionAdder) {
+  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
+                        int maxVerticesPerTransaction, CollectionAdder collectionAdder) {
     this.vres = vres;
     this.graphWrapper = graphWrapper;
     tx = graphWrapper.getGraph().tx();
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
-    this.vre = initVre(vreName);
+    this.vre = initVre(vreName, vreLabel);
     this.collectionAdder = collectionAdder;
   }
 
-  private Vertex initVre(String vreName) {
+  private Vertex initVre(String vreName, String vreLabel) {
     final Vertex result;
     try (Transaction tx = graphWrapper.getGraph().tx()) {
       final GraphTraversal<Vertex, Vertex> vre = getVreTraversal(vreName);
@@ -70,6 +71,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
       } else {
         result = graphWrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
       }
+      result.property(Vre.VRE_LABEL_PROPERTY_NAME, vreLabel);
       result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishState.UPLOADING.toString());
       tx.commit();
     }

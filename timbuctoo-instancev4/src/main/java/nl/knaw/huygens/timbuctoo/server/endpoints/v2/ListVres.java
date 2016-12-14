@@ -37,6 +37,7 @@ public class ListVres {
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       final ArrayNode result = jsnA(timbuctooActions.loadVres().getVres().values().stream().map(vre -> jsnO(
         "name", jsn(vre.getVreName()),
+        "label", jsn(vre.getLabel()),
         "metadata", jsn(createUri(vre.getVreName()).toString()),
         "isPublished", jsn(vre.getPublishState().equals(Vre.PublishState.AVAILABLE))
       )));

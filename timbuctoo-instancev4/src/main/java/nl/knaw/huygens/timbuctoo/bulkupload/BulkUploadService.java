@@ -23,10 +23,11 @@ public class BulkUploadService {
     this.graphwrapper = graphwrapper;
   }
 
-  public void saveToDb(String vreName, byte[] file, String fileName, Consumer<String> statusUpdate)
+  public void saveToDb(String vreName, byte[] file, String fileName, String vreLabel,
+                       Consumer<String> statusUpdate)
     throws InvalidFileException, IOException {
 
-    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, 50_000)) {
+    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000)) {
       Loader loader;
       if (fileName.endsWith(".xlsx")) {
         loader = new AllSheetLoader();
