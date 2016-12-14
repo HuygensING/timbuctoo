@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
 import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -29,7 +30,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @NotEmpty
   private String usersFilePath;
   @NotEmpty
-  private String databasePath;
+  private String databasePath;//FIXME: move to TinkerpopConfig once timbuctoo is hosted on azure
+  @JsonProperty
+  private TinkerPopConfig databaseConfiguration;
   @NotNull
   private TimeoutFactory autoLogoutTimeout;
   @NotNull
@@ -73,6 +76,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public String getDatabasePath() {
     return databasePath;
+  }
+
+  public TinkerPopConfig getDatabaseConfiguration() {
+    return databaseConfiguration;
   }
 
   // ActiveMQConfigHolder implementation
