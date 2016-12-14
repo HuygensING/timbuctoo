@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
@@ -65,7 +65,7 @@ public class MyVres {
           }
           boolean isPublished = vre.getPublishState().equals(Vre.PublishState.AVAILABLE);
           return new VreJson(vre.getVreName(), isAllowedToWrite,
-            isPublished, vre.getPublishState(), vre.getLabel());
+            isPublished, vre.getPublishState(), vre.getMetadata());
         })
         .filter(x -> x.isMine() || x.isPublished())
         .collect(groupingBy(
@@ -76,6 +76,7 @@ public class MyVres {
                 "name", jsn(x.getVreName()),
                 "label", jsn(x.getLabel()),
                 "published", jsn(x.isPublished),
+                "vreMetadata", x.getMetadata(),
                 "publishState", jsn(x.getPublishState().toString()),
                 "rmlUri", jsn(
                   bulkUploadVre.createUri(x.getVreName())
@@ -84,6 +85,7 @@ public class MyVres {
             } else {
               return jsnO(
                 "name", jsn(x.getVreName()),
+                "vreMetadata", x.getMetadata(),
                 "label", jsn(x.getLabel())
               );
             }
@@ -97,15 +99,16 @@ public class MyVres {
     private final boolean isMine;
     private final boolean isPublished;
     private final Vre.PublishState publishState;
-    private final String label;
     private final String vreName;
+    private final VreMetadata metadata;
 
-    public VreJson(String vreName, boolean isMine, boolean isPublished, Vre.PublishState publishState, String label) {
+    public VreJson(String vreName, boolean isMine, boolean isPublished, Vre.PublishState publishState,
+                   VreMetadata metadata) {
       this.vreName = vreName;
       this.isMine = isMine;
       this.isPublished = isPublished;
       this.publishState = publishState;
-      this.label = label;
+      this.metadata = metadata;
     }
 
     public String getVreName() {
@@ -125,7 +128,15 @@ public class MyVres {
     }
 
     private String getLabel() {
-      return label;
+      return metadata.getLabel();
+    }
+
+    private ObjectNode getMetadata() {
+      return jsnO(
+        "colorCode", jsn(metadata.getColorCode()),
+        "provenance", jsn(metadata.getProvenance()),
+        "description", jsn(metadata.getDescription())
+      );
     }
   }
 }

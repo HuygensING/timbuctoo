@@ -31,8 +31,12 @@ public class Vre {
   public static final String DATABASE_LABEL = "VRE";
   public static final String PUBLISH_STATE_PROPERTY_NAME = "publishState";
   public static final String VRE_LABEL_PROPERTY_NAME = "vreLabel";
+  public static final String COLOR_CODE_PROPERTY_NAME = "colorCode";
+  public static final String PROVENANCE_PROPERTY_NAME = "provenance";
+  public static final String DESCRIPTION_PROPERTY_NAME = "description";
+
   private final PublishState publishState;
-  private final String label;
+  private final VreMetadata metadata;
 
   public enum PublishState {
     UPLOADING,
@@ -46,15 +50,15 @@ public class Vre {
   private Map<String, String> keywordTypes = Maps.newHashMap();
   private final LinkedHashMap<String, Collection> collections = Maps.newLinkedHashMap();
 
-  public Vre(String vreName, Map<String, String> keywordTypes, PublishState publishState, String label) {
+  public Vre(String vreName, Map<String, String> keywordTypes, PublishState publishState, VreMetadata metadata) {
     this.vreName = vreName;
     this.keywordTypes = keywordTypes;
     this.publishState = publishState;
-    this.label = label;
+    this.metadata = metadata;
   }
 
   public Vre(String vreName, Map<String, String> keywordTypes) {
-    this(vreName, keywordTypes, PublishState.AVAILABLE, vreName);
+    this(vreName, keywordTypes, PublishState.AVAILABLE, new VreMetadata());
   }
 
   public Vre(String vreName) {
@@ -80,8 +84,8 @@ public class Vre {
     return vreName;
   }
 
-  public String getLabel() {
-    return label;
+  public VreMetadata getMetadata() {
+    return metadata;
   }
 
   public Optional<Collection> getImplementerOf(String abstractType) {
@@ -131,7 +135,7 @@ public class Vre {
       vreVertex.value(VRE_NAME_PROPERTY_NAME),
       loadKeywordTypes(vreVertex),
       loadPublishState(vreVertex),
-      loadLabel(vreVertex)
+      loadMetadata(vreVertex)
     );
 
     vreVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME).forEachRemaining(collectionV -> {
@@ -142,12 +146,8 @@ public class Vre {
     return vre;
   }
 
-  private static String loadLabel(Vertex vreVertex) {
-    if (vreVertex.property(VRE_LABEL_PROPERTY_NAME).isPresent()) {
-      return vreVertex.value(VRE_LABEL_PROPERTY_NAME);
-    } else {
-      return vreVertex.value(VRE_NAME_PROPERTY_NAME);
-    }
+  private static VreMetadata loadMetadata(Vertex vreVertex) {
+    return VreMetadata.fromVertex(vreVertex);
   }
 
   private static PublishState loadPublishState(Vertex vreVertex) {

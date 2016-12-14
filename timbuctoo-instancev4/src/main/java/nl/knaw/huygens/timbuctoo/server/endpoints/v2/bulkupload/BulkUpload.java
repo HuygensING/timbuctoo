@@ -141,7 +141,7 @@ public class BulkUpload {
       try {
         byte[] bytes = getUploadedBytes(fileUpload);
 
-        final ChunkedOutput<String> output = executeUpload(fileDetails, vre.getLabel(), vreName, bytes);
+        final ChunkedOutput<String> output = executeUpload(fileDetails, vre.getMetadata().getLabel(), vreName, bytes);
         return TransactionStateAndResult.commitAndReturn(
           Response.ok()
                   .location(bulkUploadVre.createUri(vreName))

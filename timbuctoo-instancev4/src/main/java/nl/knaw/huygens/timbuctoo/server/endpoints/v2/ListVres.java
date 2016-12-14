@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 
 import javax.ws.rs.GET;
@@ -13,7 +12,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
-
 import java.net.URI;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -37,7 +35,12 @@ public class ListVres {
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       final ArrayNode result = jsnA(timbuctooActions.loadVres().getVres().values().stream().map(vre -> jsnO(
         "name", jsn(vre.getVreName()),
-        "label", jsn(vre.getLabel()),
+        "label", jsn(vre.getMetadata().getLabel()),
+        "vreMetadata", jsnO(
+          "provenance", jsn(vre.getMetadata().getProvenance()),
+          "description", jsn(vre.getMetadata().getDescription()),
+          "colorCode", jsn(vre.getMetadata().getColorCode())
+        ),
         "metadata", jsn(createUri(vre.getVreName()).toString()),
         "isPublished", jsn(vre.getPublishState().equals(Vre.PublishState.AVAILABLE))
       )));

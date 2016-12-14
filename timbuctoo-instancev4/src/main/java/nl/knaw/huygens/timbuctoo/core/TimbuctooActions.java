@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
@@ -254,6 +255,10 @@ public class TimbuctooActions implements AutoCloseable {
 
   public void setVrePublishState(String vreName, Vre.PublishState publishState) {
     dataStoreOperations.setVrePublishState(vreName, publishState);
+  }
+
+  public void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate) {
+    dataStoreOperations.setVreMetadata(vreName, vreMetadataUpdate);
   }
 
   //================== Inner classes ==================

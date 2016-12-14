@@ -18,7 +18,6 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
@@ -26,15 +25,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class SaveRml {
 
   private UriHelper uriHelper;
-  private TinkerPopGraphManager graphWrapper;
   private UserPermissionChecker permissionChecker;
   private TransactionEnforcer transactionEnforcer;
 
-  public SaveRml(UriHelper uriHelper, TinkerPopGraphManager graphWrapper, UserPermissionChecker permissionChecker,
+  public SaveRml(UriHelper uriHelper, UserPermissionChecker permissionChecker,
                  TransactionEnforcer transactionEnforcer) {
 
     this.uriHelper = uriHelper;
-    this.graphWrapper = graphWrapper;
     this.permissionChecker = permissionChecker;
     this.transactionEnforcer = transactionEnforcer;
   }

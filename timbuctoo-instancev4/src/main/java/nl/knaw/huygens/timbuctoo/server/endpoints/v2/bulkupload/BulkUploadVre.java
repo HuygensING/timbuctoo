@@ -1,9 +1,13 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.RawValue;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
+import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -11,13 +15,16 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Optional;
@@ -38,16 +45,19 @@ public class BulkUploadVre {
   private final RawCollection rawCollection;
   private final ExecuteRml executeRml;
   private final UserPermissionChecker permissionChecker;
-  private SaveRml saveRml;
+  private final SaveRml saveRml;
+  private final TransactionEnforcer transactionEnforcer;
 
   public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection,
-                       ExecuteRml executeRml, UserPermissionChecker permissionChecker, SaveRml saveRml) {
+                       ExecuteRml executeRml, UserPermissionChecker permissionChecker, SaveRml saveRml,
+                       TransactionEnforcer transactionEnforcer) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.rawCollection = rawCollection;
     this.executeRml = executeRml;
     this.permissionChecker = permissionChecker;
     this.saveRml = saveRml;
+    this.transactionEnforcer = transactionEnforcer;
   }
 
   public URI createUri(String vre) {
@@ -92,6 +102,35 @@ public class BulkUploadVre {
              .forEachRemaining(v -> addCollection(collectionArrayNode, v, vreName));
 
     return Response.ok(result).build();
+  }
+
+  @PUT
+  @Consumes(APPLICATION_JSON)
+  @Produces(APPLICATION_JSON)
+  public Response update(String updateJson,
+                         @PathParam("vre") String vreName, @HeaderParam("Authorization") String authorizationHeader) {
+    Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
+
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
+    }
+
+    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+      try {
+        final Vre vre = timbuctooActions.getVre(vreName);
+        if (vre == null) {
+          return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.NOT_FOUND).build());
+        }
+
+        final VreMetadata vreMetadataUpdate = new ObjectMapper().readValue(updateJson, VreMetadata.class);
+
+        timbuctooActions.setVreMetadata(vreName, vreMetadataUpdate);
+
+        return TransactionStateAndResult.commitAndReturn(Response.ok().build());
+      } catch (IOException e) {
+        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST).build());
+      }
+    });
   }
 
   private void addCollection(ArrayNode collectionArrayNode, Vertex collectionVertex, String vreName) {

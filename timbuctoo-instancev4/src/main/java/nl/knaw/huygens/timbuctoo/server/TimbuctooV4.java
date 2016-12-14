@@ -275,11 +275,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
       new DataSourceFactory(graphManager), transactionEnforcer);
     register(environment, executeRml);
-    SaveRml saveRml = new SaveRml(uriHelper, graphManager, permissionChecker, transactionEnforcer);
+    SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
     register(environment, saveRml);
 
     BulkUploadVre bulkUploadVre =
-      new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker, saveRml);
+      new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker, saveRml,
+        transactionEnforcer);
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), bulkUploadVre,
       loggedInUserStore, authorizer, 20 * 1024 * 1024, permissionChecker, transactionEnforcer));
