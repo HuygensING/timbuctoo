@@ -30,7 +30,9 @@ public class Vre {
   public static final String KEYWORD_TYPES_PROPERTY_NAME = "keywordTypes";
   public static final String DATABASE_LABEL = "VRE";
   public static final String PUBLISH_STATE_PROPERTY_NAME = "publishState";
+  public static final String VRE_LABEL_PROPERTY_NAME = "vreLabel";
   private final PublishState publishState;
+  private final String label;
 
   public enum PublishState {
     UPLOADING,
@@ -44,14 +46,15 @@ public class Vre {
   private Map<String, String> keywordTypes = Maps.newHashMap();
   private final LinkedHashMap<String, Collection> collections = Maps.newLinkedHashMap();
 
-  public Vre(String vreName, Map<String, String> keywordTypes, PublishState publishState) {
+  public Vre(String vreName, Map<String, String> keywordTypes, PublishState publishState, String label) {
     this.vreName = vreName;
     this.keywordTypes = keywordTypes;
     this.publishState = publishState;
+    this.label = label;
   }
 
   public Vre(String vreName, Map<String, String> keywordTypes) {
-    this(vreName, keywordTypes, PublishState.AVAILABLE);
+    this(vreName, keywordTypes, PublishState.AVAILABLE, vreName);
   }
 
   public Vre(String vreName) {
@@ -75,6 +78,10 @@ public class Vre {
 
   public String getVreName() {
     return vreName;
+  }
+
+  public String getLabel() {
+    return label;
   }
 
   public Optional<Collection> getImplementerOf(String abstractType) {
@@ -123,7 +130,8 @@ public class Vre {
     final Vre vre = new Vre(
       vreVertex.value(VRE_NAME_PROPERTY_NAME),
       loadKeywordTypes(vreVertex),
-      loadPublishState(vreVertex)
+      loadPublishState(vreVertex),
+      loadLabel(vreVertex)
     );
 
     vreVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME).forEachRemaining(collectionV -> {
@@ -132,6 +140,14 @@ public class Vre {
     });
 
     return vre;
+  }
+
+  private static String loadLabel(Vertex vreVertex) {
+    if (vreVertex.property(VRE_LABEL_PROPERTY_NAME).isPresent()) {
+      return vreVertex.value(VRE_LABEL_PROPERTY_NAME);
+    } else {
+      return vreVertex.value(VRE_NAME_PROPERTY_NAME);
+    }
   }
 
   private static PublishState loadPublishState(Vertex vreVertex) {

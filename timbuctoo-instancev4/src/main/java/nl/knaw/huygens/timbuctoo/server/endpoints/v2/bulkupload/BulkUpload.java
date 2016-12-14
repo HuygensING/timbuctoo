@@ -93,7 +93,7 @@ public class BulkUpload {
         new Thread() {
           public void run() {
             try {
-              uploadService.saveToDb(namespacedVre, bytes, fileDetails.getFileName(), msg -> {
+              uploadService.saveToDb(namespacedVre, bytes, fileDetails.getFileName(), unNamespacedVreName, msg -> {
                 try {
                   //write json objects
                   if (writeErrors.get() < 5) {
