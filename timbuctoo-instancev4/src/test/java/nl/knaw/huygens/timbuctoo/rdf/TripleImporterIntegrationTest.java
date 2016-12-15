@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
+import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
@@ -102,18 +103,19 @@ public class TripleImporterIntegrationTest {
         .withCollection("locations", c -> c
           .withEntityTypeName("location")
         )
-      ).build();
+      )
+      .build();
     graphWrapper = newGraph().wrap();
     TinkerPopOperations tinkerPopOperations = TinkerPopOperationsStubs.forGraphWrapper(graphWrapper);
     tinkerPopOperations.saveVre(vres.getVre("Admin"));
+    Vre vre = tinkerPopOperations.ensureVreExists(VRE_NAME);
+    tinkerPopOperations.addCollectionToVre(vre, CreateCollection.defaultCollection());
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
 
     instance = new TripleImporter(
       graphWrapper,
-      VRE_NAME,
-      timbuctooActions);
-    System.out.println("SETUP");
-    instance.prepare();
+      VRE_NAME
+    );
   }
 
   @Test
@@ -141,14 +143,11 @@ public class TripleImporterIntegrationTest {
 
   @Test
   public void importTripleShouldAddATripleDescribingAPropertyToTheExistingEntity() throws Exception {
-    System.out.println("BEGIN importTripleShouldAddATripleDescribingAPropertyToTheExistingEntity");
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
     instance.importTriple(true, tripleExtendedIterator.next());
     instance.importTriple(true, tripleExtendedIterator.next());
-
-    System.out.println("END importTripleShouldAddATripleDescribingAPropertyToTheExistingEntity");
 
     Optional<ReadEntity> entityOpt = getReadEntity(DEFAULT_COLLECTION_NAME, ABADAN_URI);
     assertThat(entityOpt.get().getProperties(), containsInAnyOrder(
@@ -301,7 +300,6 @@ public class TripleImporterIntegrationTest {
     instance.importTriple(true, abadanIsAFeature);
     instance.importTriple(true, featureIsLocation);
 
-    // FIXME: Make entity available as its new archetype
     assertThat(getReadEntity(LOCATION_COLLECTION, ABADAN_URI), is(present()));
     assertThat(getReadEntity(COLLECTION_NAME, ABADAN_URI), is(present()));
   }

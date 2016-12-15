@@ -27,7 +27,7 @@ public class RdfImporter {
   private Vres vres;
 
   public RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, TimbuctooActions timbuctooActions) {
-    this(graphWrapper, vreName, vres, new TripleImporter(graphWrapper, vreName, timbuctooActions));
+    this(graphWrapper, vreName, vres, new TripleImporter(graphWrapper, vreName));
   }
 
   RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, TripleImporter tripleImporter) {
@@ -54,7 +54,6 @@ public class RdfImporter {
   }
 
   private void prepare() {
-    importer.prepare();
     LOG.info("Starting import...");
   }
 
