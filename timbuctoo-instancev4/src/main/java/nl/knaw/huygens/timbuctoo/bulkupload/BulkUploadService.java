@@ -27,7 +27,7 @@ public class BulkUploadService {
                        Consumer<String> statusUpdate)
     throws InvalidFileException, IOException {
 
-    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000)) {
+    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000, fileName)) {
       Loader loader;
       if (fileName.endsWith(".xlsx")) {
         loader = new AllSheetLoader();

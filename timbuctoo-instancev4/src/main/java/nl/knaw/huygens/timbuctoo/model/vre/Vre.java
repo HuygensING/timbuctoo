@@ -37,6 +37,7 @@ public class Vre {
   public static final String IMAGE_BLOB_PROPERTY_NAME = "image:blob";
   public static final String IMAGE_MEDIA_TYPE_PROPERTY_NAME = "image:mediaType";
   public static final String IMAGE_REV_PROPERTY_NAME = "image:rev";
+  public static final String UPLOADED_FILE_NAME = "uploadedFilename";
 
   private final PublishState publishState;
   private final VreMetadata metadata;

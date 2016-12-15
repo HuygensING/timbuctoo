@@ -31,21 +31,23 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
   private final int maxVerticesPerTransaction;
+  private String fileName;
   private final CollectionAdder collectionAdder;
   private int saveCounter;
   private Transaction tx;
 
   public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
-                        int maxVerticesPerTransaction) {
-    this(vres, graphWrapper, vreName, vreLabel, maxVerticesPerTransaction, new CollectionAdder(graphWrapper));
+                        int maxVerticesPerTransaction, String fileName) {
+    this(vres, graphWrapper, vreName, vreLabel, maxVerticesPerTransaction, fileName, new CollectionAdder(graphWrapper));
   }
 
   public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
-                        int maxVerticesPerTransaction, CollectionAdder collectionAdder) {
+                        int maxVerticesPerTransaction, String fileName, CollectionAdder collectionAdder) {
     this.vres = vres;
     this.graphWrapper = graphWrapper;
     tx = graphWrapper.getGraph().tx();
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
+    this.fileName = fileName;
     this.vre = initVre(vreName, vreLabel);
     this.collectionAdder = collectionAdder;
   }
@@ -72,6 +74,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
         result = graphWrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
       }
       result.property(Vre.VRE_LABEL_PROPERTY_NAME, vreLabel);
+      result.property(Vre.UPLOADED_FILE_NAME, fileName);
       result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishState.UPLOADING.toString());
       tx.commit();
     }
