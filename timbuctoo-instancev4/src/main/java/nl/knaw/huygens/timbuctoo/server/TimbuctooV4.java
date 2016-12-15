@@ -55,6 +55,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ListVres;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
@@ -265,8 +266,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
-    register(environment, new MyVres(loggedInUserStore, authorizer, bulkUploadVre, transactionEnforcer));
+    register(environment, new MyVres(loggedInUserStore, authorizer, bulkUploadVre, transactionEnforcer, uriHelper));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
+    register(environment, new VreImage(transactionEnforcer));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));

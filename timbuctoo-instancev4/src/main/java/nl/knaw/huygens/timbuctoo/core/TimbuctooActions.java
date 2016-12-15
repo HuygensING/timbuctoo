@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
@@ -275,6 +276,14 @@ public class TimbuctooActions implements AutoCloseable {
 
   public void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate) {
     dataStoreOperations.setVreMetadata(vreName, vreMetadataUpdate);
+  }
+
+  public void setVreImage(String vreName, byte[] uploadedBytes, MediaType mediaType) {
+    dataStoreOperations.setVreImage(vreName, uploadedBytes, mediaType);
+  }
+
+  public byte[] getVreImageBlob(String vreName) {
+    return dataStoreOperations.getVreImageBlob(vreName);
   }
 
   //================== Inner classes ==================

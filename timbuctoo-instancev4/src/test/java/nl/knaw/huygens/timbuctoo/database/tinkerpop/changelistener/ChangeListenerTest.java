@@ -159,6 +159,8 @@ public class ChangeListenerTest {
       "getMappingErrors",
       "setVrePublishState",
       "setVreMetadata",
+      "setVreImage",
+      "getVreImageBlob",
 
       "close",
       "success",

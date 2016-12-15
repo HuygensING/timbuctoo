@@ -150,14 +150,21 @@ public class BulkUploadVre {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Path("/image")
 
-  public Response uploadImage(@FormDataParam("file") InputStream fileUpload,
-                              @FormDataParam("file") FormDataBodyPart body) {
+  public Response uploadImage(@PathParam("vre") String vreName,
+                              @FormDataParam("file") InputStream fileUpload,
+                              @FormDataParam("file") FormDataBodyPart body,
+                              @HeaderParam("Authorization") String authorizationHeader) {
 
-    System.out.println(body.getMediaType());
+    Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
+
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
+    }
+
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       try {
         final byte[] uploadedBytes = getUploadedBytes(fileUpload);
-
+        timbuctooActions.setVreImage(vreName, uploadedBytes, body.getMediaType());
 
         return TransactionStateAndResult.commitAndReturn(Response.ok().build());
       } catch (IOException e) {

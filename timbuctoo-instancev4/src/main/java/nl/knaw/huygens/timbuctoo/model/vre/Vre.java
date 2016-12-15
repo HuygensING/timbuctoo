@@ -34,6 +34,9 @@ public class Vre {
   public static final String COLOR_CODE_PROPERTY_NAME = "colorCode";
   public static final String PROVENANCE_PROPERTY_NAME = "provenance";
   public static final String DESCRIPTION_PROPERTY_NAME = "description";
+  public static final String IMAGE_BLOB_PROPERTY_NAME = "image:blob";
+  public static final String IMAGE_MEDIA_TYPE_PROPERTY_NAME = "image:mediaType";
+  public static final String IMAGE_REV_PROPERTY_NAME = "image:rev";
 
   private final PublishState publishState;
   private final VreMetadata metadata;
