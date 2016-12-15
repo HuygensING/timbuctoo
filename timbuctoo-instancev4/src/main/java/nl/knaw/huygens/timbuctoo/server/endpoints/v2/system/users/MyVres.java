@@ -143,7 +143,8 @@ public class MyVres {
         "colorCode", jsn(metadata.getColorCode()),
         "provenance", jsn(metadata.getProvenance()),
         "description", jsn(metadata.getDescription()),
-        "image", jsn(imageUri == null ? null : imageUri.toString())
+        "image", jsn(imageUri == null ? null : imageUri.toString()),
+        "uploadedFilename", jsn(metadata.getUploadedFilename())
       );
     }
 

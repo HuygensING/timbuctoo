@@ -10,6 +10,7 @@ import static nl.knaw.huygens.timbuctoo.model.vre.Vre.IMAGE_BLOB_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.IMAGE_MEDIA_TYPE_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.IMAGE_REV_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PROVENANCE_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Vre.UPLOADED_FILE_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_LABEL_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
 
@@ -18,6 +19,7 @@ public class VreMetadata {
   private String colorCode = null;
   private String description = null;
   private String label = null;
+  private String uploadedFilename = null;
   private Integer imageRev = null;
   private MediaType imageMediaType;
 
@@ -68,6 +70,14 @@ public class VreMetadata {
     }
   }
 
+  public String getUploadedFilename() {
+    return uploadedFilename;
+  }
+
+  private void setUploadedFilename(String uploadedFilename) {
+    this.uploadedFilename = uploadedFilename;
+  }
+
   public Integer getImageRev() {
     return imageRev;
   }
@@ -99,6 +109,9 @@ public class VreMetadata {
     instance.setDescription(vreVertex.property(DESCRIPTION_PROPERTY_NAME).isPresent() ?
       vreVertex.value(DESCRIPTION_PROPERTY_NAME) : null);
 
+    instance.setUploadedFilename(vreVertex.property(UPLOADED_FILE_NAME).isPresent() ?
+      vreVertex.value(UPLOADED_FILE_NAME) : null);
+
     if (vreVertex.property(IMAGE_BLOB_PROPERTY_NAME).isPresent() &&
       vreVertex.property(IMAGE_REV_PROPERTY_NAME).isPresent()) {
       instance.setImageRev(vreVertex.<Integer>value(IMAGE_REV_PROPERTY_NAME));
@@ -110,14 +123,16 @@ public class VreMetadata {
     return instance;
   }
 
-
   @Override
   public String toString() {
-    return "VreMetadataUpdate{" +
+    return "VreMetadata{" +
       "provenance='" + provenance + '\'' +
       ", colorCode='" + colorCode + '\'' +
       ", description='" + description + '\'' +
       ", label='" + label + '\'' +
+      ", uploadedFilename='" + uploadedFilename + '\'' +
+      ", imageRev=" + imageRev +
+      ", imageMediaType=" + imageMediaType +
       '}';
   }
 }

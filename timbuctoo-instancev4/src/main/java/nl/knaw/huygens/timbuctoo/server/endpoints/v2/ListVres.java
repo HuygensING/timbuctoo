@@ -42,7 +42,8 @@ public class ListVres {
             "provenance", jsn(vre.getMetadata().getProvenance()),
             "description", jsn(vre.getMetadata().getDescription()),
             "colorCode", jsn(vre.getMetadata().getColorCode()),
-            "image", jsn(imageUri == null ? null : imageUri.toString())
+            "image", jsn(imageUri == null ? null : imageUri.toString()),
+            "uploadedFilename", jsn(vre.getMetadata().getUploadedFilename())
           ),
           "metadata", jsn(createUri(vre.getVreName()).toString()),
           "isPublished", jsn(vre.getPublishState().equals(Vre.PublishState.AVAILABLE))
