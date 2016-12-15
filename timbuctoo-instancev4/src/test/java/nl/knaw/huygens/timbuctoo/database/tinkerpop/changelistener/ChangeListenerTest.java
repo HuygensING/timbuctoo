@@ -156,6 +156,8 @@ public class ChangeListenerTest {
       "saveRmlMappingState",
       "setVrePublishState",
       "setVreMetadata",
+      "setVreImage",
+      "getVreImageBlob",
 
       "close",
       "success",

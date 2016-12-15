@@ -2,24 +2,30 @@ package nl.knaw.huygens.timbuctoo.model.vre;
 
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import javax.ws.rs.core.MediaType;
+
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.COLOR_CODE_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.DESCRIPTION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Vre.IMAGE_BLOB_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Vre.IMAGE_MEDIA_TYPE_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Vre.IMAGE_REV_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PROVENANCE_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_LABEL_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
 
 public class VreMetadata {
-  private String provenance;
-  private String colorCode;
-  private String description;
-  private String label;
-
+  private String provenance = null;
+  private String colorCode = null;
+  private String description = null;
+  private String label = null;
+  private Integer imageRev = null;
+  private MediaType imageMediaType;
 
   public String getProvenance() {
     return provenance;
   }
 
-  public void setProvenance(String provenance) {
+  private void setProvenance(String provenance) {
     this.provenance = provenance;
   }
 
@@ -27,7 +33,7 @@ public class VreMetadata {
     return colorCode;
   }
 
-  public void setColorCode(String colorCode) {
+  private void setColorCode(String colorCode) {
     this.colorCode = colorCode;
   }
 
@@ -62,6 +68,22 @@ public class VreMetadata {
     }
   }
 
+  public Integer getImageRev() {
+    return imageRev;
+  }
+
+  private void setImageRev(Integer imageRev) {
+    this.imageRev = imageRev;
+  }
+
+  private void setImageMediaType(MediaType imageMediaType) {
+    this.imageMediaType = imageMediaType;
+  }
+
+  public MediaType getImageMediaType() {
+    return imageMediaType;
+  }
+
   static VreMetadata fromVertex(Vertex vreVertex) {
     final VreMetadata instance = new VreMetadata();
 
@@ -77,6 +99,14 @@ public class VreMetadata {
     instance.setDescription(vreVertex.property(DESCRIPTION_PROPERTY_NAME).isPresent() ?
       vreVertex.value(DESCRIPTION_PROPERTY_NAME) : null);
 
+    if (vreVertex.property(IMAGE_BLOB_PROPERTY_NAME).isPresent() &&
+      vreVertex.property(IMAGE_REV_PROPERTY_NAME).isPresent()) {
+      instance.setImageRev(vreVertex.<Integer>value(IMAGE_REV_PROPERTY_NAME));
+    }
+
+    if (vreVertex.property(IMAGE_MEDIA_TYPE_PROPERTY_NAME).isPresent()) {
+      instance.setImageMediaType(MediaType.valueOf(vreVertex.value(IMAGE_MEDIA_TYPE_PROPERTY_NAME)));
+    }
     return instance;
   }
 

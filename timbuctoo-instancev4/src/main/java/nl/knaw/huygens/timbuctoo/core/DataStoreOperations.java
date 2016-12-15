@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
@@ -85,6 +86,10 @@ public interface DataStoreOperations extends AutoCloseable {
   void setVrePublishState(String vreName, Vre.PublishState publishState);
 
   void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate);
+
+  void setVreImage(String vreName, byte[] uploadedBytes, MediaType mediaType);
+
+  byte[] getVreImageBlob(String vreName);
 
   void removeCollectionsAndEntities(String vreName);
 

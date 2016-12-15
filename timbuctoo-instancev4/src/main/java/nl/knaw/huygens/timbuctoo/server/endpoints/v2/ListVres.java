@@ -33,19 +33,33 @@ public class ListVres {
   @GET
   public Response get() {
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
-      final ArrayNode result = jsnA(timbuctooActions.loadVres().getVres().values().stream().map(vre -> jsnO(
-        "name", jsn(vre.getVreName()),
-        "label", jsn(vre.getMetadata().getLabel()),
-        "vreMetadata", jsnO(
-          "provenance", jsn(vre.getMetadata().getProvenance()),
-          "description", jsn(vre.getMetadata().getDescription()),
-          "colorCode", jsn(vre.getMetadata().getColorCode())
-        ),
-        "metadata", jsn(createUri(vre.getVreName()).toString()),
-        "isPublished", jsn(vre.getPublishState().equals(Vre.PublishState.AVAILABLE))
-      )));
+      final ArrayNode result = jsnA(timbuctooActions.loadVres().getVres().values().stream().map(vre -> {
+        final URI imageUri = createImageUri(vre);
+        return jsnO(
+          "name", jsn(vre.getVreName()),
+          "label", jsn(vre.getMetadata().getLabel()),
+          "vreMetadata", jsnO(
+            "provenance", jsn(vre.getMetadata().getProvenance()),
+            "description", jsn(vre.getMetadata().getDescription()),
+            "colorCode", jsn(vre.getMetadata().getColorCode()),
+            "image", jsn(imageUri == null ? null : imageUri.toString())
+          ),
+          "metadata", jsn(createUri(vre.getVreName()).toString()),
+          "isPublished", jsn(vre.getPublishState().equals(Vre.PublishState.AVAILABLE))
+        );
+      }));
       return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());
     });
+  }
+
+  private URI createImageUri(Vre vre) {
+    if (vre.getMetadata().getImageRev() == null) {
+      return null;
+    }
+    return uriHelper.fromResourceUri(UriBuilder.fromResource(VreImage.class)
+                                               .resolveTemplate("vreName", vre.getVreName())
+                                               .resolveTemplate("rev", vre.getMetadata().getImageRev())
+                                               .build());
   }
 
   private URI createUri(String vreName) {

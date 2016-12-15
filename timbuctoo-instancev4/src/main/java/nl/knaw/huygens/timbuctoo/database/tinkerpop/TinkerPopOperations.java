@@ -54,6 +54,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
@@ -248,6 +249,34 @@ public class TinkerPopOperations implements DataStoreOperations {
       final Vertex vreVertex = vreT.next();
       vreMetadataUpdate.updateVreVertex(vreVertex);
     }
+  }
+
+  @Override
+  public void setVreImage(String vreName, byte[] uploadedBytes, MediaType mediaType) {
+    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+
+    if (vreT.hasNext()) {
+      final Vertex vreVertex = vreT.next();
+      final Integer imageRev = vreVertex.property(Vre.IMAGE_REV_PROPERTY_NAME).isPresent() ?
+        vreVertex.<Integer>value(Vre.IMAGE_REV_PROPERTY_NAME) + 1 : 1;
+
+      vreVertex.property(Vre.IMAGE_REV_PROPERTY_NAME, imageRev);
+      vreVertex.property(Vre.IMAGE_BLOB_PROPERTY_NAME, uploadedBytes);
+      vreVertex.property(Vre.IMAGE_MEDIA_TYPE_PROPERTY_NAME, mediaType.toString());
+    }
+  }
+
+  @Override
+  public byte[] getVreImageBlob(String vreName) {
+    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+
+    if (vreT.hasNext()) {
+      final Vertex vreVertex = vreT.next();
+      if (vreVertex.property(Vre.IMAGE_BLOB_PROPERTY_NAME).isPresent()) {
+        return vreVertex.value(Vre.IMAGE_BLOB_PROPERTY_NAME);
+      }
+    }
+    return null;
   }
 
   @Override

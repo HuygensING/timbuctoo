@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 
 import javax.ws.rs.GET;
@@ -16,6 +18,8 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,14 +35,16 @@ public class MyVres {
   private final LoggedInUserStore loggedInUserStore;
   private final Authorizer authorizer;
   private final BulkUploadVre bulkUploadVre;
-  private TransactionEnforcer transactionEnforcer;
+  private final TransactionEnforcer transactionEnforcer;
+  private final UriHelper uriHelper;
 
   public MyVres(LoggedInUserStore loggedInUserStore, Authorizer authorizer, BulkUploadVre bulkUploadVre,
-                TransactionEnforcer transactionEnforcer) {
+                TransactionEnforcer transactionEnforcer, UriHelper uriHelper) {
     this.loggedInUserStore = loggedInUserStore;
     this.authorizer = authorizer;
     this.bulkUploadVre = bulkUploadVre;
     this.transactionEnforcer = transactionEnforcer;
+    this.uriHelper = uriHelper;
   }
 
   @GET
@@ -132,11 +138,23 @@ public class MyVres {
     }
 
     private ObjectNode getMetadata() {
+      final URI imageUri = createImageUri(vreName, metadata);
       return jsnO(
         "colorCode", jsn(metadata.getColorCode()),
         "provenance", jsn(metadata.getProvenance()),
-        "description", jsn(metadata.getDescription())
+        "description", jsn(metadata.getDescription()),
+        "image", jsn(imageUri == null ? null : imageUri.toString())
       );
+    }
+
+    private URI createImageUri(String vreName, VreMetadata metadata) {
+      if (metadata.getImageRev() == null) {
+        return null;
+      }
+      return uriHelper.fromResourceUri(UriBuilder.fromResource(VreImage.class)
+                                                 .resolveTemplate("vreName", vreName)
+                                                 .resolveTemplate("rev", metadata.getImageRev())
+                                                 .build());
     }
   }
 }
