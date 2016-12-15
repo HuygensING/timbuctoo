@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.core;
 
-import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -33,6 +32,7 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -241,22 +241,27 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.ensureVreExists(vreName);
   }
 
-  public void addCollectionToVre(String vreName, CreateCollection createCollection) {
-    dataStoreOperations.addCollectionToVre(getVre(vreName), createCollection);
-  }
-
-  public void removeCollectionsAndEntities(String vreName) {
-    dataStoreOperations.removeCollectionsAndEntities(loadVres().getVre(vreName));
-  }
-
-  public void clearMappingErrors(String vreName) {
-    dataStoreOperations.clearMappingErrors(loadVres().getVre(vreName));
-  }
-
   public void saveRmlMappingState(String vreName, String rdfData) {
     dataStoreOperations.saveRmlMappingState(vreName, rdfData);
   }
 
+  public void rdfCleanImportSession(String vreName, Function<RdfImportSession, TransactionState> sessionConsumer) {
+    RdfImportSession session = RdfImportSession.cleanImportSession(vreName, dataStoreOperations);
+
+    try {
+      TransactionState result = sessionConsumer.apply(session);
+      if (result.wasCommitted()) {
+        session.success();
+      } else {
+        session.rollback();
+      }
+    } catch (RuntimeException e) {
+      session.rollback();
+      throw e;
+    } finally {
+      session.close();
+    }
+  }
 
   //================== Inner classes ==================
   @FunctionalInterface

@@ -26,19 +26,6 @@ public class RdfImporterTest {
       "\"30.35\"^^<http://www.w3.org/2001/XMLSchema#float> .";
 
   @Test
-  public void importRdfFirstCreatesAVreThanAddsTheTriplesToTheVre() {
-    TinkerPopGraphManager graphWrapper = newGraph().wrap();
-    TripleImporter tripleImporter = mock(TripleImporter.class);
-    RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, mock(Vres.class), tripleImporter);
-
-    instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
-
-    InOrder inOrder = inOrder(tripleImporter);
-    inOrder.verify(tripleImporter).prepare();
-    inOrder.verify(tripleImporter).importTriple(eq(true), any(Triple.class));
-  }
-
-  @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
     TinkerPopGraphManager graphWrapper = newGraph().wrap();
     TripleImporter tripleImporter = mock(TripleImporter.class);

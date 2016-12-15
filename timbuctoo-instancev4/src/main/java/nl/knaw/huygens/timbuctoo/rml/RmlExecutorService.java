@@ -3,15 +3,12 @@ package nl.knaw.huygens.timbuctoo.rml;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.TripleImporter;
-import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
-import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,22 +42,13 @@ public class RmlExecutorService {
 
   public void execute(Consumer<String> statusUpdate) {
     transactionEnforcer.execute(timbuctooActions -> {
-      final TripleImporter importer = new TripleImporter(graphWrapper, vreName, timbuctooActions);
-
-      importer.prepare();
-      timbuctooActions.clearMappingErrors(vreName);
-      timbuctooActions.removeCollectionsAndEntities(vreName);
-
-      try (Transaction tx = graphWrapper.getGraph().tx()) {
-        if (!tx.isOpen()) {
-          tx.open();
-        }
-
-        final TripleProcessorImpl processor = new TripleProcessorImpl(new Database(graphWrapper));
+      timbuctooActions.rdfCleanImportSession(vreName, session -> {
+        final TripleImporter importer = new TripleImporter(graphWrapper, vreName);
 
         //first save the archetype mappings
         AtomicLong tripleCount = new AtomicLong(0);
 
+        //create the links from the collection entities to the archetypes
         model
           .listStatements(
             null,
@@ -73,17 +61,19 @@ public class RmlExecutorService {
                 statement.getPredicate().asNode(),
                 statement.getObject().asNode()
               ));
-              reportTripleCount(tripleCount, false, statusUpdate);
+              reportTripleCount(tripleCount, statusUpdate);
             }
           );
 
+        //generate and import rdf
         rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
           (triple) -> {
-            reportTripleCount(tripleCount, false, statusUpdate);
+            reportTripleCount(tripleCount, statusUpdate);
             importer.importTriple(true, triple);
           });
 
-        reportTripleCount(tripleCount, true, statusUpdate);
+        reportTripleCount(tripleCount, statusUpdate);
+
         //Give the collections a proper name
         graphWrapper
           .getGraph()
@@ -99,15 +89,15 @@ public class RmlExecutorService {
             }
           });
 
-        tx.commit();
-      }
+        vres.reload();//FIXME naar importSession.close can be done when the Vres are retrieved via TimbuctooActions
+        return commit();
+      });
 
-      vres.reload();
       return commit();
     });
   }
 
-  private void reportTripleCount(AtomicLong tripleCount, boolean force, Consumer<String> statusUpdate) {
+  private void reportTripleCount(AtomicLong tripleCount, Consumer<String> statusUpdate) {
     final long curCount = tripleCount.incrementAndGet();
     final String message = String.format("Processed %d triples", curCount);
     statusUpdate.accept(message);
