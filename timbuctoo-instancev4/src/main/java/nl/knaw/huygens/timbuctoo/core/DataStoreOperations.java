@@ -23,7 +23,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface DataStoreOperations extends AutoCloseable {
-  void clearMappingErrors(String vreName);
+  void clearMappingErrors(Vre vre);
 
   boolean hasMappingErrors(String vreName);
 
@@ -82,7 +82,7 @@ public interface DataStoreOperations extends AutoCloseable {
 
   Vre ensureVreExists(String vreName);
 
-  void removeCollectionsAndEntities(String vreName);
+  void removeCollectionsAndEntities(Vre vre);
 
   void addPid(UUID id, int rev, URI pidUri) throws NotFoundException;
 

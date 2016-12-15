@@ -214,8 +214,8 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public void clearMappingErrors(String vreName) {
-    getRawCollectionsTraversal(vreName)
+  public void clearMappingErrors(Vre vre) {
+    getRawCollectionsTraversal(vre.getVreName())
       .emit()
       .repeat(__.out(HAS_NEXT_ERROR))
       .forEachRemaining(vertex -> {
@@ -699,11 +699,11 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public void removeCollectionsAndEntities(String vreName) {
+  public void removeCollectionsAndEntities(Vre vre) {
     traversal
       .V()
       .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
       .out("hasCollection")
       .not(has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true))
       .union(

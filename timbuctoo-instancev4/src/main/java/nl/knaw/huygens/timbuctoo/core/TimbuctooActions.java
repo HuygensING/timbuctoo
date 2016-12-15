@@ -246,11 +246,11 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public void removeCollectionsAndEntities(String vreName) {
-    dataStoreOperations.removeCollectionsAndEntities(vreName);
+    dataStoreOperations.removeCollectionsAndEntities(loadVres().getVre(vreName));
   }
 
   public void clearMappingErrors(String vreName) {
-    dataStoreOperations.clearMappingErrors(vreName);
+    dataStoreOperations.clearMappingErrors(loadVres().getVre(vreName));
   }
 
   public void saveRmlMappingState(String vreName, String rdfData) {
