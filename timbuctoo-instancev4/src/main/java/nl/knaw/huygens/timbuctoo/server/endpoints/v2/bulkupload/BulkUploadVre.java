@@ -8,27 +8,36 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Optional;
 
+import static com.google.common.io.ByteStreams.limit;
+import static com.google.common.io.ByteStreams.toByteArray;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.FIRST_RAW_PROPERTY_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RAW_PROPERTY_EDGE_NAME;
@@ -40,6 +49,8 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 @Path("/v2.1/bulk-upload/{vre}")
 public class BulkUploadVre {
+  public static final Logger LOG = LoggerFactory.getLogger(BulkUploadVre.class);
+
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
   private final RawCollection rawCollection;
@@ -47,10 +58,11 @@ public class BulkUploadVre {
   private final UserPermissionChecker permissionChecker;
   private final SaveRml saveRml;
   private final TransactionEnforcer transactionEnforcer;
+  private final int maxFileSize;
 
   public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection,
                        ExecuteRml executeRml, UserPermissionChecker permissionChecker, SaveRml saveRml,
-                       TransactionEnforcer transactionEnforcer) {
+                       TransactionEnforcer transactionEnforcer, int maxFileSize) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.rawCollection = rawCollection;
@@ -58,6 +70,7 @@ public class BulkUploadVre {
     this.permissionChecker = permissionChecker;
     this.saveRml = saveRml;
     this.transactionEnforcer = transactionEnforcer;
+    this.maxFileSize = maxFileSize;
   }
 
   public URI createUri(String vre) {
@@ -133,6 +146,33 @@ public class BulkUploadVre {
     });
   }
 
+  @POST
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Path("/image")
+
+  public Response uploadImage(@FormDataParam("file") InputStream fileUpload,
+                              @FormDataParam("file") FormDataBodyPart body) {
+
+    System.out.println(body.getMediaType());
+    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+      try {
+        final byte[] uploadedBytes = getUploadedBytes(fileUpload);
+
+
+        return TransactionStateAndResult.commitAndReturn(Response.ok().build());
+      } catch (IOException e) {
+        LOG.error("Reading upload failed", e);
+        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
+                       .entity(e.getMessage())
+                       .build());
+      } catch (IllegalArgumentException e) {
+        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
+                       .entity(e.getMessage())
+                       .build());
+      }
+    });
+  }
+
   private void addCollection(ArrayNode collectionArrayNode, Vertex collectionVertex, String vreName) {
     String collectionName = collectionVertex.value("name");
     ObjectNode collection = jsnO("name", jsn(collectionName));
@@ -149,6 +189,25 @@ public class BulkUploadVre {
     }
   }
 
+  private byte[] getUploadedBytes(InputStream fileUpload) throws IOException {
+    byte[] bytes;
+    bytes = toByteArray(limit(fileUpload, maxFileSize));
+    if (fileUpload.read() != -1) {
+      throw new IllegalArgumentException("The file may not be larger than " +
+        humanReadableByteCount(maxFileSize) + " bytes");
+    }
+    return bytes;
+  }
+
+  private String humanReadableByteCount(long bytes) {
+    int unit = 1024;
+    if (bytes < unit) {
+      return bytes + " B";
+    }
+    int exp = (int) (Math.log(bytes) / Math.log(unit));
+    String pre = ("KMGTPE").charAt(exp - 1) + "iB";
+    return String.format("%.2f %s", bytes / Math.pow(unit, exp), pre);
+  }
 
   private void addVariables(ArrayNode variables, Vertex variable) {
     variables.add(jsn(variable.value(RAW_PROPERTY_NAME)));
