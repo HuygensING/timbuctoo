@@ -40,8 +40,12 @@ public class Collection {
   public static final String HAS_INITIAL_PROPERTY_RELATION_NAME = "hasInitialProperty";
   public static final String HAS_ARCHETYPE_RELATION_NAME = "hasArchetype";
   public static final String IS_RELATION_COLLECTION_PROPERTY_NAME = "isRelationCollection";
+
   public static final String HAS_PREDICATE_RELATION_NAME = "hasPredicate";
   private static final Logger LOG = LoggerFactory.getLogger(Collection.class);
+
+  public static final String COLLECTION_DESCRIPTION_PROPERTY_NAME = "collectionDescription";
+
   private final String entityTypeName;
   private final String collectionName;
   private final Vre vre;
@@ -52,12 +56,13 @@ public class Collection {
   private final boolean isRelationCollection;
   private final String collectionLabel;
   private boolean unknown;
+  private final String description;
 
   //FIXME: shouldn't be public
   public Collection(@NotNull String entityTypeName, @NotNull String abstractType,
-             @NotNull ReadableProperty displayName, @NotNull LinkedHashMap<String, ReadableProperty> properties,
-             @NotNull String collectionName, @NotNull Vre vre, @NotNull String collectionLabel, boolean unknown,
-             boolean isRelationCollection) {
+                    @NotNull ReadableProperty displayName, @NotNull LinkedHashMap<String, ReadableProperty> properties,
+                    @NotNull String collectionName, @NotNull Vre vre, @NotNull String collectionLabel, boolean unknown,
+                    boolean isRelationCollection, String description) {
     this.entityTypeName = entityTypeName;
     this.abstractType = abstractType;
     this.displayName = displayName;
@@ -65,6 +70,7 @@ public class Collection {
     this.collectionName = collectionName;
     this.vre = vre;
     this.unknown = unknown;
+    this.description = description;
     if (collectionLabel == null) {
       this.collectionLabel = collectionName;
     } else {
@@ -135,11 +141,14 @@ public class Collection {
     final LinkedHashMap<String, ReadableProperty> properties = loadProperties(collectionVertex, vre);
     final String collectionName = collectionVertex.value(COLLECTION_NAME_PROPERTY_NAME);
     final String label = getProp(collectionVertex, COLLECTION_LABEL_PROPERTY_NAME, String.class).orElse(null);
+    final String description = getProp(collectionVertex, COLLECTION_DESCRIPTION_PROPERTY_NAME, String.class)
+      .orElse(null);
+
     boolean isRelationCollection = collectionVertex.value(IS_RELATION_COLLECTION_PROPERTY_NAME);
     boolean unknown = getProp(collectionVertex, COLLECTION_IS_UNKNOWN_PROPERTY_NAME, Boolean.class).orElse(false);
 
     return new Collection(entityTypeName, abstractType, displayName, properties, collectionName, vre,
-      label, unknown, isRelationCollection);
+      label, unknown, isRelationCollection, description);
   }
 
   private static ReadableProperty loadDisplayName(Vertex collectionVertex, Vre vre) {
@@ -203,7 +212,9 @@ public class Collection {
     collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, isRelationCollection);
     collectionVertex.property(COLLECTION_LABEL_PROPERTY_NAME, collectionLabel);
     collectionVertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME, unknown);
-
+    if (description != null) {
+      collectionVertex.property(COLLECTION_DESCRIPTION_PROPERTY_NAME, description);
+    }
     saveArchetypeRelation(graph, collectionVertex);
 
     savePropertyConfigurations(graph, collectionVertex);
