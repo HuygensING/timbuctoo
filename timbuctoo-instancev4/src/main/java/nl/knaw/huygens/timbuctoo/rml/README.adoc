@@ -279,14 +279,14 @@ I can imagine that intuitively the datasource that provides the data also stores
 
 [ditaa]
 --
-   **non-exsistent** ----------------------+
-                                           |
-        ^                                  |
-        |                                  |
-        |                                  v
-        |                           +-----------+
-        |                           |           |
-        |                           | uploading |
+   **non-exsistent** ----------------------+     +---------------+
+                                           |     |               |
+        ^                                  +-----| upload failed |
+        |                                  |     |               |
+        |                                  v     +---------------+
+        |                           +-----------+     ^
+        |                           |           |     |
+        |                           | uploading |-----+
         |                           |           |
   +------------+                    +-----------+
   |            |                           |

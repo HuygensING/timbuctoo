@@ -144,12 +144,12 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     }
   }
 
-  public void setUploadFinished(String vreName) {
+  public void setUploadFinished(String vreName, Vre.PublishState publishState) {
     try (Transaction tx = graphWrapper.getGraph().tx()) {
 
       final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
       if (vreT.hasNext()) {
-        vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishState.MAPPING_CREATION.toString());
+        vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
       }
       tx.commit();
     }
