@@ -39,6 +39,7 @@ public class ScaffoldMigrator {
             vre
               .withCollection("persons", collection ->
                 collection
+                  .withDescription("People with at least a name, birthdate and birthplace.")
                   .withDisplayName(localProperty("person_names", defaultFullPersonNameConverter))
                   .withProperty("names", localProperty("names", personNames))
                   .withProperty("gender", localProperty("person_gender"))
@@ -47,6 +48,7 @@ public class ScaffoldMigrator {
               )
               .withCollection("locations", collection ->
                 collection
+                  .withDescription("Countries, cities, villages, streets, etc.")
                   .withDisplayName(localProperty("location_name"))
                   .withProperty("name", localProperty("location_name"))
                   .withProperty("country", localProperty("location_country"))
@@ -54,12 +56,14 @@ public class ScaffoldMigrator {
               )
               .withCollection("collectives", collection ->
                 collection
+                  .withDescription("Institutes, multiple persons, companies, etc.")
                   .withDisplayName(localProperty("collective_name"))
                   .withProperty("name", localProperty("collective_name"))
                   .withProperty("altLabel", localProperty("collective_altLabel", arrayToEncodedArray))
               )
               .withCollection("documents", collection ->
                 collection
+                  .withDescription("Stories, novels, letters, diaries, plays, films, etc.")
                   .withDisplayName(localProperty("document_title"))
                   .withProperty("title", localProperty("document_title"))
                   .withProperty("documentType", localProperty("document_documentType"))
@@ -68,6 +72,7 @@ public class ScaffoldMigrator {
               )
               .withCollection("concepts", collection ->
                 collection
+                  .withDescription("Concepts which do not conform to a specific archetype.")
                   .withDisplayName(localProperty("label"))
               )
               .withCollection("relations", CollectionBuilder::isRelationCollection))

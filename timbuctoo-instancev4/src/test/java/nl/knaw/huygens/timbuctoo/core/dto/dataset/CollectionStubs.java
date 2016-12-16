@@ -20,17 +20,18 @@ public class CollectionStubs {
       mock(Vre.class),
       vrename + entitytypename,
       false,
-      false
-    );
+      false,
+      null);
   }
 
   public static Collection collWithCollectionName(String collectionName) {
     // TODO find a better way to create a collection for a test
     return new Collection(null, collectionName, null, Maps.newLinkedHashMap(), collectionName, null, null, false,
-      false);
+      false, null);
   }
 
   public static Collection keywordCollWithCollectionName(String collectionName) {
-    return new Collection(null, "keyword", null, Maps.newLinkedHashMap(), collectionName, null, null, false, false);
+    return new Collection(null, "keyword", null, Maps.newLinkedHashMap(), collectionName, null, null, false, false,
+      null);
   }
 }

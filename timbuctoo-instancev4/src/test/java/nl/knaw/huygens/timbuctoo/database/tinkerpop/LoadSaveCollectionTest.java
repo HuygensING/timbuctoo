@@ -94,7 +94,7 @@ public class LoadSaveCollectionTest {
       }).build();
 
     save(new Collection("person", "person", null, Maps.newLinkedHashMap(), "persons",
-      new Vre(vreName), null, false, false), graph);
+      new Vre(vreName), null, false, false, null), graph);
 
   }
 
