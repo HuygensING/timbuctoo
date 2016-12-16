@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
@@ -34,8 +35,13 @@ public class BulkUploadService {
       } else {
         loader = new DataPerfectLoader();
       }
-      loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
-      saver.setUploadFinished(vreName);
+      try {
+        loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
+        saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);
+      } catch (IOException | InvalidFileException e) {
+        saver.setUploadFinished(vreName, Vre.PublishState.UPLOAD_FAILED);
+        throw e;
+      }
     }
   }
 
