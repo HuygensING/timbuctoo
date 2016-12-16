@@ -25,6 +25,9 @@
 	height:100%;
 	}
 
+.top-green {
+	height: 5px;
+}
 .hit-canvas{
 	background-color:rgba(0,0,0,0.05);
 	top:75px;
@@ -43,7 +46,7 @@
 	right:0px;
 	position:absolute;
 	display:block;
-	
+
 	}
 
 
@@ -58,7 +61,7 @@
 .card-title {
 	padding-top:50px;
 	}
-	
+
 .card-body {
 	padding:20px;
 	}
@@ -72,7 +75,7 @@
 /* Bootstrap OVERRIDE */
 
 
-	
+
 .pagination {
     margin: 0px 0;
 }
@@ -81,6 +84,7 @@
   position: fixed;
   bottom: 0;
   width: 100%;
+  z-index: 100;
   /* Set the fixed height of the footer here */
 
 }
@@ -88,7 +92,7 @@
 .white-bar {
 	background-color: #ffffff;
   padding:1.5em 0 1.2em 0;
-  border-top:1px solid #dddddd; 
+  border-top:1px solid #dddddd;
 }
 
 
@@ -107,6 +111,10 @@
 	margin-top:-5px;
 	}
 
+.navbar {
+	margin-bottom: 0;
+	}
+
 
 .navbar, .navbar a {
 	color:#FFFFFF;
@@ -119,7 +127,7 @@
 	font-weight:500;
 	}
 
-	
+
 .card-dataset {
 	width:150px;
 	float:left;
@@ -130,12 +138,12 @@
 .card-dataset .btn {
 	margin-bottom:.5em ;
 	}
-	
+
 .card-dataset .explore {
 	padding-top:2em ;
 	padding-bottom:2em ;
 	}
-	
+
  .btn-primary {
 	 font-weight:500;
 	 }
@@ -145,12 +153,12 @@
 	 border-color:#595959;
 	 color:#595959;
 	 }
-	 
+
 .btn-blank {
 	 background:none;
 	 color:#595959;
 	}
-	 
+
 .list-group {
     list-style: decimal inside;
 	border:none;
@@ -168,7 +176,7 @@
 .nav-tabs .active {
 	font-weight:500;
 	}
-	
+
 .names-form {
 	display:inline-block;
 	}
@@ -181,7 +189,7 @@
 	list-style:none;
 	margin-bottom:2px;
 	padding: .2em 0px;
-	
+
 	}
 
 .item-element {
@@ -192,21 +200,16 @@
 	border-radius:6px;
 	color:#269075;
 	}
-	
-.from-excel,
-.to-timbuctoo {
+
+.from-excel {
 	color:#486B61;
 }
 
-.from-excel img,
-.to-timbuctoo img {
+.from-excel img {
 	height:1em;
 	width:auto;
 }
 
-.to-timbuctoo img {
-	background-color: #486b61;
-}
 
 .excel-tab {
 	display:block;
@@ -221,9 +224,9 @@
 }
 
 .excel-icon {
-	
+
 	fill: #a9a9a9;
-		} 
+		}
 
 .table-obtrusive th, .table-obtrusive td{
 	color:#a9a9a9;
@@ -235,7 +238,7 @@
 	background-size:contain;
 	background-repeat:no-repeat;
 	}
-	
+
 
 table .ignored {
 	opacity: 0.2;
@@ -246,7 +249,7 @@ table .ignored {
 }
 
 /* Facets */
-	
+
 .facet {
 	margin-bottom:2em;
 	}
@@ -258,8 +261,10 @@ table .ignored {
 .facet-items-box {
 	border-top:1px solid #eeeeee;
 	padding-top:.7em;
+	overflow-y: auto;
+	max-height: 175px;
 	}
-	
+
 .facet-item {
 	margin-bottom:.5em;
 	cursor:pointer;
@@ -268,28 +273,56 @@ table .ignored {
 .facet-check-box {
 	width:1em;
 	height:auto;
-	margin-top:-3px;
+	padding-top: 3px;
 	margin-right:.5em;
-	}
-	
+	float: left;
+	fill: #f9f9f9;
+	stroke: #414042;
+	stroke-width: 1;
+}
+
+
+svg.facet-check-box.checked {
+	fill: #d5e6f1
+}
+
 .facet-item-count {
 	}
 
 .facet-extra {
-	display:none;
-	
-	}
+	opacity: 0;
+	transition: opacity 0.2s ease-in-out;
 
+}
+
+.basic-facet:hover .facet-extra {
+	opacity: 1;
+}
 .facet-extra-space {
 	padding-top:10px;
 	height:40px;
 	}
+.downcase-then-capitalize {
+	text-transform:lowercase;
+}
 
-
-
+.downcase-then-capitalize:first-letter {
+	text-transform:uppercase;
+}
 
 
 /* results */
+ol.begin {
+  counter-reset: listcounter;
+}
+
+ol.begin li:before,
+ol.continue li:before {
+  content: counter(listcounter) ". ";
+  
+}
+
+
 .result-list ol{
 	padding:0px;
 	margin:0 0 0 0;
@@ -298,35 +331,86 @@ table .ignored {
 
 .result-list li{
 	padding:.5em 0 .5em 0;
-	counter-increment: step-counter;
+	counter-increment: listcounter;
 	border-top:1px solid #eeeeee;
 	cursor:pointer;
-  	
+
 	}
+.result-list-edit li:first-of-type {
+	border: none
+}
 
 .result-list li:hover{
 	font-weight:500;
-  	
+
 	}
-	
+
 .result-list li::before {
-  content: counter(step-counter);
+  content: counter(listcounter);
   font-size:.8em;
   color:#cccccc;
-  width:30px;
-  display:inline-block;
-  
+  width:20px;
+  display: inline-block;
+
+
 }
+
+.result-list .row {
+	margin: 0;
+	width: calc(100% - 21px);
+	display: block;
+}
+
+.result-list .col-md-6 {
+	padding: 0;
+}
+
+.toggleTag {
+	border-radius: 45px;
+	margin-bottom: .4em;
+	margin-right: .4em;
+	
+}
+
+.toggleTag--active {
+	background-color: #e6e6e6;
+}
+
+.toggleTag--inactive {
+	background-color: #ffff;
+	border: 1px solid #e6e6e6;
+	color: #808080;
+	
+}
+
 
 /* detail page */
 
 .img-portrait  {
 	height:150px;
 	width:auto;
-	
+
 	}
 #born-died {
 	width:45px;
 	height:auto;
 	}
 
+.input-group-btn:first-child > * > .btn {
+	margin-right: -1px;
+	border-bottom-right-radius: 0;
+	border-top-right-radius: 0;
+}
+
+.result-list-dataset-info {
+	display: block;
+	margin-top: 1em;
+	margin-bottom: .5em
+}
+
+
+
+.no-lr-padding {
+	padding-left: 0 !important;
+	padding-right: 0 !important;
+}

@@ -30,6 +30,9 @@ strong {
 	color:#a9a9a9
 	}
 
+.hi-dark-grey {
+	background-color:#323232
+	}
 
 
 .hi-light-grey-bg {
@@ -51,6 +54,14 @@ strong {
 .hi-italic {
 	font-style:italic;
 	}
+
+.hi-underline {
+	border-bottom:1px solid #eeeeee;
+}
+
+.regular {
+	font-weight:300 !important;
+}
 
 .logo {
 	height:1.5em;
