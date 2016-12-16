@@ -140,6 +140,8 @@ public class Database {
 
     org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
     rdfIndex.add(neo4jNode, vreName, nodeUri);
+    rdfIndex.add(neo4jNode, "Admin", nodeUri);
+
 
     return entity;
   }

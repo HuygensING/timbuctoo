@@ -189,9 +189,9 @@ public class TripleImporterIntegrationTest {
     ));
   }
 
-  private Optional<ReadEntity> getReadEntity(String collectionName, String rdfIro) throws Exception {
+  private Optional<ReadEntity> getReadEntity(String collectionName, String rdfUri) throws Exception {
     Collection collection = timbuctooActions.getCollectionMetadata(collectionName);
-    return timbuctooActions.searchEntityByRdfUri(collection, rdfIro, true);
+    return timbuctooActions.getEntityByRdfUri(collection, rdfUri, true);
   }
 
   @Test

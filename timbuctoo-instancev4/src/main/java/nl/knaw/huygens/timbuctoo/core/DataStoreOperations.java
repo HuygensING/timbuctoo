@@ -89,7 +89,7 @@ public interface DataStoreOperations extends AutoCloseable {
   /**
    * Get the latest version of the entity with a certain rdf uri.
    */
-  Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations);
+  Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations);
 
   List<RelationType> getRelationTypes();
 

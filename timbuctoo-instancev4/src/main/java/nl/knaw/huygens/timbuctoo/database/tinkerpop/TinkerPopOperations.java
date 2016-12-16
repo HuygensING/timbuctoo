@@ -403,19 +403,16 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
-    GraphTraversal<Vertex, Vertex> entityT = latestState.V().has("rdfUri", uri).has("isLatest", true);
+  public Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
+    Optional<Vertex> vertex = indexHandler.findVertexInRdfIndex(collection.getVre(), uri);
 
-    if (!entityT.asAdmin().clone().hasNext()) {
-      return Optional.empty();
-    }
-
-    String entityTypesStr = getProp(entityT.asAdmin().clone().next(), "types", String.class).orElse("[]");
-    if (!entityTypesStr.contains("\"" + collection.getEntityTypeName() + "\"")) {
-      return Optional.empty();
-    }
-
-    return Optional.of(new TinkerPopToEntityMapper(collection, traversal, mappings).mapEntity(entityT, withRelations));
+    return vertex
+      .filter(v ->
+        getProp(v, "types", String.class)
+          .orElse("[]")
+          .contains("\"" + collection.getEntityTypeName() + "\"")
+      )
+      .map(v -> new TinkerPopToEntityMapper(collection, traversal, mappings).mapEntity(v, withRelations));
   }
 
   @Override

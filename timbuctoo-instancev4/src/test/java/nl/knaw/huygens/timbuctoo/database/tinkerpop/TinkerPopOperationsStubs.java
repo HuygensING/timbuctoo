@@ -14,7 +14,7 @@ public class TinkerPopOperationsStubs {
   public static TinkerPopOperations forGraphWrapper(TinkerPopGraphManager graphManager) {
 
     return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), null,
-      mock(IndexHandler.class));
+      new Neo4jIndexHandler(graphManager));
   }
 
   public static TinkerPopOperations forChangeListenerMock(ChangeListener changeListener) {
@@ -67,5 +67,12 @@ public class TinkerPopOperationsStubs {
   public static TinkerPopOperations newInstance() {
     return new TinkerPopOperations(newGraph().wrap(), mock(ChangeListener.class), new GremlinEntityFetcher(), null,
       mock(IndexHandler.class));
+  }
+
+  public static TinkerPopOperations forGraphWrapperAndMappingsAndIndexHandler(TinkerPopGraphManager graphManager,
+                                                                              Vres vres,
+                                                                              IndexHandler indexHandler) {
+    return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), vres,
+      indexHandler);
   }
 }

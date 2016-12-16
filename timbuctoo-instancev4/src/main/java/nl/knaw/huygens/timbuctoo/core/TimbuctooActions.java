@@ -221,8 +221,8 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   //================== RDF ==================
-  public Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
-    return dataStoreOperations.searchEntityByRdfUri(collection, uri, withRelations);
+  public Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
+    return dataStoreOperations.getEntityByRdfUri(collection, uri, withRelations);
   }
 
   public Vre getVre(String vreName) {

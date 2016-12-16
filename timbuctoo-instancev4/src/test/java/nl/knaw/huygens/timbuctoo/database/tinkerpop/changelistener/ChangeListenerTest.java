@@ -167,7 +167,7 @@ public class ChangeListenerTest {
       "saveVre",
       "ensureVreExists",
       "addPid",
-      "searchEntityByRdfUri",
+      "getEntityByRdfUri",
       "getRelationTypes",
       "addCollectionToVre"
     );

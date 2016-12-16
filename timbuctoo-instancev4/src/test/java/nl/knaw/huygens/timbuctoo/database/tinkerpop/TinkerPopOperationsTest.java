@@ -46,6 +46,8 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapperAndMappings;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs
+  .forGraphWrapperAndMappingsAndIndexHandler;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
@@ -2288,41 +2290,18 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
-  public void searchEntityByRdfUriReturnsAnEmptyOptionalIfTheEntityCannotBeFound() {
+  public void getEntityByRdfUriReturnsAnEmptyOptionalIfTheEntityCannotBeFound() {
     Vres vres = createConfiguration();
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(newGraph().wrap(), vres);
     Collection collection = vres.getCollection("testthings").get();
 
-    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
+    Optional<ReadEntity> readEntity = instance.getEntityByRdfUri(collection, "http://example.com/entity", false);
 
     assertThat(readEntity, is(not(present())));
   }
 
   @Test
-  public void searchEntityByRdfUriReturnsTheEntityWhenFound() {
-    UUID id1 = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("rdfUri", "http://example.com/entity")
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .wrap();
-    Vres vres = createConfiguration();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(graphManager, vres);
-    Collection collection = vres.getCollection("testthings").get();
-
-    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
-
-    assertThat(readEntity, is(present()));
-    assertThat(readEntity.get(), hasProperty("id", equalTo(id1)));
-  }
-
-  @Test
-  public void searchEntityByRdfUriReturnsTheLatestEntity() {
+  public void getEntityByRdfUriReturnsTheLatestEntity() {
     UUID id1 = UUID.randomUUID();
     TinkerPopGraphManager graphManager = newGraph()
       .withVertex(v -> v
@@ -2345,10 +2324,13 @@ public class TinkerPopOperationsTest {
       )
       .wrap();
     Vres vres = createConfiguration();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(graphManager, vres);
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    Vertex vertex = graphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
+    when(indexHandler.findVertexInRdfIndex(any(Vre.class), anyString())).thenReturn(Optional.of(vertex));
+    TinkerPopOperations instance = forGraphWrapperAndMappingsAndIndexHandler(graphManager, vres, indexHandler);
     Collection collection = vres.getCollection("testthings").get();
 
-    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
+    Optional<ReadEntity> readEntity = instance.getEntityByRdfUri(collection, "http://example.com/entity", false);
 
     assertThat(readEntity, is(present()));
     assertThat(readEntity.get(), hasProperty("rev", equalTo(2)));
