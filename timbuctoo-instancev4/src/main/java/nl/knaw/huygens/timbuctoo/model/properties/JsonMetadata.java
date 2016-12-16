@@ -181,6 +181,7 @@ public class JsonMetadata {
       return jsnO(
         "collectionName", jsn(collection.getCollectionName()),
         "collectionLabel", jsn(collection.getCollectionLabel()),
+        "description", jsn(collection.getDescription()),
         "unknown", jsn(collection.isUnknown()),
         "relationCollection", jsn(collection.isRelationCollection()),
         "archetypeName", jsn(collection.getAbstractType()),

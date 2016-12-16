@@ -323,4 +323,8 @@ public class Collection {
   public Optional<ReadableProperty> getProperty(String propertyName) {
     return Optional.ofNullable(properties.get(propertyName));
   }
+
+  public String getDescription() {
+    return description;
+  }
 }
