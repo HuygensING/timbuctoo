@@ -12,6 +12,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.security.JsonBasedUserStoreStubs.forFile;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -33,7 +34,7 @@ public class JsonBasedUserStoreTest {
     User[] users = {user, userWithoutPid};
     OBJECT_MAPPER.writeValue(USERS_FILE.toFile(), users);
 
-    instance = new JsonBasedUserStore(USERS_FILE);
+    instance = forFile(USERS_FILE);
   }
 
   @After
@@ -65,7 +66,7 @@ public class JsonBasedUserStoreTest {
   @Test
   public void userForThrowsAnAuthenticationUnavailableExceptionWhenTheUsersFileCannotBeRead()
     throws AuthenticationUnavailableException {
-    JsonBasedUserStore instance = new JsonBasedUserStore(Paths.get("nonExistingUserFile"));
+    JsonBasedUserStore instance = forFile(Paths.get("nonExistingUserFile"));
 
     expectedException.expect(AuthenticationUnavailableException.class);
 
@@ -93,7 +94,7 @@ public class JsonBasedUserStoreTest {
   @Test
   public void createUserThrowsAUserCreationExceptionWhenTheUsersFileCannotBeRead() throws Exception {
     Path nonExistingUsersFile = Paths.get("src", "test", "resources", "users1.json");
-    JsonBasedUserStore instance = new JsonBasedUserStore(nonExistingUsersFile);
+    JsonBasedUserStore instance = forFile(nonExistingUsersFile);
 
     expectedException.expect(UserCreationException.class);
     instance.createUser("pid", "email", "givenName", "surname", "organization");
