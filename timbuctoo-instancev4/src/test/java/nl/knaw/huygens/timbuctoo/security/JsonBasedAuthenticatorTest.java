@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticatorStubs.backedByFile;
+import static nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticatorStubs.withAlgorithm;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,7 +34,7 @@ public class JsonBasedAuthenticatorTest {
 
   @Before
   public void setUp() throws Exception {
-    instance = new JsonBasedAuthenticator(LOGINS_FILE);
+    instance = backedByFile(LOGINS_FILE);
   }
 
   @Test
@@ -56,7 +58,7 @@ public class JsonBasedAuthenticatorTest {
   @Test
   public void authenticateThrowsALocalLoginUnavailableExceptionWhenTheLoginsFileCouldBeRead()
     throws LocalLoginUnavailableException {
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(Paths.get("unavailableLoginsFile"));
+    JsonBasedAuthenticator instance = backedByFile(Paths.get("unavailableLoginsFile"));
 
     expectedException.expect(LocalLoginUnavailableException.class);
 
@@ -66,7 +68,7 @@ public class JsonBasedAuthenticatorTest {
   @Test
   public void authenticateThrowsALocalLoginUnavailableExceptionWhenTheEncryptionAlgorithmIsUnavailable()
     throws LocalLoginUnavailableException {
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(LOGINS_FILE, "bogusAlgorithm");
+    JsonBasedAuthenticator instance = withAlgorithm(LOGINS_FILE, "bogusAlgorithm");
 
     expectedException.expect(LocalLoginUnavailableException.class);
 
@@ -78,7 +80,7 @@ public class JsonBasedAuthenticatorTest {
     Login[] logins = new Login[0];
     Path emptyLoginsFile = Paths.get("src", "test", "resources", "logins1.json");
     new ObjectMapper().writeValue(emptyLoginsFile.toFile(), logins);
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(emptyLoginsFile);
+    JsonBasedAuthenticator instance = backedByFile(emptyLoginsFile);
 
     instance.createLogin("userPid", "userName", "password", "givenName", "surname", "email", "org");
 
@@ -94,7 +96,7 @@ public class JsonBasedAuthenticatorTest {
     Path emptyLoginsFile = Paths.get("src", "test", "resources", "logins1.json");
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.writeValue(emptyLoginsFile.toFile(), logins);
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(emptyLoginsFile);
+    JsonBasedAuthenticator instance = backedByFile(emptyLoginsFile);
 
     String userPid = "userPid";
     instance.createLogin(userPid, "userName", "password", "givenName", "surname", "email", "org");
@@ -114,7 +116,7 @@ public class JsonBasedAuthenticatorTest {
     Path emptyLoginsFile = Paths.get("src", "test", "resources", "logins1.json");
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.writeValue(emptyLoginsFile.toFile(), logins);
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(emptyLoginsFile);
+    JsonBasedAuthenticator instance = backedByFile(emptyLoginsFile);
 
     String userName = "userName";
     instance.createLogin("userPid", userName, "password", "givenName", "surname", "email", "org");
@@ -133,7 +135,7 @@ public class JsonBasedAuthenticatorTest {
     Login[] logins = new Login[0];
     Path emptyLoginsFile = Paths.get("src", "test", "resources", "logins1.json");
     new ObjectMapper().writeValue(emptyLoginsFile.toFile(), logins);
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(emptyLoginsFile, "bogusAlgorithm");
+    JsonBasedAuthenticator instance = withAlgorithm(emptyLoginsFile, "bogusAlgorithm");
 
     try {
       instance.createLogin("userPid", "userName", "password", "givenName", "surname", "email", "org");
@@ -145,7 +147,7 @@ public class JsonBasedAuthenticatorTest {
   @Test(expected = LoginCreationException.class)
   public void createLoginThrowsLoginCreationExceptionWhenTheLoginsFileCannotBeRead() throws Exception {
     Path pathToNonExistingFile = Paths.get("src", "test", "resources", "logins1.json");
-    JsonBasedAuthenticator instance = new JsonBasedAuthenticator(pathToNonExistingFile);
+    JsonBasedAuthenticator instance = backedByFile(pathToNonExistingFile);
 
     instance.createLogin("userPid", "userName", "password", "givenName", "surname", "email", "org");
   }

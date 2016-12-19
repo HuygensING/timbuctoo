@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.localfile.LocalFileLoginAccess;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllEntityIds;
@@ -156,7 +157,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
 
     JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
-    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
+    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(
+      new LocalFileLoginAccess(loginsPath), ENCRYPTION_ALGORITHM
+    );
     final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
       authenticator,
       userStore,
