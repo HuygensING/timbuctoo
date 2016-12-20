@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
+
 import java.util.Optional;
 
 public interface VreAuthorizationAccess {

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security;
+package nl.knaw.huygens.timbuctoo.security.dto;
 
 /*
  * #%L
@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
+import nl.knaw.huygens.timbuctoo.security.UserRoles;
 
 import java.util.List;
 

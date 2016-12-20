@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security.localfile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorization;
+import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationAccess;
 import org.junit.After;
 import org.junit.Before;

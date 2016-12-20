@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import org.junit.Before;
 import org.junit.Test;
 
