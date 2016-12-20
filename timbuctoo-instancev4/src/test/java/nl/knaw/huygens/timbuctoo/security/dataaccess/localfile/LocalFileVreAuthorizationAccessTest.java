@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security.localfile;
+package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;

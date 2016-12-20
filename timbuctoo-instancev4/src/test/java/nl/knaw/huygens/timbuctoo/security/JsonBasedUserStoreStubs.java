@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import nl.knaw.huygens.timbuctoo.security.localfile.LocalFileUserAccess;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileUserAccess;
 
 import java.nio.file.Path;
 
