@@ -41,17 +41,16 @@ public class LoginFileMigration {
 
     for (LegacyLogin login : logins) {
 
-      Login newLogin = new Login(login.getUserPid(), login.getUsername(), login.getPassword().getBytes(),
-              login.getSalt());
-
-      newLogin.setGivenName(login.getGivenName());
-      newLogin.setEmailAddress(login.getEmailAddress());
-      newLogin.setOrganization(login.getOrganization());
-      newLogin.setId(login.getId());
-      newLogin.setRev(login.getRev());
-      newLogin.setModified(login.getModified());
-      newLogin.setCreated(login.getCreated());
-      newLogins.add(newLogin);
+      newLogins.add(Login.create(
+        login.getUsername(),
+        login.getUserPid(),
+        login.getPassword().getBytes(),
+        login.getSalt(),
+        login.getGivenName(),
+        login.getSurName(),
+        login.getEmailAddress(),
+        login.getOrganization())
+      );
     }
 
     // ObjectMapper will only write the @type property for a typed array, not for a list, because

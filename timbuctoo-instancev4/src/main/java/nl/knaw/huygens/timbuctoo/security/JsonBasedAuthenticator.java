@@ -73,12 +73,7 @@ public class JsonBasedAuthenticator implements Authenticator, LoginCreator {
     byte[] salt = createSalt();
     byte[] encryptedPassword = encryptPassword(password, salt);
 
-    Login login = new Login(userPid, userName, encryptedPassword, salt);
-    login.setGivenName(givenName);
-    login.setSurName(surname);
-    login.setEmailAddress(email);
-    login.setOrganization(organization);
-    return login;
+    return Login.create(userName, userPid, encryptedPassword, salt, givenName, surname, email, organization);
   }
 
   private byte[] createSalt() {
