@@ -2,10 +2,11 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,6 +21,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
 
   public LocalFileVreAuthorizationAccess(Path authorizationsFolder) {
     objectMapper = new ObjectMapper();
+    objectMapper.registerModule(new GuavaModule());
     this.authorizationsFolder = authorizationsFolder;
   }
 
@@ -27,7 +29,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   public VreAuthorization getOrCreateAuthorization(String vreId, String userId, String userRole)
     throws AuthorizationUnavailableException {
     File file = getFile(vreId);
-    VreAuthorization vreAuthorization = new VreAuthorization(vreId, userId, userRole);
+    VreAuthorization vreAuthorization = VreAuthorization.create(vreId, userId, userRole);
 
     try {
       synchronized (authorizationsFolder) {

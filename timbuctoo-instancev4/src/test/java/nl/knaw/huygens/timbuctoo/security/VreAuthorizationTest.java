@@ -12,7 +12,7 @@ import static org.junit.Assert.assertThat;
 public class VreAuthorizationTest {
   @Test
   public void isAllowedToWriteReturnsTrueIfTheRolesContainUser() throws Exception {
-    VreAuthorization instance = new VreAuthorization(null, null, USER_ROLE);
+    VreAuthorization instance = VreAuthorization.create("", "", USER_ROLE);
 
     boolean allowedToWrite = instance.isAllowedToWrite();
 
@@ -21,7 +21,7 @@ public class VreAuthorizationTest {
 
   @Test
   public void isAllowedToWriteReturnsTrueIfTheRolesContainAdmin() throws Exception {
-    VreAuthorization instance = new VreAuthorization(null, null, ADMIN_ROLE);
+    VreAuthorization instance = VreAuthorization.create("", "", ADMIN_ROLE);
 
     boolean allowedToWrite = instance.isAllowedToWrite();
 
@@ -30,7 +30,7 @@ public class VreAuthorizationTest {
 
   @Test
   public void isAllowedToWriteReturnsFalseIfTheRolesOnlyContainUnverifiedUser() throws Exception {
-    VreAuthorization instance = new VreAuthorization(null, null, UNVERIFIED_USER_ROLE);
+    VreAuthorization instance = VreAuthorization.create("", "", UNVERIFIED_USER_ROLE);
 
     boolean allowedToWrite = instance.isAllowedToWrite();
 
@@ -39,7 +39,7 @@ public class VreAuthorizationTest {
 
   @Test
   public void isAllowedToWriteReturnsTrueIfTheRolesContainUnverifiedUserAndUser() throws Exception {
-    VreAuthorization instance = new VreAuthorization(null, null, UNVERIFIED_USER_ROLE, USER_ROLE);
+    VreAuthorization instance = VreAuthorization.create("", "", UNVERIFIED_USER_ROLE, USER_ROLE);
 
     boolean allowedToWrite = instance.isAllowedToWrite();
 
@@ -48,7 +48,7 @@ public class VreAuthorizationTest {
 
   @Test
   public void isAllowedToWriteReturnsTrueIfTheRolesContainUnverifiedUserAndAdmin() throws Exception {
-    VreAuthorization instance = new VreAuthorization(null, null, UNVERIFIED_USER_ROLE, ADMIN_ROLE);
+    VreAuthorization instance = VreAuthorization.create("", "", UNVERIFIED_USER_ROLE, ADMIN_ROLE);
 
     boolean allowedToWrite = instance.isAllowedToWrite();
 
@@ -57,7 +57,7 @@ public class VreAuthorizationTest {
 
   @Test
   public void isAllowedToWriteReturnsFalseIfTheRolesAreEmpty() throws Exception {
-    VreAuthorization instance = new VreAuthorization(null, null);
+    VreAuthorization instance = VreAuthorization.create("", "");
 
     boolean allowedToWrite = instance.isAllowedToWrite();
 

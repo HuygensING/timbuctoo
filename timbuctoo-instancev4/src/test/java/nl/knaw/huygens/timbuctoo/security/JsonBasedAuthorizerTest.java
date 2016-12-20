@@ -38,7 +38,7 @@ public class JsonBasedAuthorizerTest {
   @Test
   public void authorizationForReturnsTheNewAuthorizationIfTheUserHasNoAuthorizationForTheCurrentCollection()
     throws Exception {
-    VreAuthorization vreAuthorization = new VreAuthorization();
+    VreAuthorization vreAuthorization = VreAuthorization.create("", "");
     when(authorizationAccess.getAuthorization(anyString(), anyString())).thenReturn(Optional.empty());
     when(authorizationAccess.getOrCreateAuthorization(anyString(), anyString(), anyString()))
       .thenReturn(vreAuthorization);
@@ -60,7 +60,7 @@ public class JsonBasedAuthorizerTest {
 
   @Test
   public void authorizationForReturnsTheFoundAuthorizationForTheVreOfTheCollection() throws Exception {
-    VreAuthorization vreAuthorization = new VreAuthorization();
+    VreAuthorization vreAuthorization = VreAuthorization.create("", "");
     when(authorizationAccess.getAuthorization(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
     Collection collection = collectionOfVreWithId(VRE_ID);
 
@@ -72,7 +72,7 @@ public class JsonBasedAuthorizerTest {
 
   @Test
   public void authorizationForReturnsTheFoundAuthorizationForTheVreIdAndTheUserId() throws Exception {
-    VreAuthorization vreAuthorization = new VreAuthorization();
+    VreAuthorization vreAuthorization = VreAuthorization.create("", "");
     when(authorizationAccess.getAuthorization(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
 
     Authorization authorization = instance.authorizationFor(VRE_ID, USER_ID);

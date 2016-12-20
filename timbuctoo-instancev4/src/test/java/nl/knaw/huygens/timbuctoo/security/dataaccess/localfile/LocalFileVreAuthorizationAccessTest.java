@@ -34,7 +34,7 @@ public class LocalFileVreAuthorizationAccessTest {
 
   @Before
   public void setup() throws Exception {
-    VreAuthorization[] authorizations = {new VreAuthorization(VRE, USER_ID, "USER")};
+    VreAuthorization[] authorizations = {VreAuthorization.create(VRE, USER_ID, "USER")};
     File file = VRE_AUTH_PATH.toFile();
     objectMapper = new ObjectMapper();
     objectMapper.writeValue(file, authorizations);
