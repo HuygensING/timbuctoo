@@ -1,11 +1,10 @@
-package nl.knaw.huygens.timbuctoo.server;
+package nl.knaw.huygens.timbuctoo.security.legacy;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.security.LegacyLogin;
 import nl.knaw.huygens.timbuctoo.security.dto.Login;
 
 import java.io.IOException;

@@ -38,6 +38,7 @@ import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileLoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileUserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.legacy.LoginFileMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllEntityIds;

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security;
+package nl.knaw.huygens.timbuctoo.security.legacy;
 
 /*
  * #%L
