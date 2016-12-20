@@ -8,7 +8,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.UserRoles;
+import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
