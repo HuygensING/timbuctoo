@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security;
+package nl.knaw.huygens.timbuctoo.security.dto.typeidresolvers;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.DatabindContext;

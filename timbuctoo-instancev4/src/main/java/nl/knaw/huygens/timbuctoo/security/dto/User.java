@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
-import nl.knaw.huygens.timbuctoo.security.UserTypeIdResolver;
+import nl.knaw.huygens.timbuctoo.security.dto.typeidresolvers.UserTypeIdResolver;
 
 import java.util.UUID;
 
