@@ -46,7 +46,7 @@ public class UserPermissionCheckerTest {
 
   @Test
   public void checkReturnsAllowedToWriteWhenTheUserIsAuthorizedForTheVre() throws Exception {
-    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(new User("displayName")));
+    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
     given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorization(ALLOWED_TO_WRITE));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
@@ -56,7 +56,7 @@ public class UserPermissionCheckerTest {
 
   @Test
   public void checkReturnsNoPermissionWhenTheUserIsNotAuthorized() throws Exception {
-    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(new User("displayName")));
+    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
     given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorization(NOT_ALLOWED_TO_WRITE));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
@@ -80,7 +80,7 @@ public class UserPermissionCheckerTest {
 
   @Test
   public void checkReturnsUnknownUserWhenTheUserCannotBeAuthorized() throws Exception {
-    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(new User("displayName")));
+    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
     given(authorizer.authorizationFor(anyString(), anyString())).willThrow(new AuthorizationUnavailableException());
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);

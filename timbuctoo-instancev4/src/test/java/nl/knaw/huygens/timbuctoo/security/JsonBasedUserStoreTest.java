@@ -31,9 +31,8 @@ public class JsonBasedUserStoreTest {
 
   @Before
   public void setUp() throws Exception {
-    User user = new User();
-    user.setPersistentId("pidOfKnownUser");
-    User userWithoutPid = new User();
+    User user = User.create("", "pidOfKnownUser");
+    User userWithoutPid = User.create(null, null);
     User[] users = {user, userWithoutPid};
     OBJECT_MAPPER.writeValue(USERS_FILE.toFile(), users);
 
@@ -60,7 +59,8 @@ public class JsonBasedUserStoreTest {
   }
 
   @Test
-  public void userForReturnsAnOptionalWithAUserForAKnownUserWithoutPid() throws AuthenticationUnavailableException {
+  public void ifTheDatabaseContainsOneUserWithNullAsPidThatUserIsReturnedWhenQueryingForNull()
+    throws AuthenticationUnavailableException {
     Optional<User> knownUser = instance.userFor(null);
 
     assertThat(knownUser, is(present()));

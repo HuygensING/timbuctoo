@@ -40,7 +40,7 @@ public class EntityToJsonMapperTest {
   @Before
   public void setUp() throws Exception {
     userStore = mock(UserStore.class);
-    when(userStore.userForId(USER_ID)).thenReturn(Optional.of(new User(USER_NAME)));
+    when(userStore.userForId(USER_ID)).thenReturn(Optional.of(User.create(USER_NAME, "")));
     instance = new EntityToJsonMapper(
       userStore,
       (collection, id1, rev) -> URI.create("www.example.com")

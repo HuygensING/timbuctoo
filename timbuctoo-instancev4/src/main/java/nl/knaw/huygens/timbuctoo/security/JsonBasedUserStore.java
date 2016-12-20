@@ -30,8 +30,7 @@ public class JsonBasedUserStore implements UserStore, UserCreator {
 
   @Override
   public User saveNew(String displayName, String persistentId) throws AuthenticationUnavailableException {
-    User nw = new User(displayName);
-    nw.setPersistentId(persistentId);
+    User nw = User.create(displayName, persistentId);
     userAccess.addUser(nw);
     return nw;
   }
@@ -39,9 +38,7 @@ public class JsonBasedUserStore implements UserStore, UserCreator {
   @Override
   public String createUser(String pid, String email, String givenName, String surname, String organization)
     throws UserCreationException {
-    User user = new User();
-    user.setPersistentId(pid);
-    user.setDisplayName(String.format("%s %s", givenName, surname));
+    User user = User.create(String.format("%s %s", givenName, surname), pid);
     try {
       Optional<User> userForPid = userAccess.getUserForPid(pid);
       if (userForPid.isPresent()) {

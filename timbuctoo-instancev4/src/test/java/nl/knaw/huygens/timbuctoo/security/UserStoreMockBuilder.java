@@ -27,7 +27,7 @@ public class UserStoreMockBuilder {
   }
 
   public UserStoreMockBuilder withUserFor(String pid) throws AuthenticationUnavailableException {
-    when(userStore.userFor(pid)).thenReturn(Optional.of(new User()));
+    when(userStore.userFor(pid)).thenReturn(Optional.of(User.create("", "")));
     return this;
   }
 
