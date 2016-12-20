@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
@@ -13,7 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class LocalFileUserAccess implements nl.knaw.huygens.timbuctoo.security.UserAccess {
+public class LocalFileUserAccess implements UserAccess {
   public final Path usersFile;
   public final ObjectMapper objectMapper;
 

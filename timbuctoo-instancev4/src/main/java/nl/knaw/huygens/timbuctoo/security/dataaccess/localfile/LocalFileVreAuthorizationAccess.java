@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 
 import java.io.File;
 import java.io.IOException;

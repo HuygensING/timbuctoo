@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security;
+package nl.knaw.huygens.timbuctoo.security.dataaccess;
 
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;

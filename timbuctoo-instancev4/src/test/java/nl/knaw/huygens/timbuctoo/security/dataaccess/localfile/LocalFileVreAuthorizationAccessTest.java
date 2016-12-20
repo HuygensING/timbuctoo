@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
