@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.security.dto.Login;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

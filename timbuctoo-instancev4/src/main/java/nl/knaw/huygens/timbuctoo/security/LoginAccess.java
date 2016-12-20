@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import nl.knaw.huygens.timbuctoo.security.dto.Login;
+
 import java.util.Optional;
 
 public interface LoginAccess {

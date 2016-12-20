@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.security.localfile;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.LocalLoginUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.Login;
+import nl.knaw.huygens.timbuctoo.security.dto.Login;
 import nl.knaw.huygens.timbuctoo.security.LoginAccess;
 import nl.knaw.huygens.timbuctoo.security.LoginCreationException;
 import org.slf4j.Logger;

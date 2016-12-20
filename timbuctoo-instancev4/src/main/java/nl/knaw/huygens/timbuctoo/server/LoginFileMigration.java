@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.security.LegacyLogin;
-import nl.knaw.huygens.timbuctoo.security.Login;
+import nl.knaw.huygens.timbuctoo.security.dto.Login;
 
 import java.io.IOException;
 import java.nio.file.Path;
