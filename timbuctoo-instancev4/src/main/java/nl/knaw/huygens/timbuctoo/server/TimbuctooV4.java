@@ -38,7 +38,6 @@ import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileLoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileUserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.security.legacy.LoginFileMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllEntityIds;
@@ -151,13 +150,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final AuthenticationHandler authHandler = configuration.getFederatedAuthentication().makeHandler(environment);
     final Path loginsPath = Paths.get(configuration.getLoginsFilePath());
     final Path usersPath = Paths.get(configuration.getUsersFilePath());
-    final LoginFileMigration loginFileMigration = new LoginFileMigration();
-
-    // Convert login file
-    if (!loginFileMigration.isConverted(loginsPath)) {
-      LOG.info("Migrating logins file to use byte[] for password property");
-      loginFileMigration.convert(loginsPath);
-    }
 
     JsonBasedUserStore userStore = new JsonBasedUserStore(new LocalFileUserAccess(usersPath));
     JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(
