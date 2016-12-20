@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
-import nl.knaw.huygens.timbuctoo.security.LoginTypeIdResolver;
+import nl.knaw.huygens.timbuctoo.security.dto.typeidresolvers.LoginTypeIdResolver;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 // FIXME Find a better way for deserialization
