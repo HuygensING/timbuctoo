@@ -1,10 +1,10 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.core;
 
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreStubs;
 import org.junit.Test;
 
-import static nl.knaw.huygens.timbuctoo.database.CollectionNameHelper.RDF_URI_PREFIX;
+import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.RDF_URI_PREFIX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsString;

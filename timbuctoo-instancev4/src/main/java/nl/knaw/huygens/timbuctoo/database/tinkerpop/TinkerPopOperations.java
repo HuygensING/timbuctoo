@@ -79,7 +79,7 @@ import java.util.stream.Collectors;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
-import static nl.knaw.huygens.timbuctoo.core.dto.CreateCollection.DEFAULT_COLLECTION_ENTITYNAME;
+import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_ENTITIES_LABEL;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_IS_UNKNOWN_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
@@ -922,7 +922,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, createCollection.getEntityTypeName(vre));
     collectionVertex.property(RDF_URI_PROP, createCollection.getRdfUri(vre));
     collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
-    collectionVertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME, createCollection.isUknownCollection());
+    collectionVertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME, createCollection.isUnknownCollection());
 
     // add entities vertex
     Vertex containerVertex = graph.addVertex(COLLECTION_ENTITIES_LABEL);
@@ -1032,7 +1032,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public List<String> getEntitiesWithUnknownType(Vre vre) {
-    Collection coll = vre.getCollectionForTypeName(vre.getVreName() + DEFAULT_COLLECTION_ENTITYNAME);
+    Collection coll = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
 
     return entitiesOfCollection(coll)
       .has("rdfUri")
@@ -1105,7 +1105,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     indexHandler.addVertexToRdfIndex(vre, rdfUri, vertex);
 
     Vertex collection =
-      graph.traversal().V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, vre.getVreName() + DEFAULT_COLLECTION_ENTITYNAME)
+      graph.traversal().V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre))
            .out(HAS_ENTITY_NODE_RELATION_NAME).next();
     collection.addEdge(HAS_ENTITY_RELATION_NAME, vertex);
     return vertex;

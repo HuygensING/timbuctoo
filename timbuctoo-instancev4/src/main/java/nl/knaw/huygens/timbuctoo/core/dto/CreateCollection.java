@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.core.dto;
 
-import nl.knaw.huygens.timbuctoo.database.CollectionNameHelper;
+import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -9,7 +9,6 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import java.util.Objects;
 
 public class CreateCollection {
-  public static final String DEFAULT_COLLECTION_ENTITYNAME = "unknown";
   private final String unprefixedEntityName;
 
   public CreateCollection(String unprefixedEntityName) {
@@ -21,7 +20,7 @@ public class CreateCollection {
   }
 
   public static CreateCollection defaultCollection() {
-    return forEntityTypeName(DEFAULT_COLLECTION_ENTITYNAME);
+    return forEntityTypeName(CollectionNameHelper.DEFAULT_COLLECTION_ENTITY_NAME);
   }
 
   public String getEntityTypeName(Vre vre) {
@@ -32,8 +31,8 @@ public class CreateCollection {
     return CollectionNameHelper.collectionName(unprefixedEntityName, vre);
   }
 
-  public boolean isUknownCollection() {
-    return Objects.equals(unprefixedEntityName, DEFAULT_COLLECTION_ENTITYNAME);
+  public boolean isUnknownCollection() {
+    return Objects.equals(unprefixedEntityName, CollectionNameHelper.DEFAULT_COLLECTION_ENTITY_NAME);
   }
 
   public String getRdfUri(Vre vre) {

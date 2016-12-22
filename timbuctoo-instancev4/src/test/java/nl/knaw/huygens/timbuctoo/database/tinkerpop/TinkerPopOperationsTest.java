@@ -48,7 +48,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.timbuctoo.core.dto.CreateCollection.DEFAULT_COLLECTION_ENTITYNAME;
+import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
@@ -2450,7 +2450,7 @@ public class TinkerPopOperationsTest {
     instance.assertEntity(vre, "http://example.org/1");
 
     assertThat(graphManager.getGraph().traversal().V()
-                           .has(ENTITY_TYPE_NAME_PROPERTY_NAME, "vre" + DEFAULT_COLLECTION_ENTITYNAME)
+                           .has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre))
                            .out(HAS_ENTITY_NODE_RELATION_NAME)
                            .out(HAS_ENTITY_RELATION_NAME).has(RDF_URI_PROP, "http://example.org/1").count().next(),
       is(1L));
@@ -2616,7 +2616,7 @@ public class TinkerPopOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
     Vre vre = vreWithNameAndCollection(instance, "vre", CreateCollection.defaultCollection());
-    Collection defaultCollection = vre.getCollectionForTypeName("vre" + DEFAULT_COLLECTION_ENTITYNAME);
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
     RdfProperty stringProperty = new RdfProperty(
       "http://example.org/propName",
       "value",
@@ -2647,7 +2647,7 @@ public class TinkerPopOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
     Vre vre = vreWithNameAndCollection(instance, "vre", CreateCollection.defaultCollection());
-    Collection defaultCollection = vre.getCollectionForTypeName("vre" + DEFAULT_COLLECTION_ENTITYNAME);
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
     RdfProperty stringProperty = new RdfProperty(
       "http://example.org/propName",
       "value",
@@ -2689,7 +2689,7 @@ public class TinkerPopOperationsTest {
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
     vre = instance.loadVres().getVre("vre");
-    Collection defaultCollection = vre.getCollectionForTypeName("vre" + DEFAULT_COLLECTION_ENTITYNAME);
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
 
     instance.assertProperty(
       vre,
@@ -2765,7 +2765,7 @@ public class TinkerPopOperationsTest {
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
     vre = instance.loadVres().getVre("vre");
-    Collection defaultCollection = vre.getCollectionForTypeName("vre" + DEFAULT_COLLECTION_ENTITYNAME);
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
     instance.assertEntity(vre, "http://example.org/entity1");
 
     instance.finishEntities(vre, new EntityFinisherHelper());
@@ -2797,7 +2797,7 @@ public class TinkerPopOperationsTest {
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
     vre = instance.loadVres().getVre("vre");
-    Collection collection = vre.getCollectionForTypeName("vre" + DEFAULT_COLLECTION_ENTITYNAME);
+    Collection collection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
 
     ImmutableCreateProperty prop1 = ImmutableCreateProperty.builder()
                                                            .clientName("clientName1")
@@ -2816,7 +2816,7 @@ public class TinkerPopOperationsTest {
 
     instance.addPropertiesToCollection(collection, Lists.newArrayList(prop1, prop2));
 
-    collection = instance.loadVres().getCollectionForType(vre.getVreName() + DEFAULT_COLLECTION_ENTITYNAME).get();
+    collection = instance.loadVres().getCollectionForType(defaultEntityTypeName(vre)).get();
     assertThat(collection.getReadableProperties().values(), hasSize(2));
     List<Vertex> properties = graphManager.getGraph().traversal().V().hasLabel("property").toList();
     assertThat(properties, containsInAnyOrder(
