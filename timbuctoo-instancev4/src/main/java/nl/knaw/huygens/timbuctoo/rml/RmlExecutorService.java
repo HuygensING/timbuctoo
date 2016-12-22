@@ -43,7 +43,7 @@ public class RmlExecutorService {
   public void execute(Consumer<String> statusUpdate) {
     transactionEnforcer.execute(timbuctooActions -> {
       timbuctooActions.rdfCleanImportSession(vreName, session -> {
-        final TripleImporter importer = new TripleImporter(graphWrapper, vreName);
+        final TripleImporter importer = new TripleImporter(graphWrapper, vreName, session);
 
         //first save the archetype mappings
         AtomicLong tripleCount = new AtomicLong(0);

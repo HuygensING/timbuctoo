@@ -251,7 +251,7 @@ public class TimbuctooActions implements AutoCloseable {
     try {
       TransactionState result = sessionConsumer.apply(session);
       if (result.wasCommitted()) {
-        session.success();
+        session.commit();
       } else {
         session.rollback();
       }

@@ -160,6 +160,14 @@ public class Neo4jIndexHandler implements IndexHandler {
     return Optional.empty();
   }
 
+  @Override
+  public void addVertexToRdfIndex(Vre vre, String nodeUri, Vertex vertex) {
+    Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
+    org.neo4j.graphdb.Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
+    rdfIndex.add(neo4jNode, vre.getVreName(), nodeUri);
+    rdfIndex.add(neo4jNode, "Admin", nodeUri);
+  }
+
   //=====================general helper methods=====================
 
   private GraphTraversalSource traversal() {

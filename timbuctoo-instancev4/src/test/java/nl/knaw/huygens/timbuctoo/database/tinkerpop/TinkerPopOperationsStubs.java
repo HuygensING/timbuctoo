@@ -77,10 +77,16 @@ public class TinkerPopOperationsStubs {
     return new Neo4jIndexHandler(graphManager);
   }
 
-  public static TinkerPopOperations forGraphWrapperAndMappingsAndIndexHandler(TinkerPopGraphManager graphManager,
-                                                                              Vres vres,
-                                                                              IndexHandler indexHandler) {
+  public static TinkerPopOperations forGraphMappingsAndIndex(TinkerPopGraphManager graphManager,
+                                                             Vres vres,
+                                                             IndexHandler indexHandler) {
     return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), vres,
+      indexHandler);
+  }
+
+  public static TinkerPopOperations forIndexHandler(IndexHandler indexHandler) {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), null,
       indexHandler);
   }
 }

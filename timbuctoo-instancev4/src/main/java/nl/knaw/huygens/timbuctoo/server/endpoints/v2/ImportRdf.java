@@ -40,8 +40,7 @@ public class ImportRdf {
   public void post(String rdfString, @HeaderParam("VRE_ID") String vreName) {
     transactionEnforcer.execute(timbuctooActions -> {
       timbuctooActions.rdfCleanImportSession(vreName, session -> {
-        final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres
-        );
+        final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, session);
         final ByteArrayInputStream rdfInputStream =
           new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8));
         final ImportRunner importRunner = new ImportRunner(rdfImporter, rdfInputStream);
@@ -61,7 +60,7 @@ public class ImportRdf {
     final String vreName = vreNameInput != null && vreNameInput.length() > 0 ? vreNameInput : "RdfImport";
     transactionEnforcer.execute(timbuctooActions -> {
       timbuctooActions.rdfCleanImportSession(vreName, session -> {
-        final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres);
+        final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, session);
         rdfImporter.importRdf(rdfInputStream, Lang.NQUADS);
         return commit();
       });

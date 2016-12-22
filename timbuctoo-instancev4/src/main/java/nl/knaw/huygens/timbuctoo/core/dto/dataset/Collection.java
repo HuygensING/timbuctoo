@@ -39,8 +39,9 @@ public class Collection {
   public static final String HAS_ENTITY_RELATION_NAME = "hasEntity";
   public static final String HAS_INITIAL_PROPERTY_RELATION_NAME = "hasInitialProperty";
   public static final String HAS_ARCHETYPE_RELATION_NAME = "hasArchetype";
-  private static final Logger LOG = LoggerFactory.getLogger(Collection.class);
   public static final String IS_RELATION_COLLECTION_PROPERTY_NAME = "isRelationCollection";
+  public static final String HAS_PREDICATE_RELATION_NAME = "hasPredicate";
+  private static final Logger LOG = LoggerFactory.getLogger(Collection.class);
   private final String entityTypeName;
   private final String collectionName;
   private final Vre vre;

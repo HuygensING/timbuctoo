@@ -9,7 +9,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import java.util.Objects;
 
 public class CreateCollection {
-  public static final String DEFAULT_COLLECTION_NAME = "unknown";
+  public static final String DEFAULT_COLLECTION_ENTITYNAME = "unknown";
   private final String unprefixedEntityName;
 
   public CreateCollection(String unprefixedEntityName) {
@@ -21,7 +21,7 @@ public class CreateCollection {
   }
 
   public static CreateCollection defaultCollection() {
-    return forEntityTypeName(DEFAULT_COLLECTION_NAME);
+    return forEntityTypeName(DEFAULT_COLLECTION_ENTITYNAME);
   }
 
   public String getEntityTypeName(Vre vre) {
@@ -33,7 +33,7 @@ public class CreateCollection {
   }
 
   public boolean isUknownCollection() {
-    return Objects.equals(unprefixedEntityName, DEFAULT_COLLECTION_NAME);
+    return Objects.equals(unprefixedEntityName, DEFAULT_COLLECTION_ENTITYNAME);
   }
 
   public String getRdfUri(Vre vre) {

@@ -169,7 +169,13 @@ public class ChangeListenerTest {
       "addPid",
       "getEntityByRdfUri",
       "getRelationTypes",
-      "addCollectionToVre"
+      "addCollectionToVre",
+      "getPredicatesFor",
+      "retractProperty",
+      "assertProperty",
+      "finishEntities",
+      "addPropertiesToCollection",
+      "getEntitiesWithUnknownType"
     );
     Method[] allMethods = TinkerPopOperations.class.getDeclaredMethods();
     for (Method method : allMethods) {

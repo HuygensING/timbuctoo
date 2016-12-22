@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessor;
 import nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorImpl;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -11,8 +12,8 @@ public class TripleImporter {
   private final String vreName;
 
 
-  public TripleImporter(TinkerPopGraphManager graphWrapper, String vreName) {
-    this.processor = new TripleProcessorImpl(new Database(graphWrapper));
+  public TripleImporter(TinkerPopGraphManager graphWrapper, String vreName, RdfImportSession rdfImportSession) {
+    this.processor = new TripleProcessorImpl(new Database(graphWrapper), rdfImportSession);
     this.vreName = vreName;
   }
 

@@ -52,4 +52,6 @@ public interface IndexHandler {
   //=====================RDF Uri index=====================
   Optional<Vertex> findVertexInRdfIndex(Vre vre, String nodeUri);
 
+  void addVertexToRdfIndex(Vre vre, String nodeUri, Vertex vertex);
+
 }
