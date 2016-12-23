@@ -41,8 +41,9 @@ public class RdfImportSession {
     dataStoreOperations.clearMappingErrors(vre);
     dataStoreOperations.removeCollectionsAndEntities(vre);
     dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    Vre reloadedVre = dataStoreOperations.loadVres().getVre(vre.getVreName());
 
-    return new RdfImportSession(dataStoreOperations, vre, errorReporter, propertyFactory);
+    return new RdfImportSession(dataStoreOperations, reloadedVre, errorReporter, propertyFactory);
   }
 
   public void close() {
@@ -51,7 +52,7 @@ public class RdfImportSession {
       dataStoreOperations.getEntitiesWithUnknownType(reloadedVre)
                          .forEach(entityUri -> errorReporter.entityTypeUnknown(entityUri));
       dataStoreOperations.finishEntities(reloadedVre, entityFinisherHelper);
-      this.vre.getCollections().values().forEach(col -> {
+      reloadedVre.getCollections().values().forEach(col -> {
         List<PredicateInUse> predicatesFor = dataStoreOperations.getPredicatesFor(col);
         dataStoreOperations.addPropertiesToCollection(col, propertyFactory.fromPredicates(predicatesFor));
       });
