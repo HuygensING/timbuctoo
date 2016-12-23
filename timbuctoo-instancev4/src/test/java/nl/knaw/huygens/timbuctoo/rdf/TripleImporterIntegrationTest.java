@@ -147,7 +147,7 @@ public class TripleImporterIntegrationTest {
   }
 
   @Test
-  public void importTripleShouldAddATripleDescribingAPropertyToTheExistingEntity() throws Exception {
+  public void importTripleShouldAddAPropertyToTheExistingEntity() throws Exception {
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
