@@ -48,7 +48,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.DEFAULT_COLLECTION_ENTITY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
@@ -2547,7 +2546,7 @@ public class TinkerPopOperationsTest {
 
     List<Object> values = graphManager.getGraph().traversal().V()
                                       .has(RDF_URI_PROP, "http://example.org/1")
-                                      .values(DEFAULT_COLLECTION_ENTITY_NAME + "_" + "http://example.org/propName")
+                                      .values(defaultEntityTypeName("vre") + "_" + "http://example.org/propName")
                                       .toList();
     assertThat(values, contains("value"));
   }
@@ -2668,7 +2667,7 @@ public class TinkerPopOperationsTest {
   public void assertPropertyWillKeepTrackOfThePredicate() {
     TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
     Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
     Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
 
@@ -2710,7 +2709,7 @@ public class TinkerPopOperationsTest {
   public void getEntitiesWithUnknownTypeReturnsAllTheEntitiesInTheDefaultCollectionOfTheVre() {
     TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
     Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
     instance.assertEntity(vre, "http://example.org/entity1");
     instance.assertEntity(vre, "http://example.org/entity2");
@@ -2725,7 +2724,7 @@ public class TinkerPopOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
     Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
     instance.assertEntity(vre, "http://example.org/entity1");
     instance.assertEntity(vre, "http://example.org/entity2");
@@ -2744,7 +2743,7 @@ public class TinkerPopOperationsTest {
     ChangeListener changeListener = mock(ChangeListener.class);
     TinkerPopOperations instance = TinkerPopOperationsStubs.forChangeListenerMock(changeListener);
     Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
     Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
     instance.assertEntity(vre, "http://example.org/entity1");
@@ -2760,7 +2759,7 @@ public class TinkerPopOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
     Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
     instance.assertEntity(vre, "http://example.org/entity1");
 
@@ -2776,7 +2775,7 @@ public class TinkerPopOperationsTest {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
     Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
     Collection collection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
 
@@ -2799,6 +2798,7 @@ public class TinkerPopOperationsTest {
     assertThat(collection.getReadableProperties().values(), hasSize(2));
     List<Vertex> properties = graphManager.getGraph().traversal().V().hasLabel("property").toList();
     assertThat(properties, containsInAnyOrder(
+      likeVertex().withProperty("clientName", "@displayName"),
       likeVertex()
         .withProperty("clientName", "clientName1")
         .withProperty("dbName", collection.getEntityTypeName() + "_" + "http://example.org/pred1")

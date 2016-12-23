@@ -37,11 +37,14 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CollectionHas
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CompositeChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.FulltextIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.IdIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.RdfIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
+import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
+import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -131,13 +134,14 @@ public class TinkerPopOperations implements DataStoreOperations {
   private Optional<Boolean> isSuccess = Optional.empty();
 
 
-  public TinkerPopOperations(TinkerPopGraphManager graphManager ) {
+  public TinkerPopOperations(TinkerPopGraphManager graphManager) {
     this.indexHandler = new Neo4jIndexHandler(graphManager);
     this.listener = new CompositeChangeListener(
       new AddLabelChangeListener(),
       new FulltextIndexChangeListener(indexHandler, graphManager),
       new IdIndexChangeListener(indexHandler),
-      new CollectionHasEntityRelationChangeListener(graphManager)
+      new CollectionHasEntityRelationChangeListener(graphManager),
+      new RdfIndexChangeListener(indexHandler)
     );
     this.entityFetcher = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
     this.graph = graphManager.getGraph();
@@ -149,7 +153,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   TinkerPopOperations(TinkerPopGraphManager graphManager, ChangeListener listener,
-                             GremlinEntityFetcher entityFetcher, Vres mappings, IndexHandler indexHandler) {
+                      GremlinEntityFetcher entityFetcher, Vres mappings, IndexHandler indexHandler) {
     graph = graphManager.getGraph();
     this.indexHandler = indexHandler;
     this.transaction = graph.tx();
@@ -949,7 +953,16 @@ public class TinkerPopOperations implements DataStoreOperations {
     collectionVertex.property(ENTITY_TYPE_NAME_PROPERTY_NAME, createCollection.getEntityTypeName(vre));
     collectionVertex.property(RDF_URI_PROP, createCollection.getRdfUri(vre));
     collectionVertex.property(IS_RELATION_COLLECTION_PROPERTY_NAME, false);
-    collectionVertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME, createCollection.isUnknownCollection());
+    collectionVertex.property(
+      COLLECTION_IS_UNKNOWN_PROPERTY_NAME,
+      createCollection.isUnknownCollection(vre.getVreName())
+    );
+
+    final Vertex displayName = graph.addVertex(ReadableProperty.DATABASE_LABEL);
+    displayName.property(ReadableProperty.CLIENT_PROPERTY_NAME, "@displayName");
+    displayName.property(LocalProperty.DATABASE_PROPERTY_NAME, "rdfUri");
+    displayName.property(ReadableProperty.PROPERTY_TYPE_NAME, RdfImportedDefaultDisplayname.TYPE);
+    collectionVertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayName);
 
     // add entities vertex
     Vertex containerVertex = graph.addVertex(COLLECTION_ENTITIES_LABEL);
@@ -1105,13 +1118,9 @@ public class TinkerPopOperations implements DataStoreOperations {
         v.property("rev", entityFinisherHelper.getRev());
         setCreated(v, entityFinisherHelper.getChangeTime());
         v.property("isLatest", true);
-        v.property("types", String.format(
-          "[\"%s\", \"%s\"]",
-          col.getEntityTypeName(),
-          col.getAbstractType()
-        ));
         listener.onCreate(col, v);
-        duplicateVertex(traversal, v);
+        listener.onAddToCollection(col, Optional.empty(), v);
+        listener.onPropertyUpdate(col, Optional.of(v), duplicateVertex(traversal, v));
       })
     );
   }
@@ -1177,6 +1186,13 @@ public class TinkerPopOperations implements DataStoreOperations {
   private Vertex createRdfEntity(Vre vre, String rdfUri) {
     Vertex vertex = traversal.addV().next();
     vertex.property(RDF_URI_PROP, rdfUri);
+    vertex.property(
+      "types",
+      jsnA(
+        jsn(defaultEntityTypeName(vre.getVreName())),
+        jsn(defaultEntityTypeName("Admin"))
+      ).toString()
+    );
     indexHandler.addVertexToRdfIndex(vre, rdfUri, vertex);
 
     Vertex collection = getDefaultCollectionVertex(vre).get()

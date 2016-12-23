@@ -13,16 +13,16 @@ public class VreStubs {
 
   public static Vre minimalCorrectVre(DataStoreOperations dataStoreOperations, String name) {
     Vre admin = dataStoreOperations.ensureVreExists("Admin");
-    dataStoreOperations.addCollectionToVre(admin, CreateCollection.defaultCollection());
+    dataStoreOperations.addCollectionToVre(admin, CreateCollection.defaultCollection("Admin"));
 
 
     Vre vre = dataStoreOperations.ensureVreExists(name);
-    dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection(name));
 
     Vres vres = dataStoreOperations.loadVres();
 
     Collection collection =
-      vres.getVre(name).getCollectionForCollectionName(CollectionNameHelper.defaultCollectionName(vre)).get();
+      vres.getVre(name).getCollectionForCollectionName(CollectionNameHelper.defaultCollectionName(name)).get();
 
     Collection adminCollection =
       vres.getVre("Admin").getCollectionForCollectionName(CollectionNameHelper.defaultCollectionName(admin)).get();

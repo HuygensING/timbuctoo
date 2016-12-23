@@ -40,7 +40,7 @@ public class RdfImportSession {
     Vre vre = dataStoreOperations.ensureVreExists(vreName);
     dataStoreOperations.clearMappingErrors(vre);
     dataStoreOperations.removeCollectionsAndEntities(vre);
-    dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection());
+    dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection(vre.getVreName()));
     Vre reloadedVre = dataStoreOperations.loadVres().getVre(vre.getVreName());
 
     return new RdfImportSession(dataStoreOperations, reloadedVre, errorReporter, propertyFactory);

@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
@@ -9,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -17,7 +17,6 @@ import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.List;
@@ -38,13 +37,13 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 
-@Ignore //TODO enable when the RDF-import refactoring is completed.
 public class TripleImporterIntegrationTest {
   private static final String LOCATION_COLLECTION = "locations";
   private static final String CONCEPTS_COLLECTION = "concepts";
   private static final String VRE_NAME = "vreName";
   private static final String RELATION_COLLECTION_NAME = VRE_NAME + "relations";
-  private static final String DEFAULT_COLLECTION_NAME = VRE_NAME + "unknowns";
+  private static final String DEFAULT_COLLECTION_NAME = CollectionNameHelper.defaultCollectionName(VRE_NAME);
+  private static final String DEFAULT_ENTITY_TYPE_NAME = CollectionNameHelper.defaultEntityTypeName(VRE_NAME);
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
   private static final String ASIA_URI = "http://tl.dbpedia.org/resource/Asia";
@@ -55,7 +54,6 @@ public class TripleImporterIntegrationTest {
   private static final String FICTIONAL_TYPE_URI = "http://www.opengis.net/gml/" + "_FictionalFeature";
   private static final String FICTIONAL_TYPE_NAME = VRE_NAME + "_FictionalFeature";
   private static final String FICTIONAL_COLLECTION_NAME = VRE_NAME + "_FictionalFeatures";
-  private static final String DEFAULT_ENTITY_TYPE_NAME = VRE_NAME + "unknown";
   private static final String ABADAN_HAS_TYPE_FEATURE_TRIPLE =
     "<" + ABADAN_URI + "> " +
       "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
@@ -109,7 +107,7 @@ public class TripleImporterIntegrationTest {
       )
       .build();
     graphWrapper = newGraph().wrap();
-    TinkerPopOperations tinkerPopOperations = TinkerPopOperationsStubs.forGraphWrapper(graphWrapper);
+    TinkerPopOperations tinkerPopOperations =  new TinkerPopOperations(graphWrapper);
     tinkerPopOperations.saveVre(vres.getVre("Admin"));
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
 
@@ -341,7 +339,8 @@ public class TripleImporterIntegrationTest {
     rdfImportSession.close();
 
     Optional<ReadEntity> readEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
-    assertThat(readEntity.get(), hasProperty("types", containsInAnyOrder(TYPE_NAME, FICTIONAL_TYPE_NAME, "concept")));
+    assertThat(readEntity.get(), hasProperty("types", containsInAnyOrder(TYPE_NAME, FICTIONAL_TYPE_NAME, "concept",
+      DEFAULT_ENTITY_TYPE_NAME)));
   }
 
   @Test

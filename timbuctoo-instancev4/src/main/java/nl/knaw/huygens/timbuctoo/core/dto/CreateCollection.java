@@ -19,8 +19,11 @@ public class CreateCollection {
     return new CreateCollection(unprefixedEntityTypeName);
   }
 
-  public static CreateCollection defaultCollection() {
-    return forEntityTypeName(CollectionNameHelper.DEFAULT_COLLECTION_ENTITY_NAME);
+  public static CreateCollection defaultCollection(String vreName) {
+    if (Objects.equals("Admin", vreName)) {
+      return forEntityTypeName(CollectionNameHelper.defaultEntityTypeName(vreName));
+    }
+    return forEntityTypeName(CollectionNameHelper.defaultEntityTypeName(vreName).substring(vreName.length()));
   }
 
   public String getEntityTypeName(Vre vre) {
@@ -31,8 +34,8 @@ public class CreateCollection {
     return CollectionNameHelper.collectionName(unprefixedEntityName, vre);
   }
 
-  public boolean isUnknownCollection() {
-    return Objects.equals(unprefixedEntityName, CollectionNameHelper.DEFAULT_COLLECTION_ENTITY_NAME);
+  public boolean isUnknownCollection(String vreName) {
+    return Objects.equals(unprefixedEntityName, CollectionNameHelper.defaultCollectionName(vreName));
   }
 
   public String getRdfUri(Vre vre) {

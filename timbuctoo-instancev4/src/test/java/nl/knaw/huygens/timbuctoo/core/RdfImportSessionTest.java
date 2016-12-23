@@ -60,7 +60,7 @@ public class RdfImportSessionTest {
 
     verify(dataStoreOperations).addCollectionToVre(
       argThat(hasProperty("vreName", equalTo(VRE_NAME))),
-      eq(CreateCollection.defaultCollection())
+      eq(CreateCollection.defaultCollection(VRE_NAME))
     );
   }
 
@@ -77,7 +77,7 @@ public class RdfImportSessionTest {
     );
     inOrder.verify(dataStoreOperations).addCollectionToVre(
       argThat(hasProperty("vreName", equalTo(VRE_NAME))),
-      eq(CreateCollection.defaultCollection())
+      eq(CreateCollection.defaultCollection(VRE_NAME))
     );
   }
 

@@ -144,6 +144,7 @@ public class ChangeListenerTest {
       "createEntity",
       "replaceEntity",
       "deleteEntity",
+      "finishEntities",
 
       //these are ignored
       "removeCollectionsAndEntities",
@@ -174,7 +175,6 @@ public class ChangeListenerTest {
       "getPredicatesFor",
       "retractProperty",
       "assertProperty",
-      "finishEntities",
       "addPropertiesToCollection",
       "getEntitiesWithUnknownType"
     );

@@ -54,4 +54,5 @@ public interface IndexHandler {
 
   void addVertexToRdfIndex(Vre vre, String nodeUri, Vertex vertex);
 
+  void removeFromRdfIndex(Vre vre, Vertex vertex);
 }
