@@ -7,7 +7,9 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ValueTypeInUse;
 import org.apache.jena.rdf.model.impl.Util;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Stack;
 
 import static java.util.Comparator.comparingInt;
@@ -22,7 +24,20 @@ public class PropertyFactory {
   }
 
   public List<CreateProperty> fromPredicates(List<PredicateInUse> predicates) {
-    return predicates.stream().map(pred -> convertToProperty(pred)).collect(toList());
+    List<CreateProperty> result = predicates.stream().map(pred -> convertToProperty(pred)).collect(toList());
+
+    Set<String> encounteredLocalnames = new HashSet<>();
+    for (int i = 0; i < result.size(); i++) {
+      CreateProperty createProperty = result.get(i);
+      if (encounteredLocalnames.contains(createProperty.getClientName())) {
+        createProperty = ImmutableCreateProperty
+          .copyOf(createProperty)
+          .withClientName(createProperty.getRdfUri());
+        result.set(i, createProperty);
+      }
+      encounteredLocalnames.add(createProperty.getClientName());
+    }
+    return result;
   }
 
   private CreateProperty convertToProperty(PredicateInUse pred) {

@@ -52,7 +52,7 @@ public class PropertyFactoryTest {
   }
 
   @Test
-  public void fromRdfPredicateLogsEveryEntityWithThatHasADifferentValueTypeThanTheMajority() {
+  public void fromRdfPredicateLogsEveryEntityThatHasADifferentValueTypeThanTheMajority() {
     List<PredicateInUse> predicates = createPredicates();
 
     instance.fromPredicates(predicates);
@@ -70,6 +70,39 @@ public class PropertyFactoryTest {
       "http://example.org/type3"
     );
   }
+
+
+  @Test
+  public void fromRdfPredicateWillNotCreateTheSameClientNameTwice() {
+    ValueTypeInUse valueType1 = ImmutableValueTypeInUse.builder()
+                                                       .typeUri("http://example.org/type1")
+                                                       .addEntitiesConnected("entity1", "entity2")
+                                                       .build();
+    List<PredicateInUse> predicates = Lists.newArrayList(
+      ImmutablePredicateInUse.builder()
+                             .predicateUri("http://example.org/localName")
+                             .addValueTypes(valueType1)
+                             .build(),
+      ImmutablePredicateInUse.builder()
+                             .predicateUri("http://example.com/localName")
+                             .addValueTypes(valueType1)
+                             .build()
+    );
+
+    List<CreateProperty> properties = instance.fromPredicates(predicates);
+
+    assertThat(properties, containsInAnyOrder(
+      allOf(
+        hasProperty("clientName", equalTo("localName")),
+        hasProperty("rdfUri", equalTo("http://example.org/localName"))
+      ),
+      allOf(
+        hasProperty("clientName", equalTo("http://example.com/localName")),
+        hasProperty("rdfUri", equalTo("http://example.com/localName"))
+      )
+    ));
+  }
+
 
   private List<PredicateInUse> createPredicates() {
     ValueTypeInUse valueType1 = ImmutableValueTypeInUse.builder()
