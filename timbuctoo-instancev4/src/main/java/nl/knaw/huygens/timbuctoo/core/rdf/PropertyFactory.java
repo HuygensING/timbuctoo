@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.CreateProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutableCreateProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ValueTypeInUse;
+import org.apache.jena.rdf.model.impl.Util;
 
 import java.util.List;
 import java.util.Stack;
@@ -50,7 +51,7 @@ public class PropertyFactory {
   }
 
   private String getPredicateName(PredicateInUse pred) {
-    String[] split = pred.getPredicateUri().split("/");
-    return split[split.length - 1];
+    String predicateUri = pred.getPredicateUri();
+    return predicateUri.substring(Util.splitNamespaceXML(predicateUri));
   }
 }

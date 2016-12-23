@@ -41,7 +41,7 @@ public class PropertyFactoryTest {
       allOf(
         hasProperty("clientName", equalTo("pred1")),
         hasProperty("typeUri", equalTo("http://example.org/type1")),
-        hasProperty("rdfUri", equalTo("http://example.org/pred1"))
+        hasProperty("rdfUri", equalTo("http://example.org/test#pred1"))
       ),
       allOf(
         hasProperty("clientName", equalTo("pred2")),
@@ -59,7 +59,7 @@ public class PropertyFactoryTest {
 
     verify(importErrorReporter).entityHasWrongTypeForProperty(
       "entity3",
-      "http://example.org/pred1",
+      "http://example.org/test#pred1",
       "http://example.org/type1",
       "http://example.org/type2"
     );
@@ -81,7 +81,7 @@ public class PropertyFactoryTest {
                                                        .addEntitiesConnected("entity3")
                                                        .build();
     PredicateInUse pred1 = ImmutablePredicateInUse.builder()
-                                                  .predicateUri("http://example.org/pred1")
+                                                  .predicateUri("http://example.org/test#pred1")
                                                   .addValueTypes(valueType1, valueType2)
                                                   .build();
     ValueTypeInUse valueType3 = ImmutableValueTypeInUse.builder()
