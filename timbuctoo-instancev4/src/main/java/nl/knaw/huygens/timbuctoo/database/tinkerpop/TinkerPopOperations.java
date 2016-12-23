@@ -65,7 +65,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -1006,26 +1005,34 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public List<PredicateInUse> getPredicatesFor(Collection collection) {
-    ArrayList<PredicateInUse> result = Lists.newArrayList();
-    GraphTraversal<Vertex, Vertex> predicates =
-      traversal.V().hasLabel("collection").has("collectionName", collection.getCollectionName())
-               .out(Collection.HAS_PREDICATE_RELATION_NAME);
+    List<PredicateInUse> result = Lists.newArrayList();
+    Map<String, Map<String, List<String>>> preds = Maps.newHashMap();
 
-    predicates.forEachRemaining(pv -> {
-        ImmutablePredicateInUse.Builder predicateBuilder = ImmutablePredicateInUse.builder();
-        predicateBuilder.predicateUri(pv.value("predicateUri"));
-        pv.vertices(Direction.OUT).forEachRemaining(vtv -> {
-            ImmutableValueTypeInUse.Builder valueTypeBuilder = ImmutableValueTypeInUse.builder();
-            valueTypeBuilder.typeUri(vtv.value("typeUri"));
-            vtv.vertices(Direction.OUT, "appliesTo")
-               .forEachRemaining(ev -> valueTypeBuilder.addEntitiesConnected(ev.<String>value("rdfUri")));
-            predicateBuilder.addValueTypes(valueTypeBuilder.build());
-          }
-        );
-
-        result.add(predicateBuilder.build());
-      }
-    );
+    traversal.V().hasLabel("collection").has("collectionName", collection.getCollectionName())
+             .out(HAS_ENTITY_NODE_RELATION_NAME).out(HAS_ENTITY_RELATION_NAME)
+             .in("appliesTo")
+             .in("hasValueType")
+             .path()
+             .by() // collection
+             .by() // entityNode
+             .by("rdfUri") // entity
+             .by("typeUri") // valueType
+             .by("predicateUri") // predicate;
+             .forEachRemaining(p -> {
+               List<Object> objects = p.objects();
+               String predicate = (String) objects.get(4);
+               String valueType = (String) objects.get(3);
+               String entityRdfUri = (String) objects.get(2);
+               Map<String, List<String>> valueTypes = preds.computeIfAbsent(predicate, s -> Maps.newHashMap());
+               valueTypes.computeIfAbsent(valueType, s -> Lists.newArrayList(entityRdfUri));
+             });
+    preds.forEach((pk, pv) -> {
+      ImmutablePredicateInUse.Builder predicate = ImmutablePredicateInUse.builder().predicateUri(pk);
+      pv.forEach((vt, entity) -> {
+        predicate.addValueTypes(ImmutableValueTypeInUse.builder().typeUri(vt).addAllEntitiesConnected(entity).build());
+      });
+      result.add(predicate.build());
+    });
 
     return result;
   }
