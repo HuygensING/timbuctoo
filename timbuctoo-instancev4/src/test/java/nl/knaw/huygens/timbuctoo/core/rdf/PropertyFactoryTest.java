@@ -39,13 +39,11 @@ public class PropertyFactoryTest {
 
     assertThat(createProperties, containsInAnyOrder(
       allOf(
-        hasProperty("dbName", equalTo("pred1")),
         hasProperty("clientName", equalTo("pred1")),
         hasProperty("typeUri", equalTo("http://example.org/type1")),
         hasProperty("rdfUri", equalTo("http://example.org/pred1"))
       ),
       allOf(
-        hasProperty("dbName", equalTo("pred2")),
         hasProperty("clientName", equalTo("pred2")),
         hasProperty("typeUri", equalTo("http://example.org/type4")),
         hasProperty("rdfUri", equalTo("http://example.org/pred2"))

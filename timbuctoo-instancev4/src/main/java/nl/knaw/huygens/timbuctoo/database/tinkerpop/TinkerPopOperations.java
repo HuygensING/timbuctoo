@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutablePredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutableValueTypeInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
+import nl.knaw.huygens.timbuctoo.database.PropertyNameHelper;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
@@ -92,6 +93,7 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_INITIAL_
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PREDICATE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.database.PropertyNameHelper.createPropName;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.EdgeManipulator.duplicateEdge;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.duplicateVertex;
@@ -952,7 +954,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     collectionsFor(vertex).forEachRemaining(collection -> {
       getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
-        vertex.property(entityTypeName + "_" + property.getPredicateUri(), property.getValue());
+        vertex.property(createPropName(entityTypeName, property.getPredicateUri()), property.getValue());
       });
     });
 
@@ -992,7 +994,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     getVertexByRdfUri(vre, rdfUri).ifPresent(e -> {
       collectionsFor(e).forEachRemaining(collection -> {
         getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
-          e.property(entityTypeName + "_" + property.getPredicateUri(), property.getValue()).remove();
+          e.property(createPropName(entityTypeName, property.getPredicateUri()), property.getValue()).remove();
         });
       });
 
@@ -1095,11 +1097,14 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public void addPropertiesToCollection(Collection collection, List<CreateProperty> createProperties) {
     Vertex vertex = traversal.V().hasLabel("collection").has("collectionName", collection.getCollectionName()).next();
+    String entityTypeName = collection.getEntityTypeName();
 
     createProperties.forEach(createProperty -> {
       Vertex newPropertyConfig = graph.addVertex("property");
       newPropertyConfig.property(LocalProperty.CLIENT_PROPERTY_NAME, createProperty.getClientName());
-      newPropertyConfig.property(LocalProperty.DATABASE_PROPERTY_NAME, createProperty.getDbName());
+      newPropertyConfig
+        .property(LocalProperty.DATABASE_PROPERTY_NAME,
+          createPropName(entityTypeName, createProperty.getRdfUri()));
       newPropertyConfig.property(LocalProperty.PROPERTY_TYPE_NAME, createProperty.getPropertyType());
       newPropertyConfig.property("rdfUri", createProperty.getRdfUri());
       newPropertyConfig.property("typeUri", createProperty.getTypeUri());

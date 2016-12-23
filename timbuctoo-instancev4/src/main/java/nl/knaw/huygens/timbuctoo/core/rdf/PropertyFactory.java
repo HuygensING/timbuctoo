@@ -38,7 +38,6 @@ public class PropertyFactory {
 
     return ImmutableCreateProperty.builder()
                                   .clientName(getPredicateName(pred))
-                                  .dbName(getPredicateName(pred))
                                   .rdfUri(pred.getPredicateUri())
                                   .typeUri(type.getTypeUri())
                                   .propertyType(getPropertyType(type))

@@ -2782,14 +2782,12 @@ public class TinkerPopOperationsTest {
 
     ImmutableCreateProperty prop1 = ImmutableCreateProperty.builder()
                                                            .clientName("clientName1")
-                                                           .dbName("dbName1")
                                                            .propertyType("string")
                                                            .rdfUri("http://example.org/pred1")
                                                            .typeUri("http://example.org/string")
                                                            .build();
     ImmutableCreateProperty prop2 = ImmutableCreateProperty.builder()
                                                            .clientName("clientName2")
-                                                           .dbName("dbName2")
                                                            .propertyType("string")
                                                            .rdfUri("http://example.org/pred2")
                                                            .typeUri("http://example.org/string")
@@ -2803,13 +2801,13 @@ public class TinkerPopOperationsTest {
     assertThat(properties, containsInAnyOrder(
       likeVertex()
         .withProperty("clientName", "clientName1")
-        .withProperty("dbName", "dbName1")
+        .withProperty("dbName", collection.getEntityTypeName() + "_" + "http://example.org/pred1")
         .withProperty("propertyType", "string")
         .withProperty("rdfUri", "http://example.org/pred1")
         .withProperty("typeUri", "http://example.org/string"),
       likeVertex()
         .withProperty("clientName", "clientName2")
-        .withProperty("dbName", "dbName2")
+        .withProperty("dbName", collection.getEntityTypeName() + "_" + "http://example.org/pred2")
         .withProperty("propertyType", "string")
         .withProperty("rdfUri", "http://example.org/pred2")
         .withProperty("typeUri", "http://example.org/string")
