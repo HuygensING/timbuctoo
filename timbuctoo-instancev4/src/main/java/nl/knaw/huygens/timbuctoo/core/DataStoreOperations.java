@@ -122,4 +122,6 @@ public interface DataStoreOperations extends AutoCloseable {
    * @param createProperties the properties to add to the collection
    */
   void addPropertiesToCollection(Collection collection, List<CreateProperty> createProperties);
+  
+  void setAdminCollection(Collection collection, Collection adminCollection);
 }

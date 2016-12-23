@@ -84,6 +84,8 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_I
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.DATABASE_LABEL;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_INITIAL_PROPERTY_RELATION_NAME;
@@ -98,6 +100,8 @@ import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.databaseInvariant;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NEXT_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
+import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -707,14 +711,14 @@ public class TinkerPopOperations implements DataStoreOperations {
       .V()
       .hasLabel(Vre.DATABASE_LABEL)
       .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-      .out("hasCollection")
+      .out(HAS_COLLECTION_RELATION_NAME)
       .not(has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true))
       .union(
-        __.out("hasDisplayName"),
-        __.out("hasProperty"),
-        __.out("hasEntityNode")
+        __.out(HAS_DISPLAY_NAME_RELATION_NAME),
+        __.out(HAS_PROPERTY_RELATION_NAME),
+        __.out(HAS_ENTITY_NODE_RELATION_NAME)
           .union(
-            __.out("hasEntity"), //the entities
+            __.out(HAS_ENTITY_RELATION_NAME), //the entities
             __.identity() //the entityNodes container
           ),
         __.identity() //the collection
@@ -908,7 +912,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     boolean vreHasCollection = graph.traversal().V()
                                     .hasLabel(Vre.DATABASE_LABEL)
                                     .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-                                    .outE(Vre.HAS_COLLECTION_RELATION_NAME).otherV()
+                                    .outE(HAS_COLLECTION_RELATION_NAME).otherV()
                                     .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre))
                                     .hasNext();
 
@@ -932,20 +936,30 @@ public class TinkerPopOperations implements DataStoreOperations {
                             .hasLabel(Vre.DATABASE_LABEL)
                             .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
                             .next();
-    vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
+    vreVertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
+  }
+
+  private Iterator<Vertex> collectionsFor(Vertex entity) {
+    return traversal.V(entity.id())
+      .in(HAS_ENTITY_RELATION_NAME)
+      .in(HAS_ENTITY_NODE_RELATION_NAME)
+      .union(__.identity(), __.out(HAS_ARCHETYPE_RELATION_NAME));
   }
 
   @Override
   public void assertProperty(Vre vre, String rdfUri, RdfProperty property) {
     Vertex vertex = assertEntity(vre, rdfUri);
-    vertex.property(vre.getVreName() + property.getPredicateUri(), property.getValue());
-    vertex.property(property.getPredicateUri(), property.getValue()); // add admin value
 
-    traversal.V(vertex.id()).in(HAS_ENTITY_RELATION_NAME).in(HAS_ENTITY_NODE_RELATION_NAME)
-             .forEachRemaining(col -> assertPredicateForCollection(vertex, col, property));
+    collectionsFor(vertex).forEachRemaining(collection -> {
+      getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
+        vertex.property(entityTypeName + property.getPredicateUri(), property.getValue());
+      });
+    });
+
+    assertPredicateAndValueType(vertex, getDefaultCollectionVertex(vre).get(), property);
   }
 
-  private void assertPredicateForCollection(Vertex entity, Vertex col, RdfProperty property) {
+  private void assertPredicateAndValueType(Vertex entity, Vertex col, RdfProperty property) {
     GraphTraversal<Vertex, Vertex> predicate =
       traversal.V(col.id()).out(HAS_PREDICATE_RELATION_NAME).has("predicateUri", property.getPredicateUri());
 
@@ -976,31 +990,38 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public void retractProperty(Vre vre, String rdfUri, RdfProperty property) {
     getVertexByRdfUri(vre, rdfUri).ifPresent(e -> {
-      e.property(vre.getVreName() + property.getPredicateUri()).remove();
-      e.property(property.getPredicateUri()).remove(); // Remove admin property
-
-      traversal.V(e.id()).inE("appliesTo").where(__.otherV().has("typeUri", property.getTypeUri())).forEachRemaining(
-        edge -> {
-          Vertex valueType = edge.outVertex();
-          edge.remove();
-          if (!valueType.edges(Direction.OUT, "appliesTo").hasNext()) {
-            Vertex predicateVertex = traversal.V(valueType.id()).in("hasValueType")
-                                              .has("predicateUri", property.getPredicateUri())
-                                              .next();
-            valueType.edges(Direction.IN, "hasValueType").forEachRemaining(
-              valueTypeEdge -> valueType.remove()
-            );
-            if (!predicateVertex.edges(Direction.OUT, "hasValueType").hasNext()) {
-              predicateVertex.edges(Direction.BOTH).forEachRemaining(
-                predicateEdge -> predicateEdge.remove()
-              );
-              predicateVertex.remove();
-            }
-
-            valueType.remove();
-          }
+      collectionsFor(e).forEachRemaining(collection -> {
+        getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
+          e.property(entityTypeName + property.getPredicateUri(), property.getValue()).remove();
         });
+      });
+
+      retractPredicateAndValueType(property, e);
     });
+  }
+
+  private void retractPredicateAndValueType(RdfProperty property, Vertex entity) {
+    traversal.V(entity.id()).inE("appliesTo").where(__.otherV().has("typeUri", property.getTypeUri())).forEachRemaining(
+      edge -> {
+        Vertex valueType = edge.outVertex();
+        edge.remove();
+        if (!valueType.edges(Direction.OUT, "appliesTo").hasNext()) {
+          Vertex predicateVertex = traversal.V(valueType.id()).in("hasValueType")
+                                            .has("predicateUri", property.getPredicateUri())
+                                            .next();
+          valueType.edges(Direction.IN, "hasValueType").forEachRemaining(
+            valueTypeEdge -> valueType.remove()
+          );
+          if (!predicateVertex.edges(Direction.OUT, "hasValueType").hasNext()) {
+            predicateVertex.edges(Direction.BOTH).forEachRemaining(
+              predicateEdge -> predicateEdge.remove()
+            );
+            predicateVertex.remove();
+          }
+
+          valueType.remove();
+        }
+      });
   }
 
   @Override
@@ -1093,6 +1114,26 @@ public class TinkerPopOperations implements DataStoreOperations {
     });
   }
 
+  @Override
+  public void setAdminCollection(Collection collection, Collection adminCollection) {
+    Vertex adminCollectionVertex = traversal
+      .V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .has(VRE_NAME_PROPERTY_NAME, "Admin")
+      .out(HAS_COLLECTION_RELATION_NAME)
+      .has(COLLECTION_NAME_PROPERTY_NAME, adminCollection.getCollectionName())
+      .next();
+
+    Vertex collectionVertex = traversal
+      .V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .out(HAS_COLLECTION_RELATION_NAME)
+      .has(COLLECTION_NAME_PROPERTY_NAME, collection.getCollectionName())
+      .next();
+
+    collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, adminCollectionVertex);
+  }
+
   private Vertex getLastProperty(Object collectionId) {
     return traversal.V(collectionId)
                     .out(HAS_INITIAL_PROPERTY_RELATION_NAME)
@@ -1111,11 +1152,15 @@ public class TinkerPopOperations implements DataStoreOperations {
     vertex.property(RDF_URI_PROP, rdfUri);
     indexHandler.addVertexToRdfIndex(vre, rdfUri, vertex);
 
-    Vertex collection =
-      graph.traversal().V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre))
-           .out(HAS_ENTITY_NODE_RELATION_NAME).next();
+    Vertex collection = getDefaultCollectionVertex(vre).get()
+      .vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
+      .next();
     collection.addEdge(HAS_ENTITY_RELATION_NAME, vertex);
     return vertex;
+  }
+
+  private Optional<Vertex> getDefaultCollectionVertex(Vre vre) {
+    return graph.traversal().V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre)).toStream().findAny();
   }
 
   Optional<Vertex> getVertexByRdfUri(Vre vre, String uri) {
