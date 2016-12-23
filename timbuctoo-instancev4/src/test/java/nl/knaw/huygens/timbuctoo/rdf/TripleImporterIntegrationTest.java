@@ -370,14 +370,14 @@ public class TripleImporterIntegrationTest {
     rdfImportSession.commit();
     rdfImportSession.close();
 
-    Optional<ReadEntity> type = getReadEntity(COLLECTION_NAME, ABADAN_URI);
-    Optional<ReadEntity> fictionalType = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
+    Optional<ReadEntity> featureEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
+    Optional<ReadEntity> fictionalFeatureEntity = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
 
-    assertThat(type.get().getProperties(), hasItem(allOf(
+    assertThat(featureEntity.get().getProperties(), hasItem(allOf(
       hasProperty("name", equalTo("point")),
       hasProperty("value", equalTo("30.35 48.28333333333333"))
     )));
-    assertThat(fictionalType.get().getProperties(), hasItem(allOf(
+    assertThat(fictionalFeatureEntity.get().getProperties(), hasItem(allOf(
       hasProperty("name", equalTo("point")),
       hasProperty("value", equalTo("30.35 48.28333333333333"))
     )));
