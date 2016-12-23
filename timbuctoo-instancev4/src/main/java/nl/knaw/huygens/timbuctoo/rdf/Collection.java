@@ -71,16 +71,12 @@ public class Collection {
   }
 
   public void add(Vertex entityVertex) {
-    // If the requested collection is the default collection and the entity is already in a collection: return
-    // If the entity is already in the requested collection: return
-    if ((collectionDescription.equals(CollectionDescription.getDefault(vreName)) && isInACollection(entityVertex)) ||
-      isInCollection(entityVertex, collectionDescription)) {
+    if (!isInCollection(entityVertex, this.collectionDescription)) {
+      Vertex containerVertex = vertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME).next();
+      containerVertex.addEdge(HAS_ENTITY_RELATION_NAME, entityVertex);
 
-      return;
+      propertyHelper.addCurrentProperties(entityVertex, collectionDescription);
     }
-
-    Vertex containerVertex = vertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME).next();
-    containerVertex.addEdge(HAS_ENTITY_RELATION_NAME, entityVertex);
   }
 
   public void remove(Vertex entityVertex) {

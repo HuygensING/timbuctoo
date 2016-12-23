@@ -77,7 +77,7 @@ public class EntityTest {
     TypesHelper typesHelper = mock(TypesHelper.class);
     Entity instance = new Entity(vertex, collections, typesHelper, propertyHelper);
 
-    instance.moveToCollection(oldCollection, newCollection);
+    instance.moveToOtherArchetype(oldCollection, newCollection);
 
     verify(propertyHelper).movePropertiesToNewCollection(instance, oldCollection, newCollection);
   }

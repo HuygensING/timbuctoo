@@ -15,19 +15,12 @@ import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
+import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jLuceneEntityFetcher;
-import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
-import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.AddLabelChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CollectionHasEntityRelationChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CompositeChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.FulltextIndexChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.IdIndexChangeListener;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -186,21 +179,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
-    final Neo4jIndexHandler indexHandler = new Neo4jIndexHandler(graphManager);
-    final CompositeChangeListener changeListeners = new CompositeChangeListener(
-      new AddLabelChangeListener(),
-      new FulltextIndexChangeListener(indexHandler, graphManager),
-      new IdIndexChangeListener(indexHandler),
-      new CollectionHasEntityRelationChangeListener(graphManager)
-    );
     JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
 
     final UrlGenerator pathWithoutVersionAndRevision =
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, null).toString().replaceFirst("^/v2.1/", ""));
     final UrlGenerator uriWithoutRev = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, null));
-
-    final Neo4jLuceneEntityFetcher entityFetcher = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
 
     HandleAdder handleAdder = new HandleAdder(persistenceManager, activeMqBundle);
 
@@ -210,13 +194,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       Clock.systemDefaultZone(),
       handleAdder,
       uriToRedirectToFromPersistentUrls,
-      () -> new TinkerPopOperations(
-        graphManager,
-        changeListeners,
-        entityFetcher,
-        null,
-        indexHandler
-      )
+      () -> new TinkerPopOperations(graphManager)
     );
     TransactionEnforcer transactionEnforcer = new TransactionEnforcer(
       timbuctooActionsFactory

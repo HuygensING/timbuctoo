@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -15,16 +14,17 @@ public class TinkerPopOperationsStubs {
   public static TinkerPopOperations forGraphWrapper(TinkerPopGraphManager graphManager) {
 
     return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), null,
-      mock(IndexHandler.class));
+      createIndexHandler(graphManager));
   }
 
   public static TinkerPopOperations forChangeListenerMock(ChangeListener changeListener) {
-    return new TinkerPopOperations(newGraph().wrap(), changeListener, new GremlinEntityFetcher(), null,
-      mock(IndexHandler.class));
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    return new TinkerPopOperations(graphManager, changeListener, new GremlinEntityFetcher(), null,
+      createIndexHandler(graphManager));
   }
 
   public static TinkerPopOperations forReplaceCall(ChangeListener changeListener, UUID id, int rev) {
-    TinkerPopGraphManager wrap = newGraph()
+    TinkerPopGraphManager graphManager = newGraph()
       .withVertex("old", vertexBuilder -> vertexBuilder
         .withTimId(id.toString())
         .withProperty("rev", rev)
@@ -37,12 +37,13 @@ public class TinkerPopOperationsStubs {
         .withIncomingRelation(VERSION_OF, "old")
       )
       .wrap();
-    return new TinkerPopOperations(wrap, changeListener, new GremlinEntityFetcher(), null, mock(IndexHandler.class));
+    return new TinkerPopOperations(graphManager, changeListener, new GremlinEntityFetcher(), null, createIndexHandler(
+      graphManager));
   }
 
   public static TinkerPopOperations forDeleteCall(ChangeListener changeListener, UUID id, int rev,
                                                   String entityTypeName) {
-    TinkerPopGraphManager wrap = newGraph()
+    TinkerPopGraphManager graphManager = newGraph()
       .withVertex("old", vertexBuilder -> vertexBuilder
         .withTimId(id.toString())
         .withProperty("types", "[\"" + entityTypeName + "\"]")
@@ -57,11 +58,35 @@ public class TinkerPopOperationsStubs {
         .withIncomingRelation(VERSION_OF, "old")
       )
       .wrap();
-    return new TinkerPopOperations(wrap, changeListener, new GremlinEntityFetcher(), null, mock(IndexHandler.class));
+    return new TinkerPopOperations(graphManager, changeListener, new GremlinEntityFetcher(), null, createIndexHandler(
+      graphManager));
   }
 
   public static TinkerPopOperations forGraphWrapperAndMappings(TinkerPopGraphManager graphManager, Vres mappings) {
     return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), mappings,
-      mock(IndexHandler.class));
+      createIndexHandler(graphManager));
+  }
+
+  public static TinkerPopOperations newInstance() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), null,
+      createIndexHandler(graphManager));
+  }
+
+  private static IndexHandler createIndexHandler(TinkerPopGraphManager graphManager) {
+    return new Neo4jIndexHandler(graphManager);
+  }
+
+  public static TinkerPopOperations forGraphMappingsAndIndex(TinkerPopGraphManager graphManager,
+                                                             Vres vres,
+                                                             IndexHandler indexHandler) {
+    return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), vres,
+      indexHandler);
+  }
+
+  public static TinkerPopOperations forIndexHandler(IndexHandler indexHandler) {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), null,
+      indexHandler);
   }
 }

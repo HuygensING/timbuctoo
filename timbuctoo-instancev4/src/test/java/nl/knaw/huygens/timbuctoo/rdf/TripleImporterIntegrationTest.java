@@ -1,15 +1,15 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
+import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
-import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
@@ -35,7 +35,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 public class TripleImporterIntegrationTest {
@@ -43,7 +42,8 @@ public class TripleImporterIntegrationTest {
   private static final String CONCEPTS_COLLECTION = "concepts";
   private static final String VRE_NAME = "vreName";
   private static final String RELATION_COLLECTION_NAME = VRE_NAME + "relations";
-  private static final String DEFAULT_COLLECTION_NAME = VRE_NAME + "unknowns";
+  private static final String DEFAULT_COLLECTION_NAME = CollectionNameHelper.defaultCollectionName(VRE_NAME);
+  private static final String DEFAULT_ENTITY_TYPE_NAME = CollectionNameHelper.defaultEntityTypeName(VRE_NAME);
   private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
   private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
   private static final String ASIA_URI = "http://tl.dbpedia.org/resource/Asia";
@@ -54,7 +54,6 @@ public class TripleImporterIntegrationTest {
   private static final String FICTIONAL_TYPE_URI = "http://www.opengis.net/gml/" + "_FictionalFeature";
   private static final String FICTIONAL_TYPE_NAME = VRE_NAME + "_FictionalFeature";
   private static final String FICTIONAL_COLLECTION_NAME = VRE_NAME + "_FictionalFeatures";
-  private static final String DEFAULT_ENTITY_TYPE_NAME = VRE_NAME + "unknown";
   private static final String ABADAN_HAS_TYPE_FEATURE_TRIPLE =
     "<" + ABADAN_URI + "> " +
       "<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> " +
@@ -89,9 +88,12 @@ public class TripleImporterIntegrationTest {
       "<http://www.example.com/location> .";
   private TimbuctooActions timbuctooActions;
   private TripleImporter instance;
+  private TinkerPopGraphManager graphWrapper;
+  private RdfImportSession rdfImportSession;
 
   @Before
   public void setUp() throws Exception {
+    // FIXME create stub
     // Timbuctoo needs at least an Admin VRE.
     Vres vres = new VresBuilder()
       .withVre("Admin", "", v -> v
@@ -102,28 +104,28 @@ public class TripleImporterIntegrationTest {
         .withCollection("locations", c -> c
           .withEntityTypeName("location")
         )
-      ).build();
-    TinkerPopGraphManager graphWrapper = newGraph().wrap();
-    TinkerPopOperations tinkerPopOperations = TinkerPopOperationsStubs.forGraphWrapper(graphWrapper);
+      )
+      .build();
+    graphWrapper = newGraph().wrap();
+    TinkerPopOperations tinkerPopOperations =  new TinkerPopOperations(graphWrapper);
     tinkerPopOperations.saveVre(vres.getVre("Admin"));
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
 
+    rdfImportSession = RdfImportSession.cleanImportSession(VRE_NAME, tinkerPopOperations);
     instance = new TripleImporter(
-      new TransactionEnforcer(
-        afterSuccessTaskExecutor -> timbuctooActions
-      ),
       graphWrapper,
-      VRE_NAME
-    );
-    instance.prepare();
+      VRE_NAME,
+      rdfImportSession);
   }
 
   @Test
-  public void prepareAddsANewVreWithARelationsCollectionToTheDatabase() {
+  public void prepareAddsANewVreWithDefaultCollectionsToTheDatabase() {
     Vre vre = timbuctooActions.getVre(VRE_NAME);
     assertThat(vre, is(notNullValue()));
     Optional<Collection> relationsOpt = vre.getCollectionForCollectionName(RELATION_COLLECTION_NAME);
     assertThat(relationsOpt, is(present()));
+    Optional<Collection> unknownsCollection = vre.getCollectionForCollectionName(DEFAULT_COLLECTION_NAME);
+    assertThat(unknownsCollection, is(present()));
   }
 
   @Test
@@ -132,6 +134,8 @@ public class TripleImporterIntegrationTest {
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(ABADAN_POINT_TRIPLE);
 
     instance.importTriple(true, tripleExtendedIterator.next());
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> entityOpt = getReadEntity(DEFAULT_COLLECTION_NAME, ABADAN_URI);
 
@@ -140,12 +144,14 @@ public class TripleImporterIntegrationTest {
   }
 
   @Test
-  public void importTripleShouldAddATripleDescribingAPropertyToTheExistingEntity() throws Exception {
+  public void importTripleShouldAddAPropertyToTheExistingEntity() throws Exception {
     final String tripleString = ABADAN_POINT_TRIPLE + "\n" + ABADAN_LAT_TRIPLE;
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
     instance.importTriple(true, tripleExtendedIterator.next());
     instance.importTriple(true, tripleExtendedIterator.next());
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> entityOpt = getReadEntity(DEFAULT_COLLECTION_NAME, ABADAN_URI);
     assertThat(entityOpt.get().getProperties(), containsInAnyOrder(
@@ -161,6 +167,8 @@ public class TripleImporterIntegrationTest {
 
     instance.importTriple(true, abadanHasTypeFeature);
     instance.importTriple(true, abadanPointTriple);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> entityOpt = getReadEntity(COLLECTION_NAME, ABADAN_URI);
     assertThat(entityOpt.get().getProperties(), contains(
@@ -174,6 +182,8 @@ public class TripleImporterIntegrationTest {
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
     instance.importTriple(true, tripleExtendedIterator.next());
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> abadanOpt = getReadEntity(DEFAULT_COLLECTION_NAME, ABADAN_URI);
     assertThat(abadanOpt, is(present()));
@@ -187,9 +197,9 @@ public class TripleImporterIntegrationTest {
     ));
   }
 
-  private Optional<ReadEntity> getReadEntity(String collectionName, String rdfIro) throws Exception {
+  private Optional<ReadEntity> getReadEntity(String collectionName, String rdfUri) throws Exception {
     Collection collection = timbuctooActions.getCollectionMetadata(collectionName);
-    return timbuctooActions.searchEntityByRdfUri(collection, rdfIro, true);
+    return timbuctooActions.getEntityByRdfUri(collection, rdfUri, true);
   }
 
   @Test
@@ -202,6 +212,8 @@ public class TripleImporterIntegrationTest {
     instance.importTriple(true, abadan);
     instance.importTriple(true, iran);
     instance.importTriple(true, relation);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Collection collectionMetadata = timbuctooActions.getCollectionMetadata(DEFAULT_COLLECTION_NAME);
     DataStream<ReadEntity> result = timbuctooActions.getCollection(collectionMetadata, 0, 10, false,
@@ -220,6 +232,8 @@ public class TripleImporterIntegrationTest {
 
     instance.importTriple(true, abadanInIran.next());
     instance.importTriple(true, iranInAsia.next());
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     List<RelationType> relationTypes = timbuctooActions.getRelationTypes();
 
@@ -232,6 +246,8 @@ public class TripleImporterIntegrationTest {
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
     instance.importTriple(true, tripleExtendedIterator.next());
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> readEntity = getReadEntity(DEFAULT_COLLECTION_NAME, ABADAN_URI);
     assertThat(readEntity.get().getRelations().get(0), allOf(
@@ -248,6 +264,8 @@ public class TripleImporterIntegrationTest {
     final ExtendedIterator<Triple> tripleExtendedIterator = createTripleIterator(tripleString);
 
     instance.importTriple(true, tripleExtendedIterator.next());
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> entityOpt = getReadEntity(DEFAULT_COLLECTION_NAME, ABADAN_URI);
     assertThat(entityOpt.get(), allOf(
@@ -264,6 +282,8 @@ public class TripleImporterIntegrationTest {
     final Triple abadan = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
 
     instance.importTriple(true, abadan);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> readEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
     assertThat(readEntity, is(present()));
@@ -276,6 +296,8 @@ public class TripleImporterIntegrationTest {
 
     instance.importTriple(true, abadanIsAFeature);
     instance.importTriple(true, abadanIsAFictionalFeature);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     assertThat(getReadEntity(COLLECTION_NAME, ABADAN_URI), is(present()));
     assertThat(getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI), is(present()));
@@ -286,6 +308,8 @@ public class TripleImporterIntegrationTest {
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
 
     instance.importTriple(true, abadanIsAFeature);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     assertThat(getReadEntity(CONCEPTS_COLLECTION, ABADAN_URI), is(present()));
   }
@@ -297,21 +321,11 @@ public class TripleImporterIntegrationTest {
 
     instance.importTriple(true, abadanIsAFeature);
     instance.importTriple(true, featureIsLocation);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
-    // FIXME: Make entity available as its new archetype
     assertThat(getReadEntity(LOCATION_COLLECTION, ABADAN_URI), is(present()));
     assertThat(getReadEntity(COLLECTION_NAME, ABADAN_URI), is(present()));
-  }
-
-  @Test
-  public void importTripleRemovesTheSubjectAndItsEntitiesFromTheDefaultArchetype() throws Exception {
-    Triple abadanIsAFeature = createSingleTriple(ABADAN_HAS_TYPE_FEATURE_TRIPLE);
-    Triple featureIsLocation = createSingleTriple(FEATURE_SUBCLASS_OF_LOCATION_TRIPLE);
-
-    instance.importTriple(true, abadanIsAFeature);
-    instance.importTriple(true, featureIsLocation);
-
-    assertThat(getReadEntity(CONCEPTS_COLLECTION, ABADAN_URI), is(not(present())));
   }
 
   @Test
@@ -321,9 +335,12 @@ public class TripleImporterIntegrationTest {
 
     instance.importTriple(true, abadanIsAFeature);
     instance.importTriple(true, abadanIsAFictionalFeature);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> readEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
-    assertThat(readEntity.get(), hasProperty("types", containsInAnyOrder(TYPE_NAME, FICTIONAL_TYPE_NAME, "concept")));
+    assertThat(readEntity.get(), hasProperty("types", containsInAnyOrder(TYPE_NAME, FICTIONAL_TYPE_NAME, "concept",
+      DEFAULT_ENTITY_TYPE_NAME)));
   }
 
   @Test
@@ -335,15 +352,42 @@ public class TripleImporterIntegrationTest {
     instance.importTriple(true, abadanIsAFeature);
     instance.importTriple(true, abadanIsAFictionalFeature);
     instance.importTriple(true, abadanHasPoint);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
-    Optional<ReadEntity> type = getReadEntity(COLLECTION_NAME, ABADAN_URI);
-    Optional<ReadEntity> fictionalType = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
+    Optional<ReadEntity> featureEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
+    Optional<ReadEntity> fictionalFeatureEntity = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
 
-    assertThat(type.get().getProperties(), hasItem(allOf(
+    assertThat(featureEntity.get().getProperties(), hasItem(allOf(
       hasProperty("name", equalTo("point")),
       hasProperty("value", equalTo("30.35 48.28333333333333"))
     )));
-    assertThat(fictionalType.get().getProperties(), hasItem(allOf(
+    assertThat(fictionalFeatureEntity.get().getProperties(), hasItem(allOf(
+      hasProperty("name", equalTo("point")),
+      hasProperty("value", equalTo("30.35 48.28333333333333"))
+    )));
+  }
+
+  @Test
+  public void importTripleShouldCopyPropertiesToNewCollectionsEvenIfTheEntityAlreadyHadACollection() throws Exception {
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+    final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
+
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanHasPoint);
+    instance.importTriple(true, abadanIsAFictionalFeature);
+    rdfImportSession.commit();
+    rdfImportSession.close();
+
+    Optional<ReadEntity> featureEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
+    Optional<ReadEntity> fictionalFeatureEntity = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
+
+    assertThat(featureEntity.get().getProperties(), hasItem(allOf(
+      hasProperty("name", equalTo("point")),
+      hasProperty("value", equalTo("30.35 48.28333333333333"))
+    )));
+    assertThat(fictionalFeatureEntity.get().getProperties(), hasItem(allOf(
       hasProperty("name", equalTo("point")),
       hasProperty("value", equalTo("30.35 48.28333333333333"))
     )));
@@ -358,6 +402,8 @@ public class TripleImporterIntegrationTest {
     instance.importTriple(true, abadanIsAFeature);
     instance.importTriple(true, abadanIsAFictionalFeature);
     instance.importTriple(true, abadanHasPoint);
+    rdfImportSession.commit();
+    rdfImportSession.close();
 
     Optional<ReadEntity> type = getReadEntity(COLLECTION_NAME, ABADAN_URI);
     Optional<ReadEntity> fictionalType = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);

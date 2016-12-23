@@ -17,13 +17,15 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutorService;
 
+import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
+
 @Path("/v2.1/rdf/import")
 public class ImportRdf {
 
   private final TinkerPopGraphManager graphWrapper;
+  private final TransactionEnforcer transactionEnforcer;
   private Vres vres;
   private ExecutorService rfdExecutorService;
-  private final TransactionEnforcer transactionEnforcer;
 
   public ImportRdf(TinkerPopGraphManager graphWrapper, Vres vres, ExecutorService rfdExecutorService,
                    TransactionEnforcer transactionEnforcer) {
@@ -36,11 +38,18 @@ public class ImportRdf {
   @Consumes("application/n-quads")
   @POST
   public void post(String rdfString, @HeaderParam("VRE_ID") String vreName) {
-    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, transactionEnforcer);
-    final ByteArrayInputStream rdfInputStream = new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8));
-    final ImportRunner importRunner = new ImportRunner(rdfImporter, rdfInputStream);
+    transactionEnforcer.execute(timbuctooActions -> {
+      timbuctooActions.rdfCleanImportSession(vreName, session -> {
+        final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, session);
+        final ByteArrayInputStream rdfInputStream =
+          new ByteArrayInputStream(rdfString.getBytes(StandardCharsets.UTF_8));
+        final ImportRunner importRunner = new ImportRunner(rdfImporter, rdfInputStream);
 
-    rfdExecutorService.submit(importRunner);
+        rfdExecutorService.submit(importRunner);
+        return commit();
+      });
+      return commit();
+    });
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -49,8 +58,14 @@ public class ImportRdf {
                      @FormDataParam("VRE_ID") String vreNameInput) {
 
     final String vreName = vreNameInput != null && vreNameInput.length() > 0 ? vreNameInput : "RdfImport";
-    final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, transactionEnforcer);
-    rdfImporter.importRdf(rdfInputStream, Lang.NQUADS);
+    transactionEnforcer.execute(timbuctooActions -> {
+      timbuctooActions.rdfCleanImportSession(vreName, session -> {
+        final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, session);
+        rdfImporter.importRdf(rdfInputStream, Lang.NQUADS);
+        return commit();
+      });
+      return commit();
+    });
   }
 
   private static final class ImportRunner implements Runnable {

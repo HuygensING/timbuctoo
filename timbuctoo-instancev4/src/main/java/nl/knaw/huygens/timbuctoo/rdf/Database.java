@@ -45,7 +45,7 @@ public class Database {
   public static final String RDF_SYNONYM_PROP = "rdfAlternatives";
   private final TinkerPopGraphManager graphWrapper;
   private final SystemPropertyModifier systemPropertyModifier;
-  private GraphTraversalSource traversal;
+  private GraphTraversalSource cachedTraversal;
   private Index<org.neo4j.graphdb.Node> rdfIndex;
   private GraphDatabaseService graphDatabase;
 
@@ -105,7 +105,7 @@ public class Database {
         rdfurls.forEachRemaining(x -> errorMessage.append(", ").append(x.getId()));
         LOG.error(errorMessage.toString());
       }
-      GraphTraversal<Vertex, Vertex> vertexLookup = traversal.V(vertexId);
+      GraphTraversal<Vertex, Vertex> vertexLookup = traversal().V(vertexId);
       if (vertexLookup.hasNext()) {
         Vertex vertex = vertexLookup.next();
         return Optional.of(vertex);
@@ -140,14 +140,22 @@ public class Database {
 
     org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
     rdfIndex.add(neo4jNode, vreName, nodeUri);
+    rdfIndex.add(neo4jNode, "Admin", nodeUri);
+
 
     return entity;
   }
 
+  private GraphTraversalSource traversal() {
+    if (cachedTraversal == null) {
+      cachedTraversal = graphWrapper
+        .getGraph().traversal();
+    }
+    return cachedTraversal;
+  }
+
   private Set<Collection> getCollections(Vertex foundVertex, String vreName) {
-    traversal = graphWrapper
-      .getGraph().traversal();
-    return traversal
+    return traversal()
       .V(foundVertex.id())
       .in(HAS_ENTITY_RELATION_NAME)
       .in(HAS_ENTITY_NODE_RELATION_NAME)

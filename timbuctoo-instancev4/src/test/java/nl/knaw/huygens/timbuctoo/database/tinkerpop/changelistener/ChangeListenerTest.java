@@ -144,6 +144,7 @@ public class ChangeListenerTest {
       "createEntity",
       "replaceEntity",
       "deleteEntity",
+      "finishEntities",
 
       //these are ignored
       "removeCollectionsAndEntities",
@@ -154,6 +155,7 @@ public class ChangeListenerTest {
       "clearMappingErrors",
       "hasMappingErrors",
       "saveRmlMappingState",
+      "setAdminCollection",
 
       "close",
       "success",
@@ -167,8 +169,14 @@ public class ChangeListenerTest {
       "saveVre",
       "ensureVreExists",
       "addPid",
-      "searchEntityByRdfUri",
-      "getRelationTypes"
+      "getEntityByRdfUri",
+      "getRelationTypes",
+      "addCollectionToVre",
+      "getPredicatesFor",
+      "retractProperty",
+      "assertProperty",
+      "addPropertiesToCollection",
+      "getEntitiesWithUnknownType"
     );
     Method[] allMethods = TinkerPopOperations.class.getDeclaredMethods();
     for (Method method : allMethods) {

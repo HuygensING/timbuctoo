@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import com.google.common.collect.Sets;
+import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import org.apache.jena.graph.Triple;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -34,11 +33,11 @@ public class TripleProcessorImpl implements TripleProcessor {
   private Database database;
   private PersonNameVariantTripleProcessor personNameVariant;
 
-  public TripleProcessorImpl(Database database) {
+  public TripleProcessorImpl(Database database, RdfImportSession rdfImportSession) {
     this.database = database;
     this.collectionMembership = new CollectionMembershipTripleProcessor(database);
     this.archetype = new ArchetypeTripleProcessor(database);
-    this.property = new PropertyTripleProcessor(database);
+    this.property = new PropertyTripleProcessor(database, rdfImportSession);
     this.relation = new RelationTripleProcessor(database);
     this.sameAs = new SameAsTripleProcessor(database);
     this.altLabel = new AltLabelTripleProcessor(database);

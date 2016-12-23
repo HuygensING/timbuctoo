@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
@@ -47,4 +48,11 @@ public interface IndexHandler {
   void upsertIntoIdIndex(UUID timId, Vertex vertex);
 
   void removeFromIdIndex(Vertex vertex);
+
+  //=====================RDF Uri index=====================
+  Optional<Vertex> findVertexInRdfIndex(Vre vre, String nodeUri);
+
+  void addVertexToRdfIndex(Vre vre, String nodeUri, Vertex vertex);
+
+  void removeFromRdfIndex(Vre vre, Vertex vertex);
 }

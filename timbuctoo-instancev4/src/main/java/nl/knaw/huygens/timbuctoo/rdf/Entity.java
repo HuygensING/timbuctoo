@@ -92,15 +92,10 @@ public class Entity {
     newCollection.getArchetype().ifPresent(this::handleCollectionAdd);
   }
 
-  public void moveToCollection(Collection oldCollection, Collection newCollection) {
-    addToCollection(newCollection);
-    propertyHelper.movePropertiesToNewCollection(this, oldCollection, newCollection);
-    newCollection.getArchetype().ifPresent(newArchetype -> {
-      oldCollection.getArchetype().ifPresent(oldArchetype -> {
-        propertyHelper.movePropertiesToNewCollection(this, oldArchetype, newArchetype);
-      });
-    });
-    removeFromCollection(oldCollection);
+  public void moveToOtherArchetype(Collection oldArchetype, Collection newArchetype) {
+    addToCollection(newArchetype);
+    propertyHelper.movePropertiesToNewCollection(this, oldArchetype, newArchetype);
+    removeFromCollection(oldArchetype);
   }
 
   private void handleCollectionAdd(Collection newCollection) {

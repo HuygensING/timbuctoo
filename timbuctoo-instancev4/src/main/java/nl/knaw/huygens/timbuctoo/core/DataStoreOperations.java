@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.core;
 
+import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -9,6 +10,9 @@ import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.CreateProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -22,7 +26,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface DataStoreOperations extends AutoCloseable {
-  void clearMappingErrors(String vreName);
+  void clearMappingErrors(Vre vre);
 
   boolean hasMappingErrors(String vreName);
 
@@ -67,7 +71,7 @@ public interface DataStoreOperations extends AutoCloseable {
   void replaceRelation(Collection collection, UpdateRelation updateRelation) throws NotFoundException;
 
   int deleteEntity(Collection collection, UUID id, Change modified)
-      throws NotFoundException;
+    throws NotFoundException;
 
   Vres loadVres();
 
@@ -81,14 +85,43 @@ public interface DataStoreOperations extends AutoCloseable {
 
   Vre ensureVreExists(String vreName);
 
-  void removeCollectionsAndEntities(String vreName);
+  void removeCollectionsAndEntities(Vre vre);
 
   void addPid(UUID id, int rev, URI pidUri) throws NotFoundException;
 
   /**
    * Get the latest version of the entity with a certain rdf uri.
    */
-  Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations);
+  Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations);
 
   List<RelationType> getRelationTypes();
+
+  /**
+   * Only adds the collection to the VRE when the VRE does not contain a collection with the same entity type name.
+   */
+  void addCollectionToVre(Vre vre, CreateCollection createCollection);
+
+  void assertProperty(Vre vre, String rdfUri, RdfProperty property);
+
+  void retractProperty(Vre vre, String rdfUri, RdfProperty property);
+
+  List<PredicateInUse> getPredicatesFor(Collection defaultCollection);
+
+  /**
+   * @return a list with the rdf uri's of the entities without type
+   */
+  List<String> getEntitiesWithUnknownType(Vre vre);
+
+  /**
+   * Adds the mandatory administrative fields (like id, created, modified, rev) to the entities imported by rdf.
+   */
+  void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper);
+
+  /**
+   * @param collection the collection to add the properties to
+   * @param createProperties the properties to add to the collection
+   */
+  void addPropertiesToCollection(Collection collection, List<CreateProperty> createProperties);
+  
+  void setAdminCollection(Collection collection, Collection adminCollection);
 }

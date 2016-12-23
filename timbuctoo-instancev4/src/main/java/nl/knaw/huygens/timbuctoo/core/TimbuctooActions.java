@@ -32,6 +32,7 @@ import java.time.Clock;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -220,8 +221,8 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   //================== RDF ==================
-  public Optional<ReadEntity> searchEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
-    return dataStoreOperations.searchEntityByRdfUri(collection, uri, withRelations);
+  public Optional<ReadEntity> getEntityByRdfUri(Collection collection, String uri, boolean withRelations) {
+    return dataStoreOperations.getEntityByRdfUri(collection, uri, withRelations);
   }
 
   public Vre getVre(String vreName) {
@@ -240,23 +241,32 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.ensureVreExists(vreName);
   }
 
-  public void removeCollectionsAndEntities(String vreName) {
-    dataStoreOperations.removeCollectionsAndEntities(vreName);
-  }
-
-  public void clearMappingErrors(String vreName) {
-    dataStoreOperations.clearMappingErrors(vreName);
-  }
-
   public void saveRmlMappingState(String vreName, String rdfData) {
     dataStoreOperations.saveRmlMappingState(vreName, rdfData);
+  }
+
+  public void rdfCleanImportSession(String vreName, Function<RdfImportSession, TransactionState> sessionConsumer) {
+    RdfImportSession session = RdfImportSession.cleanImportSession(vreName, dataStoreOperations);
+
+    try {
+      TransactionState result = sessionConsumer.apply(session);
+      if (result.wasCommitted()) {
+        session.commit();
+      } else {
+        session.rollback();
+      }
+    } catch (RuntimeException e) {
+      session.rollback();
+      throw e;
+    } finally {
+      session.close();
+    }
   }
 
   //================== Inner classes ==================
   @FunctionalInterface
   public interface TimbuctooActionsFactory {
-    TimbuctooActions create(AfterSuccessTaskExecutor afterSuccessTaskExecutor
-    );
+    TimbuctooActions create(AfterSuccessTaskExecutor afterSuccessTaskExecutor);
   }
 
   static class AddPersistentUrlTask implements AfterSuccessTaskExecutor.Task {

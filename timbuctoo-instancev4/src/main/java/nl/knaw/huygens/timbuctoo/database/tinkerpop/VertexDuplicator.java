@@ -22,7 +22,7 @@ public class VertexDuplicator {
     duplicateVertex(traversal, vertex);
   }
 
-  public static void duplicateVertex(GraphTraversalSource traversal, Vertex vertex) {
+  public static Vertex duplicateVertex(GraphTraversalSource traversal, Vertex vertex) {
     Vertex duplicate = traversal.addV().next();
 
     for (Iterator<VertexProperty<Object>> properties = vertex.properties(); properties.hasNext(); ) {
@@ -40,6 +40,7 @@ public class VertexDuplicator {
     vertex.property(IS_LATEST, false);
     duplicate.property(IS_LATEST, true);
     vertex.addEdge(VERSION_OF, duplicate);
+    return duplicate;
   }
 
   static void moveOutgoingEdges(Vertex vertex, Vertex duplicate) {

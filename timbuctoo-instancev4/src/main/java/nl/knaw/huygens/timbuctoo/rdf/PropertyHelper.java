@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 class PropertyHelper {
@@ -27,4 +28,14 @@ class PropertyHelper {
     return propertyName.startsWith(collectionDescription.getPrefix() + "_");
   }
 
+  public void addCurrentProperties(Vertex entityVertex, CollectionDescription collectionDescription) {
+    String defaultPrefix = CollectionNameHelper.defaultEntityTypeName(collectionDescription.getVreName());
+    String collectionPrefix = collectionDescription.getPrefix();
+    entityVertex.properties().forEachRemaining(prop -> {
+      if (prop.label().startsWith(defaultPrefix)) {
+        String newLabel = collectionPrefix + prop.label().substring(defaultPrefix.length());
+        entityVertex.property(newLabel, prop.value());
+      }
+    });
+  }
 }

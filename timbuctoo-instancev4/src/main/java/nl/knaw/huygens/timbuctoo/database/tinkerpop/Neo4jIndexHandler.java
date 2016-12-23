@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.EmptyGraphTraversal;
@@ -14,6 +15,8 @@ import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.helpers.collection.MapUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -21,12 +24,15 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
 
 public class Neo4jIndexHandler implements IndexHandler {
   private static final String QUICK_SEARCH = "quickSearch";
   private static final String ID_INDEX = "idIndex";
   private static final String TIM_ID = "tim_id";
   private final TinkerPopGraphManager tinkerPopGraphManager;
+  private static final Logger LOG = LoggerFactory.getLogger(Neo4jIndexHandler.class);
+  private GraphTraversalSource cachedTraversal;
 
   public Neo4jIndexHandler(TinkerPopGraphManager tinkerPopGraphManager) {
     this.tinkerPopGraphManager = tinkerPopGraphManager;
@@ -93,7 +99,7 @@ public class Neo4jIndexHandler implements IndexHandler {
   //=====================tim_id index=====================
   @Override
   public Optional<Vertex> findById(UUID timId) {
-    IndexHits<Node> hits = getIdIndex(ID_INDEX).query(TIM_ID, timId.toString());
+    IndexHits<Node> hits = getIdIndex().query(TIM_ID, timId.toString());
     List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
     GraphTraversal<Vertex, Vertex> vertexT = traversal().V(ids);
 
@@ -102,7 +108,7 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   @Override
   public void insertIntoIdIndex(UUID timId, Vertex vertex) {
-    Index<Node> index = getIdIndex(ID_INDEX);
+    Index<Node> index = getIdIndex();
     index.add(vertexToNode(vertex), TIM_ID, timId.toString());
   }
 
@@ -116,16 +122,67 @@ public class Neo4jIndexHandler implements IndexHandler {
   @Override
   public void removeFromIdIndex(Vertex vertex) {
     // make sure only this field is removed from the index.
-    getIdIndex(ID_INDEX).remove(vertexToNode(vertex), TIM_ID);
+    getIdIndex().remove(vertexToNode(vertex), TIM_ID);
   }
 
-  private Index<Node> getIdIndex(String collectionName) {
-    return indexManager().forNodes(collectionName);
+  private Index<Node> getIdIndex() {
+    return indexManager().forNodes(ID_INDEX);
   }
+
+  //=====================RDF Uri index=====================
+  @Override
+  public Optional<Vertex> findVertexInRdfIndex(Vre vre, String nodeUri) {
+    String vreName = vre.getVreName();
+    IndexHits<Node> rdfurls = indexManager().forNodes(RDFINDEX_NAME).get(vreName, nodeUri);
+    if (rdfurls.hasNext()) {
+      long vertexId = rdfurls.next().getId();
+      if (rdfurls.hasNext()) {
+        StringBuilder errorMessage = new StringBuilder().append("There is more then one node in ")
+                                                        .append(RDFINDEX_NAME)
+                                                        .append(" for the vre ")
+                                                        .append(vreName)
+                                                        .append(" and the rdfUri ")
+                                                        .append(nodeUri)
+                                                        .append(" namely ")
+                                                        .append(vertexId);
+        rdfurls.forEachRemaining(x -> errorMessage.append(", ").append(x.getId()));
+        LOG.error(errorMessage.toString());
+      }
+      GraphTraversal<Vertex, Vertex> vertexLookup = traversal().V(vertexId);
+      if (vertexLookup.hasNext()) {
+        Vertex vertex = vertexLookup.next();
+        return Optional.of(vertex);
+      } else {
+        LOG.error("Index returned a Node for " + vreName + " - " + nodeUri + " but the node id " + vertexId +
+          "could not be found using Tinkerpop.");
+      }
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public void addVertexToRdfIndex(Vre vre, String nodeUri, Vertex vertex) {
+    Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
+    org.neo4j.graphdb.Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
+    rdfIndex.add(neo4jNode, vre.getVreName(), nodeUri);
+    rdfIndex.add(neo4jNode, "Admin", nodeUri);
+  }
+
+  @Override
+  public void removeFromRdfIndex(Vre vre, Vertex vertex) {
+    Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
+    org.neo4j.graphdb.Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
+    rdfIndex.remove(neo4jNode, vre.getVreName());
+    rdfIndex.remove(neo4jNode, "Admin");
+  }
+
   //=====================general helper methods=====================
 
   private GraphTraversalSource traversal() {
-    return tinkerPopGraphManager.getGraph().traversal();
+    if (cachedTraversal == null) {
+      cachedTraversal = tinkerPopGraphManager.getGraph().traversal();
+    }
+    return cachedTraversal;
   }
 
   private GraphDatabaseService graphDatabase() {

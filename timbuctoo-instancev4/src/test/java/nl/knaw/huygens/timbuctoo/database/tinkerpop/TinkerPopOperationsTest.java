@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
 import javaslang.control.Try;
 import nl.knaw.huygens.timbuctoo.core.AlreadyUpdatedException;
+import nl.knaw.huygens.timbuctoo.core.EntityFinisherHelper;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.RelationNotPossibleException;
+import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -19,6 +21,10 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionBuilder;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutableCreateProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.ValueTypeInUse;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -42,11 +48,18 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapperAndMappings;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.model.vre.VreStubs.minimalCorrectVre;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -61,6 +74,7 @@ import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
@@ -69,10 +83,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static uk.co.datumedge.hamcrest.json.SameJSONAs.sameJSONAs;
 
 public class TinkerPopOperationsTest {
@@ -2287,41 +2303,18 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
-  public void searchEntityByRdfUriReturnsAnEmptyOptionalIfTheEntityCannotBeFound() {
+  public void getEntityByRdfUriReturnsAnEmptyOptionalIfTheEntityCannotBeFound() {
     Vres vres = createConfiguration();
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(newGraph().wrap(), vres);
     Collection collection = vres.getCollection("testthings").get();
 
-    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
+    Optional<ReadEntity> readEntity = instance.getEntityByRdfUri(collection, "http://example.com/entity", false);
 
     assertThat(readEntity, is(not(present())));
   }
 
   @Test
-  public void searchEntityByRdfUriReturnsTheEntityWhenFound() {
-    UUID id1 = UUID.randomUUID();
-    TinkerPopGraphManager graphManager = newGraph()
-      .withVertex(v -> v
-        .withTimId(id1)
-        .withType("thing")
-        .withVre("test")
-        .withProperty("rdfUri", "http://example.com/entity")
-        .isLatest(true)
-        .withLabel("testthing")
-      )
-      .wrap();
-    Vres vres = createConfiguration();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(graphManager, vres);
-    Collection collection = vres.getCollection("testthings").get();
-
-    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
-
-    assertThat(readEntity, is(present()));
-    assertThat(readEntity.get(), hasProperty("id", equalTo(id1)));
-  }
-
-  @Test
-  public void searchEntityByRdfUriReturnsTheLatestEntity() {
+  public void getEntityByRdfUriReturnsTheLatestEntity() {
     UUID id1 = UUID.randomUUID();
     TinkerPopGraphManager graphManager = newGraph()
       .withVertex(v -> v
@@ -2344,10 +2337,13 @@ public class TinkerPopOperationsTest {
       )
       .wrap();
     Vres vres = createConfiguration();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(graphManager, vres);
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    Vertex vertex = graphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
+    when(indexHandler.findVertexInRdfIndex(any(Vre.class), anyString())).thenReturn(Optional.of(vertex));
+    TinkerPopOperations instance = forGraphMappingsAndIndex(graphManager, vres, indexHandler);
     Collection collection = vres.getCollection("testthings").get();
 
-    Optional<ReadEntity> readEntity = instance.searchEntityByRdfUri(collection, "http://example.com/entity", false);
+    Optional<ReadEntity> readEntity = instance.getEntityByRdfUri(collection, "http://example.com/entity", false);
 
     assertThat(readEntity, is(present()));
     assertThat(readEntity.get(), hasProperty("rev", equalTo(2)));
@@ -2393,4 +2389,429 @@ public class TinkerPopOperationsTest {
     assertThat(relationTypes, hasSize(2));
   }
 
+  @Test
+  public void addCollectionToVreAddsACollectionToTheVre() {
+    TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
+    Vre vre = instance.ensureVreExists("vre");
+
+    CreateCollection collection = CreateCollection.forEntityTypeName("entityTypeName");
+    instance.addCollectionToVre(vre, collection);
+
+    Vres vres = instance.loadVres();
+    Vre vre1 = vres.getVre("vre");
+    assertThat(vre1.getCollectionForCollectionName(collection.getCollectionName(vre1)), is(present()));
+  }
+
+  @Test
+  public void addCollectionToVreDoesNotAddTheCollectionWhenTheVreAlreadyHasACollectionWithTheSameName() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = instance.ensureVreExists("vre");
+
+    CreateCollection collection = CreateCollection.forEntityTypeName("entityTypeName");
+    instance.addCollectionToVre(vre, collection);
+    instance.addCollectionToVre(vre, collection);
+
+    assertThat(graphManager.getGraph().traversal().V().hasLabel(Collection.DATABASE_LABEL)
+                           .has(ENTITY_TYPE_NAME_PROPERTY_NAME, collection.getEntityTypeName(vre)).count()
+                           .next(),
+      is(1L));
+  }
+
+  @Test
+  public void assertEntityCreatesANewEntityIfTheEntityDoesNotExist() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = minimalCorrectVre(instance, "vre");
+
+    instance.assertEntity(vre, "http://example.org/1");
+
+    assertThat(instance.getVertexByRdfUri(vre, "http://example.org/1"), is(present()));
+  }
+
+  @Test
+  public void assertEntitySetsTheRdfUriProperty() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = minimalCorrectVre(instance, "vre");
+
+    instance.assertEntity(vre, "http://example.org/1");
+
+    assertThat(graphManager.getGraph().traversal().V().has(RDF_URI_PROP, "http://example.org/1").count().next(),
+      is(1L));
+  }
+
+  @Test
+  public void assertEntityAddsCreatedEntitiesToTheDefaultCollection() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = minimalCorrectVre(instance, "vre");
+
+    instance.assertEntity(vre, "http://example.org/1");
+
+    assertThat(graphManager.getGraph().traversal().V()
+                           .has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre))
+                           .out(HAS_ENTITY_NODE_RELATION_NAME)
+                           .out(HAS_ENTITY_RELATION_NAME).has(RDF_URI_PROP, "http://example.org/1").count().next(),
+      is(1L));
+  }
+
+  @Test
+  public void assertEntityDoesNotReCreateEntitiesThatAlreadyExist() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = minimalCorrectVre(instance, "vre");
+
+    long administrativeVertices = graphManager.getGraph().traversal().V().count().next();
+    instance.assertEntity(vre, "http://example.org/1");
+    instance.assertEntity(vre, "http://example.org/1");
+
+    assertThat(graphManager.getGraph().traversal().V().count().next(), is(administrativeVertices + 1));
+  }
+
+  @Test
+  public void assertPropertyAddsThePropertyOnTheEntity() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    String vreName = "vre";
+    Vre vre = minimalCorrectVre(instance, vreName);
+
+    instance.assertProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+
+    List<Object> values = graphManager.getGraph().traversal().V()
+                                      .has(RDF_URI_PROP, "http://example.org/1")
+                                      .values(defaultEntityTypeName(vre) + "_" + "http://example.org/propName")
+                                      .toList();
+    assertThat(values, contains("value"));
+  }
+
+  @Test
+  public void assertPropertyOverwritesThePropertyOnTheEntity() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    String vreName = "vre";
+    Vre vre = minimalCorrectVre(instance, vreName);
+
+    instance.assertProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+
+    instance.assertProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "somethingCompletelyDifferent",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+
+    List<Object> values = graphManager.getGraph().traversal().V()
+                                      .has(RDF_URI_PROP, "http://example.org/1")
+                                      .values(defaultEntityTypeName(vre) + "_" + "http://example.org/propName")
+                                      .toList();
+    assertThat(values, contains("somethingCompletelyDifferent"));
+  }
+
+  @Test
+  public void assertPropertyAlsoAddsAnAdminVersionOfTheProperty() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = minimalCorrectVre(instance, "vre");
+
+
+    instance.assertProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+
+    List<Object> values = graphManager.getGraph().traversal().V()
+                                      .has(RDF_URI_PROP, "http://example.org/1")
+                                      .values(defaultEntityTypeName("vre") + "_" + "http://example.org/propName")
+                                      .toList();
+    assertThat(values, contains("value"));
+  }
+
+  @Test
+  public void retractPropertyRemovesTheProperty() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = minimalCorrectVre(instance, "vre");
+
+    instance.assertEntity(vre, "http://example.org/1");
+
+    long minimalPropertyCount = graphManager.getGraph().traversal().V()
+                                            .has(RDF_URI_PROP, "http://example.org/1")
+                                            .properties()
+                                            .count().next();
+
+    instance.assertProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+
+    instance.retractProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "somethingCompletelyDifferent",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+
+    Long entitiesWithPropName = graphManager.getGraph().traversal().V()
+                                            .has(RDF_URI_PROP, "http://example.org/1")
+                                            .properties()
+                                            .count().next() - minimalPropertyCount;
+    assertThat(entitiesWithPropName, is(0L));
+  }
+
+  @Test
+  public void retractPropertyRemovesTheValueTypeFromThePredicateIfItDoesNotApplyToAnyEntity() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = minimalCorrectVre(instance, "vre");
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+    RdfProperty stringProperty = new RdfProperty(
+      "http://example.org/propName",
+      "value",
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+    );
+    RdfProperty floatProperty = new RdfProperty(
+      "http://example.org/propName",
+      "1.5",
+      "http://www.w3.org/2001/XMLSchema#float"
+    );
+    instance.assertProperty(vre, "http://example.org/1", stringProperty);
+    instance.assertProperty(vre, "http://example.org/2", floatProperty);
+    instance.assertProperty(vre, "http://example.org/3", floatProperty);
+
+    instance.retractProperty(vre, "http://example.org/1", stringProperty);
+    instance.retractProperty(vre, "http://example.org/2", floatProperty);
+
+    List<PredicateInUse> predicates = instance.getPredicatesFor(defaultCollection);
+    assertThat(predicates, hasSize(1));
+    assertThat(
+      predicates.get(0).getValueTypes(),
+      contains(hasProperty("typeUri", equalTo("http://www.w3.org/2001/XMLSchema#float")))
+    );
+  }
+
+  @Test
+  public void retractRemovesThePredicateWhenNoValueTypesAreConnected() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = minimalCorrectVre(instance, "vre");
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+    RdfProperty stringProperty = new RdfProperty(
+      "http://example.org/propName",
+      "value",
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+    );
+    instance.assertProperty(vre, "http://example.org/1", stringProperty);
+
+    instance.retractProperty(vre, "http://example.org/1", stringProperty);
+
+    List<PredicateInUse> predicates = instance.getPredicatesFor(defaultCollection);
+    assertThat(predicates, is(empty()));
+  }
+
+  @Test
+  public void retractPropertyWillBeANoopIfTheEntityDoesNotYetExist() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = instance.ensureVreExists("vre");
+
+    instance.retractProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "somethingCompletelyDifferent",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+
+    Long entitiesWithPropName = graphManager.getGraph().traversal().V()
+                                            .has(RDF_URI_PROP, "http://example.org/1")
+                                            .count().next();
+    assertThat(entitiesWithPropName, is(0L));
+  }
+
+  @Test
+  public void assertPropertyWillKeepTrackOfThePredicate() {
+    TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    vre = instance.loadVres().getVre("vre");
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+
+    instance.assertProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+    instance.assertProperty(
+      vre,
+      "http://example.org/2",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/2001/XMLSchema#float"
+      )
+    );
+
+    List<PredicateInUse> predicates = instance.getPredicatesFor(defaultCollection);
+    assertThat(predicates, contains(hasProperty("predicateUri", equalTo("http://example.org/propName"))));
+    List<ValueTypeInUse> valueTypes = predicates.get(0).getValueTypes();
+    assertThat(valueTypes, containsInAnyOrder(
+      allOf(
+        hasProperty("typeUri", equalTo("http://www.w3.org/2001/XMLSchema#float")),
+        hasProperty("entitiesConnected", contains("http://example.org/2"))
+      ),
+      allOf(
+        hasProperty("typeUri", equalTo("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")),
+        hasProperty("entitiesConnected", contains("http://example.org/1"))
+      )
+    ));
+  }
+
+  @Test
+  public void getEntitiesWithUnknownTypeReturnsAllTheEntitiesInTheDefaultCollectionOfTheVre() {
+    TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    vre = instance.loadVres().getVre("vre");
+    instance.assertEntity(vre, "http://example.org/entity1");
+    instance.assertEntity(vre, "http://example.org/entity2");
+
+    List<String> entitiesWithUnknownType = instance.getEntitiesWithUnknownType(vre);
+
+    assertThat(entitiesWithUnknownType, containsInAnyOrder("http://example.org/entity1", "http://example.org/entity2"));
+  }
+
+  @Test
+  public void finishEntitiesSetsTheAdministrativeProperties() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    vre = instance.loadVres().getVre("vre");
+    instance.assertEntity(vre, "http://example.org/entity1");
+    instance.assertEntity(vre, "http://example.org/entity2");
+
+    instance.finishEntities(vre, new EntityFinisherHelper());
+
+    assertThat(graphManager.getGraph().traversal().V().has("rdfUri", "http://example.org/entity1")
+                           .has("tim_id").has("rev").has("modified").has("created").has("types").hasNext(), is(true));
+    assertThat(graphManager.getGraph().traversal().V().has("rdfUri", "http://example.org/entity2")
+                           .has("tim_id").has("rev").has("modified").has("created").has("types").hasNext(), is(true));
+
+  }
+
+  @Test
+  public void finishEntitiesCallsTheChangeListener() {
+    ChangeListener changeListener = mock(ChangeListener.class);
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forChangeListenerMock(changeListener);
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    vre = instance.loadVres().getVre("vre");
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+    instance.assertEntity(vre, "http://example.org/entity1");
+
+    instance.finishEntities(vre, new EntityFinisherHelper());
+
+    verify(changeListener)
+      .onCreate(eq(defaultCollection), argThat(is(likeVertex().withProperty("rdfUri", "http://example.org/entity1"))));
+  }
+
+  @Test
+  public void finishEntitiesDuplicatesTheVertices() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    vre = instance.loadVres().getVre("vre");
+    instance.assertEntity(vre, "http://example.org/entity1");
+
+    instance.finishEntities(vre, new EntityFinisherHelper());
+
+    assertThat(graphManager.getGraph().traversal().V().has("rdfUri", "http://example.org/entity1")
+                           .has("tim_id").has("rev").has("modified").has("created").has("types").count().next(),
+      is(2L));
+  }
+
+  @Test
+  public void addPropertiesToCollectionsAddsPropertyDescriptionsToTheCollection() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    vre = instance.loadVres().getVre("vre");
+    Collection collection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+
+    ImmutableCreateProperty prop1 = ImmutableCreateProperty.builder()
+                                                           .clientName("clientName1")
+                                                           .propertyType("string")
+                                                           .rdfUri("http://example.org/pred1")
+                                                           .typeUri("http://example.org/string")
+                                                           .build();
+    ImmutableCreateProperty prop2 = ImmutableCreateProperty.builder()
+                                                           .clientName("clientName2")
+                                                           .propertyType("string")
+                                                           .rdfUri("http://example.org/pred2")
+                                                           .typeUri("http://example.org/string")
+                                                           .build();
+
+    instance.addPropertiesToCollection(collection, Lists.newArrayList(prop1, prop2));
+
+    collection = instance.loadVres().getCollectionForType(defaultEntityTypeName(vre)).get();
+    assertThat(collection.getReadableProperties().values(), hasSize(2));
+    List<Vertex> properties = graphManager.getGraph().traversal().V().hasLabel("property").toList();
+    assertThat(properties, containsInAnyOrder(
+      likeVertex().withProperty("clientName", "@displayName"),
+      likeVertex()
+        .withProperty("clientName", "clientName1")
+        .withProperty("dbName", collection.getEntityTypeName() + "_" + "http://example.org/pred1")
+        .withProperty("propertyType", "string")
+        .withProperty("rdfUri", "http://example.org/pred1")
+        .withProperty("typeUri", "http://example.org/string"),
+      likeVertex()
+        .withProperty("clientName", "clientName2")
+        .withProperty("dbName", collection.getEntityTypeName() + "_" + "http://example.org/pred2")
+        .withProperty("propertyType", "string")
+        .withProperty("rdfUri", "http://example.org/pred2")
+        .withProperty("typeUri", "http://example.org/string")
+    ));
+  }
 }
+
