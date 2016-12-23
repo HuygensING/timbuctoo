@@ -384,6 +384,31 @@ public class TripleImporterIntegrationTest {
   }
 
   @Test
+  public void importTripleShouldCopyPropertiesToNewCollectionsEvenIfTheEntityAlreadyHadACollection() throws Exception {
+    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
+    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
+    final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
+
+    instance.importTriple(true, abadanIsAFeature);
+    instance.importTriple(true, abadanHasPoint);
+    instance.importTriple(true, abadanIsAFictionalFeature);
+    rdfImportSession.commit();
+    rdfImportSession.close();
+
+    Optional<ReadEntity> featureEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
+    Optional<ReadEntity> fictionalFeatureEntity = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
+
+    assertThat(featureEntity.get().getProperties(), hasItem(allOf(
+      hasProperty("name", equalTo("point")),
+      hasProperty("value", equalTo("30.35 48.28333333333333"))
+    )));
+    assertThat(fictionalFeatureEntity.get().getProperties(), hasItem(allOf(
+      hasProperty("name", equalTo("point")),
+      hasProperty("value", equalTo("30.35 48.28333333333333"))
+    )));
+  }
+
+  @Test
   public void importTripleShouldSetsTheRdfUriAsDisplayName() throws Exception {
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();

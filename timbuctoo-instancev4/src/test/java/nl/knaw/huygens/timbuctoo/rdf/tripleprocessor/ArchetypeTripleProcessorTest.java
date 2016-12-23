@@ -61,8 +61,8 @@ public class ArchetypeTripleProcessorTest {
   public void processMovesTheEntitiesOfTheCollectionToTheNewArchetype() {
     instance.process(VRE_NAME, true, triple);
 
-    verify(entity1).moveToCollection(previousArchetype, archetypeCollection);
-    verify(entity2).moveToCollection(previousArchetype, archetypeCollection);
+    verify(entity1).moveToOtherArchetype(previousArchetype, archetypeCollection);
+    verify(entity2).moveToOtherArchetype(previousArchetype, archetypeCollection);
   }
 
 }

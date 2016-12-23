@@ -25,7 +25,7 @@ public class CollectionMembershipTripleProcessorTest {
       "<" + IRAN_URI + "> .";
 
   @Test
-  public void processAddsTheEntityToTheRequestedCollectionAndRemovesItFromTheDefaultCollection() {
+  public void processAddsTheEntityToTheRequestedCollection() {
     Database database = mock(Database.class);
     Triple triple = createSingleTriple(ABADAN_IS_PART_OF_IRAN_TRIPLE);
     Collection collectionFromTriple = mock(Collection.class);
@@ -41,7 +41,7 @@ public class CollectionMembershipTripleProcessorTest {
     instance.process("vreName", true, triple);
 
     InOrder inOrder = inOrder(entity);
-    inOrder.verify(entity).moveToCollection(defaultCollection, collectionFromTriple);
+    inOrder.verify(entity).addToCollection(collectionFromTriple);
   }
 
 }
