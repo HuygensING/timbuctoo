@@ -2489,7 +2489,8 @@ public class TinkerPopOperationsTest {
 
     List<Object> values = graphManager.getGraph().traversal().V()
                                       .has(RDF_URI_PROP, "http://example.org/1")
-                                      .values(defaultEntityTypeName(vre) + "http://example.org/propName").toList();
+                                      .values(defaultEntityTypeName(vre) + "_" + "http://example.org/propName")
+                                      .toList();
     assertThat(values, contains("value"));
   }
 
@@ -2522,7 +2523,8 @@ public class TinkerPopOperationsTest {
 
     List<Object> values = graphManager.getGraph().traversal().V()
                                       .has(RDF_URI_PROP, "http://example.org/1")
-                                      .values(defaultEntityTypeName(vre) + "http://example.org/propName").toList();
+                                      .values(defaultEntityTypeName(vre) + "_" + "http://example.org/propName")
+                                      .toList();
     assertThat(values, contains("somethingCompletelyDifferent"));
   }
 
@@ -2545,7 +2547,8 @@ public class TinkerPopOperationsTest {
 
     List<Object> values = graphManager.getGraph().traversal().V()
                                       .has(RDF_URI_PROP, "http://example.org/1")
-                                      .values(DEFAULT_COLLECTION_ENTITY_NAME + "http://example.org/propName").toList();
+                                      .values(DEFAULT_COLLECTION_ENTITY_NAME + "_" + "http://example.org/propName")
+                                      .toList();
     assertThat(values, contains("value"));
   }
 
@@ -2558,9 +2561,9 @@ public class TinkerPopOperationsTest {
     instance.assertEntity(vre, "http://example.org/1");
 
     long minimalPropertyCount = graphManager.getGraph().traversal().V()
-      .has(RDF_URI_PROP, "http://example.org/1")
-      .properties()
-      .count().next();
+                                            .has(RDF_URI_PROP, "http://example.org/1")
+                                            .properties()
+                                            .count().next();
 
     instance.assertProperty(
       vre,

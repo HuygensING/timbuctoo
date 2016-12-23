@@ -941,9 +941,9 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   private Iterator<Vertex> collectionsFor(Vertex entity) {
     return traversal.V(entity.id())
-      .in(HAS_ENTITY_RELATION_NAME)
-      .in(HAS_ENTITY_NODE_RELATION_NAME)
-      .union(__.identity(), __.out(HAS_ARCHETYPE_RELATION_NAME));
+                    .in(HAS_ENTITY_RELATION_NAME)
+                    .in(HAS_ENTITY_NODE_RELATION_NAME)
+                    .union(__.identity(), __.out(HAS_ARCHETYPE_RELATION_NAME));
   }
 
   @Override
@@ -952,7 +952,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     collectionsFor(vertex).forEachRemaining(collection -> {
       getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
-        vertex.property(entityTypeName + property.getPredicateUri(), property.getValue());
+        vertex.property(entityTypeName + "_" + property.getPredicateUri(), property.getValue());
       });
     });
 
@@ -992,7 +992,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     getVertexByRdfUri(vre, rdfUri).ifPresent(e -> {
       collectionsFor(e).forEachRemaining(collection -> {
         getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
-          e.property(entityTypeName + property.getPredicateUri(), property.getValue()).remove();
+          e.property(entityTypeName + "_" + property.getPredicateUri(), property.getValue()).remove();
         });
       });
 
@@ -1153,8 +1153,8 @@ public class TinkerPopOperations implements DataStoreOperations {
     indexHandler.addVertexToRdfIndex(vre, rdfUri, vertex);
 
     Vertex collection = getDefaultCollectionVertex(vre).get()
-      .vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
-      .next();
+                                                       .vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
+                                                       .next();
     collection.addEdge(HAS_ENTITY_RELATION_NAME, vertex);
     return vertex;
   }
