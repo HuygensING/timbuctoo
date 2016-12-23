@@ -36,7 +36,6 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 @Ignore //TODO enable when the RDF-import refactoring is completed.
@@ -329,19 +328,6 @@ public class TripleImporterIntegrationTest {
 
     assertThat(getReadEntity(LOCATION_COLLECTION, ABADAN_URI), is(present()));
     assertThat(getReadEntity(COLLECTION_NAME, ABADAN_URI), is(present()));
-  }
-
-  @Test
-  public void importTripleRemovesTheSubjectAndItsEntitiesFromTheDefaultArchetype() throws Exception {
-    Triple abadanIsAFeature = createSingleTriple(ABADAN_HAS_TYPE_FEATURE_TRIPLE);
-    Triple featureIsLocation = createSingleTriple(FEATURE_SUBCLASS_OF_LOCATION_TRIPLE);
-
-    instance.importTriple(true, abadanIsAFeature);
-    instance.importTriple(true, featureIsLocation);
-    rdfImportSession.commit();
-    rdfImportSession.close();
-
-    assertThat(getReadEntity(CONCEPTS_COLLECTION, ABADAN_URI), is(not(present())));
   }
 
   @Test
