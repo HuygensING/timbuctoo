@@ -31,8 +31,12 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutablePredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutableValueTypeInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
-import nl.knaw.huygens.timbuctoo.database.PropertyNameHelper;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CollectionHasEntityRelationChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CompositeChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.IdIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopPropertyConverter;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
@@ -126,7 +130,25 @@ public class TinkerPopOperations implements DataStoreOperations {
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
 
-  public TinkerPopOperations(TinkerPopGraphManager graphManager, ChangeListener listener,
+
+  public TinkerPopOperations(TinkerPopGraphManager graphManager ) {
+    this.indexHandler = new Neo4jIndexHandler(graphManager);
+    this.listener = new CompositeChangeListener(
+      new AddLabelChangeListener(),
+      new FulltextIndexChangeListener(indexHandler, graphManager),
+      new IdIndexChangeListener(indexHandler),
+      new CollectionHasEntityRelationChangeListener(graphManager)
+    );
+    this.entityFetcher = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
+    this.graph = graphManager.getGraph();
+    this.transaction = graph.tx();
+    this.traversal = graph.traversal();
+    this.latestState = graphManager.getLatestState();
+    this.mappings = loadVres();
+    this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
+  }
+
+  TinkerPopOperations(TinkerPopGraphManager graphManager, ChangeListener listener,
                              GremlinEntityFetcher entityFetcher, Vres mappings, IndexHandler indexHandler) {
     graph = graphManager.getGraph();
     this.indexHandler = indexHandler;
