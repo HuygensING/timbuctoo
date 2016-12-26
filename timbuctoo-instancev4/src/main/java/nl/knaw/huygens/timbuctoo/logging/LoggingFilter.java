@@ -115,61 +115,65 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
   @Override
   public void filter(final ContainerRequestContext context) throws IOException {
-    final UUID id = UUID.randomUUID();
-    MDC.put(MDC_ID, id.toString());
-    MDC.put(MDC_PRE_LOG, "true");
-    MDC.put(MDC_RELEASE_HASH, releaseHash);
+    if (!"1".equals(context.getHeaderString("Is-Healthcheck"))) {
+      final UUID id = UUID.randomUUID();
+      MDC.put(MDC_ID, id.toString());
+      MDC.put(MDC_PRE_LOG, "true");
+      MDC.put(MDC_RELEASE_HASH, releaseHash);
 
-    //Log a very minimal message. Mostly to make sure that we notice requests that never log in the response filter
-    LOGGER.info(">     " + context.getMethod() + " " + context.getUriInfo().getRequestUri().toASCIIString());
-    MDC.remove(MDC_PRE_LOG);
-    final Stopwatch stopwatch = Stopwatch.createUnstarted();
-    context.setProperty(STOPWATCH_PROPERTY, stopwatch);
+      //Log a very minimal message. Mostly to make sure that we notice requests that never log in the response filter
+      LOGGER.info(">     " + context.getMethod() + " " + context.getUriInfo().getRequestUri().toASCIIString());
+      MDC.remove(MDC_PRE_LOG);
+      final Stopwatch stopwatch = Stopwatch.createUnstarted();
+      context.setProperty(STOPWATCH_PROPERTY, stopwatch);
 
-    if (context.hasEntity()) {
-      context.setEntityStream(
-        addInboundEntityToMdc(context.getEntityStream(), MessageUtils.getCharset(context.getMediaType()))
-      );
+      if (context.hasEntity()) {
+        context.setEntityStream(
+          addInboundEntityToMdc(context.getEntityStream(), MessageUtils.getCharset(context.getMediaType()))
+        );
+      }
+      stopwatch.start();
     }
-    stopwatch.start();
   }
 
   @Override
   public void filter(final ContainerRequestContext requestContext, final ContainerResponseContext responseContext)
     throws IOException {
-    MDC.put(MDC_POST_LOG, "true");
-    MDC.put(MDC_HTTP_METHOD, requestContext.getMethod());
-    MDC.put(MDC_HTTP_URI, requestContext.getUriInfo().getRequestUri().toASCIIString());
-    MDC.put(MDC_HTTP_PATH, requestContext.getUriInfo().getRequestUri().getPath());
-    MDC.put(MDC_HTTP_AUTHORITY, requestContext.getUriInfo().getRequestUri().getAuthority());
-    MDC.put(MDC_HTTP_QUERY, requestContext.getUriInfo().getRequestUri().getQuery());
-    MDC.put(MDC_REQUEST_HEADERS, formatHeaders(requestContext.getHeaders()));
+    if (!"1".equals(requestContext.getHeaderString("Is-Healthcheck"))) {
+      MDC.put(MDC_POST_LOG, "true");
+      MDC.put(MDC_HTTP_METHOD, requestContext.getMethod());
+      MDC.put(MDC_HTTP_URI, requestContext.getUriInfo().getRequestUri().toASCIIString());
+      MDC.put(MDC_HTTP_PATH, requestContext.getUriInfo().getRequestUri().getPath());
+      MDC.put(MDC_HTTP_AUTHORITY, requestContext.getUriInfo().getRequestUri().getAuthority());
+      MDC.put(MDC_HTTP_QUERY, requestContext.getUriInfo().getRequestUri().getQuery());
+      MDC.put(MDC_REQUEST_HEADERS, formatHeaders(requestContext.getHeaders()));
 
-    MDC.put(MDC_HTTP_STATUS, Integer.toString(responseContext.getStatus()));
-    MDC.put(MDC_RESPONSE_HEADERS, formatHeaders(responseContext.getStringHeaders()));
+      MDC.put(MDC_HTTP_STATUS, Integer.toString(responseContext.getStatus()));
+      MDC.put(MDC_RESPONSE_HEADERS, formatHeaders(responseContext.getStringHeaders()));
 
-    //Actual log is done when the response stream has finished in aroundWriteTo
-    String log = "< " +
-      Integer.toString(responseContext.getStatus()) + " " +
-      requestContext.getMethod() + " " +
-      requestContext.getUriInfo().getRequestUri().toASCIIString();
+      //Actual log is done when the response stream has finished in aroundWriteTo
+      String log = "< " +
+        Integer.toString(responseContext.getStatus()) + " " +
+        requestContext.getMethod() + " " +
+        requestContext.getUriInfo().getRequestUri().toASCIIString();
 
-    if (responseContext.hasEntity()) {
-      //delay logging until the result has been sent to the client so we can measure the size of the result
-      requestContext.setProperty(LOG_TEXT_PROPERTY, log);
+      if (responseContext.hasEntity()) {
+        //delay logging until the result has been sent to the client so we can measure the size of the result
+        requestContext.setProperty(LOG_TEXT_PROPERTY, log);
 
-      //wrap the outputstream in one that measures the size
-      final CountingOutputStream stream = new CountingOutputStream(responseContext.getEntityStream());
-      responseContext.setEntityStream(stream);
-      requestContext.setProperty(WRAPPED_STREAM_PROPERTY, stream);
-    } else {
-      //log now, because the writeTo wrapper will not be called
-      MDC.put(MDC_OUTPUT_BYTECOUNT, "0");
-      String size = " (0 bytes)";
+        //wrap the outputstream in one that measures the size
+        final CountingOutputStream stream = new CountingOutputStream(responseContext.getEntityStream());
+        responseContext.setEntityStream(stream);
+        requestContext.setProperty(WRAPPED_STREAM_PROPERTY, stream);
+      } else {
+        //log now, because the writeTo wrapper will not be called
+        MDC.put(MDC_OUTPUT_BYTECOUNT, "0");
+        String size = " (0 bytes)";
 
-      String durationLog = getDuration((Stopwatch) requestContext.getProperty(STOPWATCH_PROPERTY));
-      LOGGER.info(log + size + durationLog);
-      clearMdc();
+        String durationLog = getDuration((Stopwatch) requestContext.getProperty(STOPWATCH_PROPERTY));
+        LOGGER.info(log + size + durationLog);
+        clearMdc();
+      }
     }
   }
 
@@ -208,21 +212,22 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
   @Override
   public void aroundWriteTo(final WriterInterceptorContext context)
     throws IOException, WebApplicationException {
+    if (context.getProperty(WRAPPED_STREAM_PROPERTY) != null) {
+      final CountingOutputStream stream = (CountingOutputStream) context.getProperty(WRAPPED_STREAM_PROPERTY);
+      context.proceed();
 
-    final CountingOutputStream stream = (CountingOutputStream) context.getProperty(WRAPPED_STREAM_PROPERTY);
-    context.proceed();
+      String durationLog = getDuration((Stopwatch) context.getProperty(STOPWATCH_PROPERTY));
 
-    String durationLog = getDuration((Stopwatch) context.getProperty(STOPWATCH_PROPERTY));
+      String size;
+      if (stream != null) {
+        MDC.put(MDC_OUTPUT_BYTECOUNT, stream.getCount() + "");
+        size = " (" + stream.getCount() + " bytes)";
+      } else {
+        size = " (outputSize unknown)";
+      }
 
-    String size;
-    if (stream != null) {
-      MDC.put(MDC_OUTPUT_BYTECOUNT, stream.getCount() + "");
-      size = " (" + stream.getCount() + " bytes)";
-    } else {
-      size = " (outputSize unknown)";
+      LOGGER.info(context.getProperty(LOG_TEXT_PROPERTY) + size + durationLog);
     }
-
-    LOGGER.info(context.getProperty(LOG_TEXT_PROPERTY) + size + durationLog);
     clearMdc();
   }
 }
