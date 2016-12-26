@@ -21,6 +21,7 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.kernel.ha.HaSettings;
+import org.neo4j.logging.slf4j.Slf4jLogProvider;
 import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,6 +100,7 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
           haconfig.allowInitCluster()
         );
         graphDatabase = new HighlyAvailableGraphDatabaseFactory()
+          .setUserLogProvider( new Slf4jLogProvider() )
           .newEmbeddedDatabaseBuilder(databasePath)
           .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
           // .setConfig(GraphDatabaseSettings.pagecache_memory, configuration.getMaxMemory())
@@ -120,6 +122,7 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
       } else {
         LOG.info("Launching local non-ha mode. Database at " + databasePath.getAbsolutePath());
         graphDatabase = new GraphDatabaseFactory()
+          .setUserLogProvider( new Slf4jLogProvider() )
           .newEmbeddedDatabaseBuilder(databasePath)
           .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
           .newGraphDatabase();
