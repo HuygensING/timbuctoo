@@ -132,8 +132,10 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
 
   @Override
   public void stop() throws Exception {
+    LOG.info("Stopping database");
     graph.close();
     graphDatabase.shutdown();
+    LOG.info("Database stopped");
   }
 
   @Override
