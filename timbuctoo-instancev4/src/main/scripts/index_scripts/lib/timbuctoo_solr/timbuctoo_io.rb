@@ -1,5 +1,13 @@
 require 'net/http'
+require 'httplog'
 require 'json'
+
+def make_http(uri)
+  http = Net::HTTP.new(uri.hostname, uri.port)
+  http.use_ssl = uri.scheme.eql?('https')
+
+  http
+end
 
 class Dataset
 
@@ -15,7 +23,7 @@ class Dataset
     location = "#{metadata_url}?withCollectionInfo=true"
     uri = URI.parse(location)
     req = Net::HTTP::Get.new(uri)
-    http = Net::HTTP.new(uri.hostname, uri.port)
+    http = make_http(uri)
 
     response = http.request(req)
     raise "http request to #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
@@ -70,7 +78,7 @@ class TimbuctooIO
     location = "#{@base_url}/v2.1/system/vres"
     uri = URI.parse(location)
     req = Net::HTTP::Get.new(uri)
-    http = Net::HTTP.new(uri.hostname, uri.port)
+    http = make_http(uri)
 
     response = http.request(req)
     raise "http request to #{location} failed with status #{response.code}: #{location}" unless response.code.eql?('200')
@@ -94,7 +102,7 @@ class TimbuctooIO
         (with_relations ? '&withRelations=true' : '')
     uri = URI.parse(location)
     req = Net::HTTP::Get.new(uri)
-    http = Net::HTTP.new(uri.hostname, uri.port)
+    http = make_http(uri)
     http.read_timeout = 600
     response = http.request(req)
     raise "http request failed with status #{response.code}: #{location}" unless response.code.eql?('200')
