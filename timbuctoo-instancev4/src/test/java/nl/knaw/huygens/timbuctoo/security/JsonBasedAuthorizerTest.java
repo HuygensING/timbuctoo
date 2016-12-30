@@ -21,21 +21,21 @@ public class JsonBasedAuthorizerTest {
 
   public static final String VRE_ID = "vreId";
   public static final String USER_ID = "userId";
-  private VreAuthorizationCollection authorizationCollection;
+  private VreAuthorizationAccess authorizationAccess;
   private JsonBasedAuthorizer instance;
 
   @Before
   public void setUp() throws Exception {
-    authorizationCollection = mock(VreAuthorizationCollection.class);
-    instance = new JsonBasedAuthorizer(authorizationCollection);
+    authorizationAccess = mock(VreAuthorizationAccess.class);
+    instance = new JsonBasedAuthorizer(authorizationAccess);
   }
 
   @Test
   public void authorizationForReturnsTheNewAuthorizationIfTheUserHasNoAuthorizationForTheCurrentCollection()
     throws Exception {
     VreAuthorization vreAuthorization = new VreAuthorization();
-    when(authorizationCollection.authorizationFor(anyString(), anyString())).thenReturn(Optional.empty());
-    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
+    when(authorizationAccess.getAuthorization(anyString(), anyString())).thenReturn(Optional.empty());
+    when(authorizationAccess.getOrCreateAuthorization(anyString(), anyString(), anyString()))
       .thenReturn(vreAuthorization);
 
     Collection collection = collectionOfVreWithId(VRE_ID);
@@ -44,7 +44,7 @@ public class JsonBasedAuthorizerTest {
     Authorization authorization = instance.authorizationFor(collection, userId);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationCollection).addAuthorizationFor(VRE_ID, userId, UNVERIFIED_USER_ROLE);
+    verify(authorizationAccess).getOrCreateAuthorization(VRE_ID, userId, UNVERIFIED_USER_ROLE);
   }
 
   private Collection collectionOfVreWithId(String vreId) {
@@ -56,30 +56,30 @@ public class JsonBasedAuthorizerTest {
   @Test
   public void authorizationForReturnsTheFoundAuthorizationForTheVreOfTheCollection() throws Exception {
     VreAuthorization vreAuthorization = new VreAuthorization();
-    when(authorizationCollection.authorizationFor(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
+    when(authorizationAccess.getAuthorization(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
     Collection collection = collectionOfVreWithId(VRE_ID);
 
     Authorization authorization = instance.authorizationFor(collection, USER_ID);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationCollection, never()).addAuthorizationFor(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
+    verify(authorizationAccess, never()).getOrCreateAuthorization(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
   }
 
   @Test
   public void authorizationForReturnsTheFoundAuthorizationForTheVreIdAndTheUserId() throws Exception {
     VreAuthorization vreAuthorization = new VreAuthorization();
-    when(authorizationCollection.authorizationFor(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
+    when(authorizationAccess.getAuthorization(anyString(), anyString())).thenReturn(Optional.of(vreAuthorization));
 
     Authorization authorization = instance.authorizationFor(VRE_ID, USER_ID);
 
     assertThat(authorization, is(sameInstance(vreAuthorization)));
-    verify(authorizationCollection, never()).addAuthorizationFor(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
+    verify(authorizationAccess, never()).getOrCreateAuthorization(VRE_ID, USER_ID, UNVERIFIED_USER_ROLE);
   }
 
   @Test(expected = AuthorizationUnavailableException.class)
   public void authorizationForThrowsAnAuthorizationUnavailableExceptionWhenTheVreAuthorizationsThrowsOneWhileReading()
     throws Exception {
-    when(authorizationCollection.authorizationFor(anyString(), anyString()))
+    when(authorizationAccess.getAuthorization(anyString(), anyString()))
       .thenThrow(new AuthorizationUnavailableException());
     Collection collection = collectionOfVreWithId(VRE_ID);
 
@@ -89,9 +89,9 @@ public class JsonBasedAuthorizerTest {
   @Test(expected = AuthorizationUnavailableException.class)
   public void authorizationForThrowsAnAuthorizationUnavailableExceptionWhenTheVreAuthorizationsThrowsOneWhileAdding()
     throws Exception {
-    when(authorizationCollection.authorizationFor(anyString(), anyString()))
+    when(authorizationAccess.getAuthorization(anyString(), anyString()))
       .thenReturn(Optional.empty());
-    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
+    when(authorizationAccess.getOrCreateAuthorization(anyString(), anyString(), anyString()))
       .thenThrow(new AuthorizationUnavailableException());
     Collection collection = collectionOfVreWithId(VRE_ID);
 
@@ -103,13 +103,13 @@ public class JsonBasedAuthorizerTest {
     throws Exception {
     instance.createAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
 
-    verify(authorizationCollection).addAuthorizationFor(VRE_ID, USER_ID, UserRoles.USER_ROLE);
+    verify(authorizationAccess).getOrCreateAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);
   }
 
   @Test(expected = AuthorizationCreationException.class)
   public void createAuthorizationThrowsAnAuthCreateExWhenTheAuthorizationCollectionThrowsAnAuthUnavailableEx()
     throws Exception {
-    when(authorizationCollection.addAuthorizationFor(anyString(), anyString(), anyString()))
+    when(authorizationAccess.getOrCreateAuthorization(anyString(), anyString(), anyString()))
       .thenThrow(new AuthorizationUnavailableException());
 
     instance.createAuthorization(VRE_ID, USER_ID, UserRoles.USER_ROLE);

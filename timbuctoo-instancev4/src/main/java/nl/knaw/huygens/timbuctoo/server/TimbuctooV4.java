@@ -37,6 +37,7 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.localfile.LocalFileLoginAccess;
 import nl.knaw.huygens.timbuctoo.security.localfile.LocalFileUserAccess;
+import nl.knaw.huygens.timbuctoo.security.localfile.LocalFileVreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllEntityIds;
@@ -184,7 +185,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
 
-    JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
+    JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(
+      new LocalFileVreAuthorizationAccess(
+        configuration.getAuthorizationsPath()
+      )
+    );
 
     final UrlGenerator pathWithoutVersionAndRevision =
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, null).toString().replaceFirst("^/v2.1/", ""));

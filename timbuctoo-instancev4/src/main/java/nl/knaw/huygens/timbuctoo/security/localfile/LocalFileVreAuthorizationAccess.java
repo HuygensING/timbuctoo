@@ -1,8 +1,11 @@
-package nl.knaw.huygens.timbuctoo.security;
+package nl.knaw.huygens.timbuctoo.security.localfile;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorization;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationAccess;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,16 +14,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-public class VreAuthorizationCollection {
+public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   private final ObjectMapper objectMapper;
   private final Path authorizationsFolder;
 
-  public VreAuthorizationCollection(Path authorizationsFolder) {
+  public LocalFileVreAuthorizationAccess(Path authorizationsFolder) {
     objectMapper = new ObjectMapper();
     this.authorizationsFolder = authorizationsFolder;
   }
 
-  public VreAuthorization addAuthorizationFor(String vreId, String userId, String userRole)
+  @Override
+  public VreAuthorization getOrCreateAuthorization(String vreId, String userId, String userRole)
     throws AuthorizationUnavailableException {
     File file = getFile(vreId);
     VreAuthorization vreAuthorization = new VreAuthorization(vreId, userId, userRole);
@@ -52,7 +56,8 @@ public class VreAuthorizationCollection {
     return vreAuthorization;
   }
 
-  public Optional<VreAuthorization> authorizationFor(String vreId, String userId)
+  @Override
+  public Optional<VreAuthorization> getAuthorization(String vreId, String userId)
     throws AuthorizationUnavailableException {
 
     File file = getFile(vreId);

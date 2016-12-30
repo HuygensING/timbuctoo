@@ -1,23 +1,18 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.crud.Authorization;
 
-import java.nio.file.Path;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.security.UserRoles.UNVERIFIED_USER_ROLE;
 
 public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCreator {
 
-  private VreAuthorizationCollection authorizationCollection;
+  private VreAuthorizationAccess authorizationAccess;
 
-  public JsonBasedAuthorizer(Path pathToAuthorizations) {
-    this.authorizationCollection = new VreAuthorizationCollection(pathToAuthorizations);
-  }
-
-  public JsonBasedAuthorizer(VreAuthorizationCollection authorizationCollection) {
-    this.authorizationCollection = authorizationCollection;
+  public JsonBasedAuthorizer(VreAuthorizationAccess authorizationAccess) {
+    this.authorizationAccess = authorizationAccess;
   }
 
   @Override
@@ -27,19 +22,20 @@ public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCreator 
 
   @Override
   public Authorization authorizationFor(String vreId, String userId) throws AuthorizationUnavailableException {
-    Optional<VreAuthorization> vreAuthorization = authorizationCollection.authorizationFor(vreId, userId);
+    //FIXME: based on a cursory glance at the code it seems that this get and the following if are redundant
+    Optional<VreAuthorization> vreAuthorization = authorizationAccess.getAuthorization(vreId, userId);
 
     if (vreAuthorization.isPresent()) {
       return vreAuthorization.get();
     }
 
-    return authorizationCollection.addAuthorizationFor(vreId, userId, UNVERIFIED_USER_ROLE);
+    return authorizationAccess.getOrCreateAuthorization(vreId, userId, UNVERIFIED_USER_ROLE);
   }
 
   @Override
   public void createAuthorization(String vreId, String userId, String vreRole) throws AuthorizationCreationException {
     try {
-      authorizationCollection.addAuthorizationFor(vreId, userId, vreRole);
+      authorizationAccess.getOrCreateAuthorization(vreId, userId, vreRole);
     } catch (AuthorizationUnavailableException e) {
       throw new AuthorizationCreationException(e);
     }
