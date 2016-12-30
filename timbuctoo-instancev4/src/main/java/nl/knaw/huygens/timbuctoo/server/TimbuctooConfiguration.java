@@ -25,10 +25,12 @@ import java.util.regex.Pattern;
  *  - example database
  */
 public class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder, SearchConfig {
-  @NotEmpty
+  @JsonProperty
   private String loginsFilePath;
-  @NotEmpty
+  @JsonProperty
   private String usersFilePath;
+  @JsonProperty
+  private String authorizationConnectionString;
   @NotEmpty
   private String databasePath;//FIXME: move to TinkerpopConfig once timbuctoo is hosted on azure
   @JsonProperty
@@ -148,6 +150,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public String getTimbuctooSearchUrl() {
     return timbuctooSearchUrl;
+  }
+
+  public String getAuthorizationConnectionString() {
+    return authorizationConnectionString;
   }
 
   // A class to configure timeouts without compromising the Timeout class.

@@ -19,7 +19,8 @@ public class JsonBasedAuthenticator implements Authenticator, LoginCreator {
   private final String algorithm;
   private final LoginAccess loginAccess;
 
-  public JsonBasedAuthenticator(LoginAccess loginAccess, String encryptionAlgorithm) {
+  public JsonBasedAuthenticator(LoginAccess loginAccess, String encryptionAlgorithm) throws NoSuchAlgorithmException {
+    MessageDigest.getInstance(encryptionAlgorithm);
     this.loginAccess = loginAccess;
     this.algorithm = encryptionAlgorithm;
   }

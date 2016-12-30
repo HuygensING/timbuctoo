@@ -4,6 +4,8 @@ import com.codahale.metrics.JmxAttributeGauge;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
+import com.microsoft.azure.storage.CloudStorageAccount;
+import com.microsoft.azure.storage.table.CloudTableClient;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -21,6 +23,15 @@ import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jIndexHandler;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.Neo4jLuceneEntityFetcher;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.AddLabelChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CollectionHasEntityRelationChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CompositeChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.FulltextIndexChangeListener;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.IdIndexChangeListener;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
@@ -35,6 +46,12 @@ import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.LoginAccess;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.azure.AzureLoginAccess;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.azure.AzureUserAccess;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.azure.AzureVreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileLoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileUserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
@@ -72,7 +89,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
@@ -148,20 +164,36 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Support services
     final AuthenticationHandler authHandler = configuration.getFederatedAuthentication().makeHandler(environment);
-    final Path loginsPath = Paths.get(configuration.getLoginsFilePath());
-    final Path usersPath = Paths.get(configuration.getUsersFilePath());
 
-    JsonBasedUserStore userStore = new JsonBasedUserStore(new LocalFileUserAccess(usersPath));
-    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(
-      new LocalFileLoginAccess(loginsPath), ENCRYPTION_ALGORITHM
-    );
+    UserAccess userAccess;
+    LoginAccess loginAccess;
+    VreAuthorizationAccess authorizationAccess;
+    String connectionString = configuration.getAuthorizationConnectionString();
+    if (connectionString != null) {
+      CloudTableClient tableClient = CloudStorageAccount.parse(connectionString).createCloudTableClient();
+      userAccess = new AzureUserAccess(tableClient);
+      loginAccess = new AzureLoginAccess(tableClient);;
+      authorizationAccess = new AzureVreAuthorizationAccess(tableClient);;
+    } else {
+      final Path usersPath = Paths.get(configuration.getUsersFilePath());
+      userAccess = new LocalFileUserAccess(usersPath);
+      register(environment, "Users file", new FileHealthCheck(usersPath));
+
+      final Path loginsPath = Paths.get(configuration.getLoginsFilePath());
+      loginAccess = new LocalFileLoginAccess(loginsPath);
+      register(environment, "Local logins file", new FileHealthCheck(loginsPath));
+
+      authorizationAccess = new LocalFileVreAuthorizationAccess(configuration.getAuthorizationsPath());
+    }
+    JsonBasedUserStore userStore = new JsonBasedUserStore(userAccess);
+    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginAccess, ENCRYPTION_ALGORITHM);
     final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
       authenticator,
       userStore,
       configuration.getAutoLogoutTimeout(),
       authHandler
     );
-
+    JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(authorizationAccess);
 
     // Database migrations
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
@@ -177,12 +209,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
-
-    JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(
-      new LocalFileVreAuthorizationAccess(
-        configuration.getAuthorizationsPath()
-      )
-    );
 
     final UrlGenerator pathWithoutVersionAndRevision =
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, null).toString().replaceFirst("^/v2.1/", ""));
@@ -285,10 +311,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.admin().addTask(new DbLogCreatorTask(graphManager));
 
     // register health checks
-    register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
-    register(environment, "Local logins file", new FileHealthCheck(loginsPath));
-    register(environment, "Users file", new FileHealthCheck(usersPath));
-
     register(environment, "Neo4j database connection", graphManager);
     register(environment, "Database", new DatabaseHealthCheck(databaseValidationRunner));
 

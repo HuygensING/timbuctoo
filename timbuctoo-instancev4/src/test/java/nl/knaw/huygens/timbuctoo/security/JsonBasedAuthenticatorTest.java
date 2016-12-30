@@ -13,12 +13,13 @@ import org.junit.rules.ExpectedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticatorStubs.backedByFile;
-import static nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticatorStubs.withAlgorithm;
+import static nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticatorStubs.throwingWithAlgorithm;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -69,13 +70,11 @@ public class JsonBasedAuthenticatorTest {
   }
 
   @Test
-  public void authenticateThrowsALocalLoginUnavailableExceptionWhenTheEncryptionAlgorithmIsUnavailable()
-    throws LocalLoginUnavailableException {
-    JsonBasedAuthenticator instance = withAlgorithm(LOGINS_FILE, "bogusAlgorithm");
+  public void constructorThrowsNoSuchAlgorithmWhenTheAlgorithmIsNotAvailable()
+    throws NoSuchAlgorithmException {
 
-    expectedException.expect(LocalLoginUnavailableException.class);
-
-    instance.authenticate(KNOWN_USER, CORRECT_PASSWORD);
+    expectedException.expect(NoSuchAlgorithmException.class);
+    throwingWithAlgorithm(LOGINS_FILE, "bogusAlgorithm");
   }
 
   @Test
@@ -131,20 +130,6 @@ public class JsonBasedAuthenticatorTest {
     assertThat(count, is(1L));
 
     Files.delete(emptyLoginsFile);
-  }
-
-  @Test(expected = LoginCreationException.class)
-  public void createLoginThrowsLoginCreationExceptionWhenThePasswordCannotBeEncrypted() throws Exception {
-    Login[] logins = new Login[0];
-    Path emptyLoginsFile = Paths.get("src", "test", "resources", "logins1.json");
-    new ObjectMapper().writeValue(emptyLoginsFile.toFile(), logins);
-    JsonBasedAuthenticator instance = withAlgorithm(emptyLoginsFile, "bogusAlgorithm");
-
-    try {
-      instance.createLogin("userPid", "userName", "password", "givenName", "surname", "email", "org");
-    } finally {
-      Files.delete(emptyLoginsFile);
-    }
   }
 
   @Test(expected = LoginCreationException.class)
