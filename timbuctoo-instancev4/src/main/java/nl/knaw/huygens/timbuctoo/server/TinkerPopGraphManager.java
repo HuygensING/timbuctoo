@@ -39,7 +39,7 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
 
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
 
-  private final TimbuctooConfiguration configuration;
+  private final TinkerPopConfig configuration;
   private final LinkedHashMap<String, DatabaseMigration> migrations;
   protected final List<Consumer<Graph>> graphWaitList;
 
@@ -48,7 +48,7 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
   protected Neo4jGraph graph;
   protected GraphDatabaseService graphDatabase;
 
-  public TinkerPopGraphManager(TimbuctooConfiguration configuration,
+  public TinkerPopGraphManager(TinkerPopConfig configuration,
                                LinkedHashMap<String, DatabaseMigration> migrations) {
     this.configuration = configuration;
     graphWaitList = Lists.newArrayList();
@@ -88,8 +88,8 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
       databasePath = new File(configuration.getDatabasePath());
     }
     if (graphDatabase == null) {
-      if (configuration.getDatabaseConfiguration() != null && configuration.getDatabaseConfiguration().hasHaconfig()) {
-        TinkerPopConfig.HaConfig haconfig = configuration.getDatabaseConfiguration().getHaconfig();
+      if (configuration.hasHaconfig()) {
+        TinkerPopConfig.HaConfig haconfig = configuration.getHaconfig();
         LOG.info(
           "Launching HA mode. Server id is " +
           haconfig.getServerId() +

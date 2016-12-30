@@ -1,10 +1,18 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.hibernate.validator.constraints.NotEmpty;
 
 public class TinkerPopConfig {
   @JsonProperty
   private HaConfig haconfig;
+
+  @JsonProperty
+  @NotEmpty
+  private String databasePath;
+
+  @JsonProperty
+  private int executeDatabaseInvariantCheckAt = 24;
 
   public HaConfig getHaconfig() {
     return haconfig;
@@ -12,6 +20,22 @@ public class TinkerPopConfig {
 
   public boolean hasHaconfig() {
     return haconfig != null;
+  }
+
+  public String getDatabasePath() {
+    return databasePath;
+  }
+
+  public void setDatabasePath(String databasePath) {
+    this.databasePath = databasePath;
+  }
+
+  public void setExecuteDatabaseInvariantCheckAt(int executeDatabaseInvariantCheckAt) {
+    this.executeDatabaseInvariantCheckAt = executeDatabaseInvariantCheckAt;
+  }
+
+  public int getExecuteDatabaseInvariantCheckAt() {
+    return executeDatabaseInvariantCheckAt;
   }
 
   public class HaConfig {

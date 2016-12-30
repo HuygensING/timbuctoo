@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -39,8 +38,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty
   private SecurityFactory securityConfiguration;
 
-  @NotEmpty
-  private String databasePath;//FIXME: move to TinkerpopConfig once timbuctoo is hosted on azure
+  @JsonProperty
+  @Deprecated
+  private String databasePath;
   @JsonProperty
   private TinkerPopConfig databaseConfiguration;
   @Deprecated
@@ -65,6 +65,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private boolean allowGremlinEndpoint = true;
 
   @JsonProperty
+  @Deprecated
   private int executeDatabaseInvariantCheckAt = 24;
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
@@ -86,6 +87,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return usersFilePath;
   }
 
+  @Deprecated
   public String getDatabasePath() {
     return databasePath;
   }
@@ -133,9 +135,8 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   }
 
   @Valid
-  @NotNull
   @Deprecated
-  private FederatedAuthConfiguration federatedAuthentication = new FederatedAuthConfiguration();
+  private FederatedAuthConfiguration federatedAuthentication;
 
   @JsonProperty("federatedAuthentication")
   public FederatedAuthConfiguration getFederatedAuthentication() {
@@ -152,6 +153,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return authorizationsPath;
   }
 
+  @Deprecated
   public int getExecuteDatabaseInvariantCheckAt() {
     return executeDatabaseInvariantCheckAt;
   }

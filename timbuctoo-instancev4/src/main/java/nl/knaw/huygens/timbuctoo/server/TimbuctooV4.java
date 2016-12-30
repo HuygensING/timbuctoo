@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
@@ -163,7 +164,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
-    final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(configuration, migrations);
+    TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
+    if (tinkerPopConfig == null) {
+      tinkerPopConfig = new TinkerPopConfig();
+      tinkerPopConfig.setDatabasePath(configuration.getDatabasePath());
+      tinkerPopConfig.setExecuteDatabaseInvariantCheckAt(configuration.getExecuteDatabaseInvariantCheckAt());
+    }
+    final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
@@ -203,7 +210,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.lifecycle().manage(graphManager);
     // database validator
     final BackgroundRunner<ValidationResult> databaseValidationRunner = setUpDatabaseValidator(
-      configuration,
+      tinkerPopConfig,
       environment,
       vres,
       graphManager, // graphWaiter
@@ -309,7 +316,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     setupObjectMapping(environment);
   }
 
-  private BackgroundRunner<ValidationResult> setUpDatabaseValidator(TimbuctooConfiguration configuration,
+  private BackgroundRunner<ValidationResult> setUpDatabaseValidator(TinkerPopConfig configuration,
                                                                     Environment environment, Vres vres,
                                                                     GraphWaiter graphWaiter,
                                                                     TinkerPopGraphManager graphManager) {
