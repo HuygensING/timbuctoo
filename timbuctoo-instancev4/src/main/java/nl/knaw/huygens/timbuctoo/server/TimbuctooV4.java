@@ -137,16 +137,21 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // Support services
     SecurityFactory securityConfig;
-    securityConfig = new SecurityFactory();
-    //map old style to new style. Needed until timbuctoo is migrated away from rpm based releases and we can more
-    //easily update the configuration
-    securityConfig.setLocalfileAccessFactory(new LocalfileAccessFactory(
-      configuration.getAuthorizationsPath().toAbsolutePath().toString(),
-      configuration.getLoginsFilePath(),
-      configuration.getUsersFilePath()
-    ));
-    securityConfig.setAutoLogoutTimeout(configuration.getAutoLogoutTimeout());
-    securityConfig.setAuthHandler(configuration.getFederatedAuthentication().makeHandler(environment));
+    if (configuration.getSecurityConfiguration() == null) {
+      securityConfig = new SecurityFactory();
+      //map old style to new style. Needed until timbuctoo is migrated away from rpm based releases and we can more
+      //easily update the configuration
+      securityConfig.setLocalfileAccessFactory(new LocalfileAccessFactory(
+        configuration.getAuthorizationsPath().toAbsolutePath().toString(),
+        configuration.getLoginsFilePath(),
+        configuration.getUsersFilePath()
+      ));
+      securityConfig.setAutoLogoutTimeout(configuration.getAutoLogoutTimeout());
+      securityConfig.setAuthHandler(configuration.getFederatedAuthentication().makeHandler(environment));
+    } else {
+      securityConfig = configuration.getSecurityConfiguration();
+      securityConfig.setEnvironment(environment);
+    }
 
     // Database migrations
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();

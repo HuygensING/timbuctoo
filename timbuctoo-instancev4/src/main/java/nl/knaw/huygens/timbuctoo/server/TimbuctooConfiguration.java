@@ -6,6 +6,7 @@ import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
+import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -31,19 +32,19 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty
   @Deprecated
   private String usersFilePath;
-  @NotNull
+  @JsonProperty
   @Deprecated
   private Path authorizationsPath;
 
-  // @JsonProperty
-  // private SecurityFactory securityConfiguration;
+  @JsonProperty
+  private SecurityFactory securityConfiguration;
 
   @NotEmpty
   private String databasePath;//FIXME: move to TinkerpopConfig once timbuctoo is hosted on azure
   @JsonProperty
   private TinkerPopConfig databaseConfiguration;
-  @NotNull
   @Deprecated
+  @JsonProperty
   private TimeoutFactory autoLogoutTimeout;
   @NotNull
   private TimeoutFactory searchResultAvailabilityTimeout;
@@ -162,5 +163,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   public String getTimbuctooSearchUrl() {
     return timbuctooSearchUrl;
   }
+
+  public SecurityFactory getSecurityConfiguration() {
+    return securityConfiguration;
+  }
+
 
 }
