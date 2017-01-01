@@ -21,16 +21,22 @@ import static nl.knaw.huygens.timbuctoo.util.Neo4jHelper.cleanDb;
 //FIXME should become a rule
 public class TestGraphBuilder {
 
-  private static GraphDatabaseService neo4jDb = new TestGraphDatabaseFactory().newImpermanentDatabase();
-  private final List<GraphFragmentBuilder> graphFragmentBuilders = new LinkedList<>();
+  private static GraphDatabaseService reusableNeo4jDb = new TestGraphDatabaseFactory().newImpermanentDatabase();
   private static Transaction trans;
+  private final List<GraphFragmentBuilder> graphFragmentBuilders = new LinkedList<>();
+  private final GraphDatabaseService neo4jDb;
 
   // FIXME do use the label to map the relations
-  private TestGraphBuilder() {
+  private TestGraphBuilder(GraphDatabaseService neo4jDb) {
+    this.neo4jDb = neo4jDb;
   }
 
   public static TestGraphBuilder newGraph() {
-    return new TestGraphBuilder();
+    return new TestGraphBuilder(reusableNeo4jDb);
+  }
+
+  public static TestGraphBuilder newSlowPrivateGraph() {
+    return new TestGraphBuilder(new TestGraphDatabaseFactory().newImpermanentDatabase());
   }
 
   public Neo4jGraph build() {
@@ -42,11 +48,12 @@ public class TestGraphBuilder {
     //second to 3 minutes on a machine with an SSD) so instead we now re-use
     //the same neo4j database that we clear when the function to create a new
     //one is called.
-    if (trans != null) {
-      trans.close();
+    if (neo4jDb == reusableNeo4jDb) {
+      if (trans != null) {
+        trans.close();
+      }
+      cleanDb(neo4jDb);
     }
-    cleanDb(neo4jDb);
-
     Neo4jGraphAPIImpl neo4jGraphApi = new Neo4jGraphAPIImpl(neo4jDb);
     Neo4jGraph neo4jGraph = Neo4jGraph.open(neo4jGraphApi);
 
@@ -67,7 +74,9 @@ public class TestGraphBuilder {
       tx.commit();
     }
 
-    trans = neo4jDb.beginTx();
+    if (neo4jDb == reusableNeo4jDb) { //we're re-using the database
+      trans = neo4jDb.beginTx(); //make sure we own the toplevel transaction so are guaranteed to close it
+    }
     return neo4jGraph;
   }
 
