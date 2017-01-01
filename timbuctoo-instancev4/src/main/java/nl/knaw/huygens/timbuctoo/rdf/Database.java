@@ -58,11 +58,15 @@ public class Database {
     this.systemPropertyModifier = systemPropertyModifier;
     graphDatabase = graphWrapper.getGraphDatabase();
     final Transaction transaction = graphWrapper.getGraph().tx();
+    boolean hasOwnTransaction = false;
     if (!transaction.isOpen()) {
       transaction.open();
+      hasOwnTransaction = true;
     }
     rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
-    transaction.close();
+    if (hasOwnTransaction) {
+      transaction.close();
+    }
   }
 
   private String getNodeUri(Node node, String vreName) {
