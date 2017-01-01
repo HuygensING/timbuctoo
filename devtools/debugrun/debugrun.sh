@@ -29,7 +29,16 @@ while getopts ":d:pDf:c:y:hrtC" opt; do
     FLIGHT_CONTROL="$OPTARG"
     ;;
   h)
-    echo -e "$0: run the timbuctoo command with some easier to remember switches\n\n-d    specify debug port\n-D    do not expose a debugging port\n-p    pause until debugger attaches\n-f    make flight recording\n-c    command to run (defaults to server)\n-y    YAML config to load (defaults to ./example_config.yaml)" >&2
+    echo -e "$0: run the timbuctoo command with some easier to remember switches\n\n\
+    -c    command to run (defaults to server)\n\
+    -C    clean state (throw away database and auth files)\n\
+    -d    specify debug port\n\
+    -D    do not expose a debugging port\n\
+    -f    make flight recording\n\
+    -p    pause until debugger attaches\n\
+    -r    rebuild before launching (skips tests, add -t to run them)\n\
+    -t    run tests when rebuilding\n\
+    -y    YAML config to load (defaults to $PWD/example_config.yaml)" >&2
     exit 0
     ;;
   p)
