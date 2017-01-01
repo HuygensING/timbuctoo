@@ -287,11 +287,14 @@ public class Database {
   }
 
   private void addCollectionToVre(CollectionDescription collectionDescription, Vertex collectionVertex) {
-    Vertex vreVertex = graphWrapper.getGraph().traversal().V()
-                                   .hasLabel(Vre.DATABASE_LABEL)
-                                   .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
-                                   .next();
-    vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
+    Iterator<Vertex> vreTraversal = graphWrapper.getGraph().traversal().V()
+                                     .hasLabel(Vre.DATABASE_LABEL)
+                                     .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName());
+    if (vreTraversal.hasNext()) {
+      vreTraversal.next().addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
+    } else {
+      throw new IllegalStateException("Vre " + collectionDescription.getVreName() + " not found");
+    }
   }
 
 
