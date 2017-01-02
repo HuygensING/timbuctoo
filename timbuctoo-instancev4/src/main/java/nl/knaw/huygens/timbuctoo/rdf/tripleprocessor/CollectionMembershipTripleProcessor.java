@@ -16,6 +16,7 @@ class CollectionMembershipTripleProcessor {
 
     if (isAssertion) {
       entity.addToCollection(database.findOrCreateCollection(vreName, triple.getObject()));
+      entity.removeFromCollection(database.getDefaultCollection(vreName));
     } else {
       entity.removeFromCollection(database.findOrCreateCollection(vreName, triple.getObject()));
     }
