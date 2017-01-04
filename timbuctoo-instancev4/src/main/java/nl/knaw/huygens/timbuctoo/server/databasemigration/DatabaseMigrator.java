@@ -28,43 +28,50 @@ public class DatabaseMigrator {
 
   public void execute() {
     Graph graph = graphWrapper.getGraph();
-    GraphTraversalSource traversalSource = graph.traversal();
-    List<String> executedMigrations = traversalSource.V()
-                                           .has("type", EXECUTED_MIGRATIONS_TYPE)
-                                           .map(vertexTraverser -> (String) vertexTraverser.get()
-                                                                                           .property("name")
-                                                                                           .value())
-                                           .toList();
+    if (graph.tx().isOpen()) {
+      LOG.error("Transaction wasn't closed before calling migrator");
+    }
+    boolean verticesAvailable;
+    List<String> executedMigrations;
+    try (Transaction transaction = graph.tx()) {
+      transaction.open();
+      GraphTraversalSource traversalSource = graph.traversal();
+      executedMigrations = traversalSource.V()
+        .has("type", EXECUTED_MIGRATIONS_TYPE)
+        .map(vertexTraverser -> (String) vertexTraverser.get()
+          .property("name")
+          .value())
+        .toList();
 
-    boolean verticesAvailable = traversalSource.V().hasNext();
-
+      verticesAvailable = traversalSource.V().hasNext();
+    }
     migrations.forEach((name, migration) -> {
-      if (!verticesAvailable) {
-        LOG.info("Skipping migration with name '{}' because this is a clean database. ", name);
-        this.saveExecution(graph, name);
-      } else if (!executedMigrations.contains(name)) {
-        LOG.info("Executing migration with name '{}'", name);
-        try {
-          migration.execute(graphWrapper);
+      try (Transaction transaction = graph.tx()) {
+        transaction.open();
+        if (!verticesAvailable) {
+          LOG.info("Skipping migration with name '{}' because this is a clean database. ", name);
           this.saveExecution(graph, name);
-        } catch (IOException e) {
-          LOG.error("Could not complete migration with name '{}'", name);
+          transaction.commit();
+        } else if (!executedMigrations.contains(name)) {
+          LOG.info("Executing migration with name '{}'", name);
+          try {
+            migration.execute(graphWrapper);
+            this.saveExecution(graph, name);
+            transaction.commit();
+          } catch (IOException e) {
+            LOG.error("Could not complete migration with name '{}'", name);
+          }
+        } else {
+          LOG.info("Skipping migration with name '{}', because it has already been executed.", name);
         }
-      } else {
-        LOG.info("Skipping migration with name '{}', because it has already been executed.", name);
       }
     });
   }
 
   private void saveExecution(Graph graph, String name) {
-    Transaction transaction = graph.tx();
-    if (!transaction.isOpen()) {
-      transaction.open();
-    }
     Vertex migrationVertex = graph.addVertex();
     migrationVertex.property("type", EXECUTED_MIGRATIONS_TYPE);
     migrationVertex.property("name", name);
     migrationVertex.property("tim_id", UUID.randomUUID().toString());
-    transaction.commit();
   }
 }
