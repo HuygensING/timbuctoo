@@ -10,6 +10,7 @@ public class AllCellRowCellHandler implements RowCellHandler {
   private final Importer importer;
   private boolean entityStarted;
   private boolean headerRow = false;
+  private boolean rowStarted = false;
   private static final Logger LOG = getLogger(AllCellRowCellHandler.class);
 
   public AllCellRowCellHandler(Importer importer) {
@@ -19,16 +20,24 @@ public class AllCellRowCellHandler implements RowCellHandler {
   @Override
   public void start(String name) {
     entityStarted = false;
+    rowStarted = false;
     headerRow = true;
     importer.startCollection(name);
   }
 
   @Override
   public void startRow(int rowNum) {
+    if (rowStarted) {
+      LOG.error("call endRow() before calling startRow()");
+    }
+    rowStarted = true;
   }
 
   @Override
   public void cell(short column, String value, String cellStyleStr) {
+    if (!rowStarted) {
+      LOG.error("call startRow() before calling cell()");
+    }
     if (headerRow) {
       importer.registerPropertyName(column, value);
     } else {
@@ -48,10 +57,9 @@ public class AllCellRowCellHandler implements RowCellHandler {
     if (entityStarted) {
       entityStarted = false;
       importer.finishEntity();
-    } else {
-      LOG.error("An entity was finished before it was started");
     }
 
+    rowStarted = false;
   }
 
   @Override
