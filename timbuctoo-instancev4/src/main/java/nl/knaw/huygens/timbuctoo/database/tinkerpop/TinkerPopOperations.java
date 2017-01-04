@@ -134,6 +134,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final SystemPropertyModifier systemPropertyModifier;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
+  private final boolean ownTransaction;
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
@@ -169,7 +170,11 @@ public class TinkerPopOperations implements DataStoreOperations {
                               IndexHandler indexHandler) {
     graph = graphManager.getGraph();
     this.transaction = graph.tx();
-    if (!transaction.isOpen()) {
+    if (transaction.isOpen()) {
+      ownTransaction = false;
+      LOG.error("There is already an open transaction", new Throwable()); //exception for the stack trace
+    } else {
+      ownTransaction = true;
       transaction.open();
     }
     this.indexHandler = indexHandler;
@@ -320,20 +325,23 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void close() {
-    if (isSuccess.isPresent()) {
-      if (isSuccess.get()) {
-        transaction.commit();
+    if (!transaction.isOpen()) {
+      LOG.error("Transaction was already closed!", new Throwable());
+    } else if (ownTransaction) {
+      if (isSuccess.isPresent()) {
+        if (isSuccess.get()) {
+          transaction.commit();
+        } else {
+          transaction.rollback();
+        }
       } else {
         transaction.rollback();
-      }
-    } else {
-      transaction.rollback();
-      if (requireCommit) {
-        LOG.error("Transaction was not closed, rolling back. Please add an explicit rollback so that we know this " +
-          "was not a missing success()");
+        if (requireCommit) {
+          LOG.error("Transaction was not closed, rolling back. Please add an explicit rollback so that we know this " +
+            "was not a missing success()");
+        }
       }
     }
-    transaction.close();
   }
 
   @Override
