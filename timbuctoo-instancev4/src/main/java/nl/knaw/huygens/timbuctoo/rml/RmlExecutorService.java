@@ -89,12 +89,12 @@ public class RmlExecutorService {
             }
           });
 
-        vres.reload();//FIXME naar importSession.close can be done when the Vres are retrieved via TimbuctooActions
         return commit();
       });
 
       return commit();
     });
+    vres.reload();//FIXME naar importSession.close can be done when the Vres are retrieved via TimbuctooActions
   }
 
   private void reportTripleCount(AtomicLong tripleCount, Consumer<String> statusUpdate) {
