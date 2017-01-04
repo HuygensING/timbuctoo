@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
@@ -57,14 +58,25 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
       initGraphDatabaseService();
       this.graph = Neo4jGraph.open(new Neo4jGraphAPIImpl(graphDatabase));
       new DatabaseMigrator(this, migrations).execute();
-      graphWaitList.forEach(consumer -> {
-        try {
-          consumer.accept(graph);
-        } catch (RuntimeException e) {
-          LOG.error(e.getMessage(), e);
-        }
-      });
+      callWaiters();
     }
+  }
+
+  protected void callWaiters() {
+    AtomicInteger counter = new AtomicInteger(0);
+    graphWaitList.forEach(consumer -> {
+      try {
+        consumer.accept(graph);
+      } catch (RuntimeException e) {
+        LOG.error(e.getMessage(), e);
+      } finally {
+        if (graph.tx().isOpen()) {
+          LOG.error("Unclosed transaction at " + counter.get());
+          graph.tx().close();
+        }
+        counter.incrementAndGet();
+      }
+    });
   }
 
   protected void initGraphDatabaseService() {
