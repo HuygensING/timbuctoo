@@ -112,6 +112,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NE
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -1199,6 +1200,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   private Vertex createRdfEntity(Vre vre, String rdfUri) {
     Vertex vertex = traversal.addV().next();
     vertex.property(RDF_URI_PROP, rdfUri);
+    vertex.property(RDF_SYNONYM_PROP, new String[0]);
     vertex.property(
       "types",
       jsnA(
