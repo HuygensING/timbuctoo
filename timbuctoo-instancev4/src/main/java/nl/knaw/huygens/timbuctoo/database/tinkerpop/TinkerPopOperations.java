@@ -118,7 +118,6 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
-import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 
 public class TinkerPopOperations implements DataStoreOperations {
   private static final String RDF_URI_PROP = "rdfUri";
@@ -1125,9 +1124,10 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper) {
+    String vreName = vre.getVreName();
     vre.getCollections().values().forEach(col -> entitiesOfCollection(col)
       .forEachRemaining(v -> {
-        v.property("tim_id", entityFinisherHelper.newId().toString());
+        v.property("tim_id", entityFinisherHelper.newId(v, vreName).toString());
         v.property("rev", entityFinisherHelper.getRev());
         setCreated(v, entityFinisherHelper.getChangeTime());
         v.property("isLatest", true);
