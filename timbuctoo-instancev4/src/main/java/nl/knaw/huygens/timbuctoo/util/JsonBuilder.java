@@ -12,6 +12,37 @@ import com.fasterxml.jackson.databind.node.TextNode;
 import java.util.stream.Stream;
 
 public class JsonBuilder {
+
+  /*
+    If you need to turn a json document into the builder syntax you can use the following javascript code:
+
+    ```
+    JSON.parse(myjsonString, function objToJsnBuilder(key, value) {
+      var result;
+      if (value instanceof Array) {
+        return "jsnA(\n" + value.map(item => item.split("\n").map(x =>"  "+x).join("\n")).join(",\n") + "\n)";
+      } else if (value != null && typeof value === "object") {
+        result = [];
+        for (var key in value) {
+          if (value[key].indexOf("\n") > -1) {
+            result.push("  " + "tuple(" + JSON.stringify(key) + ", " + value[key].split("\n").map(x => "  "+x)
+              .join("\n").substr(2) + ")");
+          } else {
+            result.push("  " + "tuple(" + JSON.stringify(key) + ", " + value[key] + ")");
+          }
+        }
+        return "jsnO(\n" + result.join(",\n") + "\n)";
+      } else if (value == null) {
+        return "jsn()";
+      } else {
+        return "jsn(" + JSON.stringify(value) + ")";
+      }
+    });
+    ```
+
+    It will output a string with the builder java code.
+   */
+
   public static JsonNodeFactory factory = JsonNodeFactory.instance;
 
   public static ObjectNode jsnO(String prop1, JsonNode contents1) {
