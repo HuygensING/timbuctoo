@@ -15,6 +15,7 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
+import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.glassfish.jersey.server.ChunkedOutput;
 import org.slf4j.Logger;
@@ -110,25 +111,28 @@ public class ExecuteRml {
     LOG.info(rmlMappingDocument.toString());
 
     Graph graph = graphWrapper.getGraph();
-    GraphTraversal<Vertex, Vertex> vreT =
-      graph.traversal().V().hasLabel(Vre.DATABASE_LABEL).has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
-    if (!vreT.hasNext()) {
-      return Response.status(Response.Status.NOT_FOUND)
-                     .entity(jsnO(
-                       "success", jsn(false),
-                       "errors", jsnA(jsn(String.format("VRE with name '%s' cannot be found", vreName)))
-                     ))
-                     .build();
-    }
-    Vertex vreVertex = vreT.next();
+    try (Transaction transaction = graph.tx()) {
+      GraphTraversal<Vertex, Vertex> vreT =
+        graph.traversal().V().hasLabel(Vre.DATABASE_LABEL).has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+      if (!vreT.hasNext()) {
+        return Response.status(Response.Status.NOT_FOUND)
+          .entity(jsnO(
+            "success", jsn(false),
+            "errors", jsnA(jsn(String.format("VRE with name '%s' cannot be found", vreName)))
+          ))
+          .build();
+      }
+      Vertex vreVertex = vreT.next();
 
-    if (!vreVertex.vertices(Direction.OUT, RAW_COLLECTION_EDGE_NAME).hasNext()) {
-      return Response.status(Response.Status.PRECONDITION_FAILED)
-                     .entity(jsnO(
-                       "success", jsn(false),
-                       "errors", jsnA(jsn("The VRE is missing raw collections to map."))
-                     ))
-                     .build();
+      if (!vreVertex.vertices(Direction.OUT, RAW_COLLECTION_EDGE_NAME).hasNext()) {
+        return Response.status(Response.Status.PRECONDITION_FAILED)
+          .entity(jsnO(
+            "success", jsn(false),
+            "errors", jsnA(jsn("The VRE is missing raw collections to map."))
+          ))
+          .build();
+      }
+      transaction.close();
     }
 
     final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
