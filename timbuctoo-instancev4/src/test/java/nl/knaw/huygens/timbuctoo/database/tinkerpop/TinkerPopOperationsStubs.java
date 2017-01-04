@@ -68,9 +68,7 @@ public class TinkerPopOperationsStubs {
   }
 
   public static TinkerPopOperations newInstance() {
-    TinkerPopGraphManager graphManager = newGraph().wrap();
-    return new TinkerPopOperations(graphManager, mock(ChangeListener.class), new GremlinEntityFetcher(), null,
-      createIndexHandler(graphManager));
+    return forGraphWrapper(newGraph().wrap());
   }
 
   private static IndexHandler createIndexHandler(TinkerPopGraphManager graphManager) {

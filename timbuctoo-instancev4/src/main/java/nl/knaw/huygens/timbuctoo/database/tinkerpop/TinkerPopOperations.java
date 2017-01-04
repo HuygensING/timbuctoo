@@ -1128,9 +1128,15 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public List<String> getEntitiesWithUnknownType(Vre vre) {
-    Collection coll = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+    Collection defaultColl = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
 
-    return entitiesOfCollection(coll)
+    return entitiesOfCollection(defaultColl)
+      //all entities cannot reach a collectionNode with a name that is different from the default collection name
+      .not(
+        __.in(HAS_ENTITY_RELATION_NAME)
+          .in(HAS_ENTITY_NODE_RELATION_NAME)
+          .has("collectionName", P.neq(defaultColl.getCollectionName()))
+      )
       .has("rdfUri")
       .map(v -> v.get().<String>value("rdfUri")).toList();
   }
