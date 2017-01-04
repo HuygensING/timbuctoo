@@ -11,7 +11,7 @@ import java.util.Objects;
 public class CreateCollection {
   private final String unprefixedEntityName;
 
-  public CreateCollection(String unprefixedEntityName) {
+  private CreateCollection(String unprefixedEntityName) {
     this.unprefixedEntityName = unprefixedEntityName;
   }
 
@@ -35,7 +35,14 @@ public class CreateCollection {
   }
 
   public boolean isUnknownCollection(String vreName) {
-    return Objects.equals(unprefixedEntityName, CollectionNameHelper.defaultCollectionName(vreName));
+    if (Objects.equals("Admin", vreName)) {
+      return Objects.equals(unprefixedEntityName, CollectionNameHelper.defaultEntityTypeName(vreName));
+    } else {
+      return Objects.equals(
+        unprefixedEntityName,
+        CollectionNameHelper.defaultEntityTypeName(vreName).substring(vreName.length())
+      );
+    }
   }
 
   public String getRdfUri(Vre vre) {
