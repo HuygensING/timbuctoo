@@ -950,7 +950,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public void addCollectionToVre(Vre vre, CreateCollection createCollection) {
     // FIXME think of a default way to add collections to VRE's.
-    boolean vreHasCollection = graph.traversal().V()
+    boolean vreHasCollection = traversal.V()
                                     .hasLabel(Vre.DATABASE_LABEL)
                                     .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
                                     .outE(HAS_COLLECTION_RELATION_NAME).otherV()
@@ -970,6 +970,16 @@ public class TinkerPopOperations implements DataStoreOperations {
       COLLECTION_IS_UNKNOWN_PROPERTY_NAME,
       createCollection.isUnknownCollection(vre.getVreName())
     );
+    final GraphTraversal<Vertex, Vertex> archetypeCollection = traversal.V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+      .out(HAS_COLLECTION_RELATION_NAME)
+      .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getArchetypeName());
+
+    if (archetypeCollection.hasNext()) {
+      collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.next());
+    }
+
 
     final Vertex displayName = graph.addVertex(ReadableProperty.DATABASE_LABEL);
     displayName.property(ReadableProperty.CLIENT_PROPERTY_NAME, "@displayName");
