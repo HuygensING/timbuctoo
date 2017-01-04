@@ -80,6 +80,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -117,6 +118,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.has;
+import static org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__.in;
 
 public class TinkerPopOperations implements DataStoreOperations {
   private static final String RDF_URI_PROP = "rdfUri";
@@ -135,34 +137,45 @@ public class TinkerPopOperations implements DataStoreOperations {
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
-    this.indexHandler = new Neo4jIndexHandler(graphManager);
-    this.listener = new CompositeChangeListener(
-      new AddLabelChangeListener(),
-      new FulltextIndexChangeListener(indexHandler, graphManager),
-      new IdIndexChangeListener(indexHandler),
-      new CollectionHasEntityRelationChangeListener(graphManager),
-      new RdfIndexChangeListener(indexHandler)
+    this(
+      graphManager,
+      indexHandler -> new CompositeChangeListener(
+        new AddLabelChangeListener(),
+        new FulltextIndexChangeListener(indexHandler, graphManager),
+        new IdIndexChangeListener(indexHandler),
+        new CollectionHasEntityRelationChangeListener(graphManager),
+        new RdfIndexChangeListener(indexHandler)
+      ),
+      indexHandler -> new Neo4jLuceneEntityFetcher(graphManager, indexHandler),
+      null,
+      new Neo4jIndexHandler(graphManager)
     );
-    this.entityFetcher = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
-    this.graph = graphManager.getGraph();
-    this.transaction = graph.tx();
-    this.traversal = graph.traversal();
-    this.latestState = graphManager.getLatestState();
-    this.mappings = loadVres();
-    this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
   }
 
+  //for tests
   TinkerPopOperations(TinkerPopGraphManager graphManager, ChangeListener listener,
                       GremlinEntityFetcher entityFetcher, Vres mappings, IndexHandler indexHandler) {
-    graph = graphManager.getGraph();
-    this.indexHandler = indexHandler;
-    this.transaction = graph.tx();
-    this.listener = listener;
-    this.entityFetcher = entityFetcher;
+    this(
+      graphManager,
+      indexHandler1 -> listener,
+      indexHandler1 -> entityFetcher,
+      mappings,
+      indexHandler
+    );
+  }
 
+  private TinkerPopOperations(TinkerPopGraphManager graphManager, Function<IndexHandler, ChangeListener> listener,
+                              Function<IndexHandler, GremlinEntityFetcher> entityFetcher, Vres mappings,
+                              IndexHandler indexHandler) {
+    graph = graphManager.getGraph();
+    this.transaction = graph.tx();
     if (!transaction.isOpen()) {
       transaction.open();
     }
+    this.indexHandler = indexHandler;
+    this.listener = listener.apply(indexHandler);
+    this.entityFetcher = entityFetcher.apply(indexHandler);
+
     this.traversal = graph.traversal();
     this.latestState = graphManager.getLatestState();
     this.mappings = mappings == null ? loadVres() : mappings;
