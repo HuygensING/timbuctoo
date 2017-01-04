@@ -19,7 +19,7 @@ public class EntityFinisherHelper {
   public EntityFinisherHelper() {
     change = new Change();
     change.setTimeStamp(Clock.systemDefaultZone().instant().toEpochMilli()); // TODO make configurable
-    change.setUserId("rdfImporter"); // TODO make configurable
+    change.setUserId("rdf-importer"); // TODO make configurable
   }
 
   public UUID newId(Vertex vertex, String vreName) {
