@@ -169,6 +169,10 @@ public class RmlIntegrationTest {
                 "custom-matcher", jsn("/*ALL_MATCH_ONE_OF*/"),
                 "keyProp", jsn("type"),
                 "possibilities", jsnO(
+                  "someVreunknown", jsnO(
+                    tuple("id", jsn(p1id)),
+                    tuple("type", jsn("someVreunknown"))
+                  ),
                   "someVreperson", jsnO(
                     tuple("id", jsn(p1id)),
                     tuple("type", jsn("someVreperson"))
