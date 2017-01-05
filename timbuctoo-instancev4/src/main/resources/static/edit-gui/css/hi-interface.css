@@ -364,3 +364,18 @@ svg.facet-check-box.checked {
        border-top-right-radius: 0;
 }
 
+.add-field-form > div > div:hover {
+	cursor: pointer;
+	background-color: #d5e6f1;
+}
+
+
+.add-field-form > div > div.selected {
+	cursor: pointer;
+	background-color: #d5e6f1;
+}
+
+.add-field-form > div > div.selected:hover {
+	color: white;
+	background-color: #2e82bb;
+}
