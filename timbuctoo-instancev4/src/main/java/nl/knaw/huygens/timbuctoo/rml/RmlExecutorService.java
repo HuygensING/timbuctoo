@@ -12,6 +12,7 @@ import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Clock;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
@@ -47,6 +48,7 @@ public class RmlExecutorService {
 
         //first save the archetype mappings
         AtomicLong tripleCount = new AtomicLong(0);
+        AtomicLong curtime = new AtomicLong(Clock.systemUTC().millis());
 
         //create the links from the collection entities to the archetypes
         model
@@ -61,18 +63,18 @@ public class RmlExecutorService {
                 statement.getPredicate().asNode(),
                 statement.getObject().asNode()
               ));
-              reportTripleCount(tripleCount, statusUpdate);
+              reportTripleCount(tripleCount, curtime, statusUpdate);
             }
           );
 
         //generate and import rdf
         rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
           (triple) -> {
-            reportTripleCount(tripleCount, statusUpdate);
+            reportTripleCount(tripleCount, curtime, statusUpdate);
             importer.importTriple(true, triple);
           });
 
-        reportTripleCount(tripleCount, statusUpdate);
+        reportTripleCount(tripleCount, curtime, statusUpdate);
 
         //Give the collections a proper name
         graphWrapper
@@ -97,12 +99,13 @@ public class RmlExecutorService {
     vres.reload();//FIXME naar importSession.close can be done when the Vres are retrieved via TimbuctooActions
   }
 
-  private void reportTripleCount(AtomicLong tripleCount, Consumer<String> statusUpdate) {
+  private void reportTripleCount(AtomicLong tripleCount, AtomicLong curTime, Consumer<String> statusUpdate) {
     final long curCount = tripleCount.incrementAndGet();
-    final String message = String.format("Processed %d triples", curCount);
-    statusUpdate.accept(message);
+    if ((Clock.systemUTC().millis() - curTime.get()) > 500) {
+      statusUpdate.accept(String.format("Processed %d triples", curCount));
+    }
     if (LOG.isDebugEnabled()) {
-      LOG.debug(message);
+      LOG.debug(String.format("Processed %d triples", curCount));
     }
   }
 }
