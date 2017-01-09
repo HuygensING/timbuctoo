@@ -47,6 +47,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
+import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -326,22 +327,33 @@ public class TinkerPopOperations implements DataStoreOperations {
     return result;
   }
 
+  private GraphTraversal<Vertex, Vertex> getVreTraversal(String vreName) {
+    return traversal
+      .V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+  }
+
   private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
-    return traversal.V()
-                    .hasLabel(Vre.DATABASE_LABEL)
-                    .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-                    .out(RAW_COLLECTION_EDGE_NAME);
+    return getVreTraversal(vreName).out(RAW_COLLECTION_EDGE_NAME);
   }
 
   @Override
   public void setVrePublishState(String vreName, Vre.PublishState publishState) {
-    final GraphTraversal<Vertex, Vertex> vreT = traversal
-      .V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
 
     if (vreT.hasNext()) {
       vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
+    }
+  }
+
+  @Override
+  public void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate) {
+    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+
+    if (vreT.hasNext()) {
+      final Vertex vreVertex = vreT.next();
+      vreMetadataUpdate.updateVreVertex(vreVertex);
     }
   }
 
@@ -352,9 +364,9 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void saveRmlMappingState(String vreName, String rdfData) {
-    final GraphTraversal<Vertex, Vertex> vreT = traversal.V()
-                                                         .hasLabel(Vre.DATABASE_LABEL)
-                                                         .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+    final GraphTraversal<Vertex, Vertex>
+      vreT = getVreTraversal(vreName);
+
     if (vreT.hasNext()) {
       vreT.next().property(SAVED_MAPPING_STATE, rdfData);
     }

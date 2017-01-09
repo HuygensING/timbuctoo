@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 
 import java.io.IOException;
@@ -91,6 +92,8 @@ public interface DataStoreOperations extends AutoCloseable {
   void setVrePublishState(String vreName, Vre.PublishState publishState);
 
   void removeCollectionsAndEntities(Vre vre);
+
+  void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate);
 
   void addPid(UUID id, int rev, URI pidUri) throws NotFoundException;
 
