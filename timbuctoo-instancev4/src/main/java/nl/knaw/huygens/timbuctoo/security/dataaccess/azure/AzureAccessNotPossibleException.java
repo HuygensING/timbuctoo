@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess.azure;
 
-public class AzureAccessNotPossibleException extends Exception {
+import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
+
+public class AzureAccessNotPossibleException extends AccessNotPossibleException {
   public AzureAccessNotPossibleException(String message) {
     super(message);
   }

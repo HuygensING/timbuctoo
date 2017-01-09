@@ -7,13 +7,13 @@ import io.dropwizard.Configuration;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
+import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,16 +26,24 @@ import java.util.regex.Pattern;
  */
 public class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder, SearchConfig {
   @JsonProperty
+  @Deprecated
   private String loginsFilePath;
   @JsonProperty
+  @Deprecated
   private String usersFilePath;
-  @JsonProperty
-  private String authorizationConnectionString;
+  @NotNull
+  @Deprecated
+  private Path authorizationsPath;
+
+  // @JsonProperty
+  // private SecurityFactory securityConfiguration;
+
   @NotEmpty
   private String databasePath;//FIXME: move to TinkerpopConfig once timbuctoo is hosted on azure
   @JsonProperty
   private TinkerPopConfig databaseConfiguration;
   @NotNull
+  @Deprecated
   private TimeoutFactory autoLogoutTimeout;
   @NotNull
   private TimeoutFactory searchResultAvailabilityTimeout;
@@ -51,8 +59,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty
   @NotNull
   private PersistenceManagerFactory persistenceManager;
-  @NotNull
-  private Path authorizationsPath;
 
   @JsonProperty
   private boolean allowGremlinEndpoint = true;
@@ -64,14 +70,17 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return persistenceManager;
   }
 
+  @Deprecated
   public Timeout getAutoLogoutTimeout() {
     return autoLogoutTimeout.createTimeout();
   }
 
+  @Deprecated
   public String getLoginsFilePath() {
     return loginsFilePath;
   }
 
+  @Deprecated
   public String getUsersFilePath() {
     return usersFilePath;
   }
@@ -124,6 +133,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   @Valid
   @NotNull
+  @Deprecated
   private FederatedAuthConfiguration federatedAuthentication = new FederatedAuthConfiguration();
 
   @JsonProperty("federatedAuthentication")
@@ -136,6 +146,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     this.federatedAuthentication = federatedAuthentication;
   }
 
+  @Deprecated
   public Path getAuthorizationsPath() {
     return authorizationsPath;
   }
@@ -151,31 +162,5 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   public String getTimbuctooSearchUrl() {
     return timbuctooSearchUrl;
   }
-
-  public String getAuthorizationConnectionString() {
-    return authorizationConnectionString;
-  }
-
-  // A class to configure timeouts without compromising the Timeout class.
-  private class TimeoutFactory {
-    private long duration;
-    private TimeUnit timeUnit;
-
-    public TimeoutFactory() {
-    }
-
-    public void setDuration(long duration) {
-      this.duration = duration;
-    }
-
-    public void setTimeUnit(TimeUnit timeUnit) {
-      this.timeUnit = timeUnit;
-    }
-
-    public Timeout createTimeout() {
-      return new Timeout(duration, timeUnit);
-    }
-  }
-
 
 }
