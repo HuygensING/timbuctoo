@@ -20,6 +20,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 import java.util.Iterator;
+import java.util.Optional;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.FIRST_RAW_PROPERTY_EDGE_NAME;
@@ -58,18 +59,12 @@ public class BulkUploadVre {
   @GET
   @Produces(APPLICATION_JSON)
   public Response get(@PathParam("vre") String vreName, @HeaderParam("Authorization") String authorizationHeader) {
-    UserPermissionChecker.UserPermission permission = permissionChecker.check(vreName, authorizationHeader);
+    Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
 
-    switch (permission) {
-      case UNKNOWN_USER:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-      case NO_PERMISSION:
-        return Response.status(Response.Status.FORBIDDEN).build();
-      case ALLOWED_TO_WRITE:
-        break;
-      default:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
     }
+
     org.apache.tinkerpop.gremlin.structure.Graph graph = graphWrapper.getGraph();
 
     GraphTraversal<Vertex, Vertex> vreT =

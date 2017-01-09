@@ -119,18 +119,10 @@ public class BulkUpload {
     @HeaderParam("Authorization") String authorization) {
 
     // First check permission
-    UserPermissionChecker.UserPermission permission = permissionChecker.check(vreName, authorization);
-    switch (permission) {
-      case UNKNOWN_USER:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-      case NO_PERMISSION:
-        return Response.status(Response.Status.FORBIDDEN).build();
-      case ALLOWED_TO_WRITE:
-        break;
-      default:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
+    final Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorization);
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
     }
-
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
 
       // Try to find the vre
