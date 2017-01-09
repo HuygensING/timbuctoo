@@ -1,4 +1,4 @@
-FROM ubuntu:latest
+FROM ubuntu:16.04
 
 RUN apt-get update
 RUN apt-get install -y build-essential wget git
@@ -16,14 +16,14 @@ RUN mkdir -p /root/app
 COPY . /root/app
 
 # make changes below for multi-collection search
-RUN cd /root/app/generic-indexer; bundle install
 
 EXPOSE 80
 
 ENV TIMBUCTOO_SCRAPE_URL http://timbuctoo
-ENV TIMBUCTOO_BROWSER_URL http://timbuctoo
 ENV SOLR_URL http://solr
-ENV PORT 80
+ENV SOLR_AUTH your_secret
+ENV INDEX_NAME indexname
 
-CMD ["/usr/local/bin/foreman","start","-d","/root/app/generic-indexer"]
+WORKDIR /root/app/federated-indexer/
+CMD ["./run.sh"]
 

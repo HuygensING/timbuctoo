@@ -3,11 +3,12 @@ require 'json'
 
 class Dataset
 
-  attr_reader :metadata, :name
+  attr_reader :metadata, :name, :is_published
 
-  def initialize(name: nil, metadata: nil)
+  def initialize(name: nil, metadata: nil, label: nil, vreMetadata: nil, isPublished: nil)
     @name = name
-    @metadata = fetch_metadata(metadata)
+    @metadata = fetch_metadata(metadata) if isPublished
+    @is_published = isPublished
   end
 
   private
@@ -77,6 +78,7 @@ class TimbuctooIO
 
     JSON.parse(response.body, :symbolize_names => true)
         .map{|dataset_data| Dataset.new(dataset_data)}
+        .select{|dataset_data| dataset_data.is_published}
   end
 
 
