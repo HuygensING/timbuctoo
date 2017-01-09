@@ -10,7 +10,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;

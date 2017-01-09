@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.dto.User;

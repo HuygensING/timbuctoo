@@ -10,8 +10,8 @@ import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 

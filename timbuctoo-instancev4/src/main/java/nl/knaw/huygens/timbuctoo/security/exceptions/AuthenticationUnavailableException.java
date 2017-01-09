@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security;
+package nl.knaw.huygens.timbuctoo.security.exceptions;
 
 public class AuthenticationUnavailableException extends Exception {
 

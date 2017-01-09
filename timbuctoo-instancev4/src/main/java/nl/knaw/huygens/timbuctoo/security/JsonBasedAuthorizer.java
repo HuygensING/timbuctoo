@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.security;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 
 import java.util.Optional;
 

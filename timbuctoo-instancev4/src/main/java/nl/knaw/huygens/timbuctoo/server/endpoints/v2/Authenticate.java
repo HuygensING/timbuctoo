@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
-import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.LocalLoginUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
 import nl.knaw.huygens.timbuctoo.server.security.BasicAuthorizationHeaderParser;
 import nl.knaw.huygens.timbuctoo.server.security.InvalidAuthorizationHeaderException;

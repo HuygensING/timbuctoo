@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
+
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyString;

@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

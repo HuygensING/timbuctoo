@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.timbuctoo.security.dto.Login;
+import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

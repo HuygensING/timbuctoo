@@ -1,13 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationCreationException;
-import nl.knaw.huygens.timbuctoo.security.LoginCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
 import nl.knaw.huygens.timbuctoo.security.LoginCreator;
-import nl.knaw.huygens.timbuctoo.security.UserCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.security.UserCreator;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
-import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;

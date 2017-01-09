@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

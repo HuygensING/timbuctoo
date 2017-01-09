@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.core;
 
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
