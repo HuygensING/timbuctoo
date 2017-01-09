@@ -55,6 +55,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ListVres;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
@@ -253,20 +254,21 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
       new DataSourceFactory(graphManager), transactionEnforcer);
     register(environment, executeRml);
-    SaveRml saveRml = new SaveRml(uriHelper, graphManager, permissionChecker, transactionEnforcer);
+    SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
     register(environment, saveRml);
 
-    BulkUploadVre bulkUploadVre =
-      new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml, permissionChecker, saveRml);
+    BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml,
+      permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024);
     register(environment, bulkUploadVre);
-    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), uriHelper, bulkUploadVre,
-      loggedInUserStore, authorizer, 20 * 1024 * 1024));
+    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), bulkUploadVre,
+      loggedInUserStore, authorizer, 20 * 1024 * 1024, permissionChecker, transactionEnforcer));
 
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
-    register(environment, new MyVres(loggedInUserStore, authorizer, vres, bulkUploadVre));
-    register(environment, new ListVres(vres, uriHelper));
+    register(environment, new MyVres(loggedInUserStore, authorizer, bulkUploadVre, transactionEnforcer, uriHelper));
+    register(environment, new ListVres(uriHelper, transactionEnforcer));
+    register(environment, new VreImage(transactionEnforcer));
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));

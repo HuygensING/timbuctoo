@@ -47,8 +47,10 @@ import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
+import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
+import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -66,9 +68,13 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
@@ -115,6 +121,8 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.a
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
+import static nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration.TIMBUCTOO_NAMESPACE;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -134,6 +142,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final Graph graph;
   private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
+  private final GraphDatabaseService graphDatabase;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
   private final boolean ownTransaction;
@@ -187,6 +196,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     this.latestState = graphManager.getLatestState();
     this.mappings = mappings == null ? loadVres() : mappings;
     this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
+    this.graphDatabase = graphManager.getGraphDatabase(); //FIXME move to IndexHandler
   }
 
   private static UUID asUuid(String input, Element source) {
@@ -326,11 +336,62 @@ public class TinkerPopOperations implements DataStoreOperations {
     return result;
   }
 
+  private GraphTraversal<Vertex, Vertex> getVreTraversal(String vreName) {
+    return traversal
+      .V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+  }
+
   private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
-    return traversal.V()
-                    .hasLabel(Vre.DATABASE_LABEL)
-                    .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-                    .out(RAW_COLLECTION_EDGE_NAME);
+    return getVreTraversal(vreName).out(RAW_COLLECTION_EDGE_NAME);
+  }
+
+  @Override
+  public void setVrePublishState(String vreName, Vre.PublishState publishState) {
+    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+
+    if (vreT.hasNext()) {
+      vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
+    }
+  }
+
+  @Override
+  public void setVreMetadata(String vreName, VreMetadata vreMetadataUpdate) {
+    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+
+    if (vreT.hasNext()) {
+      final Vertex vreVertex = vreT.next();
+      vreMetadataUpdate.updateVreVertex(vreVertex);
+    }
+  }
+
+  @Override
+  public void setVreImage(String vreName, byte[] uploadedBytes, MediaType mediaType) {
+    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+
+    if (vreT.hasNext()) {
+      final Vertex vreVertex = vreT.next();
+      final Integer imageRev = vreVertex.property(Vre.IMAGE_REV_PROPERTY_NAME).isPresent() ?
+        vreVertex.<Integer>value(Vre.IMAGE_REV_PROPERTY_NAME) + 1 : 1;
+
+      vreVertex.property(Vre.IMAGE_REV_PROPERTY_NAME, imageRev);
+      vreVertex.property(Vre.IMAGE_BLOB_PROPERTY_NAME, uploadedBytes);
+      vreVertex.property(Vre.IMAGE_MEDIA_TYPE_PROPERTY_NAME, mediaType.toString());
+    }
+  }
+
+  @Override
+  public byte[] getVreImageBlob(String vreName) {
+    final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+
+    if (vreT.hasNext()) {
+      final Vertex vreVertex = vreT.next();
+      if (vreVertex.property(Vre.IMAGE_BLOB_PROPERTY_NAME).isPresent()) {
+        return vreVertex.value(Vre.IMAGE_BLOB_PROPERTY_NAME);
+      }
+    }
+    return null;
   }
 
   @Override
@@ -340,9 +401,9 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void saveRmlMappingState(String vreName, String rdfData) {
-    final GraphTraversal<Vertex, Vertex> vreT = traversal.V()
-                                                         .hasLabel(Vre.DATABASE_LABEL)
-                                                         .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+    final GraphTraversal<Vertex, Vertex>
+      vreT = getVreTraversal(vreName);
+
     if (vreT.hasNext()) {
       vreT.next().property(SAVED_MAPPING_STATE, rdfData);
     }
@@ -951,6 +1012,8 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   private void saveRelationType(RelationType relationType) {
+    final String rdfUri = TIMBUCTOO_NAMESPACE + relationType.getOutName();
+    final String[] rdfAlternatives = {TIMBUCTOO_NAMESPACE + relationType.getInverseName()};
     final Vertex vertex = graph.addVertex(
       T.label, "relationtype",
       "rev", 1,
@@ -967,8 +1030,15 @@ public class TinkerPopOperations implements DataStoreOperations {
       "relationtype_symmetric", relationType.isSymmetric(),
       "relationtype_derived", relationType.isDerived(),
 
-      "rdfUri", "http://timbuctoo.huygens.knaw.nl/" + relationType.getOutName()
+      "rdfUri", rdfUri,
+      "rdfAlternatives", rdfAlternatives
     );
+
+    //FIXME move to IndexHandler
+    final Index<Node> rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
+    org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
+    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfUri);
+    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfAlternatives[0]);
 
     systemPropertyModifier.setCreated(vertex, "timbuctoo", "timbuctoo");
   }

@@ -29,18 +29,45 @@ public class Vre {
   public static final String VRE_NAME_PROPERTY_NAME = "name";
   public static final String KEYWORD_TYPES_PROPERTY_NAME = "keywordTypes";
   public static final String DATABASE_LABEL = "VRE";
+  public static final String PUBLISH_STATE_PROPERTY_NAME = "publishState";
+  public static final String VRE_LABEL_PROPERTY_NAME = "vreLabel";
+  public static final String COLOR_CODE_PROPERTY_NAME = "colorCode";
+  public static final String PROVENANCE_PROPERTY_NAME = "provenance";
+  public static final String DESCRIPTION_PROPERTY_NAME = "description";
+  public static final String IMAGE_BLOB_PROPERTY_NAME = "image:blob";
+  public static final String IMAGE_MEDIA_TYPE_PROPERTY_NAME = "image:mediaType";
+  public static final String IMAGE_REV_PROPERTY_NAME = "image:rev";
+  public static final String UPLOADED_FILE_NAME = "uploadedFilename";
+
+  private final PublishState publishState;
+  private final VreMetadata metadata;
+
+  public enum PublishState {
+    UPLOADING,
+    UPLOAD_FAILED,
+    MAPPING_CREATION,
+    MAPPING_EXECUTION,
+    MAPPING_CREATION_AFTER_ERRORS,
+    AVAILABLE
+  }
 
   private final String vreName;
   private Map<String, String> keywordTypes = Maps.newHashMap();
   private final LinkedHashMap<String, Collection> collections = Maps.newLinkedHashMap();
 
-  public Vre(String vreName, Map<String, String> keywordTypes) {
+  public Vre(String vreName, Map<String, String> keywordTypes, PublishState publishState, VreMetadata metadata) {
     this.vreName = vreName;
     this.keywordTypes = keywordTypes;
+    this.publishState = publishState;
+    this.metadata = metadata;
+  }
+
+  public Vre(String vreName, Map<String, String> keywordTypes) {
+    this(vreName, keywordTypes, PublishState.AVAILABLE, new VreMetadata());
   }
 
   public Vre(String vreName) {
-    this.vreName = vreName;
+    this(vreName, Maps.newHashMap());
   }
 
   public Collection getCollectionForTypeName(String entityTypeName) {
@@ -60,6 +87,10 @@ public class Vre {
 
   public String getVreName() {
     return vreName;
+  }
+
+  public VreMetadata getMetadata() {
+    return metadata;
   }
 
   public Optional<Collection> getImplementerOf(String abstractType) {
@@ -100,8 +131,17 @@ public class Vre {
     return collections;
   }
 
+  public PublishState getPublishState() {
+    return publishState;
+  }
+
   public static Vre load(Vertex vreVertex) {
-    final Vre vre = new Vre(vreVertex.value(VRE_NAME_PROPERTY_NAME), loadKeywordTypes(vreVertex));
+    final Vre vre = new Vre(
+      vreVertex.value(VRE_NAME_PROPERTY_NAME),
+      loadKeywordTypes(vreVertex),
+      loadPublishState(vreVertex),
+      loadMetadata(vreVertex)
+    );
 
     vreVertex.vertices(Direction.OUT, HAS_COLLECTION_RELATION_NAME).forEachRemaining(collectionV -> {
       Collection collection = Collection.load(collectionV, vre);
@@ -109,6 +149,19 @@ public class Vre {
     });
 
     return vre;
+  }
+
+  private static VreMetadata loadMetadata(Vertex vreVertex) {
+    return VreMetadata.fromVertex(vreVertex);
+  }
+
+  private static PublishState loadPublishState(Vertex vreVertex) {
+    if (vreVertex.property(PUBLISH_STATE_PROPERTY_NAME).isPresent()) {
+      return PublishState.valueOf(vreVertex.<String>property(PUBLISH_STATE_PROPERTY_NAME).value());
+    } else {
+      // Default to available when publishState property is not set (it is an old VRE)
+      return PublishState.AVAILABLE;
+    }
   }
 
   private static Map<String, String> loadKeywordTypes(Vertex vreVertex) {

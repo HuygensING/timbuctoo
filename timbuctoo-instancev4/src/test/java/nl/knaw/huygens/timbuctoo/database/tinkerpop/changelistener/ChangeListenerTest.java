@@ -2,11 +2,11 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -157,6 +157,10 @@ public class ChangeListenerTest {
       "saveRmlMappingState",
       "setAdminCollection",
       "getMappingErrors",
+      "setVrePublishState",
+      "setVreMetadata",
+      "setVreImage",
+      "getVreImageBlob",
 
       "close",
       "success",

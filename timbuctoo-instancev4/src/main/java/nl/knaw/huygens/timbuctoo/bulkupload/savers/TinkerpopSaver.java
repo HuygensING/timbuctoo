@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
-import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
@@ -32,30 +31,31 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
   private final int maxVerticesPerTransaction;
+  private String fileName;
   private final CollectionAdder collectionAdder;
   private int saveCounter;
   private Transaction tx;
 
-  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, int maxVerticesPerTransaction) {
-    this(vres, graphWrapper, vreName, maxVerticesPerTransaction, new CollectionAdder(graphWrapper));
+  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
+                        int maxVerticesPerTransaction, String fileName) {
+    this(vres, graphWrapper, vreName, vreLabel, maxVerticesPerTransaction, fileName, new CollectionAdder(graphWrapper));
   }
 
-  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, int maxVerticesPerTransaction,
-                        CollectionAdder collectionAdder) {
+  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
+                        int maxVerticesPerTransaction, String fileName, CollectionAdder collectionAdder) {
     this.vres = vres;
     this.graphWrapper = graphWrapper;
     tx = graphWrapper.getGraph().tx();
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
-    this.vre = initVre(vreName);
+    this.fileName = fileName;
+    this.vre = initVre(vreName, vreLabel);
     this.collectionAdder = collectionAdder;
   }
 
-  private Vertex initVre(String vreName) {
+  private Vertex initVre(String vreName, String vreLabel) {
     final Vertex result;
     try (Transaction tx = graphWrapper.getGraph().tx()) {
-      final GraphTraversal<Vertex, Vertex> vre = graphWrapper.getGraph().traversal().V()
-                                                             .hasLabel(Vre.DATABASE_LABEL)
-                                                             .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+      final GraphTraversal<Vertex, Vertex> vre = getVreTraversal(vreName);
       if (vre.hasNext()) {
         result = vre.next();
         if (result.property(SAVED_MAPPING_STATE).isPresent()) {
@@ -73,11 +73,20 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
       } else {
         result = graphWrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
       }
+      result.property(Vre.VRE_LABEL_PROPERTY_NAME, vreLabel);
+      result.property(Vre.UPLOADED_FILE_NAME, fileName);
+      result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishState.UPLOADING.toString());
       tx.commit();
     }
 
     vres.reload();
     return result;
+  }
+
+  private GraphTraversal<Vertex, Vertex> getVreTraversal(String vreName) {
+    return graphWrapper.getGraph().traversal().V()
+                                                           .hasLabel(Vre.DATABASE_LABEL)
+                                                           .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
   }
 
   private void allowCommit() {
@@ -133,7 +142,16 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
 
       previousPropertyDesc = propertyDesc;
     }
-
   }
 
+  public void setUploadFinished(String vreName, Vre.PublishState publishState) {
+    try (Transaction tx = graphWrapper.getGraph().tx()) {
+
+      final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+      if (vreT.hasNext()) {
+        vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
+      }
+      tx.commit();
+    }
+  }
 }

@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
+import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
@@ -23,17 +24,24 @@ public class BulkUploadService {
     this.graphwrapper = graphwrapper;
   }
 
-  public void saveToDb(String vreName, byte[] file, String fileName, Consumer<String> statusUpdate)
+  public void saveToDb(String vreName, byte[] file, String fileName, String vreLabel,
+                       Consumer<String> statusUpdate)
     throws InvalidFileException, IOException {
 
-    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, 50_000)) {
+    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000, fileName)) {
       Loader loader;
       if (fileName.endsWith(".xlsx")) {
         loader = new AllSheetLoader();
       } else {
         loader = new DataPerfectLoader();
       }
-      loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
+      try {
+        loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
+        saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);
+      } catch (IOException | InvalidFileException e) {
+        saver.setUploadFinished(vreName, Vre.PublishState.UPLOAD_FAILED);
+        throw e;
+      }
     }
   }
 

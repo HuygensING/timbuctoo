@@ -21,6 +21,7 @@ public class CollectionBuilder {
   private final Map<String, Supplier<GraphTraversal<Object, Vertex>>> derivedRelations = Maps.newHashMap();
   private boolean isRelationCollection = false;
   private String collectionLabel;
+  private String description;
 
   private CollectionBuilder(String collectionName, String defaultPrefix) {
     this.collectionName = collectionName;
@@ -62,6 +63,11 @@ public class CollectionBuilder {
     return this;
   }
 
+  public CollectionBuilder withDescription(String description) {
+    this.description = description;
+    return this;
+  }
+
   public void build(Vre vre) {
     if (entityTypeName == null) {
       if (collectionName.endsWith("s")) {
@@ -89,7 +95,9 @@ public class CollectionBuilder {
       vre,
       collectionLabel,
       false, //unknown is only constructed by the RDF importer
-      isRelationCollection);
+      isRelationCollection,
+      description);
     vre.addCollection(collection);
   }
+
 }

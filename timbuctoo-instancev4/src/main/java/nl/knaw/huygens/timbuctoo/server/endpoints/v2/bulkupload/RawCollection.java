@@ -85,19 +85,11 @@ public class RawCollection {
                       @QueryParam(START_ID) String startId, @HeaderParam("Authorization") String authorizationString,
                       @QueryParam(ONLY_ERRORS) @DefaultValue("false") boolean onlyErrors) {
 
-    UserPermissionChecker.UserPermission permission = userPermissionChecker.check(vreName, authorizationString);
+    Optional<Response> filterResponse = userPermissionChecker.checkPermissionWithResponse(vreName, authorizationString);
 
-    switch (permission) {
-      case UNKNOWN_USER:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-      case NO_PERMISSION:
-        return Response.status(Response.Status.FORBIDDEN).build();
-      case ALLOWED_TO_WRITE:
-        break;
-      default:
-        return Response.status(Response.Status.UNAUTHORIZED).build();
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
     }
-
 
     GraphTraversal<Vertex, Vertex> collection = graphWrapper.getGraph().traversal().V()
                                                             .hasLabel(Vre.DATABASE_LABEL)

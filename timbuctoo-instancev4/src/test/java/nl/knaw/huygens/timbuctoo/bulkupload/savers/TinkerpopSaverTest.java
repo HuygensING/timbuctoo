@@ -43,7 +43,7 @@ public class TinkerpopSaverTest {
 
   @Test
   public void theCreationAddsAVreToTheDatabase() {
-    new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
+    new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME, MAX_VERTICES_PER_TRANSACTION, VRE_NAME);
 
     assertThat(graphWrapper.getGraph().traversal().V().hasLabel(Vre.DATABASE_LABEL).next(), is(
       likeVertex().withProperty(Vre.VRE_NAME_PROPERTY_NAME, VRE_NAME)
@@ -52,7 +52,8 @@ public class TinkerpopSaverTest {
 
   @Test
   public void addEntityAddsEachEntityToTheCollection() {
-    TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
+    TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME, MAX_VERTICES_PER_TRANSACTION,
+      VRE_NAME);
 
     Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
     Vertex second = instance.addEntity(rawCollection, Maps.newHashMap());
@@ -64,8 +65,8 @@ public class TinkerpopSaverTest {
   @Test
   public void addEntityAddsEachEntityToTheCollectionAfterItIsAddedToTheLastItemOfTheCollection() {
     CollectionAdder collectionAdder = mock(CollectionAdder.class);
-    TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION,
-      collectionAdder);
+    TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME, MAX_VERTICES_PER_TRANSACTION,
+      VRE_NAME, collectionAdder);
 
     Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
 
@@ -76,7 +77,8 @@ public class TinkerpopSaverTest {
 
   @Test
   public void addEntityAddsARelationThatIndicatesTheFirstRelation() {
-    TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
+    TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME, MAX_VERTICES_PER_TRANSACTION,
+      VRE_NAME);
 
     Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
     instance.addEntity(rawCollection, Maps.newHashMap());
@@ -88,7 +90,8 @@ public class TinkerpopSaverTest {
 
   @Test
   public void addEntityAppendsTheNewVertexToThePrevious() {
-    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
+    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME,
+      MAX_VERTICES_PER_TRANSACTION, VRE_NAME);
 
     final Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
     final Vertex second = instance.addEntity(rawCollection, Maps.newHashMap());
@@ -102,7 +105,8 @@ public class TinkerpopSaverTest {
 
   @Test
   public void addPropertyDescriptionsAddsThePropertyDescriptionsToTheCollection() {
-    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
+    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME,
+      MAX_VERTICES_PER_TRANSACTION, VRE_NAME);
     ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
     importPropertyDescriptions.getOrCreate(6).setPropertyName("first");
     importPropertyDescriptions.getOrCreate(5).setPropertyName("second");
@@ -121,7 +125,8 @@ public class TinkerpopSaverTest {
 
   @Test
   public void addPropertyDescriptionsStoresTheOrderOfThePropertyDescriptions() {
-    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, MAX_VERTICES_PER_TRANSACTION);
+    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME,
+      MAX_VERTICES_PER_TRANSACTION, VRE_NAME);
     ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
     importPropertyDescriptions.getOrCreate(6).setPropertyName("first");
     importPropertyDescriptions.getOrCreate(5).setPropertyName("second");

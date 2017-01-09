@@ -81,7 +81,7 @@ public class PrepareForBiaImportMigration implements DatabaseMigration {
 
     final Collection conceptsCollection =
       new Collection("concept", "concept", localProperty("label"), conceptProperties, "concepts",
-        mappings.getVre("Admin"), "concepts", false, false);
+        mappings.getVre("Admin"), "concepts", false, false, null);
 
     adminVre.addCollection(conceptsCollection);
     adminVre.save(graph);
