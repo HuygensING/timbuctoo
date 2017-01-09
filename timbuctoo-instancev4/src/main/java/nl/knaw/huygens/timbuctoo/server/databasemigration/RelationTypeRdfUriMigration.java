@@ -18,7 +18,7 @@ import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 
 public class RelationTypeRdfUriMigration implements DatabaseMigration {
   private static final Logger LOG = LoggerFactory.getLogger(RelationTypeRdfUriMigration.class);
-  private static final String TIMBUCTOO_NAMESPACE = "http://timbuctoo.huygens.knaw.nl/";
+  public static final String TIMBUCTOO_NAMESPACE = "http://timbuctoo.huygens.knaw.nl/";
 
   @Override
   public void execute(TinkerPopGraphManager graphWrapper) throws IOException {

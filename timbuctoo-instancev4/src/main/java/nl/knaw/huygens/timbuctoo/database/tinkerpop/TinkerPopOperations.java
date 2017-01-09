@@ -50,6 +50,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
+import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -67,6 +68,9 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.index.Index;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,6 +121,8 @@ import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.a
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
+import static nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration.TIMBUCTOO_NAMESPACE;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -136,6 +142,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final Graph graph;
   private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
+  private final GraphDatabaseService graphDatabase;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
   private final boolean ownTransaction;
@@ -189,6 +196,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     this.latestState = graphManager.getLatestState();
     this.mappings = mappings == null ? loadVres() : mappings;
     this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
+    this.graphDatabase = graphManager.getGraphDatabase(); //FIXME move to IndexHandler
   }
 
   private static UUID asUuid(String input, Element source) {
@@ -1004,6 +1012,8 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   private void saveRelationType(RelationType relationType) {
+    final String rdfUri = TIMBUCTOO_NAMESPACE + relationType.getOutName();
+    final String[] rdfAlternatives = {TIMBUCTOO_NAMESPACE + relationType.getInverseName()};
     final Vertex vertex = graph.addVertex(
       T.label, "relationtype",
       "rev", 1,
@@ -1020,8 +1030,15 @@ public class TinkerPopOperations implements DataStoreOperations {
       "relationtype_symmetric", relationType.isSymmetric(),
       "relationtype_derived", relationType.isDerived(),
 
-      "rdfUri", "http://timbuctoo.huygens.knaw.nl/" + relationType.getOutName()
+      "rdfUri", rdfUri,
+      "rdfAlternatives", rdfAlternatives
     );
+
+    //FIXME move to IndexHandler
+    final Index<Node> rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
+    org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) vertex.id());
+    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfUri);
+    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, rdfAlternatives[0]);
 
     systemPropertyModifier.setCreated(vertex, "timbuctoo", "timbuctoo");
   }
