@@ -17,6 +17,7 @@ import org.neo4j.tooling.GlobalGraphOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,25 +28,49 @@ public abstract class Neo4jHelper {
   public static void dumpDb(GraphDatabaseService gds) {
     final GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(gds);
     for (Node node : globalGraphOperations.getAllNodes()) {
-      System.out.println(dump(node));
+      System.out.println(dumpNode(node));
     }
-    for (Node node : globalGraphOperations.getAllNodes()) {
-      for (Relationship rel : node.getRelationships(Direction.OUTGOING)) {
-        System.out.println(node + "-[:" + rel.getType().name() + " " + dump(rel) + "]->" + rel.getEndNode());
-      }
+    for (Relationship rel : globalGraphOperations.getAllRelationships()) {
+      System.out.println(dumpEdge(rel));
     }
   }
 
-  private static String dump(PropertyContainer pc) {
-    final long id = pc instanceof Node ? ((Node) pc).getId() : ((Relationship) pc).getId();
+  private static String dumpNode(Node node) {
+    try {
+      ArrayList<String> labels = new ArrayList<>();
+      for (Label label : node.getLabels()) {
+        if (!"vertex".equals(label.name())) {
+          labels.add(label.name());
+        }
+      }
+      return String.format("(%d) [%s] %s ", node.getId(), String.join(", ", labels), dumpProps(node));
+    } catch (Exception e) {
+      return "(" + node.getId() + ") " + e.getMessage();
+    }
+  }
+
+  private static String dumpEdge(Relationship edge) {
+    try {
+      return String.format("(%s) -[%s %s]-> (%s)",
+        edge.getStartNode().getId(),
+        edge.getType().name(),
+        dumpProps(edge),
+        edge.getEndNode().getId()
+      );
+    } catch (Exception e) {
+      return "//!!!" + edge.getId() + ": " + e.getMessage() + "!!!";
+    }
+  }
+
+  private static String dumpProps(PropertyContainer pc) {
     try {
       Map<String, Object> props = new HashMap<>();
       for (String prop : pc.getPropertyKeys()) {
         props.put(prop, pc.getProperty(prop));
       }
-      return String.format("(%d) %s ", id, props);
+      return String.format("%s", props);
     } catch (Exception e) {
-      return "(" + id + ") " + e.getMessage();
+      return "{!!!" + e.getMessage() + "!!!}";
     }
   }
 

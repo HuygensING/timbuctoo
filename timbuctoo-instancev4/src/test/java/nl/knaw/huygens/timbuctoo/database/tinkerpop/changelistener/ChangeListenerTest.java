@@ -156,6 +156,7 @@ public class ChangeListenerTest {
       "hasMappingErrors",
       "saveRmlMappingState",
       "setAdminCollection",
+      "getMappingErrors",
 
       "close",
       "success",

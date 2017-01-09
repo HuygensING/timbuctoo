@@ -63,9 +63,7 @@ public class EntityToJsonMapper {
     if (entity.getRdfUri() != null) {
       mappedEntity.set("^rdfUri", jsn(entity.getRdfUri().toString()));
     }
-    if (entity.getRdfAlternatives() != null) {
-      mappedEntity.set("^rdfAlternatives", jsnA(entity.getRdfAlternatives().stream().map(JsonBuilder::jsn)));
-    }
+    mappedEntity.set("^rdfAlternatives", jsnA(entity.getRdfAlternatives().stream().map(JsonBuilder::jsn)));
 
     JsonNode variationRefs = jsnA(entity.getTypes()
                                         .stream()

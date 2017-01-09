@@ -58,11 +58,15 @@ public class Database {
     this.systemPropertyModifier = systemPropertyModifier;
     graphDatabase = graphWrapper.getGraphDatabase();
     final Transaction transaction = graphWrapper.getGraph().tx();
+    boolean hasOwnTransaction = false;
     if (!transaction.isOpen()) {
       transaction.open();
+      hasOwnTransaction = true;
     }
     rdfIndex = graphDatabase.index().forNodes(RDFINDEX_NAME);
-    transaction.close();
+    if (hasOwnTransaction) {
+      transaction.close();
+    }
   }
 
   private String getNodeUri(Node node, String vreName) {
@@ -287,11 +291,14 @@ public class Database {
   }
 
   private void addCollectionToVre(CollectionDescription collectionDescription, Vertex collectionVertex) {
-    Vertex vreVertex = graphWrapper.getGraph().traversal().V()
-                                   .hasLabel(Vre.DATABASE_LABEL)
-                                   .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName())
-                                   .next();
-    vreVertex.addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
+    Iterator<Vertex> vreTraversal = graphWrapper.getGraph().traversal().V()
+                                     .hasLabel(Vre.DATABASE_LABEL)
+                                     .has(Vre.VRE_NAME_PROPERTY_NAME, collectionDescription.getVreName());
+    if (vreTraversal.hasNext()) {
+      vreTraversal.next().addEdge(Vre.HAS_COLLECTION_RELATION_NAME, collectionVertex);
+    } else {
+      throw new IllegalStateException("Vre " + collectionDescription.getVreName() + " not found");
+    }
   }
 
 

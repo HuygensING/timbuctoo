@@ -30,7 +30,10 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
+import nl.knaw.huygens.timbuctoo.rdf.Database;
+import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -2717,6 +2720,31 @@ public class TinkerPopOperationsTest {
     List<String> entitiesWithUnknownType = instance.getEntitiesWithUnknownType(vre);
 
     assertThat(entitiesWithUnknownType, containsInAnyOrder("http://example.org/entity1", "http://example.org/entity2"));
+  }
+
+  @Test
+  public void getEntitiesWithUnknownTypeDoesNotReturnEntitiesWithACollection() {
+    TinkerPopGraphManager wrap = newGraph().wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(wrap);
+    final Database legacyRdfDatabase = new Database(wrap);
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+
+    Vre admin = instance.ensureVreExists("Admin");
+    instance.addCollectionToVre(admin, CreateCollection.defaultCollection("Admin"));
+
+    vre = instance.loadVres().getVre("vre");
+
+    instance.assertEntity(vre, "http://example.org/entity1");
+    instance.assertEntity(vre, "http://example.org/entity2");
+    nl.knaw.huygens.timbuctoo.rdf.Collection collection =
+      legacyRdfDatabase.findOrCreateCollection("vre", NodeFactory.createURI("http://example.org/myCollection"));
+    Optional<Entity> entity = legacyRdfDatabase.findEntity("vre", NodeFactory.createURI("http://example.org/entity1"));
+    entity.get().addToCollection(collection);
+
+    List<String> entitiesWithUnknownType = instance.getEntitiesWithUnknownType(vre);
+
+    assertThat(entitiesWithUnknownType, containsInAnyOrder("http://example.org/entity2"));
   }
 
   @Test

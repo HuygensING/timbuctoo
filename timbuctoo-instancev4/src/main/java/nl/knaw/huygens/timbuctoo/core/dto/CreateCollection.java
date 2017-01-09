@@ -10,8 +10,9 @@ import java.util.Objects;
 
 public class CreateCollection {
   private final String unprefixedEntityName;
+  private String archetypeName;
 
-  public CreateCollection(String unprefixedEntityName) {
+  private CreateCollection(String unprefixedEntityName) {
     this.unprefixedEntityName = unprefixedEntityName;
   }
 
@@ -22,8 +23,12 @@ public class CreateCollection {
   public static CreateCollection defaultCollection(String vreName) {
     if (Objects.equals("Admin", vreName)) {
       return forEntityTypeName(CollectionNameHelper.defaultEntityTypeName(vreName));
+    } else {
+      CreateCollection result =
+        forEntityTypeName(CollectionNameHelper.defaultEntityTypeName(vreName).substring(vreName.length()));
+      result.setArchetypeName("concepts");
+      return result;
     }
-    return forEntityTypeName(CollectionNameHelper.defaultEntityTypeName(vreName).substring(vreName.length()));
   }
 
   public String getEntityTypeName(Vre vre) {
@@ -35,7 +40,14 @@ public class CreateCollection {
   }
 
   public boolean isUnknownCollection(String vreName) {
-    return Objects.equals(unprefixedEntityName, CollectionNameHelper.defaultCollectionName(vreName));
+    if (Objects.equals("Admin", vreName)) {
+      return Objects.equals(unprefixedEntityName, CollectionNameHelper.defaultEntityTypeName(vreName));
+    } else {
+      return Objects.equals(
+        unprefixedEntityName,
+        CollectionNameHelper.defaultEntityTypeName(vreName).substring(vreName.length())
+      );
+    }
   }
 
   public String getRdfUri(Vre vre) {
@@ -55,5 +67,13 @@ public class CreateCollection {
   @Override
   public String toString() {
     return ToStringBuilder.reflectionToString(this);
+  }
+
+  public String getArchetypeName() {
+    return archetypeName;
+  }
+
+  private void setArchetypeName(String archetypeName) {
+    this.archetypeName = archetypeName;
   }
 }

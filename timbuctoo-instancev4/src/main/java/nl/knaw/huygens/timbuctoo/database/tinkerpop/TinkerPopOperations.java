@@ -73,6 +73,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -80,9 +81,11 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
@@ -111,6 +114,7 @@ import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NE
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -132,37 +136,53 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final SystemPropertyModifier systemPropertyModifier;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
+  private final boolean ownTransaction;
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
-    this.indexHandler = new Neo4jIndexHandler(graphManager);
-    this.listener = new CompositeChangeListener(
-      new AddLabelChangeListener(),
-      new FulltextIndexChangeListener(indexHandler, graphManager),
-      new IdIndexChangeListener(indexHandler),
-      new CollectionHasEntityRelationChangeListener(graphManager),
-      new RdfIndexChangeListener(indexHandler)
+    this(
+      graphManager,
+      indexHandler -> new CompositeChangeListener(
+        new AddLabelChangeListener(),
+        new FulltextIndexChangeListener(indexHandler, graphManager),
+        new IdIndexChangeListener(indexHandler),
+        new CollectionHasEntityRelationChangeListener(graphManager),
+        new RdfIndexChangeListener(indexHandler)
+      ),
+      indexHandler -> new Neo4jLuceneEntityFetcher(graphManager, indexHandler),
+      null,
+      new Neo4jIndexHandler(graphManager)
     );
-    this.entityFetcher = new Neo4jLuceneEntityFetcher(graphManager, indexHandler);
-    this.graph = graphManager.getGraph();
-    this.transaction = graph.tx();
-    this.traversal = graph.traversal();
-    this.latestState = graphManager.getLatestState();
-    this.mappings = loadVres();
-    this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
   }
 
+  //for tests
   TinkerPopOperations(TinkerPopGraphManager graphManager, ChangeListener listener,
                       GremlinEntityFetcher entityFetcher, Vres mappings, IndexHandler indexHandler) {
-    graph = graphManager.getGraph();
-    this.indexHandler = indexHandler;
-    this.transaction = graph.tx();
-    this.listener = listener;
-    this.entityFetcher = entityFetcher;
+    this(
+      graphManager,
+      indexHandler1 -> listener,
+      indexHandler1 -> entityFetcher,
+      mappings,
+      indexHandler
+    );
+  }
 
-    if (!transaction.isOpen()) {
+  private TinkerPopOperations(TinkerPopGraphManager graphManager, Function<IndexHandler, ChangeListener> listener,
+                              Function<IndexHandler, GremlinEntityFetcher> entityFetcher, Vres mappings,
+                              IndexHandler indexHandler) {
+    graph = graphManager.getGraph();
+    this.transaction = graph.tx();
+    if (transaction.isOpen()) {
+      ownTransaction = false;
+      LOG.error("There is already an open transaction", new Throwable()); //exception for the stack trace
+    } else {
+      ownTransaction = true;
       transaction.open();
     }
+    this.indexHandler = indexHandler;
+    this.listener = listener.apply(indexHandler);
+    this.entityFetcher = entityFetcher.apply(indexHandler);
+
     this.traversal = graph.traversal();
     this.latestState = graphManager.getLatestState();
     this.mappings = mappings == null ? loadVres() : mappings;
@@ -257,11 +277,15 @@ public class TinkerPopOperations implements DataStoreOperations {
     }
   }
 
+  private GraphTraversal<Vertex, Vertex> getMappingErrorsTraversal(String vreName) {
+    return getRawCollectionsTraversal(vreName)
+      .repeat(__.out(HAS_NEXT_ERROR))
+      .emit();
+  }
+
   @Override
   public void clearMappingErrors(Vre vre) {
-    getRawCollectionsTraversal(vre.getVreName())
-      .emit()
-      .repeat(__.out(HAS_NEXT_ERROR))
+    getMappingErrorsTraversal(vre.getVreName())
       .forEachRemaining(vertex -> {
         vertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
         vertex.properties().forEachRemaining(property -> {
@@ -272,6 +296,35 @@ public class TinkerPopOperations implements DataStoreOperations {
       });
   }
 
+  @Override
+  public Map<String, Map<String, String>> getMappingErrors(String vreName) {
+    Map<String, Map<String, String>> result = new HashMap<>();
+    getMappingErrorsTraversal(vreName).forEachRemaining(vertex -> {
+      Map<String, String> errors = new HashMap<>();
+      vertex.properties().forEachRemaining(p -> {
+        if (p.key().startsWith(ERROR_PREFIX)) {
+          try {
+            errors.put(p.key().substring(ERROR_PREFIX.length()), (String) p.value());
+          } catch (ClassCastException e) {
+            LOG.error("Raw entity error was not a String", e);
+            errors.put(p.key().substring(ERROR_PREFIX.length()), "Unknown error");
+          }
+        }
+      });
+      if (!errors.isEmpty()) {
+        try {
+          result.put(vertex.value("tim_id"), errors);
+        } catch (ClassCastException e) {
+          LOG.error("tim_id was not a String", e);
+          errors.put(vertex.id() + "", "Unknown error");
+        } catch (NoSuchElementException e) {
+          LOG.error("vertex " + vertex.id() + " does not have a tim_id", e);
+          errors.put(vertex.id() + "", "Unknown error");
+        }
+      }
+    });
+    return result;
+  }
 
   private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
     return traversal.V()
@@ -282,7 +335,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public boolean hasMappingErrors(String vreName) {
-    return getRawCollectionsTraversal(vreName).outE(HAS_NEXT_ERROR).hasNext();
+    return getMappingErrorsTraversal(vreName).hasNext();
   }
 
   @Override
@@ -307,20 +360,23 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void close() {
-    if (isSuccess.isPresent()) {
-      if (isSuccess.get()) {
-        transaction.commit();
+    if (!transaction.isOpen()) {
+      LOG.error("Transaction was already closed!", new Throwable());
+    } else if (ownTransaction) {
+      if (isSuccess.isPresent()) {
+        if (isSuccess.get()) {
+          transaction.commit();
+        } else {
+          transaction.rollback();
+        }
       } else {
         transaction.rollback();
-      }
-    } else {
-      transaction.rollback();
-      if (requireCommit) {
-        LOG.error("Transaction was not closed, rolling back. Please add an explicit rollback so that we know this " +
-          "was not a missing success()");
+        if (requireCommit) {
+          LOG.error("Transaction was not closed, rolling back. Please add an explicit rollback so that we know this " +
+            "was not a missing success()");
+        }
       }
     }
-    transaction.close();
   }
 
   @Override
@@ -456,7 +512,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public List<RelationType> getRelationTypes() {
     return traversal.V().has(T.label, LabelP.of("relationtype")).toList().stream()
-                    .map(RelationType::relationType).collect(Collectors.toList());
+                    .map(RelationType::relationType).collect(toList());
   }
 
 
@@ -937,7 +993,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public void addCollectionToVre(Vre vre, CreateCollection createCollection) {
     // FIXME think of a default way to add collections to VRE's.
-    boolean vreHasCollection = graph.traversal().V()
+    boolean vreHasCollection = traversal.V()
                                     .hasLabel(Vre.DATABASE_LABEL)
                                     .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
                                     .outE(HAS_COLLECTION_RELATION_NAME).otherV()
@@ -957,6 +1013,16 @@ public class TinkerPopOperations implements DataStoreOperations {
       COLLECTION_IS_UNKNOWN_PROPERTY_NAME,
       createCollection.isUnknownCollection(vre.getVreName())
     );
+    final GraphTraversal<Vertex, Vertex> archetypeCollection = traversal.V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+      .out(HAS_COLLECTION_RELATION_NAME)
+      .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getArchetypeName());
+
+    if (archetypeCollection.hasNext()) {
+      collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.next());
+    }
+
 
     final Vertex displayName = graph.addVertex(ReadableProperty.DATABASE_LABEL);
     displayName.property(ReadableProperty.CLIENT_PROPERTY_NAME, "@displayName");
@@ -1097,9 +1163,15 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public List<String> getEntitiesWithUnknownType(Vre vre) {
-    Collection coll = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+    Collection defaultColl = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
 
-    return entitiesOfCollection(coll)
+    return entitiesOfCollection(defaultColl)
+      //all entities cannot reach a collectionNode with a name that is different from the default collection name
+      .not(
+        __.in(HAS_ENTITY_RELATION_NAME)
+          .in(HAS_ENTITY_NODE_RELATION_NAME)
+          .has("collectionName", P.neq(defaultColl.getCollectionName()))
+      )
       .has("rdfUri")
       .map(v -> v.get().<String>value("rdfUri")).toList();
   }
@@ -1112,9 +1184,10 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper) {
+    String vreName = vre.getVreName();
     vre.getCollections().values().forEach(col -> entitiesOfCollection(col)
       .forEachRemaining(v -> {
-        v.property("tim_id", entityFinisherHelper.newId().toString());
+        v.property("tim_id", entityFinisherHelper.newId(v, vreName).toString());
         v.property("rev", entityFinisherHelper.getRev());
         setCreated(v, entityFinisherHelper.getChangeTime());
         v.property("isLatest", true);
@@ -1186,6 +1259,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   private Vertex createRdfEntity(Vre vre, String rdfUri) {
     Vertex vertex = traversal.addV().next();
     vertex.property(RDF_URI_PROP, rdfUri);
+    vertex.property(RDF_SYNONYM_PROP, new String[0]);
     vertex.property(
       "types",
       jsnA(

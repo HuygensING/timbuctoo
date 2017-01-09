@@ -22,13 +22,7 @@ public class TestableTinkerPopGraphManager extends TinkerPopGraphManager {
 
   @Override
   public void start() throws Exception {
-    graphWaitList.forEach(consumer -> {
-      try {
-        consumer.accept(graph);
-      } catch (RuntimeException e) {
-        LOG.error(e.getMessage(), e);
-      }
-    });
+    callWaiters();
   }
 
   @Override

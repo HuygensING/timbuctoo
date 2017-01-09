@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -106,18 +107,24 @@ public class BulkUploadedDataSource implements DataSource {
           parentField,
           parentCollection
         ));
-        if (lastError == null) {
-          Vertex collection = graph.traversal().V()
-                                   .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
-                                   .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-                                   .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
-                                   .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
-                                   .next();
-          collection.addEdge(HAS_NEXT_ERROR, currentVertex);
-        } else {
-          lastError.addEdge(HAS_NEXT_ERROR, currentVertex);
+        //if the current entity is not already part of the rawEntities-with-errors chain
+        if (!currentVertex.edges(Direction.IN, HAS_NEXT_ERROR).hasNext()) {
+          //if there is no such chain
+          if (lastError == null) {
+            //start it
+            Vertex collection = graph.traversal().V()
+              .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+              .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+              .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
+              .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
+              .next();
+            collection.addEdge(HAS_NEXT_ERROR, currentVertex);
+          } else {
+            //continue it
+            lastError.addEdge(HAS_NEXT_ERROR, currentVertex);
+          }
+          lastError = currentVertex;
         }
-        lastError = currentVertex;
       }
     }
 

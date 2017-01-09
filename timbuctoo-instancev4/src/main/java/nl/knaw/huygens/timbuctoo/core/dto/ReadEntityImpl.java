@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.model.Change;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public class ReadEntityImpl implements ReadEntity {
   private UUID id;
   private final HashMap<String, Object> extraProperties;
   private URI rdfUri;
-  private List<String> rdfAlternatives;
+  private List<String> rdfAlternatives = new ArrayList<>(0);
 
   public ReadEntityImpl() {
     extraProperties = Maps.newHashMap();
