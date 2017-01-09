@@ -45,7 +45,7 @@ import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.LoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
@@ -187,7 +187,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
     JsonBasedUserStore userStore = new JsonBasedUserStore(userAccess);
     JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginAccess, ENCRYPTION_ALGORITHM);
-    final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
+    final LoggedInUsers loggedInUsers = new LoggedInUsers(
       authenticator,
       userStore,
       configuration.getAutoLogoutTimeout(),
@@ -261,12 +261,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // register REST endpoints
     register(environment, new RootEndpoint());
     register(environment, new JsEnv(configuration));
-    register(environment, new Authenticate(loggedInUserStore));
-    register(environment, new Me(loggedInUserStore));
+    register(environment, new Authenticate(loggedInUsers));
+    register(environment, new Me(loggedInUsers));
     register(environment, new Search(configuration, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
-    register(environment, new Index(loggedInUserStore, crudServiceFactory, transactionEnforcer));
-    register(environment, new SingleEntity(loggedInUserStore, crudServiceFactory, transactionEnforcer));
+    register(environment, new Index(loggedInUsers, crudServiceFactory, transactionEnforcer));
+    register(environment, new SingleEntity(loggedInUsers, crudServiceFactory, transactionEnforcer));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
@@ -276,7 +276,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
     register(environment, new Graph(graphManager, vres));
     // Bulk upload
-    UserPermissionChecker permissionChecker = new UserPermissionChecker(loggedInUserStore, authorizer);
+    UserPermissionChecker permissionChecker = new UserPermissionChecker(loggedInUsers, authorizer);
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
@@ -289,12 +289,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024);
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), bulkUploadVre,
-      loggedInUserStore, authorizer, 20 * 1024 * 1024, permissionChecker, transactionEnforcer));
-
+      loggedInUsers, authorizer, 20 * 1024 * 1024, permissionChecker, transactionEnforcer));
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
-    register(environment, new MyVres(loggedInUserStore, authorizer, bulkUploadVre, transactionEnforcer, uriHelper));
+    register(environment, new MyVres(loggedInUsers, authorizer, bulkUploadVre, transactionEnforcer, uriHelper));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
 

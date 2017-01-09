@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.security;
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker.UserPermission;
 import org.junit.Before;
@@ -24,20 +24,20 @@ public class UserPermissionCheckerTest {
   public static final String AUTHORIZATION_HEADER = "authorizationHeader";
   public static final boolean ALLOWED_TO_WRITE = true;
   public static final boolean NOT_ALLOWED_TO_WRITE = false;
-  private LoggedInUserStore loggedInUserStore;
+  private LoggedInUsers loggedInUsers;
   private Authorizer authorizer;
   private UserPermissionChecker instance;
 
   @Before
   public void setUp() throws Exception {
-    loggedInUserStore = mock(LoggedInUserStore.class);
+    loggedInUsers = mock(LoggedInUsers.class);
     authorizer = mock(Authorizer.class);
-    instance = new UserPermissionChecker(loggedInUserStore, authorizer);
+    instance = new UserPermissionChecker(loggedInUsers, authorizer);
   }
 
   @Test
   public void checkReturnsUnknownUserWhenTheUserCannotBeAuthenticated() {
-    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.empty());
+    given(loggedInUsers.userFor(anyString())).willReturn(Optional.empty());
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
 
@@ -46,7 +46,7 @@ public class UserPermissionCheckerTest {
 
   @Test
   public void checkReturnsAllowedToWriteWhenTheUserIsAuthorizedForTheVre() throws Exception {
-    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
+    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
     given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorization(ALLOWED_TO_WRITE));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
@@ -56,7 +56,7 @@ public class UserPermissionCheckerTest {
 
   @Test
   public void checkReturnsNoPermissionWhenTheUserIsNotAuthorized() throws Exception {
-    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
+    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
     given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorization(NOT_ALLOWED_TO_WRITE));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
@@ -80,7 +80,7 @@ public class UserPermissionCheckerTest {
 
   @Test
   public void checkReturnsUnknownUserWhenTheUserCannotBeAuthorized() throws Exception {
-    given(loggedInUserStore.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
+    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(User.create("displayName", "")));
     given(authorizer.authorizationFor(anyString(), anyString())).willThrow(new AuthorizationUnavailableException());
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);

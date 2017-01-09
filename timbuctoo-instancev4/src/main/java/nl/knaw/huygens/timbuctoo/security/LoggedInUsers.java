@@ -22,16 +22,16 @@ import java.util.UUID;
  * <p/>
  * <p>Needs: An object from which to retrieve valid users, an object to store logged in users</p>
  */
-public class LoggedInUserStore {
+public class LoggedInUsers {
 
-  public static final Logger LOG = LoggerFactory.getLogger(LoggedInUserStore.class);
+  public static final Logger LOG = LoggerFactory.getLogger(LoggedInUsers.class);
   private final Authenticator authenticator;
   private final UserStore userStore;
   private final AuthenticationHandler authenticationHandler;
   private final Cache<String, User> users;
 
-  public LoggedInUserStore(Authenticator authenticator, UserStore userStore,
-                           Timeout inactivityTimeout, AuthenticationHandler authenticationHandler) {
+  public LoggedInUsers(Authenticator authenticator, UserStore userStore,
+                       Timeout inactivityTimeout, AuthenticationHandler authenticationHandler) {
     this.authenticator = authenticator;
     this.userStore = userStore;
     this.authenticationHandler = authenticationHandler;
