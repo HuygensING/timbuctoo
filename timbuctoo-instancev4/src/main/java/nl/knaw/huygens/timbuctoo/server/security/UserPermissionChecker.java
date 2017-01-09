@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import org.slf4j.LoggerFactory;
 
@@ -16,16 +16,16 @@ import static nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker.Us
 import static nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker.UserPermission.UNKNOWN_USER;
 
 public class UserPermissionChecker {
-  private final LoggedInUserStore loggedInUserStore;
+  private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
 
-  public UserPermissionChecker(LoggedInUserStore loggedInUserStore, Authorizer authorizer) {
-    this.loggedInUserStore = loggedInUserStore;
+  public UserPermissionChecker(LoggedInUsers loggedInUsers, Authorizer authorizer) {
+    this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
   }
 
   public UserPermission check(String vreName, String authorizationHeader) {
-    Optional<User> user = loggedInUserStore.userFor(authorizationHeader);
+    Optional<User> user = loggedInUsers.userFor(authorizationHeader);
 
     if (!user.isPresent()) {
       return UNKNOWN_USER;

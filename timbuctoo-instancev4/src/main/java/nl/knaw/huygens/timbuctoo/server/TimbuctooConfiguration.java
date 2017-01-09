@@ -4,15 +4,16 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
 import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
+import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
-import org.hibernate.validator.constraints.NotEmpty;
+import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.nio.file.Path;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -24,13 +25,26 @@ import java.util.regex.Pattern;
  *  - example database
  */
 public class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder, SearchConfig {
-  @NotEmpty
+  @JsonProperty
+  @Deprecated
   private String loginsFilePath;
-  @NotEmpty
+  @JsonProperty
+  @Deprecated
   private String usersFilePath;
-  @NotEmpty
+  @JsonProperty
+  @Deprecated
+  private Path authorizationsPath;
+
+  @JsonProperty
+  private SecurityFactory securityConfiguration;
+
+  @JsonProperty
+  @Deprecated
   private String databasePath;
-  @NotNull
+  @JsonProperty
+  private TinkerPopConfig databaseConfiguration;
+  @Deprecated
+  @JsonProperty
   private TimeoutFactory autoLogoutTimeout;
   @NotNull
   private TimeoutFactory searchResultAvailabilityTimeout;
@@ -46,33 +60,40 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty
   @NotNull
   private PersistenceManagerFactory persistenceManager;
-  @NotNull
-  private Path authorizationsPath;
 
   @JsonProperty
   private boolean allowGremlinEndpoint = true;
 
   @JsonProperty
+  @Deprecated
   private int executeDatabaseInvariantCheckAt = 24;
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
   }
 
+  @Deprecated
   public Timeout getAutoLogoutTimeout() {
     return autoLogoutTimeout.createTimeout();
   }
 
+  @Deprecated
   public String getLoginsFilePath() {
     return loginsFilePath;
   }
 
+  @Deprecated
   public String getUsersFilePath() {
     return usersFilePath;
   }
 
+  @Deprecated
   public String getDatabasePath() {
     return databasePath;
+  }
+
+  public TinkerPopConfig getDatabaseConfiguration() {
+    return databaseConfiguration;
   }
 
   // ActiveMQConfigHolder implementation
@@ -114,8 +135,8 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   }
 
   @Valid
-  @NotNull
-  private FederatedAuthConfiguration federatedAuthentication = new FederatedAuthConfiguration();
+  @Deprecated
+  private FederatedAuthConfiguration federatedAuthentication;
 
   @JsonProperty("federatedAuthentication")
   public FederatedAuthConfiguration getFederatedAuthentication() {
@@ -127,10 +148,12 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     this.federatedAuthentication = federatedAuthentication;
   }
 
+  @Deprecated
   public Path getAuthorizationsPath() {
     return authorizationsPath;
   }
 
+  @Deprecated
   public int getExecuteDatabaseInvariantCheckAt() {
     return executeDatabaseInvariantCheckAt;
   }
@@ -143,25 +166,8 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return timbuctooSearchUrl;
   }
 
-  // A class to configure timeouts without compromising the Timeout class.
-  private class TimeoutFactory {
-    private long duration;
-    private TimeUnit timeUnit;
-
-    public TimeoutFactory() {
-    }
-
-    public void setDuration(long duration) {
-      this.duration = duration;
-    }
-
-    public void setTimeUnit(TimeUnit timeUnit) {
-      this.timeUnit = timeUnit;
-    }
-
-    public Timeout createTimeout() {
-      return new Timeout(duration, timeUnit);
-    }
+  public SecurityFactory getSecurityConfiguration() {
+    return securityConfiguration;
   }
 
 

@@ -13,7 +13,7 @@ searchResultAvailabilityTimeout:
 executeDatabaseInvariantCheckAt: -1
 
 #Public timbuctoo url
-baseUri: http://localhost:8080 # used to generate next and previous links of a search result
+baseUri: http://localhost:1339 # used to generate next and previous links of a search result
 
 activeMq:
   #persistent=false means that the broker does not try to store the queue. This is not needed in a debugrun.

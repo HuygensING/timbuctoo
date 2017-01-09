@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
-import nl.knaw.huygens.timbuctoo.security.AuthorizationCreationException;
-import nl.knaw.huygens.timbuctoo.security.LoginCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
 import nl.knaw.huygens.timbuctoo.security.LoginCreator;
-import nl.knaw.huygens.timbuctoo.security.UserCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.security.UserCreator;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
 

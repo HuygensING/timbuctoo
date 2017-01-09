@@ -6,9 +6,9 @@ import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -37,13 +37,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Produces(MediaType.APPLICATION_JSON)
 public class Index {
 
-  private final LoggedInUserStore loggedInUserStore;
+  private final LoggedInUsers loggedInUsers;
   private final CrudServiceFactory crudServiceFactory;
   private final TransactionEnforcer transactionEnforcer;
 
-  public Index(LoggedInUserStore loggedInUserStore, CrudServiceFactory crudServiceFactory,
+  public Index(LoggedInUsers loggedInUsers, CrudServiceFactory crudServiceFactory,
                TransactionEnforcer transactionEnforcer) {
-    this.loggedInUserStore = loggedInUserStore;
+    this.loggedInUsers = loggedInUsers;
     this.crudServiceFactory = crudServiceFactory;
     this.transactionEnforcer = transactionEnforcer;
   }
@@ -61,7 +61,7 @@ public class Index {
     @HeaderParam("Authorization") String authHeader,
     ObjectNode body
   ) throws URISyntaxException {
-    Optional<User> user = loggedInUserStore.userFor(authHeader);
+    Optional<User> user = loggedInUsers.userFor(authHeader);
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {

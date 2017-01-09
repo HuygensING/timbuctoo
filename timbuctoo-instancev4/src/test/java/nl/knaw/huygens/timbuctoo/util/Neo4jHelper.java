@@ -11,9 +11,6 @@ import org.neo4j.graphdb.Transaction;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexManager;
 import org.neo4j.graphdb.index.RelationshipIndex;
-import org.neo4j.kernel.GraphDatabaseAPI;
-import org.neo4j.kernel.impl.core.NodeManager;
-import org.neo4j.tooling.GlobalGraphOperations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +23,10 @@ public abstract class Neo4jHelper {
   private static final Logger log = LoggerFactory.getLogger(Neo4jHelper.class);
 
   public static void dumpDb(GraphDatabaseService gds) {
-    final GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(gds);
-    for (Node node : globalGraphOperations.getAllNodes()) {
+    for (Node node : gds.getAllNodes()) {
       System.out.println(dumpNode(node));
     }
-    for (Relationship rel : globalGraphOperations.getAllRelationships()) {
+    for (Relationship rel : gds.getAllRelationships()) {
       System.out.println(dumpEdge(rel));
     }
   }
@@ -93,10 +89,7 @@ public abstract class Neo4jHelper {
   }
 
   private static void removeNodes(GraphDatabaseService graphDatabaseService, boolean includeReferenceNode) {
-    GraphDatabaseAPI api = (GraphDatabaseAPI) graphDatabaseService;
-    NodeManager nodeManager = api.getDependencyResolver().resolveDependency(NodeManager.class);
-    final GlobalGraphOperations globalGraphOperations = GlobalGraphOperations.at(graphDatabaseService);
-    for (Node node : globalGraphOperations.getAllNodes()) {
+    for (Node node : graphDatabaseService.getAllNodes()) {
       for (Relationship rel : node.getRelationships(Direction.OUTGOING)) {
         try {
           rel.delete();
@@ -111,7 +104,7 @@ public abstract class Neo4jHelper {
         node.removeLabel(label);
       }
     }
-    for (Node node : globalGraphOperations.getAllNodes()) {
+    for (Node node : graphDatabaseService.getAllNodes()) {
       try {
         node.delete();
       } catch (IllegalStateException ise) {

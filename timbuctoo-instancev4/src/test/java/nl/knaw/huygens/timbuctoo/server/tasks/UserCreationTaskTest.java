@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.tasks;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
-import nl.knaw.huygens.timbuctoo.security.UserCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.server.security.UserInfoKeys;
 import org.junit.Before;
 import org.junit.Test;

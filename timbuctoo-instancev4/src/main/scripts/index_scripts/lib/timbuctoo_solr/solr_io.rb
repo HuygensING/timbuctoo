@@ -1,8 +1,15 @@
 require 'net/http'
+
 require 'json'
 
 class SolrIO
 
+  def make_http(uri)
+    http = Net::HTTP.new(uri.hostname, uri.port)
+    http.use_ssl = uri.scheme.eql?('https')
+
+    http
+  end
   # @param [String] base_url the solr base_url (usually including /solr)
   # @param [String] authorization the authorization header
   def initialize(base_url, authorization: nil)
@@ -17,7 +24,7 @@ class SolrIO
     uri = URI.parse("#{@base_url}/admin/cores?action=CREATE&name=#{index_name}&instanceDir=#{index_name}&configSet=#{config_set}")
     req = Net::HTTP::Post.new(uri)
     req['Authorization'] = @authorization unless @authorization.nil?
-    http = Net::HTTP.new(uri.hostname, uri.port)
+    http = make_http(uri)
     response = http.request(req)
 
     raise "Create of #{index_name} failed for url #{@base_url}" unless response.code.eql?('200')
@@ -31,7 +38,7 @@ class SolrIO
     req = Net::HTTP::Post.new(uri)
     req.content_type = "application/json"
     req['Authorization'] = @authorization unless @authorization.nil?
-    http = Net::HTTP.new(uri.hostname, uri.port)
+    http = make_http(uri)
     req.body = payload.to_json
     response = http.request(req)
 
@@ -44,7 +51,7 @@ class SolrIO
     uri = URI.parse("#{@base_url}/#{index_name}/update?commit=true")
     req = Net::HTTP::Post.new(uri)
     req['Authorization'] = @authorization unless @authorization.nil?
-    http = Net::HTTP.new(uri.hostname, uri.port)
+    http = make_http(uri)
     response = http.request(req)
 
     raise "Commit on #{index_name} failed for url #{@base_url}" unless response.code.eql?('200')
@@ -55,7 +62,7 @@ class SolrIO
   def delete_data(index_name)
     uri = URI.parse("#{@base_url}/#{index_name}/update/")
     req = Net::HTTP::Post.new(uri)
-    http = Net::HTTP.new(uri.hostname, uri.port)
+    http = make_http(uri)
     req.content_type = 'text/xml'
     req['Authorization'] = @authorization unless @authorization.nil?
     req.body = '<delete><query>*:*</query></delete>'
@@ -70,7 +77,7 @@ class SolrIO
     uri = URI.parse("#{@base_url}/admin/cores?action=UNLOAD&core=#{index_name}")
     req = Net::HTTP::Post.new(uri)
     req['Authorization'] = @authorization unless @authorization.nil?
-    http = Net::HTTP.new(uri.hostname, uri.port)
+    http = make_http(uri)
     response = http.request(req)
 
     raise "Delete of #{index_name} failed for url #{@base_url}" unless response.code.eql?('200')

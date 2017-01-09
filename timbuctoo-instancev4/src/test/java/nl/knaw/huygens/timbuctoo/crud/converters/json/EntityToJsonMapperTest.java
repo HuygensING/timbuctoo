@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.converters.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,7 +40,7 @@ public class EntityToJsonMapperTest {
   @Before
   public void setUp() throws Exception {
     userStore = mock(UserStore.class);
-    when(userStore.userForId(USER_ID)).thenReturn(Optional.of(new User(USER_NAME)));
+    when(userStore.userForId(USER_ID)).thenReturn(Optional.of(User.create(USER_NAME, "")));
     instance = new EntityToJsonMapper(
       userStore,
       (collection, id1, rev) -> URI.create("www.example.com")

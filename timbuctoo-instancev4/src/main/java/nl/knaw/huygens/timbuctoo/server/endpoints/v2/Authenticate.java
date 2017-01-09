@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 
-import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.LocalLoginUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.server.security.BasicAuthorizationHeaderParser;
 import nl.knaw.huygens.timbuctoo.server.security.InvalidAuthorizationHeaderException;
 import org.slf4j.Logger;
@@ -25,10 +25,10 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 public class Authenticate {
 
   public static final Logger LOG = LoggerFactory.getLogger(Authenticate.class);
-  private final LoggedInUserStore loggedInUserStore;
+  private final LoggedInUsers loggedInUsers;
 
-  public Authenticate(LoggedInUserStore loggedInUserStore) {
-    this.loggedInUserStore = loggedInUserStore;
+  public Authenticate(LoggedInUsers loggedInUsers) {
+    this.loggedInUsers = loggedInUsers;
   }
 
   @POST
@@ -40,7 +40,7 @@ public class Authenticate {
       BasicAuthorizationHeaderParser.Credentials credentials = BasicAuthorizationHeaderParser
         .parse(encodedAuthString);
 
-      Optional<String> token = loggedInUserStore.userTokenFor(credentials.getUsername(), credentials.getPassword());
+      Optional<String> token = loggedInUsers.userTokenFor(credentials.getUsername(), credentials.getPassword());
       if (token.isPresent()) {
         return Response.noContent().header("X_AUTH_TOKEN", token.get()).build();
       } else {
