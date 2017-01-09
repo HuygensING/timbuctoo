@@ -6,6 +6,8 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
+
 public class RdfIndexChangeListener implements ChangeListener {
 
   private final IndexHandler indexHandler;
@@ -16,13 +18,17 @@ public class RdfIndexChangeListener implements ChangeListener {
 
   @Override
   public void onCreate(Collection collection, Vertex vertex) {
-    indexHandler.addVertexToRdfIndex(collection.getVre(), vertex.value("rdfUri"), vertex);
+    getProp(vertex, "rdfUri", String.class).ifPresent(uri -> {
+      indexHandler.addVertexToRdfIndex(collection.getVre(), uri, vertex);
+    });
   }
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
     oldVertex.ifPresent(vertex -> indexHandler.removeFromRdfIndex(collection.getVre(), vertex));
-    indexHandler.addVertexToRdfIndex(collection.getVre(), newVertex.value("rdfUri"), newVertex);
+    getProp(newVertex, "rdfUri", String.class).ifPresent(uri -> {
+      indexHandler.addVertexToRdfIndex(collection.getVre(), uri, newVertex);
+    });
   }
 
   @Override
