@@ -43,7 +43,7 @@ public class RmlExecutorService {
 
   public void execute(Consumer<String> statusUpdate) {
     transactionEnforcer.execute(timbuctooActions -> {
-      timbuctooActions.setVrePublishState(vreName, Vre.PublishStates.MAPPING_EXECUTION);
+      timbuctooActions.setVrePublishState(vreName, Vre.PublishState.MAPPING_EXECUTION);
 
       timbuctooActions.rdfCleanImportSession(vreName, session -> {
         final TripleImporter importer = new TripleImporter(graphWrapper, vreName, session);
@@ -95,7 +95,6 @@ public class RmlExecutorService {
 
         return commit();
       });
-
       return commit();
     });
     vres.reload();//FIXME naar importSession.close can be done when the Vres are retrieved via TimbuctooActions

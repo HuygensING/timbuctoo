@@ -268,7 +268,7 @@ public class TimbuctooActions implements AutoCloseable {
     }
   }
 
-  public void setVrePublishState(String vreName, Vre.PublishStates publishState) {
+  public void setVrePublishState(String vreName, Vre.PublishState publishState) {
     dataStoreOperations.setVrePublishState(vreName, publishState);
   }
 
