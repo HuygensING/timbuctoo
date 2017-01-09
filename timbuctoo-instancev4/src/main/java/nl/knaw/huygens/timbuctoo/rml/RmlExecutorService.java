@@ -43,6 +43,8 @@ public class RmlExecutorService {
 
   public void execute(Consumer<String> statusUpdate) {
     transactionEnforcer.execute(timbuctooActions -> {
+      timbuctooActions.setVrePublishState(vreName, Vre.PublishStates.MAPPING_EXECUTION);
+
       timbuctooActions.rdfCleanImportSession(vreName, session -> {
         final TripleImporter importer = new TripleImporter(graphWrapper, vreName, session);
 

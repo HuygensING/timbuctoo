@@ -157,7 +157,7 @@ public class ChangeListenerTest {
       "saveRmlMappingState",
       "setAdminCollection",
       "getMappingErrors",
-
+      "setVrePublishState",
       "close",
       "success",
       "rollback",
