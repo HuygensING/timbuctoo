@@ -13,7 +13,7 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;

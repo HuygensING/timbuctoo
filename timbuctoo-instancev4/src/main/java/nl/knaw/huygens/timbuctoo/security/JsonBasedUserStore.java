@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

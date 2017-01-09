@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users;
 
 
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -22,7 +23,7 @@ public class Me {
 
   @GET
   public Response get(@HeaderParam("Authorization") String authHeader) {
-    Optional<nl.knaw.huygens.timbuctoo.security.User> user = loggedInUserStore.userFor(authHeader);
+    Optional<User> user = loggedInUserStore.userFor(authHeader);
     if (user.isPresent()) {
       return Response.ok().entity(user.get()).build();
 

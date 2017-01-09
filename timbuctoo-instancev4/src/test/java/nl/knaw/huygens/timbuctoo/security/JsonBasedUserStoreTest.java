@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;

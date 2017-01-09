@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;

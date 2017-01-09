@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.security.client.MockAuthenticationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.junit.Before;
 import org.junit.Rule;

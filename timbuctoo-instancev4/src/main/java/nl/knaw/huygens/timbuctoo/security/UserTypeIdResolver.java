@@ -5,8 +5,9 @@ import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.impl.TypeIdResolverBase;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 
-class UserTypeIdResolver extends TypeIdResolverBase {
+public class UserTypeIdResolver extends TypeIdResolverBase {
   public static final String TYPENAME = "user";
   public static final JavaType JAVA_TYPE = TypeFactory.defaultInstance().uncheckedSimpleType(User.class);
 

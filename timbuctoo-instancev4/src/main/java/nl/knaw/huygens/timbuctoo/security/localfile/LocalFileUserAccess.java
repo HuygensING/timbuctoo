@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 
 import java.io.IOException;
 import java.nio.file.Path;

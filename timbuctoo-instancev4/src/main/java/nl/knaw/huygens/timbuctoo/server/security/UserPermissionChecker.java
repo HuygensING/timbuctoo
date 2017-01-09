@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import org.slf4j.LoggerFactory;
 

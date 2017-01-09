@@ -5,6 +5,7 @@ import com.google.common.cache.CacheBuilder;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

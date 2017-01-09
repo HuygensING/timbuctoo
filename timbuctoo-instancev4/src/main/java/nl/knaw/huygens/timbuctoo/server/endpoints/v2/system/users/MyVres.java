@@ -8,9 +8,9 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 
 import javax.ws.rs.GET;

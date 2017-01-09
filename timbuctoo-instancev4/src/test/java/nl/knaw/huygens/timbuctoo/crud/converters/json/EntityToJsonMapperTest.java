@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.converters.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import org.junit.Before;
 import org.junit.Test;
