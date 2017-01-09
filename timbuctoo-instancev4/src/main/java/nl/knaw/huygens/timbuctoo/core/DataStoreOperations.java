@@ -22,11 +22,14 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import java.io.IOException;
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface DataStoreOperations extends AutoCloseable {
   void clearMappingErrors(Vre vre);
+
+  Map<String, Map<String, String>> getMappingErrors(String vreName);
 
   boolean hasMappingErrors(String vreName);
 

@@ -73,6 +73,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -84,6 +85,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
@@ -275,11 +277,15 @@ public class TinkerPopOperations implements DataStoreOperations {
     }
   }
 
+  private GraphTraversal<Vertex, Vertex> getMappingErrorsTraversal(String vreName) {
+    return getRawCollectionsTraversal(vreName)
+      .repeat(__.out(HAS_NEXT_ERROR))
+      .emit();
+  }
+
   @Override
   public void clearMappingErrors(Vre vre) {
-    getRawCollectionsTraversal(vre.getVreName())
-      .emit()
-      .repeat(__.out(HAS_NEXT_ERROR))
+    getMappingErrorsTraversal(vre.getVreName())
       .forEachRemaining(vertex -> {
         vertex.edges(Direction.IN, HAS_NEXT_ERROR).forEachRemaining(Edge::remove);
         vertex.properties().forEachRemaining(property -> {
@@ -290,6 +296,35 @@ public class TinkerPopOperations implements DataStoreOperations {
       });
   }
 
+  @Override
+  public Map<String, Map<String, String>> getMappingErrors(String vreName) {
+    Map<String, Map<String, String>> result = new HashMap<>();
+    getMappingErrorsTraversal(vreName).forEachRemaining(vertex -> {
+      Map<String, String> errors = new HashMap<>();
+      vertex.properties().forEachRemaining(p -> {
+        if (p.key().startsWith(ERROR_PREFIX)) {
+          try {
+            errors.put(p.key().substring(ERROR_PREFIX.length()), (String) p.value());
+          } catch (ClassCastException e) {
+            LOG.error("Raw entity error was not a String", e);
+            errors.put(p.key().substring(ERROR_PREFIX.length()), "Unknown error");
+          }
+        }
+      });
+      if (!errors.isEmpty()) {
+        try {
+          result.put(vertex.value("tim_id"), errors);
+        } catch (ClassCastException e) {
+          LOG.error("tim_id was not a String", e);
+          errors.put(vertex.id() + "", "Unknown error");
+        } catch (NoSuchElementException e) {
+          LOG.error("vertex " + vertex.id() + " does not have a tim_id", e);
+          errors.put(vertex.id() + "", "Unknown error");
+        }
+      }
+    });
+    return result;
+  }
 
   private GraphTraversal<Vertex, Vertex> getRawCollectionsTraversal(String vreName) {
     return traversal.V()
@@ -300,7 +335,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public boolean hasMappingErrors(String vreName) {
-    return getRawCollectionsTraversal(vreName).outE(HAS_NEXT_ERROR).hasNext();
+    return getMappingErrorsTraversal(vreName).hasNext();
   }
 
   @Override
@@ -477,7 +512,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public List<RelationType> getRelationTypes() {
     return traversal.V().has(T.label, LabelP.of("relationtype")).toList().stream()
-                    .map(RelationType::relationType).collect(Collectors.toList());
+                    .map(RelationType::relationType).collect(toList());
   }
 
 

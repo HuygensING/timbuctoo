@@ -33,6 +33,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
@@ -153,6 +154,15 @@ public class ExecuteRml {
             transactionEnforcer.execute(timbuctooActions -> {
               try {
                 if (timbuctooActions.hasMappingErrors(vreName)) {
+                  if (LOG.isDebugEnabled()) {
+                    Map<String, Map<String, String>> mappingErrors = timbuctooActions.getMappingErrors(vreName);
+                    for (Map.Entry<String, Map<String, String>> vertex : mappingErrors.entrySet()) {
+                      LOG.debug(vertex.getKey());
+                      for (Map.Entry<String, String> error : vertex.getValue().entrySet()) {
+                        LOG.debug("  " + error.getKey() + ": " + error.getValue());
+                      }
+                    }
+                  }
                   output.write("failure");
                 } else {
                   output.write("success");

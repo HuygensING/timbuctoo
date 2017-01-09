@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
@@ -235,6 +236,10 @@ public class TimbuctooActions implements AutoCloseable {
 
   public boolean hasMappingErrors(String vreName) {
     return dataStoreOperations.hasMappingErrors(vreName);
+  }
+
+  public Map<String, Map<String, String>> getMappingErrors(String vreName) {
+    return dataStoreOperations.getMappingErrors(vreName);
   }
 
   public void ensureVreExists(String vreName) {
