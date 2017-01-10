@@ -94,6 +94,8 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_ITEM_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_PROPERTY_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
 import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_ENTITIES_LABEL;
@@ -855,7 +857,57 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void deleteVre(String vreName) {
+    final GraphTraversal<Vertex, Vertex> vreT = traversal
+      .V()
+      .hasLabel(Vre.DATABASE_LABEL)
+      .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
 
+
+    if (vreT.hasNext()) {
+      final Vre vre = loadVres().getVre(vreName);
+      final Vertex vreV = vreT.next();
+
+      vre.getCollections().forEach((collectionName, collection) -> {
+        indexHandler.deleteQuicksearchIndex(collection);
+      });
+      // TODO per vertex: remove from tim_id index and from rdfUri index
+      removeAllRawCollections(vreV);
+      removeAllCollectionsAndEntities(vreV);
+      vreV.remove();
+
+      loadVres().reload();
+    }
+
+  }
+
+  private void removeAllRawCollections(Vertex vreV) {
+    traversal.V(vreV.id())
+             .out(RAW_COLLECTION_EDGE_NAME)
+             .union(
+               __.out(RAW_ITEM_EDGE_NAME),
+               __.out(RAW_PROPERTY_EDGE_NAME),
+               __.identity() //the collection
+             )
+             .drop()
+             .toList();//force traversal and thus side-effects
+  }
+
+  private void removeAllCollectionsAndEntities(Vertex vreV) {
+    traversal
+      .V(vreV.id())
+      .out(HAS_COLLECTION_RELATION_NAME)
+      .union(
+        __.out(HAS_DISPLAY_NAME_RELATION_NAME),
+        __.out(HAS_PROPERTY_RELATION_NAME),
+        __.out(HAS_ENTITY_NODE_RELATION_NAME)
+          .union(
+            __.out(HAS_ENTITY_RELATION_NAME), //the entities
+            __.identity() //the entityNodes container
+          ),
+        __.identity() //the collection
+      )
+      .drop()
+      .toList();//force traversal and thus side-effects
   }
 
   @Override

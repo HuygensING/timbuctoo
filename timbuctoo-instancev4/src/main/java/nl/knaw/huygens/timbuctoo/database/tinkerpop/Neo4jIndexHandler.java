@@ -175,6 +175,11 @@ public class Neo4jIndexHandler implements IndexHandler {
     rdfIndex.remove(neo4jNode, "Admin");
   }
 
+  @Override
+  public void deleteQuicksearchIndex(Collection collection) {
+    Index<Node> index = getQuickSearchIndex(collection);
+    index.delete();
+  }
   //=====================Edge tim_id index=====================
   @Override
   public Optional<Edge> findEdgeById(UUID edgeId) {
