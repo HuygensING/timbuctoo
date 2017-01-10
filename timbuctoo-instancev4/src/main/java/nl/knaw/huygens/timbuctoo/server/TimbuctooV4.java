@@ -24,7 +24,6 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
-import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
@@ -65,9 +64,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
@@ -87,7 +84,6 @@ import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static nl.knaw.huygens.timbuctoo.handle.HandleAdder.HANDLE_QUEUE;
@@ -168,7 +164,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     if (tinkerPopConfig == null) {
       tinkerPopConfig = new TinkerPopConfig();
       tinkerPopConfig.setDatabasePath(configuration.getDatabasePath());
-      tinkerPopConfig.setExecuteDatabaseInvariantCheckAt(configuration.getExecuteDatabaseInvariantCheckAt());
     }
     final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
@@ -208,14 +203,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       );
 
     environment.lifecycle().manage(graphManager);
-    // database validator
-    final BackgroundRunner<ValidationResult> databaseValidationRunner = setUpDatabaseValidator(
-      tinkerPopConfig,
-      environment,
-      vres,
-      graphManager, // graphWaiter
-      graphManager // graphManager
-    );
 
     final CrudServiceFactory crudServiceFactory = new CrudServiceFactory(
       vres,
@@ -281,16 +268,31 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getUserCreator(),
       securityConfig.getVreAuthorizationCreator()
     )));
-    environment.admin().addTask(new DatabaseValidationTask(
-      databaseValidationRunner,
-      getDatabaseValidator(vres, graphManager),
-      graphManager
-    ));
+
+    environment.admin().addTask(
+      new DatabaseValidationTask(
+        new DatabaseValidator(
+          graphManager,
+          new LabelsAddedToVertexDatabaseCheck(),
+          new InvariantsCheck(vres),
+          new FullTextIndexCheck()
+        ),
+        Clock.systemUTC(),
+        5000
+      )
+    );
     environment.admin().addTask(new DbLogCreatorTask(graphManager));
 
     // register health checks
+    // Dropwizard Health checks are used to check whether requests should be routed to this instance
+    // For example, checking if neo4j is in a valid state is not a "HealthCheck" because if the database on one instance
+    // is in an invalid state, then this applies to all other instances too. So once the database is in an invalid state
+    // timbuctoo will be down.
+    //
+    // checking whether this instance is part of the neo4j quorum is a good HealthCheck because running a database query
+    // on those instances that are not part of the quorum will block forever, while the other instances will respond
+    // just fine.
     register(environment, "Neo4j database connection", graphManager);
-    register(environment, "Database", new DatabaseHealthCheck(databaseValidationRunner));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
@@ -314,47 +316,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }));
 
     setupObjectMapping(environment);
-  }
-
-  private BackgroundRunner<ValidationResult> setUpDatabaseValidator(TinkerPopConfig configuration,
-                                                                    Environment environment, Vres vres,
-                                                                    GraphWaiter graphWaiter,
-                                                                    TinkerPopGraphManager graphManager) {
-
-    final ScheduledExecutorService executor = environment.lifecycle()
-                                                         .scheduledExecutorService("databaseCheckExecutor")
-                                                         .build();
-
-    final int executeCheckAt = configuration.getExecuteDatabaseInvariantCheckAt();
-    final Clock clock = Clock.systemDefaultZone();
-    BackgroundRunner<ValidationResult> healthCheckRunner = new BackgroundRunner<>(executeCheckAt, clock, executor);
-
-    if (executeCheckAt >= 0) {
-      DatabaseValidator databaseValidator = getDatabaseValidator(vres, graphManager);
-
-      graphWaiter.onGraph(graph -> {
-        healthCheckRunner.start(() -> {
-          final ValidationResult result = databaseValidator.check(graph);
-          if (result.isValid()) {
-            LOG.info("Databasevalidator indicates that the database is valid");
-          } else {
-            LOG.error(Logmarkers.databaseInvariant, result.getMessage());
-          }
-          return result;
-        });
-      });
-    } else {
-      LOG.error("Database invariant check will not run because executeDatabaseInvariantCheckAt is {}.", executeCheckAt);
-    }
-    return healthCheckRunner;
-  }
-
-  private DatabaseValidator getDatabaseValidator(Vres vres, TinkerPopGraphManager graphManager) {
-    return new DatabaseValidator(
-      new LabelsAddedToVertexDatabaseCheck(),
-      new InvariantsCheck(vres),
-      new FullTextIndexCheck(graphManager)
-    );
   }
 
   private void setupObjectMapping(Environment environment) {
