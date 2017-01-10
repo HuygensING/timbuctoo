@@ -286,6 +286,10 @@ public class TimbuctooActions implements AutoCloseable {
     return dataStoreOperations.getVreImageBlob(vreName);
   }
 
+  public void deleteVre(String vreName) {
+    dataStoreOperations.deleteVre(vreName);
+  }
+
   //================== Inner classes ==================
   @FunctionalInterface
   public interface TimbuctooActionsFactory {

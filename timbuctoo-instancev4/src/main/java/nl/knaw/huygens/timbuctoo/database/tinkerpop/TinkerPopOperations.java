@@ -854,6 +854,11 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
+  public void deleteVre(String vreName) {
+
+  }
+
+  @Override
   public void removeCollectionsAndEntities(Vre vre) {
     traversal
       .V()

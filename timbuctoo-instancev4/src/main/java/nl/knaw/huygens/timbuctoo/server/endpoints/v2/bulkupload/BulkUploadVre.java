@@ -20,6 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -144,6 +145,22 @@ public class BulkUploadVre {
         return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST).build());
       }
     });
+  }
+
+  @DELETE
+  @Produces(APPLICATION_JSON)
+  public Response delete(@PathParam("vre") String vreName, @HeaderParam("Authorization") String authorizationHeader) {
+    Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
+
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
+    }
+
+    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+      timbuctooActions.deleteVre(vreName);
+      return TransactionStateAndResult.commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
+    });
+
   }
 
   @POST
