@@ -256,7 +256,7 @@ public class Neo4JIndexHandlerTest {
   }
 
   @Test
-  public void findByIdReturnAnEmptyTraversalWhenNoResultsreFound() {
+  public void findByIdReturnsAnEmptyTraversalWhenNoResultsAreFound() {
     UUID id1 = UUID.randomUUID();
     TinkerPopGraphManager tinkerPopGraphManager = newGraph()
       .withVertex(v -> v
