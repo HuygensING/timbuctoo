@@ -14,6 +14,7 @@ RUN gem install bundler
 
 RUN mkdir -p /root/app
 COPY . /root/app
+RUN cd /root/app/federated-indexer; bundle install
 
 # make changes below for multi-collection search
 
