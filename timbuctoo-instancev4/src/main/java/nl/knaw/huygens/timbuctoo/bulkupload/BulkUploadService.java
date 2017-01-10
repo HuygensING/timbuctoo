@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.function.Consumer;
 
@@ -24,7 +25,7 @@ public class BulkUploadService {
     this.graphwrapper = graphwrapper;
   }
 
-  public void saveToDb(String vreName, byte[] file, String fileName, String vreLabel,
+  public void saveToDb(String vreName, File file, String fileName, String vreLabel,
                        Consumer<String> statusUpdate)
     throws InvalidFileException, IOException {
 
