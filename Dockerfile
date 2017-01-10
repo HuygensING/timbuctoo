@@ -1,4 +1,4 @@
-FROM maven:3.3-jdk-8
+FROM huygensing/timbuctoo:build-base
 
 ENV BASE_URI=http://localhost:8080
 ENV TIMBUCTOO_SEARCH_URL=http://localhost:8082
@@ -10,9 +10,6 @@ RUN mkdir -p /data/database
 RUN echo "[]" > /data/auth/logins.json
 RUN echo "[]" > /data/auth/users.json
 
-#FIXME do a mvn go-offline step using only the poms and delete them so that we can use that image as the base
-#this will improve build times dramatically and reduce the size of the image
-
 COPY ./ContractDiff ./ContractDiff
 COPY ./HttpCommand ./HttpCommand
 COPY ./security-client-agnostic ./security-client-agnostic
@@ -21,9 +18,9 @@ COPY ./timbuctoo-instancev4/src ./timbuctoo-instancev4/src
 COPY ./timbuctoo-instancev4/pom.xml ./timbuctoo-instancev4/pom.xml
 COPY ./pom.xml ./pom.xml
 
-# FIXME: remove the build-script generation steps and make this mvn clean install
-# then have the launch script use the jar from the local maven repo. This will save unnecessary package
-# copying which will keep the size of the image down
+# FIXME: do a maven install and then run appassembler with generateRepository=false and specify /root/.m2 as the REPO
+# variable
+# This will save unnecessary package copying from the local repository to the target folder. Making the image smaller
 RUN mvn clean package
 
 COPY ./timbuctoo-instancev4/docker_config.yaml ./timbuctoo-instancev4/docker_config.yaml
