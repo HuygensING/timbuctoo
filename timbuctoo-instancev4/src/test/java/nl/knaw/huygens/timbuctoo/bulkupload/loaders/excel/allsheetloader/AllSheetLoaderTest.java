@@ -4,25 +4,24 @@ import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImporterStubs;
 import org.junit.Test;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.google.common.io.ByteStreams.toByteArray;
-
 public class AllSheetLoaderTest {
 
   @Test
-  public void importExcel() {
-    InputStream excelFile = AllSheetLoaderTest.class.getResourceAsStream("test.xlsx");
+  public void importExcel() throws Exception {
+    URL excelFileUrl = AllSheetLoaderTest.class.getResource("test.xlsx");
+    File excelFile = new File(excelFileUrl.toURI());
 
     AllSheetLoader instance = new AllSheetLoader();
     try {
       List<String> results = new ArrayList<>();
       AtomicBoolean failure = new AtomicBoolean(false);
-      instance.loadData(toByteArray(excelFile), ImporterStubs.withCustomReporter(logline -> {
+      instance.loadData(excelFile, ImporterStubs.withCustomReporter(logline -> {
         if (logline.matches("failure.*")) {
           failure.set(true);
         }
@@ -31,7 +30,7 @@ public class AllSheetLoaderTest {
       if (failure.get()) {
         throw new RuntimeException("Failure during import: \n" + String.join("\n", results));
       }
-    } catch (InvalidFileException | IOException e) {
+    } catch (InvalidFileException e) {
       throw new RuntimeException(e);
     }
   }

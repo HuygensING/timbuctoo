@@ -14,8 +14,10 @@ import org.slf4j.Logger;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -35,11 +37,10 @@ public class DataPerfectLoader implements Loader {
   private final Map<String, Integer> genericNameCounters = new HashMap<>();
 
   @Override
-  public void loadData(byte[] source, Importer importer)
-    throws InvalidFileException, IOException {
+  public void loadData(File file, Importer importer) throws InvalidFileException, IOException {
     Database dbPerfectdb = null;
     try {
-      File output = writeZipToTempDir(source);
+      File output = writeZipToTempDir(file);
 
       File dirWithDb = unwrapToplevelDirIfNeeded(output);
       File structureFile = getStructureFile(dirWithDb);
@@ -128,9 +129,9 @@ public class DataPerfectLoader implements Loader {
     return dirWithDb;
   }
 
-  private File writeZipToTempDir(byte[] source) throws IOException, InvalidFileException {
+  private File writeZipToTempDir(File source) throws IOException, InvalidFileException {
     File output = createTempDir();
-    try (ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(source))) {
+    try (ZipInputStream zis = new ZipInputStream(new FileInputStream(source))) {
       ZipEntry ze;
       byte[] buffer = new byte[1024];
       try {

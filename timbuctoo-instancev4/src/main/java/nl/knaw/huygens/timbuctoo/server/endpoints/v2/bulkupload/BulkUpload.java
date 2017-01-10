@@ -5,11 +5,11 @@ import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -25,15 +25,16 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.google.common.io.ByteStreams.limit;
-import static com.google.common.io.ByteStreams.toByteArray;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.MAPPING_EXECUTION;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.UPLOADING;
+import static org.apache.poi.util.IOUtils.copy;
 
 @Path("/v2.1/bulk-upload")
 public class BulkUpload {
@@ -85,8 +86,12 @@ public class BulkUpload {
         }
 
         try {
-          byte[] bytes = getUploadedBytes(fileUpload);
-          final ChunkedOutput<String> output = executeUpload(fileDetails, unNamespacedVreName, namespacedVre, bytes);
+          final ChunkedOutput<String> output = executeUpload(
+            fileDetails,
+            unNamespacedVreName,
+            namespacedVre,
+            fileUpload
+          );
           // the output will be probably returned even before
           // a first chunk is written by the new thread
           return Response.ok()
@@ -139,9 +144,12 @@ public class BulkUpload {
       }
 
       try {
-        byte[] bytes = getUploadedBytes(fileUpload);
-
-        final ChunkedOutput<String> output = executeUpload(fileDetails, vre.getMetadata().getLabel(), vreName, bytes);
+        final ChunkedOutput<String> output = executeUpload(
+          fileDetails,
+          vre.getMetadata().getLabel(),
+          vreName,
+          fileUpload
+        );
         return TransactionStateAndResult.commitAndReturn(
           Response.ok()
                   .location(bulkUploadVre.createUri(vreName))
@@ -165,13 +173,18 @@ public class BulkUpload {
 
   private ChunkedOutput<String> executeUpload(@FormDataParam("file") final FormDataContentDisposition fileDetails,
                                               final String vreLabel, final String vreName,
-                                              final byte[] bytes) {
+                                              final InputStream inputStream) throws IOException {
     final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
     final AtomicInteger writeErrors = new AtomicInteger(0);
+
+    File tempFile = File.createTempFile(fileDetails.getName(), null, null);
+    FileOutputStream fos = new FileOutputStream(tempFile);
+    copy(inputStream, fos);
+
     new Thread() {
       public void run() {
         try {
-          uploadService.saveToDb(vreName, bytes, fileDetails.getFileName(), vreLabel, msg -> {
+          uploadService.saveToDb(vreName, tempFile, fileDetails.getFileName(), vreLabel, msg -> {
             try {
               //write json objects
               if (writeErrors.get() < 5) {
@@ -203,27 +216,8 @@ public class BulkUpload {
     return output;
   }
 
-  private byte[] getUploadedBytes(InputStream fileUpload) throws IOException {
-    byte[] bytes;
-    bytes = toByteArray(limit(fileUpload, maxCache));
-    if (fileUpload.read() != -1) {
-      throw new IllegalArgumentException("The file may not be larger than " +
-        humanReadableByteCount(maxCache) + " bytes");
-    }
-    return bytes;
-  }
-
   private String stripFunnyCharacters(String vre) {
     return vre.replaceFirst("\\.[a-zA-Z]+$", "").replaceAll("[^a-zA-Z-]", "_");
   }
 
-  private String humanReadableByteCount(long bytes) {
-    int unit = 1024;
-    if (bytes < unit) {
-      return bytes + " B";
-    }
-    int exp = (int) (Math.log(bytes) / Math.log(unit));
-    String pre = ("KMGTPE").charAt(exp - 1) + "iB";
-    return String.format("%.2f %s", bytes / Math.pow(unit, exp), pre);
-  }
 }
