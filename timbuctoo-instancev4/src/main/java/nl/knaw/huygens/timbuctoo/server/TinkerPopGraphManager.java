@@ -42,6 +42,7 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
 
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
 
+  private String lastHealthCheckLog = "";
   private final TinkerPopConfig configuration;
   private final LinkedHashMap<String, DatabaseMigration> migrations;
   protected final List<Consumer<Graph>> graphWaitList;
@@ -150,9 +151,24 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
         .append(configuration.getHaconfig().getServerId())
         .append(":\n");
       haDb.getDependencyResolver().resolveDependency(ClusterMembers.class).getMembers().forEach(member -> {
-        logMessage.append("  ").append(member).append("\n");
+        logMessage.append("  member ").append(member.getInstanceId()).append(": ")
+          .append("alive=").append(member.isAlive()).append(", ");
+        if (member.getStoreId() != null) {
+          logMessage.append("storeVersion=").append(member.getStoreId().getStoreVersion()).append(", ");
+        }
+        if (member.getRoles() != null) {
+          logMessage.append("roles=");
+          member.getRoles().forEach(role -> {
+            logMessage.append(role).append("; ");
+          });
+        }
+        logMessage.append("\n");
       });
-      LOG.info(logMessage.toString());
+      String logMessageStr = logMessage.toString();
+      if (!lastHealthCheckLog.equals(logMessageStr)) {
+        lastHealthCheckLog = logMessageStr;
+        LOG.info(logMessageStr);
+      }
     }
 
     /*
