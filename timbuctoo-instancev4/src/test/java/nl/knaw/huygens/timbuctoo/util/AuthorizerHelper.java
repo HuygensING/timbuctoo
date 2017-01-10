@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.util;
 
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 
 import static nl.knaw.huygens.timbuctoo.util.CollectionMatcher.likeCollection;

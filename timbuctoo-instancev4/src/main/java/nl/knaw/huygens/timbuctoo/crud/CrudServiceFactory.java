@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.crud;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudService;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 
 public class CrudServiceFactory {
@@ -12,7 +11,7 @@ public class CrudServiceFactory {
   private final UserStore userStore;
   private final UrlGenerator relationUrlFor;
 
-  public CrudServiceFactory(Vres vres, JsonBasedUserStore userStore, UrlGenerator relationUrlFor) {
+  public CrudServiceFactory(Vres vres, UserStore userStore, UrlGenerator relationUrlFor) {
     this.vres = vres;
     this.userStore = userStore;
     this.relationUrlFor = relationUrlFor;

@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
+
 import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -24,7 +27,7 @@ public class UserStoreMockBuilder {
   }
 
   public UserStoreMockBuilder withUserFor(String pid) throws AuthenticationUnavailableException {
-    when(userStore.userFor(pid)).thenReturn(Optional.of(new User()));
+    when(userStore.userFor(pid)).thenReturn(Optional.of(User.create("", "")));
     return this;
   }
 

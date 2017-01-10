@@ -13,28 +13,25 @@ import io.dropwizard.java8.Java8Bundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
-import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperations;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TransactionFilter;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersEntityGet;
 import nl.knaw.huygens.timbuctoo.handle.HandleAdder;
 import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
-import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthenticator;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedUserStore;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexAllEntityIds;
@@ -67,11 +64,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseHealthCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.EncryptionAlgorithmHealthCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedToVertexDatabaseCheck;
@@ -87,13 +80,10 @@ import org.slf4j.LoggerFactory;
 import javax.management.ObjectName;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ScheduledExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
 import static nl.knaw.huygens.timbuctoo.handle.HandleAdder.HANDLE_QUEUE;
@@ -101,7 +91,6 @@ import static nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil.rethrowConsumer
 
 public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
-  public static final String ENCRYPTION_ALGORITHM = "SHA-256";
   private static final Logger LOG = LoggerFactory.getLogger(TimbuctooV4.class);
   private ActiveMQBundle activeMqBundle;
 
@@ -144,26 +133,25 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
 
     // Support services
-    final AuthenticationHandler authHandler = configuration.getFederatedAuthentication().makeHandler(environment);
-    final Path loginsPath = Paths.get(configuration.getLoginsFilePath());
-    final Path usersPath = Paths.get(configuration.getUsersFilePath());
-    final LoginFileMigration loginFileMigration = new LoginFileMigration();
-
-    // Convert login file
-    if (!loginFileMigration.isConverted(loginsPath)) {
-      LOG.info("Migrating logins file to use byte[] for password property");
-      loginFileMigration.convert(loginsPath);
+    SecurityFactory securityConfig;
+    if (configuration.getSecurityConfiguration() == null) {
+      securityConfig = new SecurityFactory();
+      //map old style to new style. Needed until timbuctoo is migrated away from rpm based releases and we can more
+      //easily update the configuration
+      securityConfig.setLocalfileAccessFactory(new LocalfileAccessFactory(
+        configuration.getAuthorizationsPath().toAbsolutePath().toString(),
+        configuration.getLoginsFilePath(),
+        configuration.getUsersFilePath()
+      ));
+      securityConfig.setAutoLogoutTimeout(configuration.getAutoLogoutTimeout());
+      securityConfig.setAuthHandler(configuration.getFederatedAuthentication().makeHandler(environment));
+    } else {
+      securityConfig = configuration.getSecurityConfiguration();
     }
 
-    JsonBasedUserStore userStore = new JsonBasedUserStore(usersPath);
-    JsonBasedAuthenticator authenticator = new JsonBasedAuthenticator(loginsPath, ENCRYPTION_ALGORITHM);
-    final LoggedInUserStore loggedInUserStore = new LoggedInUserStore(
-      authenticator,
-      userStore,
-      configuration.getAutoLogoutTimeout(),
-      authHandler
-    );
-
+    securityConfig.getHealthChecks().forEachRemaining(check -> {
+      register(environment, check.getLeft(), check.getRight());
+    });
 
     // Database migrations
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
@@ -175,12 +163,15 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
 
-    final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(configuration, migrations);
+    TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
+    if (tinkerPopConfig == null) {
+      tinkerPopConfig = new TinkerPopConfig();
+      tinkerPopConfig.setDatabasePath(configuration.getDatabasePath());
+    }
+    final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
       uriHelper.fromResourceUri(SingleEntity.makeUrl(coll, id, rev));
-
-    JsonBasedAuthorizer authorizer = new JsonBasedAuthorizer(configuration.getAuthorizationsPath());
 
     final UrlGenerator pathWithoutVersionAndRevision =
       (coll, id, rev) -> URI.create(SingleEntity.makeUrl(coll, id, null).toString().replaceFirst("^/v2.1/", ""));
@@ -191,7 +182,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
-      authorizer,
+      securityConfig.getAuthorizer(),
       Clock.systemDefaultZone(),
       handleAdder,
       uriToRedirectToFromPersistentUrls,
@@ -215,30 +206,24 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       );
 
     environment.lifecycle().manage(graphManager);
-    // database validator
-    final BackgroundRunner<ValidationResult> databaseValidationRunner = setUpDatabaseValidator(
-      configuration,
-      environment,
-      vres,
-      graphManager, // graphWaiter
-      graphManager // graphManager
-    );
 
     final CrudServiceFactory crudServiceFactory = new CrudServiceFactory(
       vres,
-      userStore,
+      securityConfig.getUserStore(),
       pathWithoutVersionAndRevision
     );
 
     // register REST endpoints
     register(environment, new RootEndpoint());
     register(environment, new JsEnv(configuration));
-    register(environment, new Authenticate(loggedInUserStore));
-    register(environment, new Me(loggedInUserStore));
+    register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
+    register(environment, new Me(securityConfig.getLoggedInUsers(environment)));
     register(environment, new Search(configuration, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
-    register(environment, new Index(loggedInUserStore, crudServiceFactory, transactionEnforcer));
-    register(environment, new SingleEntity(loggedInUserStore, crudServiceFactory, transactionEnforcer));
+    register(environment,
+      new Index(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
+    register(environment,
+      new SingleEntity(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
@@ -248,7 +233,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
     register(environment, new Graph(graphManager, vres));
     // Bulk upload
-    UserPermissionChecker permissionChecker = new UserPermissionChecker(loggedInUserStore, authorizer);
+    UserPermissionChecker permissionChecker = new UserPermissionChecker(
+      securityConfig.getLoggedInUsers(environment),
+      securityConfig.getAuthorizer()
+    );
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
@@ -261,12 +249,18 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024);
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), bulkUploadVre,
-      loggedInUserStore, authorizer, 20 * 1024 * 1024, permissionChecker, transactionEnforcer));
-
+      securityConfig.getLoggedInUsers(environment), securityConfig.getVreAuthorizationCreator(), 20 * 1024 * 1024,
+      permissionChecker, transactionEnforcer));
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
-    register(environment, new MyVres(loggedInUserStore, authorizer, bulkUploadVre, transactionEnforcer, uriHelper));
+    register(environment, new MyVres(
+      securityConfig.getLoggedInUsers(environment),
+      securityConfig.getAuthorizer(),
+      bulkUploadVre,
+      transactionEnforcer,
+      uriHelper)
+    );
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
 
@@ -274,21 +268,36 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
 
     // Admin resources
-    environment.admin().addTask(new UserCreationTask(new LocalUserCreator(authenticator, userStore, authorizer)));
-    environment.admin().addTask(new DatabaseValidationTask(
-      databaseValidationRunner,
-      getDatabaseValidator(vres, graphManager),
-      graphManager
-    ));
+    environment.admin().addTask(new UserCreationTask(new LocalUserCreator(
+      securityConfig.getLoginCreator(),
+      securityConfig.getUserCreator(),
+      securityConfig.getVreAuthorizationCreator()
+    )));
+
+    environment.admin().addTask(
+      new DatabaseValidationTask(
+        new DatabaseValidator(
+          graphManager,
+          new LabelsAddedToVertexDatabaseCheck(),
+          new InvariantsCheck(vres),
+          new FullTextIndexCheck()
+        ),
+        Clock.systemUTC(),
+        5000
+      )
+    );
     environment.admin().addTask(new DbLogCreatorTask(graphManager));
 
     // register health checks
-    register(environment, "Encryption algorithm", new EncryptionAlgorithmHealthCheck(ENCRYPTION_ALGORITHM));
-    register(environment, "Local logins file", new FileHealthCheck(loginsPath));
-    register(environment, "Users file", new FileHealthCheck(usersPath));
-
+    // Dropwizard Health checks are used to check whether requests should be routed to this instance
+    // For example, checking if neo4j is in a valid state is not a "HealthCheck" because if the database on one instance
+    // is in an invalid state, then this applies to all other instances too. So once the database is in an invalid state
+    // timbuctoo will be down.
+    //
+    // checking whether this instance is part of the neo4j quorum is a good HealthCheck because running a database query
+    // on those instances that are not part of the quorum will block forever, while the other instances will respond
+    // just fine.
     register(environment, "Neo4j database connection", graphManager);
-    register(environment, "Database", new DatabaseHealthCheck(databaseValidationRunner));
 
     //Log all http requests
     register(environment, new LoggingFilter(1024, currentVersion));
@@ -312,47 +321,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }));
 
     setupObjectMapping(environment);
-  }
-
-  private BackgroundRunner<ValidationResult> setUpDatabaseValidator(TimbuctooConfiguration configuration,
-                                                                    Environment environment, Vres vres,
-                                                                    GraphWaiter graphWaiter,
-                                                                    TinkerPopGraphManager graphManager) {
-
-    final ScheduledExecutorService executor = environment.lifecycle()
-                                                         .scheduledExecutorService("databaseCheckExecutor")
-                                                         .build();
-
-    final int executeCheckAt = configuration.getExecuteDatabaseInvariantCheckAt();
-    final Clock clock = Clock.systemDefaultZone();
-    BackgroundRunner<ValidationResult> healthCheckRunner = new BackgroundRunner<>(executeCheckAt, clock, executor);
-
-    if (executeCheckAt >= 0) {
-      DatabaseValidator databaseValidator = getDatabaseValidator(vres, graphManager);
-
-      graphWaiter.onGraph(graph -> {
-        healthCheckRunner.start(() -> {
-          final ValidationResult result = databaseValidator.check(graph);
-          if (result.isValid()) {
-            LOG.info("Databasevalidator indicates that the database is valid");
-          } else {
-            LOG.error(Logmarkers.databaseInvariant, result.getMessage());
-          }
-          return result;
-        });
-      });
-    } else {
-      LOG.error("Database invariant check will not run because executeDatabaseInvariantCheckAt is {}.", executeCheckAt);
-    }
-    return healthCheckRunner;
-  }
-
-  private DatabaseValidator getDatabaseValidator(Vres vres, TinkerPopGraphManager graphManager) {
-    return new DatabaseValidator(
-      new LabelsAddedToVertexDatabaseCheck(),
-      new InvariantsCheck(vres),
-      new FullTextIndexCheck(graphManager)
-    );
   }
 
   private void setupObjectMapping(Environment environment) {

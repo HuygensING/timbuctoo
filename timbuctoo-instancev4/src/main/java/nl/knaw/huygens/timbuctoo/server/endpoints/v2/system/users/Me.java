@@ -1,7 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users;
 
 
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -14,15 +15,15 @@ import java.util.Optional;
 @Path("/v2.1/system/users/me")
 @Produces(MediaType.APPLICATION_JSON)
 public class Me {
-  private final LoggedInUserStore loggedInUserStore;
+  private final LoggedInUsers loggedInUsers;
 
-  public Me(LoggedInUserStore loggedInUserStore) {
-    this.loggedInUserStore = loggedInUserStore;
+  public Me(LoggedInUsers loggedInUsers) {
+    this.loggedInUsers = loggedInUsers;
   }
 
   @GET
   public Response get(@HeaderParam("Authorization") String authHeader) {
-    Optional<nl.knaw.huygens.timbuctoo.security.User> user = loggedInUserStore.userFor(authHeader);
+    Optional<User> user = loggedInUsers.userFor(authHeader);
     if (user.isPresent()) {
       return Response.ok().entity(user.get()).build();
 

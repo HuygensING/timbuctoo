@@ -1,6 +1,9 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -12,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.security.JsonBasedUserStoreStubs.forFile;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,13 +31,12 @@ public class JsonBasedUserStoreTest {
 
   @Before
   public void setUp() throws Exception {
-    User user = new User();
-    user.setPersistentId("pidOfKnownUser");
-    User userWithoutPid = new User();
+    User user = User.create("", "pidOfKnownUser");
+    User userWithoutPid = User.create(null, null);
     User[] users = {user, userWithoutPid};
     OBJECT_MAPPER.writeValue(USERS_FILE.toFile(), users);
 
-    instance = new JsonBasedUserStore(USERS_FILE);
+    instance = forFile(USERS_FILE);
   }
 
   @After
@@ -56,7 +59,8 @@ public class JsonBasedUserStoreTest {
   }
 
   @Test
-  public void userForReturnsAnOptionalWithAUserForAKnownUserWithoutPid() throws AuthenticationUnavailableException {
+  public void ifTheDatabaseContainsOneUserWithNullAsPidThatUserIsReturnedWhenQueryingForNull()
+    throws AuthenticationUnavailableException {
     Optional<User> knownUser = instance.userFor(null);
 
     assertThat(knownUser, is(present()));
@@ -65,7 +69,7 @@ public class JsonBasedUserStoreTest {
   @Test
   public void userForThrowsAnAuthenticationUnavailableExceptionWhenTheUsersFileCannotBeRead()
     throws AuthenticationUnavailableException {
-    JsonBasedUserStore instance = new JsonBasedUserStore(Paths.get("nonExistingUserFile"));
+    JsonBasedUserStore instance = forFile(Paths.get("nonExistingUserFile"));
 
     expectedException.expect(AuthenticationUnavailableException.class);
 
@@ -93,7 +97,7 @@ public class JsonBasedUserStoreTest {
   @Test
   public void createUserThrowsAUserCreationExceptionWhenTheUsersFileCannotBeRead() throws Exception {
     Path nonExistingUsersFile = Paths.get("src", "test", "resources", "users1.json");
-    JsonBasedUserStore instance = new JsonBasedUserStore(nonExistingUsersFile);
+    JsonBasedUserStore instance = forFile(nonExistingUsersFile);
 
     expectedException.expect(UserCreationException.class);
     instance.createUser("pid", "email", "givenName", "surname", "organization");

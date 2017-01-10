@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server;
 
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonParser;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
 import org.apache.tinkerpop.gremlin.structure.io.IoCore;
 import org.neo4j.graphdb.GraphDatabaseService;
@@ -15,7 +16,7 @@ public class TestableTinkerPopGraphManager extends TinkerPopGraphManager {
   private static final Logger LOG = getLogger(TestableTinkerPopGraphManager.class);
 
   public TestableTinkerPopGraphManager(GraphDatabaseService graphDatabaseService, Neo4jGraph graph) {
-    super(new TimbuctooConfiguration(), new LinkedHashMap<>());
+    super(new TinkerPopConfig(), new LinkedHashMap<>());
     this.graphDatabase = graphDatabaseService;
     this.graph = graph;
   }

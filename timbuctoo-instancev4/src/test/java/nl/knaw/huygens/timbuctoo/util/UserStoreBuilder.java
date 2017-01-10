@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.util;
 
-import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 
 import java.util.Optional;

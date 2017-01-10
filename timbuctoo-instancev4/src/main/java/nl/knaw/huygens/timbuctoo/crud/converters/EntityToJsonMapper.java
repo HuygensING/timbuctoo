@@ -4,16 +4,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
+import com.google.common.base.Strings;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.security.AuthenticationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.neo4j.helpers.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +96,7 @@ public class EntityToJsonMapper {
       mappedEntity.set(convertedProperty.getLeft(), convertedProperty.getRight());
     });
 
-    if (!Strings.isBlank(entity.getDisplayName())) {
+    if (!Strings.isNullOrEmpty(entity.getDisplayName())) {
       mappedEntity.set("@displayName", jsn(entity.getDisplayName()));
     }
 

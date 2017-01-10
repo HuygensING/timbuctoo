@@ -5,10 +5,10 @@ import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationCreationException;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
-import nl.knaw.huygens.timbuctoo.security.UserRoles;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -41,18 +41,18 @@ public class BulkUpload {
   public static final Logger LOG = LoggerFactory.getLogger(BulkUpload.class);
   private final BulkUploadService uploadService;
   private final BulkUploadVre bulkUploadVre;
-  private final LoggedInUserStore loggedInUserStore;
+  private final LoggedInUsers loggedInUsers;
   private final VreAuthorizationCreator authorizationCreator;
   private final int maxCache;
   private final UserPermissionChecker permissionChecker;
   private final TransactionEnforcer transactionEnforcer;
 
   public BulkUpload(BulkUploadService uploadService, BulkUploadVre bulkUploadVre,
-                    LoggedInUserStore loggedInUserStore, VreAuthorizationCreator authorizationCreator, int maxCache,
+                    LoggedInUsers loggedInUsers, VreAuthorizationCreator authorizationCreator, int maxCache,
                     UserPermissionChecker permissionChecker, TransactionEnforcer transactionEnforcer) {
     this.uploadService = uploadService;
     this.bulkUploadVre = bulkUploadVre;
-    this.loggedInUserStore = loggedInUserStore;
+    this.loggedInUsers = loggedInUsers;
     this.authorizationCreator = authorizationCreator;
     this.maxCache = maxCache;
     this.permissionChecker = permissionChecker;
@@ -70,7 +70,7 @@ public class BulkUpload {
     if (fileUpload == null) {
       return Response.status(Response.Status.BAD_REQUEST).entity("The file is missing").build();
     } else {
-      Optional<User> user = loggedInUserStore.userFor(authorization);
+      Optional<User> user = loggedInUsers.userFor(authorization);
       if (!user.isPresent()) {
         return Response.status(Response.Status.FORBIDDEN).entity("User not known").build();
       } else {

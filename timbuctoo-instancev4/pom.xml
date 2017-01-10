@@ -135,6 +135,7 @@
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
     <jsonld-java.version>0.8.3</jsonld-java.version>
+    <neo4j.version>3.0.3</neo4j.version>
   </properties>
 
   <dependencies>
@@ -192,7 +193,7 @@
     <dependency>
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-      <version>0.3-2.3.0</version>
+      <version>0.4-${neo4j.version}</version>
     </dependency>
 
     <!-- ### handle ids ## -->
@@ -281,6 +282,14 @@
       <version>${huygens.security.version}</version>
     </dependency>
 
+    <!--Azure libraries for using azure services when running there -->
+    <dependency>
+      <groupId>com.microsoft.azure</groupId>
+      <artifactId>azure-storage</artifactId>
+      <version>4.0.0</version>
+    </dependency>
+
+
     <!-- ### RDF ## -->
     <!-- Apache Jena -->
     <dependency>
@@ -297,7 +306,16 @@
       <version>2.2.12</version>
       <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-guava</artifactId>
+      <version>2.6.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jdk8</artifactId>
+      <version>2.6.3</version>
+    </dependency>
     <!-- ### Std lib additions ## -->
     <!-- Guava -->
     <dependency>
@@ -373,18 +391,27 @@
     <dependency>
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-kernel</artifactId>
-      <version>2.3.1</version>
+      <version>${neo4j.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-io</artifactId>
-      <version>2.3.1</version>
+      <version>${neo4j.version}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-ha</artifactId>
+      <version>${neo4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.neo4j</groupId>
+      <artifactId>neo4j-slf4j</artifactId>
+      <version>${neo4j.version}</version>
+    </dependency>
     <!-- Timbuctoo test services for easy creation of class matchers -->
     <dependency>
       <groupId>nl.knaw.huygens</groupId>

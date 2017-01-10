@@ -1,35 +1,60 @@
 package nl.knaw.huygens.timbuctoo.server.healthchecks;
 
+import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.TestGraphBuilder;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.mockito.InOrder;
+import org.neo4j.graphdb.GraphDatabaseService;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.hamcrest.MockitoHamcrest.argThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class DatabaseValidatorTest {
+
+  @Test
+  public void checkCallsInitAndFinish() {
+    TinkerPopGraphManager graph = makeGraph("1");
+    DatabaseCheck databaseCheck1 = mock(DatabaseCheck.class);
+    DatabaseCheck databaseCheck2 = mock(DatabaseCheck.class);
+
+    DatabaseValidator instance =
+      new DatabaseValidator(graph, databaseCheck1, databaseCheck2);
+
+    instance.check();
+
+    InOrder inOrder = inOrder(databaseCheck1, databaseCheck2);
+    inOrder.verify(databaseCheck1).init(any(Graph.class), any(GraphDatabaseService.class));
+    inOrder.verify(databaseCheck2).init(any(Graph.class), any(GraphDatabaseService.class));
+    inOrder.verify(databaseCheck1).check(any(Vertex.class));
+    inOrder.verify(databaseCheck2).check(any(Vertex.class));
+    inOrder.verify(databaseCheck1).finish();
+    inOrder.verify(databaseCheck2).finish();
+  }
+
 
   @Test
   public void checkRunsAllTheDatabaseChecksForEachVertex() {
     String id1 = "id1";
     String id2 = "id2";
-    Graph graph = makeGraph(id1, id2);
+    TinkerPopGraphManager graph = makeGraph(id1, id2);
     DatabaseCheck databaseCheck1 = mock(DatabaseCheck.class);
     DatabaseCheck databaseCheck2 = mock(DatabaseCheck.class);
 
     DatabaseValidator instance =
-      new DatabaseValidator(databaseCheck1, databaseCheck2);
+      new DatabaseValidator(graph, databaseCheck1, databaseCheck2);
 
-    instance.check(graph);
+    instance.check();
 
     verify(databaseCheck1).check(argThat(likeVertex().withTimId(id1)));
     verify(databaseCheck1).check(argThat(likeVertex().withTimId(id2)));
@@ -39,30 +64,30 @@ public class DatabaseValidatorTest {
 
   @Test
   public void checkReturnsTheValidationResult() {
-    Graph graph = makeGraph("id1", "id2");
-    DatabaseValidator instance = new DatabaseValidator();
+    TinkerPopGraphManager graph = makeGraph("id1", "id2");
+    DatabaseValidator instance = new DatabaseValidator(graph);
 
-    ValidationResult result = instance.check(graph);
+    ValidationResult result = instance.check();
 
     assertThat(result, is(notNullValue()));
   }
 
   @Test
   public void checkReturnsANonValidValidationResultWhenAtLeastOneOfTheChecksFails() {
-    Graph graph = makeGraph("id1", "id2");
-    DatabaseValidator instance = new DatabaseValidator(nonValidDatabaseCheck());
+    TinkerPopGraphManager graph = makeGraph("id1", "id2");
+    DatabaseValidator instance = new DatabaseValidator(graph, nonValidDatabaseCheck());
 
-    ValidationResult validationResult = instance.check(graph);
+    ValidationResult validationResult = instance.check();
 
     assertThat(validationResult.isValid(), is(false));
   }
 
   @Test
   public void checkReturnsAValidValidationResultWhenAllOfTheChecksSucceed() {
-    Graph graph = makeGraph("id", "id2");
-    DatabaseValidator instance = new DatabaseValidator(validDatabaseCheck());
+    TinkerPopGraphManager graph = makeGraph("id", "id2");
+    DatabaseValidator instance = new DatabaseValidator(graph, validDatabaseCheck());
 
-    ValidationResult result = instance.check(graph);
+    ValidationResult result = instance.check();
 
     assertThat(result.isValid(), is(true));
   }
@@ -91,11 +116,11 @@ public class DatabaseValidatorTest {
     return databaseCheck;
   }
 
-  private Graph makeGraph(String... ids) {
+  private TinkerPopGraphManager makeGraph(String... ids) {
     TestGraphBuilder graphBuilder = newGraph();
     for (String id : ids) {
       graphBuilder.withVertex(vertex -> vertex.withTimId(id));
     }
-    return graphBuilder.build();
+    return graphBuilder.wrap();
   }
 }

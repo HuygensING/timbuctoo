@@ -22,6 +22,10 @@ public class FileHealthCheck extends HealthCheck {
       return Result.unhealthy("'%s' is not a regular file.", pathToFile.toAbsolutePath());
     }
 
+    if (!Files.isWritable(pathToFile)) {
+      return Result.unhealthy("'%s' is not writable.", pathToFile.toAbsolutePath());
+    }
+
     return Result.healthy();
 
   }

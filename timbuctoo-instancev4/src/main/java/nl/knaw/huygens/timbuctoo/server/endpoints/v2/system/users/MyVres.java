@@ -5,10 +5,10 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
-import nl.knaw.huygens.timbuctoo.security.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUserStore;
-import nl.knaw.huygens.timbuctoo.security.User;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
@@ -32,15 +32,15 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 @Path("/v2.1/system/users/me/vres")
 public class MyVres {
-  private final LoggedInUserStore loggedInUserStore;
+  private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
   private final BulkUploadVre bulkUploadVre;
   private final TransactionEnforcer transactionEnforcer;
   private final UriHelper uriHelper;
 
-  public MyVres(LoggedInUserStore loggedInUserStore, Authorizer authorizer, BulkUploadVre bulkUploadVre,
+  public MyVres(LoggedInUsers loggedInUsers, Authorizer authorizer, BulkUploadVre bulkUploadVre,
                 TransactionEnforcer transactionEnforcer, UriHelper uriHelper) {
-    this.loggedInUserStore = loggedInUserStore;
+    this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
     this.bulkUploadVre = bulkUploadVre;
     this.transactionEnforcer = transactionEnforcer;
@@ -50,7 +50,7 @@ public class MyVres {
   @GET
   @Produces(APPLICATION_JSON)
   public Response get(@HeaderParam("Authorization") String authorizationHeader) {
-    Optional<User> user = loggedInUserStore.userFor(authorizationHeader);
+    Optional<User> user = loggedInUsers.userFor(authorizationHeader);
 
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
