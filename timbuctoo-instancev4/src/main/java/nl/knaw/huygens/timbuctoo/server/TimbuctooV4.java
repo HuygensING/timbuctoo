@@ -147,7 +147,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.setAuthHandler(configuration.getFederatedAuthentication().makeHandler(environment));
     } else {
       securityConfig = configuration.getSecurityConfiguration();
-      securityConfig.setEnvironment(environment);
     }
 
     // Database migrations
@@ -213,12 +212,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // register REST endpoints
     register(environment, new RootEndpoint());
     register(environment, new JsEnv(configuration));
-    register(environment, new Authenticate(securityConfig.getLoggedInUsers()));
-    register(environment, new Me(securityConfig.getLoggedInUsers()));
+    register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
+    register(environment, new Me(securityConfig.getLoggedInUsers(environment)));
     register(environment, new Search(configuration, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
-    register(environment, new Index(securityConfig.getLoggedInUsers(), crudServiceFactory, transactionEnforcer));
-    register(environment, new SingleEntity(securityConfig.getLoggedInUsers(), crudServiceFactory, transactionEnforcer));
+    register(environment, new Index(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
+    register(environment, new SingleEntity(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
@@ -229,7 +228,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Graph(graphManager, vres));
     // Bulk upload
     UserPermissionChecker permissionChecker = new UserPermissionChecker(
-      securityConfig.getLoggedInUsers(),
+      securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer()
     );
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
@@ -244,13 +243,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024);
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), bulkUploadVre,
-      securityConfig.getLoggedInUsers(), securityConfig.getVreAuthorizationCreator(), 20 * 1024 * 1024,
+      securityConfig.getLoggedInUsers(environment), securityConfig.getVreAuthorizationCreator(), 20 * 1024 * 1024,
       permissionChecker, transactionEnforcer));
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata(jsonMetadata));
     register(environment, new MyVres(
-      securityConfig.getLoggedInUsers(),
+      securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
       bulkUploadVre,
       transactionEnforcer,

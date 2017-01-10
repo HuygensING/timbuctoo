@@ -49,8 +49,6 @@ public class SecurityFactory {
 
   @JsonIgnore
   AuthenticationHandler authHandler;
-  @JsonIgnore
-  private Environment environment;
 
   private JsonBasedAuthenticator getJsonBasedAuthenticator() throws AccessNotPossibleException,
     NoSuchAlgorithmException {
@@ -110,7 +108,7 @@ public class SecurityFactory {
     return vreAuthorizationAccess;
   }
 
-  private AuthenticationHandler getAuthHandler() {
+  private AuthenticationHandler getAuthHandler(Environment environment) {
     if (authHandler == null) {
       authHandler = federatedAuthentication.makeHandler(environment);
     }
@@ -141,14 +139,14 @@ public class SecurityFactory {
     return getJsonBasedAuthenticator();
   }
 
-  public LoggedInUsers getLoggedInUsers()
+  public LoggedInUsers getLoggedInUsers(Environment environment)
     throws AccessNotPossibleException, NoSuchAlgorithmException {
     if (loggedInUsers == null) {
       loggedInUsers = new LoggedInUsers(
         getAuthenticator(),
         getUserStore(),
         autoLogoutTimeout.createTimeout(),
-        getAuthHandler()
+        getAuthHandler(environment)
       );
     }
     return loggedInUsers;
@@ -173,10 +171,5 @@ public class SecurityFactory {
   @JsonIgnore
   public void setAuthHandler(AuthenticationHandler authHandler) {
     this.authHandler = authHandler;
-  }
-
-  @JsonIgnore
-  public void setEnvironment(Environment environment) {
-    this.environment = environment;
   }
 }
