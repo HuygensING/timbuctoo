@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.util.EmptyIterator;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
@@ -13,9 +15,11 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFa
 import nl.knaw.huygens.timbuctoo.server.FederatedAuthConfiguration;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import javax.validation.constraints.NotNull;
 import java.security.NoSuchAlgorithmException;
+import java.util.Iterator;
 
 public class SecurityFactory {
   @JsonProperty
@@ -49,8 +53,6 @@ public class SecurityFactory {
 
   @JsonIgnore
   AuthenticationHandler authHandler;
-  @JsonIgnore
-  private Environment environment;
 
   private JsonBasedAuthenticator getJsonBasedAuthenticator() throws AccessNotPossibleException,
     NoSuchAlgorithmException {
@@ -110,7 +112,7 @@ public class SecurityFactory {
     return vreAuthorizationAccess;
   }
 
-  private AuthenticationHandler getAuthHandler() {
+  private AuthenticationHandler getAuthHandler(Environment environment) {
     if (authHandler == null) {
       authHandler = federatedAuthentication.makeHandler(environment);
     }
@@ -141,14 +143,14 @@ public class SecurityFactory {
     return getJsonBasedAuthenticator();
   }
 
-  public LoggedInUsers getLoggedInUsers()
+  public LoggedInUsers getLoggedInUsers(Environment environment)
     throws AccessNotPossibleException, NoSuchAlgorithmException {
     if (loggedInUsers == null) {
       loggedInUsers = new LoggedInUsers(
         getAuthenticator(),
         getUserStore(),
         autoLogoutTimeout.createTimeout(),
-        getAuthHandler()
+        getAuthHandler(environment)
       );
     }
     return loggedInUsers;
@@ -175,8 +177,13 @@ public class SecurityFactory {
     this.authHandler = authHandler;
   }
 
-  @JsonIgnore
-  public void setEnvironment(Environment environment) {
-    this.environment = environment;
+  public Iterator<Tuple<String, HealthCheck>> getHealthChecks() {
+    if (localfile != null) {
+      return localfile.getHealthChecks();
+    }
+    if (azure != null) {
+      return azure.getHealthChecks();
+    }
+    return new EmptyIterator<>();
   }
 }

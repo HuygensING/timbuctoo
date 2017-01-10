@@ -66,6 +66,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   @JsonProperty
   @Deprecated
+  //left in to make the config not break on older timbuctoo instances
   private int executeDatabaseInvariantCheckAt = 24;
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
@@ -151,11 +152,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @Deprecated
   public Path getAuthorizationsPath() {
     return authorizationsPath;
-  }
-
-  @Deprecated
-  public int getExecuteDatabaseInvariantCheckAt() {
-    return executeDatabaseInvariantCheckAt;
   }
 
   public boolean isAllowGremlinEndpoint() {

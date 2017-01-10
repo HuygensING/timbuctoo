@@ -9,8 +9,10 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.ElementValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.neo4j.graphdb.GraphDatabaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +32,11 @@ public class InvariantsCheck implements DatabaseCheck {
 
   public InvariantsCheck(Vres vres) {
     this.vres = vres;
+  }
+
+  @Override
+  public void init(Graph graph, GraphDatabaseService service) {
+
   }
 
   @Override
@@ -61,6 +68,11 @@ public class InvariantsCheck implements DatabaseCheck {
       }
     });
     return new CompositeValidationResult(validationResults);
+  }
+
+  @Override
+  public void finish() {
+
   }
 
   private boolean isAccepted(Edge edge, String edgeType) {

@@ -1,8 +1,5 @@
 #Config with minimal info to launch a test build
 
-databaseConfiguration:
-  executeDatabaseInvariantCheckAt: 2
-
 securityConfiguration:
   autoLogoutTimeout:
     duration: 8

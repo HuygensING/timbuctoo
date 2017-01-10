@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
 import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentDisplayNameDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
-import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ElementValidationResult;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.ValidationResult;
@@ -28,16 +27,13 @@ import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getEntityTypesOrDef
 
 public class FullTextIndexCheck implements DatabaseCheck {
 
-
-
   private final HashMap<String, PropertyDescriptor> displayNameDescriptors;
-  private final TinkerPopGraphManager graphManager;
+  protected GraphDatabaseService databaseService;
+  protected Graph graph;
 
-  public FullTextIndexCheck(TinkerPopGraphManager graphManager) {
+  public FullTextIndexCheck() {
     final PropertyDescriptorFactory propertyDescriptorFactory = new PropertyDescriptorFactory(
             new PropertyParserFactory());
-
-    this.graphManager = graphManager;
 
     displayNameDescriptors = Maps.newHashMap();
     displayNameDescriptors.put("wwdocuments", new WwDocumentDisplayNameDescriptor());
@@ -51,15 +47,19 @@ public class FullTextIndexCheck implements DatabaseCheck {
   }
 
   @Override
+  public void init(Graph graph, GraphDatabaseService service) {
+    this.graph = graph;
+    this.databaseService = service;
+  }
+
+  @Override
   public ValidationResult check(Vertex vertex) {
     Boolean isLatest = vertex.property("isLatest").isPresent() ?
             (Boolean) vertex.property("isLatest").value() :
             false;
-    final GraphDatabaseService graphDatabase = graphManager.getGraphDatabase();
-    final Graph graph = graphManager.getGraph();
 
     if (isLatest) {
-      final IndexManager indexManager = graphDatabase.index();
+      final IndexManager indexManager = databaseService.index();
       String[] types = getEntityTypesOrDefault(vertex);
       Transaction transaction = graph.tx();
 
@@ -114,6 +114,12 @@ public class FullTextIndexCheck implements DatabaseCheck {
       transaction.close();
     }
     return new ElementValidationResult(true, String.format("Vertex %s is valid", vertex));
+  }
+
+  @Override
+  public void finish() {
+    this.graph = null;
+    this.databaseService = null;
   }
 
 }

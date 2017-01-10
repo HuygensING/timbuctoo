@@ -11,9 +11,6 @@ public class TinkerPopConfig {
   @NotEmpty
   private String databasePath;
 
-  @JsonProperty
-  private int executeDatabaseInvariantCheckAt = 24;
-
   public HaConfig getHaconfig() {
     return haconfig;
   }
@@ -28,14 +25,6 @@ public class TinkerPopConfig {
 
   public void setDatabasePath(String databasePath) {
     this.databasePath = databasePath;
-  }
-
-  public void setExecuteDatabaseInvariantCheckAt(int executeDatabaseInvariantCheckAt) {
-    this.executeDatabaseInvariantCheckAt = executeDatabaseInvariantCheckAt;
-  }
-
-  public int getExecuteDatabaseInvariantCheckAt() {
-    return executeDatabaseInvariantCheckAt;
   }
 
   public class HaConfig {

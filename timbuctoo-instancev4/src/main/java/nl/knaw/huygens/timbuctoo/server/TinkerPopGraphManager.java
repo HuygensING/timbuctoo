@@ -21,6 +21,8 @@ import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
 import org.neo4j.kernel.ha.HaSettings;
+import org.neo4j.kernel.ha.HighlyAvailableGraphDatabase;
+import org.neo4j.kernel.ha.cluster.member.ClusterMembers;
 import org.neo4j.logging.slf4j.Slf4jLogProvider;
 import org.neo4j.tinkerpop.api.impl.Neo4jGraphAPIImpl;
 import org.slf4j.Logger;
@@ -140,15 +142,29 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
 
   @Override
   protected Result check() throws Exception {
+    StringBuilder logMessage = new StringBuilder();
+    if (graphDatabase instanceof HighlyAvailableGraphDatabase) {
+      HighlyAvailableGraphDatabase haDb = (HighlyAvailableGraphDatabase) graphDatabase;
+      logMessage
+        .append("From the perspective of ")
+        .append(configuration.getHaconfig().getServerId())
+        .append(":\n");
+      haDb.getDependencyResolver().resolveDependency(ClusterMembers.class).getMembers().forEach(member -> {
+        logMessage.append("  ").append(member).append("\n");
+      });
+      LOG.info(logMessage.toString());
+    }
+
     /*
      * TODO find a better way to check the database is available.
-     * Neo4j says it is still available when the database directory is removed.
-     * It seems like isAvailable only checks the database is shutdown or not.
+     * isAvailable only checks for HA availability and whether it is shutdown. It will return true even if the database
+     * files have been removed and each write will fail.
      * Trying to retrieve nodes from the non-existing database does not result in an Exception.
+     * A commit() with a write will fail, but is not a test that you might want to run every second.
      */
     if (graphDatabase.isAvailable(1000)) {
       if (databasePath.exists()) {
-        return Result.healthy();
+        return Result.healthy(logMessage.toString());
       }
       return Result.unhealthy("Path to database [%s] does not exist", databasePath);
     }
