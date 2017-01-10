@@ -1,7 +1,7 @@
-package nl.knaw.huygens.timbuctoo.database;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
-public class PropertyNameHelper {
-  public static String createPropName(String entityTypeName, String rdfUri) {
+class PropertyNameHelper {
+  static String createPropName(String entityTypeName, String rdfUri) {
     if (rdfUri.startsWith("http://timbuctoo.huygens.knaw.nl/")) {
       return entityTypeName + "_" + rdfUri.substring("http://timbuctoo.huygens.knaw.nl/".length());
     } else {
