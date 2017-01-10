@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,10 +13,13 @@ import org.neo4j.graphdb.Transaction;
 import java.util.Optional;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
+import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -314,5 +318,85 @@ public class Neo4JIndexHandlerTest {
     assertThat(instance.findById(id1).isPresent(), is(false));
   }
 
+  //=====================tim_id edge index=====================
+  @Test
+  public void findEdgeByIdReturnsTheEdgeWithId() {
+    UUID edgeId = UUID.randomUUID();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId))
+      )
+      .withVertex("other", v -> {
+      })
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    Edge edge = tinkerPopGraphManager.getGraph().traversal().E().has("tim_id", edgeId.toString()).next();
+    instance.insertEdgeIntoIdIndex(edgeId, edge);
+
+    Optional<Edge> edgeOpt = instance.findEdgeById(edgeId);
+
+    assertThat(edgeOpt, is(present()));
+    assertThat(edgeOpt.get(), is(likeEdge().withId(edgeId.toString())));
+
+  }
+
+  @Test
+  public void findEdgeByIdReturnsAnEmtptyOptionalWhenTheEdgeIsNotFound() {
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(newGraph().wrap());
+    UUID edgeId = UUID.randomUUID();
+
+    Optional<Edge> edgeOpt = instance.findEdgeById(edgeId);
+
+    assertThat(edgeOpt, is(not(present())));
+  }
+
+  @Test
+  public void upsertIntoEdgeIdIndexRemovesTheOldEntryAndAddsANewOne() {
+    UUID edgeId = UUID.randomUUID();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId).withRev(1))
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId).withRev(2))
+      )
+      .withVertex("other", v -> {
+      })
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    Edge edge1 = tinkerPopGraphManager.getGraph().traversal().E().has("rev", 1).next();
+    instance.insertEdgeIntoIdIndex(edgeId, edge1);
+    Optional<Edge> edgeOpt = instance.findEdgeById(edgeId);
+    assertThat(edgeOpt, is(present()));
+    assertThat(edgeOpt.get(), is(likeEdge().withProperty("rev", 1)));
+
+    Edge edge2 = tinkerPopGraphManager.getGraph().traversal().E().has("rev", 2).next();
+
+    instance.upsertIntoEdgeIdIndex(edgeId, edge2);
+
+    Optional<Edge> edgeOpt2 = instance.findEdgeById(edgeId);
+    assertThat(edgeOpt2, is(present()));
+    assertThat(edgeOpt2.get(), is(likeEdge().withProperty("rev", 2)));
+  }
+
+  @Test
+  public void removeFromEdgeIdIndexRemovesTheVertexFromTheIndex() {
+    UUID edgeId = UUID.randomUUID();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId))
+      )
+      .withVertex("other", v -> {
+      })
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    Edge edge = tinkerPopGraphManager.getGraph().traversal().E().has("tim_id", edgeId.toString()).next();
+    instance.insertEdgeIntoIdIndex(edgeId, edge);
+    Optional<Edge> edgeOpt = instance.findEdgeById(edgeId);
+    assertThat(edgeOpt, is(present()));
+    assertThat(edgeOpt.get(), is(likeEdge().withId(edgeId.toString())));
+
+    instance.removeEdgeFromIdIndex(edge);
+
+    assertThat(instance.findEdgeById(edgeId), is(not(present())));
+  }
 
 }

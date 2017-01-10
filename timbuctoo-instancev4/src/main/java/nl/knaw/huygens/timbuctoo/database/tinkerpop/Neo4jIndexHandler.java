@@ -8,12 +8,15 @@ import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.EmptyGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
+import org.neo4j.graphdb.Relationship;
 import org.neo4j.graphdb.index.Index;
 import org.neo4j.graphdb.index.IndexHits;
 import org.neo4j.graphdb.index.IndexManager;
+import org.neo4j.graphdb.index.RelationshipIndex;
 import org.neo4j.helpers.collection.MapUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,8 +33,8 @@ public class Neo4jIndexHandler implements IndexHandler {
   private static final String QUICK_SEARCH = "quickSearch";
   private static final String ID_INDEX = "idIndex";
   private static final String TIM_ID = "tim_id";
-  private final TinkerPopGraphManager tinkerPopGraphManager;
   private static final Logger LOG = LoggerFactory.getLogger(Neo4jIndexHandler.class);
+  private final TinkerPopGraphManager tinkerPopGraphManager;
   private GraphTraversalSource cachedTraversal;
 
   public Neo4jIndexHandler(TinkerPopGraphManager tinkerPopGraphManager) {
@@ -176,6 +179,39 @@ public class Neo4jIndexHandler implements IndexHandler {
     rdfIndex.remove(neo4jNode, "Admin");
   }
 
+  //=====================Edge tim_id index=====================
+  @Override
+  public Optional<Edge> findEdgeById(UUID edgeId) {
+    RelationshipIndex edgeIdIndex = getEdgeIdIndex();
+    IndexHits<Relationship> hits = edgeIdIndex.query(TIM_ID, edgeId.toString());
+
+    return hits.hasNext() ? traversal().E(hits.next().getId()).tryNext() : Optional.empty();
+  }
+
+  @Override
+  public void insertEdgeIntoIdIndex(UUID edgeId, Edge edge) {
+    getEdgeIdIndex().add(edgeToRelationship(edge), TIM_ID, edgeId.toString());
+  }
+
+  @Override
+  public void upsertIntoEdgeIdIndex(UUID edgeId, Edge edge) {
+    Optional<Edge> prevEdge = findEdgeById(edgeId);
+    prevEdge.ifPresent(this::removeEdgeFromIdIndex);
+    insertEdgeIntoIdIndex(edgeId, edge);
+  }
+
+  @Override
+  public void removeEdgeFromIdIndex(Edge edge) {
+    getEdgeIdIndex().remove(edgeToRelationship(edge), TIM_ID);
+  }
+
+  private RelationshipIndex getEdgeIdIndex() {
+    return indexManager().forRelationships("edgeIdIndex");
+  }
+
+  private Relationship edgeToRelationship(Edge edge) {
+    return graphDatabase().getRelationshipById((long) edge.id());
+  }
   //=====================general helper methods=====================
 
   private GraphTraversalSource traversal() {
