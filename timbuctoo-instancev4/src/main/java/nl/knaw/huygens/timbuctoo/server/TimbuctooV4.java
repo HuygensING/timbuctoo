@@ -149,6 +149,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig = configuration.getSecurityConfiguration();
     }
 
+    securityConfig.getHealthChecks().forEachRemaining(check -> {
+      register(environment, check.getLeft(), check.getRight());
+    });
+
     // Database migrations
     LinkedHashMap<String, DatabaseMigration> migrations = new LinkedHashMap<>();
 
@@ -216,8 +220,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Me(securityConfig.getLoggedInUsers(environment)));
     register(environment, new Search(configuration, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
-    register(environment, new Index(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
-    register(environment, new SingleEntity(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
+    register(environment,
+      new Index(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
+    register(environment,
+      new SingleEntity(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
