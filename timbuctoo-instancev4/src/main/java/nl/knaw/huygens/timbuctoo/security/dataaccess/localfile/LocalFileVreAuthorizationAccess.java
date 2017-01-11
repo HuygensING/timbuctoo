@@ -84,6 +84,25 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
 
   }
 
+  @Override
+  public void deleteVreAuthorizations(String vreId, String userId) throws AuthorizationUnavailableException {
+    final Optional<VreAuthorization> authorization = getAuthorization(vreId, userId);
+    if (authorization.isPresent() && authorization.get().isAllowedToWrite()) {
+      File file = getFile(vreId);
+      if (file.exists()) {
+        final boolean isDeleted = file.delete();
+        if (!isDeleted) {
+          throw new AuthorizationUnavailableException("Failed to delete vre authorizations for vre '" + vreId + "'");
+        }
+      } else {
+        throw new AuthorizationUnavailableException("Failed to delete vre authorizations for vre '" + vreId + "'");
+      }
+    } else {
+      throw new AuthorizationUnavailableException("User with id '" + userId +
+        "' is not allowed to delete vre '" + vreId + "'");
+    }
+  }
+
   private File getFile(String vreId) {
     return authorizationsFolder.resolve(String.format("%s.json", vreId)).toFile();
   }

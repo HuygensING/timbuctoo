@@ -100,7 +100,7 @@ public class SecurityFactory {
     return userAccess;
   }
 
-  private VreAuthorizationAccess getVreAuthorizationAccess() throws AccessNotPossibleException {
+  public VreAuthorizationAccess getVreAuthorizationAccess() throws AccessNotPossibleException {
     if (vreAuthorizationAccess == null) {
       if (azure != null) {
         vreAuthorizationAccess = azure.getVreAuthorizationAccess();

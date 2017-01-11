@@ -8,6 +8,9 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -60,10 +63,12 @@ public class BulkUploadVre {
   private final SaveRml saveRml;
   private final TransactionEnforcer transactionEnforcer;
   private final int maxFileSize;
+  private final VreAuthorizationAccess vreAuthorizationAccess;
 
   public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection,
                        ExecuteRml executeRml, UserPermissionChecker permissionChecker, SaveRml saveRml,
-                       TransactionEnforcer transactionEnforcer, int maxFileSize) {
+                       TransactionEnforcer transactionEnforcer, int maxFileSize,
+                       VreAuthorizationAccess vreAuthorizationAccess) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.rawCollection = rawCollection;
@@ -72,6 +77,7 @@ public class BulkUploadVre {
     this.saveRml = saveRml;
     this.transactionEnforcer = transactionEnforcer;
     this.maxFileSize = maxFileSize;
+    this.vreAuthorizationAccess = vreAuthorizationAccess;
   }
 
   public URI createUri(String vre) {
@@ -158,6 +164,14 @@ public class BulkUploadVre {
 
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       timbuctooActions.deleteVre(vreName);
+      final Optional<User> user = permissionChecker.getUserFor(authorizationHeader);
+      if (user.isPresent()) {
+        try {
+          vreAuthorizationAccess.deleteVreAuthorizations(vreName, user.get().getId());
+        } catch (AuthorizationUnavailableException e) {
+          LOG.error("Failed to remove authorization for vre '{}'", vreName);
+        }
+      }
       return TransactionStateAndResult.commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
     });
 

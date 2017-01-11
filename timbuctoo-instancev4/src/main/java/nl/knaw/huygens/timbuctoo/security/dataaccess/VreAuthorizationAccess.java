@@ -11,4 +11,7 @@ public interface VreAuthorizationAccess {
 
   Optional<VreAuthorization> getAuthorization(String vreId, String userId)
       throws AuthorizationUnavailableException;
+
+  void deleteVreAuthorizations(String vreId, String userId)
+      throws AuthorizationUnavailableException;
 }

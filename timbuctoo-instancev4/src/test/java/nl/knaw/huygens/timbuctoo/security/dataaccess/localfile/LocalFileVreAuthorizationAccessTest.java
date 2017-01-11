@@ -3,12 +3,14 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -16,6 +18,7 @@ import java.util.Optional;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -29,12 +32,16 @@ public class LocalFileVreAuthorizationAccessTest {
   public static final Path VRE_AUTH_PATH = AUTHORIZATIONS_FOLDER.resolve(String.format("%s.json", VRE));
 
   public static final String USER_ID = "USER000000000001";
+  public static final String USER_ID_WITHOUT_WRITE_PERMISSIONS = "USER000000000002";
   private VreAuthorizationAccess instance;
   private ObjectMapper objectMapper;
 
   @Before
   public void setup() throws Exception {
-    VreAuthorization[] authorizations = {VreAuthorization.create(VRE, USER_ID, "USER")};
+    VreAuthorization[] authorizations = {
+      VreAuthorization.create(VRE, USER_ID, "USER"),
+      VreAuthorization.create(VRE, USER_ID_WITHOUT_WRITE_PERMISSIONS, UNVERIFIED_USER_ROLE)
+    };
     File file = VRE_AUTH_PATH.toFile();
     objectMapper = new ObjectMapper();
     objectMapper.writeValue(file, authorizations);
@@ -44,7 +51,9 @@ public class LocalFileVreAuthorizationAccessTest {
 
   @After
   public void teardown() throws Exception {
-    Files.delete(VRE_AUTH_PATH);
+    if (new File(VRE_AUTH_PATH.toString()).exists()) {
+      Files.delete(VRE_AUTH_PATH);
+    }
   }
 
   @Test
@@ -117,5 +126,23 @@ public class LocalFileVreAuthorizationAccessTest {
 
     // Teardown
     Files.delete(AUTHORIZATIONS_FOLDER.resolve(String.format("%s.json", newVre)));
+  }
+
+  @Test(expected = AuthorizationUnavailableException.class)
+  public void deleteVreAuthorizationsThrowsWhenUserDoesNotHaveWriteAccess() throws AuthorizationUnavailableException {
+    instance.deleteVreAuthorizations(VRE, USER_ID_WITHOUT_WRITE_PERMISSIONS);
+  }
+
+  @Test(expected = AuthorizationUnavailableException.class)
+  public void deleteVreAuthorizationsThrowsWhenUserAuthorizationIsNotPresent()
+    throws AuthorizationUnavailableException {
+
+    instance.deleteVreAuthorizations(VRE, "unknownUser");
+  }
+
+  @Test
+  public void deleteVreAuthorizationsDeletesTheVreAuthorizationsFile() throws AuthorizationUnavailableException {
+    instance.deleteVreAuthorizations(VRE, USER_ID);
+    assertThat(new File(AUTHORIZATIONS_FOLDER.resolve("vre.json").toString()).exists(), equalTo(false));
   }
 }

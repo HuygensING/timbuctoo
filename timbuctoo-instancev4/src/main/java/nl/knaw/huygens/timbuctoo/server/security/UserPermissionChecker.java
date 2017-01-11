@@ -45,6 +45,10 @@ public class UserPermissionChecker {
     }
   }
 
+  public Optional<User> getUserFor(String authorizationHeader) {
+    return loggedInUsers.userFor(authorizationHeader);
+  }
+
   public Optional<Response> checkPermissionWithResponse(String vreName, String authorizationHeader) {
     UserPermission permission = check(vreName, authorizationHeader);
     switch (permission) {

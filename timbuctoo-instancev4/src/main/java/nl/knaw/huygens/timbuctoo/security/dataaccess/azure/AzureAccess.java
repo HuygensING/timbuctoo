@@ -41,6 +41,10 @@ public abstract class AzureAccess {
     table.execute(TableOperation.insert(new DynamicTableEntity(partitionKey, rowKey, new HashMap<>(properties))));
   }
 
+  protected void delete(String partitionKey, String rowKey) throws StorageException {
+    table.execute(TableOperation.delete(new DynamicTableEntity(partitionKey, rowKey)));
+  }
+
   protected static String[] getStringArrayOrEmpty(DynamicTableEntity entity, String key) {
     String content = getStringOrNull(entity, key);
     if (content == null) {

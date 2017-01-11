@@ -67,4 +67,20 @@ public class AzureVreAuthorizationAccess extends AzureAccess implements VreAutho
       throw new AuthorizationUnavailableException("Could not get authorization");
     }
   }
+
+  @Override
+  public void deleteVreAuthorizations(String vreId, String userId) throws AuthorizationUnavailableException {
+    final Optional<VreAuthorization> authorization = getAuthorization(vreId, userId);
+    if (authorization.isPresent() && authorization.get().isAllowedToWrite()) {
+      try {
+        delete(vreId, userId);
+      } catch (StorageException e) {
+        LOG.error("deleteVreAuthorizations failed", e);
+        throw new AuthorizationUnavailableException("Could not delete authorization for vre '" + vreId + "'");
+      }
+    } else {
+      throw new AuthorizationUnavailableException("User with id '" + userId +
+        "' is not allowed to delete vre '" + vreId + "'");
+    }
+  }
 }
