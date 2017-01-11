@@ -42,6 +42,7 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.net.URI;
@@ -50,6 +51,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
@@ -103,6 +105,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
@@ -3086,7 +3089,74 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
-  public void deleteVreRemovesAllIndexEntries() {
+  public void deleteVreRemovesAllQuickSearchIndices() {
+    TinkerPopGraphManager graphManager = newGraph()
+      .withVertex("vreName", v -> v
+        .withLabel("VRE")
+        .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "vreName")
+        .withOutgoingRelation(HAS_COLLECTION_RELATION_NAME, "collection1")
+        .withOutgoingRelation(HAS_COLLECTION_RELATION_NAME, "collection2")
+      )
+      .withVertex("collection1", v -> v
+        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "collection1")
+        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "entityType1")
+        .withProperty(IS_RELATION_COLLECTION_PROPERTY_NAME, true)
+        .withOutgoingRelation(HAS_DISPLAY_NAME_RELATION_NAME, "displayName")
+        .withOutgoingRelation(HAS_PROPERTY_RELATION_NAME, "property")
+        .withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "entityNode")
+      )
+      .withVertex("displayName", v -> v
+        .withProperty("displayName", true)
+        .withProperty("propertyType", "string")
+      )
+      .withVertex("property", v -> v
+        .withProperty("property", true)
+        .withProperty("propertyType", "string")
+      )
+      .withVertex("entityNode", v -> v
+        .withOutgoingRelation(HAS_ENTITY_RELATION_NAME, "entity")
+      )
+      .withVertex("entity", v -> v
+        .withProperty("entity", true)
+      )
+      .withVertex("collection2", v -> v
+        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "collection2")
+        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "entityType2")
+        .withProperty(IS_RELATION_COLLECTION_PROPERTY_NAME, false)
+        .withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "entityNode2")
+      )
+      .withVertex("entityNode2", v -> v
+        .withOutgoingRelation(HAS_ENTITY_RELATION_NAME, "entity2")
+      )
+      .withVertex("entity2", v -> v
+        .withProperty("entity2", true)
+      )
+      .withVertex("otherVreCollection", v -> v
+        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "otherVreCollection")
+        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "entityType3")
+        .withProperty(IS_RELATION_COLLECTION_PROPERTY_NAME, false)
+      )
+      .wrap();
+
+    final IndexHandler indexHandler = mock(IndexHandler.class);
+
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphMappingsAndIndex(graphManager, null,
+      indexHandler);
+
+    instance.deleteVre("vreName");
+
+    ArgumentCaptor<Collection> collectionArgumentCaptor = ArgumentCaptor.forClass(Collection.class);
+
+    verify(indexHandler, times(2)).deleteQuicksearchIndex(collectionArgumentCaptor.capture());
+
+    final List<String> collectionsInvokedWithDeleteQuickSearchIndex = collectionArgumentCaptor
+      .getAllValues().stream().map(Collection::getCollectionName).collect(Collectors.toList());
+
+    assertThat(collectionsInvokedWithDeleteQuickSearchIndex.size(), equalTo(2));
+    assertThat(collectionsInvokedWithDeleteQuickSearchIndex, containsInAnyOrder(
+        "collection1",
+        "collection2"
+    ));
 
   }
 }
