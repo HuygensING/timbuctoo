@@ -3089,7 +3089,7 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
-  public void deleteVreRemovesAllQuickSearchIndices() {
+  public void deleteVreRemovesAllIndexEntries() {
     TinkerPopGraphManager graphManager = newGraph()
       .withVertex("vreName", v -> v
         .withLabel("VRE")
@@ -3143,11 +3143,20 @@ public class TinkerPopOperationsTest {
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphMappingsAndIndex(graphManager, null,
       indexHandler);
 
+    final Long entityId = (Long) (graphManager.getGraph().traversal().V().has("entity").next().id());
+    final Long entity2Id = (Long) (graphManager.getGraph().traversal().V().has("entity2").next().id());
+
     instance.deleteVre("vreName");
 
     ArgumentCaptor<Collection> collectionArgumentCaptor = ArgumentCaptor.forClass(Collection.class);
+    ArgumentCaptor<Vertex> entityArgumentCaptorForIdIndex = ArgumentCaptor.forClass(Vertex.class);
+    ArgumentCaptor<Vertex> entityArgumentCaptorForRdfIndex = ArgumentCaptor.forClass(Vertex.class);
+    ArgumentCaptor<Vre> vreArgumentCaptor = ArgumentCaptor.forClass(Vre.class);
 
     verify(indexHandler, times(2)).deleteQuicksearchIndex(collectionArgumentCaptor.capture());
+    verify(indexHandler, times(2)).removeFromIdIndex(entityArgumentCaptorForIdIndex.capture());
+    verify(indexHandler, times(2)).removeFromRdfIndex(vreArgumentCaptor.capture(),
+      entityArgumentCaptorForRdfIndex.capture());
 
     final List<String> collectionsInvokedWithDeleteQuickSearchIndex = collectionArgumentCaptor
       .getAllValues().stream().map(Collection::getCollectionName).collect(Collectors.toList());
@@ -3158,6 +3167,23 @@ public class TinkerPopOperationsTest {
         "collection2"
     ));
 
+    final List<Long> vertexIdsRemovedFromIdIndex =
+      entityArgumentCaptorForIdIndex.getAllValues().stream().map(v -> (Long) v.id()).collect(toList());
+
+    assertThat(vertexIdsRemovedFromIdIndex.size(), equalTo(2));
+    assertThat(vertexIdsRemovedFromIdIndex, containsInAnyOrder(
+      entityId,
+      entity2Id
+    ));
+
+    final List<Long> vertexIdsRemovedFromRdfIndex =
+      entityArgumentCaptorForRdfIndex.getAllValues().stream().map(v -> (Long) v.id()).collect(toList());
+
+    assertThat(vertexIdsRemovedFromRdfIndex.size(), equalTo(2));
+    assertThat(vertexIdsRemovedFromRdfIndex, containsInAnyOrder(
+      entityId,
+      entity2Id
+    ));
   }
 }
 

@@ -58,6 +58,7 @@ public class Neo4jIndexHandler implements IndexHandler {
     return traversalFromIndex(collection, quickSearch).has("keyword_type", keywordType);
   }
 
+
   private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {
     Index<Node> index = getQuickSearchIndex(collection);
     IndexHits<Node> hits = index.query(QUICK_SEARCH, createQuery(quickSearch));
@@ -82,7 +83,10 @@ public class Neo4jIndexHandler implements IndexHandler {
   public void removeFromQuickSearchIndex(Collection collection, Vertex vertex) {
     Index<Node> index = getQuickSearchIndex(collection);
     // make sure only this field is removed from the index.
-    index.remove(vertexToNode(vertex), QUICK_SEARCH);
+    final Optional<Node> node = vertexToNode(vertex);
+    if (node.isPresent()) {
+      index.remove(node.get(), QUICK_SEARCH);
+    }
   }
 
   @Override
@@ -94,7 +98,7 @@ public class Neo4jIndexHandler implements IndexHandler {
 
     Index<Node> index = getQuickSearchIndex(collection);
 
-    index.add(vertexToNode(vertex), QUICK_SEARCH, quickSearchValue);
+    vertexToNode(vertex).ifPresent(node -> index.add(node, QUICK_SEARCH, quickSearchValue));
   }
 
   //=====================tim_id index=====================
@@ -109,7 +113,10 @@ public class Neo4jIndexHandler implements IndexHandler {
   @Deprecated
   public void insertIntoIdIndex(UUID timId, Vertex vertex) {
     Index<Node> index = getIdIndex();
-    index.add(vertexToNode(vertex), TIM_ID, timId.toString());
+    final Optional<Node> node = vertexToNode(vertex);
+    if (node.isPresent()) {
+      index.add(node.get(), TIM_ID, timId.toString());
+    }
   }
 
   @Override
@@ -121,7 +128,10 @@ public class Neo4jIndexHandler implements IndexHandler {
   @Override
   public void removeFromIdIndex(Vertex vertex) {
     // make sure only this field is removed from the index.
-    getIdIndex().remove(vertexToNode(vertex), TIM_ID);
+    final Optional<Node> node = vertexToNode(vertex);
+    if (node.isPresent()) {
+      getIdIndex().remove(node.get(), TIM_ID);
+    }
   }
 
   private Index<Node> getIdIndex() {
@@ -170,9 +180,11 @@ public class Neo4jIndexHandler implements IndexHandler {
   @Override
   public void removeFromRdfIndex(Vre vre, Vertex vertex) {
     Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
-    org.neo4j.graphdb.Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
-    rdfIndex.remove(neo4jNode, vre.getVreName());
-    rdfIndex.remove(neo4jNode, "Admin");
+    Optional<Node> neo4jNode = vertexToNode(vertex);
+    if (neo4jNode.isPresent()) {
+      rdfIndex.remove(neo4jNode.get(), vre.getVreName());
+      rdfIndex.remove(neo4jNode.get(), "Admin");
+    }
   }
 
   @Override
@@ -180,6 +192,7 @@ public class Neo4jIndexHandler implements IndexHandler {
     Index<Node> index = getQuickSearchIndex(collection);
     index.delete();
   }
+
   //=====================Edge tim_id index=====================
   @Override
   public Optional<Edge> findEdgeById(UUID edgeId) {
@@ -229,8 +242,14 @@ public class Neo4jIndexHandler implements IndexHandler {
     return collection.getCollectionName();
   }
 
-  private Node vertexToNode(Vertex vertex) {
-    return graphDatabase().getNodeById((long) vertex.id());
+  private Optional<Node> vertexToNode(Vertex vertex) {
+    try {
+      final Node nodeById = graphDatabase().getNodeById((long) vertex.id());
+      return Optional.of(nodeById);
+    } catch (org.neo4j.graphdb.NotFoundException e) {
+      LOG.error("Neo4j node with id {} does not exist", vertex.id());
+      return Optional.empty();
+    }
   }
 
 }
