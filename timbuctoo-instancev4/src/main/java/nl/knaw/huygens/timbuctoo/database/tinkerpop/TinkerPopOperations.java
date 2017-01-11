@@ -1322,7 +1322,8 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   private GraphTraversal<Vertex, Vertex> entitiesOfCollection(Collection coll) {
-    return traversal.V().has("collectionName", coll.getCollectionName())
+    return traversal.V().hasLabel("collection")
+                    .has("collectionName", coll.getCollectionName())
                     .out(HAS_ENTITY_NODE_RELATION_NAME)
                     .out(HAS_ENTITY_RELATION_NAME);
   }
