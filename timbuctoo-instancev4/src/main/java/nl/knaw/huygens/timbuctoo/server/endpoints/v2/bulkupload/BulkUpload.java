@@ -210,6 +210,20 @@ public class BulkUpload {
           } catch (IOException e) {
             LOG.error("Couldn't close the output stream", e);
           }
+          try {
+            String filePath = tempFile.getAbsolutePath();
+            try {
+              if (tempFile.delete()) {
+                LOG.info("deleted tempfile " + filePath + " after import");
+              } else {
+                LOG.error("Couldn't remove file " + filePath);
+              }
+            } catch (Exception e) {
+              LOG.error("Couldn't remove file " + filePath, e);
+            }
+          } catch (Exception e) {
+            LOG.error("Error while getting path of tempfile, tempfile was not deleted", e);
+          }
         }
       }
     }.start();
