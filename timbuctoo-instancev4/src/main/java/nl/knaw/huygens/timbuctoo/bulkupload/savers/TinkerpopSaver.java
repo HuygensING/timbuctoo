@@ -7,15 +7,20 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.slf4j.Logger;
 
 import java.util.Map;
 import java.util.UUID;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 public class TinkerpopSaver implements AutoCloseable, Saver {
+  private static final Logger LOG = getLogger(TinkerpopSaver.class);
   public static final String RAW_COLLECTION_EDGE_NAME = "hasRawCollection";
   public static final String RAW_ITEM_EDGE_NAME = "hasItem";
   public static final String RAW_COLLECTION_NAME_PROPERTY_NAME = "name";
@@ -32,24 +37,19 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   private final Vertex vre;
   private final int maxVerticesPerTransaction;
   private String fileName;
-  private final CollectionAdder collectionAdder;
   private int saveCounter;
   private Transaction tx;
+  private Vertex curCollection;
+  private Vertex lastVertex;
 
   public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
                         int maxVerticesPerTransaction, String fileName) {
-    this(vres, graphWrapper, vreName, vreLabel, maxVerticesPerTransaction, fileName, new CollectionAdder(graphWrapper));
-  }
-
-  public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
-                        int maxVerticesPerTransaction, String fileName, CollectionAdder collectionAdder) {
     this.vres = vres;
     this.graphWrapper = graphWrapper;
     tx = graphWrapper.getGraph().tx();
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
     this.fileName = fileName;
     this.vre = initVre(vreName, vreLabel);
-    this.collectionAdder = collectionAdder;
   }
 
   private Vertex initVre(String vreName, String vreLabel) {
@@ -109,8 +109,8 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     Vertex result = graphWrapper.getGraph().addVertex("tim_id", UUID.randomUUID().toString());
     currentProperties.forEach((key, val) -> result.property(VALUE_PREFIX + key, val));
 
-    collectionAdder.addToLastItemOfCollection(rawCollection, result);
-    collectionAdder.addToCollection(rawCollection, result);
+    addToLastItemOfCollection(rawCollection, result);
+    addToCollection(rawCollection, result);
 
     return result;
   }
@@ -154,4 +154,31 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
       tx.commit();
     }
   }
+
+  public void addToLastItemOfCollection(Vertex rawCollection, Vertex result) {
+    if (curCollection == rawCollection && lastVertex != null) {
+      //should be the one that usually called
+      lastVertex.addEdge(TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME, result);
+      lastVertex = result;
+    } else if (!rawCollection.edges(Direction.OUT, TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME).hasNext()) {
+      //should be called only once
+      rawCollection.addEdge(TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME, result);
+      lastVertex = result;
+      curCollection = rawCollection;
+    } else {
+      //should never be called
+      LOG.error("This method is slow and ought to never be called.");
+      Vertex previous = graphWrapper.getGraph().traversal().V(rawCollection.id())
+        .out(TinkerpopSaver.RAW_ITEM_EDGE_NAME)
+        .not(__.where(__.out(TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME)))
+        .next();
+
+      previous.addEdge(TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME, result);
+    }
+  }
+
+  public void addToCollection(Vertex rawCollection, Vertex result) {
+    rawCollection.addEdge(TinkerpopSaver.RAW_ITEM_EDGE_NAME, result);
+  }
+
 }
