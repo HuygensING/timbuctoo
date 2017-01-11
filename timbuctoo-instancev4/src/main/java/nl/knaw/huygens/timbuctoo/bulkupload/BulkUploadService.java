@@ -19,17 +19,19 @@ public class BulkUploadService {
 
   private final Vres vres;
   private final TinkerPopGraphManager graphwrapper;
+  private final int maxVertices;
 
-  public BulkUploadService(Vres vres, TinkerPopGraphManager graphwrapper/*, Authorizer authorizer*/) {
+  public BulkUploadService(Vres vres, TinkerPopGraphManager graphwrapper, int maxVerticesPerTransaction) {
     this.vres = vres;
     this.graphwrapper = graphwrapper;
+    this.maxVertices = maxVerticesPerTransaction;
   }
 
   public void saveToDb(String vreName, File file, String fileName, String vreLabel,
                        Consumer<String> statusUpdate)
     throws InvalidFileException, IOException {
 
-    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000, fileName)) {
+    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, maxVertices, fileName)) {
       Loader loader;
       if (fileName.endsWith(".xlsx")) {
         loader = new AllSheetLoader();
