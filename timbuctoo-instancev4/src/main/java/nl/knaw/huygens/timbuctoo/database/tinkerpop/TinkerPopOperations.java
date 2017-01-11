@@ -1335,6 +1335,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   public void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper) {
     String vreName = vre.getVreName();
     vre.getCollections().values().forEach(col -> entitiesOfCollection(col)
+      .not(has("isLatest", false)) //everything without isLatest and everything with isLatest = true
       .forEachRemaining(v -> {
         v.property("tim_id", entityFinisherHelper.newId(v, vreName).toString());
         v.property("rev", entityFinisherHelper.getRev());
