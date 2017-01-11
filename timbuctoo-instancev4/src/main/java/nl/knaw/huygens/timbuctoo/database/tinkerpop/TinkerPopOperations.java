@@ -1210,16 +1210,15 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   private void assertPredicateAndValueType(Vertex entity, Vertex col, RdfProperty property) {
-    GraphTraversal<Vertex, Vertex> predicate =
+    final GraphTraversal<Vertex, Vertex> predicate =
       traversal.V(col.id()).out(HAS_PREDICATE_RELATION_NAME).has("predicateUri", property.getPredicateUri());
 
     Vertex predicateVertex;
     Vertex valueTypeVertex;
-    if (predicate.asAdmin().clone().hasNext()) {
+    if (predicate.hasNext()) {
       predicateVertex = predicate.next();
     } else {
-      predicate = traversal.addV("predicate");
-      predicateVertex = predicate.next();
+      predicateVertex = traversal.addV("predicate").next();
       predicateVertex.property("predicateUri", property.getPredicateUri());
       col.addEdge(HAS_PREDICATE_RELATION_NAME, predicateVertex);
     }
