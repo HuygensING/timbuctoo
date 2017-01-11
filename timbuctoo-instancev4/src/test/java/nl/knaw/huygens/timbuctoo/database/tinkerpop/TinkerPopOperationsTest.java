@@ -58,17 +58,22 @@ import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_ITE
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_PROPERTY_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndChangeListener;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsListenerAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapperAndMappings;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
+import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.VreStubs.minimalCorrectVre;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
@@ -2994,6 +2999,9 @@ public class TinkerPopOperationsTest {
       .withVertex("rawItem", v -> v
         .withProperty("tim_id", "b")
       )
+      .withVertex("someThingFromDifferentVre", v -> v
+        .withProperty("other", true)
+      )
       .wrap();
     TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
 
@@ -3007,10 +3015,73 @@ public class TinkerPopOperationsTest {
       equalTo(false));
 
     assertThat(graph.traversal().V().has("tim_id").hasNext(), equalTo(false));
+
+    assertThat(graph.traversal().V().has("other").hasNext(), equalTo(true));
   }
 
   @Test
   public void deleteVreRemovesAllCollectionsFromDatabase() {
+    TinkerPopGraphManager graphManager = newGraph()
+      .withVertex("vreName", v -> v
+        .withLabel("VRE")
+        .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "vreName")
+        .withOutgoingRelation(HAS_COLLECTION_RELATION_NAME, "collection1")
+        .withOutgoingRelation(HAS_COLLECTION_RELATION_NAME, "collection2")
+      )
+      .withVertex("collection1", v -> v
+        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "collection1")
+        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "entityType1")
+        .withProperty(IS_RELATION_COLLECTION_PROPERTY_NAME, true)
+        .withOutgoingRelation(HAS_DISPLAY_NAME_RELATION_NAME, "displayName")
+        .withOutgoingRelation(HAS_PROPERTY_RELATION_NAME, "property")
+        .withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME, "entityNode")
+      )
+      .withVertex("displayName", v -> v
+        .withProperty("displayName", true)
+        .withProperty("propertyType", "string")
+      )
+      .withVertex("property", v -> v
+        .withProperty("property", true)
+        .withProperty("propertyType", "string")
+      )
+      .withVertex("entityNode", v -> v
+        .withOutgoingRelation(HAS_ENTITY_RELATION_NAME, "entity")
+      )
+      .withVertex("entity", v -> v
+        .withProperty("entity", true)
+      )
+      .withVertex("collection2", v -> v
+        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "collection2")
+        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "entityType2")
+        .withProperty(IS_RELATION_COLLECTION_PROPERTY_NAME, false)
+      )
+      .withVertex("otherVreCollection", v -> v
+        .withProperty(COLLECTION_NAME_PROPERTY_NAME, "otherVreCollection")
+        .withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "entityType3")
+        .withProperty(IS_RELATION_COLLECTION_PROPERTY_NAME, false)
+      )
+      .wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+
+    instance.deleteVre("vreName");
+
+    Graph graph = graphManager.getGraph();
+
+    assertThat(graph.traversal().V().has(Vre.VRE_NAME_PROPERTY_NAME, "vreName").hasNext(),
+      equalTo(false));
+
+    assertThat(graph.traversal().V().has(COLLECTION_NAME_PROPERTY_NAME, "collection1").hasNext(),
+      equalTo(false));
+
+    assertThat(graph.traversal().V().has(COLLECTION_NAME_PROPERTY_NAME, "collection2").hasNext(),
+      equalTo(false));
+
+    assertThat(graph.traversal().V().has(COLLECTION_NAME_PROPERTY_NAME, "otherVreCollection").hasNext(),
+      equalTo(true));
+
+    assertThat(graph.traversal().V().has("entity").hasNext(), equalTo(false));
+    assertThat(graph.traversal().V().has("displayName").hasNext(), equalTo(false));
+    assertThat(graph.traversal().V().has("entity").hasNext(), equalTo(false));
 
   }
 
