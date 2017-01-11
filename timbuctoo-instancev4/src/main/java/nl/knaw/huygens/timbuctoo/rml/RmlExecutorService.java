@@ -100,10 +100,12 @@ public class RmlExecutorService {
     vres.reload();//FIXME naar importSession.close can be done when the Vres are retrieved via TimbuctooActions
   }
 
-  private void reportTripleCount(AtomicLong tripleCount, AtomicLong curTime, Consumer<String> statusUpdate) {
+  private void reportTripleCount(AtomicLong tripleCount, AtomicLong lastLogTime, Consumer<String> statusUpdate) {
     final long curCount = tripleCount.incrementAndGet();
-    if ((Clock.systemUTC().millis() - curTime.get()) > 500) {
+    long curTime = Clock.systemUTC().millis();
+    if ((curTime - lastLogTime.get()) > 100) {
       statusUpdate.accept(String.format("Processed %d triples", curCount));
+      lastLogTime.set(curTime);
     }
     if (LOG.isDebugEnabled()) {
       LOG.debug(String.format("Processed %d triples", curCount));
