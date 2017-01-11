@@ -38,6 +38,7 @@ import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Element;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
@@ -51,6 +52,10 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_ITEM_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_PROPERTY_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withProperties;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
@@ -2968,6 +2973,50 @@ public class TinkerPopOperationsTest {
         .withProperty("rdfUri", "http://example.org/pred2")
         .withProperty("typeUri", "http://example.org/string")
     ));
+  }
+
+  @Test
+  public void deleteVreRemovesAllRawCollectionsFromDatabase() {
+    TinkerPopGraphManager graphManager = newGraph()
+      .withVertex("vreName", v -> v
+        .withLabel("VRE")
+        .withProperty(Vre.VRE_NAME_PROPERTY_NAME, "vreName")
+        .withOutgoingRelation(RAW_COLLECTION_EDGE_NAME, "rawCollection")
+      )
+      .withVertex("rawCollection", v -> v
+        .withProperty(RAW_COLLECTION_NAME_PROPERTY_NAME, "rawCollection")
+        .withOutgoingRelation(RAW_ITEM_EDGE_NAME, "rawItem")
+        .withOutgoingRelation(RAW_PROPERTY_EDGE_NAME, "rawProperty")
+      )
+      .withVertex("rawProperty", v -> v
+        .withProperty("tim_id", "a")
+      )
+      .withVertex("rawItem", v -> v
+        .withProperty("tim_id", "b")
+      )
+      .wrap();
+    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+
+    instance.deleteVre("vreName");
+
+    Graph graph = graphManager.getGraph();
+    assertThat(graph.traversal().V().has(Vre.VRE_NAME_PROPERTY_NAME, "vreName").hasNext(),
+      equalTo(false));
+
+    assertThat(graph.traversal().V().has(RAW_COLLECTION_NAME_PROPERTY_NAME, "rawCollection").hasNext(),
+      equalTo(false));
+
+    assertThat(graph.traversal().V().has("tim_id").hasNext(), equalTo(false));
+  }
+
+  @Test
+  public void deleteVreRemovesAllCollectionsFromDatabase() {
+
+  }
+
+  @Test
+  public void deleteVreRemovesAllIndexEntries() {
+
   }
 }
 
