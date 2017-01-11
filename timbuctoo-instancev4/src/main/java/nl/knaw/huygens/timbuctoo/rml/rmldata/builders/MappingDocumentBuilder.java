@@ -120,22 +120,22 @@ public class MappingDocumentBuilder {
 
   public RmlMappingDocument build(Function<RdfResource, Optional<DataSource>> dataSourceFactory) {
 
-    final List<RrTriplesMap> triplesMaps = breakCyclesAndSort(this.tripleMapBuilders).stream()
+    final List<RrTriplesMap> triplesMaps = breakCyclesAndSort(this.tripleMapBuilders)
+      .stream()
       // Build the tripleMapBuilders with lambda to resolve otherMap they are dependent on
       .map(tripleMapBuilder -> tripleMapBuilder.build(dataSourceFactory, this::getRrTriplesMap, errors::add))
       .filter(x -> x != null)
       // First collect all the builders, so requestedTripleMaps is filled via getRrTriplesMap lambda
-      .collect(Collectors.toList())
+      .collect(Collectors.toList());
+    triplesMaps
       .stream()
       // Resolve uri's of requested triple maps to actual RrTripleMap using PromisedTriplesMap.setTriplesMap
-      .map(current -> {
-        if (requestedTripleMaps.containsKey(current.getUri())) {
-          requestedTripleMaps.get(current.getUri()).forEach(promise -> promise.setTriplesMap(current));
+      .forEach(current -> {
+        List<PromisedTriplesMap> maps = requestedTripleMaps.get(current.getUri());
+        if (maps != null) {
+          maps.forEach(promise -> promise.setTriplesMap(current));
         }
-        return current;
-      })
-      // Recollect to final list
-      .collect(Collectors.toList());
+      });
 
     return new RmlMappingDocument(triplesMaps, errors);
   }
