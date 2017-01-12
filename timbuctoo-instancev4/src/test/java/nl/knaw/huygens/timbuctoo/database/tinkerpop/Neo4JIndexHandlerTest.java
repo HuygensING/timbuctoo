@@ -16,6 +16,7 @@ import java.util.UUID;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
@@ -278,24 +279,29 @@ public class Neo4JIndexHandlerTest {
 
   @Test
   public void upsertIntoIdIndexRemovesTheOldIndexEntryAndAddsANewOne() {
-    UUID id1 = UUID.randomUUID();
-    UUID newId = UUID.randomUUID();
+    UUID id = UUID.randomUUID();
     TinkerPopGraphManager tinkerPopGraphManager = newGraph()
       .withVertex(v -> v
-        .withTimId(id1.toString())
-        .withProperty("keyword_type", "keywordType")
-        .withProperty("displayName", "query")
+        .withTimId(id.toString())
+        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("rev", 2)
       )
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
-    Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
-    instance.insertIntoIdIndex(id1, vertex);
-    assertThat(instance.findById(id1).isPresent(), is(true));
+    Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id.toString()).has("rev", 1).next();
+    instance.insertIntoIdIndex(id, vertex);
+    assertThat(instance.findById(id).isPresent(), is(true));
+    Vertex updatedVertex =
+      tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id.toString()).has("rev", 2).next();
 
-    instance.upsertIntoIdIndex(newId, vertex);
+    instance.upsertIntoIdIndex(id, updatedVertex);
 
-    assertThat(instance.findById(id1).isPresent(), is(false));
-    assertThat(instance.findById(newId).isPresent(), is(true));
+    Optional<Vertex> updatedVertexOpt = instance.findById(id);
+    assertThat(updatedVertexOpt, is(present()));
+    assertThat(updatedVertexOpt.get(), likeVertex().withProperty("rev", 2));
   }
 
   @Test
@@ -342,10 +348,20 @@ public class Neo4JIndexHandlerTest {
 
   @Test
   public void findEdgeByIdReturnsAnEmtptyOptionalWhenTheEdgeIsNotFound() {
-    Neo4jIndexHandler instance = new Neo4jIndexHandler(newGraph().wrap());
     UUID edgeId = UUID.randomUUID();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId))
+      )
+      .withVertex("other", v -> {
+      })
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    Edge edge = tinkerPopGraphManager.getGraph().traversal().E().has("tim_id", edgeId.toString()).next();
+    instance.insertEdgeIntoIdIndex(edgeId, edge);
+    UUID otherEdgeId = UUID.randomUUID();
 
-    Optional<Edge> edgeOpt = instance.findEdgeById(edgeId);
+    Optional<Edge> edgeOpt = instance.findEdgeById(otherEdgeId);
 
     assertThat(edgeOpt, is(not(present())));
   }

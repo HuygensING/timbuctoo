@@ -103,10 +103,8 @@ public class Neo4jIndexHandler implements IndexHandler {
   @Override
   public Optional<Vertex> findById(UUID timId) {
     IndexHits<Node> hits = getIdIndex().query(TIM_ID, timId.toString());
-    List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
-    GraphTraversal<Vertex, Vertex> vertexT = traversal().V(ids);
 
-    return !ids.isEmpty() && vertexT.hasNext() ? Optional.of(vertexT.next()) : Optional.empty();
+    return hits.hasNext() ? traversal().V(hits.next().getId()).tryNext() : Optional.empty();
   }
 
   @Override
@@ -118,7 +116,7 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   @Override
   public void upsertIntoIdIndex(UUID timId, Vertex vertex) {
-    removeFromIdIndex(vertex);
+    findById(timId).ifPresent(this::removeFromIdIndex);
     insertIntoIdIndex(timId, vertex);
   }
 
