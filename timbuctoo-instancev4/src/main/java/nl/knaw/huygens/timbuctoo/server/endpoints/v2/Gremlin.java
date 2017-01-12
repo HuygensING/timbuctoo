@@ -52,7 +52,7 @@ public class Gremlin {
 
     final DefaultImportCustomizerProvider provider = new DefaultImportCustomizerProvider();
     final Set<String> allImports = provider.getAllImports();
-    allImports.removeIf(path -> path.indexOf("groovy.") > -1);
+    allImports.removeIf(path -> path.contains("groovy."));
     engine.addImports(allImports);
     engine.addImports(Sets.newHashSet("import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP"));
 
