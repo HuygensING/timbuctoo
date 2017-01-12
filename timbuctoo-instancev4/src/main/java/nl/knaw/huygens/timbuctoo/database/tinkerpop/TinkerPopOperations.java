@@ -927,6 +927,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       "rev", 1
     );
     setCreated(edge, userId, time);
+    listener.onCreateEdge(collection, edge);
     return id;
   }
 

@@ -2,7 +2,8 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +45,7 @@ public class IdIndexChangeListenerTest {
   }
 
   private Vertex vertexWithId(UUID timId) {
-    Neo4jGraph graph = newGraph().withVertex(v -> v.withTimId(timId)).build();
+    Graph graph = newGraph().withVertex(v -> v.withTimId(timId)).build();
     return graph.traversal().V().has("tim_id", timId.toString()).next();
   }
 
@@ -87,6 +88,25 @@ public class IdIndexChangeListenerTest {
     instance.onAddToCollection(NULL_COLLECTION, Optional.empty(), nullVertex);
 
     verifyZeroInteractions(indexHandler);
+  }
+
+  @Test
+  public void onCreateEdgeCallTheIndexHandler() {
+    UUID timId = UUID.randomUUID();
+    Edge edge = edgeWithId(timId);
+
+    instance.onCreateEdge(NULL_COLLECTION, edge);
+
+    verify(indexHandler).insertEdgeIntoIdIndex(timId, edge);
+  }
+
+  private Edge edgeWithId(UUID timId) {
+    Graph graph = newGraph()
+      .withVertex(v -> v.withOutgoingRelation("rel", "other", e -> e.withTim_id(timId)))
+      .withVertex("other", v -> {
+      })
+      .build();
+    return graph.traversal().E().has("tim_id", timId.toString()).next();
   }
 
 }

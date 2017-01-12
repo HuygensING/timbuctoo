@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.apache.tinkerpop.gremlin.structure.Direction;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 
@@ -220,6 +221,11 @@ public class ChangeListenerTest {
     @Override
     public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
       validateVertex.accept(newVertex);
+    }
+
+    @Override
+    public void onCreateEdge(Collection collection, Edge edge) {
+
     }
   }
 }

@@ -56,6 +56,7 @@ import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withPropertie
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndChangeListener;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapperAndMappings;
@@ -85,6 +86,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyString;
@@ -1649,6 +1651,51 @@ public class TinkerPopOperationsTest {
       .withTypeId(typeId)
     ));
   }
+
+  @Test
+  public void acceptRelationCallTheChangeListener() throws Exception {
+    ChangeListener changeListener = mock(ChangeListener.class);
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    TinkerPopGraphManager graphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+    TinkerPopOperations instance = forGraphMappingsAndChangeListener(graphManager, vres, changeListener);
+    CreateRelation createRelation = new CreateRelation(sourceId, typeId, targetId);
+    createRelation.setCreated(new Change(Instant.now().toEpochMilli(), "userId", null));
+
+    instance.acceptRelation(collection, createRelation);
+
+    verify(changeListener).onCreateEdge(argThat(is(sameInstance(collection))), argThat(is(likeEdge()
+      .withSourceWithId(sourceId)
+      .withTargetWithId(targetId)
+      .withTypeId(typeId)
+    )));
+  }
+
 
   @Test
   public void acceptRelationSetsTheCreatedInformation() throws Exception {

@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,11 @@ public class FulltextIndexChangeListener implements ChangeListener {
   @Override
   public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
     handleChange(collection, newVertex);
+  }
+
+  @Override
+  public void onCreateEdge(Collection collection, Edge edge) {
+
   }
 
   private void handleChange(Collection collection, Vertex vertex) {

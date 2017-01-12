@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Optional;
@@ -33,5 +34,10 @@ public class CompositeChangeListener implements ChangeListener {
   @Override
   public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
     subListeners.forEach(l -> l.onAddToCollection(collection, oldVertex, newVertex));
+  }
+
+  @Override
+  public void onCreateEdge(Collection collection, Edge edge) {
+
   }
 }
