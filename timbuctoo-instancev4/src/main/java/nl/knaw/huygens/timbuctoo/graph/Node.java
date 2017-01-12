@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.graph;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.model.GraphReadUtils;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
 import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
@@ -9,11 +8,11 @@ import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParse
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static java.util.Comparator.comparing;
 
 public class Node {
   private static final Map<String, PropertyDescriptor> propertyDescriptors = new HashMap<>();
@@ -92,22 +91,18 @@ public class Node {
             '}';
   }
 
-  private String getVertexType(Vertex vertex)  {
+  private String getVertexType(Vertex vertex) {
     String types = (String) vertex.property("types").value();
     ObjectMapper mapper = new ObjectMapper();
 
-
-    List<String> typeList = null;
     try {
-      typeList = mapper.readValue(types,
-              mapper.getTypeFactory().constructCollectionType(List.class, String.class));
+      List<String> typeList = mapper.readValue(types,
+        mapper.getTypeFactory().constructCollectionType(List.class, String.class));
+      return typeList.stream().min(comparing(String::length)).get();
     } catch (IOException e) {
-      typeList = new ArrayList<>();
-      typeList.add("");
+      return "";
     }
 
-    typeList.sort((o1, o2) -> o1.length() - o2.length());
-    return typeList.get(0);
   }
 
 }

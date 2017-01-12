@@ -101,6 +101,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Comparator.comparing;
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
@@ -987,15 +988,14 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   private Optional<EntityRelation> getEntityRelation(Vertex sourceV, Vertex targetV, UUID typeId,
                                                      Collection collection) {
+    String typeString = typeId.toString();
     return stream(sourceV.edges(Direction.BOTH))
       .filter(e ->
         (e.inVertex().id().equals(targetV.id()) || e.outVertex().id().equals(targetV.id())) &&
-          getRequiredProp(e, "typeId", "").equals(typeId.toString())
+          getRequiredProp(e, "typeId", "").equals(typeString)
       )
-      //sort by rev (ascending)
-      .sorted((o1, o2) -> getRequiredProp(o1, "rev", -1).compareTo(getRequiredProp(o2, "rev", -1)))
-      //get last element, i.e. with the highest rev, i.e. the most recent
-      .reduce((o1, o2) -> o2)
+      // get element with the highest rev, i.e., the most recent
+      .max(comparing(o -> getRequiredProp(o, "rev", -1)))
       .map(edge -> makeEntityRelation(edge, collection));
   }
 

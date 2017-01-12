@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,8 +20,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static java.util.Comparator.comparing;
 import static nl.knaw.huygens.timbuctoo.rml.util.TopologicalSorter.topologicalSort;
-import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
 public class MappingDocumentBuilder {
   private List<TriplesMapBuilder> tripleMapBuilders = new ArrayList<>();
@@ -94,11 +93,9 @@ public class MappingDocumentBuilder {
         }
       }
       //get the triplesMapBuilder that is currently taking part in most of the cycles
-      triplesMapBuilders.stream()
-        .map(b -> tuple(b, cycleOccurrence.count(b)))
-        .sorted(this::selectBestBreakCandidate)
-        .map(Tuple::getLeft)
-        .findFirst()
+      triplesMapBuilders
+        .stream()
+        .max(comparing(cycleOccurrence::count))
         .ifPresent(x -> {
           result.add(x.splitOffDependendingPredObjMaps());
           List<Multiset<TriplesMapBuilder>> itemsToRemove = new LinkedList<>();
@@ -111,11 +108,6 @@ public class MappingDocumentBuilder {
         });
     }
     return result;
-  }
-
-  private int selectBestBreakCandidate(Tuple<TriplesMapBuilder, Integer> o1, Tuple<TriplesMapBuilder, Integer> o2) {
-    //reverse sort by cycle breakage
-    return o2.getRight() - o1.getRight();
   }
 
   public RmlMappingDocument build(Function<RdfResource, Optional<DataSource>> dataSourceFactory) {
