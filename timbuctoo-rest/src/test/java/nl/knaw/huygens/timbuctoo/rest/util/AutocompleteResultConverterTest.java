@@ -22,21 +22,21 @@ package nl.knaw.huygens.timbuctoo.rest.util;
  * #L%
  */
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Map;
-
-import javax.ws.rs.core.UriBuilder;
-
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
+import javax.ws.rs.core.UriBuilder;
+import java.util.List;
+import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AutocompleteResultConverterTest {
 
@@ -60,13 +60,15 @@ public class AutocompleteResultConverterTest {
     Map<String, Object> input2 = Maps.<String, Object> newHashMap();
     Map<String, Object> output2 = convertsToOutput(input2);
 
-    List<Map<String, Object>> input = Lists.<Map<String, Object>> newArrayList(input1, input2);
+    List<Map<String, Object>> inputResults = Lists.<Map<String, Object>> newArrayList(input1, input2);
+    RawSearchResult input = new RawSearchResult(2, inputResults);
 
     // action
-    Iterable<Map<String, Object>> convertedResult = instance.convert(input, URI);
+    RawSearchResult convertedResult = instance.convert(input, URI);
 
     // verify
-    assertThat(convertedResult, containsInAnyOrder(output1, output2));
+    assertThat(convertedResult.getResults(), containsInAnyOrder(output1, output2));
+    assertThat(convertedResult.getTotal(), is(input.getTotal()));
   }
 
   public Map<String, Object> convertsToOutput(Map<String, Object> input) {

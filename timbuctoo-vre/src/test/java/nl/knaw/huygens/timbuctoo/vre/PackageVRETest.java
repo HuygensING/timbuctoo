@@ -36,6 +36,7 @@ import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
 import org.junit.Before;
 import org.junit.Test;
@@ -478,11 +479,11 @@ public class PackageVRETest {
     setupScopeGetBaseEntityTypesWith(TYPE);
 
     Index indexMock1 = indexFoundFor(TYPE);
-    Iterable<Map<String, Object>> rawSearchResult = Lists.newArrayList();
+    RawSearchResult rawSearchResult = new RawSearchResult(0, Lists.<Map<String, Object>>newArrayList());
     when(indexMock1.doRawSearch(QUERY, START, ROWS, FILTERS)).thenReturn(rawSearchResult);
 
     // action
-    Iterable<Map<String, Object>> actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
+    RawSearchResult actualSearchResult = vre.doRawSearch(TYPE, QUERY, 0, 20, FILTERS);
 
     // verify
     assertThat(actualSearchResult, is(sameInstance(rawSearchResult)));

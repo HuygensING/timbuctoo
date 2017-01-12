@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 
 import java.util.Collection;
 import java.util.List;
@@ -165,6 +166,6 @@ public interface VRE extends Scope {
    * @throws SearchException when the search library throws an exception
    * @throws RawSearchUnavailableException when the type has no field defined to support raw search 
    */
-  Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String searchString, int start, int numberOfResults, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException,
+  RawSearchResult doRawSearch(Class<? extends DomainEntity> type, String searchString, int start, int numberOfResults, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException,
       RawSearchUnavailableException;
 }

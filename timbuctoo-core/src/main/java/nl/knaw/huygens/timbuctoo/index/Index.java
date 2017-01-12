@@ -22,14 +22,15 @@ package nl.knaw.huygens.timbuctoo.index;
  * #L%
  */
 
-import java.util.List;
-import java.util.Map;
-
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
+
+import java.util.List;
+import java.util.Map;
 
 public interface Index {
 
@@ -101,5 +102,5 @@ public interface Index {
    */
   <T extends FacetedSearchParameters<T>> FacetedSearchResult search(FacetedSearchParameters<T> searchParameters) throws SearchException, SearchValidationException;
 
-  Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException;
+  RawSearchResult doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException;
 }

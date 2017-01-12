@@ -31,6 +31,7 @@ import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -92,7 +93,7 @@ public class KeywordAutocompleteResource extends ResourceBase {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     VRE vre = getValidVRE(vreId);
 
-    Iterable<Map<String, Object>> rawSearchResult = null;
+    RawSearchResult rawSearchResult = null;
     try {
       Map<String, Object> additionalFilters = Maps.newHashMap();
       if (typeFilter != null) {
@@ -110,7 +111,7 @@ public class KeywordAutocompleteResource extends ResourceBase {
       return super.mapException(NOT_IMPLEMENTED, String.format(NO_AUTOCOMPLETE, vreId, entityName));
     }
 
-    Iterable<Map<String, Object>> result = resultConverter.convert(rawSearchResult, getCollectionUri(entityName));
+    RawSearchResult result = resultConverter.convert(rawSearchResult, getCollectionUri(entityName));
 
     return Response.ok(result).build();
   }

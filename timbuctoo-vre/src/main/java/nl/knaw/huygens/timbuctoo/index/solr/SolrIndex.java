@@ -35,6 +35,7 @@ import nl.knaw.huygens.timbuctoo.index.Index;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -205,7 +206,7 @@ public class SolrIndex implements Index {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException {
+  public RawSearchResult doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) throws SearchException, RawSearchUnavailableException {
     QueryResponse queryResponse = null;
     try {
       String solrQuery = createSolrQuery(query, additionalFilters);
@@ -218,7 +219,7 @@ public class SolrIndex implements Index {
     for (SolrDocument doc : queryResponse.getResults()) {
       results.add(doc.getFieldValueMap());
     }
-    return results;
+    return new RawSearchResult(queryResponse.getResults().getNumFound(), results);
   }
 
   private String createSolrQuery(String query, Map<String, Object> additionalFilters) throws RawSearchUnavailableException {

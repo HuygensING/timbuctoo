@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.Keyword;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
 import nl.knaw.huygens.timbuctoo.rest.util.CustomHeaders;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -95,7 +96,7 @@ public class KeywordAutoCompleteResourceTest extends WebServiceTestSetup {
     VRE vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
 
-    List<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
+    RawSearchResult rawSearchResult = newRawSearchResult();
 
     when(vre.doRawSearch(KEYWORD_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS, NO_FILTERS)).thenReturn(rawSearchResult);
     convertedResultIsFoundFor(rawSearchResult);
@@ -107,13 +108,17 @@ public class KeywordAutoCompleteResourceTest extends WebServiceTestSetup {
     // verify
     responseStatusIs(response, Status.OK);
 
-    List<Map<String, Object>> entity = response.getEntity(new GenericType<List<Map<String, Object>>>() {
-    });
+    RawSearchResult entity = response.getEntity(RawSearchResult.class);
 
-    assertThat(entity, hasSize(2));
-    verifyEntry(entity.get(0), KEY_VALUE1, VALUE_VALUE1);
-    verifyEntry(entity.get(1), KEY_VALUE2, VALUE_VALUE2);
+    List<Map<String, Object>> results = Lists.newArrayList(entity.getResults());
+    assertThat(results, hasSize(2));
+    verifyEntry(results.get(0), KEY_VALUE1, VALUE_VALUE1);
+    verifyEntry(results.get(1), KEY_VALUE2, VALUE_VALUE2);
 
+  }
+
+  private RawSearchResult newRawSearchResult() {
+    return new RawSearchResult(0, Lists.<Map<String,Object>>newArrayList());
   }
 
   @Test
@@ -122,7 +127,7 @@ public class KeywordAutoCompleteResourceTest extends WebServiceTestSetup {
     VRE vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
 
-    List<Map<String, Object>> rawSearchResult = Lists.<Map<String, Object>>newArrayList();
+    RawSearchResult rawSearchResult = newRawSearchResult();
 
     when(vre.doRawSearch(KEYWORD_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS, NO_FILTERS)).thenReturn(rawSearchResult);
     convertedResultIsFoundFor(rawSearchResult);
@@ -143,7 +148,7 @@ public class KeywordAutoCompleteResourceTest extends WebServiceTestSetup {
     VRE vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
 
-    List<Map<String, Object>> rawSearchResult = Lists.newArrayList();
+    RawSearchResult rawSearchResult = newRawSearchResult();
 
     when(vre.doRawSearch(KEYWORD_TYPE, SEARCH_PARAM, DEFAULT_START, DEFAULT_ROWS, NO_FILTERS)).thenReturn(rawSearchResult);
     convertedResultIsFoundFor(rawSearchResult);
@@ -163,7 +168,7 @@ public class KeywordAutoCompleteResourceTest extends WebServiceTestSetup {
     VRE vre = mock(VRE.class);
     makeVREAvailable(vre, VRE_ID);
 
-    List<Map<String, Object>> rawSearchResult = Lists.newArrayList();
+    RawSearchResult rawSearchResult = newRawSearchResult();
     Map<String, Object> expectedFilters = Maps.newHashMap();
     expectedFilters.put(Keyword.INDEX_TYPE_FIELD, TYPE_VALUE);
 
@@ -179,12 +184,13 @@ public class KeywordAutoCompleteResourceTest extends WebServiceTestSetup {
   }
 
 
-  private void convertedResultIsFoundFor(List<Map<String, Object>> rawSearchResult) {
+  private void convertedResultIsFoundFor(RawSearchResult rawSearchResult) {
     AutocompleteResultConverter resultConverter = injector.getInstance(AutocompleteResultConverter.class);
 
-    ArrayList<Map<String, Object>> convertedResult = Lists.<Map<String, Object>>newArrayList();
-    convertedResult.add(createEntry(KEY_VALUE1, VALUE_VALUE1));
-    convertedResult.add(createEntry(KEY_VALUE2, VALUE_VALUE2));
+    ArrayList<Map<String, Object>> results = Lists.<Map<String, Object>>newArrayList();
+    results.add(createEntry(KEY_VALUE1, VALUE_VALUE1));
+    results.add(createEntry(KEY_VALUE2, VALUE_VALUE2));
+    RawSearchResult convertedResult = new RawSearchResult(2, results);
     when(resultConverter.convert(rawSearchResult, entityURI)).thenReturn(convertedResult);
   }
 

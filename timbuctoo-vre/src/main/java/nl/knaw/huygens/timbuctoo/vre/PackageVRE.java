@@ -38,6 +38,7 @@ import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.model.SearchResult;
 import nl.knaw.huygens.timbuctoo.search.FacetedSearchResultProcessor;
 import nl.knaw.huygens.timbuctoo.search.FullTextSearchFieldFinder;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import nl.knaw.huygens.timbuctoo.search.converters.SearchResultConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -300,7 +301,7 @@ public class PackageVRE implements VRE {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(Class<? extends DomainEntity> type, String query, int start, int rows, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException, RawSearchUnavailableException {
+  public RawSearchResult doRawSearch(Class<? extends DomainEntity> type, String query, int start, int rows, Map<String, Object> additionalFilters) throws NotInScopeException, SearchException, RawSearchUnavailableException {
     if (!inScope(type)) {
       throw new NotInScopeException(type, vreId);
     }

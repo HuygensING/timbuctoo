@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.config.TypeRegistry;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
 import nl.knaw.huygens.timbuctoo.rest.util.AutocompleteResultConverter;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import nl.knaw.huygens.timbuctoo.vre.NotInScopeException;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.VRE;
@@ -47,7 +48,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
-import java.util.Map;
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -89,7 +89,7 @@ public class AutocompleteResource extends ResourceBase {
     Class<? extends DomainEntity> type = getValidEntityType(entityName);
     VRE vre = getValidVRE(vreId);
 
-    Iterable<Map<String, Object>> rawSearchResult = null;
+    RawSearchResult rawSearchResult = null;
     try {
       rawSearchResult = vre.doRawSearch(type, query, start, rows, Maps.<String, Object>newHashMap());
     } catch (NotInScopeException e) {
@@ -102,7 +102,7 @@ public class AutocompleteResource extends ResourceBase {
       return super.mapException(NOT_IMPLEMENTED, String.format(NO_AUTOCOMPLETE, vreId, entityName));
     }
 
-    Iterable<Map<String, Object>> result = resultConverter.convert(rawSearchResult, getCollectionUri(entityName));
+    RawSearchResult result = resultConverter.convert(rawSearchResult, getCollectionUri(entityName));
 
     return Response.ok(result).build();
   }

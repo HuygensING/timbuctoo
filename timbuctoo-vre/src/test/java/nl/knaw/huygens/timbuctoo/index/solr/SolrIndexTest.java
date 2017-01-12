@@ -35,6 +35,7 @@ import nl.knaw.huygens.solr.AbstractSolrServer;
 import nl.knaw.huygens.timbuctoo.index.IndexException;
 import nl.knaw.huygens.timbuctoo.index.RawSearchUnavailableException;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import nl.knaw.huygens.timbuctoo.vre.SearchException;
 import nl.knaw.huygens.timbuctoo.vre.SearchValidationException;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -562,10 +563,10 @@ public class SolrIndexTest {
     setupQueryResponseForQueryWithResults(query, result1, result2);
 
     // action
-    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS, FILTERS);
+    RawSearchResult searchResult = instance.doRawSearch(QUERY, START, ROWS, FILTERS);
 
     // verify
-    assertThat(searchResult, containsInAnyOrder(result1, result2));
+    assertThat(searchResult.getResults(), containsInAnyOrder(result1, result2));
   }
 
   @SuppressWarnings("unchecked")
@@ -581,11 +582,11 @@ public class SolrIndexTest {
     setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
 
     // action
-    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(otherQuery, START, ROWS, FILTERS);
+    RawSearchResult searchResult = instance.doRawSearch(otherQuery, START, ROWS, FILTERS);
 
     // verify
     verify(solrServerMock).search(argThat(expectedQuery));
-    assertThat(searchResult, containsInAnyOrder(result1, result2));
+    assertThat(searchResult.getResults(), containsInAnyOrder(result1, result2));
   }
 
   private String getSolrQuery(String query) {
@@ -605,11 +606,11 @@ public class SolrIndexTest {
     setupQueryResponseForQueryWithResults(expectedQuery, result1, result2);
 
     // action
-    Iterable<Map<String, Object>> searchResult = instance.doRawSearch(QUERY, START, ROWS, filters);
+    RawSearchResult searchResult = instance.doRawSearch(QUERY, START, ROWS, filters);
 
     // verify
     verify(solrServerMock).search(argThat(expectedQuery));
-    assertThat(searchResult, containsInAnyOrder(result1, result2));
+    assertThat(searchResult.getResults(), containsInAnyOrder(result1, result2));
   }
 
   private String getSolrQueryWithAdditionalFilters(String query, Map<String, Object> filters) {

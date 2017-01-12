@@ -25,6 +25,7 @@ package nl.knaw.huygens.timbuctoo.rest.util;
 import com.google.common.collect.Lists;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 
 import java.net.URI;
 import java.util.List;
@@ -39,13 +40,14 @@ public class AutocompleteResultConverter {
     this.entryConverter = entryConverter;
   }
 
-  public Iterable<Map<String, Object>> convert(Iterable<Map<String, Object>> rawSearchResult, URI entityURI) {
+  public RawSearchResult convert(RawSearchResult rawSearchResult, URI entityURI) {
     List<Map<String,Object>> convertedResult = Lists.newArrayList();
-    for(Map<String, Object> resultEntry : rawSearchResult){
+    // convert the results to what the client wants to see
+    for(Map<String, Object> resultEntry : rawSearchResult.getResults()){
       convertedResult.add(entryConverter.convert(resultEntry, entityURI));
     }
 
-    return convertedResult;
+    return new RawSearchResult(rawSearchResult.getTotal(), convertedResult);
   }
 
 

@@ -22,9 +22,11 @@ package nl.knaw.huygens.timbuctoo.index;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import nl.knaw.huygens.facetedsearch.model.FacetedSearchResult;
 import nl.knaw.huygens.facetedsearch.model.parameters.FacetedSearchParameters;
 import nl.knaw.huygens.timbuctoo.model.DomainEntity;
+import nl.knaw.huygens.timbuctoo.search.RawSearchResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +78,7 @@ public class NoOpIndex implements Index {
   }
 
   @Override
-  public Iterable<Map<String, Object>> doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) {
-    return null;
+  public RawSearchResult doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters) {
+    return new RawSearchResult(0, Lists.<Map<String, Object>>newArrayList());
   }
 }
