@@ -39,13 +39,18 @@ class GenericIndexer
         puts "Index #{collection} already exists"
       end
       @solr_io.delete_data(collection)
-# begin
+      begin
       @timbuctoo_io.scrape_collection(collection, :with_relations => true, :process_record => -> (record) {
         convert(mapper, record, collection)
       })
 
       @solr_io.commit(collection)
-# rescue
+      rescue Exception => e
+          STDERR.puts "indexer failed"
+          STDERR.puts e
+          # remove all collections up till now?
+          @solr_io.delete_index(collection)
+      end
     end
   end
 
