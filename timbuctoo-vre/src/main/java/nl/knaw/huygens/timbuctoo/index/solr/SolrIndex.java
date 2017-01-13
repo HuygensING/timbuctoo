@@ -209,11 +209,14 @@ public class SolrIndex implements Index {
   @Override
   public RawSearchResult doRawSearch(String query, int start, int rows, Map<String, Object> additionalFilters)
     throws SearchException, RawSearchUnavailableException {
+
     FacetedSearchResult result;
     try {
       DefaultFacetedSearchParameters searchParameters = new DefaultFacetedSearchParameters();
+      String cleanQuery = cleanUpSpecialCharaters(query);
+      System.out.println("query: " + cleanQuery);
       searchParameters
-        .setFullTextSearchParameters(Lists.newArrayList(new FullTextSearchParameter(rawSearchField, query)));
+        .setFullTextSearchParameters(Lists.newArrayList(new FullTextSearchParameter(rawSearchField, cleanQuery)));
 
       result = search(searchParameters);
 
@@ -226,7 +229,7 @@ public class SolrIndex implements Index {
 
   private String cleanUpSpecialCharaters(String term) {
 
-    return term.replace(":", " ");
+    return term.replace(":", " ").replace("\"","");
   }
 
   @Override
