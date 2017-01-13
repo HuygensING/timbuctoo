@@ -39,12 +39,13 @@ class GenericIndexer
         puts "Index #{collection} already exists"
       end
       @solr_io.delete_data(collection)
-
+# begin
       @timbuctoo_io.scrape_collection(collection, :with_relations => true, :process_record => -> (record) {
         convert(mapper, record, collection)
       })
 
       @solr_io.commit(collection)
+# rescue
     end
   end
 
