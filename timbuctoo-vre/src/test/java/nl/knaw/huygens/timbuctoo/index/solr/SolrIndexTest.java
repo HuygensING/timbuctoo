@@ -45,6 +45,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InOrder;
 import org.mockito.Mock;
@@ -71,6 +72,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+@Ignore
 public class SolrIndexTest {
   private static final String INDEX_NAME = "indexName";
   private static final String RAW_SEARCH_FIELD = "rawSearchField";
