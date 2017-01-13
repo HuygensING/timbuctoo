@@ -24,8 +24,6 @@ import java.nio.charset.Charset;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -71,7 +69,8 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
   private String formatHeaders(final MultivaluedMap<String, String> headers) {
     final StringBuilder builder = new StringBuilder();
-    for (final Map.Entry<String, List<String>> headerEntry : getSortedHeaders(headers.entrySet())) {
+
+    headers.entrySet().stream().sorted().forEach(headerEntry -> {
       final List<?> val = headerEntry.getValue();
       final String header = headerEntry.getKey();
 
@@ -89,14 +88,8 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
         }
       }
       builder.append("\n");
-    }
+    });
     return builder.toString();
-  }
-
-  private Set<Map.Entry<String, List<String>>> getSortedHeaders(final Set<Map.Entry<String, List<String>>> headers) {
-    final TreeSet<Map.Entry<String, List<String>>> sortedHeaders = new TreeSet<>(COMPARATOR);
-    sortedHeaders.addAll(headers);
-    return sortedHeaders;
   }
 
   private InputStream addInboundEntityToMdc(InputStream stream, final Charset charset) throws IOException {
