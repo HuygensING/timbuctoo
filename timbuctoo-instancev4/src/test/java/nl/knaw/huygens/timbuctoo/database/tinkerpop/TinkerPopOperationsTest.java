@@ -56,6 +56,7 @@ import static nl.knaw.huygens.timbuctoo.core.dto.CreateEntityStubs.withPropertie
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndChangeListener;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
@@ -1696,7 +1697,6 @@ public class TinkerPopOperationsTest {
     )));
   }
 
-
   @Test
   public void acceptRelationSetsTheCreatedInformation() throws Exception {
     Vres vres = createConfiguration();
@@ -2060,6 +2060,61 @@ public class TinkerPopOperationsTest {
     instance.replaceRelation(collection, updateRelation);
 
     assertThat(graphManager.getGraph().traversal().E().has("tim_id", relId.toString()).count().next(), is(2L));
+  }
+
+  @Test
+  public void replaceRelationCallsTheChangeListener() throws Exception {
+    Vres vres = createConfiguration();
+    Collection collection = vres.getCollection("testrelations").get();
+    UUID typeId = UUID.randomUUID();
+    UUID sourceId = UUID.randomUUID();
+    UUID targetId = UUID.randomUUID();
+    UUID relId = UUID.randomUUID();
+    TinkerPopGraphManager graphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(typeId.toString())
+        .withType("relationtype")
+        .withProperty("relationtype_regularName", "regularName")
+        .withProperty("rev", 1)
+        .withProperty("isLatest", true)
+      )
+      .withVertex(v -> v
+        .withTimId(sourceId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+        .withOutgoingRelation("regularName", "otherVertex", r -> r
+          .withTim_id(relId)
+          .withAccepted("testrelation", true)
+          .withTypeId(typeId)
+          .withRev(1)
+          .addType("testrelation")
+        )
+      )
+      .withVertex("otherVertex", v -> v
+        .withTimId(targetId.toString())
+        .withProperty("rev", 1)
+        .withVre("test")
+        .withType("thing")
+        .withProperty("isLatest", true)
+      )
+      .wrap();
+    ChangeListener changeListener = mock(ChangeListener.class);
+    TinkerPopOperations instance = forGraphMappingsAndChangeListener(graphManager, vres, changeListener);
+    UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
+    long timeStamp = Instant.now().toEpochMilli();
+    String userId = "userId";
+    updateRelation.setModified(new Change(timeStamp, userId, null));
+
+    instance.replaceRelation(collection, updateRelation);
+
+    String acceptedProp = createPropName(collection.getEntityTypeName(), "accepted");
+    verify(changeListener).onEdgeUpdate(
+      argThat(is(sameInstance(collection))),
+      argThat(is(likeEdge().withProperty(acceptedProp, true))),
+      argThat(is(likeEdge().withProperty(acceptedProp, false)))
+    );
   }
 
   @Test

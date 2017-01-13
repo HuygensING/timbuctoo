@@ -16,4 +16,6 @@ public interface ChangeListener {
   void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex);
 
   void onCreateEdge(Collection collection, Edge edge);
+
+  void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge);
 }

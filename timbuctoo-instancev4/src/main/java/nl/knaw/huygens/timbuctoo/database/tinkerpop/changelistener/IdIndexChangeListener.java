@@ -40,4 +40,9 @@ public class IdIndexChangeListener implements ChangeListener {
   public void onCreateEdge(Collection collection, Edge edge) {
     indexHandler.insertEdgeIntoIdIndex(UUID.fromString(edge.value("tim_id")), edge);
   }
+
+  @Override
+  public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
+    indexHandler.upsertIntoEdgeIdIndex(UUID.fromString(newEdge.value("tim_id")), newEdge);
+  }
 }

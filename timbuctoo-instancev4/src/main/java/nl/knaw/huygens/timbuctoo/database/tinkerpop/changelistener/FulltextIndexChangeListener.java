@@ -57,6 +57,11 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   }
 
+  @Override
+  public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
+
+  }
+
   private void handleChange(Collection collection, Vertex vertex) {
     GraphTraversal<Vertex, Vertex> traversal = graphWrapper.getGraph().traversal().V(vertex.id());
     final GraphTraversal<Vertex, Try<JsonNode>> displayNameT = traversal.asAdmin().clone()

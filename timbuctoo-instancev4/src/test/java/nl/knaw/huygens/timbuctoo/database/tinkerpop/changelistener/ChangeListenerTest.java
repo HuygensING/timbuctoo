@@ -227,5 +227,10 @@ public class ChangeListenerTest {
     public void onCreateEdge(Collection collection, Edge edge) {
 
     }
+
+    @Override
+    public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
+
+    }
   }
 }

@@ -100,6 +100,17 @@ public class IdIndexChangeListenerTest {
     verify(indexHandler).insertEdgeIntoIdIndex(timId, edge);
   }
 
+  @Test
+  public void onEdgeUpdateCallsTheIndexHandler() {
+    UUID timId = UUID.randomUUID();
+    Edge edge = edgeWithId(timId);
+    Edge nullEdge = null;
+
+    instance.onEdgeUpdate(NULL_COLLECTION, nullEdge, edge);
+
+    verify(indexHandler).upsertIntoEdgeIdIndex(timId, edge);
+  }
+
   private Edge edgeWithId(UUID timId) {
     Graph graph = newGraph()
       .withVertex(v -> v.withOutgoingRelation("rel", "other", e -> e.withTim_id(timId)))
@@ -108,5 +119,6 @@ public class IdIndexChangeListenerTest {
       .build();
     return graph.traversal().E().has("tim_id", timId.toString()).next();
   }
+
 
 }

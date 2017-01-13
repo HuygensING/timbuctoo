@@ -736,6 +736,8 @@ public class TinkerPopOperations implements DataStoreOperations {
     edge.property(acceptedPropName, accepted);
     edge.property("rev", getProp(origEdge, "rev", Integer.class).orElse(1) + 1);
     setModified(edge, userId, instant);
+
+    listener.onEdgeUpdate(collection, origEdge, edge);
   }
 
   @Override

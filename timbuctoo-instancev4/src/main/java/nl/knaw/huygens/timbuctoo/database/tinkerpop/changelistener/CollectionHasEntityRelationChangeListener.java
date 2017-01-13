@@ -57,6 +57,11 @@ public class CollectionHasEntityRelationChangeListener implements ChangeListener
 
   }
 
+  @Override
+  public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
+
+  }
+
   private GraphTraversal<Vertex, Vertex> findEntityNodeForEntityTypeName(String type) {
     return graphWrapper
       .getGraph().traversal().V()

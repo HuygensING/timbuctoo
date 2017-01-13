@@ -36,6 +36,11 @@ public class AddLabelChangeListener implements ChangeListener {
 
   }
 
+  @Override
+  public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
+
+  }
+
   public void handleRdfLabelAdd(Vertex vertex, String entityTypeName) {
     ((Neo4jVertex) vertex).addLabel(entityTypeName);
   }
