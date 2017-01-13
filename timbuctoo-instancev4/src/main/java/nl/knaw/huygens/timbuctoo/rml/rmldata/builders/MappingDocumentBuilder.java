@@ -82,9 +82,7 @@ public class MappingDocumentBuilder {
   private List<TriplesMapBuilder> breakCycles(List<TriplesMapBuilder> triplesMapBuilders,
                                               Set<Multiset<TriplesMapBuilder>> cycles) {
     List<TriplesMapBuilder> result = new LinkedList<>();
-    for (TriplesMapBuilder triplesMapBuilder : triplesMapBuilders) {
-      result.add(triplesMapBuilder);
-    }
+    result.addAll(triplesMapBuilders);
     while (cycles.size() > 0) {
       Multiset<TriplesMapBuilder> cycleOccurrence = HashMultiset.create();
       for (Multiset<TriplesMapBuilder> cycle : cycles) {
