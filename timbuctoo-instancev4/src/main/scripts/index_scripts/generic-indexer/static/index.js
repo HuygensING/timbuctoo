@@ -5755,7 +5755,22 @@ var FacetedSearch = (function (_React$Component) {
           _react2["default"].createElement(_resultsPagination2["default"], { onChange: onPageChange,
             numFound: activeCollection.results.numFound,
             start: activeCollection.query.start || 0,
-            rows: activeCollection.query.rows })
+            rows: activeCollection.query.rows }),
+          _react2["default"].createElement(
+            "div",
+            { style: { position: "fixed", bottom: "0", left: "0", zIndex: 10, width: "100%" } },
+            _react2["default"].createElement(
+              "div",
+              { className: "container" },
+              "This search is machine-generated based on the data-model. ",
+              _react2["default"].createElement(
+                "a",
+                { href: "https://github.com/huygensing/timbuctoo/issues/new", target: "_blank" },
+                "Suggestions"
+              ),
+              " for improvement are very welcome!"
+            )
+          )
         )
       );
     }
