@@ -461,7 +461,11 @@ public class TinkerPopOperations implements DataStoreOperations {
       final EntityRelation existingEdge = existingEdgeOpt.get();
       if (!existingEdge.isAccepted()) {
         //if not already an active relation
-        updateRelation(existingEdge, collection, userId, true, instant);
+        try {
+          replaceRelation(collection, existingEdge.getTimId(), existingEdge.getRevision(), true, userId, instant);
+        } catch (NotFoundException e) {
+          LOG.error("Relation with id '{}' not found. This should not happen.", existingEdge.getTimId());
+        }
       }
       return existingEdge.getTimId();
     } else {
@@ -901,15 +905,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       //get last element, i.e. with the highest rev, i.e. the most recent
       .reduce((o1, o2) -> o2)
       .map(edge -> makeEntityRelation(edge, collection));
-  }
-
-  private void updateRelation(EntityRelation existingEdge, Collection collection, String userId, boolean accepted,
-                              Instant time) {
-    final Edge origEdge = getExpectedEdge(traversal, existingEdge.getTimId().toString());
-    final Edge newEdge = EdgeManipulator.duplicateEdge(origEdge);
-    newEdge.property(collection.getEntityTypeName() + "_accepted", accepted);
-    newEdge.property("rev", existingEdge.getRevision() + 1);
-    setModified(newEdge, userId, time);
   }
 
   private UUID createRelation(Vertex source, Vertex target, DirectionalRelationType relationType,
