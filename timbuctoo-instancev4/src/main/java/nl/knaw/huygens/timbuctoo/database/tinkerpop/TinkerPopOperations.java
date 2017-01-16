@@ -1146,17 +1146,18 @@ public class TinkerPopOperations implements DataStoreOperations {
       predicateVertex.property("predicateUri", property.getPredicateUri());
       col.addEdge(HAS_PREDICATE_RELATION_NAME, predicateVertex);
     }
-    GraphTraversal<Vertex, Vertex> valueTypeT = traversal.V(predicateVertex.id()).out("hasValueType")
+    GraphTraversal<Vertex, Vertex> valueTypeT = traversal.V(predicateVertex.id()).out(
+      Collection.HAS_VALUE_TYPE_RELATION_NAME)
                                                          .has("typeUri", property.getTypeUri());
     if (valueTypeT.hasNext()) {
       valueTypeVertex = valueTypeT.next();
     } else {
       valueTypeVertex = traversal.addV("valueType").next();
       valueTypeVertex.property("typeUri", property.getTypeUri());
-      predicateVertex.addEdge("hasValueType", valueTypeVertex);
+      predicateVertex.addEdge(Collection.HAS_VALUE_TYPE_RELATION_NAME, valueTypeVertex);
     }
 
-    valueTypeVertex.addEdge("appliesTo", entity);
+    valueTypeVertex.addEdge(Collection.APPLIES_TO_RELATION_NAME, entity);
 
   }
 
@@ -1174,18 +1175,19 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   private void retractPredicateAndValueType(RdfProperty property, Vertex entity) {
-    traversal.V(entity.id()).inE("appliesTo").where(__.otherV().has("typeUri", property.getTypeUri())).forEachRemaining(
+    traversal.V(entity.id()).inE(Collection.APPLIES_TO_RELATION_NAME
+    ).where(__.otherV().has("typeUri", property.getTypeUri())).forEachRemaining(
       edge -> {
         Vertex valueType = edge.outVertex();
         edge.remove();
-        if (!valueType.edges(Direction.OUT, "appliesTo").hasNext()) {
-          Vertex predicateVertex = traversal.V(valueType.id()).in("hasValueType")
+        if (!valueType.edges(Direction.OUT, Collection.APPLIES_TO_RELATION_NAME).hasNext()) {
+          Vertex predicateVertex = traversal.V(valueType.id()).in(Collection.HAS_VALUE_TYPE_RELATION_NAME)
                                             .has("predicateUri", property.getPredicateUri())
                                             .next();
-          valueType.edges(Direction.IN, "hasValueType").forEachRemaining(
+          valueType.edges(Direction.IN, Collection.HAS_VALUE_TYPE_RELATION_NAME).forEachRemaining(
             valueTypeEdge -> valueType.remove()
           );
-          if (!predicateVertex.edges(Direction.OUT, "hasValueType").hasNext()) {
+          if (!predicateVertex.edges(Direction.OUT, Collection.HAS_VALUE_TYPE_RELATION_NAME).hasNext()) {
             predicateVertex.edges(Direction.BOTH).forEachRemaining(
               predicateEdge -> predicateEdge.remove()
             );
@@ -1204,8 +1206,8 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     traversal.V().hasLabel("collection").has("collectionName", collection.getCollectionName())
              .out(HAS_ENTITY_NODE_RELATION_NAME).out(HAS_ENTITY_RELATION_NAME)
-             .in("appliesTo")
-             .in("hasValueType")
+             .in(Collection.APPLIES_TO_RELATION_NAME)
+             .in(Collection.HAS_VALUE_TYPE_RELATION_NAME)
              .path()
              .by() // collection
              .by() // entityNode
