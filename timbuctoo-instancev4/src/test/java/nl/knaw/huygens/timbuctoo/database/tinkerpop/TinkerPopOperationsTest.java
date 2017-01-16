@@ -59,6 +59,7 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_R
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndChangeListener;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndIndex;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsListenerAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapperAndMappings;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
@@ -1943,8 +1944,10 @@ public class TinkerPopOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.findEdgeById(relId))
+      .thenReturn(Optional.of(graphManager.getGraph().traversal().E().has("tim_id", relId.toString()).next()));
+    TinkerPopOperations instance = forGraphMappingsAndIndex(graphManager, vres, indexHandler);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     updateRelation.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 
@@ -1997,8 +2000,10 @@ public class TinkerPopOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.findEdgeById(relId))
+      .thenReturn(Optional.of(graphManager.getGraph().traversal().E().has("tim_id", relId.toString()).next()));
+    TinkerPopOperations instance = forGraphMappingsAndIndex(graphManager, vres, indexHandler);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -2051,7 +2056,10 @@ public class TinkerPopOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.findEdgeById(relId))
+      .thenReturn(Optional.of(graphManager.getGraph().traversal().E().has("tim_id", relId.toString()).next()));
+    TinkerPopOperations instance = forGraphMappingsAndIndex(graphManager, vres, indexHandler);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -2101,7 +2109,11 @@ public class TinkerPopOperationsTest {
       )
       .wrap();
     ChangeListener changeListener = mock(ChangeListener.class);
-    TinkerPopOperations instance = forGraphMappingsAndChangeListener(graphManager, vres, changeListener);
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.findEdgeById(relId))
+      .thenReturn(Optional.of(graphManager.getGraph().traversal().E().has("tim_id", relId.toString()).next()));
+    TinkerPopOperations instance =
+      forGraphMappingsListenerAndIndex(graphManager, vres, changeListener, indexHandler);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     long timeStamp = Instant.now().toEpochMilli();
     String userId = "userId";
@@ -2156,7 +2168,10 @@ public class TinkerPopOperationsTest {
         .withProperty("isLatest", true)
       )
       .wrap();
-    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    when(indexHandler.findEdgeById(relId))
+      .thenReturn(Optional.of(graphManager.getGraph().traversal().E().has("tim_id", relId.toString()).next()));
+    TinkerPopOperations instance = forGraphMappingsAndIndex(graphManager, vres, indexHandler);
     UpdateRelation updateRelation = new UpdateRelation(relId, 1, false);
     updateRelation.setModified(new Change(Instant.now().toEpochMilli(), "userId", null));
 

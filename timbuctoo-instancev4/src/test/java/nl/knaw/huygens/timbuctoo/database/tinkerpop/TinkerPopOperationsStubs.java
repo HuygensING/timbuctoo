@@ -88,4 +88,11 @@ public class TinkerPopOperationsStubs {
     return new TinkerPopOperations(graphManager, changeListener, new GremlinEntityFetcher(), vres,
       mock(IndexHandler.class));
   }
+
+  public static TinkerPopOperations forGraphMappingsListenerAndIndex(TinkerPopGraphManager graphManager,
+                                                                     Vres vres,
+                                                                     ChangeListener changeListener,
+                                                                     IndexHandler indexHandler) {
+    return new TinkerPopOperations(graphManager, changeListener, new GremlinEntityFetcher(), vres, indexHandler);
+  }
 }

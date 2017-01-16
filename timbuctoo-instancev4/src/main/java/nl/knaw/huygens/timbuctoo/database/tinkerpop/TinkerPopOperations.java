@@ -143,9 +143,9 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
   private final GraphDatabaseService graphDatabase;
+  private final boolean ownTransaction;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
-  private final boolean ownTransaction;
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
@@ -723,16 +723,13 @@ public class TinkerPopOperations implements DataStoreOperations {
 
 
     // FIXME: throw a AlreadyUpdatedException when the rev of the client is not the latest
-    Edge origEdge;
-    try {
-      origEdge = traversal.E()
-                          .has("tim_id", id.toString())
-                          .has("isLatest", true)
-                          .has("rev", rev)
-                          .next();
-    } catch (NoSuchElementException e) {
+    Optional<Edge> origEdgeOpt = indexHandler.findEdgeById(id);
+
+    if (!origEdgeOpt.isPresent()) {
       throw new NotFoundException();
     }
+
+    Edge origEdge = origEdgeOpt.get();
 
     //FIXME: throw a distinct Exception when the client tries to save a relation with wrong source, target or type.
 
@@ -1062,11 +1059,11 @@ public class TinkerPopOperations implements DataStoreOperations {
   public void addCollectionToVre(Vre vre, CreateCollection createCollection) {
     // FIXME think of a default way to add collections to VRE's.
     boolean vreHasCollection = traversal.V()
-                                    .hasLabel(Vre.DATABASE_LABEL)
-                                    .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-                                    .outE(HAS_COLLECTION_RELATION_NAME).otherV()
-                                    .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre))
-                                    .hasNext();
+                                        .hasLabel(Vre.DATABASE_LABEL)
+                                        .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
+                                        .outE(HAS_COLLECTION_RELATION_NAME).otherV()
+                                        .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre))
+                                        .hasNext();
 
     if (vreHasCollection) {
       return;
@@ -1082,10 +1079,11 @@ public class TinkerPopOperations implements DataStoreOperations {
       createCollection.isUnknownCollection(vre.getVreName())
     );
     final GraphTraversal<Vertex, Vertex> archetypeCollection = traversal.V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
-      .out(HAS_COLLECTION_RELATION_NAME)
-      .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getArchetypeName());
+                                                                        .hasLabel(Vre.DATABASE_LABEL)
+                                                                        .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                                                                        .out(HAS_COLLECTION_RELATION_NAME)
+                                                                        .has(COLLECTION_NAME_PROPERTY_NAME,
+                                                                          createCollection.getArchetypeName());
 
     if (archetypeCollection.hasNext()) {
       collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.next());
