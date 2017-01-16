@@ -105,4 +105,27 @@ public class FulltextIndexChangeListenerTest {
     inOrder.verify(indexHandler).insertIntoQuickSearchIndex(collection, "new", newVertex);
   }
 
+  @Test
+  public void doesNotThrowWhenDisplayNameTraversalYieldsNoResults() {
+    final String theMissingPropertyName = "missingProperty_name";
+    IndexHandler indexHandler = mock(IndexHandler.class);
+    GraphWrapper graphWrapper = newGraph()
+      .withVertex("newVertex", v -> v
+        .withProperty("locateMe", "here")
+      )
+      .wrap();
+    FulltextIndexChangeListener instance = new FulltextIndexChangeListener(indexHandler, graphWrapper);
+    Collection collection = new VresBuilder()
+      .withVre("thevre", "vre", vre -> vre
+        .withCollection("vrecolls", coll -> coll
+          .withDisplayName(localProperty(theMissingPropertyName))
+        )
+      )
+      .build().getCollection("vrecolls").get();
+    Vertex newVertex = graphWrapper.getGraph().traversal().V().has("locateMe", "here").next();
+
+    instance.onAddToCollection(collection, Optional.empty(), newVertex);
+
+  }
+
 }
