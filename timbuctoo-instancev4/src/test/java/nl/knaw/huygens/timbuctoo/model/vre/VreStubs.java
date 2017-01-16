@@ -18,7 +18,7 @@ public class VreStubs {
 
     Vre vre = dataStoreOperations.ensureVreExists(name);
     dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection(name));
-
+    dataStoreOperations.addPredicateValueTypeVertexToVre(vre);
     Vres vres = dataStoreOperations.loadVres();
 
     Collection collection =

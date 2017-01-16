@@ -114,6 +114,8 @@ public interface DataStoreOperations extends AutoCloseable {
    */
   void addCollectionToVre(Vre vre, CreateCollection createCollection);
 
+  void addPredicateValueTypeVertexToVre(Vre vre);
+
   void assertProperty(Vre vre, String rdfUri, RdfProperty property);
 
   void retractProperty(Vre vre, String rdfUri, RdfProperty property);

@@ -41,6 +41,7 @@ public class RdfImportSession {
     dataStoreOperations.clearMappingErrors(vre);
     dataStoreOperations.removeCollectionsAndEntities(vre);
     dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection(vre.getVreName()));
+    dataStoreOperations.addPredicateValueTypeVertexToVre(vre);
     Vre reloadedVre = dataStoreOperations.loadVres().getVre(vre.getVreName());
 
     return new RdfImportSession(dataStoreOperations, reloadedVre, errorReporter, propertyFactory);

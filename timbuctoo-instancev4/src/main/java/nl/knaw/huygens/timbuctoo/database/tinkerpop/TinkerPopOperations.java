@@ -109,8 +109,8 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_INITIAL_
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PREDICATE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.EdgeManipulator.duplicateEdge;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.duplicateVertex;
 import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.configurationFailure;
@@ -120,8 +120,8 @@ import static nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty.HAS_NE
 import static nl.knaw.huygens.timbuctoo.model.properties.converters.Converters.arrayToEncodedArray;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.VRE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration.TIMBUCTOO_NAMESPACE;
 import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadedDataSource.HAS_NEXT_ERROR;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -1112,6 +1112,13 @@ public class TinkerPopOperations implements DataStoreOperations {
     vreVertex.addEdge(HAS_COLLECTION_RELATION_NAME, collectionVertex);
   }
 
+  @Override
+  public void addPredicateValueTypeVertexToVre(Vre vre) {
+    Vertex predicateValueTypeVertex = graph.addVertex();
+    getVreTraversal(vre.getVreName())
+      .next().addEdge(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME, predicateValueTypeVertex);
+  }
+
   private Iterator<Vertex> collectionsFor(Vertex entity) {
     return traversal.V(entity.id())
                     .in(HAS_ENTITY_RELATION_NAME)
@@ -1129,7 +1136,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       });
     });
 
-    assertPredicateAndValueType(vertex, getDefaultCollectionVertex(vre).get(), property);
+    assertPredicateAndValueType(vertex, getPredicateValueTypeVertexFor(vre).get(), property);
   }
 
   private void assertPredicateAndValueType(Vertex entity, Vertex col, RdfProperty property) {
@@ -1351,6 +1358,17 @@ public class TinkerPopOperations implements DataStoreOperations {
   private Optional<Vertex> getDefaultCollectionVertex(Vre vre) {
     return graph.traversal().V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre)).toStream().findAny();
   }
+
+  private Optional<Vertex> getPredicateValueTypeVertexFor(Vre vre) {
+
+    return graph.traversal().V()
+                .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+                .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
+                .out(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME)
+                .toStream()
+                .findAny();
+  }
+
 
   Optional<Vertex> getVertexByRdfUri(Vre vre, String uri) {
     return indexHandler.findVertexInRdfIndex(vre, uri);
