@@ -20,13 +20,6 @@ public interface IndexHandler {
                                                            String keywordType);
 
   /**
-   * This method does not prevent multiple entries for a vertex.
-   * Use {@link #upsertIntoQuickSearchIndex(Collection, String, Vertex)} if you want to update the existing
-   * entry or a new entry for unknown vertices.
-   */
-  void insertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
-
-  /**
    * This method adds or update a index entry and makes shure the index have only one entry for each vertex.
    */
   void upsertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
@@ -38,9 +31,9 @@ public interface IndexHandler {
 
   /**
    * This method does not prevent multiple entries for a vertex.
-   * Use {@link #upsertIntoIdIndex(UUID, Vertex)} if you want to update the existing entry
-   * or a new entry for unknown vertices.
+   * Use {@link #upsertIntoIdIndex(UUID, Vertex)}
    */
+  @Deprecated
   void insertIntoIdIndex(UUID timId, Vertex vertex);
 
   /**
@@ -59,13 +52,6 @@ public interface IndexHandler {
 
   //=====================Edge tim_id index=====================
   Optional<Edge> findEdgeById(UUID edgeId);
-
-  /**
-   * This method does not prevent multiple entries for a vertex.
-   * Use {@link #upsertIntoEdgeIdIndex(UUID, Edge)} if you want to update the existing entry
-   * or a new entry for unknown vertices.
-   */
-  void insertEdgeIntoIdIndex(UUID edgeId, Edge edge);
 
   /**
    * This method adds or update a index entry and makes sure the index have only one entry for each edge.

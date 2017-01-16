@@ -88,7 +88,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
         "Displayname traversal resulted in no results vertexId={} collection={} propertyType={}",
         vertex.id(), collection.getCollectionName(), collection.getDisplayName().getUniqueTypeId());
     } else {
-      indexHandler.insertIntoQuickSearchIndex(collection, docCaption, vertex);
+      indexHandler.upsertIntoQuickSearchIndex(collection, docCaption, vertex);
     }
   }
 

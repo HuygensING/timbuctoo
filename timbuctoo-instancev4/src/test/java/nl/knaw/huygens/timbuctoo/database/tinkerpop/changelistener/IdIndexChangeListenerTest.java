@@ -7,14 +7,12 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -41,7 +39,7 @@ public class IdIndexChangeListenerTest {
 
     instance.onCreate(NULL_COLLECTION, vertex);
 
-    verify(indexHandler).insertIntoIdIndex(timId, vertex);
+    verify(indexHandler).upsertIntoIdIndex(timId, vertex);
   }
 
   private Vertex vertexWithId(UUID timId) {
@@ -57,9 +55,7 @@ public class IdIndexChangeListenerTest {
 
     instance.onPropertyUpdate(NULL_COLLECTION, Optional.of(oldVertex), newVertex);
 
-    InOrder inOrder = inOrder(indexHandler);
-    inOrder.verify(indexHandler).removeFromIdIndex(oldVertex);
-    verify(indexHandler).insertIntoIdIndex(timId, newVertex);
+    verify(indexHandler).upsertIntoIdIndex(timId, newVertex);
   }
 
   @Test
@@ -97,7 +93,7 @@ public class IdIndexChangeListenerTest {
 
     instance.onCreateEdge(NULL_COLLECTION, edge);
 
-    verify(indexHandler).insertEdgeIntoIdIndex(timId, edge);
+    verify(indexHandler).upsertIntoEdgeIdIndex(timId, edge);
   }
 
   @Test

@@ -38,7 +38,7 @@ public class FulltextIndexChangeListenerTest {
 
     instance.onCreate(collection, vertex);
 
-    verify(indexHandler).insertIntoQuickSearchIndex(collection, "foo", vertex);
+    verify(indexHandler).upsertIntoQuickSearchIndex(collection, "foo", vertex);
   }
 
   @Test
@@ -72,7 +72,7 @@ public class FulltextIndexChangeListenerTest {
     Vertex vertex = graphWrapper.getGraph().traversal().V().next();
     instance.onCreate(collection, vertex);
 
-    verify(indexHandler).insertIntoQuickSearchIndex(collection, "authorA; authorB foo", vertex);
+    verify(indexHandler).upsertIntoQuickSearchIndex(collection, "authorA; authorB foo", vertex);
   }
 
   @Test
@@ -102,7 +102,7 @@ public class FulltextIndexChangeListenerTest {
 
     InOrder inOrder = inOrder(indexHandler);
     inOrder.verify(indexHandler).removeFromQuickSearchIndex(collection, oldVertex);
-    inOrder.verify(indexHandler).insertIntoQuickSearchIndex(collection, "new", newVertex);
+    inOrder.verify(indexHandler).upsertIntoQuickSearchIndex(collection, "new", newVertex);
   }
 
   @Test

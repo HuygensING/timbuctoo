@@ -17,13 +17,12 @@ public class IdIndexChangeListener implements ChangeListener {
 
   @Override
   public void onCreate(Collection collection, Vertex vertex) {
-    indexHandler.insertIntoIdIndex(UUID.fromString(vertex.value("tim_id")), vertex);
+    indexHandler.upsertIntoIdIndex(UUID.fromString(vertex.value("tim_id")), vertex);
   }
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    oldVertex.ifPresent(vertex -> indexHandler.removeFromIdIndex(vertex));
-    indexHandler.insertIntoIdIndex(UUID.fromString(newVertex.value("tim_id")), newVertex);
+    indexHandler.upsertIntoIdIndex(UUID.fromString(newVertex.value("tim_id")), newVertex);
   }
 
   @Override
@@ -38,7 +37,7 @@ public class IdIndexChangeListener implements ChangeListener {
 
   @Override
   public void onCreateEdge(Collection collection, Edge edge) {
-    indexHandler.insertEdgeIntoIdIndex(UUID.fromString(edge.value("tim_id")), edge);
+    indexHandler.upsertIntoEdgeIdIndex(UUID.fromString(edge.value("tim_id")), edge);
   }
 
   @Override

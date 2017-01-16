@@ -58,13 +58,6 @@ public class Neo4jIndexHandler implements IndexHandler {
     return traversalFromIndex(collection, quickSearch).has("keyword_type", keywordType);
   }
 
-  @Override
-  public void insertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
-    Index<Node> index = getQuickSearchIndex(collection);
-
-    index.add(vertexToNode(vertex), QUICK_SEARCH, quickSearchValue);
-  }
-
   private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {
     Index<Node> index = getQuickSearchIndex(collection);
     IndexHits<Node> hits = index.query(QUICK_SEARCH, createQuery(quickSearch));
@@ -96,7 +89,9 @@ public class Neo4jIndexHandler implements IndexHandler {
   public void upsertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
     this.removeFromQuickSearchIndex(collection, vertex);
 
-    this.insertIntoQuickSearchIndex(collection, quickSearchValue, vertex);
+    Index<Node> index = getQuickSearchIndex(collection);
+
+    index.add(vertexToNode(vertex), QUICK_SEARCH, quickSearchValue);
   }
 
   //=====================tim_id index=====================
@@ -108,11 +103,11 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
+  @Deprecated
   public void insertIntoIdIndex(UUID timId, Vertex vertex) {
     Index<Node> index = getIdIndex();
     index.add(vertexToNode(vertex), TIM_ID, timId.toString());
   }
-
 
   @Override
   public void upsertIntoIdIndex(UUID timId, Vertex vertex) {
@@ -187,15 +182,10 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public void insertEdgeIntoIdIndex(UUID edgeId, Edge edge) {
-    getEdgeIdIndex().add(edgeToRelationship(edge), TIM_ID, edgeId.toString());
-  }
-
-  @Override
   public void upsertIntoEdgeIdIndex(UUID edgeId, Edge edge) {
     Optional<Edge> prevEdge = findEdgeById(edgeId);
     prevEdge.ifPresent(this::removeEdgeFromIdIndex);
-    insertEdgeIntoIdIndex(edgeId, edge);
+    getEdgeIdIndex().add(edgeToRelationship(edge), TIM_ID, edgeId.toString());
   }
 
   @Override
