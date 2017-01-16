@@ -11,6 +11,9 @@ public class TinkerPopConfig {
   @NotEmpty
   private String databasePath;
 
+  @JsonProperty
+  private String pageCacheMemory = "";
+
   public HaConfig getHaconfig() {
     return haconfig;
   }
@@ -25,6 +28,10 @@ public class TinkerPopConfig {
 
   public void setDatabasePath(String databasePath) {
     this.databasePath = databasePath;
+  }
+
+  public String getPageCacheMemory() {
+    return pageCacheMemory;
   }
 
   public class HaConfig {
