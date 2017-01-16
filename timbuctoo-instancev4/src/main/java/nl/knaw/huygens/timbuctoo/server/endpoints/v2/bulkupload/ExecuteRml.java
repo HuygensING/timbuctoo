@@ -170,6 +170,7 @@ public class ExecuteRml {
               return commit();
             });
             output.close();
+            LOG.info("Finished RML import");
           } catch (IOException e) {
             LOG.error("Couldn't close the output stream", e);
           }
