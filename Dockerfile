@@ -10,6 +10,8 @@ RUN mkdir -p /data/database
 RUN echo "[]" > /data/auth/logins.json
 RUN echo "[]" > /data/auth/users.json
 
+RUN apt-get update && apt-get install -y --no-install-recommends jq && rm -rf /var/lib/apt/lists/*
+
 COPY ./ContractDiff ./ContractDiff
 COPY ./HttpCommand ./HttpCommand
 COPY ./security-client-agnostic ./security-client-agnostic
