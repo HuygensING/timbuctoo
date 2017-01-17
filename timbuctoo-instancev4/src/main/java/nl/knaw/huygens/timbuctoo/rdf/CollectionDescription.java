@@ -20,6 +20,7 @@ class CollectionDescription {
     this.entityTypeName = entityTypeName;
     this.vreName = vreName;
     this.rdfUri = rdfUri;
+    this.unknown = entityTypeName != null && entityTypeName.endsWith("unknown");
   }
 
   public static CollectionDescription getDefault(String vreName) {

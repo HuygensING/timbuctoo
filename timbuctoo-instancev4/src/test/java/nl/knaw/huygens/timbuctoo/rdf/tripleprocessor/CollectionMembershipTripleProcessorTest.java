@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
+import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.rdf.Collection;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
@@ -36,7 +37,8 @@ public class CollectionMembershipTripleProcessorTest {
     when(database.getDefaultCollection("vreName")).thenReturn(defaultCollection);
     Entity entity = mock(Entity.class);
     when(database.findOrCreateEntity("vreName", triple.getSubject())).thenReturn(entity);
-    CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database);
+    CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database, mock(
+      RdfImportSession.class));
 
     instance.process("vreName", true, triple);
 

@@ -35,7 +35,7 @@ public class TripleProcessorImpl implements TripleProcessor {
 
   public TripleProcessorImpl(Database database, RdfImportSession rdfImportSession) {
     this.database = database;
-    this.collectionMembership = new CollectionMembershipTripleProcessor(database);
+    this.collectionMembership = new CollectionMembershipTripleProcessor(database, rdfImportSession);
     this.archetype = new ArchetypeTripleProcessor(database);
     this.property = new PropertyTripleProcessor(database, rdfImportSession);
     this.relation = new RelationTripleProcessor(database);
