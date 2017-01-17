@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
 import nl.knaw.huygens.timbuctoo.core.rdf.PropertyFactory;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import org.apache.jena.graph.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,6 +42,7 @@ public class RdfImportSession {
     dataStoreOperations.clearMappingErrors(vre);
     dataStoreOperations.removeCollectionsAndEntities(vre);
     dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection(vre.getVreName()));
+    dataStoreOperations.addPredicateValueTypeVertexToVre(vre);
     Vre reloadedVre = dataStoreOperations.loadVres().getVre(vre.getVreName());
 
     return new RdfImportSession(dataStoreOperations, reloadedVre, errorReporter, propertyFactory);
@@ -75,6 +77,9 @@ public class RdfImportSession {
     dataStoreOperations.retractProperty(vre, rdfUri, property);
   }
 
+  public RdfImportErrorReporter getErrorReporter() {
+    return errorReporter;
+  }
 
   enum SessionState {
     UNKNOWN,
@@ -93,6 +98,13 @@ public class RdfImportSession {
                                               String actualTypeUri) {
       LOG.error("Entity with URI '{}' has wrong value type for predicate '{}'. Expected type '{}', but was '{}'.",
         entityRdfUri, predicateUri, expectedTypeUri, actualTypeUri);
+    }
+
+    @Override
+    public void multipleRdfTypes(Triple triple) {
+      LOG.warn("Adding multiple rdf:types to a subject is not supported <{}> <rdf:type> <{}>.",
+        triple.getSubject().getURI(),
+        triple.getObject().getURI());
     }
   }
 }

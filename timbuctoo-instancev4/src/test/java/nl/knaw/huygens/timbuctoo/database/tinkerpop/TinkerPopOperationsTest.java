@@ -2671,6 +2671,7 @@ public class TinkerPopOperationsTest {
     TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    instance.addPredicateValueTypeVertexToVre(vre);
     vre = instance.loadVres().getVre("vre");
     Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
 

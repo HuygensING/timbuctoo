@@ -39,6 +39,8 @@ public class Vre {
   public static final String IMAGE_REV_PROPERTY_NAME = "image:rev";
   public static final String UPLOADED_FILE_NAME = "uploadedFilename";
 
+  public static final String HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME = "hasPredicateValueTypeVertex";
+
   private final PublishState publishState;
   private final VreMetadata metadata;
 

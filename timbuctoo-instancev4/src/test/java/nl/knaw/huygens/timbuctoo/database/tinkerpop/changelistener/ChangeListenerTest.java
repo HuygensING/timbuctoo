@@ -147,6 +147,7 @@ public class ChangeListenerTest {
       "finishEntities",
 
       //these are ignored
+      "addPredicateValueTypeVertexToVre",
       "removeCollectionsAndEntities",
       "replaceRelation",
       "acceptRelation",

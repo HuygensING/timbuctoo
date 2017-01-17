@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Entity {
   public final Vertex vertex;
@@ -85,6 +86,14 @@ public class Entity {
 
   public void removeProperty(String propertyName) {
     collections.forEach(collection -> collection.removeProperty(vertex, propertyName));
+  }
+
+  public boolean isInKnownCollection() {
+    return collections
+      .stream()
+      .filter(collection -> !collection.getDescription().isUnknown())
+      .filter(collection -> !collection.getDescription().getVreName().equals("Admin"))
+      .iterator().hasNext();
   }
 
   public void addToCollection(Collection newCollection) {

@@ -42,9 +42,13 @@ public class Collection {
   public static final String IS_RELATION_COLLECTION_PROPERTY_NAME = "isRelationCollection";
 
   public static final String HAS_PREDICATE_RELATION_NAME = "hasPredicate";
+  public static final String HAS_VALUE_TYPE_RELATION_NAME = "hasValueType";
+  public static final String APPLIES_TO_RELATION_NAME = "appliesTo";
+
   private static final Logger LOG = LoggerFactory.getLogger(Collection.class);
 
   public static final String COLLECTION_DESCRIPTION_PROPERTY_NAME = "collectionDescription";
+
 
   private final String entityTypeName;
   private final String collectionName;

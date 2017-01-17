@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
+import nl.knaw.huygens.timbuctoo.core.RdfImportErrorReporter;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
+import nl.knaw.huygens.timbuctoo.core.RdfImportSessionStubs;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -36,6 +38,9 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 public class TripleImporterIntegrationTest {
   private static final String LOCATION_COLLECTION = "locations";
@@ -95,17 +100,7 @@ public class TripleImporterIntegrationTest {
   public void setUp() throws Exception {
     // FIXME create stub
     // Timbuctoo needs at least an Admin VRE.
-    Vres vres = new VresBuilder()
-      .withVre("Admin", "", v -> v
-        .withCollection("concepts", c -> c
-          .withEntityTypeName("concept")
-        )
-        .withCollection("relations", CollectionBuilder::isRelationCollection)
-        .withCollection("locations", c -> c
-          .withEntityTypeName("location")
-        )
-      )
-      .build();
+    Vres vres = getVres();
     graphWrapper = newGraph().wrap();
     TinkerPopOperations tinkerPopOperations =  new TinkerPopOperations(graphWrapper);
     tinkerPopOperations.saveVre(vres.getVre("Admin"));
@@ -116,6 +111,20 @@ public class TripleImporterIntegrationTest {
       graphWrapper,
       VRE_NAME,
       rdfImportSession);
+  }
+
+  private Vres getVres() {
+    return new VresBuilder()
+        .withVre("Admin", "", v -> v
+          .withCollection("concepts", c -> c
+            .withEntityTypeName("concept")
+          )
+          .withCollection("relations", CollectionBuilder::isRelationCollection)
+          .withCollection("locations", c -> c
+            .withEntityTypeName("location")
+          )
+        )
+        .build();
   }
 
   @Test
@@ -290,7 +299,7 @@ public class TripleImporterIntegrationTest {
   }
 
   @Test
-  public void importTripleShouldConnectTheSubjectToMultipleCollectionsNamedByTheObject() throws Exception {
+  public void importTripleShouldConnectTheSubjectToTheFirstCollectionNamedByTheObject() throws Exception {
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
 
@@ -300,7 +309,6 @@ public class TripleImporterIntegrationTest {
     rdfImportSession.close();
 
     assertThat(getReadEntity(COLLECTION_NAME, ABADAN_URI), is(present()));
-    assertThat(getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI), is(present()));
   }
 
   @Test
@@ -331,20 +339,17 @@ public class TripleImporterIntegrationTest {
   @Test
   public void importTripleAddsTheCollectionsAndTheArchetypeToTheTypesPropOfTheSubject() throws Exception {
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
-    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
 
     instance.importTriple(true, abadanIsAFeature);
-    instance.importTriple(true, abadanIsAFictionalFeature);
     rdfImportSession.commit();
     rdfImportSession.close();
 
     Optional<ReadEntity> readEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
-    assertThat(readEntity.get(), hasProperty("types", containsInAnyOrder(TYPE_NAME, FICTIONAL_TYPE_NAME, "concept",
-      DEFAULT_ENTITY_TYPE_NAME)));
+    assertThat(readEntity.get(), hasProperty("types", containsInAnyOrder(TYPE_NAME, "concept")));
   }
 
   @Test
-  public void importTripleShouldSetThePropertiesForAllCollections() throws Exception {
+  public void importTripleShouldSetThePropertiesForTheFirstCollection() throws Exception {
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
     final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
@@ -356,41 +361,34 @@ public class TripleImporterIntegrationTest {
     rdfImportSession.close();
 
     Optional<ReadEntity> featureEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
-    Optional<ReadEntity> fictionalFeatureEntity = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
 
     assertThat(featureEntity.get().getProperties(), hasItem(allOf(
-      hasProperty("name", equalTo("point")),
-      hasProperty("value", equalTo("30.35 48.28333333333333"))
-    )));
-    assertThat(fictionalFeatureEntity.get().getProperties(), hasItem(allOf(
       hasProperty("name", equalTo("point")),
       hasProperty("value", equalTo("30.35 48.28333333333333"))
     )));
   }
 
   @Test
-  public void importTripleShouldCopyPropertiesToNewCollectionsEvenIfTheEntityAlreadyHadACollection() throws Exception {
+  public void importTripleShouldLogAWarningWhenTryingToAddToASecondKnownCollection() throws Exception {
     final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
     final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
     final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
+    TinkerPopOperations tinkerPopOperations =  new TinkerPopOperations(graphWrapper);
+    tinkerPopOperations.saveVre(getVres().getVre("Admin"));
+    final RdfImportErrorReporter errorReporter = mock(RdfImportErrorReporter.class);
 
-    instance.importTriple(true, abadanIsAFeature);
-    instance.importTriple(true, abadanHasPoint);
-    instance.importTriple(true, abadanIsAFictionalFeature);
-    rdfImportSession.commit();
-    rdfImportSession.close();
+    RdfImportSession localSession = RdfImportSessionStubs.rdfImportSessionWithErrorReporter("vreName",
+      tinkerPopOperations, errorReporter);
 
-    Optional<ReadEntity> featureEntity = getReadEntity(COLLECTION_NAME, ABADAN_URI);
-    Optional<ReadEntity> fictionalFeatureEntity = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
+    TripleImporter localInstance = new TripleImporter(graphWrapper, VRE_NAME, localSession);
 
-    assertThat(featureEntity.get().getProperties(), hasItem(allOf(
-      hasProperty("name", equalTo("point")),
-      hasProperty("value", equalTo("30.35 48.28333333333333"))
-    )));
-    assertThat(fictionalFeatureEntity.get().getProperties(), hasItem(allOf(
-      hasProperty("name", equalTo("point")),
-      hasProperty("value", equalTo("30.35 48.28333333333333"))
-    )));
+    localInstance.importTriple(true, abadanIsAFeature);
+    localInstance.importTriple(true, abadanHasPoint);
+    localInstance.importTriple(true, abadanIsAFictionalFeature);
+    localSession.commit();
+    localSession.close();
+
+    verify(errorReporter).multipleRdfTypes(abadanIsAFictionalFeature);
   }
 
   @Test
@@ -406,12 +404,7 @@ public class TripleImporterIntegrationTest {
     rdfImportSession.close();
 
     Optional<ReadEntity> type = getReadEntity(COLLECTION_NAME, ABADAN_URI);
-    Optional<ReadEntity> fictionalType = getReadEntity(FICTIONAL_COLLECTION_NAME, ABADAN_URI);
     assertThat(type.get().getDisplayName(), is(ABADAN_URI));
-    assertThat(fictionalType.get().getDisplayName(), is(ABADAN_URI));
   }
-
-  //FIXME: adding 2 collections to an entity will not copy the properties to the last collection (because collections
-  // are
 
 }
