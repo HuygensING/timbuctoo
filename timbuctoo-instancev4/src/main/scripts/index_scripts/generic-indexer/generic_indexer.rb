@@ -56,7 +56,7 @@ class GenericIndexer
       end
     end
     if indexer_failed
-      committed_indexes.each do |collection|
+      commited_indexes.each do |collection|
         @solr_io.delete_index(collection)
       end
     end
