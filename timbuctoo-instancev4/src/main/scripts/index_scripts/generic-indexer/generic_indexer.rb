@@ -32,6 +32,8 @@ class GenericIndexer
   end
 
   def run
+    indexer_failed = false
+    last_collection = ""
     @mappers.each do |collection, mapper|
       begin
         @solr_io.create(collection)
@@ -46,10 +48,17 @@ class GenericIndexer
 
       @solr_io.commit(collection)
       rescue Exception => e
-          STDERR.puts "indexer failed"
-          STDERR.puts e
-          # remove all collections up till now?
-          @solr_io.delete_index(collection)
+        STDERR.puts "indexer failed"
+        STDERR.puts e
+        indexer_failed = true
+        last_collection = collection
+        break
+      end
+    end
+    if indexer_failed
+      @mappers.each do |collection, mapper|
+        @solr_io.delete_index(collection)
+        break if collection.eql?(last_collection)
       end
     end
   end
