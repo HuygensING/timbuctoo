@@ -5,6 +5,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
+import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_IS_UNKNOWN_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 
 
@@ -16,11 +17,11 @@ class CollectionDescription {
   private final String rdfUri;
   private boolean unknown;
 
-  private CollectionDescription(String entityTypeName, String vreName, String rdfUri) {
+  private CollectionDescription(String entityTypeName, String vreName, String rdfUri, boolean isUnknown) {
     this.entityTypeName = entityTypeName;
     this.vreName = vreName;
     this.rdfUri = rdfUri;
-    this.unknown = entityTypeName != null && entityTypeName.endsWith("unknown");
+    this.unknown = isUnknown;
   }
 
   public static CollectionDescription getDefault(String vreName) {
@@ -36,10 +37,13 @@ class CollectionDescription {
 
   public static CollectionDescription fromVertex(String vreName, Vertex vertex) {
     VertexProperty<String> rdfUri = vertex.property(Database.RDF_URI_PROP);
+    Boolean isUnknown = vertex.property(COLLECTION_IS_UNKNOWN_PROPERTY_NAME).isPresent() ?
+      vertex.value(COLLECTION_IS_UNKNOWN_PROPERTY_NAME) : false;
+    final String entityTypeName = vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
     if (rdfUri.isPresent()) {
-      return createCollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName, rdfUri.value());
+      return createCollectionDescription(entityTypeName, vreName, rdfUri.value(), isUnknown);
     }
-    return createCollectionDescription(vertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME), vreName);
+    return createCollectionDescription(entityTypeName, vreName);
   }
 
 
@@ -52,17 +56,22 @@ class CollectionDescription {
   }
 
   public static CollectionDescription createCollectionDescription(String entityTypeName, String vreName,
+                                                                  String rdfUri, boolean isUnkown) {
+    return new CollectionDescription(createEntityTypeName(entityTypeName, vreName), vreName, rdfUri, isUnkown);
+  }
+
+  public static CollectionDescription createCollectionDescription(String entityTypeName, String vreName,
                                                                   String rdfUri) {
-    return new CollectionDescription(createEntityTypeName(entityTypeName, vreName), vreName, rdfUri);
+    return new CollectionDescription(createEntityTypeName(entityTypeName, vreName), vreName, rdfUri, false);
   }
 
   public static CollectionDescription getAdmin(Vertex archetypeVertex) {
     String entityTypeName = archetypeVertex.value(ENTITY_TYPE_NAME_PROPERTY_NAME);
-    return new CollectionDescription(entityTypeName, "Admin", createRdfUri(entityTypeName));
+    return new CollectionDescription(entityTypeName, "Admin", createRdfUri(entityTypeName), false);
   }
 
   public static CollectionDescription createForAdmin(String entityTypeName) {
-    return new CollectionDescription(entityTypeName, "Admin", createRdfUri(entityTypeName));
+    return new CollectionDescription(entityTypeName, "Admin", createRdfUri(entityTypeName), false);
   }
 
   private static String createEntityTypeName(String entityTypeName, String vreName) {
