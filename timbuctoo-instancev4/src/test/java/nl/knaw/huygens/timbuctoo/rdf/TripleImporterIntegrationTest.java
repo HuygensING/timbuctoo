@@ -386,7 +386,7 @@ public class TripleImporterIntegrationTest {
     localSession.commit();
     localSession.close();
 
-    verify(errorReporter).multipleRdfTypes(any());
+    verify(errorReporter).multipleRdfTypes(abadanIsAFictionalFeature);
   }
 
   @Test
