@@ -135,7 +135,9 @@
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
     <jsonld-java.version>0.8.3</jsonld-java.version>
-    <neo4j.version>3.0.3</neo4j.version>
+    <neo4j.version>3.1.0</neo4j.version>
+    <!-- The number after the dash is the Neo4j version -->
+    <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
   </properties>
 
   <dependencies>
@@ -193,7 +195,17 @@
     <dependency>
       <groupId>org.neo4j</groupId>
       <artifactId>neo4j-tinkerpop-api-impl</artifactId>
-      <version>0.4-${neo4j.version}</version>
+      <version>${neo4j-tinkerpop-api-impl.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.neo4j</groupId>
+          <artifactId>neo4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.neo4j</groupId>
+          <artifactId>neo4j-enterprise</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <!-- ### handle ids ## -->
