@@ -1361,9 +1361,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   private Optional<Vertex> getPredicateValueTypeVertexFor(Vre vre) {
 
-    return graph.traversal().V()
-                .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
-                .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
+    return getVreTraversal(vre.getVreName())
                 .out(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME)
                 .toStream()
                 .findAny();
