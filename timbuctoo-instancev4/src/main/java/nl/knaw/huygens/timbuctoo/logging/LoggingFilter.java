@@ -15,6 +15,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.MultivaluedMap;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -54,6 +55,8 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
   private static final String MDC_HTTP_STATUS = "http_status";
   private static final String MDC_RESPONSE_HEADERS = "http_response_headers";
   private static final String MDC_RELEASE_HASH = "git_hash";
+  private static final String MDC_OUTPUT_SNIPPET = "http_response_body";
+  public static final String EMPTY = "";
 
   private final int entityLogSize;
   private final String releaseHash;
@@ -112,25 +115,23 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
   @Override
   public void filter(final ContainerRequestContext context) throws IOException {
-    if (!"1".equals(context.getHeaderString("Is-Healthcheck"))) {
-      final UUID id = UUID.randomUUID();
-      MDC.put(MDC_ID, id.toString());
-      MDC.put(MDC_RELEASE_HASH, releaseHash);
+    final UUID id = UUID.randomUUID();
+    MDC.put(MDC_ID, id.toString());
+    MDC.put(MDC_RELEASE_HASH, releaseHash);
 
-      MDC.put(MDC_PRE_LOG, "true");
-      //Log a very minimal message. Mostly to make sure that we notice requests that never log in the response filter
-      LOG.info(">     " + context.getMethod() + " " + context.getUriInfo().getRequestUri().toASCIIString());
-      MDC.remove(MDC_PRE_LOG);
-      final Stopwatch stopwatch = Stopwatch.createUnstarted();
-      context.setProperty(STOPWATCH_PROPERTY, stopwatch);
+    MDC.put(MDC_PRE_LOG, "true");
+    //Log a very minimal message. Mostly to make sure that we notice requests that never log in the response filter
+    LOG.info(">     " + context.getMethod() + " " + context.getUriInfo().getRequestUri().toASCIIString());
+    MDC.remove(MDC_PRE_LOG);
+    final Stopwatch stopwatch = Stopwatch.createUnstarted();
+    context.setProperty(STOPWATCH_PROPERTY, stopwatch);
 
-      if (context.hasEntity()) {
-        context.setEntityStream(
-          addInboundEntityToMdc(context.getEntityStream(), MessageUtils.getCharset(context.getMediaType()))
-        );
-      }
-      stopwatch.start();
+    if (context.hasEntity()) {
+      context.setEntityStream(
+        addInboundEntityToMdc(context.getEntityStream(), MessageUtils.getCharset(context.getMediaType()))
+      );
     }
+    stopwatch.start();
   }
 
   @Override
@@ -145,24 +146,27 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
       Stopwatch stopwatch = (Stopwatch) requestContext.getProperty(STOPWATCH_PROPERTY);
       if (responseContext.hasEntity()) {
-        //delay logging until the result has been sent to the client so we can measure the size of the result
+        String contentType = responseContext.getHeaderString("Content-Type");
+        boolean logResponseText = "text/plain".equals(contentType) || "application/json".equals(contentType);
+        //delay logging until the responseBody has been fully written
         responseContext.setEntityStream(new LoggingOutputStream(
           responseContext.getEntityStream(),
           stopwatch,
           log,
           requestContext,
           responseContext,
-          MDC.getCopyOfContextMap()
+          MDC.getCopyOfContextMap(),
+          logResponseText
         ));
       } else {
         //log now, because the writeTo wrapper will not be called
-        doLog(log, 0, stopwatch, requestContext, responseContext, MDC.getCopyOfContextMap());
+        doLog(log, 0, stopwatch, requestContext, responseContext, MDC.getCopyOfContextMap(), EMPTY);
       }
     }
   }
 
   private void doLog(String log, long bytecount, Stopwatch stopwatch, ContainerRequestContext requestContext,
-                     ContainerResponseContext responseContext, Map<String, String> mdcVals) {
+                     ContainerResponseContext responseContext, Map<String, String> mdcVals, String responseBody) {
     //store current MDC state somewhere
     final Map<String, String> curMdc = MDC.getCopyOfContextMap();
     clearMdc();
@@ -179,6 +183,9 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
     MDC.put(MDC_RESPONSE_HEADERS, formatHeaders(responseContext.getStringHeaders()));
 
     MDC.put(MDC_OUTPUT_BYTECOUNT, bytecount + "");
+    if (responseBody.length() > 0) {
+      MDC.put(MDC_OUTPUT_SNIPPET, responseBody);
+    }
     String size = " (" + bytecount + " bytes)";
 
     String durationLog = getDuration(stopwatch);
@@ -220,22 +227,27 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
   }
 
   private class LoggingOutputStream extends FilterOutputStream {
+    public static final int MAX_RESULT_SIZE = 2048;
     private final Stopwatch stopwatch;
     private final String log;
     private final ContainerRequestContext requestContext;
     private final ContainerResponseContext responseContext;
     private final Map<String, String> contextMap;
-    private long count;
+    private final boolean logResponseText;
+    private long count = 0;
+    private ByteArrayOutputStream responseBody = new ByteArrayOutputStream(MAX_RESULT_SIZE);
 
     public LoggingOutputStream(OutputStream out, Stopwatch stopwatch, String log,
                                ContainerRequestContext requestContext, ContainerResponseContext responseContext,
-                               Map<String, String> contextMap) {
+                               Map<String, String> contextMap, boolean logResponseText) {
       super(Preconditions.checkNotNull(out));
+
       this.stopwatch = stopwatch;
       this.log = log;
       this.requestContext = requestContext;
       this.responseContext = responseContext;
       this.contextMap = contextMap;
+      this.logResponseText = logResponseText;
     }
 
     public long getCount() {
@@ -244,17 +256,28 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
     public void write(byte[] bytes, int off, int len) throws IOException {
       this.out.write(bytes, off, len);
-      this.count += (long)len;
+      if (logResponseText && count < MAX_RESULT_SIZE - 1) {
+        int writeLen = (int) count + len;
+        if (writeLen > MAX_RESULT_SIZE) {
+          writeLen = MAX_RESULT_SIZE - (int) count;
+        }
+        responseBody.write(bytes, off, writeLen);
+      }
+      this.count += len;
     }
 
     public void write(int someByte) throws IOException {
       this.out.write(someByte);
+      if (logResponseText && count < MAX_RESULT_SIZE - 1) {
+        responseBody.write(someByte);
+      }
       ++this.count;
     }
 
     public void close() throws IOException {
       this.out.close();
-      doLog(log, count, stopwatch, requestContext, responseContext, contextMap);
+      doLog(log, count, stopwatch, requestContext, responseContext, contextMap, responseBody.toString("UTF-8"));
+      responseBody.close();
     }
   }
 }
