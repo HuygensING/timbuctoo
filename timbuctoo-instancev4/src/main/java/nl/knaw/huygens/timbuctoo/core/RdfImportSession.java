@@ -35,11 +35,6 @@ public class RdfImportSession {
     return cleanImportSession(vreName, dataStoreOperations, errorReporter, new PropertyFactory(errorReporter));
   }
 
-  public static RdfImportSession cleanImportSession(String vreName, DataStoreOperations dataStoreOperations,
-                                                    RdfImportErrorReporter errorReporter) {
-    return cleanImportSession(vreName, dataStoreOperations, errorReporter, new PropertyFactory(errorReporter));
-  }
-
   static RdfImportSession cleanImportSession(String vreName, DataStoreOperations dataStoreOperations,
                                              RdfImportErrorReporter errorReporter,
                                              PropertyFactory propertyFactory) {
