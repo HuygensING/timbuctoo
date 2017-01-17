@@ -1,5 +1,7 @@
 FROM huygensing/timbuctoo:build-base
 
+RUN apk add --no-cache jq
+
 ENV BASE_URI=http://localhost:8080
 ENV TIMBUCTOO_SEARCH_URL=http://localhost:8082
 EXPOSE 80 81
@@ -9,8 +11,6 @@ RUN mkdir -p /data/auth/authorizations
 RUN mkdir -p /data/database
 RUN echo "[]" > /data/auth/logins.json
 RUN echo "[]" > /data/auth/users.json
-
-RUN apt-get update && apt-get install -y --no-install-recommends jq && rm -rf /var/lib/apt/lists/*
 
 COPY ./ContractDiff ./ContractDiff
 COPY ./HttpCommand ./HttpCommand

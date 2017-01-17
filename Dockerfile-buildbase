@@ -1,4 +1,6 @@
-FROM openjdk:8-jdk
+FROM openjdk:8-jdk-alpine
+
+RUN apk add --no-cache curl tar bash
 
 ARG MAVEN_VERSION=3.3.9
 ARG USER_HOME_DIR="/root"
@@ -24,6 +26,6 @@ COPY ./timbuctoo-instancev4/pom.xml ./timbuctoo-instancev4/pom.xml
 COPY ./pom.xml ./pom.xml
 COPY ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml
 
-RUN mvn clean package dependency:go-offline || true
+RUN mvn clean package dependency:go-offline
 
 RUN rm -r ./*
