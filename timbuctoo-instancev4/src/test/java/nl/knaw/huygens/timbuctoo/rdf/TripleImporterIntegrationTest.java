@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
 import nl.knaw.huygens.timbuctoo.core.RdfImportErrorReporter;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
+import nl.knaw.huygens.timbuctoo.core.RdfImportSessionStubs;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -376,7 +377,8 @@ public class TripleImporterIntegrationTest {
     tinkerPopOperations.saveVre(getVres().getVre("Admin"));
     final RdfImportErrorReporter errorReporter = mock(RdfImportErrorReporter.class);
 
-    RdfImportSession localSession = RdfImportSession.cleanImportSession(VRE_NAME, tinkerPopOperations, errorReporter);
+    RdfImportSession localSession = RdfImportSessionStubs.rdfImportSessionWithErrorReporter("vreName",
+      tinkerPopOperations, errorReporter);
 
     TripleImporter localInstance = new TripleImporter(graphWrapper, VRE_NAME, localSession);
 
