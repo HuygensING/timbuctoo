@@ -221,7 +221,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new JsEnv(configuration));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
     register(environment, new Me(securityConfig.getLoggedInUsers(environment)));
-    register(environment, new Search(configuration, graphManager));
+    register(environment, new Search(configuration, uriHelper, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
     register(environment,
       new Index(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));

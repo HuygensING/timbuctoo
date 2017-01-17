@@ -1,15 +1,15 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 
-import nl.knaw.huygens.timbuctoo.server.SearchConfig;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 
 import javax.ws.rs.core.UriBuilder;
 import java.util.UUID;
 
 class NavigationCreator {
-  private SearchConfig searchConfig;
+  private final UriHelper uriHelper;
 
-  public NavigationCreator(SearchConfig searchConfig) {
-    this.searchConfig = searchConfig;
+  public NavigationCreator(UriHelper uriHelper) {
+    this.uriHelper = uriHelper;
   }
 
   public void next(SearchResponseV2_1 searchResponse, int rows, int currentStart, int numFound, UUID id) {
@@ -28,11 +28,11 @@ class NavigationCreator {
   }
 
   private String createUri(UUID id, int start, int rows) {
-
-    return UriBuilder.fromUri(searchConfig.getBaseUri()).path("/v2.1/search/{id}")
-                     .queryParam("start", start)
-                     .queryParam("rows", rows)
-                     .build(id)
-                     .toString();
+    return uriHelper.fromResourceUri(
+      UriBuilder.fromUri("/v2.1/search/{id}")
+        .queryParam("start", start)
+        .queryParam("rows", rows)
+        .build(id)
+    ).toString();
   }
 }
