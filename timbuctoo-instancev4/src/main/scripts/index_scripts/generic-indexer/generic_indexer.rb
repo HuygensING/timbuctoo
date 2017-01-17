@@ -32,6 +32,8 @@ class GenericIndexer
   end
 
   def run
+    indexer_failed = false
+    commited_indexes = []
     @mappers.each do |collection, mapper|
       begin
         @solr_io.create(collection)
@@ -39,12 +41,24 @@ class GenericIndexer
         puts "Index #{collection} already exists"
       end
       @solr_io.delete_data(collection)
-
+      begin
       @timbuctoo_io.scrape_collection(collection, :with_relations => true, :process_record => -> (record) {
         convert(mapper, record, collection)
       })
 
+      commited_indexes << collection
       @solr_io.commit(collection)
+      rescue Exception => e
+        STDERR.puts "indexer failed"
+        STDERR.puts e
+        indexer_failed = true
+        break
+      end
+    end
+    if indexer_failed
+      commited_indexes.each do |collection|
+        @solr_io.delete_index(collection)
+      end
     end
   end
 
