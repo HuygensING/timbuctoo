@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URI;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.endsWith;
@@ -20,7 +21,7 @@ public class NavigationCreatorV2_1Test {
 
   @Before
   public void setUp() throws Exception {
-    UriHelper uriHelper = new UriHelper(BASE_URI);
+    UriHelper uriHelper = new UriHelper(URI.create(BASE_URI));
     instance = new NavigationCreator(uriHelper);
   }
 
