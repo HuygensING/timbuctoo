@@ -42,7 +42,6 @@ import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.net.URI;
@@ -51,7 +50,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
@@ -105,7 +103,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
@@ -3146,42 +3143,16 @@ public class TinkerPopOperationsTest {
 
     instance.deleteVre("vreName");
 
-    ArgumentCaptor<Collection> collectionArgumentCaptor = ArgumentCaptor.forClass(Collection.class);
-    ArgumentCaptor<Vertex> entityArgumentCaptorForIdIndex = ArgumentCaptor.forClass(Vertex.class);
-    ArgumentCaptor<Vertex> entityArgumentCaptorForRdfIndex = ArgumentCaptor.forClass(Vertex.class);
-    ArgumentCaptor<Vre> vreArgumentCaptor = ArgumentCaptor.forClass(Vre.class);
+    verify(indexHandler).deleteQuicksearchIndex(argThat(hasProperty("collectionName", equalTo("collection1"))));
+    verify(indexHandler).deleteQuicksearchIndex(argThat(hasProperty("collectionName", equalTo("collection2"))));
 
-    verify(indexHandler, times(2)).deleteQuicksearchIndex(collectionArgumentCaptor.capture());
-    verify(indexHandler, times(2)).removeFromIdIndex(entityArgumentCaptorForIdIndex.capture());
-    verify(indexHandler, times(2)).removeFromRdfIndex(vreArgumentCaptor.capture(),
-      entityArgumentCaptorForRdfIndex.capture());
+    verify(indexHandler).removeFromIdIndex(argThat(is(likeVertex().withId(entityId))));
+    verify(indexHandler).removeFromIdIndex(argThat(is(likeVertex().withId(entity2Id))));
 
-    final List<String> collectionsInvokedWithDeleteQuickSearchIndex = collectionArgumentCaptor
-      .getAllValues().stream().map(Collection::getCollectionName).collect(Collectors.toList());
-
-    assertThat(collectionsInvokedWithDeleteQuickSearchIndex.size(), equalTo(2));
-    assertThat(collectionsInvokedWithDeleteQuickSearchIndex, containsInAnyOrder(
-        "collection1",
-        "collection2"
-    ));
-
-    final List<Long> vertexIdsRemovedFromIdIndex =
-      entityArgumentCaptorForIdIndex.getAllValues().stream().map(v -> (Long) v.id()).collect(toList());
-
-    assertThat(vertexIdsRemovedFromIdIndex.size(), equalTo(2));
-    assertThat(vertexIdsRemovedFromIdIndex, containsInAnyOrder(
-      entityId,
-      entity2Id
-    ));
-
-    final List<Long> vertexIdsRemovedFromRdfIndex =
-      entityArgumentCaptorForRdfIndex.getAllValues().stream().map(v -> (Long) v.id()).collect(toList());
-
-    assertThat(vertexIdsRemovedFromRdfIndex.size(), equalTo(2));
-    assertThat(vertexIdsRemovedFromRdfIndex, containsInAnyOrder(
-      entityId,
-      entity2Id
-    ));
+    verify(indexHandler).removeFromRdfIndex(
+      argThat(hasProperty("vreName", equalTo("vreName"))), argThat(is(likeVertex().withId(entityId))));
+    verify(indexHandler).removeFromRdfIndex(
+      argThat(hasProperty("vreName", equalTo("vreName"))), argThat(is(likeVertex().withId(entity2Id))));
   }
 }
 

@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.Is.is;
 
 public class VertexMatcher extends CompositeMatcher<Vertex> {
   private VertexMatcher() {
@@ -87,6 +88,17 @@ public class VertexMatcher extends CompositeMatcher<Vertex> {
       @Override
       protected String getItemValue(Vertex item) {
         return item.label();
+      }
+    });
+
+    return this;
+  }
+
+  public VertexMatcher withId(Long expectedId) {
+    this.addMatcher(new PropertyMatcher<Vertex, Long>("id", is(expectedId)) {
+      @Override
+      protected Long getItemValue(Vertex item) {
+        return (Long) item.id();
       }
     });
 
