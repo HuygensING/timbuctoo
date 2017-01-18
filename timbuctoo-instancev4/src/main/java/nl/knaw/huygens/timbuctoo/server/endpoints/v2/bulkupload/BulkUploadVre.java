@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -163,18 +164,25 @@ public class BulkUploadVre {
       return filterResponse.get();
     }
 
-    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
-      timbuctooActions.deleteVre(vreName);
-      final Optional<User> user = permissionChecker.getUserFor(authorizationHeader);
-      if (user.isPresent()) {
-        try {
-          vreAuthorizationAccess.deleteVreAuthorizations(vreName, user.get().getId());
-        } catch (AuthorizationException e) {
-          LOG.error("Failed to remove authorization for vre '{}'", vreName);
-        }
+    final Optional<User> user = permissionChecker.getUserFor(authorizationHeader);
+
+    try {
+      if (user.isPresent() && permissionChecker.isAdminFor(vreName, user.get())) {
+        return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+          timbuctooActions.deleteVre(vreName);
+          try {
+            vreAuthorizationAccess.deleteVreAuthorizations(vreName, user.get().getId());
+          } catch (AuthorizationException e) {
+            LOG.error("Failed to remove authorization for vre '{}'", vreName);
+          }
+          return TransactionStateAndResult.commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
+        });
+      } else {
+        return Response.status(Response.Status.FORBIDDEN).entity(jsnO("success", jsn(false))).build();
       }
-      return TransactionStateAndResult.commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
-    });
+    } catch (AuthorizationUnavailableException e) {
+      return Response.status(Response.Status.FORBIDDEN).entity(jsnO("success", jsn(false))).build();
+    }
 
   }
 
