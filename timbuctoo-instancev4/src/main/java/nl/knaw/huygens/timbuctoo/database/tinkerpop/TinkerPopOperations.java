@@ -533,7 +533,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     listener.onAddToCollection(col, Optional.empty(), vertex);
     baseCollection.ifPresent(baseCol -> listener.onAddToCollection(baseCol, Optional.empty(), vertex));
 
-    duplicateVertex(traversal, vertex);
+    duplicateVertex(traversal, vertex, indexHandler);
   }
 
   @Override
@@ -701,7 +701,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       listener.onAddToCollection(collection, prevVertex, entityVertex);
     }
 
-    duplicateVertex(traversal, entityVertex);
+    duplicateVertex(traversal, entityVertex, indexHandler);
     return newRev;
   }
 
@@ -800,7 +800,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       listener.onRemoveFromCollection(collection, getPrevVertex(collection, entity), entity);
     }
 
-    duplicateVertex(traversal, entity);
+    duplicateVertex(traversal, entity, indexHandler);
 
     return newRev;
   }
@@ -1268,7 +1268,7 @@ public class TinkerPopOperations implements DataStoreOperations {
         v.property("isLatest", true);
         listener.onCreate(col, v);
         listener.onAddToCollection(col, Optional.empty(), v);
-        listener.onPropertyUpdate(col, Optional.of(v), duplicateVertex(traversal, v));
+        listener.onPropertyUpdate(col, Optional.of(v), duplicateVertex(traversal, v, indexHandler));
       })
     );
   }
