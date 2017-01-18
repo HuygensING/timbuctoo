@@ -242,6 +242,9 @@ public class Neo4jIndexHandler implements IndexHandler {
     return collection.getCollectionName();
   }
 
+  // In edge cases it can occur that the actual neo4j node is already deleted, while the instance of Vertex
+  // still holds an ID, causing org.neo4j.graphdb.NotFoundException.
+  // LOG an error for now, keeping code stable, but maybe exception should be escalated
   private Optional<Node> vertexToNode(Vertex vertex) {
     try {
       final Node nodeById = graphDatabase().getNodeById((long) vertex.id());
