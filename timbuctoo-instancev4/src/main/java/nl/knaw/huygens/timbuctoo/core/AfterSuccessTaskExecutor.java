@@ -3,15 +3,11 @@ package nl.knaw.huygens.timbuctoo.core;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.LinkedList;
+import java.util.ArrayDeque;
 
 public class AfterSuccessTaskExecutor {
   public static final Logger LOG = LoggerFactory.getLogger(AfterSuccessTaskExecutor.class);
-  private final LinkedList<Task> tasks;
-
-  public AfterSuccessTaskExecutor() {
-    tasks = new LinkedList<>();
-  }
+  private final ArrayDeque<Task> tasks = new ArrayDeque<>();
 
   public void addTask(Task task) {
     tasks.push(task);
