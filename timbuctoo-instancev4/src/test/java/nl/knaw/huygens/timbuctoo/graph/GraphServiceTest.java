@@ -167,12 +167,13 @@ public class GraphServiceTest {
     ));
   }
 
-  private int getIndex(List<Node> nodes, String key) {
-    for (int i = 0; i < nodes.size(); i++) {
-      final Node node = nodes.get(i);
+  private int getIndex(java.util.Collection<Node> nodes, String key) {
+    int idx = 0;
+    for (Node node : nodes) {
       if (node.getKey().equals("wwpersons/" + key)) {
-        return i;
+        return idx;
       }
+      idx++;
     }
     return -1;
   }
