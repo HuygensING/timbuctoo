@@ -2438,7 +2438,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void getEntityByRdfUriReturnsAnEmptyOptionalIfTheEntityCannotBeFound() {
     Vres vres = createConfiguration();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(newGraph().wrap(), vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(newGraph().wrap(), vres);
     Collection collection = vres.getCollection("testthings").get();
 
     Optional<ReadEntity> readEntity = instance.getEntityByRdfUri(collection, "http://example.com/entity", false);
@@ -2515,7 +2515,7 @@ public class TinkerPopOperationsTest {
       )
       .wrap();
     Vres vres = createConfiguration();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapperAndMappings(graphManager, vres);
+    TinkerPopOperations instance = forGraphWrapperAndMappings(graphManager, vres);
 
     List<RelationType> relationTypes = instance.getRelationTypes();
 
@@ -2538,7 +2538,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void addCollectionToVreDoesNotAddTheCollectionWhenTheVreAlreadyHasACollectionWithTheSameName() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = instance.ensureVreExists("vre");
 
     CreateCollection collection = CreateCollection.forEntityTypeName("entityTypeName");
@@ -2554,7 +2554,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void assertEntityCreatesANewEntityIfTheEntityDoesNotExist() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = minimalCorrectVre(instance, "vre");
 
     instance.assertEntity(vre, "http://example.org/1");
@@ -2565,7 +2565,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void assertEntitySetsTheRdfUriProperty() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = minimalCorrectVre(instance, "vre");
 
     instance.assertEntity(vre, "http://example.org/1");
@@ -2577,7 +2577,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void assertEntityAddsCreatedEntitiesToTheDefaultCollection() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = minimalCorrectVre(instance, "vre");
 
     instance.assertEntity(vre, "http://example.org/1");
@@ -2592,7 +2592,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void assertEntityDoesNotReCreateEntitiesThatAlreadyExist() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = minimalCorrectVre(instance, "vre");
 
     long administrativeVertices = graphManager.getGraph().traversal().V().count().next();
@@ -2605,7 +2605,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void assertPropertyAddsThePropertyOnTheEntity() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     String vreName = "vre";
     Vre vre = minimalCorrectVre(instance, vreName);
 
@@ -2629,7 +2629,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void assertPropertyOverwritesThePropertyOnTheEntity() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     String vreName = "vre";
     Vre vre = minimalCorrectVre(instance, vreName);
 
@@ -2663,7 +2663,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void assertPropertyAlsoAddsAnAdminVersionOfTheProperty() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = minimalCorrectVre(instance, "vre");
 
 
@@ -2687,7 +2687,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void retractPropertyRemovesTheProperty() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = minimalCorrectVre(instance, "vre");
 
     instance.assertEntity(vre, "http://example.org/1");
@@ -2727,7 +2727,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void retractPropertyRemovesTheValueTypeFromThePredicateIfItDoesNotApplyToAnyEntity() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = minimalCorrectVre(instance, "vre");
     Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
     RdfProperty stringProperty = new RdfProperty(
@@ -2758,7 +2758,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void retractRemovesThePredicateWhenNoValueTypesAreConnected() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = minimalCorrectVre(instance, "vre");
     Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
     RdfProperty stringProperty = new RdfProperty(
@@ -2777,7 +2777,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void retractPropertyWillBeANoopIfTheEntityDoesNotYetExist() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = instance.ensureVreExists("vre");
 
     instance.retractProperty(
@@ -2856,7 +2856,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void getEntitiesWithUnknownTypeDoesNotReturnEntitiesWithACollection() {
     TinkerPopGraphManager wrap = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(wrap);
+    TinkerPopOperations instance = forGraphWrapper(wrap);
     final Database legacyRdfDatabase = new Database(wrap);
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
@@ -2881,7 +2881,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void finishEntitiesSetsTheAdministrativeProperties() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
@@ -2926,7 +2926,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void finishEntitiesDuplicatesTheVertices() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
@@ -2942,7 +2942,7 @@ public class TinkerPopOperationsTest {
   @Test
   public void addPropertiesToCollectionsAddsPropertyDescriptionsToTheCollection() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
@@ -3006,7 +3006,7 @@ public class TinkerPopOperationsTest {
         .withProperty("other", true)
       )
       .wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
 
     instance.deleteVre("vreName");
 
@@ -3064,7 +3064,7 @@ public class TinkerPopOperationsTest {
         .withProperty(IS_RELATION_COLLECTION_PROPERTY_NAME, false)
       )
       .wrap();
-    TinkerPopOperations instance = TinkerPopOperationsStubs.forGraphWrapper(graphManager);
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
 
     instance.deleteVre("vreName");
 
