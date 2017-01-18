@@ -11,7 +11,9 @@ import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.glassfish.jersey.server.ChunkedOutput;
 import org.slf4j.Logger;
@@ -29,8 +31,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.MAPPING_EXECUTION;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.UPLOADING;
 import static org.apache.poi.util.IOUtils.copy;
@@ -62,65 +67,58 @@ public class BulkUpload {
   @POST
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces("text/plain")
-  public Response uploadExcelFile(
-    @FormDataParam("file") InputStream fileUpload,
-    @FormDataParam("file") FormDataContentDisposition fileDetails,
-    @FormDataParam("vreName") String vreName,
-    @HeaderParam("Authorization") String authorization) {
-    if (fileUpload == null) {
-      return Response.status(Response.Status.BAD_REQUEST).entity("The file is missing").build();
-    } else {
-      Optional<User> user = loggedInUsers.userFor(authorization);
-      if (!user.isPresent()) {
-        return Response.status(Response.Status.FORBIDDEN).entity("User not known").build();
-      } else {
-        final String unNamespacedVreName = vreName == null ? fileDetails.getFileName() : vreName;
-        String namespacedVre = user.get().getPersistentId() + "_" + stripFunnyCharacters(unNamespacedVreName);
-        try {
-          authorizationCreator.createAuthorization(namespacedVre, user.get().getId(), UserRoles.ADMIN_ROLE);
-        } catch (AuthorizationCreationException e) {
-          LOG.error("Cannot add authorization for user {} and VRE {}", user.get().getId(), namespacedVre);
-          LOG.error("Exception thrown", e);
-          return Response.status(Response.Status.FORBIDDEN).entity("Unable to create authorization for user").build();
-        }
-
-        try {
-          final ChunkedOutput<String> output = executeUpload(
-            fileDetails,
-            unNamespacedVreName,
-            namespacedVre,
-            fileUpload
-          );
-          // the output will be probably returned even before
-          // a first chunk is written by the new thread
-          return Response.ok()
-                         .entity(output)
-                         .location(bulkUploadVre.createUri(namespacedVre))
-                         .build();
-
-        } catch (IOException e) {
-          LOG.error("Reading upload failed", e);
-          return Response.status(Response.Status.BAD_REQUEST)
-                         .entity(e.getMessage())
-                         .build();
-        } catch (IllegalArgumentException e) {
-          return Response.status(Response.Status.BAD_REQUEST)
-                         .entity(e.getMessage())
-                         .build();
-        }
-
-      }
+  public Response upload(@HeaderParam("Authorization") String authorization,
+                         @FormDataParam("vreName") String vreName,
+                         FormDataMultiPart parts) {
+    Optional<User> user = loggedInUsers.userFor(authorization);
+    if (!user.isPresent()) {
+      return Response.status(Response.Status.FORBIDDEN).entity("User not known").build();
     }
+
+    if (vreName == null) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("vreName missing").build();
+    }
+    String namespacedVre = user.get().getPersistentId() + "_" + stripFunnyCharacters(vreName);
+
+    try {
+      authorizationCreator.createAuthorization(namespacedVre, user.get().getId(), UserRoles.ADMIN_ROLE);
+    } catch (AuthorizationCreationException e) {
+      LOG.error("Cannot add authorization for user {} and VRE {}", user.get().getId(), namespacedVre);
+      LOG.error("Exception thrown", e);
+      return Response.status(Response.Status.FORBIDDEN).entity("Unable to create authorization for user").build();
+    }
+
+    List<FormDataBodyPart> files = parts.getFields("file");
+    if (files == null) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("files missing").build();
+    }
+
+    ChunkedOutput<String> output;
+    try {
+      output = executeUpload(files, vreName, namespacedVre);
+    } catch (IOException e) {
+      LOG.error("Reading upload failed", e);
+      return Response.status(Response.Status.BAD_REQUEST)
+                     .entity(e.getMessage())
+                     .build();
+    } catch (IllegalArgumentException e) {
+      return Response.status(Response.Status.BAD_REQUEST)
+                     .entity(e.getMessage())
+                     .build();
+    }
+
+    return Response.ok()
+                   .entity(output)
+                   .location(bulkUploadVre.createUri(namespacedVre))
+                   .build();
   }
 
   @PUT
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @Produces("text/plain")
-  public Response reUploadExcelFile(
-    @FormDataParam("file") InputStream fileUpload,
-    @FormDataParam("file") FormDataContentDisposition fileDetails,
-    @FormDataParam("vreId") String vreName,
-    @HeaderParam("Authorization") String authorization) {
+  public Response reUploadExcelFile(@FormDataParam("vreId") String vreName,
+                                    @HeaderParam("Authorization") String authorization,
+                                    FormDataMultiPart parts) {
 
     // First check permission
     final Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorization);
@@ -139,16 +137,19 @@ public class BulkUpload {
       // Check whether vre is currently in a transitional state
       if (vre.getPublishState() == UPLOADING || vre.getPublishState() == MAPPING_EXECUTION) {
         // Data from this vre is currently being transformed, so re-upload is dangerous
-        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.PRECONDITION_FAILED).build());
+        return TransactionStateAndResult
+          .commitAndReturn(Response.status(Response.Status.PRECONDITION_FAILED).build());
+      }
+
+      List<FormDataBodyPart> files = parts.getFields("file");
+      if (files == null) {
+        return TransactionStateAndResult
+          .commitAndReturn(
+            Response.status(Response.Status.BAD_REQUEST).entity("files missing").build());
       }
 
       try {
-        final ChunkedOutput<String> output = executeUpload(
-          fileDetails,
-          vre.getMetadata().getLabel(),
-          vreName,
-          fileUpload
-        );
+        ChunkedOutput<String> output = executeUpload(files, vre.getMetadata().getLabel(), vreName);
         return TransactionStateAndResult.commitAndReturn(
           Response.ok()
                   .location(bulkUploadVre.createUri(vreName))
@@ -170,21 +171,33 @@ public class BulkUpload {
     });
   }
 
-  private ChunkedOutput<String> executeUpload(@FormDataParam("file") final FormDataContentDisposition fileDetails,
-                                              final String vreLabel, final String vreName,
-                                              final InputStream inputStream) throws IOException {
-    final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
+  private ChunkedOutput<String> executeUpload(List<FormDataBodyPart> parts, String vreLabel, String vreName)
+    throws IOException {
+    ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
 
-    File tempFile = File.createTempFile(fileDetails.getName(), null, null);
-    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-      copy(inputStream, fos);
+    // These are deleted in BulkUploadService.
+    // TODO: is there a way to avoid having to create these files?
+    List<File> tempFiles = new ArrayList<>();
+    for (FormDataBodyPart part : parts) {
+      FormDataContentDisposition fileDetails = part.getFormDataContentDisposition();
+      InputStream fileUpload = part.getValueAs(InputStream.class);
+      File tempFile = File.createTempFile("timbuctoo-bulkupload-", null, null);
+      try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+        copy(fileUpload, fos);
+      }
+      tempFiles.add(tempFile);
     }
+
+    List<String> fileNames = parts.stream().map(part -> {
+      FormDataContentDisposition fileDetails = part.getFormDataContentDisposition();
+      return fileDetails.getFileName();
+    }).collect(toList());
 
     new Thread() {
       public void run() {
         final int[] writeErrors = {0};
         try {
-          uploadService.saveToDb(vreName, tempFile, fileDetails.getFileName(), vreLabel, msg -> {
+          uploadService.saveToDb(vreName, tempFiles, fileNames, vreLabel, msg -> {
             try {
               //write json objects
               if (writeErrors[0] < 5) {
@@ -210,23 +223,10 @@ public class BulkUpload {
           } catch (IOException e) {
             LOG.error("Couldn't close the output stream", e);
           }
-          try {
-            String filePath = tempFile.getAbsolutePath();
-            try {
-              if (tempFile.delete()) {
-                LOG.info("deleted tempfile " + filePath + " after import");
-              } else {
-                LOG.error("Couldn't remove file " + filePath);
-              }
-            } catch (Exception e) {
-              LOG.error("Couldn't remove file " + filePath, e);
-            }
-          } catch (Exception e) {
-            LOG.error("Error while getting path of tempfile, tempfile was not deleted", e);
-          }
         }
       }
     }.start();
+
     return output;
   }
 

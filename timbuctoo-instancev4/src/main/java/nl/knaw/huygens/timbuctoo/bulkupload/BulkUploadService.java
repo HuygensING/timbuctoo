@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv.CsvLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
@@ -10,13 +11,18 @@ import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.function.Consumer;
 
-public class BulkUploadService {
+import static java.util.stream.Collectors.joining;
 
+public class BulkUploadService {
+  public static final Logger LOG = LoggerFactory.getLogger(BulkUploadService.class);
   private final Vres vres;
   private final TinkerPopGraphManager graphwrapper;
   private final int maxVertices;
@@ -27,25 +33,44 @@ public class BulkUploadService {
     this.maxVertices = maxVerticesPerTransaction;
   }
 
-  public void saveToDb(String vreName, File file, String fileName, String vreLabel,
-                       Consumer<String> statusUpdate)
-    throws InvalidFileException, IOException {
+  public void saveToDb(String vreName, List<File> tempFiles, List<String> fileNames, String vreLabel,
+                       Consumer<String> statusUpdate) throws IOException, InvalidFileException {
 
-    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, maxVertices, fileName)) {
-      Loader loader;
-      if (fileName.endsWith(".xlsx")) {
-        loader = new AllSheetLoader();
-      } else {
-        loader = new DataPerfectLoader();
+    if (tempFiles.size() != fileNames.size()) {
+      throw new IllegalArgumentException("number of filenames should match number of files");
+    }
+
+    String fileNamesDisplay =
+      fileNames.size() == 1 ? fileNames.get(0) : "multiple files: " + fileNames.stream().collect(joining(", "));
+
+    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000, fileNamesDisplay)) {
+      for (int i = 0; i < tempFiles.size(); i++) {
+        String fileName = fileNames.get(i);
+        File file = tempFiles.get(i);
+
+        Loader loader;
+        // TODO move this switch on extension to BulkUpload.
+        if (fileName.endsWith(".xlsx")) {
+          loader = new AllSheetLoader();
+        } else if (fileName.endsWith(".csv")) {
+          loader = new CsvLoader(fileName.substring(0, fileName.length() - 4));
+        } else {
+          loader = new DataPerfectLoader();
+        }
+        try {
+          loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
+          saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);
+        } catch (IOException | InvalidFileException e) {
+          saver.setUploadFinished(vreName, Vre.PublishState.UPLOAD_FAILED);
+          throw e;
+        }
       }
-      try {
-        loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
-        saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);
-      } catch (IOException | InvalidFileException e) {
-        saver.setUploadFinished(vreName, Vre.PublishState.UPLOAD_FAILED);
-        throw e;
-      }
+    } finally {
+      tempFiles.forEach(f -> {
+        if (!f.delete()) {
+          LOG.error("couldn't delete " + f.getAbsolutePath());
+        }
+      });
     }
   }
-
 }

@@ -248,6 +248,12 @@
     </dependency>
 
     <!-- ### Uploads file handling ## -->
+    <!-- CSV -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>1.4</version>
+    </dependency>
     <!-- Excel -->
     <dependency>
       <groupId>org.apache.poi</groupId>
@@ -256,10 +262,10 @@
     </dependency>
     <!-- dataperfect -->
     <dependency>
-	    <groupId>com.github.DANS-KNAW</groupId>
-	    <artifactId>dans-dp-lib</artifactId>
-	    <version>36e6037f4b</version>
-	  </dependency>
+      <groupId>com.github.DANS-KNAW</groupId>
+      <artifactId>dans-dp-lib</artifactId>
+      <version>36e6037f4b</version>
+    </dependency>
 
     <!-- ### HTML Parser ## -->
     <dependency>
@@ -514,10 +520,10 @@
       <name>mbknor</name>
       <url>https://raw.githubusercontent.com/mbknor/mbknor.github.com/master/m2repo/releases</url>
     </repository>
-		<repository>
-		    <id>jitpack.io</id>
-		    <url>https://jitpack.io</url>
-		</repository>
+    <repository>
+      <id>jitpack.io</id>
+      <url>https://jitpack.io</url>
+    </repository>
   </repositories>
 
 
