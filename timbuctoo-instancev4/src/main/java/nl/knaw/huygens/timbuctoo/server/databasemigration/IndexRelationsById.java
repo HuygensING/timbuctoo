@@ -10,7 +10,7 @@ public class IndexRelationsById implements DatabaseMigration {
   @Override
   public void execute(TinkerPopGraphManager graphWrapper) throws IOException {
     Neo4jIndexHandler neo4jIndexHandler = new Neo4jIndexHandler(graphWrapper);
-    graphWrapper.getGraph().traversal().E().has("tim_id").forEachRemaining(e -> {
+    graphWrapper.getGraph().traversal().E().has("tim_id").has("isLatest", true).forEachRemaining(e -> {
         neo4jIndexHandler.upsertIntoEdgeIdIndex(UUID.fromString(e.value("tim_id")), e);
       }
     );
