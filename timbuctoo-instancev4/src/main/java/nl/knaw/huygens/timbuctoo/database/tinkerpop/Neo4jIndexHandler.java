@@ -86,8 +86,11 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public void upsertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex) {
-    this.removeFromQuickSearchIndex(collection, vertex);
+  public void upsertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex,
+                                         Vertex oldVertex) {
+    if (oldVertex != null) {
+      this.removeFromQuickSearchIndex(collection, oldVertex);
+    }
 
     Index<Node> index = getQuickSearchIndex(collection);
 

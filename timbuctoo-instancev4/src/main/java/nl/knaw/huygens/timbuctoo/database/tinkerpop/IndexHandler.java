@@ -22,7 +22,7 @@ public interface IndexHandler {
   /**
    * This method adds or update a index entry and makes shure the index have only one entry for each vertex.
    */
-  void upsertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex);
+  void upsertIntoQuickSearchIndex(Collection collection, String quickSearchValue, Vertex vertex, Vertex oldVertex);
 
   void removeFromQuickSearchIndex(Collection collection, Vertex vertex);
 

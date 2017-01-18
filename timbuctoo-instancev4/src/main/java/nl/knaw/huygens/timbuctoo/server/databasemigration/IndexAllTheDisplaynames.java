@@ -44,7 +44,7 @@ public class IndexAllTheDisplaynames implements DatabaseMigration {
               Collection collection = collectionOpt.get();
               DisplayNameHelper.getDisplayname(traversalSource, vertex, collection)
                                .ifPresent(displayName -> {
-                                 indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex);
+                                 indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex, null);
                                });
             } else {
               LOG.error("'{}' is not a known entity type.", type);

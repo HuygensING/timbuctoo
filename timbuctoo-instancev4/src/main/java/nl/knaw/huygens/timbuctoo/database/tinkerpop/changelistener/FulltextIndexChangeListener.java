@@ -32,13 +32,12 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   @Override
   public void onCreate(Collection collection, Vertex vertex) {
-    handleChange(collection, vertex);
+    handleChange(collection, vertex, null);
   }
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    oldVertex.ifPresent(vertex -> handleRemove(collection, vertex));
-    handleChange(collection, newVertex);
+    handleChange(collection, newVertex, oldVertex.orElse(null));
   }
 
   @Override
@@ -49,7 +48,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   @Override
   public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    handleChange(collection, newVertex);
+    handleChange(collection, newVertex, oldVertex.orElse(null));
   }
 
   @Override
@@ -62,7 +61,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   }
 
-  private void handleChange(Collection collection, Vertex vertex) {
+  private void handleChange(Collection collection, Vertex vertex, Vertex oldVertex) {
     GraphTraversal<Vertex, Vertex> traversal = graphWrapper.getGraph().traversal().V(vertex.id());
     final GraphTraversal<Vertex, Try<JsonNode>> displayNameT = traversal.asAdmin().clone()
                                                                  .union(collection.getDisplayName().traversalJson());
@@ -88,7 +87,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
         "Displayname traversal resulted in no results vertexId={} collection={} propertyType={}",
         vertex.id(), collection.getCollectionName(), collection.getDisplayName().getUniqueTypeId());
     } else {
-      indexHandler.upsertIntoQuickSearchIndex(collection, docCaption, vertex);
+      indexHandler.upsertIntoQuickSearchIndex(collection, docCaption, vertex, oldVertex);
     }
   }
 

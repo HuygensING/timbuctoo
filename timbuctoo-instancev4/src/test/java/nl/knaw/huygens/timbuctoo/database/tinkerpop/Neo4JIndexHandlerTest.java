@@ -205,7 +205,7 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
     Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).next();
-    instance.upsertIntoQuickSearchIndex(collection, "query", vertex);
+    instance.upsertIntoQuickSearchIndex(collection, "query", vertex, null);
     GraphTraversal<Vertex, Vertex> beforeRemoval =
       instance.findByQuickSearch(collection, QuickSearch.fromQueryString("query"));
     assertThat(beforeRemoval.hasNext(), is(true));
@@ -223,21 +223,27 @@ public class Neo4JIndexHandlerTest {
     TinkerPopGraphManager tinkerPopGraphManager = newGraph()
       .withVertex(v -> v
         .withTimId(id1)
+        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withProperty("rev", 2)
       )
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
-    Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).next();
-    instance.upsertIntoQuickSearchIndex(collection, "firstValue", vertex);
+    Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).has("rev", 1).next();
+    instance.upsertIntoQuickSearchIndex(collection, "firstValue", vertex, null);
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("firstValue")).hasNext(), is(true));
+    Vertex newVersion = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).has("rev", 2).next();
 
-    instance.upsertIntoQuickSearchIndex(collection, "secondValue", vertex);
+    instance.upsertIntoQuickSearchIndex(collection, "secondValue", newVersion, vertex);
 
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("firstValue")).hasNext(), is(false));
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("secondValue")).hasNext(), is(true));
   }
 
   private void addToQuickSearchIndex(Neo4jIndexHandler instance, Collection collection, Vertex vertex) {
-    instance.upsertIntoQuickSearchIndex(collection, vertex.value("displayName"), vertex);
+    instance.upsertIntoQuickSearchIndex(collection, vertex.value("displayName"), vertex, null);
   }
 
   //=====================tim_id index=====================
