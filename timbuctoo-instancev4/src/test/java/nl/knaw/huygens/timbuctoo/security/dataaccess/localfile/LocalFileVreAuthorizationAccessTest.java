@@ -1,16 +1,15 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -128,20 +127,18 @@ public class LocalFileVreAuthorizationAccessTest {
     Files.delete(AUTHORIZATIONS_FOLDER.resolve(String.format("%s.json", newVre)));
   }
 
-  @Test(expected = AuthorizationUnavailableException.class)
-  public void deleteVreAuthorizationsThrowsWhenUserDoesNotHaveWriteAccess() throws AuthorizationUnavailableException {
+  @Test(expected = AuthorizationException.class)
+  public void deleteVreAuthorizationsThrowsWhenUserDoesNotHaveWriteAccess() throws AuthorizationException {
     instance.deleteVreAuthorizations(VRE, USER_ID_WITHOUT_WRITE_PERMISSIONS);
   }
 
-  @Test(expected = AuthorizationUnavailableException.class)
-  public void deleteVreAuthorizationsThrowsWhenUserAuthorizationIsNotPresent()
-    throws AuthorizationUnavailableException {
-
+  @Test(expected = AuthorizationException.class)
+  public void deleteVreAuthorizationsThrowsWhenUserAuthorizationIsNotPresent() throws AuthorizationException {
     instance.deleteVreAuthorizations(VRE, "unknownUser");
   }
 
   @Test
-  public void deleteVreAuthorizationsDeletesTheVreAuthorizationsFile() throws AuthorizationUnavailableException {
+  public void deleteVreAuthorizationsDeletesTheVreAuthorizationsFile() throws Exception {
     instance.deleteVreAuthorizations(VRE, USER_ID);
     assertThat(new File(AUTHORIZATIONS_FOLDER.resolve("vre.json").toString()).exists(), equalTo(false));
   }

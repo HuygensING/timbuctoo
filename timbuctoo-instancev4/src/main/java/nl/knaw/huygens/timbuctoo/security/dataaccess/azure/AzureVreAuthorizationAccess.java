@@ -7,6 +7,7 @@ import com.microsoft.azure.storage.table.DynamicTableEntity;
 import com.microsoft.azure.storage.table.EntityProperty;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import org.slf4j.Logger;
 
@@ -69,18 +70,21 @@ public class AzureVreAuthorizationAccess extends AzureAccess implements VreAutho
   }
 
   @Override
-  public void deleteVreAuthorizations(String vreId, String userId) throws AuthorizationUnavailableException {
-    final Optional<VreAuthorization> authorization = getAuthorization(vreId, userId);
-    if (authorization.isPresent() && authorization.get().isAllowedToWrite()) {
-      try {
-        delete(vreId, userId);
-      } catch (StorageException e) {
-        LOG.error("deleteVreAuthorizations failed", e);
-        throw new AuthorizationUnavailableException("Could not delete authorization for vre '" + vreId + "'");
+  public void deleteVreAuthorizations(String vreId, String userId) throws AuthorizationException {
+    try {
+      final Optional<VreAuthorization> authorization = getAuthorization(vreId, userId);
+      if (authorization.isPresent() && authorization.get().isAllowedToWrite()) {
+        try {
+          delete(vreId, userId);
+        } catch (StorageException e) {
+          LOG.error("deleteVreAuthorizations failed", e);
+          throw new AuthorizationException("Could not delete authorization for vre '" + vreId + "'");
+        }
+      } else {
+        throw new AuthorizationException("User with id '" + userId + "' is not allowed to delete vre '" + vreId + "'");
       }
-    } else {
-      throw new AuthorizationUnavailableException("User with id '" + userId +
-        "' is not allowed to delete vre '" + vreId + "'");
+    } catch (AuthorizationUnavailableException e) {
+      throw new AuthorizationException(e.getMessage());
     }
   }
 }

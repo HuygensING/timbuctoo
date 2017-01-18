@@ -10,7 +10,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -169,7 +169,7 @@ public class BulkUploadVre {
       if (user.isPresent()) {
         try {
           vreAuthorizationAccess.deleteVreAuthorizations(vreName, user.get().getId());
-        } catch (AuthorizationUnavailableException e) {
+        } catch (AuthorizationException e) {
           LOG.error("Failed to remove authorization for vre '{}'", vreName);
         }
       }
