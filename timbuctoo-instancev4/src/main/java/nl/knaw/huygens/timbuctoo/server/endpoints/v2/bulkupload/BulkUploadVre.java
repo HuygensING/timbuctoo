@@ -153,6 +153,7 @@ public class BulkUploadVre {
     });
   }
 
+  // FIXME: this method involved all Vre's, not bulk uploaded ones specifically, move to a new Vre endpoint
   @DELETE
   @Produces(APPLICATION_JSON)
   public Response delete(@PathParam("vre") String vreName, @HeaderParam("Authorization") String authorizationHeader) {
