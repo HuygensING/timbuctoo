@@ -3023,7 +3023,7 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
-  public void deleteVreRemovesAllCollectionsFromDatabase() {
+  public void deleteVreRemovesAllTheVresCollectionsFromDatabase() {
     TinkerPopGraphManager graphManager = newGraph()
       .withVertex("vreName", v -> v
         .withLabel("VRE")
@@ -3084,8 +3084,6 @@ public class TinkerPopOperationsTest {
 
     assertThat(graph.traversal().V().has("entity").hasNext(), equalTo(false));
     assertThat(graph.traversal().V().has("displayName").hasNext(), equalTo(false));
-    assertThat(graph.traversal().V().has("entity").hasNext(), equalTo(false));
-
   }
 
   @Test
