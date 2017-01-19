@@ -75,17 +75,13 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
       final String header = headerEntry.getKey();
 
       builder.append(header).append(": ");
-      if (val.size() == 1) {
-        builder.append(val.get(0));
-      } else {
-        boolean add = false;
-        for (final Object s : val) {
-          if (add) {
-            builder.append(',');
-          }
-          add = true;
-          builder.append(s);
+      boolean first = true;
+      for (final Object s : val) {
+        if (!first) {
+          builder.append(',');
         }
+        first = false;
+        builder.append(s);
       }
       builder.append("\n");
     });
