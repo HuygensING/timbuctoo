@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,10 +13,14 @@ import org.neo4j.graphdb.Transaction;
 import java.util.Optional;
 import java.util.UUID;
 
+import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
+import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -200,7 +205,7 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
     Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).next();
-    instance.upsertIntoQuickSearchIndex(collection, "query", vertex);
+    instance.upsertIntoQuickSearchIndex(collection, "query", vertex, null);
     GraphTraversal<Vertex, Vertex> beforeRemoval =
       instance.findByQuickSearch(collection, QuickSearch.fromQueryString("query"));
     assertThat(beforeRemoval.hasNext(), is(true));
@@ -218,21 +223,27 @@ public class Neo4JIndexHandlerTest {
     TinkerPopGraphManager tinkerPopGraphManager = newGraph()
       .withVertex(v -> v
         .withTimId(id1)
+        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withProperty("rev", 2)
       )
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
-    Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).next();
-    instance.upsertIntoQuickSearchIndex(collection, "firstValue", vertex);
+    Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).has("rev", 1).next();
+    instance.upsertIntoQuickSearchIndex(collection, "firstValue", vertex, null);
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("firstValue")).hasNext(), is(true));
+    Vertex newVersion = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).has("rev", 2).next();
 
-    instance.upsertIntoQuickSearchIndex(collection, "secondValue", vertex);
+    instance.upsertIntoQuickSearchIndex(collection, "secondValue", newVersion, vertex);
 
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("firstValue")).hasNext(), is(false));
     assertThat(instance.findByQuickSearch(collection, QuickSearch.fromQueryString("secondValue")).hasNext(), is(true));
   }
 
   private void addToQuickSearchIndex(Neo4jIndexHandler instance, Collection collection, Vertex vertex) {
-    instance.insertIntoQuickSearchIndex(collection, vertex.value("displayName"), vertex);
+    instance.upsertIntoQuickSearchIndex(collection, vertex.value("displayName"), vertex, null);
   }
 
   //=====================tim_id index=====================
@@ -248,7 +259,7 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
     Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
-    instance.insertIntoIdIndex(id1, vertex);
+    instance.upsertIntoIdIndex(id1, vertex);
 
     Optional<Vertex> result = instance.findById(id1);
 
@@ -274,24 +285,29 @@ public class Neo4JIndexHandlerTest {
 
   @Test
   public void upsertIntoIdIndexRemovesTheOldIndexEntryAndAddsANewOne() {
-    UUID id1 = UUID.randomUUID();
-    UUID newId = UUID.randomUUID();
+    UUID id = UUID.randomUUID();
     TinkerPopGraphManager tinkerPopGraphManager = newGraph()
       .withVertex(v -> v
-        .withTimId(id1.toString())
-        .withProperty("keyword_type", "keywordType")
-        .withProperty("displayName", "query")
+        .withTimId(id.toString())
+        .withProperty("rev", 1)
+      )
+      .withVertex(v -> v
+        .withTimId(id.toString())
+        .withProperty("rev", 2)
       )
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
-    Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
-    instance.insertIntoIdIndex(id1, vertex);
-    assertThat(instance.findById(id1).isPresent(), is(true));
+    Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id.toString()).has("rev", 1).next();
+    instance.upsertIntoIdIndex(id, vertex);
+    assertThat(instance.findById(id).isPresent(), is(true));
+    Vertex updatedVertex =
+      tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id.toString()).has("rev", 2).next();
 
-    instance.upsertIntoIdIndex(newId, vertex);
+    instance.upsertIntoIdIndex(id, updatedVertex);
 
-    assertThat(instance.findById(id1).isPresent(), is(false));
-    assertThat(instance.findById(newId).isPresent(), is(true));
+    Optional<Vertex> updatedVertexOpt = instance.findById(id);
+    assertThat(updatedVertexOpt, is(present()));
+    assertThat(updatedVertexOpt.get(), likeVertex().withProperty("rev", 2));
   }
 
   @Test
@@ -306,7 +322,7 @@ public class Neo4JIndexHandlerTest {
       .wrap();
     Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
     Vertex vertex = tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1.toString()).next();
-    instance.insertIntoIdIndex(id1, vertex);
+    instance.upsertIntoIdIndex(id1, vertex);
     assertThat(instance.findById(id1).isPresent(), is(true));
 
     instance.removeFromIdIndex(vertex);
@@ -314,5 +330,95 @@ public class Neo4JIndexHandlerTest {
     assertThat(instance.findById(id1).isPresent(), is(false));
   }
 
+  //=====================tim_id edge index=====================
+  @Test
+  public void findEdgeByIdReturnsTheEdgeWithId() {
+    UUID edgeId = UUID.randomUUID();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId))
+      )
+      .withVertex("other", v -> {
+      })
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    Edge edge = tinkerPopGraphManager.getGraph().traversal().E().has("tim_id", edgeId.toString()).next();
+    instance.upsertIntoEdgeIdIndex(edgeId, edge);
+
+    Optional<Edge> edgeOpt = instance.findEdgeById(edgeId);
+
+    assertThat(edgeOpt, is(present()));
+    assertThat(edgeOpt.get(), is(likeEdge().withId(edgeId.toString())));
+
+  }
+
+  @Test
+  public void findEdgeByIdReturnsAnEmtptyOptionalWhenTheEdgeIsNotFound() {
+    UUID edgeId = UUID.randomUUID();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId))
+      )
+      .withVertex("other", v -> {
+      })
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    Edge edge = tinkerPopGraphManager.getGraph().traversal().E().has("tim_id", edgeId.toString()).next();
+    instance.upsertIntoEdgeIdIndex(edgeId, edge);
+    UUID otherEdgeId = UUID.randomUUID();
+
+    Optional<Edge> edgeOpt = instance.findEdgeById(otherEdgeId);
+
+    assertThat(edgeOpt, is(not(present())));
+  }
+
+  @Test
+  public void upsertIntoEdgeIdIndexRemovesTheOldEntryAndAddsANewOne() {
+    UUID edgeId = UUID.randomUUID();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId).withRev(1))
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId).withRev(2))
+      )
+      .withVertex("other", v -> {
+      })
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    Edge edge1 = tinkerPopGraphManager.getGraph().traversal().E().has("rev", 1).next();
+    instance.upsertIntoEdgeIdIndex(edgeId, edge1);
+    Optional<Edge> edgeOpt = instance.findEdgeById(edgeId);
+    assertThat(edgeOpt, is(present()));
+    assertThat(edgeOpt.get(), is(likeEdge().withProperty("rev", 1)));
+
+    Edge edge2 = tinkerPopGraphManager.getGraph().traversal().E().has("rev", 2).next();
+
+    instance.upsertIntoEdgeIdIndex(edgeId, edge2);
+
+    Optional<Edge> edgeOpt2 = instance.findEdgeById(edgeId);
+    assertThat(edgeOpt2, is(present()));
+    assertThat(edgeOpt2.get(), is(likeEdge().withProperty("rev", 2)));
+  }
+
+  @Test
+  public void removeFromEdgeIdIndexRemovesTheVertexFromTheIndex() {
+    UUID edgeId = UUID.randomUUID();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withOutgoingRelation("rel", "other", e -> e.withTim_id(edgeId))
+      )
+      .withVertex("other", v -> {
+      })
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    Edge edge = tinkerPopGraphManager.getGraph().traversal().E().has("tim_id", edgeId.toString()).next();
+    instance.upsertIntoEdgeIdIndex(edgeId, edge);
+    Optional<Edge> edgeOpt = instance.findEdgeById(edgeId);
+    assertThat(edgeOpt, is(present()));
+    assertThat(edgeOpt.get(), is(likeEdge().withId(edgeId.toString())));
+
+    instance.removeEdgeFromIdIndex(edge);
+
+    assertThat(instance.findEdgeById(edgeId), is(not(present())));
+  }
 
 }

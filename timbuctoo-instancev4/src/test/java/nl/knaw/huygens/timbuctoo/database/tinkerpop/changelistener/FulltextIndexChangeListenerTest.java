@@ -6,13 +6,11 @@ import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -38,7 +36,7 @@ public class FulltextIndexChangeListenerTest {
 
     instance.onCreate(collection, vertex);
 
-    verify(indexHandler).insertIntoQuickSearchIndex(collection, "foo", vertex);
+    verify(indexHandler).upsertIntoQuickSearchIndex(collection, "foo", vertex, null);
   }
 
   @Test
@@ -72,7 +70,7 @@ public class FulltextIndexChangeListenerTest {
     Vertex vertex = graphWrapper.getGraph().traversal().V().next();
     instance.onCreate(collection, vertex);
 
-    verify(indexHandler).insertIntoQuickSearchIndex(collection, "authorA; authorB foo", vertex);
+    verify(indexHandler).upsertIntoQuickSearchIndex(collection, "authorA; authorB foo", vertex, null);
   }
 
   @Test
@@ -100,9 +98,7 @@ public class FulltextIndexChangeListenerTest {
 
     instance.onPropertyUpdate(collection, Optional.of(oldVertex), newVertex);
 
-    InOrder inOrder = inOrder(indexHandler);
-    inOrder.verify(indexHandler).removeFromQuickSearchIndex(collection, oldVertex);
-    inOrder.verify(indexHandler).insertIntoQuickSearchIndex(collection, "new", newVertex);
+    verify(indexHandler).upsertIntoQuickSearchIndex(collection, "new", newVertex, oldVertex);
   }
 
   @Test

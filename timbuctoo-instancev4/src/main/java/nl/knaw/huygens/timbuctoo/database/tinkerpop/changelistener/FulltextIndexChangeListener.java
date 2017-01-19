@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,13 +32,12 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   @Override
   public void onCreate(Collection collection, Vertex vertex) {
-    handleChange(collection, vertex);
+    handleChange(collection, vertex, null);
   }
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    oldVertex.ifPresent(vertex -> handleRemove(collection, vertex));
-    handleChange(collection, newVertex);
+    handleChange(collection, newVertex, oldVertex.orElse(null));
   }
 
   @Override
@@ -48,10 +48,20 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   @Override
   public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    handleChange(collection, newVertex);
+    handleChange(collection, newVertex, oldVertex.orElse(null));
   }
 
-  private void handleChange(Collection collection, Vertex vertex) {
+  @Override
+  public void onCreateEdge(Collection collection, Edge edge) {
+
+  }
+
+  @Override
+  public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
+
+  }
+
+  private void handleChange(Collection collection, Vertex vertex, Vertex oldVertex) {
     GraphTraversal<Vertex, Vertex> traversal = graphWrapper.getGraph().traversal().V(vertex.id());
     final GraphTraversal<Vertex, Try<JsonNode>> displayNameT = traversal.asAdmin().clone()
                                                                  .union(collection.getDisplayName().traversalJson());
@@ -77,7 +87,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
         "Displayname traversal resulted in no results vertexId={} collection={} propertyType={}",
         vertex.id(), collection.getCollectionName(), collection.getDisplayName().getUniqueTypeId());
     } else {
-      indexHandler.insertIntoQuickSearchIndex(collection, docCaption, vertex);
+      indexHandler.upsertIntoQuickSearchIndex(collection, docCaption, vertex, oldVertex);
     }
   }
 

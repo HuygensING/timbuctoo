@@ -11,18 +11,19 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 
 import java.util.Iterator;
+import java.util.UUID;
 
 public class VertexDuplicator {
 
   public static final String VERSION_OF = "VERSION_OF";
   public static final String IS_LATEST = "isLatest";
 
-  public static void duplicateVertex(Graph graph, Vertex vertex) {
+  public static void duplicateVertex(Graph graph, Vertex vertex, IndexHandler indexHandler) {
     GraphTraversalSource traversal = graph.traversal();
-    duplicateVertex(traversal, vertex);
+    duplicateVertex(traversal, vertex, indexHandler);
   }
 
-  public static Vertex duplicateVertex(GraphTraversalSource traversal, Vertex vertex) {
+  public static Vertex duplicateVertex(GraphTraversalSource traversal, Vertex vertex, IndexHandler indexHandler) {
     Vertex duplicate = traversal.addV().next();
 
     for (Iterator<VertexProperty<Object>> properties = vertex.properties(); properties.hasNext(); ) {
@@ -34,8 +35,8 @@ public class VertexDuplicator {
       ((Neo4jVertex) duplicate).addLabel(label);
     }
 
-    moveIncomingEdges(vertex, duplicate);
-    moveOutgoingEdges(vertex, duplicate);
+    moveIncomingEdges(vertex, duplicate, indexHandler);
+    moveOutgoingEdges(vertex, duplicate, indexHandler);
 
     vertex.property(IS_LATEST, false);
     duplicate.property(IS_LATEST, true);
@@ -43,7 +44,7 @@ public class VertexDuplicator {
     return duplicate;
   }
 
-  static void moveOutgoingEdges(Vertex vertex, Vertex duplicate) {
+  static void moveOutgoingEdges(Vertex vertex, Vertex duplicate, IndexHandler indexHandler) {
     for (Iterator<Edge> edges = vertex.edges(Direction.OUT); edges.hasNext(); ) {
       Edge edge = edges.next();
       if (edge.label().equals(VERSION_OF)) {
@@ -57,11 +58,13 @@ public class VertexDuplicator {
 
         duplicateEdge.property(property.key(), property.value());
       }
+      duplicateEdge.<String>property("tim_id")
+        .ifPresent(p -> indexHandler.upsertIntoEdgeIdIndex(UUID.fromString(p), duplicateEdge));
       edge.remove();
     }
   }
 
-  static void moveIncomingEdges(Vertex vertex, Vertex duplicate) {
+  static void moveIncomingEdges(Vertex vertex, Vertex duplicate, IndexHandler indexHandler) {
     for (Iterator<Edge> edges = vertex.edges(Direction.IN); edges.hasNext(); ) {
       Edge edge = edges.next();
       if (edge.label().equals(VERSION_OF)) {
@@ -73,6 +76,8 @@ public class VertexDuplicator {
 
         duplicateEdge.property(property.key(), property.value());
       }
+      duplicateEdge.<String>property("tim_id")
+        .ifPresent(p -> indexHandler.upsertIntoEdgeIdIndex(UUID.fromString(p), duplicateEdge));
       edge.remove();
     }
   }

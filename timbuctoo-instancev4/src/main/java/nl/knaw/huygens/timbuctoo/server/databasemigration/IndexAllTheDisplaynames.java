@@ -32,6 +32,8 @@ public class IndexAllTheDisplaynames implements DatabaseMigration {
     traversalSource
       .V()
       .has("types") //only valid entities
+      .has("isLatest", true) // we do not want to search for older entities
+      .has("deleted", false) // only index non deleted entities
       .forEachRemaining(vertex -> {
         try {
           String[] types = mapper.readValue(vertex.<String>value("types"), String[].class);
@@ -44,7 +46,7 @@ public class IndexAllTheDisplaynames implements DatabaseMigration {
               Collection collection = collectionOpt.get();
               DisplayNameHelper.getDisplayname(traversalSource, vertex, collection)
                                .ifPresent(displayName -> {
-                                 indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex);
+                                 indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex, null);
                                });
             } else {
               LOG.error("'{}' is not a known entity type.", type);

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jVertex;
+import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
@@ -28,6 +29,16 @@ public class AddLabelChangeListener implements ChangeListener {
   @Override
   public void onAddToCollection(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
     ((Neo4jVertex) newVertex).addLabel(collection.getEntityTypeName());
+  }
+
+  @Override
+  public void onCreateEdge(Collection collection, Edge edge) {
+
+  }
+
+  @Override
+  public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
+
   }
 
   public void handleRdfLabelAdd(Vertex vertex, String entityTypeName) {

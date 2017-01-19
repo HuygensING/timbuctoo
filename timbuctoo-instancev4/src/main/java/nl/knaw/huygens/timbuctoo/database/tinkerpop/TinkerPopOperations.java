@@ -143,9 +143,9 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
   private final GraphDatabaseService graphDatabase;
+  private final boolean ownTransaction;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
-  private final boolean ownTransaction;
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
@@ -461,7 +461,11 @@ public class TinkerPopOperations implements DataStoreOperations {
       final EntityRelation existingEdge = existingEdgeOpt.get();
       if (!existingEdge.isAccepted()) {
         //if not already an active relation
-        updateRelation(existingEdge, collection, userId, true, instant);
+        try {
+          replaceRelation(collection, existingEdge.getTimId(), existingEdge.getRevision(), true, userId, instant);
+        } catch (NotFoundException e) {
+          LOG.error("Relation with id '{}' not found. This should not happen.", existingEdge.getTimId());
+        }
       }
       return existingEdge.getTimId();
     } else {
@@ -529,7 +533,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     listener.onAddToCollection(col, Optional.empty(), vertex);
     baseCollection.ifPresent(baseCol -> listener.onAddToCollection(baseCol, Optional.empty(), vertex));
 
-    duplicateVertex(traversal, vertex);
+    duplicateVertex(traversal, vertex, indexHandler);
   }
 
   @Override
@@ -697,7 +701,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       listener.onAddToCollection(collection, prevVertex, entityVertex);
     }
 
-    duplicateVertex(traversal, entityVertex);
+    duplicateVertex(traversal, entityVertex, indexHandler);
     return newRev;
   }
 
@@ -719,16 +723,13 @@ public class TinkerPopOperations implements DataStoreOperations {
 
 
     // FIXME: throw a AlreadyUpdatedException when the rev of the client is not the latest
-    Edge origEdge;
-    try {
-      origEdge = traversal.E()
-                          .has("tim_id", id.toString())
-                          .has("isLatest", true)
-                          .has("rev", rev)
-                          .next();
-    } catch (NoSuchElementException e) {
+    Optional<Edge> origEdgeOpt = indexHandler.findEdgeById(id);
+
+    if (!origEdgeOpt.isPresent()) {
       throw new NotFoundException();
     }
+
+    Edge origEdge = origEdgeOpt.get();
 
     //FIXME: throw a distinct Exception when the client tries to save a relation with wrong source, target or type.
 
@@ -736,6 +737,8 @@ public class TinkerPopOperations implements DataStoreOperations {
     edge.property(acceptedPropName, accepted);
     edge.property("rev", getProp(origEdge, "rev", Integer.class).orElse(1) + 1);
     setModified(edge, userId, instant);
+
+    listener.onEdgeUpdate(collection, origEdge, edge);
   }
 
   @Override
@@ -797,7 +800,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       listener.onRemoveFromCollection(collection, getPrevVertex(collection, entity), entity);
     }
 
-    duplicateVertex(traversal, entity);
+    duplicateVertex(traversal, entity, indexHandler);
 
     return newRev;
   }
@@ -901,15 +904,6 @@ public class TinkerPopOperations implements DataStoreOperations {
       .map(edge -> makeEntityRelation(edge, collection));
   }
 
-  private void updateRelation(EntityRelation existingEdge, Collection collection, String userId, boolean accepted,
-                              Instant time) {
-    final Edge origEdge = getExpectedEdge(traversal, existingEdge.getTimId().toString());
-    final Edge newEdge = EdgeManipulator.duplicateEdge(origEdge);
-    newEdge.property(collection.getEntityTypeName() + "_accepted", accepted);
-    newEdge.property("rev", existingEdge.getRevision() + 1);
-    setModified(newEdge, userId, time);
-  }
-
   private UUID createRelation(Vertex source, Vertex target, DirectionalRelationType relationType,
                               String userId, Collection collection, boolean accepted, Instant time) {
     UUID id = UUID.randomUUID();
@@ -927,6 +921,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       "rev", 1
     );
     setCreated(edge, userId, time);
+    listener.onCreateEdge(collection, edge);
     return id;
   }
 
@@ -1064,11 +1059,11 @@ public class TinkerPopOperations implements DataStoreOperations {
   public void addCollectionToVre(Vre vre, CreateCollection createCollection) {
     // FIXME think of a default way to add collections to VRE's.
     boolean vreHasCollection = traversal.V()
-                                    .hasLabel(Vre.DATABASE_LABEL)
-                                    .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-                                    .outE(HAS_COLLECTION_RELATION_NAME).otherV()
-                                    .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre))
-                                    .hasNext();
+                                        .hasLabel(Vre.DATABASE_LABEL)
+                                        .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
+                                        .outE(HAS_COLLECTION_RELATION_NAME).otherV()
+                                        .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getCollectionName(vre))
+                                        .hasNext();
 
     if (vreHasCollection) {
       return;
@@ -1084,10 +1079,11 @@ public class TinkerPopOperations implements DataStoreOperations {
       createCollection.isUnknownCollection(vre.getVreName())
     );
     final GraphTraversal<Vertex, Vertex> archetypeCollection = traversal.V()
-      .hasLabel(Vre.DATABASE_LABEL)
-      .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
-      .out(HAS_COLLECTION_RELATION_NAME)
-      .has(COLLECTION_NAME_PROPERTY_NAME, createCollection.getArchetypeName());
+                                                                        .hasLabel(Vre.DATABASE_LABEL)
+                                                                        .has(Vre.VRE_NAME_PROPERTY_NAME, "Admin")
+                                                                        .out(HAS_COLLECTION_RELATION_NAME)
+                                                                        .has(COLLECTION_NAME_PROPERTY_NAME,
+                                                                          createCollection.getArchetypeName());
 
     if (archetypeCollection.hasNext()) {
       collectionVertex.addEdge(HAS_ARCHETYPE_RELATION_NAME, archetypeCollection.next());
@@ -1272,7 +1268,7 @@ public class TinkerPopOperations implements DataStoreOperations {
         v.property("isLatest", true);
         listener.onCreate(col, v);
         listener.onAddToCollection(col, Optional.empty(), v);
-        listener.onPropertyUpdate(col, Optional.of(v), duplicateVertex(traversal, v));
+        listener.onPropertyUpdate(col, Optional.of(v), duplicateVertex(traversal, v, indexHandler));
       })
     );
   }

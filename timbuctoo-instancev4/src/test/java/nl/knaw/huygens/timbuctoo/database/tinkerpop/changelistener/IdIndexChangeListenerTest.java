@@ -2,18 +2,17 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener;
 
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
-import org.apache.tinkerpop.gremlin.neo4j.structure.Neo4jGraph;
+import org.apache.tinkerpop.gremlin.structure.Edge;
+import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -40,11 +39,11 @@ public class IdIndexChangeListenerTest {
 
     instance.onCreate(NULL_COLLECTION, vertex);
 
-    verify(indexHandler).insertIntoIdIndex(timId, vertex);
+    verify(indexHandler).upsertIntoIdIndex(timId, vertex);
   }
 
   private Vertex vertexWithId(UUID timId) {
-    Neo4jGraph graph = newGraph().withVertex(v -> v.withTimId(timId)).build();
+    Graph graph = newGraph().withVertex(v -> v.withTimId(timId)).build();
     return graph.traversal().V().has("tim_id", timId.toString()).next();
   }
 
@@ -56,9 +55,7 @@ public class IdIndexChangeListenerTest {
 
     instance.onPropertyUpdate(NULL_COLLECTION, Optional.of(oldVertex), newVertex);
 
-    InOrder inOrder = inOrder(indexHandler);
-    inOrder.verify(indexHandler).removeFromIdIndex(oldVertex);
-    verify(indexHandler).insertIntoIdIndex(timId, newVertex);
+    verify(indexHandler).upsertIntoIdIndex(timId, newVertex);
   }
 
   @Test
@@ -88,5 +85,36 @@ public class IdIndexChangeListenerTest {
 
     verifyZeroInteractions(indexHandler);
   }
+
+  @Test
+  public void onCreateEdgeCallTheIndexHandler() {
+    UUID timId = UUID.randomUUID();
+    Edge edge = edgeWithId(timId);
+
+    instance.onCreateEdge(NULL_COLLECTION, edge);
+
+    verify(indexHandler).upsertIntoEdgeIdIndex(timId, edge);
+  }
+
+  @Test
+  public void onEdgeUpdateCallsTheIndexHandler() {
+    UUID timId = UUID.randomUUID();
+    Edge edge = edgeWithId(timId);
+    Edge nullEdge = null;
+
+    instance.onEdgeUpdate(NULL_COLLECTION, nullEdge, edge);
+
+    verify(indexHandler).upsertIntoEdgeIdIndex(timId, edge);
+  }
+
+  private Edge edgeWithId(UUID timId) {
+    Graph graph = newGraph()
+      .withVertex(v -> v.withOutgoingRelation("rel", "other", e -> e.withTim_id(timId)))
+      .withVertex("other", v -> {
+      })
+      .build();
+    return graph.traversal().E().has("tim_id", timId.toString()).next();
+  }
+
 
 }
