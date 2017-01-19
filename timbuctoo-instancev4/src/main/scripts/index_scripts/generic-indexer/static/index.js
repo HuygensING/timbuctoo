@@ -4775,6 +4775,9 @@ function actionsMaker(navigateTo, dispatch) {
 					redispatch({ type: "RECEIVE_ENTITY", entity: JSON.parse(body) });
 				});
 			});
+		},
+		onSetActiveClient: function onSetActiveClient(name) {
+			return dispatch({ type: "SET_ACTIVE_CLIENT", activeClient: name });
 		}
 	};
 	return actions;
@@ -5017,19 +5020,16 @@ var _pageJsx2 = _interopRequireDefault(_pageJsx);
 var App = (function (_React$Component) {
 	_inherits(App, _React$Component);
 
-	function App(props) {
+	function App() {
 		_classCallCheck(this, App);
 
-		_get(Object.getPrototypeOf(App.prototype), "constructor", this).call(this, props);
-		this.state = {
-			activeClient: null
-		};
+		_get(Object.getPrototypeOf(App.prototype), "constructor", this).apply(this, arguments);
 	}
 
 	_createClass(App, [{
 		key: "setActiveClient",
 		value: function setActiveClient(name) {
-			this.setState({ activeClient: name });
+			this.props.onSetActiveClient(name);
 		}
 	}, {
 		key: "render",
@@ -5040,7 +5040,7 @@ var App = (function (_React$Component) {
 			var solr = _props.solr;
 			var onCreateIndexes = _props.onCreateIndexes;
 			var vreId = _props.metadata.vreId;
-			var activeClient = this.state.activeClient;
+			var activeClient = this.props.solr.activeClient;
 
 			var searchClients = (0, _actionsSolr.getSearchClients)();
 
@@ -7364,7 +7364,8 @@ function _defineProperty(obj, key, value) { if (key in obj) { Object.definePrope
 var initialState = {
 	indexPresent: false,
 	indexesPending: false,
-	searchStates: {}
+	searchStates: {},
+	activeClient: null
 };
 
 exports["default"] = function (state, action) {
@@ -7384,6 +7385,11 @@ exports["default"] = function (state, action) {
 		case "SET_SEARCH_STATE":
 			return _extends({}, state, {
 				searchStates: _extends({}, state.searchStates, _defineProperty({}, action.collectionName, action.searchState))
+			});
+
+		case "SET_ACTIVE_CLIENT":
+			return _extends({}, state, {
+				activeClient: action.activeClient
 			});
 
 		default:
