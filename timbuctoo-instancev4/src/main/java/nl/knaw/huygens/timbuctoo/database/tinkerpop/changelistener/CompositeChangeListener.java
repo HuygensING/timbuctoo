@@ -38,11 +38,11 @@ public class CompositeChangeListener implements ChangeListener {
 
   @Override
   public void onCreateEdge(Collection collection, Edge edge) {
-
+    subListeners.forEach(l -> l.onCreateEdge(collection, edge));
   }
 
   @Override
   public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
-
+    subListeners.forEach(l -> l.onEdgeUpdate(collection, oldEdge, newEdge));
   }
 }
