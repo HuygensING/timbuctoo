@@ -5307,6 +5307,23 @@ var ts2date = function ts2date(ts) {
   return date.getDate() + "-" + (date.getMonth() + 1) + "-" + date.getFullYear();
 };
 
+var getArchetypeFields = function getArchetypeFields(variants, metadata) {
+  return Object.keys(metadata).map(function (collectionName) {
+    return {
+      archetypeName: metadata[collectionName].archetypeName || collectionName.replace(/s$/, ""),
+      properties: metadata[collectionName].properties.filter(function (prop) {
+        return prop.type !== "relation";
+      }).map(function (prop) {
+        return prop.name;
+      })
+    };
+  }).find(function (md) {
+    return variants.map(function (v) {
+      return v.type;
+    }).indexOf(md.archetypeName) > -1;
+  }).properties;
+};
+
 var Detail = (function (_React$Component) {
   _inherits(Detail, _React$Component);
 
@@ -5351,6 +5368,12 @@ var Detail = (function (_React$Component) {
         return value.components.map(function (com) {
           return com.value;
         }).join(" ");
+      } else if (value.url) {
+        return _react2["default"].createElement(
+          "a",
+          { href: value.url },
+          value.label
+        );
       }
     }
   }, {
@@ -5360,12 +5383,20 @@ var Detail = (function (_React$Component) {
 
       if (typeof propertyValue === "string" || typeof propertyValue === "number") {
         return propertyValue;
-      } else if (Array.isArray(propertyValue)) {
-        return propertyValue.map(function (val) {
-          return _this.renderPropPart(val);
-        }).join(", ");
+      } else if (Array.isArray(propertyValue) && propertyValue.length > 0) {
+        return _react2["default"].createElement(
+          "ul",
+          { style: { listStyle: "none", padding: 0, margin: 0 } },
+          propertyValue.map(function (val, i) {
+            return _react2["default"].createElement(
+              "li",
+              { key: i },
+              _this.renderPropPart(val)
+            );
+          })
+        );
       }
-      return "[Object]";
+      return null;
     }
   }, {
     key: "render",
@@ -5378,11 +5409,13 @@ var Detail = (function (_React$Component) {
       var vreId = _props2.vreId;
       var nextId = _props2.nextId;
       var prevId = _props2.prevId;
+      var metadata = _props2.metadata;
 
       if (!entity._id) {
         return _react2["default"].createElement(_pageJsx2["default"], null);
       }
 
+      var archetypeFields = getArchetypeFields(entity["@variationRefs"], metadata);
       var birthDeathBlock = collectionMetadata.archetypeName === "person" ? _react2["default"].createElement(
         "div",
         { className: "row small-marigin text-center" },
@@ -5448,25 +5481,51 @@ var Detail = (function (_React$Component) {
         _react2["default"].createElement(
           "div",
           { className: "container basic-margin" },
-          collectionMetadata.properties.filter(function (property) {
-            return entity[property.name] || entity["@relations"][property.name];
+          Object.keys(entity).filter(function (prop) {
+            return ["^", "_", "@"].indexOf(prop.charAt(0)) < 0;
+          }).sort(function (a, b) {
+            return archetypeFields.indexOf(a) > archetypeFields.indexOf(b) ? -1 : 1;
           }).map(function (property) {
             return _react2["default"].createElement(
               "div",
-              { key: property.name, className: "row small-margin" },
+              { key: property, className: "row small-margin" },
               _react2["default"].createElement(
                 "div",
-                { className: "col-xs-6 text-right hi-light-grey" },
-                (0, _camel2label2["default"])(property.name)
+                { className: "col-xs-6 text-right hi-light-grey", style: { fontWeight: archetypeFields.indexOf(property) > -1 ? "bold" : "normal" } },
+                (0, _camel2label2["default"])(property)
               ),
               _react2["default"].createElement(
                 "div",
                 { className: "col-xs-6" },
-                entity["@relations"][property.name] ? entity["@relations"][property.name].filter(function (rel) {
-                  return rel.displayName.length > 0;
-                }).map(function (rel) {
-                  return rel.displayName;
-                }).join(", ") : _this2.renderProp(entity[property.name])
+                _this2.renderProp(entity[property])
+              )
+            );
+          }),
+          Object.keys(entity["@relations"] || {}).filter(function (property) {
+            return !property.match(/^inverse:/);
+          }).map(function (property) {
+            return _react2["default"].createElement(
+              "div",
+              { key: property, className: "row small-margin" },
+              _react2["default"].createElement(
+                "div",
+                { className: "col-xs-6 text-right hi-light-grey" },
+                (0, _camel2label2["default"])(property)
+              ),
+              _react2["default"].createElement(
+                "div",
+                { className: "col-xs-6" },
+                _react2["default"].createElement(
+                  "ul",
+                  { style: { padding: "0", margin: "0", listStyle: "none", maxHeight: "200px", overflowY: "auto" } },
+                  entity["@relations"][property].map(function (rel) {
+                    return _react2["default"].createElement(
+                      "li",
+                      { key: rel.path },
+                      rel.displayName || "<no display name found>"
+                    );
+                  })
+                )
               )
             );
           })
@@ -7253,6 +7312,7 @@ var makeContainerComponent = (0, _reactRedux.connect)(function (state) {
 var makeDetailComponent = (0, _reactRedux.connect)(function (state, route) {
 	var solr = state.solr;
 	var collections = state.metadata.collections;
+	var metadata = state.metadata;
 
 	var resultIds = solr.searchStates[route.params.collectionName].results.docs.map(function (doc) {
 		return doc.id;
@@ -7264,7 +7324,8 @@ var makeDetailComponent = (0, _reactRedux.connect)(function (state, route) {
 		params: route.params,
 		vreId: state.metadata.vreId,
 		nextId: resultIds[resultIds.indexOf(route.params.id) + 1],
-		prevId: resultIds[resultIds.indexOf(route.params.id) - 1]
+		prevId: resultIds[resultIds.indexOf(route.params.id) - 1],
+		metadata: metadata.archetypeCollections
 	};
 }, function (dispatch) {
 	return (0, _actions2["default"])(navigateTo, dispatch);
