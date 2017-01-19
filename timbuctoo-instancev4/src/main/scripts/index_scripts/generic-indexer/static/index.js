@@ -5999,6 +5999,9 @@ var SearchFields = (function (_React$Component) {
           var field = searchField.field;
 
           var SearchComponent = components[type];
+          if (typeof SearchComponent === 'undefined') {
+            return;
+          }
           var facets = type === "list-facet" || type === "range-facet" ? results.facets[field] || [] : null;
           return _react2["default"].createElement(SearchComponent, { key: i + "_" + field, facets: facets, onChange: onSearchFieldChange,
             collapse: searchField.collapse,
