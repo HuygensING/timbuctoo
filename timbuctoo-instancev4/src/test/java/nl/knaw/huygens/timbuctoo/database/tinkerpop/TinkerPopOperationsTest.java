@@ -2981,7 +2981,7 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
-  public void deleteVreRemovesAllRawCollectionsFromDatabase() {
+  public void deleteVreRemovesAllTheVresRawCollectionsFromDatabase() {
     TinkerPopGraphManager graphManager = newGraph()
       .withVertex("vreName", v -> v
         .withLabel("VRE")
