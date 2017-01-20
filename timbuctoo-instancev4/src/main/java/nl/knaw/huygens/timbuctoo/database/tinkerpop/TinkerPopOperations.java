@@ -145,7 +145,6 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
   private final GraphDatabaseService graphDatabase;
-  private final boolean ownTransaction;
   private final IntermediateCommitter committer;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
