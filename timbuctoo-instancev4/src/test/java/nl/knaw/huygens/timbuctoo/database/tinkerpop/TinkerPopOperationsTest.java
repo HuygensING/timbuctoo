@@ -3143,8 +3143,8 @@ public class TinkerPopOperationsTest {
 
     instance.deleteVre("vreName");
 
-    verify(indexHandler).deleteQuicksearchIndex(argThat(hasProperty("collectionName", equalTo("collection1"))));
-    verify(indexHandler).deleteQuicksearchIndex(argThat(hasProperty("collectionName", equalTo("collection2"))));
+    verify(indexHandler).deleteQuickSearchIndex(argThat(hasProperty("collectionName", equalTo("collection1"))));
+    verify(indexHandler).deleteQuickSearchIndex(argThat(hasProperty("collectionName", equalTo("collection2"))));
 
     verify(indexHandler).removeFromIdIndex(argThat(is(likeVertex().withId(entityId))));
     verify(indexHandler).removeFromIdIndex(argThat(is(likeVertex().withId(entity2Id))));

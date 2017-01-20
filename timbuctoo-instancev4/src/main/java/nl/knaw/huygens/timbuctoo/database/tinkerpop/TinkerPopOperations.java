@@ -868,7 +868,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       final Vertex vreV = vreT.next();
 
       vre.getCollections().forEach((collectionName, collection) -> {
-        indexHandler.deleteQuicksearchIndex(collection);
+        indexHandler.deleteQuickSearchIndex(collection);
       });
 
       removeAllEntityIndexEntries(vre);

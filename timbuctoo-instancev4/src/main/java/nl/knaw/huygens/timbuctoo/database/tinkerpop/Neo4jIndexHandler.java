@@ -101,6 +101,12 @@ public class Neo4jIndexHandler implements IndexHandler {
     vertexToNode(vertex).ifPresent(node -> index.add(node, QUICK_SEARCH, quickSearchValue));
   }
 
+  @Override
+  public void deleteQuickSearchIndex(Collection collection) {
+    Index<Node> index = getQuickSearchIndex(collection);
+    index.delete();
+  }
+
   //=====================tim_id index=====================
   @Override
   public Optional<Vertex> findById(UUID timId) {
@@ -185,12 +191,6 @@ public class Neo4jIndexHandler implements IndexHandler {
       rdfIndex.remove(neo4jNode.get(), vre.getVreName());
       rdfIndex.remove(neo4jNode.get(), "Admin");
     }
-  }
-
-  @Override
-  public void deleteQuicksearchIndex(Collection collection) {
-    Index<Node> index = getQuickSearchIndex(collection);
-    index.delete();
   }
 
   //=====================Edge tim_id index=====================

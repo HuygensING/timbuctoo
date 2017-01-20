@@ -26,6 +26,8 @@ public interface IndexHandler {
 
   void removeFromQuickSearchIndex(Collection collection, Vertex vertex);
 
+  void deleteQuickSearchIndex(Collection collection);
+
   //=====================tim_id index=====================
   Optional<Vertex> findById(UUID timId);
 
@@ -50,7 +52,6 @@ public interface IndexHandler {
 
   void removeFromRdfIndex(Vre vre, Vertex vertex);
 
-  void deleteQuicksearchIndex(Collection collection);
   //=====================Edge tim_id index=====================
   Optional<Edge> findEdgeById(UUID edgeId);
 
