@@ -534,11 +534,12 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     setAdministrativeProperties(col, vertex, input);
 
-    listener.onCreate(col, vertex);
-    listener.onAddToCollection(col, Optional.empty(), vertex);
-    baseCollection.ifPresent(baseCol -> listener.onAddToCollection(baseCol, Optional.empty(), vertex));
+    Vertex duplicate = duplicateVertex(traversal, vertex, indexHandler);
+    listener.onCreate(col, duplicate);
 
-    duplicateVertex(traversal, vertex, indexHandler);
+    //not passing oldVertex because old has never been passed to addToCollection so it doesn't need to be removed
+    listener.onAddToCollection(col, Optional.empty(), duplicate);
+    baseCollection.ifPresent(baseCol -> listener.onAddToCollection(baseCol, Optional.empty(), duplicate));
   }
 
   @Override
@@ -1340,7 +1341,10 @@ public class TinkerPopOperations implements DataStoreOperations {
         v.property("tim_id", entityFinisherHelper.newId(v, vreName).toString());
         v.property("rev", entityFinisherHelper.getRev());
         setCreated(v, entityFinisherHelper.getChangeTime());
-        v.property("isLatest", true);
+        if (!v.property("isLatest").isPresent()) { //this is the first time the vertex passes this body
+          v.property("isLatest", true);
+          v = duplicateVertex(traversal, v, indexHandler);
+        }
         listener.onCreate(col, v);
         listener.onAddToCollection(col, Optional.empty(), v);
       })
