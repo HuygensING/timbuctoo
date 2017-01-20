@@ -146,6 +146,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final SystemPropertyModifier systemPropertyModifier;
   private final GraphDatabaseService graphDatabase;
   private final boolean ownTransaction;
+  private final IntermediateCommitter committer;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
   private final boolean ownTransaction;
@@ -202,6 +203,11 @@ public class TinkerPopOperations implements DataStoreOperations {
     this.mappings = mappings == null ? loadVres() : mappings;
     this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
     this.graphDatabase = graphManager.getGraphDatabase(); //FIXME move to IndexHandler
+
+    this.committer = new IntermediateCommitter(250_000, () -> {
+      this.transaction.commit();
+      this.transaction.open();
+    });
   }
 
   private static UUID asUuid(String input, Element source) {
@@ -1208,6 +1214,7 @@ public class TinkerPopOperations implements DataStoreOperations {
     });
 
     assertPredicateAndValueType(vertex, getPredicateValueTypeVertexFor(vre), property);
+    committer.tick();
   }
 
   private void assertPredicateAndValueType(Vertex entity, Vertex col, RdfProperty property) {
@@ -1249,6 +1256,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
       retractPredicateAndValueType(property, e);
     });
+    committer.tick();
   }
 
   private void retractPredicateAndValueType(RdfProperty property, Vertex entity) {
@@ -1334,8 +1342,6 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper) {
-    transaction.commit();
-    transaction.open();
     String vreName = vre.getVreName();
     vre.getCollections().values().forEach(col -> entitiesOfCollection(col)
       .not(has("isLatest", false)) //everything without isLatest and everything with isLatest = true
@@ -1349,6 +1355,7 @@ public class TinkerPopOperations implements DataStoreOperations {
         }
         listener.onCreate(col, v);
         listener.onAddToCollection(col, Optional.empty(), v);
+        committer.tick();
       })
     );
   }
