@@ -38,6 +38,7 @@ public class Collection {
   private final PropertyHelper propertyHelper;
   private final CollectionDescription collectionDescription;
   protected GraphTraversalSource traversal;
+  protected Vertex entityNode;
 
   public Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper) {
     this(vreName, vertex, graphWrapper, CollectionDescription.fromVertex(vreName, vertex));
@@ -82,10 +83,13 @@ public class Collection {
   }
 
   public void remove(Vertex entityVertex) {
+    if (entityNode == null) {
+      entityNode = vertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME).next();
+    }
     Iterator<Edge> edges = entityVertex.edges(Direction.IN);
     while (edges.hasNext()) {
       Edge edge = edges.next();
-      if (edge.inVertex().equals(vertex)) {
+      if (edge.outVertex().equals(entityNode)) {
         edge.remove();
         propertyHelper.removeProperties(entityVertex, collectionDescription);
         break;
