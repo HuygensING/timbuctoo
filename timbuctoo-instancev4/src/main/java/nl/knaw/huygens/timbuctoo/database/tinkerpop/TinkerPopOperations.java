@@ -148,6 +148,9 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final boolean ownTransaction;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
+  private final boolean ownTransaction;
+  private final Map<String, Vertex> defaultCollectionVerticesCache = new HashMap<>();
+  private final Map<String, Vertex> predicateValueTypeVerticesCache = new HashMap<>();
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
@@ -809,6 +812,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public Vres loadVres() {
+    defaultCollectionVerticesCache.clear();
     ImmutableVresDto.Builder builder = ImmutableVresDto.builder();
 
     traversal.V().has(T.label, LabelP.of(Vre.DATABASE_LABEL)).forEachRemaining(vreVertex -> {
@@ -1202,7 +1206,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       });
     });
 
-    assertPredicateAndValueType(vertex, getPredicateValueTypeVertexFor(vre).get(), property);
+    assertPredicateAndValueType(vertex, getPredicateValueTypeVertexFor(vre), property);
   }
 
   private void assertPredicateAndValueType(Vertex entity, Vertex col, RdfProperty property) {
@@ -1415,25 +1419,27 @@ public class TinkerPopOperations implements DataStoreOperations {
     );
     indexHandler.addVertexToRdfIndex(vre, rdfUri, vertex);
 
-    Vertex collection = getDefaultCollectionVertex(vre).get()
-                                                       .vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
+    Vertex collection = getDefaultCollectionVertex(vre).vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
                                                        .next();
     collection.addEdge(HAS_ENTITY_RELATION_NAME, vertex);
     return vertex;
   }
 
-  private Optional<Vertex> getDefaultCollectionVertex(Vre vre) {
-    return graph.traversal().V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre)).toStream().findAny();
+  private Vertex getDefaultCollectionVertex(Vre vre) {
+    return defaultCollectionVerticesCache.computeIfAbsent(
+      vre.getVreName(),
+      name -> traversal.V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(name)).next()
+    );
   }
 
-  private Optional<Vertex> getPredicateValueTypeVertexFor(Vre vre) {
-
-    return getVreTraversal(vre.getVreName())
-                .out(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME)
-                .toStream()
-                .findAny();
+  private Vertex getPredicateValueTypeVertexFor(Vre vre) {
+    return predicateValueTypeVerticesCache.computeIfAbsent(
+      vre.getVreName(),
+      name -> getVreTraversal(vre.getVreName())
+        .out(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME)
+        .next()
+    );
   }
-
 
   Optional<Vertex> getVertexByRdfUri(Vre vre, String uri) {
     return indexHandler.findVertexInRdfIndex(vre, uri);
