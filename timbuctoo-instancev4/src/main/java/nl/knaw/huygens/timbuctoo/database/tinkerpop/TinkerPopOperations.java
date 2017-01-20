@@ -1342,7 +1342,6 @@ public class TinkerPopOperations implements DataStoreOperations {
         v.property("isLatest", true);
         listener.onCreate(col, v);
         listener.onAddToCollection(col, Optional.empty(), v);
-        listener.onPropertyUpdate(col, Optional.of(v), duplicateVertex(traversal, v, indexHandler));
       })
     );
   }
