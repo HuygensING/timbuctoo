@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.RawValue;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -44,6 +43,7 @@ import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RA
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
+import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAndReturn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
@@ -132,16 +132,16 @@ public class BulkUploadVre {
       try {
         final Vre vre = timbuctooActions.getVre(vreName);
         if (vre == null) {
-          return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.NOT_FOUND).build());
+          return commitAndReturn(Response.status(Response.Status.NOT_FOUND).build());
         }
 
         final VreMetadata vreMetadataUpdate = new ObjectMapper().readValue(updateJson, VreMetadata.class);
 
         timbuctooActions.setVreMetadata(vreName, vreMetadataUpdate);
 
-        return TransactionStateAndResult.commitAndReturn(Response.ok().build());
+        return commitAndReturn(Response.ok().build());
       } catch (IOException e) {
-        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST).build());
+        return commitAndReturn(Response.status(Response.Status.BAD_REQUEST).build());
       }
     });
   }
@@ -166,14 +166,14 @@ public class BulkUploadVre {
         final byte[] uploadedBytes = getUploadedBytes(fileUpload);
         timbuctooActions.setVreImage(vreName, uploadedBytes, body.getMediaType());
 
-        return TransactionStateAndResult.commitAndReturn(Response.ok().build());
+        return commitAndReturn(Response.ok().build());
       } catch (IOException e) {
         LOG.error("Reading upload failed", e);
-        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
+        return commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
                        .entity(e.getMessage())
                        .build());
       } catch (IllegalArgumentException e) {
-        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
+        return commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
                        .entity(e.getMessage())
                        .build());
       }

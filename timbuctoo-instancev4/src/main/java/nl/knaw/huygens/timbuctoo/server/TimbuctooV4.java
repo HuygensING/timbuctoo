@@ -49,7 +49,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.JsEnv;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ListVres;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
@@ -65,6 +64,8 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.ListVres;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.SingleVre;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
@@ -255,7 +256,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       permissionChecker, transactionEnforcer));
 
     register(environment, new RelationTypes(graphManager));
-    register(environment, new Metadata(jsonMetadata));
+    register(environment, new Metadata());
+    register(environment, new nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.Metadata(jsonMetadata));
     register(environment, new MyVres(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
@@ -263,6 +265,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       transactionEnforcer,
       uriHelper)
     );
+    register(environment, new SingleVre(permissionChecker, transactionEnforcer,
+      securityConfig.getVreAuthorizationCreator()));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
 

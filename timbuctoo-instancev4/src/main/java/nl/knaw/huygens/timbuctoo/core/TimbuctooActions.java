@@ -21,9 +21,11 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -284,6 +286,18 @@ public class TimbuctooActions implements AutoCloseable {
 
   public byte[] getVreImageBlob(String vreName) {
     return dataStoreOperations.getVreImageBlob(vreName);
+  }
+
+  public void deleteVre(String vreName, User user) throws AuthorizationException, AuthorizationUnavailableException {
+    boolean isAdmin = authorizer
+      .authorizationFor(vreName, user.getId())
+      .getRoles()
+      .contains(UserRoles.ADMIN_ROLE);
+    if (isAdmin) {
+      dataStoreOperations.deleteVre(vreName);
+    } else {
+      throw new AuthorizationException("User with id " + user.getId() + " is not allowed to delete VRE " + vreName);
+    }
   }
 
   //================== Inner classes ==================

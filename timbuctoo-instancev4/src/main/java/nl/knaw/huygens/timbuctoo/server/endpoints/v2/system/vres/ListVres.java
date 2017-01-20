@@ -1,10 +1,12 @@
-package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
+package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres;
 
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

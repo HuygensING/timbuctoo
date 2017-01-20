@@ -163,6 +163,7 @@ public class ChangeListenerTest {
       "setVreMetadata",
       "setVreImage",
       "getVreImageBlob",
+      "deleteVre",
 
       "close",
       "success",

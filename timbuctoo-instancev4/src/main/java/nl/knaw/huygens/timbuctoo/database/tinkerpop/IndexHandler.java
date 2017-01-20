@@ -26,6 +26,8 @@ public interface IndexHandler {
 
   void removeFromQuickSearchIndex(Collection collection, Vertex vertex);
 
+  void deleteQuickSearchIndex(Collection collection);
+
   //=====================tim_id index=====================
   Optional<Vertex> findById(UUID timId);
 

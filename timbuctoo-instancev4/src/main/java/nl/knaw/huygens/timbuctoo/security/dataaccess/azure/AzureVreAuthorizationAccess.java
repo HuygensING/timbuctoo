@@ -5,6 +5,8 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.azure.storage.table.DynamicTableEntity;
 import com.microsoft.azure.storage.table.EntityProperty;
+import com.microsoft.azure.storage.table.TableBatchOperation;
+import com.microsoft.azure.storage.table.TableQuery;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
@@ -67,4 +69,26 @@ public class AzureVreAuthorizationAccess extends AzureAccess implements VreAutho
       throw new AuthorizationUnavailableException("Could not get authorization");
     }
   }
+
+  @Override
+  public void deleteVreAuthorizations(String vreId) throws AuthorizationUnavailableException {
+    String condition = TableQuery.generateFilterCondition(
+      "PartitionKey",
+      TableQuery.QueryComparisons.EQUAL,
+      vreId
+    );
+
+    TableBatchOperation deletes = new TableBatchOperation();
+    for (DynamicTableEntity entity : table.execute(TableQuery.from(DynamicTableEntity.class).where(condition))) {
+      deletes.delete(entity);
+    }
+
+    try {
+      table.execute(deletes);
+    } catch (StorageException e) {
+      LOG.error("deleteVreAuthorizations failed", e);
+      throw new AuthorizationUnavailableException("Could not delete authorizations");
+    }
+  }
+
 }

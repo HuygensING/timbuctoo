@@ -3,15 +3,18 @@ package nl.knaw.huygens.timbuctoo.security;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
 
-public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCreator {
+public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCrud {
 
   private VreAuthorizationAccess authorizationAccess;
 
@@ -43,5 +46,21 @@ public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCreator 
     } catch (AuthorizationUnavailableException e) {
       throw new AuthorizationCreationException(e);
     }
+  }
+
+  @Override
+  public void deleteVreAuthorizations(String vreId, User user)
+    throws AuthorizationException, AuthorizationUnavailableException {
+    Optional<VreAuthorization> authorization = authorizationAccess.getAuthorization(vreId, user.getId());
+
+    if (!authorization.isPresent() || !authorization.get().getRoles().contains(ADMIN_ROLE)) {
+      throw new AuthorizationException(String.format(
+        "User with id '%s' is not allowed to remove the authorizations of vre with id '%s",
+        user,
+        vreId
+      ));
+    }
+
+    authorizationAccess.deleteVreAuthorizations(vreId);
   }
 }

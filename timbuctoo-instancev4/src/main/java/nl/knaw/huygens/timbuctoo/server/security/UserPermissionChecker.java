@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import org.slf4j.LoggerFactory;
 
@@ -43,6 +43,10 @@ public class UserPermissionChecker {
       LoggerFactory.getLogger(RawCollection.class).error("Authorization cannot be read.", e);
       return UNKNOWN_USER;
     }
+  }
+
+  public Optional<User> getUserFor(String authorizationHeader) {
+    return loggedInUsers.userFor(authorizationHeader);
   }
 
   public Optional<Response> checkPermissionWithResponse(String vreName, String authorizationHeader) {
