@@ -5,9 +5,10 @@ import com.microsoft.azure.storage.StorageException;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import com.microsoft.azure.storage.table.DynamicTableEntity;
 import com.microsoft.azure.storage.table.EntityProperty;
+import com.microsoft.azure.storage.table.TableBatchOperation;
+import com.microsoft.azure.storage.table.TableQuery;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import org.slf4j.Logger;
 
@@ -70,21 +71,24 @@ public class AzureVreAuthorizationAccess extends AzureAccess implements VreAutho
   }
 
   @Override
-  public void deleteVreAuthorizations(String vreId, String userId) throws AuthorizationException {
+  public void deleteVreAuthorizations(String vreId) throws AuthorizationUnavailableException {
+    String condition = TableQuery.generateFilterCondition(
+      "PartitionKey",
+      TableQuery.QueryComparisons.EQUAL,
+      vreId
+    );
+
+    TableBatchOperation deletes = new TableBatchOperation();
+    for (DynamicTableEntity entity : table.execute(TableQuery.from(DynamicTableEntity.class).where(condition))) {
+      deletes.delete(entity);
+    }
+
     try {
-      final Optional<VreAuthorization> authorization = getAuthorization(vreId, userId);
-      if (authorization.isPresent() && authorization.get().isAllowedToWrite()) {
-        try {
-          delete(vreId, userId);
-        } catch (StorageException e) {
-          LOG.error("deleteVreAuthorizations failed", e);
-          throw new AuthorizationException("Could not delete authorization for vre '" + vreId + "'");
-        }
-      } else {
-        throw new AuthorizationException("User with id '" + userId + "' is not allowed to delete vre '" + vreId + "'");
-      }
-    } catch (AuthorizationUnavailableException e) {
-      throw new AuthorizationException(e.getMessage());
+      table.execute(deletes);
+    } catch (StorageException e) {
+      LOG.error("deleteVreAuthorizations failed", e);
+      throw new AuthorizationUnavailableException("Could not delete authorizations");
     }
   }
+
 }

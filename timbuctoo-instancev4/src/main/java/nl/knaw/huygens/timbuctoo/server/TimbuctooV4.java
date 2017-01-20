@@ -248,7 +248,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, saveRml);
 
     BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml,
-      permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024, securityConfig.getVreAuthorizationAccess());
+      permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024, securityConfig.getVreAuthorizationCreator());
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), bulkUploadVre,
       securityConfig.getLoggedInUsers(environment), securityConfig.getVreAuthorizationCreator(), 20 * 1024 * 1024,

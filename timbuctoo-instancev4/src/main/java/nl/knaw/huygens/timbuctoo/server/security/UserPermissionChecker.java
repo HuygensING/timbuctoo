@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import org.slf4j.LoggerFactory;
@@ -48,13 +47,6 @@ public class UserPermissionChecker {
 
   public Optional<User> getUserFor(String authorizationHeader) {
     return loggedInUsers.userFor(authorizationHeader);
-  }
-
-  public boolean isAdminFor(String vreName, User user) throws AuthorizationUnavailableException {
-    return authorizer
-      .authorizationFor(vreName, user.getId())
-      .getRoles()
-      .contains(UserRoles.ADMIN_ROLE);
   }
 
   public Optional<Response> checkPermissionWithResponse(String vreName, String authorizationHeader) {

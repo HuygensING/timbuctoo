@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,8 @@ public class LocalFileVreAuthorizationAccessTest {
 
   public static final Path AUTHORIZATIONS_FOLDER = Paths.get("src", "test", "resources");
   public static final String VRE = "vre";
-  public static final Path VRE_AUTH_PATH = AUTHORIZATIONS_FOLDER.resolve(String.format("%s.json", VRE));
+  public static final String VRE_FILE = "vre.json";
+  public static final Path VRE_AUTH_PATH = AUTHORIZATIONS_FOLDER.resolve(VRE_FILE);
 
   public static final String USER_ID = "USER000000000001";
   public static final String USER_ID_WITHOUT_WRITE_PERMISSIONS = "USER000000000002";
@@ -127,19 +128,16 @@ public class LocalFileVreAuthorizationAccessTest {
     Files.delete(AUTHORIZATIONS_FOLDER.resolve(String.format("%s.json", newVre)));
   }
 
-  @Test(expected = AuthorizationException.class)
-  public void deleteVreAuthorizationsThrowsWhenUserDoesNotHaveWriteAccess() throws AuthorizationException {
-    instance.deleteVreAuthorizations(VRE, USER_ID_WITHOUT_WRITE_PERMISSIONS);
-  }
+  @Test(expected = AuthorizationUnavailableException.class)
+  public void deleteVreAuthorizationThrowsAnAuthorizationUnavailableExceptionWhenTheFileIsUnavailable()
+    throws Exception {
 
-  @Test(expected = AuthorizationException.class)
-  public void deleteVreAuthorizationsThrowsWhenUserAuthorizationIsNotPresent() throws AuthorizationException {
-    instance.deleteVreAuthorizations(VRE, "unknownUser");
+    instance.deleteVreAuthorizations("nonExisting");
   }
 
   @Test
   public void deleteVreAuthorizationsDeletesTheVreAuthorizationsFile() throws Exception {
-    instance.deleteVreAuthorizations(VRE, USER_ID);
-    assertThat(new File(AUTHORIZATIONS_FOLDER.resolve("vre.json").toString()).exists(), equalTo(false));
+    instance.deleteVreAuthorizations(VRE);
+    assertThat(new File(AUTHORIZATIONS_FOLDER.resolve(VRE_FILE).toString()).exists(), equalTo(false));
   }
 }

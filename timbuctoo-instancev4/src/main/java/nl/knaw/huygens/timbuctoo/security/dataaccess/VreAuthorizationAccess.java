@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess;
 
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 
 import java.util.Optional;
@@ -10,9 +9,7 @@ public interface VreAuthorizationAccess {
   VreAuthorization getOrCreateAuthorization(String vreId, String userId, String userRole)
     throws AuthorizationUnavailableException;
 
-  Optional<VreAuthorization> getAuthorization(String vreId, String userId)
-      throws AuthorizationUnavailableException;
+  Optional<VreAuthorization> getAuthorization(String vreId, String userId) throws AuthorizationUnavailableException;
 
-  void deleteVreAuthorizations(String vreId, String userId)
-      throws AuthorizationException;
+  void deleteVreAuthorizations(String vreId) throws AuthorizationUnavailableException;
 }

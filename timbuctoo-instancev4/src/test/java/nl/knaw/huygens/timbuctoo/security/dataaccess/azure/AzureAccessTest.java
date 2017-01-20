@@ -28,7 +28,7 @@ public class AzureAccessTest {
     tableClient = CloudStorageAccount.parse("DefaultEndpointsProtocol=http;" +
       "AccountName=;" +
       "AccountKey=")
-      .createCloudTableClient();
+                                     .createCloudTableClient();
   }
 
   @Test
@@ -77,5 +77,20 @@ public class AzureAccessTest {
     assertThat(beforeCreate, is(not(present())));
     assertThat(afterCreate.get(), is(created));
   }
+
+  @Test
+  public void testDeleteAllFromPartition() throws Exception {
+    AzureVreAuthorizationAccess instance = new AzureVreAuthorizationAccess(tableClient);
+    instance.getOrCreateAuthorization("vreId", "userId", "role1");
+    instance.getOrCreateAuthorization("otherVreId", "userId", "role1");
+    instance.getOrCreateAuthorization("vreId", "otherUserId", "role1");
+
+    instance.deleteVreAuthorizations("vreId");
+
+    assertThat(instance.getAuthorization("vreId", "userId"), is(not(present())));
+    assertThat(instance.getAuthorization("vreId", "otherUserId"), is(not(present())));
+    assertThat(instance.getAuthorization("otherVreId", "userId"), is(present()));
+  }
+
 
 }

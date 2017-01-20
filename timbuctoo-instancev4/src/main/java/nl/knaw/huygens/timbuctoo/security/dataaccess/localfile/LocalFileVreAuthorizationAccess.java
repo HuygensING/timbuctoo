@@ -6,7 +6,6 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 
 import java.io.File;
@@ -86,25 +85,11 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   }
 
   @Override
-  public void deleteVreAuthorizations(String vreId, String userId) throws AuthorizationException {
-    try {
-      final Optional<VreAuthorization> authorization = getAuthorization(vreId, userId);
-      if (authorization.isPresent() && authorization.get().isAllowedToWrite()) {
-        File file = getFile(vreId);
-        if (file.exists()) {
-          final boolean isDeleted = file.delete();
-          if (!isDeleted) {
-            throw new AuthorizationException("Failed to delete vre authorizations for vre '" + vreId + "'");
-          }
-        } else {
-          throw new AuthorizationException("Failed to delete vre authorizations for vre '" + vreId + "'");
-        }
-      } else {
-        throw new AuthorizationException("User with id '" + userId +
-          "' is not allowed to delete vre '" + vreId + "'");
+  public void deleteVreAuthorizations(String vreId) throws AuthorizationUnavailableException {
+    synchronized (authorizationsFolder) {
+      if (!getFile(vreId).delete()) {
+        throw new AuthorizationUnavailableException("Failed to delete vre authorizations for vre '" + vreId + "'");
       }
-    } catch (AuthorizationUnavailableException e) {
-      throw new AuthorizationException(e.getMessage());
     }
   }
 

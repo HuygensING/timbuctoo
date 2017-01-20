@@ -5,10 +5,9 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.util.RawValue;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
@@ -49,6 +48,7 @@ import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RA
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.SAVED_MAPPING_STATE;
+import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAndReturn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
@@ -64,12 +64,12 @@ public class BulkUploadVre {
   private final SaveRml saveRml;
   private final TransactionEnforcer transactionEnforcer;
   private final int maxFileSize;
-  private final VreAuthorizationAccess vreAuthorizationAccess;
+  private final VreAuthorizationCreator vreAuthorization;
 
   public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection,
                        ExecuteRml executeRml, UserPermissionChecker permissionChecker, SaveRml saveRml,
                        TransactionEnforcer transactionEnforcer, int maxFileSize,
-                       VreAuthorizationAccess vreAuthorizationAccess) {
+                       VreAuthorizationCreator vreAuthorization) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.rawCollection = rawCollection;
@@ -78,7 +78,7 @@ public class BulkUploadVre {
     this.saveRml = saveRml;
     this.transactionEnforcer = transactionEnforcer;
     this.maxFileSize = maxFileSize;
-    this.vreAuthorizationAccess = vreAuthorizationAccess;
+    this.vreAuthorization = vreAuthorization;
   }
 
   public URI createUri(String vre) {
@@ -140,16 +140,16 @@ public class BulkUploadVre {
       try {
         final Vre vre = timbuctooActions.getVre(vreName);
         if (vre == null) {
-          return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.NOT_FOUND).build());
+          return commitAndReturn(Response.status(Response.Status.NOT_FOUND).build());
         }
 
         final VreMetadata vreMetadataUpdate = new ObjectMapper().readValue(updateJson, VreMetadata.class);
 
         timbuctooActions.setVreMetadata(vreName, vreMetadataUpdate);
 
-        return TransactionStateAndResult.commitAndReturn(Response.ok().build());
+        return commitAndReturn(Response.ok().build());
       } catch (IOException e) {
-        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST).build());
+        return commitAndReturn(Response.status(Response.Status.BAD_REQUEST).build());
       }
     });
   }
@@ -166,23 +166,23 @@ public class BulkUploadVre {
 
     final Optional<User> user = permissionChecker.getUserFor(authorizationHeader);
 
-    try {
-      if (user.isPresent() && permissionChecker.isAdminFor(vreName, user.get())) {
-        return transactionEnforcer.executeAndReturn(timbuctooActions -> {
-          timbuctooActions.deleteVre(vreName);
-          try {
-            vreAuthorizationAccess.deleteVreAuthorizations(vreName, user.get().getId());
-          } catch (AuthorizationException e) {
-            LOG.error("Failed to remove authorization for vre '{}'", vreName);
-          }
-          return TransactionStateAndResult.commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
-        });
-      } else {
-        return Response.status(Response.Status.FORBIDDEN).entity(jsnO("success", jsn(false))).build();
+    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
+      try {
+        timbuctooActions.deleteVre(vreName, user.get());
+        vreAuthorization.deleteVreAuthorizations(vreName, user.get());
+        return commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
+      } catch (AuthorizationException e) {
+        LOG.error("User with id '" + user.get().getId() + "' was not allowed to delete VRE '" + vreName + "'", e);
+        return commitAndReturn(
+          Response.status(Response.Status.FORBIDDEN).entity(jsnO("success", jsn(false))).build()
+        );
+      } catch (AuthorizationUnavailableException e) {
+        LOG.error("Failed to remove authorization for vre '{}'", vreName, e);
+        return commitAndReturn(
+          Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(jsnO("success", jsn(false))).build()
+        );
       }
-    } catch (AuthorizationUnavailableException e) {
-      return Response.status(Response.Status.FORBIDDEN).entity(jsnO("success", jsn(false))).build();
-    }
+    });
 
   }
 
@@ -206,14 +206,14 @@ public class BulkUploadVre {
         final byte[] uploadedBytes = getUploadedBytes(fileUpload);
         timbuctooActions.setVreImage(vreName, uploadedBytes, body.getMediaType());
 
-        return TransactionStateAndResult.commitAndReturn(Response.ok().build());
+        return commitAndReturn(Response.ok().build());
       } catch (IOException e) {
         LOG.error("Reading upload failed", e);
-        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
+        return commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
                        .entity(e.getMessage())
                        .build());
       } catch (IllegalArgumentException e) {
-        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
+        return commitAndReturn(Response.status(Response.Status.BAD_REQUEST)
                        .entity(e.getMessage())
                        .build());
       }
