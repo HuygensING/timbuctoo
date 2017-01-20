@@ -65,6 +65,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.SingleVre;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.DatabaseValidator;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.FullTextIndexCheck;
 import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.InvariantsCheck;
@@ -247,6 +248,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
     register(environment, saveRml);
 
+    register(environment, new SingleVre(permissionChecker, transactionEnforcer,
+      securityConfig.getVreAuthorizationCreator()));
     BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml,
       permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024, securityConfig.getVreAuthorizationCreator());
     register(environment, bulkUploadVre);
