@@ -50,7 +50,7 @@ public class ChangeListenerTest {
       );
 
       Long prevVersions = stream(vertex.vertices(Direction.BOTH, VERSION_OF)).collect(Collectors.counting());
-      assertThat(prevVersions, is(0L));
+      assertThat(prevVersions, is(1L));
     });
     ChangeListener spy = spy(changeListener);
     DataStoreOperations instance = TinkerPopOperationsStubs.forChangeListenerMock(spy);

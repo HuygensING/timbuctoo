@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 
 import nl.knaw.huygens.timbuctoo.search.EntityRef;
 import nl.knaw.huygens.timbuctoo.search.SearchResult;
-import nl.knaw.huygens.timbuctoo.server.SearchConfig;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 
 import java.util.List;
 
@@ -11,13 +11,9 @@ public class SearchResponseV2_1Factory {
   private final SearchResponseV2_1RefAdder refCreator;
   private NavigationCreator navigationCreator;
 
-  public SearchResponseV2_1Factory(SearchResponseV2_1RefAdder refCreator, NavigationCreator navigationCreator) {
-    this.refCreator = refCreator;
-    this.navigationCreator = navigationCreator;
-  }
-
-  public SearchResponseV2_1Factory(SearchConfig searchConfig) {
-    this(new SearchResponseV2_1RefAdder(), new NavigationCreator(searchConfig));
+  public SearchResponseV2_1Factory(UriHelper uriHelper) {
+    this.refCreator = new SearchResponseV2_1RefAdder();
+    this.navigationCreator = new NavigationCreator(uriHelper);
   }
 
   /**

@@ -1,9 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 
-import nl.knaw.huygens.timbuctoo.server.SearchConfig;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.net.URI;
 import java.util.UUID;
 
 import static org.hamcrest.Matchers.endsWith;
@@ -12,8 +13,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 
 public class NavigationCreatorV2_1Test {
 
@@ -22,9 +21,8 @@ public class NavigationCreatorV2_1Test {
 
   @Before
   public void setUp() throws Exception {
-    SearchConfig searchConfig = mock(SearchConfig.class);
-    given(searchConfig.getBaseUri()).willReturn(BASE_URI);
-    instance = new NavigationCreator(searchConfig);
+    UriHelper uriHelper = new UriHelper(URI.create(BASE_URI));
+    instance = new NavigationCreator(uriHelper);
   }
 
   @Test

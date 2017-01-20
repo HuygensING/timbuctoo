@@ -322,7 +322,7 @@ public class CollectionTest {
     when(vertices.hasNext()).thenReturn(true);
     when(vertex.vertices(any(), any())).thenReturn(vertices);
 
-    new Collection(null, vertex, null, description);
+    new Collection("", vertex, newGraph().wrap(), description);
 
     verify(vertex).vertices(any(), any());
     verifyNoMoreInteractions(vertex);

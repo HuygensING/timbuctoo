@@ -1,5 +1,7 @@
 FROM huygensing/timbuctoo:build-base
 
+RUN apk add --no-cache jq
+
 ENV BASE_URI=http://localhost:8080
 ENV TIMBUCTOO_SEARCH_URL=http://localhost:8082
 EXPOSE 80 81

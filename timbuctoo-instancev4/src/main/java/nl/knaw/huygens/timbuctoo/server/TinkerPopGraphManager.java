@@ -17,6 +17,7 @@ import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.neo4j.cluster.ClusterSettings;
 import org.neo4j.graphdb.GraphDatabaseService;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 import org.neo4j.graphdb.factory.GraphDatabaseFactory;
 import org.neo4j.graphdb.factory.GraphDatabaseSettings;
 import org.neo4j.graphdb.factory.HighlyAvailableGraphDatabaseFactory;
@@ -102,26 +103,29 @@ public class TinkerPopGraphManager extends HealthCheck implements Managed, Graph
           ". allow init cluster is " +
           haconfig.allowInitCluster()
         );
-        graphDatabase = new HighlyAvailableGraphDatabaseFactory()
-          .setUserLogProvider( new Slf4jLogProvider() )
-          .newEmbeddedDatabaseBuilder(databasePath)
-          .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
-          // .setConfig(GraphDatabaseSettings.pagecache_memory, configuration.getMaxMemory())
+        final GraphDatabaseBuilder graphDatabaseBuilder =
+          new HighlyAvailableGraphDatabaseFactory()
+            .setUserLogProvider(new Slf4jLogProvider())
+            .newEmbeddedDatabaseBuilder(databasePath)
+            .setConfig(GraphDatabaseSettings.allow_store_upgrade, "true")
 
-          .setConfig(ClusterSettings.allow_init_cluster, haconfig.allowInitCluster())
-          .setConfig(ClusterSettings.server_id, haconfig.getServerId())
-          .setConfig(ClusterSettings.initial_hosts, haconfig.getInitialHosts())
-          .setConfig(ClusterSettings.cluster_server, haconfig.getIp() + ":5001")
-          .setConfig(HaSettings.ha_server, haconfig.getIp() + ":6001")
-          /*
-           * Neo4j synchronizes the slave databases via pulls of the master data. By default this property is not
-           * activated (set to 0s). So this property has to be set. An alternative is to set 'ha.tx_push_factor'. Since
-           * a network connection might be temporarily down, a pull is safer then a push. The push_factor is meant for
-           * ensuring data duplication so that a master can safely crash
-           */
-          .setConfig(HaSettings.pull_interval, haconfig.getPullInterval())
-          .setConfig(HaSettings.tx_push_factor, haconfig.getPushFactor())
-          .newGraphDatabase();
+            .setConfig(ClusterSettings.allow_init_cluster, haconfig.allowInitCluster())
+            .setConfig(ClusterSettings.server_id, haconfig.getServerId())
+            .setConfig(ClusterSettings.initial_hosts, haconfig.getInitialHosts())
+            .setConfig(ClusterSettings.cluster_server, haconfig.getIp() + ":5001")
+            .setConfig(HaSettings.ha_server, haconfig.getIp() + ":6001")
+            /*
+             * Neo4j synchronizes the slave databases via pulls of the master data. By default this property is not
+             * activated (set to 0s). So this property has to be set. An alternative is to set 'ha.tx_push_factor'.
+             * Since a network connection might be temporarily down, a pull is safer then a push. The push_factor is
+             * meant for ensuring data duplication so that a master can safely crash
+             */
+            .setConfig(HaSettings.pull_interval, haconfig.getPullInterval())
+            .setConfig(HaSettings.tx_push_factor, haconfig.getPushFactor());
+        if (configuration.getPageCacheMemory().length() > 0) {
+          graphDatabaseBuilder.setConfig(GraphDatabaseSettings.pagecache_memory, configuration.getPageCacheMemory());
+        }
+        graphDatabase = graphDatabaseBuilder.newGraphDatabase();
       } else {
         LOG.info("Launching local non-ha mode. Database at " + databasePath.getAbsolutePath());
         graphDatabase = new GraphDatabaseFactory()

@@ -145,9 +145,12 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final IndexHandler indexHandler;
   private final SystemPropertyModifier systemPropertyModifier;
   private final GraphDatabaseService graphDatabase;
-  private final boolean ownTransaction;
+  private final IntermediateCommitter committer;
   private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
   private Optional<Boolean> isSuccess = Optional.empty();
+  private final boolean ownTransaction;
+  private final Map<String, Vertex> defaultCollectionVerticesCache = new HashMap<>();
+  private final Map<String, Vertex> predicateValueTypeVerticesCache = new HashMap<>();
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
@@ -199,6 +202,11 @@ public class TinkerPopOperations implements DataStoreOperations {
     this.mappings = mappings == null ? loadVres() : mappings;
     this.systemPropertyModifier = new SystemPropertyModifier(Clock.systemDefaultZone());
     this.graphDatabase = graphManager.getGraphDatabase(); //FIXME move to IndexHandler
+
+    this.committer = new IntermediateCommitter(250_000, () -> {
+      this.transaction.commit();
+      this.transaction.open();
+    });
   }
 
   private static UUID asUuid(String input, Element source) {
@@ -531,11 +539,12 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     setAdministrativeProperties(col, vertex, input);
 
-    listener.onCreate(col, vertex);
-    listener.onAddToCollection(col, Optional.empty(), vertex);
-    baseCollection.ifPresent(baseCol -> listener.onAddToCollection(baseCol, Optional.empty(), vertex));
+    Vertex duplicate = duplicateVertex(traversal, vertex, indexHandler);
+    listener.onCreate(col, duplicate);
 
-    duplicateVertex(traversal, vertex, indexHandler);
+    //not passing oldVertex because old has never been passed to addToCollection so it doesn't need to be removed
+    listener.onAddToCollection(col, Optional.empty(), duplicate);
+    baseCollection.ifPresent(baseCol -> listener.onAddToCollection(baseCol, Optional.empty(), duplicate));
   }
 
   @Override
@@ -809,6 +818,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public Vres loadVres() {
+    defaultCollectionVerticesCache.clear();
     ImmutableVresDto.Builder builder = ImmutableVresDto.builder();
 
     traversal.V().has(T.label, LabelP.of(Vre.DATABASE_LABEL)).forEachRemaining(vreVertex -> {
@@ -1202,20 +1212,20 @@ public class TinkerPopOperations implements DataStoreOperations {
       });
     });
 
-    assertPredicateAndValueType(vertex, getPredicateValueTypeVertexFor(vre).get(), property);
+    assertPredicateAndValueType(vertex, getPredicateValueTypeVertexFor(vre), property);
+    committer.tick();
   }
 
   private void assertPredicateAndValueType(Vertex entity, Vertex col, RdfProperty property) {
-    GraphTraversal<Vertex, Vertex> predicate =
+    final GraphTraversal<Vertex, Vertex> predicate =
       traversal.V(col.id()).out(HAS_PREDICATE_RELATION_NAME).has("predicateUri", property.getPredicateUri());
 
     Vertex predicateVertex;
     Vertex valueTypeVertex;
-    if (predicate.asAdmin().clone().hasNext()) {
+    if (predicate.hasNext()) {
       predicateVertex = predicate.next();
     } else {
-      predicate = traversal.addV("predicate");
-      predicateVertex = predicate.next();
+      predicateVertex = traversal.addV("predicate").next();
       predicateVertex.property("predicateUri", property.getPredicateUri());
       col.addEdge(HAS_PREDICATE_RELATION_NAME, predicateVertex);
     }
@@ -1245,6 +1255,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
       retractPredicateAndValueType(property, e);
     });
+    committer.tick();
   }
 
   private void retractPredicateAndValueType(RdfProperty property, Vertex entity) {
@@ -1322,7 +1333,8 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   private GraphTraversal<Vertex, Vertex> entitiesOfCollection(Collection coll) {
-    return traversal.V().has("collectionName", coll.getCollectionName())
+    return traversal.V().hasLabel("collection")
+                    .has("collectionName", coll.getCollectionName())
                     .out(HAS_ENTITY_NODE_RELATION_NAME)
                     .out(HAS_ENTITY_RELATION_NAME);
   }
@@ -1331,14 +1343,18 @@ public class TinkerPopOperations implements DataStoreOperations {
   public void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper) {
     String vreName = vre.getVreName();
     vre.getCollections().values().forEach(col -> entitiesOfCollection(col)
+      .not(has("isLatest", false)) //everything without isLatest and everything with isLatest = true
       .forEachRemaining(v -> {
         v.property("tim_id", entityFinisherHelper.newId(v, vreName).toString());
         v.property("rev", entityFinisherHelper.getRev());
         setCreated(v, entityFinisherHelper.getChangeTime());
-        v.property("isLatest", true);
+        if (!v.property("isLatest").isPresent()) { //this is the first time the vertex passes this body
+          v.property("isLatest", true);
+          v = duplicateVertex(traversal, v, indexHandler);
+        }
         listener.onCreate(col, v);
         listener.onAddToCollection(col, Optional.empty(), v);
-        listener.onPropertyUpdate(col, Optional.of(v), duplicateVertex(traversal, v, indexHandler));
+        committer.tick();
       })
     );
   }
@@ -1414,25 +1430,27 @@ public class TinkerPopOperations implements DataStoreOperations {
     );
     indexHandler.addVertexToRdfIndex(vre, rdfUri, vertex);
 
-    Vertex collection = getDefaultCollectionVertex(vre).get()
-                                                       .vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
+    Vertex collection = getDefaultCollectionVertex(vre).vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
                                                        .next();
     collection.addEdge(HAS_ENTITY_RELATION_NAME, vertex);
     return vertex;
   }
 
-  private Optional<Vertex> getDefaultCollectionVertex(Vre vre) {
-    return graph.traversal().V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre)).toStream().findAny();
+  private Vertex getDefaultCollectionVertex(Vre vre) {
+    return defaultCollectionVerticesCache.computeIfAbsent(
+      vre.getVreName(),
+      name -> traversal.V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(name)).next()
+    );
   }
 
-  private Optional<Vertex> getPredicateValueTypeVertexFor(Vre vre) {
-
-    return getVreTraversal(vre.getVreName())
-                .out(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME)
-                .toStream()
-                .findAny();
+  private Vertex getPredicateValueTypeVertexFor(Vre vre) {
+    return predicateValueTypeVerticesCache.computeIfAbsent(
+      vre.getVreName(),
+      name -> getVreTraversal(vre.getVreName())
+        .out(Vre.HAS_PREDICATE_VALUE_TYPE_VERTEX_RELATION_NAME)
+        .next()
+    );
   }
-
 
   Optional<Vertex> getVertexByRdfUri(Vre vre, String uri) {
     return indexHandler.findVertexInRdfIndex(vre, uri);

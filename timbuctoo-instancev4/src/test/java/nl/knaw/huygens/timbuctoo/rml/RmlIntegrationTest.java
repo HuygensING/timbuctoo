@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.filter.LoggingFilter;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.MultiPart;
@@ -27,7 +26,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
-import java.util.logging.Logger;
 
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
@@ -177,7 +175,7 @@ public class RmlIntegrationTest {
     return client
       .target(server)
       .register(MultiPartFeature.class)
-      .register(new LoggingFilter(Logger.getLogger(LoggingFilter.class.getName()), true))
+      // .register(new LoggingFilter(Logger.getLogger(LoggingFilter.class.getName()), true))
       .request()
       .header("Authorization", AUTH);
   }

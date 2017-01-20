@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -48,8 +49,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private TimeoutFactory autoLogoutTimeout;
   @NotNull
   private TimeoutFactory searchResultAvailabilityTimeout;
+
   @NotNull
-  private String baseUri;
+  private UriHelper uriHelper;
 
   private String timbuctooSearchUrl;
 
@@ -124,12 +126,20 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return Optional.empty();
   }
 
-  // SearchConfig implementation
-  @Override
-  public String getBaseUri() {
-    return baseUri;
+  public UriHelper getUriHelper() {
+    return uriHelper;
   }
 
+  @JsonProperty
+  public void setBaseUri(String baseUri) {
+    if (this.uriHelper == null) {
+      this.uriHelper = new UriHelper(URI.create(baseUri));
+    } else {
+      this.uriHelper.setBaseUri(URI.create(baseUri));
+    }
+  }
+
+  // SearchConfig implementation
   @Override
   public Timeout getSearchResultAvailabilityTimeout() {
     return searchResultAvailabilityTimeout.createTimeout();

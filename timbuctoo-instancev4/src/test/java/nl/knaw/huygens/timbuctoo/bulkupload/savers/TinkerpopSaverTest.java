@@ -6,11 +6,11 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDe
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.InOrder;
 
 import java.util.Iterator;
 import java.util.List;
@@ -23,7 +23,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 
 public class TinkerpopSaverTest {
@@ -63,16 +62,24 @@ public class TinkerpopSaverTest {
   }
 
   @Test
-  public void addEntityAddsEachEntityToTheCollectionAfterItIsAddedToTheLastItemOfTheCollection() {
-    CollectionAdder collectionAdder = mock(CollectionAdder.class);
-    TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME, MAX_VERTICES_PER_TRANSACTION,
-      VRE_NAME, collectionAdder);
+  public void addEntityCreatesAChainOfEntities() {
+    final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME,
+      MAX_VERTICES_PER_TRANSACTION, VRE_NAME);
 
     Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
+    Vertex second = instance.addEntity(rawCollection, Maps.newHashMap());
+    Vertex third = instance.addEntity(rawCollection, Maps.newHashMap());
 
-    InOrder inOrder = inOrder(collectionAdder);
-    inOrder.verify(collectionAdder).addToLastItemOfCollection(rawCollection, first);
-    inOrder.verify(collectionAdder).addToCollection(rawCollection, first);
+    List<Vertex> orderedList = graphWrapper.getGraph().traversal().V(rawCollection.id())
+      .emit()
+      .repeat(__.out(NEXT_RAW_ITEM_EDGE_NAME))
+      .toList();
+    assertThat(orderedList, contains(
+      rawCollection,
+      first,
+      second,
+      third
+    ));
   }
 
   @Test

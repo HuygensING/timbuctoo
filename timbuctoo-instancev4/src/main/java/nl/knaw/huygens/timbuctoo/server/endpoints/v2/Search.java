@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.search.SearchStore;
 import nl.knaw.huygens.timbuctoo.search.description.SearchDescriptionFactory;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.SearchConfig;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchRequestV2_1;
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.SearchResponseV2_1Factory;
 import org.slf4j.Logger;
@@ -39,10 +40,10 @@ public class Search {
   private final GraphWrapper graphWrapper;
   private SearchStore searchStore;
 
-  public Search(SearchConfig searchConfig, GraphWrapper graphWrapper) {
+  public Search(SearchConfig searchConfig, UriHelper uriHelper, GraphWrapper graphWrapper) {
     this.searchStore = new SearchStore(searchConfig.getSearchResultAvailabilityTimeout());
     this.graphWrapper = graphWrapper;
-    this.searchResponseFactory = new SearchResponseV2_1Factory(searchConfig);
+    this.searchResponseFactory = new SearchResponseV2_1Factory(uriHelper);
     searchDescriptionFactory = new SearchDescriptionFactory();
 
   }

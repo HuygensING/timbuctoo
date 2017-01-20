@@ -2913,11 +2913,6 @@ public class TinkerPopOperationsTest {
       eq(Optional.empty()),
       argThat(is(likeVertex().withProperty("rdfUri", "http://example.org/entity1")))
     );
-    verify(changeListener).onPropertyUpdate(
-      eq(defaultCollection),
-      (Optional<Vertex>) argThat(is(present())), // FIXME find a better way to match the value of an Optional
-      argThat(is(likeVertex().withProperty("rdfUri", "http://example.org/entity1")))
-    );
   }
 
   @Test

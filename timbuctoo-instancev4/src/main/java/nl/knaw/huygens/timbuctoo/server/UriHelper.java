@@ -4,13 +4,14 @@ import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
 public class UriHelper {
-  private final URI baseUri;
+  private URI baseUri;
 
-  public UriHelper(String baseUri) {
-    this.baseUri = UriBuilder.fromUri(baseUri).build();
+  public UriHelper(URI baseUri) {
+    this.baseUri = baseUri;
   }
 
   public URI fromResourceUri(URI resourceUri) {
+    URI baseUri = UriBuilder.fromUri(this.baseUri).build();
     return UriBuilder.fromUri(resourceUri)
                      .userInfo(baseUri.getUserInfo())
                      .scheme(baseUri.getScheme())
@@ -20,4 +21,11 @@ public class UriHelper {
                      .build();
   }
 
+  void setBaseUri(URI baseUri) {
+    this.baseUri = baseUri;
+  }
+
+  boolean hasDynamicBaseUrl() {
+    return "http://0.0.0.0:0".equals(this.baseUri.toString());
+  }
 }

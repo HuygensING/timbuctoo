@@ -22,8 +22,8 @@ class CollectionMembershipTripleProcessor {
         rdfImportSession.getErrorReporter().multipleRdfTypes(triple);
       } else {
         entity.addToCollection(database.findOrCreateCollection(vreName, triple.getObject()));
+        entity.removeFromCollection(database.getDefaultCollection(vreName));
       }
-      entity.removeFromCollection(database.getDefaultCollection(vreName));
     } else {
       entity.removeFromCollection(database.findOrCreateCollection(vreName, triple.getObject()));
     }

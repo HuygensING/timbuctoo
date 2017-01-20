@@ -10,6 +10,7 @@ import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
 import io.dropwizard.java8.Java8Bundle;
+import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.persistence.PersistenceManager;
@@ -76,12 +77,16 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
 import java.io.InputStream;
+import java.net.InetSocketAddress;
 import java.net.URI;
+import java.nio.channels.ServerSocketChannel;
 import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Properties;
@@ -163,7 +168,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("index-all-displaynames", new IndexAllTheDisplaynames());
     migrations.put("index-all-entity-ids", new IndexAllEntityIds());
 
-    final UriHelper uriHelper = new UriHelper(configuration.getBaseUri());
+    UriHelper uriHelper = configuration.getUriHelper();
+    if (configuration.getUriHelper().hasDynamicBaseUrl()) {
+      environment.lifecycle().addServerLifecycleListener(new BaseUriDeriver(configuration));
+    }
 
     TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
     if (tinkerPopConfig == null) {
@@ -217,11 +225,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
 
     // register REST endpoints
-    register(environment, new RootEndpoint());
+    register(environment, new RootEndpoint(uriHelper));
     register(environment, new JsEnv(configuration));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
     register(environment, new Me(securityConfig.getLoggedInUsers(environment)));
-    register(environment, new Search(configuration, graphManager));
+    register(environment, new Search(configuration, uriHelper, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
     register(environment,
       new Index(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
@@ -251,7 +259,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml,
       permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024);
     register(environment, bulkUploadVre);
-    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager), bulkUploadVre,
+    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager, 25_000), bulkUploadVre,
       securityConfig.getLoggedInUsers(environment), securityConfig.getVreAuthorizationCreator(), 20 * 1024 * 1024,
       permissionChecker, transactionEnforcer));
 
@@ -345,4 +353,30 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.jersey().register(component);
   }
 
+  private class BaseUriDeriver implements ServerLifecycleListener {
+    private final TimbuctooConfiguration timbuctooConfiguration;
+
+    public BaseUriDeriver(TimbuctooConfiguration timbuctooConfiguration) {
+      this.timbuctooConfiguration = timbuctooConfiguration;
+    }
+
+    @Override
+    public void serverStarted(Server server) {
+      // Detect the port Jetty is listening on - works with configured and random ports
+      for (final Connector connector : server.getConnectors()) {
+        try {
+          if ("application".equals(connector.getName())) {
+            final ServerSocketChannel channel = (ServerSocketChannel) connector
+              .getTransport();
+            final InetSocketAddress socket = (InetSocketAddress) channel
+              .getLocalAddress();
+
+            timbuctooConfiguration.setBaseUri("http://localhost:" + socket.getPort());
+          }
+        } catch (Exception e) {
+          LOG.error("No base url provided, and unable to get generate one myself", e);
+        }
+      }
+    }
+  }
 }
