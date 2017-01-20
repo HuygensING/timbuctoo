@@ -21,7 +21,9 @@ import org.slf4j.Logger;
 
 import java.time.Clock;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -48,6 +50,7 @@ public class Database {
   private GraphTraversalSource cachedTraversal;
   private Index<org.neo4j.graphdb.Node> rdfIndex;
   private GraphDatabaseService graphDatabase;
+  private Map<String, Collection> collectionCache = new HashMap<>();
 
   public Database(TinkerPopGraphManager graphWrapper) {
     this(graphWrapper, new SystemPropertyModifier(Clock.systemDefaultZone()));
@@ -138,7 +141,7 @@ public class Database {
     systemPropertyModifier.setIsLatest(vertex, true);
     systemPropertyModifier.setIsDeleted(vertex, false);
 
-    Collection collection = findOrCreateCollection(CollectionDescription.getDefault(vreName));
+    Collection collection = getDefaultCollection(vreName);
     Entity entity = new Entity(vertex, getCollections(vertex, vreName));
     entity.addToCollection(collection);
 
@@ -172,17 +175,25 @@ public class Database {
   }
 
   public Collection getDefaultCollection(String vreName) {
-    return findOrCreateCollection(CollectionDescription.getDefault(vreName));
+    return collectionCache.computeIfAbsent(
+      vreName + "<<default>>",
+      name -> findOrCreateCollection(
+        CollectionDescription.getDefault(vreName)
+      )
+    );
   }
 
   public Collection findOrCreateCollection(String vreName, Node node) {
-    CollectionDescription collectionDescription =
-      CollectionDescription.createCollectionDescription(node.getLocalName(), vreName, node.getURI());
-    return findOrCreateCollection(collectionDescription);
+    return collectionCache.computeIfAbsent(
+      vreName + node.getURI(),
+      name -> findOrCreateCollection(
+        CollectionDescription.createCollectionDescription(node.getLocalName(), vreName, node.getURI())
+      )
+    );
   }
 
 
-  public Collection findOrCreateCollection(CollectionDescription collectionDescription) {
+  private Collection findOrCreateCollection(CollectionDescription collectionDescription) {
     Graph graph = graphWrapper.getGraph();
     final GraphTraversal<Vertex, Vertex> colTraversal =
       graph.traversal().V()
