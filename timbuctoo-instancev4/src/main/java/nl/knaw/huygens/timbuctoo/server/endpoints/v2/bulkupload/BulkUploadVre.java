@@ -8,9 +8,6 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
@@ -23,7 +20,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -152,38 +148,6 @@ public class BulkUploadVre {
         return commitAndReturn(Response.status(Response.Status.BAD_REQUEST).build());
       }
     });
-  }
-
-  // FIXME: this method involved all Vre's, not bulk uploaded ones specifically, move to a new Vre endpoint
-  @DELETE
-  @Produces(APPLICATION_JSON)
-  public Response delete(@PathParam("vre") String vreName, @HeaderParam("Authorization") String authorizationHeader) {
-    Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
-
-    if (filterResponse.isPresent()) {
-      return filterResponse.get();
-    }
-
-    final Optional<User> user = permissionChecker.getUserFor(authorizationHeader);
-
-    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
-      try {
-        timbuctooActions.deleteVre(vreName, user.get());
-        vreAuthorization.deleteVreAuthorizations(vreName, user.get());
-        return commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
-      } catch (AuthorizationException e) {
-        LOG.error("User with id '" + user.get().getId() + "' was not allowed to delete VRE '" + vreName + "'", e);
-        return commitAndReturn(
-          Response.status(Response.Status.FORBIDDEN).entity(jsnO("success", jsn(false))).build()
-        );
-      } catch (AuthorizationUnavailableException e) {
-        LOG.error("Failed to remove authorization for vre '{}'", vreName, e);
-        return commitAndReturn(
-          Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(jsnO("success", jsn(false))).build()
-        );
-      }
-    });
-
   }
 
   @POST
