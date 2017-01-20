@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -37,6 +37,7 @@ public class Collection {
   private final GraphWrapper graphWrapper;
   private final PropertyHelper propertyHelper;
   private final CollectionDescription collectionDescription;
+  protected GraphTraversalSource traversal;
 
   public Collection(String vreName, Vertex vertex, GraphWrapper graphWrapper) {
     this(vreName, vertex, graphWrapper, CollectionDescription.fromVertex(vreName, vertex));
@@ -56,6 +57,7 @@ public class Collection {
     this.graphWrapper = graphWrapper;
     this.collectionDescription = collectionDescription;
     this.propertyHelper = propertyHelper;
+    traversal = graphWrapper.getGraph().traversal();
 
     findOrCreateDisplayName();
   }
@@ -80,12 +82,14 @@ public class Collection {
   }
 
   public void remove(Vertex entityVertex) {
-    GraphTraversal<Vertex, Edge> edgeToRemove =
-      graphWrapper.getGraph().traversal().V(vertex.id()).out(HAS_ENTITY_NODE_RELATION_NAME)
-                  .outE(HAS_ENTITY_RELATION_NAME).where(__.inV().hasId(entityVertex.id()));
-    if (edgeToRemove.hasNext()) {
-      edgeToRemove.next().remove();
-      propertyHelper.removeProperties(entityVertex, collectionDescription);
+    Iterator<Edge> edges = entityVertex.edges(Direction.IN);
+    while (edges.hasNext()) {
+      Edge edge = edges.next();
+      if (edge.inVertex().equals(vertex)) {
+        edge.remove();
+        propertyHelper.removeProperties(entityVertex, collectionDescription);
+        break;
+      }
     }
   }
 
