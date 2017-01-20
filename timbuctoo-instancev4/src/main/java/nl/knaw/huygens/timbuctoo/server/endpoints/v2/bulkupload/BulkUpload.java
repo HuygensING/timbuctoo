@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
@@ -43,13 +43,13 @@ public class BulkUpload {
   private final BulkUploadService uploadService;
   private final BulkUploadVre bulkUploadVre;
   private final LoggedInUsers loggedInUsers;
-  private final VreAuthorizationCreator authorizationCreator;
+  private final VreAuthorizationCrud authorizationCreator;
   private final int maxCache;
   private final UserPermissionChecker permissionChecker;
   private final TransactionEnforcer transactionEnforcer;
 
   public BulkUpload(BulkUploadService uploadService, BulkUploadVre bulkUploadVre,
-                    LoggedInUsers loggedInUsers, VreAuthorizationCreator authorizationCreator, int maxCache,
+                    LoggedInUsers loggedInUsers, VreAuthorizationCrud authorizationCreator, int maxCache,
                     UserPermissionChecker permissionChecker, TransactionEnforcer transactionEnforcer) {
     this.uploadService = uploadService;
     this.bulkUploadVre = bulkUploadVre;

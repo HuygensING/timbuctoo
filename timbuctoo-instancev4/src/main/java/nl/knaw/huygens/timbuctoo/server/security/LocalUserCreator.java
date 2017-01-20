@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
 import nl.knaw.huygens.timbuctoo.security.LoginCreator;
 import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.security.UserCreator;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 
 import java.util.Map;
 
@@ -23,10 +23,10 @@ public class LocalUserCreator {
 
   private final LoginCreator loginCreator;
   private final UserCreator userCreator;
-  private final VreAuthorizationCreator authorizationCreator;
+  private final VreAuthorizationCrud authorizationCreator;
 
   public LocalUserCreator(LoginCreator loginCreator, UserCreator userCreator,
-                          VreAuthorizationCreator authorizationCreator) {
+                          VreAuthorizationCrud authorizationCreator) {
 
     this.loginCreator = loginCreator;
     this.userCreator = userCreator;

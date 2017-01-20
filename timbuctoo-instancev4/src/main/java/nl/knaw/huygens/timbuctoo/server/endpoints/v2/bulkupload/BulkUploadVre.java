@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.util.RawValue;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
@@ -64,12 +64,12 @@ public class BulkUploadVre {
   private final SaveRml saveRml;
   private final TransactionEnforcer transactionEnforcer;
   private final int maxFileSize;
-  private final VreAuthorizationCreator vreAuthorization;
+  private final VreAuthorizationCrud vreAuthorization;
 
   public BulkUploadVre(GraphWrapper graphWrapper, UriHelper uriHelper, RawCollection rawCollection,
                        ExecuteRml executeRml, UserPermissionChecker permissionChecker, SaveRml saveRml,
                        TransactionEnforcer transactionEnforcer, int maxFileSize,
-                       VreAuthorizationCreator vreAuthorization) {
+                       VreAuthorizationCrud vreAuthorization) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.rawCollection = rawCollection;

@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationExcept
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 
-public interface VreAuthorizationCreator {
+public interface VreAuthorizationCrud {
   void createAuthorization(String vreId, String userId, String vreRole) throws AuthorizationCreationException;
 
   /**

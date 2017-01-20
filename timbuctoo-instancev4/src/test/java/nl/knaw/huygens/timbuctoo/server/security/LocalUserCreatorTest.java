@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
 import nl.knaw.huygens.timbuctoo.security.LoginCreator;
 import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.security.UserCreator;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCreator;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -33,7 +33,7 @@ public class LocalUserCreatorTest {
   private static final String VRE_ROLE = "role";
   private LoginCreator loginCreator;
   private UserCreator userCreator;
-  private VreAuthorizationCreator authorizationCreator;
+  private VreAuthorizationCrud authorizationCreator;
   private LocalUserCreator instance;
   private Map<String, String> userInfo;
 
@@ -43,7 +43,7 @@ public class LocalUserCreatorTest {
     userCreator = mock(UserCreator.class);
     given(userCreator.createUser(anyString(), anyString(), anyString(), anyString(), anyString()))
       .willReturn(USER_ID_CREATED_BY_USER_CREATOR);
-    authorizationCreator = mock(VreAuthorizationCreator.class);
+    authorizationCreator = mock(VreAuthorizationCrud.class);
     instance = new LocalUserCreator(loginCreator, userCreator, authorizationCreator);
 
     userInfo = Maps.newHashMap();

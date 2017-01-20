@@ -119,7 +119,7 @@ public class SecurityFactory {
     return authHandler;
   }
 
-  public VreAuthorizationCreator getVreAuthorizationCreator() throws AccessNotPossibleException {
+  public VreAuthorizationCrud getVreAuthorizationCreator() throws AccessNotPossibleException {
     return getJsonBasedAuthorizer();
   }
 

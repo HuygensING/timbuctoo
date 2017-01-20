@@ -14,7 +14,7 @@ import java.util.Optional;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
 
-public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCreator {
+public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCrud {
 
   private VreAuthorizationAccess authorizationAccess;
 
