@@ -10,7 +10,7 @@ import java.util.function.Function;
 public class Interpreter {
 
   private Function<RsItem<?>, String> itemNameInterpreter = Interpreters.locItemNameInterpreter;
-  private Function<Throwable, String> errorInterpreter = Interpreters.classAndMessageErrorInterpreter;
+  private Function<Throwable, String> errorInterpreter = Interpreters.messageErrorInterpreter;
 
   public Function<RsItem<?>, String> getItemNameInterpreter() {
     return itemNameInterpreter;
