@@ -193,7 +193,8 @@ public class MoveIndicesToIsLatestVertexMigration implements DatabaseMigration {
                                                 long nodeId, GraphTraversalSource traversalS) {
     String docCaption = getGenericQuickSearchValue(wwDocumentsCollection, nodeId, traversalS);
 
-    String authors = traversalS.V(nodeId).outE("isCreatedBy").has("wwrelation_accepted", true).otherV()
+    String authors = traversalS.V(nodeId)
+      .outE("isCreatedBy").has("wwrelation_accepted", true).has("isLatest", true).otherV()
       .toStream()
       .map(v -> getGenericQuickSearchValue(wwPersonsCollection, (Long) v.id(), traversalS))
       .sorted()

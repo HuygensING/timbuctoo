@@ -91,7 +91,7 @@ public class FulltextIndexChangeListener implements ChangeListener {
     String docCaption = getGenericQuickSearchValue(wwDocumentsCollection, nodeId, traversalS);
 
     String authors = traversalS.V(nodeId)
-      .outE("isCreatedBy").has("wwrelation_accepted", true).otherV()
+      .outE("isCreatedBy").has("wwrelation_accepted", true).has("isLatest", true).otherV()
       .toStream()
       .map(v -> getGenericQuickSearchValue(wwPersonsCollection, (long) v.id(), traversalS))
       .sorted()

@@ -45,8 +45,8 @@ public class FulltextIndexChangeListenerTest {
     GraphWrapper graphWrapper = newGraph()
       .withVertex("doc", v -> v
         .withProperty("wwdocument_name", "foo")
-        .withOutgoingRelation("isCreatedBy", "authorA")
-        .withOutgoingRelation("isCreatedBy", "authorB")
+        .withOutgoingRelation("isCreatedBy", "authorA", r -> r.withAccepted("wwrelation", true).withIsLatest(true))
+        .withOutgoingRelation("isCreatedBy", "authorB", r -> r.withAccepted("wwrelation", true).withIsLatest(true))
       )
       .withVertex("authorA", v -> v
         .withProperty("wwperson_name", "authorA")
