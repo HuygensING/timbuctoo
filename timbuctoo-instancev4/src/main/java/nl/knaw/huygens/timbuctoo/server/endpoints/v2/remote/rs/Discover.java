@@ -8,7 +8,8 @@ import nl.knaw.huygens.timbuctoo.remote.rs.view.Interpreter;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.Interpreters;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.SetListBase;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.TreeBase;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -16,7 +17,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URISyntaxException;
@@ -25,6 +25,7 @@ import java.net.URISyntaxException;
 @Produces(MediaType.APPLICATION_JSON)
 public class Discover {
 
+  public static final Logger LOG = LoggerFactory.getLogger(Discover.class);
   private final ResourceSyncService resourceSyncService;
 
   public Discover(ResourceSyncService resourceSyncService) {
@@ -42,9 +43,12 @@ public class Discover {
           .withStackTrace(debug));
       return Response.ok(setListBase).build();
     } catch (URISyntaxException e) {
-      throw new WebApplicationException(ExceptionUtils.getStackTrace(e), Response.Status.BAD_REQUEST);
+      String errorMessage = String.format("Url '%s' is not valid.", url);
+      LOG.error(errorMessage, e);
+      return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
     } catch (InterruptedException e) {
-      throw new WebApplicationException(ExceptionUtils.getStackTrace(e), Response.Status.INTERNAL_SERVER_ERROR);
+      LOG.error("Cannot list sets of url '" + url + "'.", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -60,9 +64,12 @@ public class Discover {
           .withStackTrace(debug));
       return Response.ok(graphList).build();
     } catch (URISyntaxException e) {
-      throw new WebApplicationException(ExceptionUtils.getStackTrace(e), Response.Status.BAD_REQUEST);
+      String errorMessage = String.format("Url '%s' is not valid.", url);
+      LOG.error(errorMessage, e);
+      return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
     } catch (InterruptedException e) {
-      throw new WebApplicationException(ExceptionUtils.getStackTrace(e), Response.Status.INTERNAL_SERVER_ERROR);
+      LOG.error("Cannot list sets of url '" + url + "'.", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -70,16 +77,19 @@ public class Discover {
   @Path("/framework/{url}")
   @Timed
   public Response getFramework(@PathParam("url") String url,
-                           @QueryParam("debug") @DefaultValue("false") boolean debug) {
+                               @QueryParam("debug") @DefaultValue("false") boolean debug) {
     try {
       FrameworkBase frameworkBase = resourceSyncService.getFramework(url,
         new Interpreter()
           .withStackTrace(debug));
       return Response.ok(frameworkBase).build();
     } catch (URISyntaxException e) {
-      throw new WebApplicationException(ExceptionUtils.getStackTrace(e), Response.Status.BAD_REQUEST);
+      String errorMessage = String.format("Url '%s' is not valid.", url);
+      LOG.error(errorMessage, e);
+      return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
     } catch (InterruptedException e) {
-      throw new WebApplicationException(ExceptionUtils.getStackTrace(e), Response.Status.INTERNAL_SERVER_ERROR);
+      LOG.error("Cannot list sets of url '" + url + "'.", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
   }
 
@@ -87,19 +97,19 @@ public class Discover {
   @Path("/tree/{url}")
   @Timed
   public Response getTree(@PathParam("url") String url,
-                               @QueryParam("debug") @DefaultValue("false") boolean debug) {
+                          @QueryParam("debug") @DefaultValue("false") boolean debug) {
     try {
       TreeBase treeBase = resourceSyncService.getTree(url,
         new Interpreter()
           .withStackTrace(debug));
       return Response.ok(treeBase).build();
     } catch (URISyntaxException e) {
-      throw new WebApplicationException(ExceptionUtils.getStackTrace(e), Response.Status.BAD_REQUEST);
+      String errorMessage = String.format("Url '%s' is not valid.", url);
+      LOG.error(errorMessage, e);
+      return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
     } catch (InterruptedException e) {
-      throw new WebApplicationException(ExceptionUtils.getStackTrace(e), Response.Status.INTERNAL_SERVER_ERROR);
+      LOG.error("Cannot list sets of url '" + url + "'.", e);
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
     }
   }
-
 }
-
-
