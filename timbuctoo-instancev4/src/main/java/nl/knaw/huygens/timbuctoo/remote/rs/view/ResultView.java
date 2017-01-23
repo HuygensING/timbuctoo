@@ -41,7 +41,7 @@ public class ResultView {
     statusCode = result.getStatusCode();
 
     contentType = result.getContent()
-      .map(o -> o.getClass().getName())
+      .map(o -> o.getClass().getSimpleName())
       .orElse("(no content)");
 
     Object content = result.getContent().orElse(null);

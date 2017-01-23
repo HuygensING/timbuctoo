@@ -103,10 +103,10 @@ public class Expedition {
   public ResultIndex exploreAndMerge(String url) throws URISyntaxException, InterruptedException {
     // not sure how/whether this can be done on the stream of explore..
     List<ResultIndex> indexes = explore(url);
-    ResultIndex resultIndex = indexes.size() > 0 ? indexes.get(0) : new ResultIndex();
-    for (int i = 1; i < indexes.size(); i++) {
-      resultIndex.merge(indexes.get(i));
-    }
+
+    ResultIndex resultIndex = new ResultIndex();
+    indexes.forEach(ri -> resultIndex.merge(ri));
+
     return resultIndex;
   }
 

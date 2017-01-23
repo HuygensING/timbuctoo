@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 /**
  *  Base class for viewing a ResultIndex as a set list.
  */
-@JsonTypeInfo(include = JsonTypeInfo.As.WRAPPER_OBJECT, use = JsonTypeInfo.Id.CLASS)
+@JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.NAME)
 public class SetListBase {
 
   private List<SetItemView> setDetails;
