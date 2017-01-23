@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.EntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableCreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
@@ -162,7 +163,8 @@ public class TimbuctooActions implements AutoCloseable {
     return dataStoreOperations.getCollection(collection, start, rows, withRelations, entityProps, relationProps);
   }
 
-  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, String keywordType, int limit) {
+  public List<QuickSearchResult> doQuickSearch(Collection collection, QuickSearch quickSearch, String keywordType,
+                                               int limit) {
     if (collection.getAbstractType().equals("keyword")) {
       return dataStoreOperations.doKeywordQuickSearch(collection, keywordType, quickSearch, limit);
     }

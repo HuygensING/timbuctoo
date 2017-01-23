@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -18,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
@@ -42,6 +44,9 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopProperty
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
@@ -51,6 +56,10 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
 import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
+import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
+import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentDisplayNameDescriptor;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -90,6 +99,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
@@ -151,6 +161,20 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final boolean ownTransaction;
   private final Map<String, Vertex> defaultCollectionVerticesCache = new HashMap<>();
   private final Map<String, Vertex> predicateValueTypeVerticesCache = new HashMap<>();
+  private final PropertyDescriptorFactory propertyDescriptorFactory =
+    new PropertyDescriptorFactory(new PropertyParserFactory());
+  private final Map<String, PropertyDescriptor> customDescriptors = ImmutableMap.<String, PropertyDescriptor>builder()
+    .put("wwdocuments", new WwDocumentDisplayNameDescriptor())
+    .put("wwpersons", propertyDescriptorFactory.getComposite(
+      propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
+      propertyDescriptorFactory.getLocal("wwperson_tempName",TempName.class))
+    )
+    .put("wwkeywords", propertyDescriptorFactory.getLocal("wwkeyword_value", String.class))
+    .put("wwlanguages", propertyDescriptorFactory.getLocal("wwlanguage_name", String.class))
+    .put("wwlocations",propertyDescriptorFactory.getLocal("names", LocationNames.class))
+    .put("wwcollectives", propertyDescriptorFactory.getLocal("wwcollective_name", String.class))
+    .build();
+
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
@@ -609,34 +633,46 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
-    GraphTraversal<Vertex, Vertex> result = indexHandler.findByQuickSearch(collection, quickSearch);
-
-    return asReadEntityList(collection, result.limit(limit));
+  public List<QuickSearchResult> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
+    return asQuickSearchResult(
+      collection,
+      indexHandler.findByQuickSearch(collection, quickSearch).limit(limit).toStream()
+    );
   }
 
   @Override
-  public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
-                                               int limit) {
-    GraphTraversal<Vertex, Vertex> result =
-      indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType);
-
-    return asReadEntityList(collection, result.limit(limit));
+  public List<QuickSearchResult> doKeywordQuickSearch(Collection collection, String keywordType,
+                                                      QuickSearch quickSearch, int limit) {
+    return asQuickSearchResult(
+      collection,
+      indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType).limit(limit).toStream()
+    );
   }
 
-  private List<ReadEntity> asReadEntityList(Collection collection, GraphTraversal<Vertex, Vertex> result) {
-    TinkerPopToEntityMapper tinkerPopToEntityMapper = new TinkerPopToEntityMapper(
-      collection,
-      traversal,
-      mappings,
-      (traversalSource, vre) -> {
-
-      },
-      (entity1, entityVertex, target, relationRef) -> {
-
-      });
-
-    return result.map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex.get(), false)).toList();
+  private List<QuickSearchResult> asQuickSearchResult(Collection collection, Stream<Vertex> result) {
+    String collectionName = collection.getCollectionName();
+    return result
+      .map(vertex -> {
+        //FIXME: this is special case handling for women writers where the autocomplete labels are different
+        //from the labels used elsewhere. Either we make this available everywhere (and configure this using the VRE)
+        //or we remove it from women writers
+        String displayName;
+        if (customDescriptors.containsKey(collectionName)) {
+          displayName = customDescriptors.get(collectionName).get(vertex);
+        } else {
+          displayName = (String) traversal.V(vertex.id()).union(collection.getDisplayName().traversalRaw()).next()
+            .getOrElseGet(e -> {
+              LOG.error("Displayname generation for vertix with id " + vertex.id() + " failed", e);
+              return "#Error#";
+            });
+        }
+        return QuickSearchResult.create(
+          displayName,
+          UUID.fromString(vertex.value("tim_id")),
+          vertex.value("rev")
+        );
+      })
+      .collect(toList());
   }
 
   @Override

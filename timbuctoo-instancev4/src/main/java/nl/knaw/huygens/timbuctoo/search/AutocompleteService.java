@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
@@ -32,10 +33,15 @@ public class AutocompleteService {
     int limit = query.isPresent() ? 50 : 1000;
     String queryString = query.orElse(null);
     QuickSearch quickSearch = QuickSearch.fromQueryString(queryString);
-    List<ReadEntity> results = timbuctooActions.doQuickSearch(collection, quickSearch, keywordType.orElse(null), limit);
+    List<QuickSearchResult> results = timbuctooActions.doQuickSearch(
+      collection,
+      quickSearch,
+      keywordType.orElse(null),
+      limit
+    );
 
     return jsnA(results.stream().map(entity -> jsnO(
-      "value", jsn(entity.getDisplayName()),
+      "value", jsn(entity.getIndexedValue()),
       "key", jsn(autoCompleteUrlFor.apply(collectionName, entity.getId(), entity.getRev()).toString())
     )));
   }

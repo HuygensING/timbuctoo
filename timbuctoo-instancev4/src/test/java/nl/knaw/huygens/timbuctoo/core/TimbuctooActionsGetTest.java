@@ -1,14 +1,12 @@
 package nl.knaw.huygens.timbuctoo.core;
 
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.core.DataStoreOperations;
-import nl.knaw.huygens.timbuctoo.core.NotFoundException;
-import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
-import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -93,27 +91,27 @@ public class TimbuctooActionsGetTest {
 
   @Test
   public void doQuickSearchReturnsTheValueOfDataStoreOperations() {
-    List<ReadEntity> entities = Lists.newArrayList();
+    List<QuickSearchResult> entities = Lists.newArrayList();
     QuickSearch query = QuickSearch.fromQueryString("");
     Collection collection = collWithCollectionName("coll");
     int limit = 1;
     when(dataStoreOperations.doQuickSearch(collection, query, limit)).thenReturn(entities);
 
-    List<ReadEntity> searchResult = instance.doQuickSearch(collection, query, null, limit);
+    List<QuickSearchResult> searchResult = instance.doQuickSearch(collection, query, null, limit);
 
     assertThat(searchResult, is(sameInstance(entities)));
   }
 
   @Test
   public void doQuickSearchCallsDoKeywordQuickSearchWhenTheCollectionIsAKeywordCollection() {
-    List<ReadEntity> entities = Lists.newArrayList();
+    List<QuickSearchResult> entities = Lists.newArrayList();
     QuickSearch query = QuickSearch.fromQueryString("");
     String keywordType = "";
     Collection collection = keywordCollWithCollectionName("coll");
     int limit = 1;
     when(dataStoreOperations.doKeywordQuickSearch(collection, keywordType, query, limit)).thenReturn(entities);
 
-    List<ReadEntity> searchResult = instance.doQuickSearch(collection, query, keywordType, limit);
+    List<QuickSearchResult> searchResult = instance.doQuickSearch(collection, query, keywordType, limit);
 
     assertThat(searchResult, is(sameInstance(entities)));
   }

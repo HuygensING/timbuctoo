@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
@@ -2245,6 +2246,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id1)
         .withType("thing")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testthing_displayName", "matching")
         .isLatest(true)
         .withLabel("testthing")
@@ -2253,6 +2255,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id2)
         .withType("thing")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testthing_displayName", "also matching")
         .isLatest(true)
         .withLabel("testthing")
@@ -2261,6 +2264,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id3)
         .withType("thing")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testthing_displayName", "different name")
         .isLatest(true)
         .withLabel("testthing")
@@ -2275,7 +2279,7 @@ public class TinkerPopOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    List<ReadEntity> result = instance.doQuickSearch(collection, quickSearch, 3);
+    List<QuickSearchResult> result = instance.doQuickSearch(collection, quickSearch, 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), containsInAnyOrder(id1, id2));
 
@@ -2294,6 +2298,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id1)
         .withType("thing")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testthing_displayName", "matching")
         .isLatest(true)
         .withLabel("testthing")
@@ -2302,6 +2307,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id2)
         .withType("thing")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testthing_displayName", "also matching")
         .isLatest(true)
         .withLabel("testthing")
@@ -2310,6 +2316,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id3)
         .withType("thing")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testthing_displayName", "different name")
         .isLatest(true)
         .withLabel("testthing")
@@ -2324,7 +2331,7 @@ public class TinkerPopOperationsTest {
     Collection collection = vres.getCollection("testthings").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    List<ReadEntity> result = instance.doQuickSearch(collection, quickSearch, 1);
+    List<QuickSearchResult> result = instance.doQuickSearch(collection, quickSearch, 1);
 
     assertThat(result, hasSize(1));
   }
@@ -2342,6 +2349,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id1)
         .withType("keyword")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testkeyword_displayName", "matching")
         .isLatest(true)
         .withProperty("keyword_type", keywordType)
@@ -2351,6 +2359,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id2)
         .withType("keyword")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testkeyword_displayName", "also matching")
         .isLatest(true)
         .withProperty("keyword_type", keywordType)
@@ -2360,6 +2369,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id3)
         .withType("keyword")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testkeyword_displayName", "different name")
         .isLatest(true)
         .withProperty("keyword_type", keywordType)
@@ -2375,7 +2385,7 @@ public class TinkerPopOperationsTest {
     Collection collection = vres.getCollection("testkeywords").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    List<ReadEntity> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 3);
+    List<QuickSearchResult> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 3);
 
     assertThat(result.stream().map(e -> e.getId()).collect(toList()), contains(id1, id2));
     verify(indexHandler).findKeywordsByQuickSearch(collection, quickSearch, keywordType);
@@ -2394,6 +2404,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id1)
         .withType("keyword")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testkeyword_displayName", "matching")
         .isLatest(true)
         .withProperty("keyword_type", keywordType)
@@ -2403,6 +2414,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id2)
         .withType("keyword")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testkeyword_displayName", "also matching")
         .isLatest(true)
         .withProperty("keyword_type", keywordType)
@@ -2412,6 +2424,7 @@ public class TinkerPopOperationsTest {
         .withTimId(id3)
         .withType("keyword")
         .withVre("test")
+        .withProperty("rev", 1)
         .withProperty("testkeyword_displayName", "different name")
         .isLatest(true)
         .withProperty("keyword_type", keywordType)
@@ -2427,7 +2440,7 @@ public class TinkerPopOperationsTest {
     Collection collection = vres.getCollection("testkeywords").get();
     QuickSearch quickSearch = QuickSearch.fromQueryString("matching");
 
-    List<ReadEntity> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 1);
+    List<QuickSearchResult> result = instance.doKeywordQuickSearch(collection, keywordType, quickSearch, 1);
 
     assertThat(result, hasSize(1));
   }

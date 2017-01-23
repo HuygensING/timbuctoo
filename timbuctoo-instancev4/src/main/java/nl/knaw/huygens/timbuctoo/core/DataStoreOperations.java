@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.CreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
@@ -58,9 +59,9 @@ public interface DataStoreOperations extends AutoCloseable {
                                        CustomEntityProperties customEntityProperties,
                                        CustomRelationProperties customRelationProperties);
 
-  List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit);
+  List<QuickSearchResult> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit);
 
-  List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
+  List<QuickSearchResult> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
                                         int limit);
 
   /**
