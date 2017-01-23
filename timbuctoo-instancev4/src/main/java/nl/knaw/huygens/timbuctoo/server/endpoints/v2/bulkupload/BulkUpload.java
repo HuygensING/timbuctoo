@@ -30,7 +30,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.MAPPING_EXECUTION;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.UPLOADING;
@@ -175,7 +174,6 @@ public class BulkUpload {
                                               final String vreLabel, final String vreName,
                                               final InputStream inputStream) throws IOException {
     final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
-    final AtomicInteger writeErrors = new AtomicInteger(0);
 
     File tempFile = File.createTempFile(fileDetails.getName(), null, null);
     try (FileOutputStream fos = new FileOutputStream(tempFile)) {
@@ -184,22 +182,23 @@ public class BulkUpload {
 
     new Thread() {
       public void run() {
+        final int[] writeErrors = {0};
         try {
           uploadService.saveToDb(vreName, tempFile, fileDetails.getFileName(), vreLabel, msg -> {
             try {
               //write json objects
-              if (writeErrors.get() < 5) {
+              if (writeErrors[0] < 5) {
                 output.write(msg + "\n");
               }
             } catch (IOException e) {
               LOG.error("Could not write to output stream", e);
-              writeErrors.incrementAndGet();
+              writeErrors[0]++;
             }
           });
         } catch (InvalidFileException | IOException e) {
           LOG.error("Something went wrong while importing a file", e);
           try {
-            if (writeErrors.get() < 5) {
+            if (writeErrors[0] < 5) {
               output.write("failure: " + e.getMessage());
             }
           } catch (IOException outputError) {
