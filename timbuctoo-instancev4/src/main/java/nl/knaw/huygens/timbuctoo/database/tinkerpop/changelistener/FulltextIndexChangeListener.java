@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.IndexHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.process.traversal.Traverser;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
+import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -53,12 +54,21 @@ public class FulltextIndexChangeListener implements ChangeListener {
 
   @Override
   public void onCreateEdge(Collection collection, Edge edge) {
-
+    handleRelationChange(collection, edge);
   }
 
   @Override
   public void onEdgeUpdate(Collection collection, Edge oldEdge, Edge newEdge) {
+    handleRelationChange(collection, newEdge);
+  }
 
+  private void handleRelationChange(Collection collection, Edge edge) {
+    if ("isCreatedBy".equals(edge.label()) && "wwrelation".equals(collection.getEntityTypeName())) {
+      Vertex document = edge.outVertex();
+      Vertex oldDocument = document.vertices(Direction.IN, "VERSION_OF").next();
+      Collection wwdocuments = collection.getVre().getCollectionForTypeName("wwdocument");
+      handleChange(wwdocuments, document, oldDocument);
+    }
   }
 
   private void handleChange(Collection collection, Vertex vertex, Vertex oldVertex) {
