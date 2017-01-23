@@ -178,8 +178,9 @@ public class BulkUpload {
     final AtomicInteger writeErrors = new AtomicInteger(0);
 
     File tempFile = File.createTempFile(fileDetails.getName(), null, null);
-    FileOutputStream fos = new FileOutputStream(tempFile);
-    copy(inputStream, fos);
+    try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+      copy(inputStream, fos);
+    }
 
     new Thread() {
       public void run() {
