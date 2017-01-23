@@ -44,6 +44,7 @@ import nl.knaw.huygens.timbuctoo.server.databasemigration.IndexRelationsById;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.PrepareForBiaImportMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.RemoveSearchResultsMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.ScaffoldMigrator;
 import nl.knaw.huygens.timbuctoo.server.endpoints.RootEndpoint;
 import nl.knaw.huygens.timbuctoo.server.endpoints.legacy.LegacyIndexRedirect;
@@ -213,6 +214,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("prepare-for-bia-import-migration", new PrepareForBiaImportMigration(vres, graphManager));
     migrations.put("give-existing-relationtypes-rdf-uris", new RelationTypeRdfUriMigration());
     migrations.put("index-relations-by-id", new IndexRelationsById());
+    migrations.put("remove-search-results", new RemoveSearchResultsMigration());
 
     HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
       .using(configuration.getHttpClientConfiguration());
