@@ -706,13 +706,13 @@ public class TinkerPopOperations implements DataStoreOperations {
     setModified(entityVertex, updateEntity.getModified());
     entityVertex.property("pid").remove();
 
-    Optional<Vertex> prevVertex = getPrevVertex(collection, entityVertex);
-    listener.onPropertyUpdate(collection, prevVertex, entityVertex);
+    Vertex duplicate = duplicateVertex(traversal, entityVertex, indexHandler);
+
+    listener.onPropertyUpdate(collection, Optional.of(entityVertex), duplicate);
     if (wasAddedToCollection) {
-      listener.onAddToCollection(collection, prevVertex, entityVertex);
+      listener.onAddToCollection(collection, Optional.of(entityVertex), duplicate);
     }
 
-    duplicateVertex(traversal, entityVertex, indexHandler);
     return newRev;
   }
 
@@ -807,11 +807,12 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     setModified(entity, modified);
     entity.property("pid").remove();
-    if (wasRemoved) {
-      listener.onRemoveFromCollection(collection, getPrevVertex(collection, entity), entity);
-    }
 
-    duplicateVertex(traversal, entity, indexHandler);
+    Vertex duplicate = duplicateVertex(traversal, entity, indexHandler);
+
+    if (wasRemoved) {
+      listener.onRemoveFromCollection(collection, Optional.of(entity), duplicate);
+    }
 
     return newRev;
   }
@@ -1061,17 +1062,6 @@ public class TinkerPopOperations implements DataStoreOperations {
 
       return latestState.V().has(T.label, labels);
     }
-  }
-
-  private Optional<Vertex> getPrevVertex(Collection collection, Vertex entity) {
-    final Iterator<Edge> prevEdges = entity.edges(Direction.IN, "VERSION_OF");
-    Optional<Vertex> old = Optional.empty();
-    if (prevEdges.hasNext()) {
-      old = Optional.of(prevEdges.next().outVertex());
-    } else {
-      LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
-    }
-    return old;
   }
 
   private void saveVres(Vres mappings) {
