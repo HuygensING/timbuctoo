@@ -221,20 +221,23 @@ public class WwDocumentSearchDescription extends AbstractSearchDescription imple
     dataDescriptors.put("authorGender", propertyDescriptorFactory.getDerived(
             "isCreatedBy",
             "wwperson_gender",
+            "wwrelation_accepted",
             Gender.class));
     dataDescriptors.put("documentType", propertyDescriptorFactory
             .getLocal("wwdocument_documentType", DocumentType.class));
     dataDescriptors.put("modified_date", propertyDescriptorFactory
             .getLocal("modified", propertyParserFactory.getParser(Change.class)));
     dataDescriptors.put("genre", propertyDescriptorFactory
-            .getDerived("hasGenre", "wwkeyword_value", String.class));
+            .getDerived("hasGenre", "wwkeyword_value", "wwrelation_accepted", String.class));
     dataDescriptors.put("publishLocation", propertyDescriptorFactory.getDerived(
             "hasPublishLocation",
             "names",
+            "wwrelation_accepted",
             LocationNames.class));
     dataDescriptors.put("language", propertyDescriptorFactory.getDerived(
             "hasWorkLanguage",
             "wwlanguage_name",
+            "wwrelation_accepted",
             String.class));
 
     return dataDescriptors;

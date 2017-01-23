@@ -21,7 +21,7 @@ public class RelatedPropertyDescriptorTest {
   @Test
   public void getReturnsNullIfTheVertexDoesNotHaveRelationOfRelationName() {
     RelatedPropertyDescriptor instance =
-      new RelatedPropertyDescriptor("relationName", "propertyName", mock(PropertyParser.class));
+      new RelatedPropertyDescriptor("relationName", "propertyName", "", mock(PropertyParser.class));
     Vertex vertex = vertex().build();
 
     String actual = instance.get(vertex);
@@ -35,7 +35,7 @@ public class RelatedPropertyDescriptorTest {
     given(parser.parse(anyString())).willReturn("parsedValue");
     String propertyName = "propertyName";
     String relationName = "relationName";
-    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, parser);
+    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, "", parser);
     String derivedPropValue = "propValue";
     Vertex vertex = vertex()
       .withOutgoingRelation(relationName, vertex().withProperty(propertyName, derivedPropValue).build())
@@ -53,7 +53,7 @@ public class RelatedPropertyDescriptorTest {
     given((parser.parse(anyString()))).willReturn("parsed");
     String propertyName = "propertyName";
     String relationName = "relationName";
-    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, parser);
+    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, "", parser);
     String derivedPropValue = "val";
     Vertex vertex = vertex()
       .withOutgoingRelation(relationName, vertex().withProperty(propertyName, derivedPropValue).build())
@@ -72,7 +72,7 @@ public class RelatedPropertyDescriptorTest {
     given((parser.parse(anyString()))).willAnswer(invocationOnMock -> invocationOnMock.getArguments()[0]);
     String propertyName = "propertyName";
     String relationName = "relationName";
-    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, parser);
+    RelatedPropertyDescriptor instance = new RelatedPropertyDescriptor(relationName, propertyName, "", parser);
     Vertex vertex = vertex()
       .withOutgoingRelation(relationName, vertex().withProperty(propertyName, "def").build())
       .withOutgoingRelation(relationName, vertex().withProperty(propertyName, "abc").build())

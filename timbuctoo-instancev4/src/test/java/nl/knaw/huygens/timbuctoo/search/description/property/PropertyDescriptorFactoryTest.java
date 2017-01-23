@@ -56,17 +56,8 @@ public class PropertyDescriptorFactoryTest {
   }
 
   @Test
-  public void getDerivedReturnsADerivedPropertyDescriptor() {
-    PropertyParser parser = mock(PropertyParser.class);
-
-    PropertyDescriptor descriptor = instance.getDerived("relationName", "propertyName", parser);
-
-    assertThat(descriptor, is(instanceOf(RelatedPropertyDescriptor.class)));
-  }
-
-  @Test
   public void getDerivedLetsThePropertyParserFactoryCreateAPropertyParser() {
-    instance.getDerived("relationName", "propertyName", String.class);
+    instance.getDerived("relationName", "propertyName", "accepted", String.class);
 
     verify(parserFactory).getParser(String.class);
   }
@@ -75,7 +66,13 @@ public class PropertyDescriptorFactoryTest {
   public void getDerivedWithSeparatorReturnsADerivedPropertyDescriptor() {
     PropertyParser parser = mock(PropertyParser.class);
 
-    PropertyDescriptor descriptor = instance.getDerivedWithSeparator("relationName", "propertyName", parser, "--");
+    PropertyDescriptor descriptor = instance.getDerivedWithSeparator(
+      "relationName",
+      "propertyName",
+      parser,
+      "accepted",
+      "--"
+    );
 
     assertThat(descriptor, is(instanceOf(RelatedPropertyDescriptor.class)));
   }

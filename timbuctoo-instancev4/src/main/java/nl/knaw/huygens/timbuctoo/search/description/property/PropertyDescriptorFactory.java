@@ -35,18 +35,20 @@ public class PropertyDescriptorFactory {
     return new CompositePropertyDescriptor(preferred, backUp);
   }
 
-  public PropertyDescriptor getDerived(String relationName, String propertyName, PropertyParser parser) {
-    return new RelatedPropertyDescriptor(relationName, propertyName, parser);
+  private PropertyDescriptor getDerived(String relationName, String propertyName, String acceptedPropertyName,
+                                        PropertyParser parser) {
+    return new RelatedPropertyDescriptor(relationName, propertyName, acceptedPropertyName, parser);
   }
 
-  public PropertyDescriptor getDerived(String relationName, String propertyName, Class<?> typeToParse) {
-    return this.getDerived(relationName, propertyName, parserFactory.getParser(typeToParse));
+  public PropertyDescriptor getDerived(String relationName, String propertyName, String acceptedPropertyName,
+                                       Class<?> typeToParse) {
+    return this.getDerived(relationName, propertyName, acceptedPropertyName, parserFactory.getParser(typeToParse));
 
   }
 
   public PropertyDescriptor getDerivedWithSeparator(String relationName, String propertyName, PropertyParser parser,
-                                                    String separator) {
-    return new RelatedPropertyDescriptor(relationName, propertyName, parser, separator);
+                                                    String acceptedPropertyName, String separator) {
+    return new RelatedPropertyDescriptor(relationName, propertyName, parser, acceptedPropertyName, separator);
   }
 
   public PropertyDescriptor getAppender(PropertyDescriptor first, PropertyDescriptor second, String separator) {
