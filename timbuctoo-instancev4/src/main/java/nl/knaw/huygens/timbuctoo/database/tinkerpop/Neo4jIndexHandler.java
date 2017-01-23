@@ -30,7 +30,7 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
 
 public class Neo4jIndexHandler implements IndexHandler {
-  private static final String QUICK_SEARCH = "quickSearch";
+  private static final String QUICK_SEARCH_PROP_NAME = "quickSearch";
   private static final String ID_INDEX = "idIndex";
   private static final String TIM_ID = "tim_id";
   private static final Logger LOG = LoggerFactory.getLogger(Neo4jIndexHandler.class);
@@ -61,7 +61,7 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {
     Index<Node> index = getQuickSearchIndex(collection);
-    IndexHits<Node> hits = index.query(QUICK_SEARCH, createQuery(quickSearch));
+    IndexHits<Node> hits = index.query(QUICK_SEARCH_PROP_NAME, createQuery(quickSearch));
     List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
 
     return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal().V(ids);
@@ -85,7 +85,7 @@ public class Neo4jIndexHandler implements IndexHandler {
     // make sure only this field is removed from the index.
     final Optional<Node> node = vertexToNode(vertex);
     if (node.isPresent()) {
-      index.remove(node.get(), QUICK_SEARCH);
+      index.remove(node.get(), QUICK_SEARCH_PROP_NAME);
     }
   }
 
@@ -98,7 +98,7 @@ public class Neo4jIndexHandler implements IndexHandler {
 
     Index<Node> index = getQuickSearchIndex(collection);
 
-    vertexToNode(vertex).ifPresent(node -> index.add(node, QUICK_SEARCH, quickSearchValue));
+    vertexToNode(vertex).ifPresent(node -> index.add(node, QUICK_SEARCH_PROP_NAME, quickSearchValue));
   }
 
   @Override
