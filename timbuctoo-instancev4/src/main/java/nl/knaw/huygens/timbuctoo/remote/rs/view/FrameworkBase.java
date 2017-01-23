@@ -27,7 +27,6 @@ public class FrameworkBase {
     init(resultIndex, interpreter);
   }
 
-  @SuppressWarnings("unchecked")
   private void init(ResultIndex resultIndex, Interpreter interpreter) {
     ResultIndexPivot pivot = new ResultIndexPivot(resultIndex);
 
