@@ -44,7 +44,7 @@ public class Neo4jIndexHandler implements IndexHandler {
   //=====================quick search index=====================
   @Override
   public boolean hasQuickSearchIndexFor(Collection collection) {
-    return indexManager().existsForNodes(getIndexName(collection));
+    return indexManager().existsForNodes(getQuicksearchIndexName(collection));
   }
 
   @Override
@@ -70,7 +70,7 @@ public class Neo4jIndexHandler implements IndexHandler {
   private Index<Node> getQuickSearchIndex(Collection collection) {
     // Add the config below, to make sure the index is case insensitive.
     Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
-    return indexManager().forNodes(getIndexName(collection), indexConfig);
+    return indexManager().forNodes(getQuicksearchIndexName(collection), indexConfig);
   }
 
   private Object createQuery(QuickSearch quickSearch) {
@@ -105,6 +105,10 @@ public class Neo4jIndexHandler implements IndexHandler {
   public void deleteQuickSearchIndex(Collection collection) {
     Index<Node> index = getQuickSearchIndex(collection);
     index.delete();
+  }
+
+  private String getQuicksearchIndexName(Collection collection) {
+    return collection.getCollectionName();
   }
 
   //=====================tim_id index=====================
@@ -236,10 +240,6 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   private IndexManager indexManager() {
     return graphDatabase().index();
-  }
-
-  private String getIndexName(Collection collection) {
-    return collection.getCollectionName();
   }
 
   // In edge cases it can occur that the actual neo4j node is already deleted, while the instance of Vertex
