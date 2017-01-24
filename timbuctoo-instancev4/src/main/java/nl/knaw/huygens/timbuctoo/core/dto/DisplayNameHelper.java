@@ -28,16 +28,12 @@ public class DisplayNameHelper {
         Try<JsonNode> traversalResult = displayNameGetter.next();
         if (!traversalResult.isSuccess()) {
           LOG.error(databaseInvariant, "Retrieving displayname failed", traversalResult.getCause());
+        } else if (traversalResult.get() == null) {
+          LOG.error(databaseInvariant, "Displayname was null");
+        } else if (!traversalResult.get().isTextual()) {
+          LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
         } else {
-          if (traversalResult.get() == null) {
-            LOG.error(databaseInvariant, "Displayname was null");
-          } else {
-            if (!traversalResult.get().isTextual()) {
-              LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
-            } else {
-              return Optional.of(traversalResult.get().asText());
-            }
-          }
+          return Optional.of(traversalResult.get().asText());
         }
       } else {
         LOG.error(databaseInvariant, "Displayname traversal resulted in no results: " + displayNameGetter);
