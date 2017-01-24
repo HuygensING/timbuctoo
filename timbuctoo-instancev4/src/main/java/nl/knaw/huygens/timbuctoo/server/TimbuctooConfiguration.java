@@ -76,6 +76,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @NotNull
   private HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration();
 
+  private String solrIndexingUrl;
+  private boolean solrIndexTriggerEnabled;
+
   public PersistenceManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
   }
@@ -192,4 +195,11 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   }
 
 
+  public String getSolrIndexingUrl() {
+    return solrIndexingUrl;
+  }
+
+  public boolean getSolrIndexTriggerEnabled() {
+    return solrIndexTriggerEnabled;
+  }
 }
