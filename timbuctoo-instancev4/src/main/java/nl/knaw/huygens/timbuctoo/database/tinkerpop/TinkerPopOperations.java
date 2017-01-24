@@ -777,6 +777,10 @@ public class TinkerPopOperations implements DataStoreOperations {
     }
 
     Edge origEdge = origEdgeOpt.get();
+    if (!origEdge.property("isLatest").isPresent() || !(origEdge.value("isLatest") instanceof Boolean) ||
+      !origEdge.<Boolean>value("isLatest")) {
+      LOG.error("edge {} is not the latest edge, or it has no valid isLatest property.", origEdge.id());
+    }
 
     //FIXME: throw a distinct Exception when the client tries to save a relation with wrong source, target or type.
 
