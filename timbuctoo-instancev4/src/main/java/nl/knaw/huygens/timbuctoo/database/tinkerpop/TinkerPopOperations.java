@@ -913,23 +913,17 @@ public class TinkerPopOperations implements DataStoreOperations {
       .hasLabel(Vre.DATABASE_LABEL)
       .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
 
-
     if (vreT.hasNext()) {
-      final Vre vre = loadVres().getVre(vreName);
       final Vertex vreV = vreT.next();
 
-      vre.getCollections().forEach((collectionName, collection) -> {
-        indexHandler.deleteQuickSearchIndex(collection);
-      });
-
-      removeAllEntityIndexEntries(vre);
       removeAllRawCollections(vreV);
       removeAllCollectionsAndEntities(vreV);
+      //indices are automatically kept in sync
+      //edges are also automatically removed
       vreV.remove();
 
       loadVres().reload();
     }
-
   }
 
   private void removeAllRawCollections(Vertex vreV) {
@@ -942,18 +936,6 @@ public class TinkerPopOperations implements DataStoreOperations {
              )
              .drop()
              .toList();//force traversal and thus side-effects
-  }
-
-  private void removeAllEntityIndexEntries(Vre vre) {
-    traversal
-      .V().hasLabel(Vre.DATABASE_LABEL).has(VRE_NAME_PROPERTY_NAME, vre.getVreName())
-      .out(HAS_COLLECTION_RELATION_NAME)
-      .out(HAS_ENTITY_NODE_RELATION_NAME)
-      .out(HAS_ENTITY_RELATION_NAME)
-      .forEachRemaining(vertex -> {
-        indexHandler.removeFromIdIndex(vertex); // remove entities from id index
-        indexHandler.removeFromRdfIndex(vre, vertex); // remove entities from rdf index
-      });
   }
 
   private void removeAllCollectionsAndEntities(Vertex vreV) {
