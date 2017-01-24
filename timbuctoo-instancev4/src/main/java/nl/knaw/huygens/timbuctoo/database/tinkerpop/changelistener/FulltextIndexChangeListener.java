@@ -72,18 +72,29 @@ public class FulltextIndexChangeListener implements ChangeListener {
   }
 
   private void handleChange(Collection collection, Vertex vertex, Vertex oldVertex) {
-    final String displayName;
     long vertexId = (long) vertex.id();
     GraphTraversalSource traversalSource = graphWrapper.getGraph().traversal();
 
     if (collection.getEntityTypeName().equals("wwdocument")) {
+      final String displayName;
       Collection wwPersonsCollection = collection.getVre().getCollectionForTypeName("wwperson");
       displayName = getWwDocumentsQuickSearchValue(collection, wwPersonsCollection, vertexId, traversalSource);
+      indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex, oldVertex);
+    } else if (collection.getEntityTypeName().equals("wwperson")) {
+      Collection wwDocumentCollection = collection.getVre().getCollectionForTypeName("wwdocument");
+      vertex.vertices(Direction.OUT, "isCreatedBy").forEachRemaining(doc -> {
+        final String displayName;
+        displayName = getWwDocumentsQuickSearchValue(wwDocumentCollection, collection, vertexId, traversalSource);
+        indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex, oldVertex);
+      });
+      String displayName = getGenericQuickSearchValue(collection, vertexId, traversalSource);
+      indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex, oldVertex);
     } else {
+      final String displayName;
       displayName = getGenericQuickSearchValue(collection, vertexId, traversalSource);
+      indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex, oldVertex);
     }
 
-    indexHandler.upsertIntoQuickSearchIndex(collection, displayName, vertex, oldVertex);
   }
 
   private String getWwDocumentsQuickSearchValue(Collection wwDocumentsCollection, Collection wwPersonsCollection,
