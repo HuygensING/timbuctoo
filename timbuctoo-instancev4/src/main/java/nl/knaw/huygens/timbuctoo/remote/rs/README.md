@@ -17,10 +17,12 @@ The ResourceSync Framework is a well-documented protocol. According to the proto
 CLARIAH adds to the protocol a convention about the communication of the graph iri's available at a remote source. At this point this is realized by translating the graph iri in base64 and taking this translation as the directory name for the capability list. At the client-side, also called destination, this directory name has to be decoded in order to get the graph iri. Other, more sophisticated conventions to get name and for instance a description of a remote graph across can be easily thought of. For instance by means of the 'discribedBy' relation of a link-element in a capabilitylist. The code anticipates changes in these conventions and enables adaptation to conventions with a minimum footprint.
 
 ### Steps to test the API
-- Start the complete set of docker images as described in https://github.com/CLARIAH/virtuoso-quad-log/blob/master/DEPLOY.md with `docker-compose-example-setup.yml`
+- Start the complete set of docker images as described in https://github.com/CLARIAH/virtuoso-quad-log/blob/master/DEPLOY.md with `docker-compose-example-setup.yml`.
+  - The `docker-compose-example-setup.yml` uses `HTTP_SERVER_URL` `http://192.168.99.100:8085`, this is the ip used by older versions of docker for mac.
+  - When you use docker on another system or use a more recent version of docker change the `HTTP_SERVER_URL` `http://localhost:8085`.
 - Start Timbuctoo
 
-The following urls should yield:
+The following urls should yield (if the `HTTP_SERVER_URL` was changed for the test api swap `192.168.99.100` for `localhost` in the examples below):
 - http://localhost:8080/v2.1/remote/rs/discover/listgraphs/http%3A%2F%2F192.168.99.100%3A8085%2F  - list the graph iri's at the remote site
 - http://localhost:8080/v2.1/remote/rs/discover/listsets/http%3A%2F%2F192.168.99.100%3A8085%2F  - same as previous, agnostic to base64-convention
 - http://localhost:8080/v2.1/remote/rs/discover/framework/http%3A%2F%2F192.168.99.100%3A8085%2F  - flat representation of the ResourceSync Framework documents
