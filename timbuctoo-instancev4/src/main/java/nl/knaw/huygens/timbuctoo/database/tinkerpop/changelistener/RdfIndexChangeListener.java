@@ -20,15 +20,14 @@ public class RdfIndexChangeListener implements ChangeListener {
   @Override
   public void onCreate(Collection collection, Vertex vertex) {
     getProp(vertex, "rdfUri", String.class).ifPresent(uri -> {
-      indexHandler.addVertexToRdfIndex(collection.getVre(), uri, vertex);
+      indexHandler.upsertIntoRdfIndex(collection.getVre(), uri, vertex);
     });
   }
 
   @Override
   public void onPropertyUpdate(Collection collection, Optional<Vertex> oldVertex, Vertex newVertex) {
-    oldVertex.ifPresent(vertex -> indexHandler.removeFromRdfIndex(collection.getVre(), vertex));
     getProp(newVertex, "rdfUri", String.class).ifPresent(uri -> {
-      indexHandler.addVertexToRdfIndex(collection.getVre(), uri, newVertex);
+      indexHandler.upsertIntoRdfIndex(collection.getVre(), uri, newVertex);
     });
   }
 

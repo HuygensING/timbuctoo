@@ -180,11 +180,15 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public void addVertexToRdfIndex(Vre vre, String nodeUri, Vertex vertex) {
+  public void upsertIntoRdfIndex(Vre vre, String nodeUri, Vertex vertex) {
     Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
-    org.neo4j.graphdb.Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
-    rdfIndex.add(neo4jNode, vre.getVreName(), nodeUri);
-    rdfIndex.add(neo4jNode, "Admin", nodeUri);
+    String vreName = vre.getVreName();
+    IndexHits<Node> oldVertex = rdfIndex.get(vreName, nodeUri);
+    if (oldVertex.hasNext()) {
+      rdfIndex.remove(oldVertex.next(), vreName, nodeUri);
+    }
+    Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
+    rdfIndex.add(neo4jNode, vreName, nodeUri);
   }
 
   @Override
@@ -193,7 +197,6 @@ public class Neo4jIndexHandler implements IndexHandler {
     Optional<Node> neo4jNode = vertexToNode(vertex);
     if (neo4jNode.isPresent()) {
       rdfIndex.remove(neo4jNode.get(), vre.getVreName());
-      rdfIndex.remove(neo4jNode.get(), "Admin");
     }
   }
 

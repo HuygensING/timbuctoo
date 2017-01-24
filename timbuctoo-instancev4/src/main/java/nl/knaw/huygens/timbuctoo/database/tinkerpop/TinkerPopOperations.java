@@ -1458,7 +1458,7 @@ public class TinkerPopOperations implements DataStoreOperations {
         jsn(defaultEntityTypeName("Admin"))
       ).toString()
     );
-    indexHandler.addVertexToRdfIndex(vre, rdfUri, vertex);
+    indexHandler.upsertIntoRdfIndex(vre, rdfUri, vertex);
 
     Vertex collection = getDefaultCollectionVertex(vre).vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
                                                        .next();
