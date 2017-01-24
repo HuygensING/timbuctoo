@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
@@ -28,6 +29,8 @@ import nl.knaw.huygens.timbuctoo.logging.LoggingFilter;
 import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
+import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
@@ -63,6 +66,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.ListVres;
@@ -77,6 +81,7 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
@@ -209,6 +214,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("give-existing-relationtypes-rdf-uris", new RelationTypeRdfUriMigration());
     migrations.put("index-relations-by-id", new IndexRelationsById());
 
+    HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
+      .using(configuration.getHttpClientConfiguration());
+    CloseableHttpClient httpClient = apacheHttpClientBuilder.build("resourcesync");
+    final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, new ResourceSyncContext());
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
 
     final AutocompleteService.AutocompleteServiceFactory autocompleteServiceFactory =
@@ -238,6 +247,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
+    register(environment, new Discover(resourceSyncService));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager));

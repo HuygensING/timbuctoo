@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
 import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
+import io.dropwizard.client.HttpClientConfiguration;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
@@ -70,6 +71,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @Deprecated
   //left in to make the config not break on older timbuctoo instances
   private int executeDatabaseInvariantCheckAt = 24;
+
+  @Valid
+  @NotNull
+  private HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration();
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
@@ -170,6 +175,16 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public String getTimbuctooSearchUrl() {
     return timbuctooSearchUrl;
+  }
+
+  @JsonProperty("httpClient")
+  public HttpClientConfiguration getHttpClientConfiguration() {
+    return httpClientConfiguration;
+  }
+
+  @JsonProperty("httpClient")
+  public void setHttpClientConfiguration(HttpClientConfiguration httpClientConfiguration) {
+    this.httpClientConfiguration = httpClientConfiguration;
   }
 
   public SecurityFactory getSecurityConfiguration() {
