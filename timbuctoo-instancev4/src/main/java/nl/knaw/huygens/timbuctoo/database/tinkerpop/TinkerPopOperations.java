@@ -917,7 +917,7 @@ public class TinkerPopOperations implements DataStoreOperations {
       final Vertex vreV = vreT.next();
 
       removeAllRawCollections(vreV);
-      removeAllCollectionsAndEntities(vreV);
+      removeCollectionsAndEntities(vreV, true);
       //indices are automatically kept in sync
       //edges are also automatically removed
       vreV.remove();
@@ -938,10 +938,14 @@ public class TinkerPopOperations implements DataStoreOperations {
              .toList();//force traversal and thus side-effects
   }
 
-  private void removeAllCollectionsAndEntities(Vertex vreV) {
-    traversal
+  private void removeCollectionsAndEntities(Vertex vreV, boolean includingRelationCollection) {
+    GraphTraversal<Vertex, Vertex> traversal = this.traversal
       .V(vreV.id())
-      .out(HAS_COLLECTION_RELATION_NAME)
+      .out(HAS_COLLECTION_RELATION_NAME);
+    if (!includingRelationCollection) {
+      traversal = traversal.not(has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true));
+    }
+    traversal
       .union(
         __.out(HAS_DISPLAY_NAME_RELATION_NAME),
         __.out(HAS_PROPERTY_RELATION_NAME),
@@ -962,20 +966,8 @@ public class TinkerPopOperations implements DataStoreOperations {
       .V()
       .hasLabel(Vre.DATABASE_LABEL)
       .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-      .out(HAS_COLLECTION_RELATION_NAME)
-      .not(has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true))
-      .union(
-        __.out(HAS_DISPLAY_NAME_RELATION_NAME),
-        __.out(HAS_PROPERTY_RELATION_NAME),
-        __.out(HAS_ENTITY_NODE_RELATION_NAME)
-          .union(
-            __.out(HAS_ENTITY_RELATION_NAME), //the entities
-            __.identity() //the entityNodes container
-          ),
-        __.identity() //the collection
-      )
-      .drop()
-      .toList();//force traversal and thus side-effects
+      .tryNext()
+      .ifPresent((vreV) -> removeCollectionsAndEntities(vreV, false));
   }
 
   /*******************************************************************************************************************
