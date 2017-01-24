@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
+import org.apache.lucene.queryparser.flexible.standard.QueryParserUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.EmptyGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
 
@@ -61,10 +63,16 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {
     Index<Node> index = getQuickSearchIndex(collection);
-    IndexHits<Node> hits = index.query(QUICK_SEARCH_PROP_NAME, createQuery(quickSearch));
-    List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
 
-    return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal().V(ids);
+    try {
+      IndexHits<Node> hits = index.query(QUICK_SEARCH_PROP_NAME, createQuery(quickSearch));
+      List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
+      return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal().V(ids);
+    } catch (Exception e) {
+      LOG.error("Unexpected exception during search", e);
+      return EmptyGraphTraversal.instance();
+    }
+
   }
 
   private Index<Node> getQuickSearchIndex(Collection collection) {
@@ -74,9 +82,16 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   private Object createQuery(QuickSearch quickSearch) {
-    String fullMatches = String.join(" ", quickSearch.fullMatches());
-    String partialMatches = String.join("* ", quickSearch.partialMatches());
-    return fullMatches + " " + partialMatches + "*";
+    String fullMatches = quickSearch.fullMatches()
+      .stream()
+      .map(QueryParserUtil::escape)
+      .collect(joining());
+    String partialMatches = quickSearch.partialMatches()
+      .stream()
+      .map(QueryParserUtil::escape)
+      .map(s -> s + "*")
+      .collect(joining());
+    return fullMatches + " " + partialMatches;
   }
 
   @Override
