@@ -42,16 +42,12 @@ public class BulkUploadService {
     }
 
     try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000, fileNamesDisplay)) {
-      for (int i = 0; i < tempFiles.size(); i++) {
-        File file = tempFiles.get(i).getRight();
-
-        try {
-          loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
-          saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);
-        } catch (IOException | InvalidFileException e) {
-          saver.setUploadFinished(vreName, Vre.PublishState.UPLOAD_FAILED);
-          throw e;
-        }
+      try {
+        loader.loadData(tempFiles, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
+        saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);
+      } catch (IOException | InvalidFileException e) {
+        saver.setUploadFinished(vreName, Vre.PublishState.UPLOAD_FAILED);
+        throw e;
       }
     }
   }

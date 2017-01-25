@@ -3,12 +3,14 @@ package nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -39,21 +41,23 @@ public class CsvLoader implements Loader {
   }
 
   @Override
-  public void loadData(File file, Importer importer) throws InvalidFileException, IOException {
-    CSVParser parser = format.parse(new FileReader(file));
+  public void loadData(List<Tuple<String, File>> files, Importer importer) throws InvalidFileException, IOException {
+    for (Tuple<String, File> file : files) {
+      CSVParser parser = format.parse(new FileReader(file.getRight()));
 
-    importer.startCollection(collectionName);
+      importer.startCollection(collectionName);
 
-    parser.getHeaderMap().forEach((name, column) -> importer.registerPropertyName(column, name));
+      parser.getHeaderMap().forEach((name, column) -> importer.registerPropertyName(column, name));
 
-    parser.forEach(row -> {
-      importer.startEntity();
-      for (int i = 0; i < row.size(); i++) {
-        importer.setValue(i, row.get(i));
-      }
-      importer.finishEntity();
-    });
+      parser.forEach(row -> {
+        importer.startEntity();
+        for (int i = 0; i < row.size(); i++) {
+          importer.setValue(i, row.get(i));
+        }
+        importer.finishEntity();
+      });
 
-    importer.finishCollection();
+      importer.finishCollection();
+    }
   }
 }

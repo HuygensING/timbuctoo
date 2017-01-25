@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.poi.openxml4j.exceptions.OpenXML4JException;
 import org.apache.poi.openxml4j.opc.OPCPackage;
 import org.apache.poi.xssf.eventusermodel.XSSFReader;
@@ -16,13 +17,14 @@ import javax.xml.parsers.SAXParserFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 public abstract class XlsxLoader implements Loader {
 
   @Override
-  public void loadData(File file, Importer importer) throws InvalidFileException, IOException {
+  public void loadData(List<Tuple<String, File>> files, Importer importer) throws InvalidFileException, IOException {
     try {
-      OPCPackage pkg = OPCPackage.open(file.getPath());
+      OPCPackage pkg = OPCPackage.open(files.get(0).getRight().getPath());
       XSSFReader xssfReader = new XSSFReader(pkg);
 
       SAXParserFactory saxFactory = SAXParserFactory.newInstance();
