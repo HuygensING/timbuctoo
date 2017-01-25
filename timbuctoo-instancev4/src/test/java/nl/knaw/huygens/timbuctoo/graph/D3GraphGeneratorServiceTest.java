@@ -26,7 +26,7 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class GraphServiceTest {
+public class D3GraphGeneratorServiceTest {
 
 
   private static final String RELATION_NAME = "relationName";
@@ -147,7 +147,7 @@ public class GraphServiceTest {
     );
 
     GraphWrapper graphWrapper = createGraphWrapper(graph);
-    GraphService underTest = new GraphService(graphWrapper, HuygensIng.mappings);
+    D3GraphGeneratorService underTest = new D3GraphGeneratorService(graphWrapper, HuygensIng.mappings);
     D3Graph result = underTest.get(
             "wwperson", UUID.fromString(THE_UUID), Lists.newArrayList(RELATION_NAME, RELATION_NAME_2), 2);
 

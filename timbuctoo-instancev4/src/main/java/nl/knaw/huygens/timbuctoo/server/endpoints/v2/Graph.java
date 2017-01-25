@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.graph.D3Graph;
-import nl.knaw.huygens.timbuctoo.graph.GraphService;
+import nl.knaw.huygens.timbuctoo.graph.D3GraphGeneratorService;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.slf4j.Logger;
@@ -25,11 +25,11 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Produces(APPLICATION_JSON)
 public class Graph {
   public static final Logger LOG = LoggerFactory.getLogger(Graph.class);
-  private final GraphService graphService;
+  private final D3GraphGeneratorService d3GraphGeneratorService;
 
 
   public Graph(GraphWrapper wrapper, Vres mappings) {
-    this.graphService = new GraphService(wrapper, mappings);
+    this.d3GraphGeneratorService = new D3GraphGeneratorService(wrapper, mappings);
   }
 
   @GET
@@ -37,7 +37,7 @@ public class Graph {
                       @QueryParam("depth") int depth, @QueryParam("types") List<String> relationNames) {
 
     try {
-      D3Graph result = graphService.get(collectionName, id.get(), relationNames, depth);
+      D3Graph result = d3GraphGeneratorService.get(collectionName, id.get(), relationNames, depth);
       return Response.ok(result).build();
     } catch (NotFoundException e) {
       return Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build();

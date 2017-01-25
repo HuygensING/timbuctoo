@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class D3Graph {
-  public static final Logger LOG = LoggerFactory.getLogger(GraphService.class);
+  public static final Logger LOG = LoggerFactory.getLogger(D3GraphGeneratorService.class);
 
   // These are linked hash tables because some of the tests rely on the order of
   // their iterators. Is that necessary?
