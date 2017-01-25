@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -20,8 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -184,7 +183,7 @@ public class BulkUpload {
     // - Parsing them without buffering is usually not possible
     // - Storing them in memory is more expensive then saving them on the FS
     // These are deleted in BulkUploadService.
-    List<File> tempFiles = new ArrayList<>();
+    List<Tuple<String, File>> tempFiles = new ArrayList<>();
     //Limit the total size of all the files to maxCache
     long sizeLeft = maxCache;
     for (FormDataBodyPart part : parts) {
@@ -201,19 +200,14 @@ public class BulkUpload {
           fos.close();
         }
       }
-      tempFiles.add(tempFile);
+      tempFiles.add(Tuple.tuple(fileDetails.getFileName(), tempFile));
     }
-
-    List<String> fileNames = parts.stream().map(part -> {
-      FormDataContentDisposition fileDetails = part.getFormDataContentDisposition();
-      return fileDetails.getFileName();
-    }).collect(toList());
 
     new Thread() {
       public void run() {
         final int[] writeErrors = {0};
         try {
-          uploadService.saveToDb(vreName, tempFiles, fileNames, vreLabel, msg -> {
+          uploadService.saveToDb(vreName, tempFiles, vreLabel, msg -> {
             try {
               //write json objects
               if (writeErrors[0] < 5) {

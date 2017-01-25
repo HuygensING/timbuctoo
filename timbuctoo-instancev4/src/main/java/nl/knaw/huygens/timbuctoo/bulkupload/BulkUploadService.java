@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,20 +34,20 @@ public class BulkUploadService {
     this.maxVertices = maxVerticesPerTransaction;
   }
 
-  public void saveToDb(String vreName, List<File> tempFiles, List<String> fileNames, String vreLabel,
+  public void saveToDb(String vreName, List<Tuple<String, File>> tempFiles, String vreLabel,
                        Consumer<String> statusUpdate) throws IOException, InvalidFileException {
 
-    if (tempFiles.size() != fileNames.size()) {
-      throw new IllegalArgumentException("number of filenames should match number of files");
+    String fileNamesDisplay;
+    if (tempFiles.size() == 1) {
+      fileNamesDisplay = tempFiles.get(0).getLeft();
+    } else {
+      fileNamesDisplay = "multiple files: " + tempFiles.stream().map(Tuple::getLeft).collect(joining(", "));
     }
-
-    String fileNamesDisplay =
-      fileNames.size() == 1 ? fileNames.get(0) : "multiple files: " + fileNames.stream().collect(joining(", "));
 
     try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000, fileNamesDisplay)) {
       for (int i = 0; i < tempFiles.size(); i++) {
-        String fileName = fileNames.get(i);
-        File file = tempFiles.get(i);
+        String fileName = tempFiles.get(i).getLeft();
+        File file = tempFiles.get(i).getRight();
 
         Loader loader;
         // TODO move this switch on extension to BulkUpload.
@@ -67,8 +68,8 @@ public class BulkUploadService {
       }
     } finally {
       tempFiles.forEach(f -> {
-        if (!f.delete()) {
-          LOG.error("couldn't delete " + f.getAbsolutePath());
+        if (!f.getRight().delete()) {
+          LOG.error("couldn't delete " + f.getRight().getAbsolutePath());
         }
       });
     }
