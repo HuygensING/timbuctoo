@@ -206,27 +206,14 @@ public class BulkUpload {
         final int[] writeErrors = {0};
         try {
           uploadService.saveToDb(vreName, tempFiles, vreLabel, msg -> {
-            try {
-              //write json objects
-              if (writeErrors[0] < 5) {
-                output.write(msg + "\n");
-              }
-            } catch (IOException e) {
-              LOG.error("Could not write to output stream", e);
-              writeErrors[0]++;
-            }
+            writeMessage(writeErrors, msg);
           });
         } catch (InvalidFileException | IOException e) {
           LOG.error("Something went wrong while importing a file", e);
-          try {
-            if (writeErrors[0] < 5) {
-              output.write("failure: " + e.getMessage());
-            }
-          } catch (IOException outputError) {
-            LOG.error("Couldn't write to output stream", outputError);
-          }
+          writeMessage(writeErrors, "failure: The file could not be read");
         } catch (Exception e) {
           LOG.error("An unexpected exception occurred", e);
+          writeMessage(writeErrors, "failure: The file could not be read");
         } finally {
           try {
             output.close();
@@ -240,6 +227,18 @@ public class BulkUpload {
           } catch (Exception e) {
             LOG.error("An unexpected exception occurred", e);
           }
+        }
+      }
+
+      private void writeMessage(int[] writeErrors, String msg) {
+        try {
+          //write json objects
+          if (writeErrors[0] < 5) {
+            output.write(msg + "\n");
+          }
+        } catch (IOException e) {
+          LOG.error("Could not write to output stream", e);
+          writeErrors[0]++;
         }
       }
     }.start();
