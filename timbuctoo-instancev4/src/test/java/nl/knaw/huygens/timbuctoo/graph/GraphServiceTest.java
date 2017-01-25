@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -141,8 +142,9 @@ public class GraphServiceTest {
     List<Vertex> vertices = graph.traversal().V()
                                  .has("wwperson_tempName")
                                  .asAdmin().clone().toList();
-    Collections.sort(vertices, (vertexA, vertexB) -> ((String) vertexA.property("wwperson_tempName").value())
-            .compareTo((String) vertexB.property("wwperson_tempName").value()));
+    Collections.sort(vertices,
+      Comparator.comparing(vertexA -> ((String) vertexA.property("wwperson_tempName").value()))
+    );
 
     GraphWrapper graphWrapper = createGraphWrapper(graph);
     GraphService underTest = new GraphService(graphWrapper, HuygensIng.mappings);
