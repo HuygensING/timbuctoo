@@ -225,6 +225,8 @@ public class BulkUpload {
           } catch (IOException outputError) {
             LOG.error("Couldn't write to output stream", outputError);
           }
+        } catch (Exception e) {
+          LOG.error("An unexpected exception occurred", e);
         } finally {
           try {
             output.close();
@@ -235,6 +237,8 @@ public class BulkUpload {
             });
           } catch (IOException e) {
             LOG.error("Couldn't close the output stream", e);
+          } catch (Exception e) {
+            LOG.error("An unexpected exception occurred", e);
           }
         }
       }
