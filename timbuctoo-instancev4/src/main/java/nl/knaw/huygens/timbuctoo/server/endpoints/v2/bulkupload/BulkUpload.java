@@ -41,7 +41,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.MAPPING_EXECUTION;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.UPLOADING;
@@ -78,6 +80,13 @@ public class BulkUpload {
                          @FormDataParam("vreName") String vreName,
                          @FormDataParam("uploadType") String uploadType,
                          FormDataMultiPart parts) {
+    Map<String, String> formData = parts.getFields().entrySet().stream()
+      .filter(entry -> !entry.getKey().equals("file"))
+      .filter(entry -> !entry.getKey().equals("vreId"))
+      .filter(entry -> !entry.getKey().equals("uploadType"))
+      .filter(entry -> entry.getValue().size() > 0 && entry.getValue().get(0) != null)
+      .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(0).getValue()));
+
     Optional<User> user = loggedInUsers.userFor(authorization);
     if (!user.isPresent()) {
       return Response.status(Response.Status.FORBIDDEN).entity("User not known").build();
@@ -102,7 +111,7 @@ public class BulkUpload {
     }
 
     try {
-      return executeUpload(files, uploadType, vreName, namespacedVre);
+      return executeUpload(files, formData, uploadType, vreName, namespacedVre);
     } catch (IOException e) {
       LOG.error("Reading upload failed", e);
       return Response.status(Response.Status.BAD_REQUEST)
@@ -123,6 +132,12 @@ public class BulkUpload {
                                     @FormDataParam("uploadType") String uploadType,
                                     FormDataMultiPart parts) {
 
+    Map<String, String> formData = parts.getFields().entrySet().stream()
+      .filter(entry -> !entry.getKey().equals("file"))
+      .filter(entry -> !entry.getKey().equals("vreId"))
+      .filter(entry -> !entry.getKey().equals("uploadType"))
+      .filter(entry -> entry.getValue().size() > 0 && entry.getValue().get(0) != null)
+      .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(0).getValue()));
     // First check permission
     final Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorization);
     if (filterResponse.isPresent()) {
@@ -153,7 +168,7 @@ public class BulkUpload {
 
       try {
         return TransactionStateAndResult.commitAndReturn(
-          executeUpload(files, uploadType, vre.getMetadata().getLabel(), vreName)
+          executeUpload(files, formData, uploadType, vre.getMetadata().getLabel(), vreName)
         );
       } catch (IOException e) {
         return TransactionStateAndResult.commitAndReturn(
@@ -171,7 +186,8 @@ public class BulkUpload {
     });
   }
 
-  private Response executeUpload(List<FormDataBodyPart> parts, String uploadType, String vreLabel, String vreName)
+  private Response executeUpload(List<FormDataBodyPart> parts, Map<String, String> form, String uploadType,
+                                 String vreLabel, String vreName)
     throws IOException {
     ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
 
@@ -179,7 +195,7 @@ public class BulkUpload {
     if (uploadType == null || uploadType.equals("xlsx")) {
       loader = new AllSheetLoader();
     } else if (uploadType.equals("csv")) {
-      loader = new CsvLoader();
+      loader = new CsvLoader(form);
     } else if (uploadType.equals("dataperfect")) {
       loader = new DataPerfectLoader();
     } else {

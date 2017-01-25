@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.google.common.collect.Lists.newArrayList;
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
+
 public class AllSheetLoaderTest {
 
   @Test
@@ -21,7 +24,7 @@ public class AllSheetLoaderTest {
     try {
       List<String> results = new ArrayList<>();
       AtomicBoolean failure = new AtomicBoolean(false);
-      instance.loadData(excelFile, ImporterStubs.withCustomReporter(logline -> {
+      instance.loadData(newArrayList(tuple("test.csv", excelFile)), ImporterStubs.withCustomReporter(logline -> {
         if (logline.matches("failure.*")) {
           failure.set(true);
         }

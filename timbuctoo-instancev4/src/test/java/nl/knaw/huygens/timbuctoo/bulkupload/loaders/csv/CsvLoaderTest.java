@@ -6,19 +6,23 @@ import org.junit.Test;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+
+import static com.google.common.collect.Lists.newArrayList;
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
 public class CsvLoaderTest {
 
   @Test
   public void importCsv() throws Exception {
     File csvFile = new File(CsvLoaderTest.class.getResource("test.csv").toURI());
-    CsvLoader loader = new CsvLoader("testcollection");
+    CsvLoader loader = new CsvLoader(new HashMap<>());
     try {
       List<String> results = new ArrayList<>();
       AtomicBoolean failure = new AtomicBoolean(false);
-      loader.loadData(csvFile, ImporterStubs.withCustomReporter(logline -> {
+      loader.loadData(newArrayList(tuple("testcollection.csv", csvFile)), ImporterStubs.withCustomReporter(logline -> {
         if (logline.matches("failure.*")) {
           failure.set(true);
         }

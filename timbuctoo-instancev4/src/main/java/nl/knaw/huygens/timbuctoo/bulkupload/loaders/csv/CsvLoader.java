@@ -6,12 +6,13 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.QuoteMode;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
 
 /**
  * A CsvLoader parses CSV files and treats each file as a separate collection.
@@ -20,21 +21,44 @@ import java.util.Objects;
 public class CsvLoader implements Loader {
   private final CSVFormat format;
 
-  public CsvLoader() {
-    this(CSVFormat.EXCEL.withHeader());
-  }
-
-  /**
-   * Constructs a CsvLoader. This only sets options.
-   *
-   * @param format         CSV format.
-   */
-  public CsvLoader(CSVFormat format) {
-    format = Objects.requireNonNull(format);
-    if (format.getHeader() == null) {
-      throw new IllegalArgumentException("CSV format must include header; use withHeader() to parse from file");
+  public CsvLoader(Map<String, String> config) {
+    CSVFormat format = CSVFormat.EXCEL;
+    if (config.containsKey("delimiter")) {
+      format.withDelimiter(config.get("delimiter").charAt(0));
     }
-    this.format = format;
+    if (config.containsKey("quoteChar")) {
+      format.withQuote(config.get("quoteChar").charAt(0));
+    }
+    if (config.containsKey("quoteMode")) {
+      format.withQuoteMode(QuoteMode.valueOf(config.get("quoteMode")));
+    }
+    if (config.containsKey("commentStart")) {
+      format.withCommentMarker(config.get("commentStart").charAt(0));
+    }
+    if (config.containsKey("escape")) {
+      format.withCommentMarker(config.get("escape").charAt(0));
+    }
+    if (config.containsKey("ignoreSurroundingSpaces")) {
+      format.withIgnoreSurroundingSpaces(config.get("ignoreSurroundingSpaces").equals("true"));
+    }
+    if (config.containsKey("ignoreEmptyLines")) {
+      format.withIgnoreEmptyLines(config.get("ignoreEmptyLines").equals("true"));
+    }
+    if (config.containsKey("recordSeparator")) {
+      format.withRecordSeparator(config.get("recordSeparator"));
+    }
+    if (config.containsKey("nullString")) {
+      format.withNullString(config.get("nullString"));
+    }
+    if (config.containsKey("trim")) {
+      format.withTrim(config.get("trim").equals("true"));
+    }
+    if (config.containsKey("trailingDelimiter")) {
+      format.withTrailingDelimiter(config.get("trailingDelimiter").equals("true"));
+    }
+    this.format = format
+      .withAllowMissingColumnNames()
+      .withHeader();
   }
 
   @Override
