@@ -1,9 +1,6 @@
 package nl.knaw.huygens.timbuctoo.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
-import nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv.CsvLoader;
-import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoader;
-import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
@@ -34,7 +31,7 @@ public class BulkUploadService {
     this.maxVertices = maxVerticesPerTransaction;
   }
 
-  public void saveToDb(String vreName, List<Tuple<String, File>> tempFiles, String vreLabel,
+  public void saveToDb(String vreName, Loader loader, List<Tuple<String, File>> tempFiles, String vreLabel,
                        Consumer<String> statusUpdate) throws IOException, InvalidFileException {
 
     String fileNamesDisplay;
@@ -46,18 +43,8 @@ public class BulkUploadService {
 
     try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000, fileNamesDisplay)) {
       for (int i = 0; i < tempFiles.size(); i++) {
-        String fileName = tempFiles.get(i).getLeft();
         File file = tempFiles.get(i).getRight();
 
-        Loader loader;
-        // TODO move this switch on extension to BulkUpload.
-        if (fileName.endsWith(".xlsx")) {
-          loader = new AllSheetLoader();
-        } else if (fileName.endsWith(".csv")) {
-          loader = new CsvLoader(fileName.substring(0, fileName.length() - 4));
-        } else {
-          loader = new DataPerfectLoader();
-        }
         try {
           loader.loadData(file, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
           saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);

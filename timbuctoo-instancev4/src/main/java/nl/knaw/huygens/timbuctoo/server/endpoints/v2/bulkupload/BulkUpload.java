@@ -2,6 +2,10 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv.CsvLoader;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoader;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
@@ -72,6 +76,7 @@ public class BulkUpload {
   @Produces("text/plain")
   public Response upload(@HeaderParam("Authorization") String authorization,
                          @FormDataParam("vreName") String vreName,
+                         @FormDataParam("uploadType") String uploadType,
                          FormDataMultiPart parts) {
     Optional<User> user = loggedInUsers.userFor(authorization);
     if (!user.isPresent()) {
@@ -96,9 +101,8 @@ public class BulkUpload {
       return Response.status(Response.Status.BAD_REQUEST).entity("files missing").build();
     }
 
-    ChunkedOutput<String> output;
     try {
-      output = executeUpload(files, vreName, namespacedVre);
+      return executeUpload(files, uploadType, vreName, namespacedVre);
     } catch (IOException e) {
       LOG.error("Reading upload failed", e);
       return Response.status(Response.Status.BAD_REQUEST)
@@ -109,11 +113,6 @@ public class BulkUpload {
                      .entity(e.getMessage())
                      .build();
     }
-
-    return Response.ok()
-                   .entity(output)
-                   .location(bulkUploadVre.createUri(namespacedVre))
-                   .build();
   }
 
   @PUT
@@ -121,6 +120,7 @@ public class BulkUpload {
   @Produces("text/plain")
   public Response reUploadExcelFile(@FormDataParam("vreId") String vreName,
                                     @HeaderParam("Authorization") String authorization,
+                                    @FormDataParam("uploadType") String uploadType,
                                     FormDataMultiPart parts) {
 
     // First check permission
@@ -152,12 +152,9 @@ public class BulkUpload {
       }
 
       try {
-        ChunkedOutput<String> output = executeUpload(files, vre.getMetadata().getLabel(), vreName);
         return TransactionStateAndResult.commitAndReturn(
-          Response.ok()
-                  .location(bulkUploadVre.createUri(vreName))
-                  .entity(output)
-                  .build());
+          executeUpload(files, uploadType, vre.getMetadata().getLabel(), vreName)
+        );
       } catch (IOException e) {
         return TransactionStateAndResult.commitAndReturn(
           Response.status(Response.Status.BAD_REQUEST)
@@ -174,9 +171,22 @@ public class BulkUpload {
     });
   }
 
-  private ChunkedOutput<String> executeUpload(List<FormDataBodyPart> parts, String vreLabel, String vreName)
+  private Response executeUpload(List<FormDataBodyPart> parts, String uploadType, String vreLabel, String vreName)
     throws IOException {
     ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
+
+    Loader loader;
+    if (uploadType == null || uploadType.equals("xlsx")) {
+      loader = new AllSheetLoader();
+    } else if (uploadType.equals("csv")) {
+      loader = new CsvLoader("fixme"); //FIXME
+    } else if (uploadType.equals("dataperfect")) {
+      loader = new DataPerfectLoader();
+    } else {
+      return Response.status(Response.Status.BAD_REQUEST)
+        .entity("failure: unknown uploadType" + uploadType)
+        .build();
+    }
 
     //Store the files on the filesystem.
     // - Parsing them without buffering is usually not possible
@@ -205,7 +215,7 @@ public class BulkUpload {
       public void run() {
         final int[] writeErrors = {0};
         try {
-          uploadService.saveToDb(vreName, tempFiles, vreLabel, msg -> {
+          uploadService.saveToDb(vreName, loader, tempFiles, vreLabel, msg -> {
             writeMessage(writeErrors, msg);
           });
         } catch (InvalidFileException | IOException e) {
@@ -243,7 +253,10 @@ public class BulkUpload {
       }
     }.start();
 
-    return output;
+    return Response.ok()
+      .location(bulkUploadVre.createUri(vreName))
+      .entity(output)
+      .build();
   }
 
   private String stripFunnyCharacters(String vre) {
