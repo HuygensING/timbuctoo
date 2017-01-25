@@ -28,8 +28,9 @@ executeDatabaseInvariantCheckAt: -1
 #Public timbuctoo url
 baseUri: http://localhost:8080 # timbuctoo generates absolute urls using the server/path that is defined here
 timbuctooSearchUrl: http://timsearch
-solrIndexTriggerEnabled: false
-# solrIndexingUrl: http://timsearch
+
+solrWebhookConfiguration:
+  isEnabled: false
 
 activeMq:
   #persistent=false means that the broker does not try to store the queue. This is not needed in a debugrun.

@@ -82,7 +82,6 @@ import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import org.apache.http.impl.client.CloseableHttpClient;
-import nl.knaw.huygens.timbuctoo.solr.GenericSolrIndexNotifier;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
 import org.slf4j.Logger;
@@ -263,7 +262,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
       new DataSourceFactory(graphManager), transactionEnforcer,
-      new GenericSolrIndexNotifier(configuration));
+      configuration.getSolrWebhookConfiguration().getWebHook());
     register(environment, executeRml);
     SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
     register(environment, saveRml);

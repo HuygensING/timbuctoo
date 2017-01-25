@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
-import nl.knaw.huygens.timbuctoo.solr.SolrIndexNotifier;
+import nl.knaw.huygens.timbuctoo.solr.SolrWebhook;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -49,11 +49,11 @@ public class ExecuteRml {
   private final JenaBasedReader rmlBuilder;
   private final DataSourceFactory dataSourceFactory;
   private final TransactionEnforcer transactionEnforcer;
-  private final SolrIndexNotifier solrIndexNotifier;
+  private final Optional<SolrWebhook> solrWebhook;
 
   public ExecuteRml(UriHelper uriHelper, TinkerPopGraphManager graphWrapper, Vres vres, JenaBasedReader rmlBuilder,
                     UserPermissionChecker permissionChecker, DataSourceFactory dataSourceFactory,
-                    TransactionEnforcer transactionEnforcer, SolrIndexNotifier solrIndexNotifier) {
+                    TransactionEnforcer transactionEnforcer, Optional<SolrWebhook> solrWebhook) {
     this.uriHelper = uriHelper;
     this.graphWrapper = graphWrapper;
     this.vres = vres;
@@ -61,7 +61,7 @@ public class ExecuteRml {
     this.rmlBuilder = rmlBuilder;
     this.dataSourceFactory = dataSourceFactory;
     this.transactionEnforcer = transactionEnforcer;
-    this.solrIndexNotifier = solrIndexNotifier;
+    this.solrWebhook = solrWebhook;
   }
 
   public URI makeUri(String vreName) {
@@ -146,8 +146,8 @@ public class ExecuteRml {
                   output.write("failure");
                 } else {
                   timbuctooActions.setVrePublishState(vreName, Vre.PublishState.AVAILABLE);
-                  if (solrIndexNotifier.isEnabled()) {
-                    solrIndexNotifier.startIndexingForVre(vreName);
+                  if (solrWebhook.isPresent()) {
+                    solrWebhook.get().startIndexingForVre(vreName);
                   }
                   output.write("success");
                 }

@@ -8,6 +8,7 @@ import io.dropwizard.client.HttpClientConfiguration;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.solr.SolrWebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 
@@ -39,6 +40,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   @JsonProperty
   private SecurityFactory securityConfiguration;
+
+  @JsonProperty
+  private SolrWebhookFactory solrWebhookConfiguration;
 
   @JsonProperty
   @Deprecated
@@ -76,8 +80,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @NotNull
   private HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration();
 
-  private String solrIndexingUrl;
-  private boolean solrIndexTriggerEnabled;
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
@@ -194,12 +196,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return securityConfiguration;
   }
 
-
-  public String getSolrIndexingUrl() {
-    return solrIndexingUrl;
-  }
-
-  public boolean getSolrIndexTriggerEnabled() {
-    return solrIndexTriggerEnabled;
+  public SolrWebhookFactory getSolrWebhookConfiguration() {
+    return solrWebhookConfiguration;
   }
 }

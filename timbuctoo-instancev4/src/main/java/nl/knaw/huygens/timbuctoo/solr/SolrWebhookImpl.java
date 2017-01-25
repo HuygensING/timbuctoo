@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.solr;
 
-import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,25 +9,17 @@ import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class GenericSolrIndexNotifier implements SolrIndexNotifier {
-  public static final Logger LOG = LoggerFactory.getLogger(GenericSolrIndexNotifier.class);
+public class SolrWebhookImpl implements SolrWebhook {
+  public static final Logger LOG = LoggerFactory.getLogger(SolrWebhookImpl.class);
 
   private final String solrIndexingUrl;
-  private final boolean isEnabled;
 
-  public GenericSolrIndexNotifier(TimbuctooConfiguration configuration) {
-    this.isEnabled = configuration.getSolrIndexTriggerEnabled();
-    this.solrIndexingUrl = configuration.getSolrIndexingUrl();
+  SolrWebhookImpl(String url) {
+    this.solrIndexingUrl = url;
   }
 
   @Override
   public void startIndexingForVre(String vreName) throws IOException {
-
-    // Failsafe which logs an error message
-    if (!isEnabled) {
-      LOG.error("Invalid state: SolrIndexNotifier.startIndexingForVre invoked while not enabled via config");
-      return;
-    }
 
     try {
       final URL url = new URL(String.format("%s/%s", solrIndexingUrl, vreName));
@@ -57,10 +48,5 @@ public class GenericSolrIndexNotifier implements SolrIndexNotifier {
         LOG.debug("Caught expected SocketTimeoutException caused by 100ms read timeout", e);
       }
     }
-  }
-
-  @Override
-  public boolean isEnabled() {
-    return isEnabled;
   }
 }
