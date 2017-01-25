@@ -30,7 +30,7 @@ public class SolrWebhookImpl implements SolrWebhook {
       // This is expected, because writing to an HTTP connection without waiting for a response does not conform
       // to the HTTP specification
       if (LOG.isDebugEnabled()) {
-        LOG.debug("Caught expected SocketTimeoutException caused by 100ms read timeout", e);
+        LOG.debug("Caught expected SocketTimeoutException caused by 200ms read timeout", e);
       }
     }
   }
