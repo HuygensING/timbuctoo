@@ -8,6 +8,7 @@ import io.dropwizard.client.HttpClientConfiguration;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 
@@ -39,6 +40,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   @JsonProperty
   private SecurityFactory securityConfiguration;
+
+  @JsonProperty
+  private WebhookFactory webhooks = new WebhookFactory();
 
   @JsonProperty
   @Deprecated
@@ -75,6 +79,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @Valid
   @NotNull
   private HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration();
+
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
@@ -191,5 +196,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return securityConfiguration;
   }
 
-
+  public WebhookFactory getWebhooks() {
+    return webhooks;
+  }
 }
