@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
-import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.TripleHelper;
 import org.apache.jena.graph.Triple;
 import org.junit.Test;
@@ -28,7 +27,7 @@ public class PropertyTripleProcessorTest {
   @Test
   public void processAddsThePropertyToTheEntity() {
     RdfImportSession rdfImportSession = mock(RdfImportSession.class);
-    PropertyTripleProcessor instance = new PropertyTripleProcessor(mock(Database.class), rdfImportSession);
+    PropertyTripleProcessor instance = new PropertyTripleProcessor(rdfImportSession);
 
     instance.process("vreName", true, TRIPLE);
 
@@ -45,7 +44,7 @@ public class PropertyTripleProcessorTest {
   @Test
   public void processRemovesThePropertyFromTheEntityIfTheCallIsARetraction() {
     RdfImportSession rdfImportSession = mock(RdfImportSession.class);
-    PropertyTripleProcessor instance = new PropertyTripleProcessor(mock(Database.class), rdfImportSession);
+    PropertyTripleProcessor instance = new PropertyTripleProcessor(rdfImportSession);
 
     instance.process("vreName", false, TRIPLE);
 

@@ -2,15 +2,12 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
-import nl.knaw.huygens.timbuctoo.rdf.Database;
 import org.apache.jena.graph.Triple;
 
 class PropertyTripleProcessor {
-  private final Database database;
   private final RdfImportSession rdfImportSession;
 
-  public PropertyTripleProcessor(Database database, RdfImportSession rdfImportSession) {
-    this.database = database;
+  public PropertyTripleProcessor(RdfImportSession rdfImportSession) {
     this.rdfImportSession = rdfImportSession;
   }
 
