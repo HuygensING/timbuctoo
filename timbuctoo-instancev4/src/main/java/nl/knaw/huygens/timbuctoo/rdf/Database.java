@@ -86,6 +86,11 @@ public class Database {
       .orElseGet(() -> createEntity(vreName, nodeUri));
   }
 
+  public Entity findOrCreateEntity(String vreName, String entityReference) {
+    return findEntity(vreName, entityReference)
+      .orElseGet(() -> createEntity(vreName, entityReference));
+  }
+
   public Optional<Entity> findEntity(String vreName, Node node) {
     return findEntity(vreName, getNodeUri(node, vreName));
   }
@@ -183,11 +188,15 @@ public class Database {
     );
   }
 
-  public Collection findOrCreateCollection(String vreName, Node node) {
+  public Collection findOrCreateCollection(String vreName, Node subject) {
+    return findOrCreateCollection(vreName, subject.getURI(), subject.getLocalName());
+  }
+
+  public Collection findOrCreateCollection(String vreName, String collectionUri, String entityTypeName) {
     return collectionCache.computeIfAbsent(
-      vreName + node.getURI(),
+      vreName + collectionUri,
       name -> findOrCreateCollection(
-        CollectionDescription.createCollectionDescription(node.getLocalName(), vreName, node.getURI())
+        CollectionDescription.createCollectionDescription(entityTypeName, vreName, collectionUri)
       )
     );
   }
@@ -381,4 +390,6 @@ public class Database {
     rdfIndex.remove(neo4jNode, vreName);
     objectEntity.vertex.remove();
   }
+
+
 }

@@ -12,6 +12,15 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 public class TripleHelper {
+
+  public static Triple createSingleTripleWithLiteralObject(String subject, String predicate, String object) {
+    return createSingleTriple("<" + subject + "> " + "<" + predicate + "> " + object + ".");
+  }
+
+  public static Triple createSingleTriple(String subject, String predicate, String object) {
+    return createSingleTriple("<" + subject + "> " + "<" + predicate + "> " + "<" + object + "> .");
+  }
+
   public static Triple createSingleTriple(String tripleString) {
     return createTripleIterator(tripleString).next();
   }
@@ -27,4 +36,6 @@ public class TripleHelper {
     Model model = ModelFactory.createDefaultModel();
     return model.createResource().asNode();
   }
+
+
 }

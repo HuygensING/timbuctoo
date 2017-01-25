@@ -182,7 +182,8 @@ public class DatabaseTest {
     when(collectionNode.getURI()).thenReturn(rdfUri);
     Database instance = new Database(graphWrapper);
 
-    Collection collection = instance.findOrCreateCollection(vreName, collectionNode);
+    Collection collection = instance.findOrCreateCollection(vreName, collectionNode.getURI(),
+      collectionNode.getLocalName());
 
     assertThat(collection, hasProperty("vreName", equalTo(vreName)));
   }
@@ -210,7 +211,8 @@ public class DatabaseTest {
     when(collectionNode.getURI()).thenReturn(rdfUri);
     Database instance = new Database(graphWrapper);
 
-    Collection collection = instance.findOrCreateCollection(vreName, collectionNode);
+    Collection collection = instance.findOrCreateCollection(vreName, collectionNode.getURI(),
+      collectionNode.getLocalName());
 
     assertThat(collection, hasProperty("vreName", equalTo(vreName)));
     assertThat(graphWrapper.getGraph().traversal().V()
@@ -248,7 +250,8 @@ public class DatabaseTest {
     when(collectionNode.getURI()).thenReturn(rdfUri);
     Database instance = new Database(graphWrapper);
 
-    Collection collection = instance.findOrCreateCollection(VRE_NAME, collectionNode);
+    Collection collection = instance.findOrCreateCollection(VRE_NAME, collectionNode.getURI(),
+      collectionNode.getLocalName());
 
     assertThat(collection, hasProperty("vreName", equalTo(VRE_NAME)));
     assertThat(graphWrapper.getGraph().traversal().V()

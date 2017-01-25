@@ -3,9 +3,9 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
-import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.impl.Util;
 
-class CollectionMembershipTripleProcessor implements TripleProcessor{
+class CollectionMembershipTripleProcessor extends AbstractReferenceTripleProcessor {
   private final Database database;
   private final RdfImportSession rdfImportSession;
 
@@ -15,18 +15,26 @@ class CollectionMembershipTripleProcessor implements TripleProcessor{
   }
 
   @Override
-  public void process(String vreName, boolean isAssertion, Triple triple) {
-    Entity entity = database.findOrCreateEntity(vreName, triple.getSubject());
+  protected void processAssertion(String vreName, String subject, String predicate, String object) {
+    Entity entity = database.findOrCreateEntity(vreName, subject);
 
-    if (isAssertion) {
-      if (entity.isInKnownCollection()) {
-        rdfImportSession.getErrorReporter().multipleRdfTypes(triple);
-      } else {
-        entity.addToCollection(database.findOrCreateCollection(vreName, triple.getObject()));
-        entity.removeFromCollection(database.getDefaultCollection(vreName));
-      }
+    if (entity.isInKnownCollection()) {
+      rdfImportSession.getErrorReporter().multipleRdfTypes(subject, object);
     } else {
-      entity.removeFromCollection(database.findOrCreateCollection(vreName, triple.getObject()));
+      entity.addToCollection(database.findOrCreateCollection(vreName, object, getEntityTypeName(object)));
+      entity.removeFromCollection(database.getDefaultCollection(vreName));
     }
+
+  }
+
+  private String getEntityTypeName(String object) {
+    // We use the local name from the object of a type triple as the entity type name of a timbuctoo collection.
+    return object.substring(Util.splitNamespaceXML(object));
+  }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, String object) {
+    Entity entity = database.findOrCreateEntity(vreName, subject);
+    entity.removeFromCollection(database.findOrCreateCollection(vreName, object, getEntityTypeName(object)));
   }
 }

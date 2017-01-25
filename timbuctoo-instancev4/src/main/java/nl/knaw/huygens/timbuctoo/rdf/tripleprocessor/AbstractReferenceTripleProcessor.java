@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 /**
  * An abstract class to use when importing a triple with an object that is a "uri node" or a "blank node".
  */
-public abstract class AbstractReferenceProcessor {
+public abstract class AbstractReferenceTripleProcessor {
   public final void process(String vreName, String subject, String predicate, String object, boolean isAssertion) {
     if (isAssertion) {
       processAssertion(vreName, subject, predicate, object);

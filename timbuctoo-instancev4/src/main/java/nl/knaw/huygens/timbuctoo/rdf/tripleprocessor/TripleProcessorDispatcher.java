@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleParser.fromTriple;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class TripleProcessorDispatcher {
@@ -85,7 +86,11 @@ public class TripleProcessorDispatcher {
       LOG.debug(vreName + (isAssertion ? ": + " : ": - ") + triple);
     }
     if (predicateIsType(triple)) {
-      collectionMembership.process(vreName, isAssertion, triple);
+      TripleParser tripleParser = fromTriple(triple);
+      String subject = tripleParser.getSubjectReference();
+      String predicate = tripleParser.getPredicateReference();
+      String object = tripleParser.getObjectReference();
+      collectionMembership.process(vreName, subject, predicate, object, isAssertion);
     } else if (predicateIsSameAs(triple)) {
       sameAs.process(vreName, isAssertion, triple);
     } else if (subclassOfKnownArchetype(triple)) {
