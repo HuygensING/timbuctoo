@@ -36,7 +36,6 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
   private final int maxVerticesPerTransaction;
-  private String fileName;
   private int saveCounter;
   private Transaction tx;
   private Vertex curCollection;
@@ -48,11 +47,10 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     this.graphWrapper = graphWrapper;
     tx = graphWrapper.getGraph().tx();
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
-    this.fileName = fileName;
-    this.vre = initVre(vreName, vreLabel);
+    this.vre = initVre(vreName, vreLabel, fileName);
   }
 
-  private Vertex initVre(String vreName, String vreLabel) {
+  private Vertex initVre(String vreName, String vreLabel, String fileName) {
     final Vertex result;
     try (Transaction tx = graphWrapper.getGraph().tx()) {
       final GraphTraversal<Vertex, Vertex> vre = getVreTraversal(vreName);
