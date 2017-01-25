@@ -10,8 +10,8 @@ import java.util.Set;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class TripleProcessorImpl implements TripleProcessor {
-  private static final Logger LOG = getLogger(TripleProcessorImpl.class);
+public class TripleProcessorDispatcher {
+  private static final Logger LOG = getLogger(TripleProcessorDispatcher.class);
   private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   private static final String RDF_SUB_CLASS_OF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
   private static final String OWL_SAME_AS = "http://www.w3.org/2002/07/owl#sameAs";
@@ -33,7 +33,7 @@ public class TripleProcessorImpl implements TripleProcessor {
   private Database database;
   private PersonNameVariantTripleProcessor personNameVariant;
 
-  public TripleProcessorImpl(Database database, RdfImportSession rdfImportSession) {
+  public TripleProcessorDispatcher(Database database, RdfImportSession rdfImportSession) {
     this.database = database;
     this.collectionMembership = new CollectionMembershipTripleProcessor(database, rdfImportSession);
     this.archetype = new ArchetypeTripleProcessor(database);
@@ -79,9 +79,8 @@ public class TripleProcessorImpl implements TripleProcessor {
     return triple.getPredicate().getURI().equals(TIM_IS_NAME_VARIANT_OF);
   }
 
-  @Override
   //FIXME: add unittests for isAssertion
-  public void process(String vreName, boolean isAssertion, Triple triple) {
+  public void dispatch(String vreName, boolean isAssertion, Triple triple) {
     if (LOG.isDebugEnabled()) {
       LOG.debug(vreName + (isAssertion ? ": + " : ": - ") + triple);
     }
