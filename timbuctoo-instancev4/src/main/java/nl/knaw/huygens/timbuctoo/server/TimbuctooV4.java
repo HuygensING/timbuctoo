@@ -262,7 +262,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
       new DataSourceFactory(graphManager), transactionEnforcer,
-      configuration.getSolrWebhookConfiguration().getWebHook(environment));
+      configuration.getWebhooks().getWebHook(environment));
     register(environment, executeRml);
     SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
     register(environment, saveRml);

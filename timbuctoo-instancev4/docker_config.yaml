@@ -26,9 +26,8 @@ executeDatabaseInvariantCheckAt: -1
 baseUri: ${BASE_URI} # used to generate next and previous links of a search result
 timbuctooSearchUrl: ${TIMBUCTOO_SEARCH_URL}
 
-solrWebhookConfiguration:
-  isEnabled: true
-  url: ${TIMBUCTOO_SEARCH_URL}
+webhooks:
+  vreAdded: ${TIMBUCTOO_SEARCH_URL}
 
 
 activeMq:

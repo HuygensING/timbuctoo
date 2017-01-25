@@ -8,20 +8,19 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 
-public class SolrWebhookImpl implements SolrWebhook {
-  public static final Logger LOG = LoggerFactory.getLogger(SolrWebhookImpl.class);
+public class CallingWebhooks implements Webhooks {
+  public static final Logger LOG = LoggerFactory.getLogger(CallingWebhooks.class);
 
   private final String solrIndexingUrl;
   private final HttpClient httpClient;
 
-  SolrWebhookImpl(String url, HttpClient httpClient) {
+  CallingWebhooks(String url, HttpClient httpClient) {
     this.solrIndexingUrl = url;
     this.httpClient = httpClient;
   }
 
   @Override
   public void startIndexingForVre(String vreName) throws IOException {
-
     try {
       final String url = String.format("%s/%s", solrIndexingUrl, vreName);
       httpClient.execute(new HttpPost(url));

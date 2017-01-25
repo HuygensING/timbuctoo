@@ -9,31 +9,27 @@ import org.apache.http.client.HttpClient;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Optional;
 
-public class SolrWebhookFactory {
-
-  @JsonProperty
-  private boolean isEnabled;
+public class WebhookFactory {
 
   @JsonProperty
-  private String url;
+  private String vreAdded;
 
   @Valid
   @NotNull
   @JsonProperty("httpClient")
   private HttpClientConfiguration httpClientConfig = new HttpClientConfiguration();
 
-  public Optional<SolrWebhook> getWebHook(Environment environment) {
-    if (isEnabled) {
+  public Webhooks getWebHook(Environment environment) {
+    if (vreAdded != null) {
       httpClientConfig.setConnectionRequestTimeout(Duration.milliseconds(200));
       final HttpClient httpClient = new HttpClientBuilder(environment)
         .using(httpClientConfig)
         .build("solr-webhook-client");
 
-      return Optional.of(new SolrWebhookImpl(url, httpClient));
+      return new CallingWebhooks(vreAdded, httpClient);
     } else {
-      return Optional.empty();
+      return new NoOpWebhooks();
     }
   }
 }

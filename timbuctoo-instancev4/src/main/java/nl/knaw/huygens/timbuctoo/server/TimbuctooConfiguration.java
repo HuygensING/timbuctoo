@@ -8,7 +8,7 @@ import io.dropwizard.client.HttpClientConfiguration;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
-import nl.knaw.huygens.timbuctoo.solr.SolrWebhookFactory;
+import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 
@@ -42,7 +42,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private SecurityFactory securityConfiguration;
 
   @JsonProperty
-  private SolrWebhookFactory solrWebhookConfiguration;
+  private WebhookFactory webhooks = new WebhookFactory();
 
   @JsonProperty
   @Deprecated
@@ -196,7 +196,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return securityConfiguration;
   }
 
-  public SolrWebhookFactory getSolrWebhookConfiguration() {
-    return solrWebhookConfiguration;
+  public WebhookFactory getWebhooks() {
+    return webhooks;
   }
 }
