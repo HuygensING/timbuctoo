@@ -1,20 +1,36 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 
+import java.time.Clock;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
 public class ResultReporter {
   private final Consumer<String> statusUpdate;
   private int curRow;
+  private int failures;
+  private String currentSheet = "";
+  private long lastLogTime;
 
   public ResultReporter(Consumer<String> statusUpdate) {
     this.statusUpdate = statusUpdate;
     this.curRow = 1;
+    this.failures = 0;
+    this.lastLogTime = -1;
   }
 
   public void startCollection(String name, Result result) {
-    statusUpdate.accept("sheet: " + name);
+    currentSheet = name;
+    curRow = 1;
+    logStatusMessage();
     result.handle(msg -> statusUpdate.accept("failure: " + msg));
+  }
+
+  private void logStatusMessage() {
+    long curTime = Clock.systemUTC().millis();
+    if (lastLogTime == -1 || curTime - lastLogTime > 100) {
+      statusUpdate.accept(getStatusMessage());
+      lastLogTime = curTime;
+    }
   }
 
   public void registerPropertyName(int column, String value, Result result) {
@@ -22,7 +38,8 @@ public class ResultReporter {
   }
 
   public void startEntity() {
-    statusUpdate.accept("" + curRow++);
+    logStatusMessage();
+    curRow++;
   }
 
   public void finishEntity(HashMap<Integer, Result> extraResults) {
@@ -38,8 +55,14 @@ public class ResultReporter {
   }
 
   private void log(int columnNumber, String message) {
-    String columnName = getExcelColumnName(columnNumber);
-    statusUpdate.accept("failure: at " + columnName + " " + message);
+    this.failures++;
+    logStatusMessage();
+  }
+
+  private String getStatusMessage() {
+    return failures > 0 ?
+      String.format("processing %s (row %d, failures: %d)", currentSheet, curRow, failures) :
+      String.format("processing %s (row %d)", currentSheet, curRow);
   }
 
   private String getExcelColumnName(int columnNumber) {
