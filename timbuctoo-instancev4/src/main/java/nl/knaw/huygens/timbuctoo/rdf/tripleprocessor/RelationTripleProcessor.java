@@ -8,13 +8,9 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
 import static org.slf4j.LoggerFactory.getLogger;
 
-class RelationTripleProcessor {
+class RelationTripleProcessor implements TripleProcessor{
   private static final Logger LOG = getLogger(RelationTripleProcessor.class);
   private final Database database;
 
@@ -22,6 +18,7 @@ class RelationTripleProcessor {
     this.database = database;
   }
 
+  @Override
   public void process(String vreName, boolean isAssertion, Triple triple) {
     final Entity subject = database.findOrCreateEntity(vreName, triple.getSubject());
     Node predicate = triple.getPredicate();

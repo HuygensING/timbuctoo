@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
+import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
 class PropertyTripleProcessor {
@@ -12,7 +13,8 @@ class PropertyTripleProcessor {
   }
 
   public void process(String vreName, boolean isAssertion, Triple triple) {
-    String entityUri = triple.getSubject().getURI();
+    Node subject = triple.getSubject();
+    String entityUri = subject.isBlank() ? subject.getBlankNodeLabel() : subject.getURI();
     RdfProperty property = new RdfProperty(
       triple.getPredicate().getURI(),
       triple.getObject().getLiteralLexicalForm(),

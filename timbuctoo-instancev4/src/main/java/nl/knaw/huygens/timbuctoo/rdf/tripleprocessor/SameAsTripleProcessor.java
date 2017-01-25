@@ -11,7 +11,7 @@ import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class SameAsTripleProcessor {
+public class SameAsTripleProcessor implements TripleProcessor{
   private final Database database;
   private static final Logger LOG = getLogger(SameAsTripleProcessor.class);
 
@@ -19,6 +19,7 @@ public class SameAsTripleProcessor {
     this.database = database;
   }
 
+  @Override
   public void process(String vreName, boolean isAssertion, Triple triple) {
     Optional<Entity> object = database.findEntity(vreName, triple.getObject());
     Optional<Entity> subject = database.findEntity(vreName, triple.getSubject());

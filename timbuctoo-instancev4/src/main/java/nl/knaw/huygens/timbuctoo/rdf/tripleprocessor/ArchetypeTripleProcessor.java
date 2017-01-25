@@ -9,13 +9,14 @@ import org.apache.jena.graph.Triple;
 import java.util.Optional;
 import java.util.Set;
 
-class ArchetypeTripleProcessor {
+class ArchetypeTripleProcessor implements TripleProcessor{
   private final Database database;
 
   public ArchetypeTripleProcessor(Database database) {
     this.database = database;
   }
 
+  @Override
   public void process(String vreName, boolean isAssertion, Triple triple) {
     Collection collection = database.findOrCreateCollection(vreName, triple.getSubject());
     Collection previousArchetype = collection.getArchetype().get(); // collection must have an archetype
