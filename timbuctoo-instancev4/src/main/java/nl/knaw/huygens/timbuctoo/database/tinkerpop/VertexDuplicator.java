@@ -58,8 +58,10 @@ public class VertexDuplicator {
 
         duplicateEdge.property(property.key(), property.value());
       }
-      duplicateEdge.<String>property("tim_id")
-        .ifPresent(p -> indexHandler.upsertIntoEdgeIdIndex(UUID.fromString(p), duplicateEdge));
+      if (duplicateEdge.<Boolean>property("isLatest").orElse(false)) {
+        duplicateEdge.<String>property("tim_id")
+          .ifPresent(p -> indexHandler.upsertIntoEdgeIdIndex(UUID.fromString(p), duplicateEdge));
+      }
       edge.remove();
     }
   }
@@ -76,8 +78,10 @@ public class VertexDuplicator {
 
         duplicateEdge.property(property.key(), property.value());
       }
-      duplicateEdge.<String>property("tim_id")
-        .ifPresent(p -> indexHandler.upsertIntoEdgeIdIndex(UUID.fromString(p), duplicateEdge));
+      if (duplicateEdge.<Boolean>property("isLatest").orElse(false)) {
+        duplicateEdge.<String>property("tim_id")
+          .ifPresent(p -> indexHandler.upsertIntoEdgeIdIndex(UUID.fromString(p), duplicateEdge));
+      }
       edge.remove();
     }
   }

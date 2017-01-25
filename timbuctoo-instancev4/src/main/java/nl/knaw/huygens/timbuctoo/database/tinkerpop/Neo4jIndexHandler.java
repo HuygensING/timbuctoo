@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.StreamIterator;
+import org.apache.lucene.queryparser.flexible.standard.QueryParserUtil;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.EmptyGraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
@@ -26,11 +27,12 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDFINDEX_NAME;
 
 public class Neo4jIndexHandler implements IndexHandler {
-  private static final String QUICK_SEARCH = "quickSearch";
+  private static final String QUICK_SEARCH_PROP_NAME = "quickSearch";
   private static final String ID_INDEX = "idIndex";
   private static final String TIM_ID = "tim_id";
   private static final Logger LOG = LoggerFactory.getLogger(Neo4jIndexHandler.class);
@@ -44,7 +46,7 @@ public class Neo4jIndexHandler implements IndexHandler {
   //=====================quick search index=====================
   @Override
   public boolean hasQuickSearchIndexFor(Collection collection) {
-    return indexManager().existsForNodes(getIndexName(collection));
+    return indexManager().existsForNodes(getQuicksearchIndexName(collection));
   }
 
   @Override
@@ -61,22 +63,35 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   private GraphTraversal<Vertex, Vertex> traversalFromIndex(Collection collection, QuickSearch quickSearch) {
     Index<Node> index = getQuickSearchIndex(collection);
-    IndexHits<Node> hits = index.query(QUICK_SEARCH, createQuery(quickSearch));
-    List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
 
-    return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal().V(ids);
+    try {
+      IndexHits<Node> hits = index.query(QUICK_SEARCH_PROP_NAME, createQuery(quickSearch));
+      List<Long> ids = StreamIterator.stream(hits.iterator()).map(h -> h.getId()).collect(toList());
+      return ids.isEmpty() ? EmptyGraphTraversal.instance() : traversal().V(ids);
+    } catch (Exception e) {
+      LOG.error("Unexpected exception during search", e);
+      return EmptyGraphTraversal.instance();
+    }
+
   }
 
   private Index<Node> getQuickSearchIndex(Collection collection) {
     // Add the config below, to make sure the index is case insensitive.
     Map<String, String> indexConfig = MapUtil.stringMap(IndexManager.PROVIDER, "lucene", "type", "fulltext");
-    return indexManager().forNodes(getIndexName(collection), indexConfig);
+    return indexManager().forNodes(getQuicksearchIndexName(collection), indexConfig);
   }
 
   private Object createQuery(QuickSearch quickSearch) {
-    String fullMatches = String.join(" ", quickSearch.fullMatches());
-    String partialMatches = String.join("* ", quickSearch.partialMatches());
-    return fullMatches + " " + partialMatches + "*";
+    String fullMatches = quickSearch.fullMatches()
+      .stream()
+      .map(QueryParserUtil::escape)
+      .collect(joining());
+    String partialMatches = quickSearch.partialMatches()
+      .stream()
+      .map(QueryParserUtil::escape)
+      .map(s -> s + "*")
+      .collect(joining());
+    return fullMatches + " " + partialMatches;
   }
 
   @Override
@@ -85,7 +100,7 @@ public class Neo4jIndexHandler implements IndexHandler {
     // make sure only this field is removed from the index.
     final Optional<Node> node = vertexToNode(vertex);
     if (node.isPresent()) {
-      index.remove(node.get(), QUICK_SEARCH);
+      index.remove(node.get(), QUICK_SEARCH_PROP_NAME);
     }
   }
 
@@ -98,13 +113,17 @@ public class Neo4jIndexHandler implements IndexHandler {
 
     Index<Node> index = getQuickSearchIndex(collection);
 
-    vertexToNode(vertex).ifPresent(node -> index.add(node, QUICK_SEARCH, quickSearchValue));
+    vertexToNode(vertex).ifPresent(node -> index.add(node, QUICK_SEARCH_PROP_NAME, quickSearchValue));
   }
 
   @Override
   public void deleteQuickSearchIndex(Collection collection) {
     Index<Node> index = getQuickSearchIndex(collection);
     index.delete();
+  }
+
+  private String getQuicksearchIndexName(Collection collection) {
+    return collection.getCollectionName();
   }
 
   //=====================tim_id index=====================
@@ -176,11 +195,15 @@ public class Neo4jIndexHandler implements IndexHandler {
   }
 
   @Override
-  public void addVertexToRdfIndex(Vre vre, String nodeUri, Vertex vertex) {
+  public void upsertIntoRdfIndex(Vre vre, String nodeUri, Vertex vertex) {
     Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
-    org.neo4j.graphdb.Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
-    rdfIndex.add(neo4jNode, vre.getVreName(), nodeUri);
-    rdfIndex.add(neo4jNode, "Admin", nodeUri);
+    String vreName = vre.getVreName();
+    IndexHits<Node> oldVertex = rdfIndex.get(vreName, nodeUri);
+    if (oldVertex.hasNext()) {
+      rdfIndex.remove(oldVertex.next(), vreName, nodeUri);
+    }
+    Node neo4jNode = graphDatabase().getNodeById((Long) vertex.id());
+    rdfIndex.add(neo4jNode, vreName, nodeUri);
   }
 
   @Override
@@ -189,7 +212,6 @@ public class Neo4jIndexHandler implements IndexHandler {
     Optional<Node> neo4jNode = vertexToNode(vertex);
     if (neo4jNode.isPresent()) {
       rdfIndex.remove(neo4jNode.get(), vre.getVreName());
-      rdfIndex.remove(neo4jNode.get(), "Admin");
     }
   }
 
@@ -236,10 +258,6 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   private IndexManager indexManager() {
     return graphDatabase().index();
-  }
-
-  private String getIndexName(Collection collection) {
-    return collection.getCollectionName();
   }
 
   // In edge cases it can occur that the actual neo4j node is already deleted, while the instance of Vertex

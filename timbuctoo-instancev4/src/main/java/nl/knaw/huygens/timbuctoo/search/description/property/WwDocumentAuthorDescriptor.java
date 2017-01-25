@@ -23,11 +23,13 @@ public class WwDocumentAuthorDescriptor implements PropertyDescriptor {
             "isCreatedBy",
             "wwperson_names",
             propertyParserFactory.getParser(PersonNames.class),
+            "wwrelation_accepted",
             "; ");
     PropertyDescriptor authorTempNameDescriptor = propertyDescriptorFactory.getDerivedWithSeparator(
             "isCreatedBy",
             "wwperson_tempName",
             propertyParserFactory.getParser(String.class),
+            "wwrelation_accepted",
             "; ");
 
     return propertyDescriptorFactory

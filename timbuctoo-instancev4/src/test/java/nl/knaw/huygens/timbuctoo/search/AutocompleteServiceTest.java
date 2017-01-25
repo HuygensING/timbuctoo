@@ -2,19 +2,18 @@ package nl.knaw.huygens.timbuctoo.search;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
-import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
-import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
-import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
+import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import org.junit.Test;
 
 import java.net.URI;
 import java.util.Optional;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.core.dto.ReadEntityStubs.readEntityWithDisplayNameIdAndRev;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionStubs.collWithCollectionName;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.CollectionStubs.keywordCollWithCollectionName;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -49,7 +48,7 @@ public class AutocompleteServiceTest {
   public void searchConvertsTheReadEntityToJson() throws Exception {
     UUID id = UUID.randomUUID();
     String collectionName = "wwpersons";
-    ReadEntity entity = readEntityWithDisplayNameIdAndRev("[TEMP] An author", id, 2);
+    QuickSearchResult entity = QuickSearchResult.create("[TEMP] An author", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
     given(timbuctooActions.getCollectionMetadata(anyString())).willReturn(collWithCollectionName(collectionName));
     given(timbuctooActions.doQuickSearch(any(), any(), isNull(), anyInt())).willReturn(Lists.newArrayList(entity));
@@ -78,7 +77,7 @@ public class AutocompleteServiceTest {
     String keywordType = "maritalStatus";
     String collectionName = "wwkeywords";
     UUID id = UUID.randomUUID();
-    ReadEntity readEntity = readEntityWithDisplayNameIdAndRev("a keyword", id, 2);
+    QuickSearchResult readEntity = QuickSearchResult.create("a keyword", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
     given(timbuctooActions.getCollectionMetadata(anyString()))
       .willReturn(keywordCollWithCollectionName(collectionName));
@@ -107,7 +106,7 @@ public class AutocompleteServiceTest {
   public void searchRequests1000ResultsWhenTheQueryIsEmpty() throws Exception {
     UUID id = UUID.randomUUID();
     String collectionName = "wwpersons";
-    ReadEntity entity = readEntityWithDisplayNameIdAndRev("[TEMP] An author", id, 2);
+    QuickSearchResult entity = QuickSearchResult.create("[TEMP] An author", id, 2);
     TimbuctooActions timbuctooActions = mock(TimbuctooActions.class);
     given(timbuctooActions.getCollectionMetadata(anyString())).willReturn(collWithCollectionName(collectionName));
     given(timbuctooActions.doQuickSearch(any(), any(), anyString(), anyInt())).willReturn(Lists.newArrayList(entity));

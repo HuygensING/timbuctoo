@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
@@ -18,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.DirectionalRelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.EntityRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.QuickSearch;
+import nl.knaw.huygens.timbuctoo.core.dto.QuickSearchResult;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationType;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
@@ -42,6 +44,9 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopProperty
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.TinkerPopToEntityMapper;
 import nl.knaw.huygens.timbuctoo.logging.Logmarkers;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.LocationNames;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
+import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
@@ -51,6 +56,10 @@ import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.SystemPropertyModifier;
 import nl.knaw.huygens.timbuctoo.relationtypes.RelationTypeService;
+import nl.knaw.huygens.timbuctoo.search.description.PropertyDescriptor;
+import nl.knaw.huygens.timbuctoo.search.description.property.PropertyDescriptorFactory;
+import nl.knaw.huygens.timbuctoo.search.description.property.WwDocumentDisplayNameDescriptor;
+import nl.knaw.huygens.timbuctoo.search.description.propertyparser.PropertyParserFactory;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigrator;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -90,6 +99,7 @@ import java.util.UUID;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
@@ -151,6 +161,20 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final boolean ownTransaction;
   private final Map<String, Vertex> defaultCollectionVerticesCache = new HashMap<>();
   private final Map<String, Vertex> predicateValueTypeVerticesCache = new HashMap<>();
+  private final PropertyDescriptorFactory propertyDescriptorFactory =
+    new PropertyDescriptorFactory(new PropertyParserFactory());
+  private final Map<String, PropertyDescriptor> customDescriptors = ImmutableMap.<String, PropertyDescriptor>builder()
+    .put("wwdocuments", new WwDocumentDisplayNameDescriptor())
+    .put("wwpersons", propertyDescriptorFactory.getComposite(
+      propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
+      propertyDescriptorFactory.getLocal("wwperson_tempName",TempName.class))
+    )
+    .put("wwkeywords", propertyDescriptorFactory.getLocal("wwkeyword_value", String.class))
+    .put("wwlanguages", propertyDescriptorFactory.getLocal("wwlanguage_name", String.class))
+    .put("wwlocations",propertyDescriptorFactory.getLocal("names", LocationNames.class))
+    .put("wwcollectives", propertyDescriptorFactory.getLocal("wwcollective_name", String.class))
+    .build();
+
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
@@ -609,34 +633,46 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public List<ReadEntity> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
-    GraphTraversal<Vertex, Vertex> result = indexHandler.findByQuickSearch(collection, quickSearch);
-
-    return asReadEntityList(collection, result.limit(limit));
+  public List<QuickSearchResult> doQuickSearch(Collection collection, QuickSearch quickSearch, int limit) {
+    return asQuickSearchResult(
+      collection,
+      indexHandler.findByQuickSearch(collection, quickSearch).limit(limit).toStream()
+    );
   }
 
   @Override
-  public List<ReadEntity> doKeywordQuickSearch(Collection collection, String keywordType, QuickSearch quickSearch,
-                                               int limit) {
-    GraphTraversal<Vertex, Vertex> result =
-      indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType);
-
-    return asReadEntityList(collection, result.limit(limit));
+  public List<QuickSearchResult> doKeywordQuickSearch(Collection collection, String keywordType,
+                                                      QuickSearch quickSearch, int limit) {
+    return asQuickSearchResult(
+      collection,
+      indexHandler.findKeywordsByQuickSearch(collection, quickSearch, keywordType).limit(limit).toStream()
+    );
   }
 
-  private List<ReadEntity> asReadEntityList(Collection collection, GraphTraversal<Vertex, Vertex> result) {
-    TinkerPopToEntityMapper tinkerPopToEntityMapper = new TinkerPopToEntityMapper(
-      collection,
-      traversal,
-      mappings,
-      (traversalSource, vre) -> {
-
-      },
-      (entity1, entityVertex, target, relationRef) -> {
-
-      });
-
-    return result.map(vertex -> tinkerPopToEntityMapper.mapEntity(vertex.get(), false)).toList();
+  private List<QuickSearchResult> asQuickSearchResult(Collection collection, Stream<Vertex> result) {
+    String collectionName = collection.getCollectionName();
+    return result
+      .map(vertex -> {
+        //FIXME: this is special case handling for women writers where the autocomplete labels are different
+        //from the labels used elsewhere. Either we make this available everywhere (and configure this using the VRE)
+        //or we remove it from women writers
+        String displayName;
+        if (customDescriptors.containsKey(collectionName)) {
+          displayName = customDescriptors.get(collectionName).get(vertex);
+        } else {
+          displayName = (String) traversal.V(vertex.id()).union(collection.getDisplayName().traversalRaw()).next()
+            .getOrElseGet(e -> {
+              LOG.error("Displayname generation for vertix with id " + vertex.id() + " failed", e);
+              return "#Error#";
+            });
+        }
+        return QuickSearchResult.create(
+          displayName,
+          UUID.fromString(vertex.value("tim_id")),
+          vertex.value("rev")
+        );
+      })
+      .collect(toList());
   }
 
   @Override
@@ -706,13 +742,13 @@ public class TinkerPopOperations implements DataStoreOperations {
     setModified(entityVertex, updateEntity.getModified());
     entityVertex.property("pid").remove();
 
-    Optional<Vertex> prevVertex = getPrevVertex(collection, entityVertex);
-    listener.onPropertyUpdate(collection, prevVertex, entityVertex);
+    Vertex duplicate = duplicateVertex(traversal, entityVertex, indexHandler);
+
+    listener.onPropertyUpdate(collection, Optional.of(entityVertex), duplicate);
     if (wasAddedToCollection) {
-      listener.onAddToCollection(collection, prevVertex, entityVertex);
+      listener.onAddToCollection(collection, Optional.of(entityVertex), duplicate);
     }
 
-    duplicateVertex(traversal, entityVertex, indexHandler);
     return newRev;
   }
 
@@ -741,6 +777,10 @@ public class TinkerPopOperations implements DataStoreOperations {
     }
 
     Edge origEdge = origEdgeOpt.get();
+    if (!origEdge.property("isLatest").isPresent() || !(origEdge.value("isLatest") instanceof Boolean) ||
+      !origEdge.<Boolean>value("isLatest")) {
+      LOG.error("edge {} is not the latest edge, or it has no valid isLatest property.", origEdge.id());
+    }
 
     //FIXME: throw a distinct Exception when the client tries to save a relation with wrong source, target or type.
 
@@ -807,11 +847,12 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     setModified(entity, modified);
     entity.property("pid").remove();
-    if (wasRemoved) {
-      listener.onRemoveFromCollection(collection, getPrevVertex(collection, entity), entity);
-    }
 
-    duplicateVertex(traversal, entity, indexHandler);
+    Vertex duplicate = duplicateVertex(traversal, entity, indexHandler);
+
+    if (wasRemoved) {
+      listener.onRemoveFromCollection(collection, Optional.of(entity), duplicate);
+    }
 
     return newRev;
   }
@@ -872,23 +913,17 @@ public class TinkerPopOperations implements DataStoreOperations {
       .hasLabel(Vre.DATABASE_LABEL)
       .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
 
-
     if (vreT.hasNext()) {
-      final Vre vre = loadVres().getVre(vreName);
       final Vertex vreV = vreT.next();
 
-      vre.getCollections().forEach((collectionName, collection) -> {
-        indexHandler.deleteQuickSearchIndex(collection);
-      });
-
-      removeAllEntityIndexEntries(vre);
       removeAllRawCollections(vreV);
-      removeAllCollectionsAndEntities(vreV);
+      removeCollectionsAndEntities(vreV, true);
+      //indices are automatically kept in sync
+      //edges are also automatically removed
       vreV.remove();
 
       loadVres().reload();
     }
-
   }
 
   private void removeAllRawCollections(Vertex vreV) {
@@ -903,22 +938,14 @@ public class TinkerPopOperations implements DataStoreOperations {
              .toList();//force traversal and thus side-effects
   }
 
-  private void removeAllEntityIndexEntries(Vre vre) {
-    traversal
-      .V().hasLabel(Vre.DATABASE_LABEL).has(VRE_NAME_PROPERTY_NAME, vre.getVreName())
-      .out(HAS_COLLECTION_RELATION_NAME)
-      .out(HAS_ENTITY_NODE_RELATION_NAME)
-      .out(HAS_ENTITY_RELATION_NAME)
-      .forEachRemaining(vertex -> {
-        indexHandler.removeFromIdIndex(vertex); // remove entities from id index
-        indexHandler.removeFromRdfIndex(vre, vertex); // remove entities from rdf index
-      });
-  }
-
-  private void removeAllCollectionsAndEntities(Vertex vreV) {
-    traversal
+  private void removeCollectionsAndEntities(Vertex vreV, boolean includingRelationCollection) {
+    GraphTraversal<Vertex, Vertex> traversal = this.traversal
       .V(vreV.id())
-      .out(HAS_COLLECTION_RELATION_NAME)
+      .out(HAS_COLLECTION_RELATION_NAME);
+    if (!includingRelationCollection) {
+      traversal = traversal.not(has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true));
+    }
+    traversal
       .union(
         __.out(HAS_DISPLAY_NAME_RELATION_NAME),
         __.out(HAS_PROPERTY_RELATION_NAME),
@@ -939,20 +966,8 @@ public class TinkerPopOperations implements DataStoreOperations {
       .V()
       .hasLabel(Vre.DATABASE_LABEL)
       .has(Vre.VRE_NAME_PROPERTY_NAME, vre.getVreName())
-      .out(HAS_COLLECTION_RELATION_NAME)
-      .not(has(Collection.IS_RELATION_COLLECTION_PROPERTY_NAME, true))
-      .union(
-        __.out(HAS_DISPLAY_NAME_RELATION_NAME),
-        __.out(HAS_PROPERTY_RELATION_NAME),
-        __.out(HAS_ENTITY_NODE_RELATION_NAME)
-          .union(
-            __.out(HAS_ENTITY_RELATION_NAME), //the entities
-            __.identity() //the entityNodes container
-          ),
-        __.identity() //the collection
-      )
-      .drop()
-      .toList();//force traversal and thus side-effects
+      .tryNext()
+      .ifPresent((vreV) -> removeCollectionsAndEntities(vreV, false));
   }
 
   /*******************************************************************************************************************
@@ -1061,17 +1076,6 @@ public class TinkerPopOperations implements DataStoreOperations {
 
       return latestState.V().has(T.label, labels);
     }
-  }
-
-  private Optional<Vertex> getPrevVertex(Collection collection, Vertex entity) {
-    final Iterator<Edge> prevEdges = entity.edges(Direction.IN, "VERSION_OF");
-    Optional<Vertex> old = Optional.empty();
-    if (prevEdges.hasNext()) {
-      old = Optional.of(prevEdges.next().outVertex());
-    } else {
-      LOG.error(Logmarkers.databaseInvariant, "Vertex {} has no previous version", entity.id());
-    }
-    return old;
   }
 
   private void saveVres(Vres mappings) {
@@ -1428,7 +1432,7 @@ public class TinkerPopOperations implements DataStoreOperations {
         jsn(defaultEntityTypeName("Admin"))
       ).toString()
     );
-    indexHandler.addVertexToRdfIndex(vre, rdfUri, vertex);
+    indexHandler.upsertIntoRdfIndex(vre, rdfUri, vertex);
 
     Vertex collection = getDefaultCollectionVertex(vre).vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
                                                        .next();

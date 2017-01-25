@@ -137,6 +137,7 @@ public class WwPersonSearchDescription extends AbstractSearchDescription {
     dataPropertyDescriptors.put("residenceLocation", propertyDescriptorFactory.getDerived(
       "hasResidenceLocation",
       "names",
+      "wwrelation_accepted",
       LocationNames.class));
     dataPropertyDescriptors.put("name", propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),

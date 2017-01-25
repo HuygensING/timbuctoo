@@ -130,7 +130,8 @@ public class SingleEntity {
         }
       });
 
-      // it is needed to split the put into two transactions to make sure the latest version is saved to the database.
+      // we perform the get in a separate transaction so that the client receives data that is guaranteed to be
+      // committed in the database
       if (updateMessage.isSuccess()) {
         return transactionEnforcer.executeAndReturn(timbuctooActions -> {
           JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
