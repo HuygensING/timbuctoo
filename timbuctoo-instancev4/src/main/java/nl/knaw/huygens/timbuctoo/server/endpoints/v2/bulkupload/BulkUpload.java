@@ -19,6 +19,9 @@ import org.glassfish.jersey.server.ChunkedOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -29,8 +32,10 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -175,15 +180,26 @@ public class BulkUpload {
     throws IOException {
     ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
 
+    //Store the files on the filesystem.
+    // - Parsing them without buffering is usually not possible
+    // - Storing them in memory is more expensive then saving them on the FS
     // These are deleted in BulkUploadService.
-    // TODO: is there a way to avoid having to create these files?
     List<File> tempFiles = new ArrayList<>();
+    //Limit the total size of all the files to maxCache
+    long sizeLeft = maxCache;
     for (FormDataBodyPart part : parts) {
       FormDataContentDisposition fileDetails = part.getFormDataContentDisposition();
       InputStream fileUpload = part.getValueAs(InputStream.class);
       File tempFile = File.createTempFile("timbuctoo-bulkupload-", null, null);
-      try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+      LimitOutputStream fos = null;
+      try {
+        fos = new LimitOutputStream(new FileOutputStream(tempFile), sizeLeft);
         copy(fileUpload, fos);
+      } finally {
+        if (fos != null) {
+          sizeLeft = fos.getLeft();
+          fos.close();
+        }
       }
       tempFiles.add(tempFile);
     }
@@ -234,4 +250,44 @@ public class BulkUpload {
     return vre.replaceFirst("\\.[a-zA-Z]+$", "").replaceAll("[^a-zA-Z-]", "_");
   }
 
+
+  class LimitOutputStream extends FilterOutputStream {
+
+    private long limit;
+
+    public LimitOutputStream(OutputStream out, long limit) {
+      super(out);
+      this.limit = limit;
+    }
+
+    public long getLeft() {
+      return limit;
+    }
+
+    public void write(@Nonnull byte... bytes) throws IOException {
+      long left = Math.min(bytes.length, limit);
+      if (left <= 0) {
+        return;
+      }
+      limit -= left;
+      out.write(bytes, 0, (int)left);
+    }
+
+    public void write(int byt) throws IOException {
+      if (limit <= 0) {
+        return;
+      }
+      limit--;
+      out.write(byt);
+    }
+
+    public void write(@Nonnull byte[] bytes, int off, int len) throws IOException {
+      long left = Math.min(len,limit);
+      if (left <= 0) {
+        return;
+      }
+      limit -= left;
+      out.write(bytes, off, (int) left);
+    }
+  }
 }
