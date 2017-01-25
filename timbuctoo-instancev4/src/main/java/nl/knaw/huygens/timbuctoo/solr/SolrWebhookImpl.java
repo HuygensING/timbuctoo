@@ -1,45 +1,30 @@
 package nl.knaw.huygens.timbuctoo.solr;
 
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.net.SocketTimeoutException;
-import java.net.URL;
-import java.net.URLConnection;
 
 public class SolrWebhookImpl implements SolrWebhook {
   public static final Logger LOG = LoggerFactory.getLogger(SolrWebhookImpl.class);
 
   private final String solrIndexingUrl;
+  private final HttpClient httpClient;
 
-  SolrWebhookImpl(String url) {
+  SolrWebhookImpl(String url, HttpClient httpClient) {
     this.solrIndexingUrl = url;
+    this.httpClient = httpClient;
   }
 
   @Override
   public void startIndexingForVre(String vreName) throws IOException {
 
     try {
-      final URL url = new URL(String.format("%s/%s", solrIndexingUrl, vreName));
-
-      // Configure the connection to a minimal read timeout
-      final URLConnection connection = url.openConnection();
-      connection.setReadTimeout(100);
-      connection.setDoOutput(true);
-
-      // Write minimal HTTP POST data to trigger indexing
-      final OutputStream outputStream = connection.getOutputStream();
-      outputStream.write(String.format("POST %s HTTP/1.1\n", url.getPath()).getBytes());
-      outputStream.write("Accept: *.*\n\n".getBytes());
-      outputStream.flush();
-      outputStream.close();
-
-      // Obtain input stream to enforce valid read/write HTTP situation
-      connection.getInputStream().close();
-
-      LOG.info("Solr indexing triggered for {}", vreName);
+      final String url = String.format("%s/%s", solrIndexingUrl, vreName);
+      httpClient.execute(new HttpPost(url));
     } catch (SocketTimeoutException e) {
       // Setting a low read timeout will terminate the connection prematurely, causing a SocketTimeoutException:
       // This is expected, because writing to an HTTP connection without waiting for a response does not conform
