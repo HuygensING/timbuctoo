@@ -2,6 +2,30 @@ package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 
 /**
  * An importer imports a dataset, consisting of multiple collections.
+ *
+ * <pre>
+ *           +-------------+                    +---------------+
+ *           |             |                    |               |
+ *           | waiting for |   startCollection  | Waiting for   +--+
+ *           | collections | +----------------> | propertynames |  |
+ *           |             |                    |               |  |
+ *           +-------------+                    +--------^------+  | registerPropertyName
+ *                 ^                                 |   |         |
+ *                 |                     startEntity |   +---------+
+ *                 |                          +------v-------+
+ *                 |                          |              +---------------+
+ *                 |                          | waiting for  +--+            |
+ *                 +--------------------------+ values       |  |            |
+ *             finishCollection               |              |  |            |
+ *                                            +----^-----^---+  | setValue   |
+ *                                                 |     |      |            |
+ *                                                 |     +------+            |
+ *                                                 |                         |
+ *                                                 |                         |
+ *                                                 |           finishEntity  |
+ *                                                 +-------------------------+
+ *
+ * </pre>
  */
 public class Importer {
 
