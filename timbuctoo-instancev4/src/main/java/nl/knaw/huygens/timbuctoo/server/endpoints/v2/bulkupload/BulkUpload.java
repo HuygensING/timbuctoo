@@ -179,7 +179,7 @@ public class BulkUpload {
     if (uploadType == null || uploadType.equals("xlsx")) {
       loader = new AllSheetLoader();
     } else if (uploadType.equals("csv")) {
-      loader = new CsvLoader("fixme"); //FIXME
+      loader = new CsvLoader();
     } else if (uploadType.equals("dataperfect")) {
       loader = new DataPerfectLoader();
     } else {

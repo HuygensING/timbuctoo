@@ -14,30 +14,27 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * A CsvLoader parses a CSV file containing a single collection.
+ * A CsvLoader parses CSV files and treats each file as a separate collection.
  * The default format is Excel's CSV format, with a header row.
  */
 public class CsvLoader implements Loader {
   private final CSVFormat format;
-  private String collectionName;
 
-  public CsvLoader(String collectionName) {
-    this(CSVFormat.EXCEL.withHeader(), collectionName);
+  public CsvLoader() {
+    this(CSVFormat.EXCEL.withHeader());
   }
 
   /**
    * Constructs a CsvLoader. This only sets options.
    *
    * @param format         CSV format.
-   * @param collectionName Name of the collection described in the CSV file.
    */
-  public CsvLoader(CSVFormat format, String collectionName) {
+  public CsvLoader(CSVFormat format) {
     format = Objects.requireNonNull(format);
     if (format.getHeader() == null) {
       throw new IllegalArgumentException("CSV format must include header; use withHeader() to parse from file");
     }
     this.format = format;
-    this.collectionName = Objects.requireNonNull(collectionName);
   }
 
   @Override
@@ -45,7 +42,12 @@ public class CsvLoader implements Loader {
     for (Tuple<String, File> file : files) {
       CSVParser parser = format.parse(new FileReader(file.getRight()));
 
-      importer.startCollection(collectionName);
+      String filename = file.getLeft();
+      //remove well-known extensions
+      if (filename.endsWith(".csv") || filename.endsWith(".tsv") || filename.endsWith(".txt")) {
+        filename = filename.substring(filename.length() - 1);
+      }
+      importer.startCollection(filename);
 
       parser.getHeaderMap().forEach((name, column) -> importer.registerPropertyName(column, name));
 
