@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.graph;
 
 import org.apache.tinkerpop.gremlin.structure.Edge;
 
+import java.util.Objects;
+
 public class Link {
   private int source;
   private int target;
@@ -45,6 +47,13 @@ public class Link {
     return otherLink.getType().equals(type) && (
         (otherLink.getSource() == source && otherLink.getTarget() == target) ||
         (otherLink.getSource() == target && otherLink.getTarget() == source));
+  }
+
+  @Override
+  public int hashCode() {
+    // Hash function that is symmetric in {source, target}.
+    // XXX sort source and target in the constructor instead?
+    return Objects.hash(source ^ target, type);
   }
 
   @Override

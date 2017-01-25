@@ -15,6 +15,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,7 +26,7 @@ import static org.hamcrest.core.Is.is;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-public class GraphServiceTest {
+public class D3GraphGeneratorServiceTest {
 
 
   private static final String RELATION_NAME = "relationName";
@@ -141,11 +142,12 @@ public class GraphServiceTest {
     List<Vertex> vertices = graph.traversal().V()
                                  .has("wwperson_tempName")
                                  .asAdmin().clone().toList();
-    Collections.sort(vertices, (vertexA, vertexB) -> ((String) vertexA.property("wwperson_tempName").value())
-            .compareTo((String) vertexB.property("wwperson_tempName").value()));
+    Collections.sort(vertices,
+      Comparator.comparing(vertexA -> ((String) vertexA.property("wwperson_tempName").value()))
+    );
 
     GraphWrapper graphWrapper = createGraphWrapper(graph);
-    GraphService underTest = new GraphService(graphWrapper, HuygensIng.mappings);
+    D3GraphGeneratorService underTest = new D3GraphGeneratorService(graphWrapper, HuygensIng.mappings);
     D3Graph result = underTest.get(
             "wwperson", UUID.fromString(THE_UUID), Lists.newArrayList(RELATION_NAME, RELATION_NAME_2), 2);
 
@@ -167,12 +169,13 @@ public class GraphServiceTest {
     ));
   }
 
-  private int getIndex(List<Node> nodes, String key) {
-    for (int i = 0; i < nodes.size(); i++) {
-      final Node node = nodes.get(i);
+  private int getIndex(java.util.Collection<Node> nodes, String key) {
+    int idx = 0;
+    for (Node node : nodes) {
       if (node.getKey().equals("wwpersons/" + key)) {
-        return i;
+        return idx;
       }
+      idx++;
     }
     return -1;
   }

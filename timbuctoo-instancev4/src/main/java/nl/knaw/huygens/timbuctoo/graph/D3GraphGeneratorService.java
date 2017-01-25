@@ -17,13 +17,13 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class GraphService {
+public class D3GraphGeneratorService {
 
   private static final int MAX_LINKS_PER_NODE = 50;
   private final GraphWrapper graphWrapper;
   private Vres mappings;
 
-  public GraphService(GraphWrapper wrapper, Vres mappings) {
+  public D3GraphGeneratorService(GraphWrapper wrapper, Vres mappings) {
     this.graphWrapper = wrapper;
     this.mappings = mappings;
   }
