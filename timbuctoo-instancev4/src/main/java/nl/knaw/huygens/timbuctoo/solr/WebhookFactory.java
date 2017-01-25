@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.client.HttpClientConfiguration;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.util.Duration;
 import org.apache.http.client.HttpClient;
 
 import javax.validation.Valid;
@@ -22,7 +21,6 @@ public class WebhookFactory {
 
   public Webhooks getWebHook(Environment environment) {
     if (vreAdded != null) {
-      httpClientConfig.setConnectionRequestTimeout(Duration.milliseconds(200));
       final HttpClient httpClient = new HttpClientBuilder(environment)
         .using(httpClientConfig)
         .build("solr-webhook-client");

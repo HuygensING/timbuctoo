@@ -28,6 +28,8 @@ timbuctooSearchUrl: ${TIMBUCTOO_SEARCH_URL}
 
 webhooks:
   vreAdded: ${TIMBUCTOO_SEARCH_URL}
+  httpClient:
+    connectionRequestTimeout: 200ms
 
 
 activeMq:
