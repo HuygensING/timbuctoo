@@ -26,21 +26,25 @@ public class D3Graph {
     try {
       nodeIndex.putIfAbsent(new Node(vertex, entityTypeName), nodeIndex.size());
     } catch (IOException e) {
-      LOG.debug("Node not added because " + e.getMessage());
+      LOG.error("Node not added because " + e.getMessage());
     }
   }
 
   public void addLink(Edge edge, Vertex source, Vertex target, String sourceTypeName, String targetTypeName) {
     try {
-      Node srcNode = new Node(source, sourceTypeName);
-      Node tgtNode = new Node(target, targetTypeName);
-      // XXX The getOrDefault simulates the behavior of the previously used ArrayList::indexOf method.
-      // Throw an exception instead?
-      Link link = new Link(edge, nodeIndex.getOrDefault(srcNode, -1), nodeIndex.getOrDefault(tgtNode, -1));
-
-      links.add(link);
+      Integer sourceNode = nodeIndex.get(new Node(source, sourceTypeName));
+      Integer targetNode = nodeIndex.get(new Node(target, targetTypeName));
+      if (sourceNode == null) {
+        LOG.error("Link for edge {} was added, but the source vertex {} was not", edge.id(), source.id());
+      }
+      if (targetNode == null) {
+        LOG.error("Link for edge {} was added, but the target vertex {} was not", edge.id(), target.id());
+      }
+      if (sourceNode != null && targetNode != null) {
+        links.add(new Link(edge, sourceNode, targetNode));
+      }
     } catch (IOException e) {
-      LOG.debug("Link not added because " + e.getMessage());
+      LOG.error("Link not added because " + e.getMessage());
     }
   }
 
