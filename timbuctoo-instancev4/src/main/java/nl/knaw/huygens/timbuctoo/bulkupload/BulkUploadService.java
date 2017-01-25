@@ -66,12 +66,6 @@ public class BulkUploadService {
           throw e;
         }
       }
-    } finally {
-      tempFiles.forEach(f -> {
-        if (!f.getRight().delete()) {
-          LOG.error("couldn't delete " + f.getRight().getAbsolutePath());
-        }
-      });
     }
   }
 }

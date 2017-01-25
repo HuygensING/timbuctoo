@@ -39,7 +39,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.MAPPING_EXECUTION;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.UPLOADING;
 import static org.apache.poi.util.IOUtils.copy;
@@ -182,7 +181,6 @@ public class BulkUpload {
     //Store the files on the filesystem.
     // - Parsing them without buffering is usually not possible
     // - Storing them in memory is more expensive then saving them on the FS
-    // These are deleted in BulkUploadService.
     List<Tuple<String, File>> tempFiles = new ArrayList<>();
     //Limit the total size of all the files to maxCache
     long sizeLeft = maxCache;
@@ -230,6 +228,11 @@ public class BulkUpload {
         } finally {
           try {
             output.close();
+            tempFiles.forEach(f -> {
+              if (!f.getRight().delete()) {
+                LOG.error("couldn't delete " + f.getRight().getAbsolutePath());
+              }
+            });
           } catch (IOException e) {
             LOG.error("Couldn't close the output stream", e);
           }
