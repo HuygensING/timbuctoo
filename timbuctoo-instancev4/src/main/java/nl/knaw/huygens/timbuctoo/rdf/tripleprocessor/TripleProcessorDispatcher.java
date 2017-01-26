@@ -12,13 +12,13 @@ import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleParser.fromTri
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class TripleProcessorDispatcher {
+  static final String TIM_IS_NAME_VARIANT_OF = "http://timbuctoo.huygens.knaw.nl/isNameVariantOf";
   private static final Logger LOG = getLogger(TripleProcessorDispatcher.class);
   private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   private static final String RDF_SUB_CLASS_OF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
   private static final String OWL_SAME_AS = "http://www.w3.org/2002/07/owl#sameAs";
   private static final String SKOS_ALT_LABEL = "http://www.w3.org/2004/02/skos/core#altLabel";
   private static final String TEI_NAMESPACE = "http://www.tei-c.org/ns/1.0/";
-  static final String TIM_IS_NAME_VARIANT_OF = "http://timbuctoo.huygens.knaw.nl/isNameVariantOf";
   private static final Set<String> TEI_NAMES_COMPONENTS = Sets.newHashSet(
     "surname", "forename", "genName", "roleName", "addName", "nameLink"
   );
@@ -85,16 +85,16 @@ public class TripleProcessorDispatcher {
     if (LOG.isDebugEnabled()) {
       LOG.debug(vreName + (isAssertion ? ": + " : ": - ") + triple);
     }
+    TripleParser tripleParser = fromTriple(triple);
+    String subject = tripleParser.getSubjectReference();
+    String predicate = tripleParser.getPredicateReference();
+
     if (predicateIsType(triple)) {
-      TripleParser tripleParser = fromTriple(triple);
-      String subject = tripleParser.getSubjectReference();
-      String predicate = tripleParser.getPredicateReference();
-      String object = tripleParser.getObjectReference();
-      collectionMembership.process(vreName, subject, predicate, object, isAssertion);
+      collectionMembership.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsSameAs(triple)) {
       sameAs.process(vreName, isAssertion, triple);
     } else if (subclassOfKnownArchetype(triple)) {
-      archetype.process(vreName, isAssertion, triple);
+      archetype.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsAltLabel(triple)) {
       altLabel.process(vreName, isAssertion, triple);
     } else if (predicateIsTeiName(triple)) {
