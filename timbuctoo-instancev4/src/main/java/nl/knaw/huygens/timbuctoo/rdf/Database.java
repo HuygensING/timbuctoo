@@ -258,30 +258,29 @@ public class Database {
     }
   }
 
-  public RelationType findOrCreateRelationType(Node predicate) {
-
+  public RelationType findOrCreateRelationType(String predicateUri, String simpleName) {
     final Optional<Vertex> relationTypeV =
-      findVertexInRdfIndex(RelationTypeService.RELATIONTYPE_INDEX_NAME, predicate.getURI());
+      findVertexInRdfIndex(RelationTypeService.RELATIONTYPE_INDEX_NAME, predicateUri);
 
     if (relationTypeV.isPresent()) {
       final Vertex relationTypeVertex = relationTypeV.get();
       boolean isInverse = relationTypeVertex.<String>property("relationtype_inverseName")
-        .value().equals(predicate.getLocalName());
+        .value().equals(simpleName);
       return new RelationType(relationTypeVertex, isInverse);
     }
 
     final String relationTypePrefix = "relationtype_";
     final Vertex relationTypeVertex = graphWrapper.getGraph().addVertex("relationtype");
 
-    relationTypeVertex.property(RDF_URI_PROP, predicate.getURI());
+    relationTypeVertex.property(RDF_URI_PROP, predicateUri);
     relationTypeVertex.property("types", "[\"relationtype\"]");
     relationTypeVertex.property(relationTypePrefix + "targetTypeName", "concept");
     relationTypeVertex.property(relationTypePrefix + "sourceTypeName", "concept");
     relationTypeVertex.property(relationTypePrefix + "symmetric", false);
     relationTypeVertex.property(relationTypePrefix + "reflexive", false);
     relationTypeVertex.property(relationTypePrefix + "derived", false);
-    relationTypeVertex.property(relationTypePrefix + "regularName", predicate.getLocalName());
-    relationTypeVertex.property(relationTypePrefix + "inverseName", "inverse:" + predicate.getLocalName());
+    relationTypeVertex.property(relationTypePrefix + "regularName", simpleName);
+    relationTypeVertex.property(relationTypePrefix + "inverseName", "inverse:" + simpleName);
 
     systemPropertyModifier.setTimId(relationTypeVertex);
     systemPropertyModifier.setCreated(relationTypeVertex, "rdf-importer");
@@ -290,7 +289,7 @@ public class Database {
     systemPropertyModifier.setRev(relationTypeVertex, 1);
 
     org.neo4j.graphdb.Node neo4jNode = graphDatabase.getNodeById((Long) relationTypeVertex.id());
-    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, predicate.getURI());
+    rdfIndex.add(neo4jNode, RelationTypeService.RELATIONTYPE_INDEX_NAME, predicateUri);
 
     return new RelationType(relationTypeVertex);
   }

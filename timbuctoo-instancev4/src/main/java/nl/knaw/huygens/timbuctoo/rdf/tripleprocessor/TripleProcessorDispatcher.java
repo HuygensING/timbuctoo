@@ -104,7 +104,7 @@ public class TripleProcessorDispatcher {
     } else if (objectIsLiteral(triple)) {
       property.process(vreName, isAssertion, triple);
     } else if (objectIsNonLiteral(triple)) {
-      relation.process(vreName, isAssertion, triple);
+      relation.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else {
       //This means that the object is neither a literal, nor a non-literal.
       //That would only happen if I misunderstand something
