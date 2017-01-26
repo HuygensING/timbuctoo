@@ -102,7 +102,7 @@ public class TripleProcessorDispatcher {
     } else if (predicateIsNameVariant(triple)) {
       personNameVariant.process(vreName, isAssertion, triple);
     } else if (objectIsLiteral(triple)) {
-      property.process(vreName, isAssertion, triple);
+      property.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
     } else if (objectIsNonLiteral(triple)) {
       relation.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else {
