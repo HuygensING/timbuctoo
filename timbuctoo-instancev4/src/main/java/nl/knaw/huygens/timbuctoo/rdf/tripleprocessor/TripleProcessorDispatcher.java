@@ -96,7 +96,7 @@ public class TripleProcessorDispatcher {
     } else if (subclassOfKnownArchetype(triple)) {
       archetype.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsAltLabel(triple)) {
-      altLabel.process(vreName, isAssertion, triple);
+      altLabel.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
     } else if (predicateIsTeiName(triple)) {
       personNames.process(vreName, isAssertion, triple);
     } else if (predicateIsNameVariant(triple)) {

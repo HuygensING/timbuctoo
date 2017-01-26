@@ -6,18 +6,18 @@ import nl.knaw.huygens.timbuctoo.model.properties.converters.ArrayToEncodedArray
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
+import org.apache.jena.graph.impl.LiteralLabel;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class AltLabelTripleProcessor implements TripleProcessor {
+public class AltLabelTripleProcessor extends AbstractValueTripleProcessor {
   private static final Logger LOG = getLogger(AltLabelTripleProcessor.class);
 
   private final Database database;
@@ -26,25 +26,18 @@ public class AltLabelTripleProcessor implements TripleProcessor {
   public AltLabelTripleProcessor(Database database) {
     this.database = database;
     this.objectMapper = new ObjectMapper();
-
   }
 
   @Override
-  public void process(String vreName, boolean isAssertion, Triple triple) {
+  protected void processAssertion(String vreName, String subject, String predicate, LiteralLabel object) {
+    final Entity entity = database.findOrCreateEntity(vreName, subject);
+    final String propertyName = getEntityTypeName(predicate);
+    final String value = object.getLexicalForm();
 
-    final Node node = triple.getSubject();
-    final Entity entity = database.findOrCreateEntity(vreName, node);
-    final String propertyName = triple.getPredicate().getLocalName();
-    final String value = triple.getObject().getLiteralLexicalForm();
-
-    if (isAssertion) {
-      addToListProperty(entity, propertyName, value);
-    } else {
-      removeFromListProperty(entity, propertyName, value);
-    }
+    addToListProperty(entity, propertyName, value);
   }
 
-  private void addToListProperty(Entity entity, String propertyName,  String newRawValue) {
+  private void addToListProperty(Entity entity, String propertyName, String newRawValue) {
     final Optional<String> currentRawValue = entity.getPropertyValue(propertyName);
 
     if (currentRawValue.isPresent()) {
@@ -65,6 +58,15 @@ public class AltLabelTripleProcessor implements TripleProcessor {
       entity.addProperty(propertyName, jsnA(newValue.stream().map(JsonBuilder::jsn)).toString(),
         new ArrayToEncodedArrayConverter().getUniqueTypeIdentifier());
     }
+  }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, LiteralLabel object) {
+    final Entity entity = database.findOrCreateEntity(vreName, subject);
+    final String propertyName = getEntityTypeName(predicate);
+    final String value = object.getLexicalForm();
+
+    removeFromListProperty(entity, propertyName, value);
   }
 
   private void removeFromListProperty(Entity entity, String propertyName, String valueToRemove) {
@@ -89,6 +91,4 @@ public class AltLabelTripleProcessor implements TripleProcessor {
       }
     }
   }
-
-
 }
