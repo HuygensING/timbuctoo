@@ -3,7 +3,8 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
-import org.apache.jena.rdf.model.impl.Util;
+
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getEntityTypeName;
 
 class CollectionMembershipTripleProcessor extends AbstractReferenceTripleProcessor {
   private final Database database;
@@ -24,12 +25,6 @@ class CollectionMembershipTripleProcessor extends AbstractReferenceTripleProcess
       entity.addToCollection(database.findOrCreateCollection(vreName, object, getEntityTypeName(object)));
       entity.removeFromCollection(database.getDefaultCollection(vreName));
     }
-
-  }
-
-  private String getEntityTypeName(String object) {
-    // We use the local name from the object of a type triple as the entity type name of a timbuctoo collection.
-    return object.substring(Util.splitNamespaceXML(object));
   }
 
   @Override

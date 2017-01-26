@@ -3,10 +3,11 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.rdf.Collection;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
-import org.apache.jena.rdf.model.impl.Util;
 
 import java.util.Optional;
 import java.util.Set;
+
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getEntityTypeName;
 
 class ArchetypeTripleProcessor extends AbstractReferenceTripleProcessor {
   private final Database database;
@@ -30,11 +31,6 @@ class ArchetypeTripleProcessor extends AbstractReferenceTripleProcessor {
 
     Set<Entity> entities = database.findEntitiesByCollection(collection);
     entities.forEach(entity -> entity.moveToOtherArchetype(previousArchetype, archetypeCollection));
-  }
-
-  private String getEntityTypeName(String uri) {
-    // We use the local name from the object of a type triple as the entity type name of a timbuctoo collection.
-    return uri.substring(Util.splitNamespaceXML(uri));
   }
 
   @Override

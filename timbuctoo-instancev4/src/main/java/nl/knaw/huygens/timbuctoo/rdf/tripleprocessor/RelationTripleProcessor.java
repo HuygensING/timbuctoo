@@ -4,7 +4,8 @@ import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.rdf.Relation;
 import nl.knaw.huygens.timbuctoo.rdf.RelationType;
-import org.apache.jena.rdf.model.impl.Util;
+
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getEntityTypeName;
 
 class RelationTripleProcessor extends AbstractReferenceTripleProcessor {
   private final Database database;
@@ -37,8 +38,4 @@ class RelationTripleProcessor extends AbstractReferenceTripleProcessor {
     subjectEntity.removeRelation(relationType, objectEntity);
   }
 
-  private String getEntityTypeName(String uri) {
-    // We use the local name from the object of a type triple as the entity type name of a timbuctoo collection.
-    return uri.substring(Util.splitNamespaceXML(uri));
-  }
 }
