@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -66,7 +67,7 @@ public final class UriBearingPersonNames {
   private int getNaturalComponentPos(PersonNameComponent.Type nameType,
                                      List<PersonNameComponent> currentPersonNameComponents) {
 
-    for (int  currentIndex = 0; currentIndex < currentPersonNameComponents.size(); currentIndex++) {
+    for (int currentIndex = 0; currentIndex < currentPersonNameComponents.size(); currentIndex++) {
       final int currentOrderIndex = NATURAL_ORDER.indexOf(currentPersonNameComponents.get(currentIndex).getType());
       final int newOrderIndex = NATURAL_ORDER.indexOf(nameType);
       if (currentOrderIndex > newOrderIndex) {
@@ -75,5 +76,31 @@ public final class UriBearingPersonNames {
     }
 
     return currentPersonNameComponents.size();
+  }
+
+  public void removeComponent(String nameUri, PersonNameComponent.Type nameType, String value) {
+    if (!nameUris.containsKey(nameUri)) {
+      LoggerFactory.getLogger(UriBearingPersonNames.class).error("Uri '{}' not known", nameUri);
+      return;
+    }
+
+    PersonName personName = list.get(nameUris.get(nameUri));
+    personName.getComponents().remove(new PersonNameComponent(nameType, value));
+
+    if (personName.getComponents().isEmpty()) {
+      list.remove(personName);
+      Integer indexOfRemoved = nameUris.remove(nameUri);
+
+      // reindex the name uri's, because the list will do this automatically.
+      Map<String, Integer> newNameUris = Maps.newHashMap();
+      nameUris.forEach((key, val) -> {
+        if (val > indexOfRemoved) {
+          val--;
+        }
+        newNameUris.put(key, val);
+      });
+
+      nameUris = newNameUris;
+    }
   }
 }

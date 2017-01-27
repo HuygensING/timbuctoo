@@ -31,20 +31,41 @@ class PersonNamesTripleProcessor implements TripleProcessor {
   @Override
   public void process(String vreName, boolean isAssertion, Triple triple) {
 
-    final Node node = triple.getSubject();
-    final Entity entity = database.findOrCreateEntity(vreName, node);
+    final Node subject = triple.getSubject();
+    final Entity entity = database.findOrCreateEntity(vreName, subject);
     final String value = triple.getObject().getLiteralLexicalForm();
     final String nameTypePredicate = triple.getPredicate().getLocalName();
 
     if (isAssertion && value.length() > 0) {
       try {
-        addNameComponentToEntity(entity, nameTypePredicate, value, node.getURI());
+        addNameComponentToEntity(entity, nameTypePredicate, value, subject.getURI());
       } catch (JsonProcessingException e) {
         LOG.error("Failed to write personNames json for {}.", entity, e);
       } catch (IOException e) {
         LOG.error("Failed to read personNames json for {}", entity, e);
       }
+    } else {
+      try {
+        removeNameComponent(entity, nameTypePredicate, value, subject.getURI());
+      } catch (IOException e) {
+        LOG.error("Failed to update personNames for {}", entity);
+      }
     }
+  }
+
+  private void removeNameComponent(Entity entity, String nameTypePredicate, String value, String subjectUri)
+    throws IOException {
+    final PersonNameComponent.Type nameType = PersonNameComponent.Type.getInstance(nameTypePredicate);
+    final Optional<String> currentRawValue = entity.getPropertyValue("names");
+
+    if (!currentRawValue.isPresent()) {
+      LOG.warn("'{}' has no 'names' property", entity);
+    }
+
+    UriBearingPersonNames names = objectMapper.readValue(currentRawValue.get(), UriBearingPersonNames.class);
+
+    names.removeComponent(subjectUri, nameType, value);
+    saveNamesProperty(entity, names);
   }
 
   private void addNameComponentToEntity(Entity entity, String nameTypePredicate, String value, String subjectUri)
@@ -61,10 +82,10 @@ class PersonNamesTripleProcessor implements TripleProcessor {
     }
 
     names.addNameComponent(subjectUri, nameType, value);
-    addNamesProperty(entity, names);
+    saveNamesProperty(entity, names);
   }
 
-  private void addNamesProperty(Entity entity, UriBearingPersonNames personNames) throws JsonProcessingException {
+  private void saveNamesProperty(Entity entity, UriBearingPersonNames personNames) throws JsonProcessingException {
     entity.addProperty(NAMES_PROPERTY_NAME, objectMapper.writeValueAsString(personNames), NAMES_TYPE_ID);
   }
 }

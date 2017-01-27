@@ -15,7 +15,6 @@ import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createSingleTripleWithLiteralObject;
 import static nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNamesJsonStringMatcher.matchesPersonNames;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -33,8 +32,8 @@ public class PersonNamesTripleProcessorTest {
   private static final String FORENAME_LITERAL = "\"" + FORENAME + "\"^^<http://www.w3.org/2001/XMLSchema#string>";
   private static final String SURNAME = "Pietersz.";
   private static final String VRE_NAME = "vreName";
-  private static final Triple
-    TRIPLE_FOR_PERSON_URI = createSingleTripleWithLiteralObject(PERSON_URI, PREDICATE_URI, FORENAME_LITERAL);
+  private static final Triple TRIPLE_FOR_PERSON_URI_FORENAME =
+    createSingleTripleWithLiteralObject(PERSON_URI, PREDICATE_URI, FORENAME_LITERAL);
   private Entity entity;
   private PersonNamesTripleProcessor instance;
 
@@ -43,14 +42,14 @@ public class PersonNamesTripleProcessorTest {
     final Database database = mock(Database.class);
     instance = new PersonNamesTripleProcessor(database);
     entity = mock(Entity.class);
-    given(database.findOrCreateEntity(VRE_NAME, TRIPLE_FOR_PERSON_URI.getSubject())).willReturn(entity);
+    given(database.findOrCreateEntity(VRE_NAME, TRIPLE_FOR_PERSON_URI_FORENAME.getSubject())).willReturn(entity);
   }
 
   @Test
   public void processCreatesANewName() throws IOException {
     given(entity.getPropertyValue(NAMES_PROPERTY_NAME)).willReturn(Optional.empty());
 
-    instance.process(VRE_NAME, true, TRIPLE_FOR_PERSON_URI);
+    instance.process(VRE_NAME, true, TRIPLE_FOR_PERSON_URI_FORENAME);
 
     verify(entity).addProperty(
       eq(NAMES_PROPERTY_NAME),
@@ -70,7 +69,7 @@ public class PersonNamesTripleProcessorTest {
     given(entity.getPropertyValue(NAMES_PROPERTY_NAME))
       .willReturn(Optional.of(new ObjectMapper().writeValueAsString(existing)));
 
-    instance.process(VRE_NAME, true, TRIPLE_FOR_PERSON_URI);
+    instance.process(VRE_NAME, true, TRIPLE_FOR_PERSON_URI_FORENAME);
 
     verify(entity).addProperty(
       eq(NAMES_PROPERTY_NAME),
@@ -88,7 +87,7 @@ public class PersonNamesTripleProcessorTest {
     given(entity.getPropertyValue(NAMES_PROPERTY_NAME))
       .willReturn(Optional.of(new ObjectMapper().writeValueAsString(existing)));
 
-    instance.process(VRE_NAME, true, TRIPLE_FOR_PERSON_URI);
+    instance.process(VRE_NAME, true, TRIPLE_FOR_PERSON_URI_FORENAME);
 
     verify(entity).addProperty(
       eq(NAMES_PROPERTY_NAME),
@@ -100,7 +99,53 @@ public class PersonNamesTripleProcessorTest {
     );
   }
 
-  
+  @Test
+  public void processRemovesTheNameFromTheRightPersonNameForARetraction() throws Exception {
+    final UriBearingPersonNames existing = new UriBearingPersonNames();
+    final PersonName existingName1 = forename(FORENAME);
+    existing.list.add(existingName1);
+    existing.nameUris.put(DIFFERENT_PERSON_URI, 0);
+    final PersonName existingName2 = PersonName.newInstance(FORENAME, SURNAME);
+    existing.list.add(existingName2);
+    existing.nameUris.put(PERSON_URI, 1);
+    given(entity.getPropertyValue(NAMES_PROPERTY_NAME))
+      .willReturn(Optional.of(new ObjectMapper().writeValueAsString(existing)));
+
+    instance.process(VRE_NAME, false, TRIPLE_FOR_PERSON_URI_FORENAME);
+
+    verify(entity).addProperty(
+      eq(NAMES_PROPERTY_NAME),
+      argThat(matchesPersonNames()
+        .withPersonName(0, forename(FORENAME), DIFFERENT_PERSON_URI)
+        .withPersonName(1, surname(SURNAME), PERSON_URI)
+      ),
+      eq(PERSON_NAMES_TYPE_NAME)
+    );
+  }
+
+  @Test
+  public void processRemovesThePersonNameIfTheRetractionRemovesTheLastNameComponent() throws Exception {
+    final UriBearingPersonNames existing = new UriBearingPersonNames();
+    final PersonName existingName1 = forename(FORENAME);
+    existing.list.add(existingName1);
+    existing.nameUris.put(PERSON_URI, 0);
+    final PersonName existingName2 = forename(FORENAME);
+    existing.list.add(existingName2);
+    existing.nameUris.put(DIFFERENT_PERSON_URI, 1);
+    given(entity.getPropertyValue(NAMES_PROPERTY_NAME))
+      .willReturn(Optional.of(new ObjectMapper().writeValueAsString(existing)));
+
+    instance.process(VRE_NAME, false, TRIPLE_FOR_PERSON_URI_FORENAME);
+
+    verify(entity).addProperty(
+      eq(NAMES_PROPERTY_NAME),
+      argThat(matchesPersonNames()
+        .withPersonName(0, forename(FORENAME), DIFFERENT_PERSON_URI)
+      ),
+      eq(PERSON_NAMES_TYPE_NAME)
+    );
+  }
+
   private PersonName forename(String forename) {
     PersonName personName = new PersonName();
     personName.addNameComponent(PersonNameComponent.Type.FORENAME, forename);

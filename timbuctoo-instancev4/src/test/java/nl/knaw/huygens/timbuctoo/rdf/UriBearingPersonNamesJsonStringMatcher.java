@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.model.PersonName;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.hamcrest.Description;
@@ -9,6 +10,7 @@ import org.hamcrest.TypeSafeMatcher;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import static java.lang.String.format;
 import static java.util.Comparator.comparingInt;
@@ -38,23 +40,32 @@ public class UriBearingPersonNamesJsonStringMatcher extends TypeSafeMatcher<Stri
   protected boolean matchesSafely(String item) {
     try {
       UriBearingPersonNames uriBearingPersonNames = objectMapper.readValue(item, UriBearingPersonNames.class);
+
+      List<PersonName> personNamesList = Lists.newArrayList(uriBearingPersonNames.list);
+      Map<String, Integer> nameUris = Maps.newHashMap(uriBearingPersonNames.nameUris);
+
       personNameMatchingRows.forEach(pmr -> {
-          if (uriBearingPersonNames.list.size() > pmr.position) {
-            if (!uriBearingPersonNames.list.get(pmr.position).equals(pmr.personName)) {
+        if (personNamesList.size() > pmr.position) {
+            if (!personNamesList.get(pmr.position).equals(pmr.personName)) {
               errorMessages.add(format("Does not have '%s' on position '%d' in 'list'.", pmr.personName, pmr.position));
             }
           } else {
             errorMessages.add(format("Does not contain an item at position '%d' of 'list'.", pmr.position));
           }
-          if (uriBearingPersonNames.nameUris.containsKey(pmr.uri)) {
-            if (uriBearingPersonNames.nameUris.get(pmr.uri) != pmr.position) {
+        if (nameUris.containsKey(pmr.uri)) {
+            if (nameUris.get(pmr.uri) != pmr.position) {
               errorMessages.add(format("'%s' in wrong position in nameUris", pmr.uri));
             }
+            nameUris.remove(pmr.uri);
           } else {
             errorMessages.add(format("Does not contain item '%s' in 'nameUris'.", pmr.uri));
           }
         }
       );
+
+      nameUris.forEach((key, value) -> {
+        errorMessages.add(format("Unexpected name for uri '%s' on position '%d'", key, value));
+      });
 
     } catch (IOException e) {
       throw new RuntimeException(e);
