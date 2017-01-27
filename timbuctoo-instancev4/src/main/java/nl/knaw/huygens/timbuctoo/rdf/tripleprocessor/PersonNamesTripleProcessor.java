@@ -7,16 +7,17 @@ import nl.knaw.huygens.timbuctoo.model.properties.converters.PersonNamesConverte
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNames;
-import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
+import org.apache.jena.graph.impl.LiteralLabel;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getEntityTypeName;
 import static org.slf4j.LoggerFactory.getLogger;
 
-class PersonNamesTripleProcessor implements TripleProcessor {
+class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
   private static final Logger LOG = getLogger(PersonNamesTripleProcessor.class);
   private static final String NAMES_PROPERTY_NAME = "names";
   private static final String NAMES_TYPE_ID = new PersonNamesConverter().getUniqueTypeIdentifier();
@@ -28,44 +29,26 @@ class PersonNamesTripleProcessor implements TripleProcessor {
     this.database = database;
   }
 
-  @Override
   public void process(String vreName, boolean isAssertion, Triple triple) {
-
-    final Node subject = triple.getSubject();
-    final Entity entity = database.findOrCreateEntity(vreName, subject);
-    final String value = triple.getObject().getLiteralLexicalForm();
-    final String nameTypePredicate = triple.getPredicate().getLocalName();
-
-    if (isAssertion && value.length() > 0) {
-      try {
-        addNameComponentToEntity(entity, nameTypePredicate, value, subject.getURI());
-      } catch (JsonProcessingException e) {
-        LOG.error("Failed to write personNames json for {}.", entity, e);
-      } catch (IOException e) {
-        LOG.error("Failed to read personNames json for {}", entity, e);
-      }
-    } else {
-      try {
-        removeNameComponent(entity, nameTypePredicate, value, subject.getURI());
-      } catch (IOException e) {
-        LOG.error("Failed to update personNames for {}", entity);
-      }
-    }
+    process(vreName, triple.getSubject().getURI(), triple.getPredicate().getURI(), triple.getObject().getLiteral(),
+      isAssertion);
   }
 
-  private void removeNameComponent(Entity entity, String nameTypePredicate, String value, String subjectUri)
-    throws IOException {
-    final PersonNameComponent.Type nameType = PersonNameComponent.Type.getInstance(nameTypePredicate);
-    final Optional<String> currentRawValue = entity.getPropertyValue("names");
+  @Override
+  protected void processAssertion(String vreName, String subject, String predicate, LiteralLabel object) {
+    final Entity entity = database.findOrCreateEntity(vreName, subject);
+    final String value = object.getLexicalForm();
+    final String nameTypePredicate = getEntityTypeName(predicate);
 
-    if (!currentRawValue.isPresent()) {
-      LOG.warn("'{}' has no 'names' property", entity);
+    try {
+      addNameComponentToEntity(entity, nameTypePredicate, value, subject);
+    } catch (JsonProcessingException e) {
+      LOG.error("Failed to write personNames json for {}.", entity);
+      LOG.error("Error thrown", e);
+    } catch (IOException e) {
+      LOG.error("Failed to read personNames json for {}", entity);
+      LOG.error("Error thrown", e);
     }
-
-    UriBearingPersonNames names = objectMapper.readValue(currentRawValue.get(), UriBearingPersonNames.class);
-
-    names.removeComponent(subjectUri, nameType, value);
-    saveNamesProperty(entity, names);
   }
 
   private void addNameComponentToEntity(Entity entity, String nameTypePredicate, String value, String subjectUri)
@@ -82,6 +65,34 @@ class PersonNamesTripleProcessor implements TripleProcessor {
     }
 
     names.addNameComponent(subjectUri, nameType, value);
+    saveNamesProperty(entity, names);
+  }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, LiteralLabel object) {
+    final Entity entity = database.findOrCreateEntity(vreName, subject);
+    final String value = object.getLexicalForm();
+    final String nameTypePredicate = getEntityTypeName(predicate);
+
+    try {
+      removeNameComponent(entity, nameTypePredicate, value, subject);
+    } catch (IOException e) {
+      LOG.error("Failed to update personNames for {}", entity);
+    }
+  }
+
+  private void removeNameComponent(Entity entity, String nameTypePredicate, String value, String subjectUri)
+    throws IOException {
+    final PersonNameComponent.Type nameType = PersonNameComponent.Type.getInstance(nameTypePredicate);
+    final Optional<String> currentRawValue = entity.getPropertyValue("names");
+
+    if (!currentRawValue.isPresent()) {
+      LOG.warn("'{}' has no 'names' property", entity);
+    }
+
+    UriBearingPersonNames names = objectMapper.readValue(currentRawValue.get(), UriBearingPersonNames.class);
+
+    names.removeComponent(subjectUri, nameType, value);
     saveNamesProperty(entity, names);
   }
 

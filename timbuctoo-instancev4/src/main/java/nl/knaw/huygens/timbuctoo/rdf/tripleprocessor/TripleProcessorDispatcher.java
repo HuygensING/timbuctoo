@@ -98,7 +98,7 @@ public class TripleProcessorDispatcher {
     } else if (predicateIsAltLabel(triple)) {
       altLabel.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
     } else if (predicateIsTeiName(triple)) {
-      personNames.process(vreName, isAssertion, triple);
+      personNames.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
     } else if (predicateIsNameVariant(triple)) {
       personNameVariant.process(vreName, isAssertion, triple);
     } else if (objectIsLiteral(triple)) {
