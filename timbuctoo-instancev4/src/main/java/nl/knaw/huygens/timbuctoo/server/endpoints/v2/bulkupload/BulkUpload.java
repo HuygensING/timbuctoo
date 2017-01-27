@@ -60,10 +60,11 @@ public class BulkUpload {
   private final int maxCache;
   private final UserPermissionChecker permissionChecker;
   private final TransactionEnforcer transactionEnforcer;
+  private final int maxFiles;
 
   public BulkUpload(BulkUploadService uploadService, BulkUploadVre bulkUploadVre,
                     LoggedInUsers loggedInUsers, VreAuthorizationCrud authorizationCreator, int maxCache,
-                    UserPermissionChecker permissionChecker, TransactionEnforcer transactionEnforcer) {
+                    UserPermissionChecker permissionChecker, TransactionEnforcer transactionEnforcer, int maxFiles) {
     this.uploadService = uploadService;
     this.bulkUploadVre = bulkUploadVre;
     this.loggedInUsers = loggedInUsers;
@@ -71,6 +72,7 @@ public class BulkUpload {
     this.maxCache = maxCache;
     this.permissionChecker = permissionChecker;
     this.transactionEnforcer = transactionEnforcer;
+    this.maxFiles = maxFiles;
   }
 
   @POST
@@ -210,7 +212,11 @@ public class BulkUpload {
     List<Tuple<String, File>> tempFiles = new ArrayList<>();
     //Limit the total size of all the files to maxCache
     long sizeLeft = maxCache;
+    int fileCount = 0;
     for (FormDataBodyPart part : parts) {
+      if (fileCount++ == maxFiles) {
+        break;
+      }
       FormDataContentDisposition fileDetails = part.getFormDataContentDisposition();
       InputStream fileUpload = part.getValueAs(InputStream.class);
       File tempFile = File.createTempFile("timbuctoo-bulkupload-", null, null);
