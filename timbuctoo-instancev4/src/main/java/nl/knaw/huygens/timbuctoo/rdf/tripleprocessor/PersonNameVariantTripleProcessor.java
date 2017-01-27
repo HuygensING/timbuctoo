@@ -69,8 +69,6 @@ public class PersonNameVariantTripleProcessor extends AbstractReferenceTriplePro
         objectEntity.get().addProperty(NAMES_PROPERTY_NAME, subjectRawNames.get(), NAMES_TYPE_ID);
       }
     }
-    // FIXME looks like a bug, but seems to work in the front-end, somewhere else this is corrected
-    database.addRdfSynonym(vreName, objectEntity.get(), object);
     database.purgeEntity(vreName, subjectEntity.get());
   }
 

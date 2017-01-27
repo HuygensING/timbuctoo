@@ -62,7 +62,6 @@ public class PersonNameVariantTripleProcessorTest {
           .withPersonName(1, forename(SUBJECT_FORENAME), SUBJECT_URI)
       ),
       eq(PERSON_NAMES_TYPE_NAME));
-    verify(database).addRdfSynonym(VRE_NAME, objectEntity, OBJECT_URI);
     verify(database).purgeEntity(VRE_NAME, subjectEntity);
   }
 
@@ -78,7 +77,6 @@ public class PersonNameVariantTripleProcessorTest {
       eq(NAMES_PROPERTY_NAME),
       argThat(matchesPersonNames().withPersonName(0, forename(SUBJECT_FORENAME), SUBJECT_URI)),
       eq(PERSON_NAMES_TYPE_NAME));
-    verify(database).addRdfSynonym(VRE_NAME, objectEntity, OBJECT_URI);
     verify(database).purgeEntity(VRE_NAME, subjectEntity);
   }
 
