@@ -95,7 +95,7 @@ public class Database {
     return findEntity(vreName, getNodeUri(node, vreName));
   }
 
-  private Optional<Entity> findEntity(String vreName, String nodeUri) {
+  public Optional<Entity> findEntity(String vreName, String nodeUri) {
     final Optional<Vertex> entityV = findVertexInRdfIndex(vreName, nodeUri);
     return entityV.isPresent() ?
       Optional.of(new Entity(entityV.get(), getCollections(entityV.get(), vreName)))
@@ -345,7 +345,10 @@ public class Database {
 
   public void addRdfSynonym(String vreName, Entity entity, Node alternative) {
     String synonymUri = getNodeUri(alternative, vreName);
+    addRdfSynonym(vreName, entity, synonymUri);
+  }
 
+  public void addRdfSynonym(String vreName, Entity entity, String synonymUri) {
     String[] oldRdfUri = entity.vertex.value(RDF_SYNONYM_PROP);
     String[] newRdfUri = Arrays.copyOf(oldRdfUri, oldRdfUri.length + 1);
 

@@ -3,113 +3,88 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.model.PersonName;
 import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
-import nl.knaw.huygens.timbuctoo.rdf.TripleHelper;
 import nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNames;
-import org.apache.jena.graph.Triple;
+import org.junit.Before;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.io.IOException;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.model.PersonNameStubs.forename;
+import static nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNamesJsonStringMatcher.matchesPersonNames;
 import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleProcessorDispatcher.TIM_IS_NAME_VARIANT_OF;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class PersonNameVariantTripleProcessorTest {
-  private static final String PERSON_URI = "http://example.com/Jan";
-  private static final String DIFFERENT_PERSON_URI = "http://example.com/Other_Jan";
+  private static final String SUBJECT_URI = "http://example.com/Jan";
+  private static final String OBJECT_URI = "http://example.com/Piet";
   private static final String NAMES_PROPERTY_NAME = "names";
   private static final String PERSON_NAMES_TYPE_NAME = "person-names";
+  private static final String SUBJECT_FORENAME = "Jan";
+  private static final String OBJECT_FORENAME = "Piet";
+  private static final String VRE_NAME = "vreName";
+  private Entity subjectEntity;
+  private Entity objectEntity;
+  private PersonNameVariantTripleProcessor instance;
+  private Database database;
 
-  private Triple makeTriple(String subject, String predicate, String object) {
-    return TripleHelper.createTripleIterator(
-      "<" + subject + "> " +
-        "<" + predicate + "> " +
-        "<" + object + "> .").next();
+  @Before
+  public void setup() {
+    database = mock(Database.class);
+    instance = new PersonNameVariantTripleProcessor(database);
+    subjectEntity = mock(Entity.class);
+    objectEntity = mock(Entity.class);
+    given(database.findEntity(VRE_NAME, SUBJECT_URI)).willReturn(Optional.of(subjectEntity));
+    given(database.findEntity(VRE_NAME, OBJECT_URI)).willReturn(Optional.of(objectEntity));
   }
 
   @Test
   public void processAddsThePersonNamesOfTheObjectEntityToTheSubjectEntity() throws IOException {
-    final Triple triple = makeTriple(PERSON_URI, TIM_IS_NAME_VARIANT_OF, DIFFERENT_PERSON_URI);
-    final Database database = mock(Database.class);
-    final PersonNameVariantTripleProcessor instance = new PersonNameVariantTripleProcessor(database);
-    final String vreName = "vreName";
-    final String foreNameA = "Jan 1";
-    final String foreNameB = "Jan 2";
-    final Entity subjectEntity = mock(Entity.class);
-    final Entity objectEntity = mock(Entity.class);
-    final String subjectName = makeName(foreNameA, PERSON_URI);
-    final String objectName = makeName(foreNameB, DIFFERENT_PERSON_URI);
-    given(database.findEntity(vreName, triple.getSubject())).willReturn(Optional.of(subjectEntity));
-    given(database.findEntity(vreName, triple.getObject())).willReturn(Optional.of(objectEntity));
+    final String subjectName = makeForename(SUBJECT_FORENAME, SUBJECT_URI);
+    final String objectName = makeForename(OBJECT_FORENAME, OBJECT_URI);
     given(subjectEntity.getPropertyValue(NAMES_PROPERTY_NAME)).willReturn(Optional.of(subjectName));
     given(objectEntity.getPropertyValue(NAMES_PROPERTY_NAME)).willReturn(Optional.of(objectName));
 
-    instance.process(vreName, true, triple);
+    instance.process(VRE_NAME, SUBJECT_URI, TIM_IS_NAME_VARIANT_OF, OBJECT_URI, true);
 
-    final ArgumentCaptor<String> json = ArgumentCaptor.forClass(String.class);
-    final ArgumentCaptor<String> propertyName = ArgumentCaptor.forClass(String.class);
-    final ArgumentCaptor<String> typeName = ArgumentCaptor.forClass(String.class);
-    verify(objectEntity).addProperty(propertyName.capture(), json.capture(), typeName.capture());
-    verify(database).addRdfSynonym(vreName, objectEntity, triple.getObject());
-    verify(database).purgeEntity(vreName, subjectEntity);
-    assertThat(propertyName.getValue(), equalTo(NAMES_PROPERTY_NAME));
-    assertThat(typeName.getValue(), equalTo(PERSON_NAMES_TYPE_NAME));
-    assertThat(getNameResult(json).list.size(), equalTo(2));
-    assertThat(getNameResult(json).list.get(0).getFullName(), equalTo(foreNameB));
-    assertThat(getNameResult(json).list.get(1).getFullName(), equalTo(foreNameA));
-    assertThat(getNameResult(json).nameUris.get(PERSON_URI), equalTo(1));
-    assertThat(getNameResult(json).nameUris.get(DIFFERENT_PERSON_URI), equalTo(0));
+    verify(objectEntity).addProperty(
+      eq(NAMES_PROPERTY_NAME),
+      argThat(
+        matchesPersonNames()
+          .withPersonName(0, forename(OBJECT_FORENAME), OBJECT_URI)
+          .withPersonName(1, forename(SUBJECT_FORENAME), SUBJECT_URI)
+      ),
+      eq(PERSON_NAMES_TYPE_NAME));
+    verify(database).addRdfSynonym(VRE_NAME, objectEntity, OBJECT_URI);
+    verify(database).purgeEntity(VRE_NAME, subjectEntity);
   }
 
   @Test
   public void processCreatesANewNameForTheObjectEntityIfNoneIsPresent() throws IOException {
-    final Triple triple = makeTriple(PERSON_URI, TIM_IS_NAME_VARIANT_OF, DIFFERENT_PERSON_URI);
-    final Database database = mock(Database.class);
-    final PersonNameVariantTripleProcessor instance = new PersonNameVariantTripleProcessor(database);
-    final String vreName = "vreName";
-    final String foreNameA = "Jan 1";
-    final Entity subjectEntity = mock(Entity.class);
-    final Entity objectEntity = mock(Entity.class);
-    final String subjectName = makeName(foreNameA, PERSON_URI);
-    given(database.findEntity(vreName, triple.getSubject())).willReturn(Optional.of(subjectEntity));
-    given(database.findEntity(vreName, triple.getObject())).willReturn(Optional.of(objectEntity));
+    final String subjectName = makeForename(SUBJECT_FORENAME, SUBJECT_URI);
     given(subjectEntity.getPropertyValue(NAMES_PROPERTY_NAME)).willReturn(Optional.of(subjectName));
     given(objectEntity.getPropertyValue(NAMES_PROPERTY_NAME)).willReturn(Optional.empty());
 
-    instance.process(vreName, true, triple);
+    instance.process(VRE_NAME, SUBJECT_URI, TIM_IS_NAME_VARIANT_OF, OBJECT_URI, true);
 
-    final ArgumentCaptor<String> json = ArgumentCaptor.forClass(String.class);
-    final ArgumentCaptor<String> propertyName = ArgumentCaptor.forClass(String.class);
-    final ArgumentCaptor<String> typeName = ArgumentCaptor.forClass(String.class);
-    verify(objectEntity).addProperty(propertyName.capture(), json.capture(), typeName.capture());
-    verify(database).addRdfSynonym(vreName, objectEntity, triple.getObject());
-    verify(database).purgeEntity(vreName, subjectEntity);
-    assertThat(propertyName.getValue(), equalTo(NAMES_PROPERTY_NAME));
-    assertThat(typeName.getValue(), equalTo(PERSON_NAMES_TYPE_NAME));
-    assertThat(getNameResult(json).list.size(), equalTo(1));
-    assertThat(getNameResult(json).list.get(0).getFullName(), equalTo(foreNameA));
-    assertThat(getNameResult(json).nameUris.get(PERSON_URI), equalTo(0));
+    verify(objectEntity).addProperty(
+      eq(NAMES_PROPERTY_NAME),
+      argThat(matchesPersonNames().withPersonName(0, forename(SUBJECT_FORENAME), SUBJECT_URI)),
+      eq(PERSON_NAMES_TYPE_NAME));
+    verify(database).addRdfSynonym(VRE_NAME, objectEntity, OBJECT_URI);
+    verify(database).purgeEntity(VRE_NAME, subjectEntity);
   }
 
-  private String makeName(String forename, String uri) throws JsonProcessingException {
-    final UriBearingPersonNames names = new UriBearingPersonNames();
-    final PersonName name = new PersonName();
-    name.addNameComponent(PersonNameComponent.Type.FORENAME, forename);
-    names.list.add(name);
-    names.nameUris.put(uri, 0);
+  private String makeForename(String forename, String uri) throws JsonProcessingException {
+    final UriBearingPersonNames names = new UriBearingPersonNames()
+      .addNameComponent(uri, PersonNameComponent.Type.FORENAME, forename);
     return new ObjectMapper().writeValueAsString(names);
-  }
-
-  private UriBearingPersonNames getNameResult(ArgumentCaptor<String> json) throws IOException {
-    return new ObjectMapper().readValue(json.getValue(), UriBearingPersonNames.class);
   }
 }
