@@ -343,8 +343,7 @@ public class Database {
 
   }
 
-  public void addRdfSynonym(String vreName, Entity entity, Node alternative) {
-    String synonymUri = getNodeUri(alternative, vreName);
+  public void addRdfSynonym(String vreName, Entity entity, String synonymUri) {
     String[] oldRdfUri = entity.vertex.value(RDF_SYNONYM_PROP);
     String[] newRdfUri = Arrays.copyOf(oldRdfUri, oldRdfUri.length + 1);
 

@@ -92,7 +92,7 @@ public class TripleProcessorDispatcher {
     if (predicateIsType(triple)) {
       collectionMembership.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsSameAs(triple)) {
-      sameAs.process(vreName, isAssertion, triple);
+      sameAs.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (subclassOfKnownArchetype(triple)) {
       archetype.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsAltLabel(triple)) {
