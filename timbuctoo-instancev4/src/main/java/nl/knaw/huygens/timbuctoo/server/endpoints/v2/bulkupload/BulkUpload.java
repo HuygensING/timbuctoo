@@ -197,7 +197,13 @@ public class BulkUpload {
     if (uploadType == null || uploadType.equals("xlsx")) {
       loader = new AllSheetLoader();
     } else if (uploadType.equals("csv")) {
-      loader = new CsvLoader(form);
+      try {
+        loader = new CsvLoader(form);
+      } catch (IllegalArgumentException e) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                       .entity(e.toString())
+                       .build();
+      }
     } else if (uploadType.equals("dataperfect")) {
       loader = new DataPerfectLoader();
     } else {

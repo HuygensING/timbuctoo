@@ -24,19 +24,19 @@ public class CsvLoader implements Loader {
   public CsvLoader(Map<String, String> config) {
     CSVFormat format = CSVFormat.EXCEL;
     if (config.containsKey("delimiter")) {
-      format = format.withDelimiter(config.get("delimiter").charAt(0));
+      format = format.withDelimiter(onlyChar(config, "delimiter"));
     }
     if (config.containsKey("quoteChar")) {
-      format = format.withQuote(config.get("quoteChar").charAt(0));
+      format = format.withQuote(onlyChar(config, "quoteChar"));
     }
     if (config.containsKey("quoteMode")) {
       format = format.withQuoteMode(QuoteMode.valueOf(config.get("quoteMode")));
     }
     if (config.containsKey("commentStart")) {
-      format = format.withCommentMarker(config.get("commentStart").charAt(0));
+      format = format.withCommentMarker(onlyChar(config, "commentStart"));
     }
     if (config.containsKey("escape")) {
-      format = format.withCommentMarker(config.get("escape").charAt(0));
+      format = format.withCommentMarker(onlyChar(config, "escape"));
     }
     if (config.containsKey("ignoreSurroundingSpaces")) {
       format = format.withIgnoreSurroundingSpaces(config.get("ignoreSurroundingSpaces").equals("true"));
@@ -59,6 +59,14 @@ public class CsvLoader implements Loader {
     this.format = format
       .withAllowMissingColumnNames()
       .withHeader();
+  }
+
+  private static char onlyChar(Map<String, String> config, String key) {
+    String value = config.get(key);
+    if (value.length() != 1) {
+      throw new IllegalArgumentException(String.format("expected a single character for %s, got %s", key, value));
+    }
+    return value.charAt(0);
   }
 
   @Override
