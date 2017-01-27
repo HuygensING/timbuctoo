@@ -24,37 +24,37 @@ public class CsvLoader implements Loader {
   public CsvLoader(Map<String, String> config) {
     CSVFormat format = CSVFormat.EXCEL;
     if (config.containsKey("delimiter")) {
-      format.withDelimiter(config.get("delimiter").charAt(0));
+      format = format.withDelimiter(config.get("delimiter").charAt(0));
     }
     if (config.containsKey("quoteChar")) {
-      format.withQuote(config.get("quoteChar").charAt(0));
+      format = format.withQuote(config.get("quoteChar").charAt(0));
     }
     if (config.containsKey("quoteMode")) {
-      format.withQuoteMode(QuoteMode.valueOf(config.get("quoteMode")));
+      format = format.withQuoteMode(QuoteMode.valueOf(config.get("quoteMode")));
     }
     if (config.containsKey("commentStart")) {
-      format.withCommentMarker(config.get("commentStart").charAt(0));
+      format = format.withCommentMarker(config.get("commentStart").charAt(0));
     }
     if (config.containsKey("escape")) {
-      format.withCommentMarker(config.get("escape").charAt(0));
+      format = format.withCommentMarker(config.get("escape").charAt(0));
     }
     if (config.containsKey("ignoreSurroundingSpaces")) {
-      format.withIgnoreSurroundingSpaces(config.get("ignoreSurroundingSpaces").equals("true"));
+      format = format.withIgnoreSurroundingSpaces(config.get("ignoreSurroundingSpaces").equals("true"));
     }
     if (config.containsKey("ignoreEmptyLines")) {
-      format.withIgnoreEmptyLines(config.get("ignoreEmptyLines").equals("true"));
+      format = format.withIgnoreEmptyLines(config.get("ignoreEmptyLines").equals("true"));
     }
     if (config.containsKey("recordSeparator")) {
-      format.withRecordSeparator(config.get("recordSeparator"));
+      format = format.withRecordSeparator(config.get("recordSeparator"));
     }
     if (config.containsKey("nullString")) {
-      format.withNullString(config.get("nullString"));
+      format = format.withNullString(config.get("nullString"));
     }
     if (config.containsKey("trim")) {
-      format.withTrim(config.get("trim").equals("true"));
+      format = format.withTrim(config.get("trim").equals("true"));
     }
     if (config.containsKey("trailingDelimiter")) {
-      format.withTrailingDelimiter(config.get("trailingDelimiter").equals("true"));
+      format = format.withTrailingDelimiter(config.get("trailingDelimiter").equals("true"));
     }
     this.format = format
       .withAllowMissingColumnNames()
@@ -69,7 +69,7 @@ public class CsvLoader implements Loader {
       String filename = file.getLeft();
       //remove well-known extensions
       if (filename.endsWith(".csv") || filename.endsWith(".tsv") || filename.endsWith(".txt")) {
-        filename = filename.substring(filename.length() - 1);
+        filename = filename.substring(0, filename.length() - 4);
       }
       importer.startCollection(filename);
 
