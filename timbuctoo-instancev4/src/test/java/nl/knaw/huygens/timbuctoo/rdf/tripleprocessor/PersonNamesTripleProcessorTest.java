@@ -16,6 +16,8 @@ import org.junit.Test;
 import java.io.IOException;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.model.PersonNameStubs.forename;
+import static nl.knaw.huygens.timbuctoo.model.PersonNameStubs.surname;
 import static nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNamesJsonStringMatcher.matchesPersonNames;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -148,15 +150,4 @@ public class PersonNamesTripleProcessorTest {
     );
   }
 
-  private PersonName forename(String forename) {
-    PersonName personName = new PersonName();
-    personName.addNameComponent(PersonNameComponent.Type.FORENAME, forename);
-    return personName;
-  }
-
-  private PersonName surname(String surname) {
-    PersonName personName = new PersonName();
-    personName.addNameComponent(PersonNameComponent.Type.SURNAME, surname);
-    return personName;
-  }
 }
