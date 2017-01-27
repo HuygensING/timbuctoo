@@ -270,7 +270,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager, 25_000), bulkUploadVre,
       securityConfig.getLoggedInUsers(environment), securityConfig.getVreAuthorizationCreator(), 20 * 1024 * 1024,
-      permissionChecker, transactionEnforcer));
+      permissionChecker, transactionEnforcer, 50));
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata());

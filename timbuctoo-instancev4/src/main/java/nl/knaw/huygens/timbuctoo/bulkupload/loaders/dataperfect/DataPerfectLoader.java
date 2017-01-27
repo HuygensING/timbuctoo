@@ -10,14 +10,13 @@ import nl.knaw.dans.common.dataperfect.Record;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.slf4j.Logger;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -37,10 +36,10 @@ public class DataPerfectLoader implements Loader {
   private final Map<String, Integer> genericNameCounters = new HashMap<>();
 
   @Override
-  public void loadData(File file, Importer importer) throws InvalidFileException, IOException {
+  public void loadData(List<Tuple<String, File>> files, Importer importer) throws InvalidFileException, IOException {
     Database dbPerfectdb = null;
     try {
-      File output = writeZipToTempDir(file);
+      File output = writeZipToTempDir(files.get(0).getRight());
 
       File dirWithDb = unwrapToplevelDirIfNeeded(output);
       File structureFile = getStructureFile(dirWithDb);
