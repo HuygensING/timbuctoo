@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import java.util.Optional;
 import java.util.Set;
 
-import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getEntityTypeName;
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getLocalName;
 
 class ArchetypeTripleProcessor extends AbstractReferenceTripleProcessor {
   private final Database database;
@@ -18,9 +18,9 @@ class ArchetypeTripleProcessor extends AbstractReferenceTripleProcessor {
 
   @Override
   protected void processAssertion(String vreName, String subject, String predicate, String object) {
-    Collection collection = database.findOrCreateCollection(vreName, subject, getEntityTypeName(subject));
+    Collection collection = database.findOrCreateCollection(vreName, subject, getLocalName(subject));
     Collection previousArchetype = collection.getArchetype().get(); // collection must have an archetype
-    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(getEntityTypeName(object));
+    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(getLocalName(object));
 
     if (!archetypeCollectionOptional.isPresent()) {
       return;
@@ -35,9 +35,9 @@ class ArchetypeTripleProcessor extends AbstractReferenceTripleProcessor {
 
   @Override
   protected void processRetraction(String vreName, String subject, String predicate, String object) {
-    Collection collection = database.findOrCreateCollection(vreName, subject, getEntityTypeName(subject));
+    Collection collection = database.findOrCreateCollection(vreName, subject, getLocalName(subject));
     Collection previousArchetype = collection.getArchetype().get(); // collection must have an archetype
-    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(getEntityTypeName(object));
+    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(getLocalName(object));
 
     if (!archetypeCollectionOptional.isPresent()) {
       return;

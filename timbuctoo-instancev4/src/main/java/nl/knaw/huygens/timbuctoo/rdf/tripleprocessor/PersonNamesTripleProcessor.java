@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 import java.io.IOException;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getEntityTypeName;
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getLocalName;
 import static org.slf4j.LoggerFactory.getLogger;
 
 class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
@@ -38,7 +38,7 @@ class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
   protected void processAssertion(String vreName, String subject, String predicate, LiteralLabel object) {
     final Entity entity = database.findOrCreateEntity(vreName, subject);
     final String value = object.getLexicalForm();
-    final String nameTypePredicate = getEntityTypeName(predicate);
+    final String nameTypePredicate = getLocalName(predicate);
 
     try {
       addNameComponentToEntity(entity, nameTypePredicate, value, subject);
@@ -72,7 +72,7 @@ class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
   protected void processRetraction(String vreName, String subject, String predicate, LiteralLabel object) {
     final Entity entity = database.findOrCreateEntity(vreName, subject);
     final String value = object.getLexicalForm();
-    final String nameTypePredicate = getEntityTypeName(predicate);
+    final String nameTypePredicate = getLocalName(predicate);
 
     try {
       removeNameComponent(entity, nameTypePredicate, value, subject);

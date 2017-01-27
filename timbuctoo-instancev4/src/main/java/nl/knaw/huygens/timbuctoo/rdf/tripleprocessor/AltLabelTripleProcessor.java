@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getEntityTypeName;
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getLocalName;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -31,7 +31,7 @@ public class AltLabelTripleProcessor extends AbstractValueTripleProcessor {
   @Override
   protected void processAssertion(String vreName, String subject, String predicate, LiteralLabel object) {
     final Entity entity = database.findOrCreateEntity(vreName, subject);
-    final String propertyName = getEntityTypeName(predicate);
+    final String propertyName = getLocalName(predicate);
     final String value = object.getLexicalForm();
 
     addToListProperty(entity, propertyName, value);
@@ -63,7 +63,7 @@ public class AltLabelTripleProcessor extends AbstractValueTripleProcessor {
   @Override
   protected void processRetraction(String vreName, String subject, String predicate, LiteralLabel object) {
     final Entity entity = database.findOrCreateEntity(vreName, subject);
-    final String propertyName = getEntityTypeName(predicate);
+    final String propertyName = getLocalName(predicate);
     final String value = object.getLexicalForm();
 
     removeFromListProperty(entity, propertyName, value);
