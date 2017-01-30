@@ -18,7 +18,7 @@ To build your own version, you can either have 'java 8' and 'maven 3' installed 
 
 === 3. Running it
 
- * Do a quick *debug run* using `./timbuctoo-instancev4/debugrun.sh` or `docker-compose up`.
+ * Do a quick *debug run* using `./devtools/debugrun/debugrun.sh` or `docker-compose up`.
  If you do not use docker the external services, such as solr won't be started. 
  Timbuctoo will still run and the API will run fine, but some urls in the web GUI won't work.
 
