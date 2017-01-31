@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.bulkupload.savers;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescription;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.VreIniter;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -9,7 +10,6 @@ import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Graph;
-import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
@@ -32,10 +32,10 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String VALUE_PREFIX = "value:";
   public static final String ERROR_PREFIX = "error:";
   public static final String SAVED_MAPPING_STATE = "savedMappingState";
-  private final Vres vres;
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
   private final int maxVerticesPerTransaction;
+  private final VreIniter vreIniter;
   private int saveCounter;
   private Transaction tx;
   private Vertex curCollection;
@@ -43,48 +43,11 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
 
   public TinkerpopSaver(Vres vres, GraphWrapper graphWrapper, String vreName, String vreLabel,
                         int maxVerticesPerTransaction, String fileName) {
-    this.vres = vres;
     this.graphWrapper = graphWrapper;
     tx = graphWrapper.getGraph().tx();
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
-    this.vre = initVre(vreName, vreLabel, fileName);
-  }
-
-  private Vertex initVre(String vreName, String vreLabel, String fileName) {
-    final Vertex result;
-    try (Transaction tx = graphWrapper.getGraph().tx()) {
-      final GraphTraversal<Vertex, Vertex> vre = getVreTraversal(vreName);
-      if (vre.hasNext()) {
-        result = vre.next();
-        if (result.property(SAVED_MAPPING_STATE).isPresent()) {
-          result.property(SAVED_MAPPING_STATE).remove();
-        }
-        graphWrapper.getGraph().traversal().V(result.id())
-                    .out(RAW_COLLECTION_EDGE_NAME)
-                    .union(
-                      __.out(RAW_ITEM_EDGE_NAME),
-                      __.out(RAW_PROPERTY_EDGE_NAME),
-                      __.identity() //the collection
-                    )
-                    .drop()
-                    .toList();//force traversal and thus side-effects
-      } else {
-        result = graphWrapper.getGraph().addVertex(T.label, Vre.DATABASE_LABEL, Vre.VRE_NAME_PROPERTY_NAME, vreName);
-      }
-      result.property(Vre.VRE_LABEL_PROPERTY_NAME, vreLabel);
-      result.property(Vre.UPLOADED_FILE_NAME, fileName);
-      result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishState.UPLOADING.toString());
-      tx.commit();
-    }
-
-    vres.reload();
-    return result;
-  }
-
-  private GraphTraversal<Vertex, Vertex> getVreTraversal(String vreName) {
-    return graphWrapper.getGraph().traversal().V()
-                                                           .hasLabel(Vre.DATABASE_LABEL)
-                                                           .has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+    this.vreIniter = new VreIniter(graphWrapper, vres);
+    this.vre = vreIniter.upsertVre(vreName, vreLabel, fileName);
   }
 
   private void allowCommit() {
@@ -145,7 +108,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public void setUploadFinished(String vreName, Vre.PublishState publishState) {
     try (Transaction tx = graphWrapper.getGraph().tx()) {
 
-      final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
+      final GraphTraversal<Vertex, Vertex> vreT = vreIniter.getVreTraversal(vreName);
       if (vreT.hasNext()) {
         vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
       }
