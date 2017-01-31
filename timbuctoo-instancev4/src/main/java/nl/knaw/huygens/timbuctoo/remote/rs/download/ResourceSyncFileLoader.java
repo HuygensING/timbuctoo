@@ -18,7 +18,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Browses the resourcesync files and loads all resources that are referenced
- *
+ * <p/>
  * A resource might not be downloadable, in that case loadFiles will throw and abort in an unfinished state.
  * You can provide a httpClient that automatically retries failed requests and that waits a long time
  * before returning a timeout to limit the amount of failures.
