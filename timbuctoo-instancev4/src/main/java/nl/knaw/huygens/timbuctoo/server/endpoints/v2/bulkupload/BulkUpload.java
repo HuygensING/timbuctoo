@@ -7,13 +7,9 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv.CsvLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -45,6 +41,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static javax.ws.rs.core.Response.status;
+import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAndReturn;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.MAPPING_EXECUTION;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.UPLOADING;
 import static org.apache.poi.util.IOUtils.copy;
@@ -61,6 +59,7 @@ public class BulkUpload {
   private final UserPermissionChecker permissionChecker;
   private final TransactionEnforcer transactionEnforcer;
   private final int maxFiles;
+  private final VreAuthIniter vreAuthIniter = new VreAuthIniter();
 
   public BulkUpload(BulkUploadService uploadService, BulkUploadVre bulkUploadVre,
                     LoggedInUsers loggedInUsers, VreAuthorizationCrud authorizationCreator, int maxCache,
@@ -89,41 +88,27 @@ public class BulkUpload {
       .filter(entry -> entry.getValue().size() > 0 && entry.getValue().get(0) != null)
       .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(0).getValue()));
 
-    Optional<User> user = loggedInUsers.userFor(authorization);
-    if (!user.isPresent()) {
-      return Response.status(Response.Status.FORBIDDEN).entity("User not known").build();
-    }
+    return vreAuthIniter
+      .addVreAuthorizations(authorization, vreName, loggedInUsers, transactionEnforcer, authorizationCreator)
+      .getOrElseGet(namespacedVre -> {
+        List<FormDataBodyPart> files = parts.getFields("file");
+        if (files == null) {
+          return status(Response.Status.BAD_REQUEST).entity("files missing").build();
+        }
 
-    if (vreName == null) {
-      return Response.status(Response.Status.BAD_REQUEST).entity("vreName missing").build();
-    }
-    String namespacedVre = user.get().getPersistentId() + "_" + stripFunnyCharacters(vreName);
-
-    try {
-      authorizationCreator.createAuthorization(namespacedVre, user.get().getId(), UserRoles.ADMIN_ROLE);
-    } catch (AuthorizationCreationException e) {
-      LOG.error("Cannot add authorization for user {} and VRE {}", user.get().getId(), namespacedVre);
-      LOG.error("Exception thrown", e);
-      return Response.status(Response.Status.FORBIDDEN).entity("Unable to create authorization for user").build();
-    }
-
-    List<FormDataBodyPart> files = parts.getFields("file");
-    if (files == null) {
-      return Response.status(Response.Status.BAD_REQUEST).entity("files missing").build();
-    }
-
-    try {
-      return executeUpload(files, formData, uploadType, vreName, namespacedVre);
-    } catch (IOException e) {
-      LOG.error("Reading upload failed", e);
-      return Response.status(Response.Status.BAD_REQUEST)
-                     .entity(e.getMessage())
-                     .build();
-    } catch (IllegalArgumentException e) {
-      return Response.status(Response.Status.BAD_REQUEST)
-                     .entity(e.getMessage())
-                     .build();
-    }
+        try {
+          return executeUpload(files, formData, uploadType, vreName, namespacedVre);
+        } catch (IOException e) {
+          LOG.error("Reading upload failed", e);
+          return status(Response.Status.BAD_REQUEST)
+            .entity(e.getMessage())
+            .build();
+        } catch (IllegalArgumentException e) {
+          return status(Response.Status.BAD_REQUEST)
+            .entity(e.getMessage())
+            .build();
+        }
+      });
   }
 
   @PUT
@@ -145,47 +130,34 @@ public class BulkUpload {
     if (filterResponse.isPresent()) {
       return filterResponse.get();
     }
-    return transactionEnforcer.executeAndReturn(timbuctooActions -> {
 
-      // Try to find the vre
-      final Vre vre = timbuctooActions.getVre(vreName);
-      if (vre == null) {
-        // not found
-        return TransactionStateAndResult.commitAndReturn(Response.status(Response.Status.NOT_FOUND).build());
-      }
+    Vre vre = transactionEnforcer.executeAndReturn(
+      timbuctooActions -> commitAndReturn(timbuctooActions.getVre(vreName))
+    );
 
-      // Check whether vre is currently in a transitional state
-      if (vre.getPublishState() == UPLOADING || vre.getPublishState() == MAPPING_EXECUTION) {
-        // Data from this vre is currently being transformed, so re-upload is dangerous
-        return TransactionStateAndResult
-          .commitAndReturn(Response.status(Response.Status.PRECONDITION_FAILED).build());
-      }
+    if (vre == null) {
+      // not found
+      return status(Response.Status.NOT_FOUND).build();
+    }
 
-      List<FormDataBodyPart> files = parts.getFields("file");
-      if (files == null) {
-        return TransactionStateAndResult
-          .commitAndReturn(
-            Response.status(Response.Status.BAD_REQUEST).entity("files missing").build());
-      }
+    // Check whether vre is currently in a transitional state
+    if (vre.getPublishState() == UPLOADING || vre.getPublishState() == MAPPING_EXECUTION) {
+      // Data from this vre is currently being transformed, so re-upload is dangerous
+      return status(Response.Status.PRECONDITION_FAILED).build();
+    }
 
-      try {
-        return TransactionStateAndResult.commitAndReturn(
-          executeUpload(files, formData, uploadType, vre.getMetadata().getLabel(), vreName)
-        );
-      } catch (IOException e) {
-        return TransactionStateAndResult.commitAndReturn(
-          Response.status(Response.Status.BAD_REQUEST)
-                  .entity(e.getMessage())
-                  .build()
-        );
-      } catch (IllegalArgumentException e) {
-        return TransactionStateAndResult.commitAndReturn(
-          Response.status(Response.Status.BAD_REQUEST)
-                  .entity(e.getMessage())
-                  .build()
-        );
-      }
-    });
+    List<FormDataBodyPart> files = parts.getFields("file");
+    if (files == null) {
+      return status(Response.Status.BAD_REQUEST).entity("files missing").build();
+    }
+
+    try {
+      return executeUpload(files, formData, uploadType, vre.getMetadata().getLabel(), vreName);
+    } catch (IOException | IllegalArgumentException e) {
+      return status(Response.Status.BAD_REQUEST)
+                .entity(e.getMessage())
+                .build();
+    }
   }
 
   private Response executeUpload(List<FormDataBodyPart> parts, Map<String, String> form, String uploadType,
@@ -200,14 +172,14 @@ public class BulkUpload {
       try {
         loader = new CsvLoader(form);
       } catch (IllegalArgumentException e) {
-        return Response.status(Response.Status.BAD_REQUEST)
+        return status(Response.Status.BAD_REQUEST)
                        .entity(e.toString())
                        .build();
       }
     } else if (uploadType.equals("dataperfect")) {
       loader = new DataPerfectLoader();
     } else {
-      return Response.status(Response.Status.BAD_REQUEST)
+      return status(Response.Status.BAD_REQUEST)
         .entity("failure: unknown uploadType" + uploadType)
         .build();
     }
@@ -286,11 +258,6 @@ public class BulkUpload {
       .entity(output)
       .build();
   }
-
-  private String stripFunnyCharacters(String vre) {
-    return vre.replaceFirst("\\.[a-zA-Z]+$", "").replaceAll("[^a-zA-Z-]", "_");
-  }
-
 
   class LimitOutputStream extends FilterOutputStream {
 
