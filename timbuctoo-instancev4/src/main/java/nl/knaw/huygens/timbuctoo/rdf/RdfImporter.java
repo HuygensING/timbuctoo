@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.atlas.web.TypedInputStream;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.riot.Lang;
 import org.apache.jena.riot.RDFDataMgr;
 import org.apache.jena.riot.system.StreamRDF;
 import org.apache.jena.sparql.core.Quad;
@@ -38,15 +37,26 @@ public class RdfImporter {
   }
 
 
-  public void importRdf(InputStream rdf, Lang lang) {
+  public void importRdf(InputStream rdf, String mimetype) {
     final Stopwatch stopwatch = Stopwatch.createStarted();
     final StreamRDF rdfStreamReader = new RdfStreamReader();
 
-    RDFDataMgr.parse(rdfStreamReader, new TypedInputStream(rdf), lang);
+    RDFDataMgr.parse(rdfStreamReader, new TypedInputStream(rdf, mimetype));
 
     LOG.info("Import took {}", stopwatch.stop());
 
   }
+
+  public void importRdf(InputStream rdf) {
+    final Stopwatch stopwatch = Stopwatch.createStarted();
+    final StreamRDF rdfStreamReader = new RdfStreamReader();
+
+    RDFDataMgr.parse(rdfStreamReader, new TypedInputStream(rdf));
+
+    LOG.info("Import took {}", stopwatch.stop());
+
+  }
+
 
   private void complete() {
     graphWrapper.getGraph().tx().commit();

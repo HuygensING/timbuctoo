@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.riot.Lang;
 import org.junit.Test;
 import org.mockito.InOrder;
 
@@ -32,7 +31,7 @@ public class RdfImporterTest {
     final Vres vres = mock(DatabaseConfiguredVres.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, tripleImporter);
 
-    instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), Lang.NQUADS);
+    instance.importRdf(getTripleStream(EXAMPLE_TRIPLE_STRING), "application/n-quads");
 
     InOrder inOrder = inOrder(tripleImporter, vres);
     inOrder.verify(tripleImporter).importTriple(eq(true), any(Triple.class));
