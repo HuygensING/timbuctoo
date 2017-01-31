@@ -18,15 +18,19 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class VreAuthIniter {
   private static final Logger LOG = getLogger(VreAuthIniter.class);
+  protected final LoggedInUsers loggedInUsers;
+  private TransactionEnforcer transactionEnforcer;
+  private VreAuthorizationCrud authorizationCreator;
 
-  public VreAuthIniter() {
+  public VreAuthIniter(LoggedInUsers loggedInUsers, TransactionEnforcer transactionEnforcer,
+                       VreAuthorizationCrud authorizationCreator) {
+    this.loggedInUsers = loggedInUsers;
+    this.transactionEnforcer = transactionEnforcer;
+    this.authorizationCreator = authorizationCreator;
   }
 
-  Either<String, Response> addVreAuthorizations(String authorization, String vreName,
-                                                LoggedInUsers loggedInUsers,
-                                                TransactionEnforcer transactionEnforcer,
-                                                VreAuthorizationCrud authorizationCreator) {
-    Optional<User> user = loggedInUsers.userFor(authorization);
+  public Either<String, Response> addVreAuthorizations(String authorization, String vreName) {
+    Optional<User> user = this.loggedInUsers.userFor(authorization);
     if (!user.isPresent()) {
       return Either.right(Response.status(Response.Status.FORBIDDEN).entity("User not known").build());
     }
