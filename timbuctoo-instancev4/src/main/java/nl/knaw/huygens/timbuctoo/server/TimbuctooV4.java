@@ -30,6 +30,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.JsonMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.DatabaseConfiguredVres;
 import nl.knaw.huygens.timbuctoo.remote.rs.ResourceSyncService;
+import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
@@ -62,10 +63,12 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactor
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.VreAuthIniter;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Import;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.Me;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users.MyVres;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.ListVres;
@@ -289,6 +292,18 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final ExecutorService rfdExecutorService = environment.lifecycle().executorService("rdf-import").build();
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
+    register(environment, new Import(
+      new ResourceSyncFileLoader(httpClient),
+      transactionEnforcer,
+      graphManager,
+      rfdExecutorService,
+      new VreAuthIniter(
+        securityConfig.getLoggedInUsers(environment),
+        transactionEnforcer,
+        securityConfig.getVreAuthorizationCreator()
+      ),
+      vres
+    ));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(
