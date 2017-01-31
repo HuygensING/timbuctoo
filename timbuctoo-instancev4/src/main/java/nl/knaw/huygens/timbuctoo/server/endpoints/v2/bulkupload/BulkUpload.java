@@ -59,7 +59,7 @@ public class BulkUpload {
   private final UserPermissionChecker permissionChecker;
   private final TransactionEnforcer transactionEnforcer;
   private final int maxFiles;
-  private final VreAuthIniter vreAuthIniter = new VreAuthIniter();
+  private final VreAuthIniter vreAuthIniter;
 
   public BulkUpload(BulkUploadService uploadService, BulkUploadVre bulkUploadVre,
                     LoggedInUsers loggedInUsers, VreAuthorizationCrud authorizationCreator, int maxCache,
@@ -72,6 +72,7 @@ public class BulkUpload {
     this.permissionChecker = permissionChecker;
     this.transactionEnforcer = transactionEnforcer;
     this.maxFiles = maxFiles;
+    this.vreAuthIniter = new VreAuthIniter(loggedInUsers, transactionEnforcer, authorizationCreator);
   }
 
   @POST
@@ -89,7 +90,7 @@ public class BulkUpload {
       .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(0).getValue()));
 
     return vreAuthIniter
-      .addVreAuthorizations(authorization, vreName, loggedInUsers, transactionEnforcer, authorizationCreator)
+      .addVreAuthorizations(authorization, vreName)
       .getOrElseGet(namespacedVre -> {
         List<FormDataBodyPart> files = parts.getFields("file");
         if (files == null) {
