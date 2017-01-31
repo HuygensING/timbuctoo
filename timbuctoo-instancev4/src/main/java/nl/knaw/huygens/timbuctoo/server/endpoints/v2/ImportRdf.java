@@ -4,7 +4,7 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.RdfImporter;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
-import org.apache.jena.riot.Lang;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
@@ -55,13 +55,14 @@ public class ImportRdf {
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @POST
   public void upload(@FormDataParam("file") final InputStream rdfInputStream,
+                     @FormDataParam("file") final FormDataContentDisposition disposition,
                      @FormDataParam("VRE_ID") String vreNameInput) {
 
     final String vreName = vreNameInput != null && vreNameInput.length() > 0 ? vreNameInput : "RdfImport";
     transactionEnforcer.execute(timbuctooActions -> {
       timbuctooActions.rdfCleanImportSession(vreName, session -> {
         final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreName, vres, session);
-        rdfImporter.importRdf(rdfInputStream, Lang.NQUADS);
+        rdfImporter.importRdf(rdfInputStream, disposition.getType());
         return commit();
       });
       return commit();
@@ -81,7 +82,7 @@ public class ImportRdf {
 
     @Override
     public void run() {
-      rdfImporter.importRdf(rdfStream, Lang.NQUADS);
+      rdfImporter.importRdf(rdfStream);
     }
   }
 }
