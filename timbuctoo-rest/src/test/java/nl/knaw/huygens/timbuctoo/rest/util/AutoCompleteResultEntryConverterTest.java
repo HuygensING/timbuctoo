@@ -62,7 +62,7 @@ public class AutoCompleteResultEntryConverterTest {
     // verify
     assertThat(convertedValue.keySet(), containsInAnyOrder(KEY_FIELD, VALUE_FIELD));
 
-    assertThat(convertedValue, hasEntry(KEY_FIELD, KEY_VALUE));
+    assertThat(convertedValue, hasEntry(KEY_FIELD, ID_VALUE));
     assertThat(convertedValue, hasEntry(VALUE_FIELD, DISPLAY_NAME));
   }
 

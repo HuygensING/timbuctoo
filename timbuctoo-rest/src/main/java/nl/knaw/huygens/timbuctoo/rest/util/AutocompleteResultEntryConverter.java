@@ -37,7 +37,7 @@ public class AutocompleteResultEntryConverter {
   public Map<String ,Object> convert(Map<String, Object> input, URI uri) {
     Map<String, Object> result = Maps.newHashMap();
 
-    result.put(KEY_FIELD, getLink(input, uri));
+    result.put(KEY_FIELD, input.get(INDEX_FIELD_ID));
     result.put(VALUE_FIELD, input.get(INDEX_FIELD_IDENTIFICATION_NAME));
 
     return result;
