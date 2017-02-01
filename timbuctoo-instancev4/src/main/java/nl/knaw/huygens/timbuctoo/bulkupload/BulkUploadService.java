@@ -41,7 +41,8 @@ public class BulkUploadService {
       fileNamesDisplay = "multiple files: " + tempFiles.stream().map(Tuple::getLeft).collect(joining(", "));
     }
 
-    try (TinkerpopSaver saver = new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, 50_000, fileNamesDisplay)) {
+    try (TinkerpopSaver saver =
+           new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, maxVertices, fileNamesDisplay)) {
       try {
         loader.loadData(tempFiles, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
         saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);
