@@ -40,7 +40,7 @@ public class ScaffoldMigrator {
                 collection
                   .withDescription("People with at least a name, birthdate and birthplace.")
                   .withDisplayName(localProperty("person_names", defaultFullPersonNameConverter))
-                  .withProperty("names", localProperty("names", personNames))
+                  .withProperty("names", localProperty("person_names", personNames))
                   .withProperty("gender", localProperty("person_gender"))
                   .withProperty("birthDate", localProperty("person_birthDate", datable))
                   .withProperty("deathDate", localProperty("person_deathDate", datable))

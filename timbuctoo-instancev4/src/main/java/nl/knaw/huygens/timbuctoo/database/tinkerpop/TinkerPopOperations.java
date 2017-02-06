@@ -660,11 +660,11 @@ public class TinkerPopOperations implements DataStoreOperations {
         if (customDescriptors.containsKey(collectionName)) {
           displayName = customDescriptors.get(collectionName).get(vertex);
         } else {
-          displayName = (String) traversal.V(vertex.id()).union(collection.getDisplayName().traversalRaw()).next()
+          displayName = traversal.V(vertex.id()).union(collection.getDisplayName().traversalJson()).next()
             .getOrElseGet(e -> {
               LOG.error("Displayname generation for vertix with id " + vertex.id() + " failed", e);
-              return "#Error#";
-            });
+              return jsn("#Error#");
+            }).asText();
         }
         return QuickSearchResult.create(
           displayName,

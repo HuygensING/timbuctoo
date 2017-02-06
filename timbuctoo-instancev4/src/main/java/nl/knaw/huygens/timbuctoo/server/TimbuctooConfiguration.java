@@ -64,6 +64,9 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @NotNull
   @Valid
   private ActiveMQConfig activeMq;
+
+  private Optional<URI> userRedirectUrl = Optional.empty();
+
   @JsonProperty
   @NotNull
   private PersistenceManagerFactory persistenceManager;
@@ -198,5 +201,14 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public WebhookFactory getWebhooks() {
     return webhooks;
+  }
+
+  public Optional<URI> getUserRedirectUrl() {
+    return userRedirectUrl;
+  }
+
+  @JsonProperty
+  private void setUserRedirectUrl(String userRedirectUrl) {
+    this.userRedirectUrl = Optional.of(URI.create(userRedirectUrl));
   }
 }

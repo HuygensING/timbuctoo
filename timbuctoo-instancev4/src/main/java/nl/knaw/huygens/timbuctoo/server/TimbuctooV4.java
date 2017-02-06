@@ -235,7 +235,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
 
     // register REST endpoints
-    register(environment, new RootEndpoint(uriHelper));
+    register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new JsEnv(configuration));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
     register(environment, new Me(securityConfig.getLoggedInUsers(environment)));
