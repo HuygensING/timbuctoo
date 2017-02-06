@@ -60,7 +60,7 @@ public class Discover {
     try {
       SetListBase graphList = resourceSyncService.listSets(url,
         new Interpreter()
-          .withItemNameInterpreter(Interpreters.base64EncodedItemNameInterpreter)
+          .withItemNameInterpreter(Interpreters.locItemNameInterpreter)
           .withStackTrace(debug));
       return Response.ok(graphList).build();
     } catch (URISyntaxException e) {
