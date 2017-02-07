@@ -27,6 +27,9 @@ public interface ReadEntity {
 
   Change getCreated();
 
+  /**
+   * @return The list of relationships in which this entity participates as the source.
+   */
   List<RelationRef> getRelations();
 
   String getDisplayName();
