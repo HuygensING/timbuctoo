@@ -2,7 +2,6 @@
 :toc: left
 :hide-uri-scheme:
 :javasourcesdir: ../timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo
-:scriptsourcesdir: ../timbuctoo-instancev4/src/main/scripts
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 :docinfo:
 
@@ -83,7 +82,11 @@ include::{javasourcesdir}/rml/README.adoc[tags=summary]
 RDF importer::
 include::{javasourcesdir}/rdf/README.adoc[tags=summary] 
 Search GUI & Index crawler::
-include::{scriptsourcesdir}/index_scripts/README.adoc[tags=summary] 
+== Summary
+
+These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.
+
+//include::{scriptsourcesdir}/index_scripts/README.adoc[tags=summary]
 Discover-GUI::
   A gui that is not aimed at precise querying, but rather to get a high-level overview of the data so that you know what queries to write.
 Dataset-search::
@@ -126,7 +129,14 @@ include::{javasourcesdir}/rml/README.adoc[]
 
 include::{javasourcesdir}/rdf/README.adoc[]
 
-include::{scriptsourcesdir}/index_scripts/README.adoc[] 
+
+= Solr index script
+== Summary
+
+These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.
+For more info follow the link below.
+
+include::https://github.com/HuygensING/timbuctoo-faceted-search-indexer/blob/master/README.adoc[]
 
 :leveloffset: -2
 
