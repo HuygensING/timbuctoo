@@ -129,6 +129,7 @@ include::{javasourcesdir}/rml/README.adoc[]
 
 include::{javasourcesdir}/rdf/README.adoc[]
 
+include::./resourcesyncexample/README.adoc[]
 
 = Solr index script
 == Summary
