@@ -5,7 +5,9 @@ Timbuctoo should be able to import RDF-data (n-quads) provided by a resource syn
 To be able to test this functionality.
 
 == How to use
-Simply run `docker-compose up` and the service will start at localhost.
+//tag::startup[]
+Simply run `docker-compose up` and the service will start at localhost port 80 (default http port).
+//end:startup[]
 Open the uri `http://localhost/.well-known/resourcesync` to list the resource sync files.
 
 == Structure
