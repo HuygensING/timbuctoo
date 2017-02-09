@@ -22,7 +22,7 @@ import java.util.concurrent.ExecutorService;
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.rollback;
 
-@Path("/v2.1/remote/rs/discover")
+@Path("/v2.1/remote/rs/import")
 public class Import {
 
   public static final Logger LOG = LoggerFactory.getLogger(Discover.class);
@@ -85,7 +85,7 @@ public class Import {
   }
 
 
-  private class ImportData {
+  public static class ImportData {
     public String source;
     public String name;
     public String vreName;
