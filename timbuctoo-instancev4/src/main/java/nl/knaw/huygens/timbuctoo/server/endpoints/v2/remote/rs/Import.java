@@ -55,7 +55,7 @@ public class Import {
               timbuctooActions.rdfCleanImportSession(importData.vreName, session -> {
                 final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreId, vres, session);
                 try {
-                  Iterator<RemoteFile> files = resourceSyncFileLoader.loadFiles(importData.source).iterator();
+                  Iterator<RemoteFile> files = resourceSyncFileLoader.loadFiles(importData.name).iterator();
                   while (files.hasNext()) {
                     RemoteFile file = files.next();
                     LOG.info("processing " + file.getUrl());
