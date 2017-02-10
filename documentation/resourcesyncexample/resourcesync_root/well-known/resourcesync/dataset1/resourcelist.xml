@@ -5,12 +5,12 @@
   <rs:ln rel="up" href="http://localhost/.well-known/resourcesync/dataset1/capability.xml"/>
   <url>
       <loc>http://localhost/.well-known/resourcesync/dataset1/resource1.nq</loc>
-      <lastmod>2017-02-01</lastmode>
+      <lastmod>2017-02-01</lastmod>
       <rs:md type="application/n-quads"/>
   </url>
   <url>
       <loc>http://localhost/.well-known/resourcesync/dataset1/resource2.nq</loc>
-      <lastmod>2017-02-01</lastmode>
+      <lastmod>2017-02-01</lastmod>
       <rs:md type="application/n-quads"/>
   </url>
 </urlset> 	 		
