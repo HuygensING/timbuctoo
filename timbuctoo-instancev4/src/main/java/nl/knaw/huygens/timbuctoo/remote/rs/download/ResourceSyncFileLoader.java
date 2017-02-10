@@ -1,10 +1,9 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.download;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsItem;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
-import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -31,11 +30,12 @@ public class ResourceSyncFileLoader {
 
   public ResourceSyncFileLoader(CloseableHttpClient httpClient) {
     this.httpClient = httpClient;
-    objectMapper = new ObjectMapper();
+    objectMapper = new XmlMapper();
+    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
-  private Urlset getRsFile(String url) throws IOException {
-    return objectMapper.readValue(getFile(url), Urlset.class);
+  private UrlSet getRsFile(String url) throws IOException {
+    return objectMapper.readValue(getFile(url), UrlSet.class);
   }
 
   private InputStream getFile(String url) throws IOException {
@@ -53,10 +53,7 @@ public class ResourceSyncFileLoader {
         getRsFile(capabilityListUri)
           .getItemList().stream()
           .filter(url -> url
-            .getMetadata()
-            .flatMap(RsMd::getCapability)
-            .map(cap -> cap.equals(Capability.RESOURCELIST.getXmlValue()))
-            .orElse(false)
+            .getMetadata().getCapability().equals(Capability.RESOURCELIST.getXmlValue())
           )
           .map(resourceListUrl -> {
             try {
@@ -66,7 +63,7 @@ public class ResourceSyncFileLoader {
             }
           })
           .flatMap(resourceList -> resourceList.getItemList().stream())
-          .map(RsItem::getLoc)
+          .map(UrlItem::getLoc)
           .map(resource -> {
             try {
               return RemoteFile.create(resource, getFile(resource));
