@@ -20,3 +20,27 @@ The third option is to use an html or a response with a link to the capability l
 And example of this is `html_with_link.html` in teh folder of `dataset2`.
 
 For more information see: http://www.openarchives.org/rs/1.0/resourcesync#FrameworkOrg
+
+=== Resource list
+We has one additional requirement in addition for the resource list.
+Resource sync has a optional `md` field (meta data field) for each url from the resource list.
+For the description of each resource we require the mandatory (by resource sync spec) `loc` field and the `md` field with the property `type` with the one of the following values:
+
+* text/turtle
+* application/rdf+xml
+* application/n-triples
+* application/ld+json
+* text/trig
+* application/n-quads
+* application/trix+xml
+* application/rdf+thrift
+
+So we expect an item resource list will look like:
+```
+...
+<url>
+    <loc>http://localhost/.well-known/resourcesync/dataset1/resource2.nq</loc>
+    <rs:md type="application/n-quads"/>
+</url>
+...
+```

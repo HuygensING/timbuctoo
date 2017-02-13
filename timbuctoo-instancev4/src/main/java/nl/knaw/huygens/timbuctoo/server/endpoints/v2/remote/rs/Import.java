@@ -61,7 +61,7 @@ public class Import {
                                       new RdfImporter(graphWrapper, importData.vreName, vres, session);
                                     try {
                                       try {
-                                        rdfImporter.importRdf(file.getData());
+                                        rdfImporter.importRdf(file.getData(), file.getMimeType());
                                       } catch (Exception e) {
                                         LOG.error("import of file for '{}' failed", file.getUrl());
                                         throw e;

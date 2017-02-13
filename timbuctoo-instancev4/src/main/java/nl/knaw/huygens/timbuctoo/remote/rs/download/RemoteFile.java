@@ -10,10 +10,13 @@ public interface RemoteFile {
 
   InputStream getData();
 
-  static RemoteFile create(String url, InputStream data) {
+  String getMimeType();
+
+  static RemoteFile create(String url, InputStream data, Metadata metadata) {
     return ImmutableRemoteFile.builder()
       .data(data)
       .url(url)
+      .mimeType(metadata.getMimeType())
       .build();
   }
 }

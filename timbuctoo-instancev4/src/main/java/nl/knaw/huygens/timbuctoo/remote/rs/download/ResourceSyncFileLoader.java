@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.remote.rs.download;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -24,6 +26,17 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class ResourceSyncFileLoader {
 
+  private static final Set<String> SUPPORTED_MIME_TYPES = Sets.newHashSet(
+    "text/turtle",
+    "application/rdf+xml",
+    "application/n-tripples",
+    "application/ld+json",
+    "application/owl+xml",
+    "text/trig",
+    "application/n-quads",
+    "application/trix+xml",
+    "application/rdf+thrift"
+  );
   private static final Logger LOG = getLogger(ResourceSyncFileLoader.class);
   private final CloseableHttpClient httpClient;
   protected final ObjectMapper objectMapper;
@@ -63,10 +76,10 @@ public class ResourceSyncFileLoader {
             }
           })
           .flatMap(resourceList -> resourceList.getItemList().stream())
-          .map(UrlItem::getLoc)
+          .filter(item -> SUPPORTED_MIME_TYPES.contains(item.getMetadata().getMimeType()))
           .map(resource -> {
             try {
-              return RemoteFile.create(resource, getFile(resource));
+              return RemoteFile.create(resource.getLoc(), getFile(resource.getLoc()), resource.getMetadata());
             } catch (IOException e) {
               throw new RuntimeUpgrader(e);
             }
