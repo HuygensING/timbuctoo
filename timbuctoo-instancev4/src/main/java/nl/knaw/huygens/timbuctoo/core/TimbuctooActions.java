@@ -256,9 +256,28 @@ public class TimbuctooActions implements AutoCloseable {
     dataStoreOperations.saveRmlMappingState(vreName, rdfData);
   }
 
+  /**
+   * This method removes all the data previously imported into this data set.
+   * If you want to add data to a data set use {@link #rdfUpdateImportSession(String, Function)}.
+   */
   public void rdfCleanImportSession(String vreName, Function<RdfImportSession, TransactionState> sessionConsumer) {
     RdfImportSession session = RdfImportSession.cleanImportSession(vreName, dataStoreOperations);
 
+    rdfImportSession(sessionConsumer, session);
+  }
+
+  /**
+   * This method makes it possible to add data to an existing data set.
+   * This method will not clean the data set when it contains any data.
+   * Use {@link #rdfCleanImportSession(String, Function)} to clean the old data of a data set.
+   */
+  public void rdfUpdateImportSession(String vreName, Function<RdfImportSession, TransactionState> sessionConsumer) {
+    RdfImportSession session = RdfImportSession.updateImportSession(vreName, dataStoreOperations);
+    rdfImportSession(sessionConsumer, session);
+  }
+
+  private void rdfImportSession(Function<RdfImportSession, TransactionState> sessionConsumer,
+                                RdfImportSession session) {
     try {
       TransactionState result = sessionConsumer.apply(session);
       if (result.wasCommitted()) {
