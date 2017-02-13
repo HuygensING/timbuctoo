@@ -25,7 +25,7 @@ import static nl.knaw.huygens.timbuctoo.core.TransactionState.rollback;
 @Path("/v2.1/remote/rs/import")
 public class Import {
 
-  public static final Logger LOG = LoggerFactory.getLogger(Discover.class);
+  public static final Logger LOG = LoggerFactory.getLogger(Import.class);
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final TransactionEnforcer transactionEnforcer;
   private final TinkerPopGraphManager graphWrapper;
@@ -48,40 +48,46 @@ public class Import {
   public Response importData(@HeaderParam("Authorization") String authorization, ImportData importData) {
     ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
     return vreAuthIniter.addVreAuthorizations(authorization, importData.vreName)
-      .getOrElseGet(vreId -> {
-        rdfExecutorService.submit(() -> {
-          try {
-            transactionEnforcer.execute(timbuctooActions -> {
-              timbuctooActions.rdfCleanImportSession(importData.vreName, session -> {
-                final RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreId, vres, session);
-                try {
-                  Iterator<RemoteFile> files = resourceSyncFileLoader.loadFiles(importData.name).iterator();
-                  while (files.hasNext()) {
-                    RemoteFile file = files.next();
-                    LOG.info("processing " + file.getUrl());
-                    rdfImporter.importRdf(file.getData());
-                  }
-                } catch (IOException e) {
-                  LOG.error("rdf import failed", e);
-                  return rollback();
-                }
-                return commit();
-              });
-              return commit();
-            });
-          } catch (Exception e) {
-            LOG.error("An unexpected error occurred ", e);
-          } finally {
-            try {
-              output.close();
-            } catch (IOException e) {
-              //ignore, we don't care
-            }
-          }
-        });
-
-        return Response.ok(output).build();
-      });
+                        .getOrElseGet(vreId -> {
+                          rdfExecutorService.submit(() -> {
+                            transactionEnforcer.execute(timbuctooActions -> {
+                              try {
+                                Iterator<RemoteFile> files =
+                                  resourceSyncFileLoader.loadFiles(importData.name).iterator();
+                                while (files.hasNext()) {
+                                  RemoteFile file = files.next();
+                                  timbuctooActions.rdfUpdateImportSession(importData.vreName, session -> {
+                                    RdfImporter rdfImporter =
+                                      new RdfImporter(graphWrapper, importData.vreName, vres, session);
+                                    try {
+                                      try {
+                                        rdfImporter.importRdf(file.getData());
+                                      } catch (Exception e) {
+                                        LOG.error("import of file for '{}' failed", file.getUrl());
+                                        throw e;
+                                      }
+                                      return commit();
+                                    } catch (Exception e) {
+                                      LOG.error("Import failed", e);
+                                      return rollback();
+                                    } finally {
+                                      try {
+                                        output.close();
+                                      } catch (IOException e) {
+                                        LOG.debug("Could not close output.", e);
+                                      }
+                                    }
+                                  });
+                                }
+                                return commit();
+                              } catch (IOException e) {
+                                LOG.error("Could not read files to import", e);
+                                return rollback();
+                              }
+                            });
+                          });
+                          return Response.ok(output).build();
+                        });
   }
 
 
