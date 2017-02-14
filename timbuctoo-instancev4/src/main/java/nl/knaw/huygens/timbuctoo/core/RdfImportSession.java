@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
 import nl.knaw.huygens.timbuctoo.core.rdf.PropertyFactory;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import org.apache.jena.graph.Triple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,10 +100,11 @@ public class RdfImportSession {
     }
 
     @Override
-    public void multipleRdfTypes(Triple triple) {
+    public void multipleRdfTypes(String subject, String object) {
       LOG.warn("Adding multiple rdf:types to a subject is not supported <{}> <rdf:type> <{}>.",
-        triple.getSubject().getURI(),
-        triple.getObject().getURI());
+        subject,
+        object
+      );
     }
   }
 }

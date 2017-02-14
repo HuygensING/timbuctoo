@@ -4,42 +4,38 @@ import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.rdf.Relation;
 import nl.knaw.huygens.timbuctoo.rdf.RelationType;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
-import org.slf4j.Logger;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getLocalName;
 
-import static org.slf4j.LoggerFactory.getLogger;
-
-class RelationTripleProcessor {
-  private static final Logger LOG = getLogger(RelationTripleProcessor.class);
+class RelationTripleProcessor extends AbstractReferenceTripleProcessor {
   private final Database database;
 
   public RelationTripleProcessor(Database database) {
     this.database = database;
   }
 
-  public void process(String vreName, boolean isAssertion, Triple triple) {
-    final Entity subject = database.findOrCreateEntity(vreName, triple.getSubject());
-    Node predicate = triple.getPredicate();
-    final RelationType relationType = database.findOrCreateRelationType(predicate);
-    final Entity object;
+  @Override
+  protected void processAssertion(String vreName, String subject, String predicate, String object) {
+    final Entity subjectEntity = database.findOrCreateEntity(vreName, subject);
+    final RelationType relationType = database.findOrCreateRelationType(predicate, getLocalName(predicate));
+    final Entity objectEntity = database.findOrCreateEntity(vreName, object);
 
-    object = database.findOrCreateEntity(vreName, triple.getObject());
-
-    if (isAssertion) {
-      if (relationType.isInverted()) {
-        final Relation relation = object.addRelation(relationType, subject);
-        relation.setCommonVreProperties(vreName);
-      } else {
-        final Relation relation = subject.addRelation(relationType, object);
-        relation.setCommonVreProperties(vreName);
-      }
+    if (relationType.isInverted()) {
+      final Relation relation = objectEntity.addRelation(relationType, subjectEntity);
+      relation.setCommonVreProperties(vreName);
     } else {
-      subject.removeRelation(relationType, object);
+      final Relation relation = subjectEntity.addRelation(relationType, objectEntity);
+      relation.setCommonVreProperties(vreName);
     }
   }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, String object) {
+    final Entity subjectEntity = database.findOrCreateEntity(vreName, subject);
+    final RelationType relationType = database.findOrCreateRelationType(predicate, getLocalName(predicate));
+    final Entity objectEntity = database.findOrCreateEntity(vreName, object);
+
+    subjectEntity.removeRelation(relationType, objectEntity);
+  }
+
 }

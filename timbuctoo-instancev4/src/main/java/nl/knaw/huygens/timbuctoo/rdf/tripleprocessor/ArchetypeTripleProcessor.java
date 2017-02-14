@@ -3,42 +3,53 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.rdf.Collection;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
 
 import java.util.Optional;
 import java.util.Set;
 
-class ArchetypeTripleProcessor {
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getLocalName;
+
+class ArchetypeTripleProcessor extends AbstractReferenceTripleProcessor {
   private final Database database;
 
   public ArchetypeTripleProcessor(Database database) {
     this.database = database;
   }
 
-  public void process(String vreName, boolean isAssertion, Triple triple) {
-    Collection collection = database.findOrCreateCollection(vreName, triple.getSubject());
+  @Override
+  protected void processAssertion(String vreName, String subject, String predicate, String object) {
+    Collection collection = database.findOrCreateCollection(vreName, subject, getLocalName(subject));
     Collection previousArchetype = collection.getArchetype().get(); // collection must have an archetype
-    Node tripleObject = triple.getObject();
-    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(tripleObject.getLocalName());
+    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(getLocalName(object));
 
     if (!archetypeCollectionOptional.isPresent()) {
       return;
     }
 
-    Collection archetypeCollection;
-    if (isAssertion) {
-      archetypeCollection = archetypeCollectionOptional.get();
-    } else {
-      //FIXME: assert that triple's archetype is equal to current archetype
-      archetypeCollection = database.getConcepts();
-    }
-
-    collection.setArchetype(archetypeCollection, tripleObject.getURI());
+    Collection archetypeCollection = archetypeCollectionOptional.get();
+    collection.setArchetype(archetypeCollection, object);
 
     Set<Entity> entities = database.findEntitiesByCollection(collection);
-    entities.forEach(entity -> {
-      entity.moveToOtherArchetype(previousArchetype, archetypeCollection);
-    });
+    entities.forEach(entity -> entity.moveToOtherArchetype(previousArchetype, archetypeCollection));
+  }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, String object) {
+    Collection collection = database.findOrCreateCollection(vreName, subject, getLocalName(subject));
+    Collection previousArchetype = collection.getArchetype().get(); // collection must have an archetype
+    Optional<Collection> archetypeCollectionOptional = database.findArchetypeCollection(getLocalName(object));
+
+    if (!archetypeCollectionOptional.isPresent()) {
+      return;
+    }
+
+    //FIXME: assert that triple's archetype is equal to current archetype
+    Collection defaultArchetype = database.getConcepts();
+
+    // The concepts archetype does not have a URI, so we use an empty string of the original uri of the archetype
+    collection.setArchetype(defaultArchetype, "");
+
+    Set<Entity> entities = database.findEntitiesByCollection(collection);
+    entities.forEach(entity -> entity.moveToOtherArchetype(previousArchetype, defaultArchetype));
   }
 }

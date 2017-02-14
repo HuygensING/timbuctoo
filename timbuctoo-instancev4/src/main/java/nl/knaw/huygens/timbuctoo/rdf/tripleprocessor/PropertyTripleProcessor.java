@@ -2,31 +2,27 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
-import nl.knaw.huygens.timbuctoo.rdf.Database;
-import org.apache.jena.graph.Triple;
+import org.apache.jena.graph.impl.LiteralLabel;
 
-class PropertyTripleProcessor {
-  private final Database database;
+class PropertyTripleProcessor extends AbstractValueTripleProcessor {
   private final RdfImportSession rdfImportSession;
 
-  public PropertyTripleProcessor(Database database, RdfImportSession rdfImportSession) {
-    this.database = database;
+  public PropertyTripleProcessor(RdfImportSession rdfImportSession) {
     this.rdfImportSession = rdfImportSession;
   }
 
-  public void process(String vreName, boolean isAssertion, Triple triple) {
-    String entityUri = triple.getSubject().getURI();
-    RdfProperty property = new RdfProperty(
-      triple.getPredicate().getURI(),
-      triple.getObject().getLiteralLexicalForm(),
-      triple.getObject().getLiteralDatatypeURI()
-    );
-    if (isAssertion) {
-      // FIXME Add support for multiple value types
-      rdfImportSession.assertProperty(entityUri, property);
-    } else {
-      rdfImportSession.retractProperty(entityUri, property);
-    }
+  @Override
+  protected void processAssertion(String vreName, String subject, String predicate, LiteralLabel object) {
+    RdfProperty property = new RdfProperty(predicate, object.getLexicalForm(), object.getDatatypeURI());
+
+    // FIXME Add support for multiple value types
+    rdfImportSession.assertProperty(subject, property);
+  }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, LiteralLabel object) {
+    RdfProperty property = new RdfProperty(predicate, object.getLexicalForm(), object.getDatatypeURI());
+    rdfImportSession.retractProperty(subject, property);
   }
 
 }

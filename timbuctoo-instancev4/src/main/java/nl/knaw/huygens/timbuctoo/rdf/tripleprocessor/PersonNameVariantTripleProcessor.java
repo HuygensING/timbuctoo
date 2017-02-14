@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.model.properties.converters.PersonNamesConverte
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNames;
-import org.apache.jena.graph.Triple;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -14,7 +13,7 @@ import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class PersonNameVariantTripleProcessor implements TripleProcessor {
+public class PersonNameVariantTripleProcessor extends AbstractReferenceTripleProcessor {
   private static final Logger LOG = getLogger(PersonNameVariantTripleProcessor.class);
   private static final String NAMES_TYPE_ID = new PersonNamesConverter().getUniqueTypeIdentifier();
   private static final String NAMES_PROPERTY_NAME = "names";
@@ -25,36 +24,6 @@ public class PersonNameVariantTripleProcessor implements TripleProcessor {
   public PersonNameVariantTripleProcessor(Database database) {
     this.database = database;
     this.objectMapper = new ObjectMapper();
-  }
-
-  @Override
-  public void process(String vreName, boolean isAssertion, Triple triple) {
-    final Optional<Entity> subjectEntity = database.findEntity(vreName, triple.getSubject());
-    final Optional<Entity> objectEntity = database.findEntity(vreName, triple.getObject());
-
-    if (subjectEntity.isPresent() && objectEntity.isPresent()) {
-      final Optional<String> myRawValue = subjectEntity.get().getPropertyValue(NAMES_PROPERTY_NAME);
-      if (myRawValue.isPresent()) {
-        final Optional<String> theirRawValue = objectEntity.get().getPropertyValue(NAMES_PROPERTY_NAME);
-        if (theirRawValue.isPresent()) {
-          try {
-            final UriBearingPersonNames mergedNames = mergeNames(myRawValue.get(), theirRawValue.get());
-            objectEntity.get().addProperty(NAMES_PROPERTY_NAME, objectMapper.writeValueAsString(mergedNames),
-              NAMES_TYPE_ID);
-          } catch (IOException e) {
-            LOG.error("Failed to read/write personNames json", e);
-            return;
-          }
-        } else {
-          objectEntity.get().addProperty(NAMES_PROPERTY_NAME, myRawValue.get(), NAMES_TYPE_ID);
-        }
-      }
-      database.addRdfSynonym(vreName, objectEntity.get(), triple.getObject());
-      database.purgeEntity(vreName, subjectEntity.get());
-    } else {
-      LOG.error("entity not found. subject: {}, object: {}", triple.getSubject().getLocalName(),
-        triple.getObject().getLocalName());
-    }
   }
 
   private UriBearingPersonNames mergeNames(String myRawValue, String theirRawValue) throws IOException {
@@ -68,5 +37,43 @@ public class PersonNameVariantTripleProcessor implements TripleProcessor {
     }
 
     return theirs;
+  }
+
+  @Override
+  protected void processAssertion(String vreName, String subject, String predicate, String object) {
+    final Optional<Entity> subjectEntity = database.findEntity(vreName, subject);
+    final Optional<Entity> objectEntity = database.findEntity(vreName, object);
+
+    if (!subjectEntity.isPresent()) {
+      LOG.error("Entity with rdf uri '{}' not found", subject);
+      return;
+    }
+
+    if (!objectEntity.isPresent()) {
+      LOG.error("Entity with rdf uri '{}' not found", object);
+    }
+
+    final Optional<String> subjectRawNames = subjectEntity.get().getPropertyValue(NAMES_PROPERTY_NAME);
+    if (subjectRawNames.isPresent()) {
+      final Optional<String> objectRawNames = objectEntity.get().getPropertyValue(NAMES_PROPERTY_NAME);
+      if (objectRawNames.isPresent()) {
+        try {
+          final UriBearingPersonNames mergedNames = mergeNames(subjectRawNames.get(), objectRawNames.get());
+          objectEntity.get().addProperty(NAMES_PROPERTY_NAME, objectMapper.writeValueAsString(mergedNames),
+            NAMES_TYPE_ID);
+        } catch (IOException e) {
+          LOG.error("Failed to read/write personNames json", e);
+          return;
+        }
+      } else {
+        objectEntity.get().addProperty(NAMES_PROPERTY_NAME, subjectRawNames.get(), NAMES_TYPE_ID);
+      }
+    }
+    database.purgeEntity(vreName, subjectEntity.get());
+  }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, String object) {
+    LOG.error("No retraction implemented for person name variant triples.");
   }
 }

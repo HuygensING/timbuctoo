@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
-import org.apache.jena.graph.Triple;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.slf4j.Logger;
 
@@ -11,21 +10,22 @@ import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class SameAsTripleProcessor {
-  private final Database database;
+public class SameAsTripleProcessor extends AbstractReferenceTripleProcessor {
   private static final Logger LOG = getLogger(SameAsTripleProcessor.class);
+  private final Database database;
 
   public SameAsTripleProcessor(Database database) {
     this.database = database;
   }
 
-  public void process(String vreName, boolean isAssertion, Triple triple) {
-    Optional<Entity> object = database.findEntity(vreName, triple.getObject());
-    Optional<Entity> subject = database.findEntity(vreName, triple.getSubject());
+  @Override
+  protected void processAssertion(String vreName, String subject, String predicate, String object) {
+    Optional<Entity> objectEntityOpt = database.findEntity(vreName, object);
+    Optional<Entity> subjectEntityOpt = database.findEntity(vreName, subject);
 
-    if (object.isPresent() && subject.isPresent()) {
-      final Entity objectEntity = object.get();
-      final Entity subjectEntity = subject.get();
+    if (objectEntityOpt.isPresent() && subjectEntityOpt.isPresent()) {
+      final Entity objectEntity = objectEntityOpt.get();
+      final Entity subjectEntity = subjectEntityOpt.get();
 
       if (LOG.isDebugEnabled()) {
         LOG.debug("Merging object entity into subject entity: {} <-- {}", subjectEntity.getProperties(),
@@ -36,13 +36,13 @@ public class SameAsTripleProcessor {
       database.copyEdgesFromObjectIntoSubject(subjectEntity, objectEntity);
 
       // Reload subject entity with any new collection added to it from the object (vertex must still be present here)
-      final Entity reloadedSubjectEntity = database.findEntity(vreName, triple.getSubject()).get();
+      final Entity reloadedSubjectEntity = database.findEntity(vreName, subject).get();
 
       // Merge the properties of the object entity into the reloaded subject entity via Entity model
-      mergeEntityProperties(reloadedSubjectEntity , objectEntity);
+      mergeEntityProperties(reloadedSubjectEntity, objectEntity);
 
       if (LOG.isDebugEnabled()) {
-        final Entity finalSubject = database.findEntity(vreName, triple.getSubject()).get();
+        final Entity finalSubject = database.findEntity(vreName, subject).get();
         LOG.debug("Final subject properties: {}", finalSubject.getProperties());
       }
 
@@ -50,14 +50,14 @@ public class SameAsTripleProcessor {
       database.purgeEntity(vreName, objectEntity);
 
       // add the object uri as a synonym to the subject entity
-      database.addRdfSynonym(vreName, subjectEntity, triple.getObject());
-    } else if (object.isPresent()) {
-      database.addRdfSynonym(vreName, object.get(), triple.getSubject());
-    } else if (subject.isPresent()) {
-      database.addRdfSynonym(vreName, subject.get(), triple.getObject());
+      database.addRdfSynonym(vreName, subjectEntity, object);
+    } else if (objectEntityOpt.isPresent()) {
+      database.addRdfSynonym(vreName, objectEntityOpt.get(), subject);
+    } else if (subjectEntityOpt.isPresent()) {
+      database.addRdfSynonym(vreName, subjectEntityOpt.get(), object);
     } else {
-      Entity entity = database.findOrCreateEntity(vreName, triple.getObject());
-      database.addRdfSynonym(vreName, entity, triple.getSubject());
+      Entity entity = database.findOrCreateEntity(vreName, object);
+      database.addRdfSynonym(vreName, entity, subject);
     }
   }
 
@@ -77,5 +77,10 @@ public class SameAsTripleProcessor {
         LOG.warn("Property values differ when merging synonymous (<owl:sameAs>) entities: {}", unprefixedPropertyName);
       }
     });
+  }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, String object) {
+    LOG.error("No retraction implemented for 'same as' triples.");
   }
 }

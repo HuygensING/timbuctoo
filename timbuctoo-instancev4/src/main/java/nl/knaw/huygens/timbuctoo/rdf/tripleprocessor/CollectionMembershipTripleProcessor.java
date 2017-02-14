@@ -3,9 +3,10 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
-import org.apache.jena.graph.Triple;
 
-class CollectionMembershipTripleProcessor {
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getLocalName;
+
+class CollectionMembershipTripleProcessor extends AbstractReferenceTripleProcessor {
   private final Database database;
   private final RdfImportSession rdfImportSession;
 
@@ -14,18 +15,21 @@ class CollectionMembershipTripleProcessor {
     this.rdfImportSession = rdfImportSession;
   }
 
-  public void process(String vreName, boolean isAssertion, Triple triple) {
-    Entity entity = database.findOrCreateEntity(vreName, triple.getSubject());
+  @Override
+  protected void processAssertion(String vreName, String subject, String predicate, String object) {
+    Entity entity = database.findOrCreateEntity(vreName, subject);
 
-    if (isAssertion) {
-      if (entity.isInKnownCollection()) {
-        rdfImportSession.getErrorReporter().multipleRdfTypes(triple);
-      } else {
-        entity.addToCollection(database.findOrCreateCollection(vreName, triple.getObject()));
-        entity.removeFromCollection(database.getDefaultCollection(vreName));
-      }
+    if (entity.isInKnownCollection()) {
+      rdfImportSession.getErrorReporter().multipleRdfTypes(subject, object);
     } else {
-      entity.removeFromCollection(database.findOrCreateCollection(vreName, triple.getObject()));
+      entity.addToCollection(database.findOrCreateCollection(vreName, object, getLocalName(object)));
+      entity.removeFromCollection(database.getDefaultCollection(vreName));
     }
+  }
+
+  @Override
+  protected void processRetraction(String vreName, String subject, String predicate, String object) {
+    Entity entity = database.findOrCreateEntity(vreName, subject);
+    entity.removeFromCollection(database.findOrCreateCollection(vreName, object, getLocalName(object)));
   }
 }

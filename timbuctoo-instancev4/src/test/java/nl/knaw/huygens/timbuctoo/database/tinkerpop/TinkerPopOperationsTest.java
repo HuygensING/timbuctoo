@@ -2879,7 +2879,9 @@ public class TinkerPopOperationsTest {
     instance.assertEntity(vre, "http://example.org/entity1");
     instance.assertEntity(vre, "http://example.org/entity2");
     nl.knaw.huygens.timbuctoo.rdf.Collection collection =
-      legacyRdfDatabase.findOrCreateCollection("vre", NodeFactory.createURI("http://example.org/myCollection"));
+      legacyRdfDatabase.findOrCreateCollection("vre",
+        NodeFactory.createURI("http://example.org/myCollection").getURI(),
+        NodeFactory.createURI("http://example.org/myCollection").getLocalName());
     Optional<Entity> entity = legacyRdfDatabase.findEntity("vre", NodeFactory.createURI("http://example.org/entity1"));
     entity.get().addToCollection(collection);
 

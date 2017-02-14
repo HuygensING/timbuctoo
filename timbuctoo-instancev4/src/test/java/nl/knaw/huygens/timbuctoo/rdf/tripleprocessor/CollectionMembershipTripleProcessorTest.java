@@ -1,49 +1,109 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
+import nl.knaw.huygens.timbuctoo.core.RdfImportErrorReporter;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.rdf.Collection;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
-import org.apache.jena.graph.Triple;
 import org.junit.Test;
 import org.mockito.InOrder;
 
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createSingleTriple;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class CollectionMembershipTripleProcessorTest {
-  private static final String ABADAN_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
-  private static final String IRAN_URI = "http://tl.dbpedia.org/resource/Iran";
-  private static final String IS_PART_OF_URI = "http://tl.dbpedia.org/ontology/isPartOf";
-
-  private static final String ABADAN_IS_PART_OF_IRAN_TRIPLE =
-    "<" + ABADAN_URI + "> " +
-      "<" + IS_PART_OF_URI + "> " +
-      "<" + IRAN_URI + "> .";
+  private static final String SUBJECT_URI = "http://tl.dbpedia.org/resource/Abadan,_Iran";
+  private static final String PREDICATE_URI = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
+  private static final String OBJECT_NAME = "location";
+  private static final String OBJECT_URI = "http://example.com/" + OBJECT_NAME;
 
   @Test
-  public void processAddsTheEntityToTheRequestedCollection() {
+  public void processAddsTheEntityToTheRequestedCollectionIfItIsAnAssertion() {
     Database database = mock(Database.class);
-    Triple triple = createSingleTriple(ABADAN_IS_PART_OF_IRAN_TRIPLE);
     Collection collectionFromTriple = mock(Collection.class);
     Collection archetypeCollection = mock(Collection.class);
     when(collectionFromTriple.getArchetype()).thenReturn(Optional.of(archetypeCollection));
-    when(database.findOrCreateCollection("vreName", triple.getObject())).thenReturn(collectionFromTriple);
+    when(database.findOrCreateCollection(anyString(), anyString(), anyString())).thenReturn(collectionFromTriple);
     Collection defaultCollection = mock(Collection.class);
     when(database.getDefaultCollection("vreName")).thenReturn(defaultCollection);
     Entity entity = mock(Entity.class);
-    when(database.findOrCreateEntity("vreName", triple.getSubject())).thenReturn(entity);
+    when(database.findOrCreateEntity("vreName", SUBJECT_URI)).thenReturn(entity);
     CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database, mock(
       RdfImportSession.class));
 
-    instance.process("vreName", true, triple);
+    instance.process("vreName", SUBJECT_URI, PREDICATE_URI, OBJECT_URI, true);
 
-    InOrder inOrder = inOrder(entity);
+    InOrder inOrder = inOrder(entity, database);
+    inOrder.verify(database).findOrCreateCollection("vreName", OBJECT_URI, OBJECT_NAME);
     inOrder.verify(entity).addToCollection(collectionFromTriple);
+  }
+
+  @Test
+  public void processRemovesTheEntityFromTheDefaultCollectionWhenAsserted() {
+    Database database = mock(Database.class);
+    Collection collectionFromTriple = mock(Collection.class);
+    Collection archetypeCollection = mock(Collection.class);
+    when(collectionFromTriple.getArchetype()).thenReturn(Optional.of(archetypeCollection));
+    when(database.findOrCreateCollection(anyString(), anyString(), anyString())).thenReturn(collectionFromTriple);
+    Collection defaultCollection = mock(Collection.class);
+    when(database.getDefaultCollection("vreName")).thenReturn(defaultCollection);
+    Entity entity = mock(Entity.class);
+    when(database.findOrCreateEntity("vreName", SUBJECT_URI)).thenReturn(entity);
+    CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database, mock(
+      RdfImportSession.class));
+
+    instance.process("vreName", SUBJECT_URI, PREDICATE_URI, OBJECT_URI, true);
+
+    verify(entity).removeFromCollection(defaultCollection);
+
+  }
+
+  @Test
+  public void processLogsAnExceptionWhenTheEntityAlreadyIsPartOfACollectionWhenAsserted() {
+    Database database = mock(Database.class);
+    Collection collectionFromTriple = mock(Collection.class);
+    Collection archetypeCollection = mock(Collection.class);
+    when(collectionFromTriple.getArchetype()).thenReturn(Optional.of(archetypeCollection));
+    when(database.findOrCreateCollection(anyString(), anyString(), anyString())).thenReturn(collectionFromTriple);
+    Collection defaultCollection = mock(Collection.class);
+    when(database.getDefaultCollection("vreName")).thenReturn(defaultCollection);
+    Entity entity = mock(Entity.class);
+    when(entity.isInKnownCollection()).thenReturn(true);
+    when(database.findOrCreateEntity("vreName", SUBJECT_URI)).thenReturn(entity);
+    RdfImportSession rdfImportSession = mock(RdfImportSession.class);
+    RdfImportErrorReporter errorReporter = mock(RdfImportErrorReporter.class);
+    when(rdfImportSession.getErrorReporter()).thenReturn(errorReporter);
+    CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database, rdfImportSession);
+
+    instance.process("vreName", SUBJECT_URI, PREDICATE_URI, OBJECT_URI, true);
+
+    verify(errorReporter).multipleRdfTypes(SUBJECT_URI, OBJECT_URI);
+  }
+
+  @Test
+  public void processRemovesTheEntityToTheRequestedCollectionIfItIsARetraction() {
+    Database database = mock(Database.class);
+    Collection collectionFromTriple = mock(Collection.class);
+    Collection archetypeCollection = mock(Collection.class);
+    when(collectionFromTriple.getArchetype()).thenReturn(Optional.of(archetypeCollection));
+    when(database.findOrCreateCollection(anyString(), anyString(), anyString())).thenReturn(collectionFromTriple);
+    Collection defaultCollection = mock(Collection.class);
+    when(database.getDefaultCollection("vreName")).thenReturn(defaultCollection);
+    Entity entity = mock(Entity.class);
+    when(database.findOrCreateEntity("vreName", SUBJECT_URI)).thenReturn(entity);
+    CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database, mock(
+      RdfImportSession.class));
+
+    instance.process("vreName", SUBJECT_URI, PREDICATE_URI, OBJECT_URI, false);
+
+    InOrder inOrder = inOrder(entity, database);
+    inOrder.verify(database).findOrCreateCollection("vreName", OBJECT_URI, OBJECT_NAME);
+    inOrder.verify(entity).removeFromCollection(collectionFromTriple);
   }
 
 }

@@ -8,16 +8,17 @@ import org.slf4j.Logger;
 
 import java.util.Set;
 
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleParser.fromTriple;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class TripleProcessorImpl implements TripleProcessor {
-  private static final Logger LOG = getLogger(TripleProcessorImpl.class);
+public class TripleProcessorDispatcher {
+  static final String TIM_IS_NAME_VARIANT_OF = "http://timbuctoo.huygens.knaw.nl/isNameVariantOf";
+  private static final Logger LOG = getLogger(TripleProcessorDispatcher.class);
   private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   private static final String RDF_SUB_CLASS_OF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
   private static final String OWL_SAME_AS = "http://www.w3.org/2002/07/owl#sameAs";
   private static final String SKOS_ALT_LABEL = "http://www.w3.org/2004/02/skos/core#altLabel";
   private static final String TEI_NAMESPACE = "http://www.tei-c.org/ns/1.0/";
-  static final String TIM_IS_NAME_VARIANT_OF = "http://timbuctoo.huygens.knaw.nl/isNameVariantOf";
   private static final Set<String> TEI_NAMES_COMPONENTS = Sets.newHashSet(
     "surname", "forename", "genName", "roleName", "addName", "nameLink"
   );
@@ -33,11 +34,11 @@ public class TripleProcessorImpl implements TripleProcessor {
   private Database database;
   private PersonNameVariantTripleProcessor personNameVariant;
 
-  public TripleProcessorImpl(Database database, RdfImportSession rdfImportSession) {
+  public TripleProcessorDispatcher(Database database, RdfImportSession rdfImportSession) {
     this.database = database;
     this.collectionMembership = new CollectionMembershipTripleProcessor(database, rdfImportSession);
     this.archetype = new ArchetypeTripleProcessor(database);
-    this.property = new PropertyTripleProcessor(database, rdfImportSession);
+    this.property = new PropertyTripleProcessor(rdfImportSession);
     this.relation = new RelationTripleProcessor(database);
     this.sameAs = new SameAsTripleProcessor(database);
     this.altLabel = new AltLabelTripleProcessor(database);
@@ -79,28 +80,31 @@ public class TripleProcessorImpl implements TripleProcessor {
     return triple.getPredicate().getURI().equals(TIM_IS_NAME_VARIANT_OF);
   }
 
-  @Override
   //FIXME: add unittests for isAssertion
-  public void process(String vreName, boolean isAssertion, Triple triple) {
+  public void dispatch(String vreName, boolean isAssertion, Triple triple) {
     if (LOG.isDebugEnabled()) {
       LOG.debug(vreName + (isAssertion ? ": + " : ": - ") + triple);
     }
+    TripleParser tripleParser = fromTriple(triple);
+    String subject = tripleParser.getSubjectReference();
+    String predicate = tripleParser.getPredicateReference();
+
     if (predicateIsType(triple)) {
-      collectionMembership.process(vreName, isAssertion, triple);
+      collectionMembership.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsSameAs(triple)) {
-      sameAs.process(vreName, isAssertion, triple);
+      sameAs.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (subclassOfKnownArchetype(triple)) {
-      archetype.process(vreName, isAssertion, triple);
+      archetype.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsAltLabel(triple)) {
-      altLabel.process(vreName, isAssertion, triple);
+      altLabel.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
     } else if (predicateIsTeiName(triple)) {
-      personNames.process(vreName, isAssertion, triple);
+      personNames.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
     } else if (predicateIsNameVariant(triple)) {
-      personNameVariant.process(vreName, isAssertion, triple);
+      personNameVariant.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (objectIsLiteral(triple)) {
-      property.process(vreName, isAssertion, triple);
+      property.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
     } else if (objectIsNonLiteral(triple)) {
-      relation.process(vreName, isAssertion, triple);
+      relation.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else {
       //This means that the object is neither a literal, nor a non-literal.
       //That would only happen if I misunderstand something

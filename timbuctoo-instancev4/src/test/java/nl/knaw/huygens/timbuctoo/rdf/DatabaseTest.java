@@ -182,7 +182,8 @@ public class DatabaseTest {
     when(collectionNode.getURI()).thenReturn(rdfUri);
     Database instance = new Database(graphWrapper);
 
-    Collection collection = instance.findOrCreateCollection(vreName, collectionNode);
+    Collection collection = instance.findOrCreateCollection(vreName, collectionNode.getURI(),
+      collectionNode.getLocalName());
 
     assertThat(collection, hasProperty("vreName", equalTo(vreName)));
   }
@@ -210,7 +211,8 @@ public class DatabaseTest {
     when(collectionNode.getURI()).thenReturn(rdfUri);
     Database instance = new Database(graphWrapper);
 
-    Collection collection = instance.findOrCreateCollection(vreName, collectionNode);
+    Collection collection = instance.findOrCreateCollection(vreName, collectionNode.getURI(),
+      collectionNode.getLocalName());
 
     assertThat(collection, hasProperty("vreName", equalTo(vreName)));
     assertThat(graphWrapper.getGraph().traversal().V()
@@ -248,7 +250,8 @@ public class DatabaseTest {
     when(collectionNode.getURI()).thenReturn(rdfUri);
     Database instance = new Database(graphWrapper);
 
-    Collection collection = instance.findOrCreateCollection(VRE_NAME, collectionNode);
+    Collection collection = instance.findOrCreateCollection(VRE_NAME, collectionNode.getURI(),
+      collectionNode.getLocalName());
 
     assertThat(collection, hasProperty("vreName", equalTo(VRE_NAME)));
     assertThat(graphWrapper.getGraph().traversal().V()
@@ -263,12 +266,9 @@ public class DatabaseTest {
     final TinkerPopGraphManager graphWrapper = newGraph().wrap();
     final Database instance = new Database(graphWrapper);
     final String relationtypePrefix = "relationtype_";
-    final Node mockNode = mock(Node.class);
     String rdfUriVal = "rdfUriVal";
-    when(mockNode.getURI()).thenReturn(rdfUriVal);
-    when(mockNode.getLocalName()).thenReturn(RELATION_NAME);
 
-    final RelationType relationType = instance.findOrCreateRelationType(mockNode);
+    final RelationType relationType = instance.findOrCreateRelationType(rdfUriVal, RELATION_NAME);
 
     assertThat(graphWrapper
       .getGraph().traversal().V().next(), likeVertex()
@@ -315,11 +315,8 @@ public class DatabaseTest {
       .withProperty("isLatest", true)
     ).wrap();
     final Database instance = new Database(graphWrapper);
-    final Node mockNode = mock(Node.class);
-    when(mockNode.getURI()).thenReturn(rdfUriVal);
-    when(mockNode.getLocalName()).thenReturn(RELATION_NAME);
 
-    instance.findOrCreateRelationType(mockNode);
+    instance.findOrCreateRelationType(rdfUriVal, RELATION_NAME);
 
     assertThat(graphWrapper.getGraph().traversal().V().hasLabel("relationtype").count().next(), is(1L));
   }

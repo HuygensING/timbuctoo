@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
-import nl.knaw.huygens.timbuctoo.core.RdfImportErrorReporter;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
-import nl.knaw.huygens.timbuctoo.core.RdfImportSessionStubs;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
 import nl.knaw.huygens.timbuctoo.core.dto.DataStream;
@@ -38,9 +36,6 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class TripleImporterIntegrationTest {
   private static final String LOCATION_COLLECTION = "locations";
@@ -366,29 +361,6 @@ public class TripleImporterIntegrationTest {
       hasProperty("name", equalTo("point")),
       hasProperty("value", equalTo("30.35 48.28333333333333"))
     )));
-  }
-
-  @Test
-  public void importTripleShouldLogAWarningWhenTryingToAddToASecondKnownCollection() throws Exception {
-    final Triple abadanIsAFeature = createTripleIterator(ABADAN_HAS_TYPE_FEATURE_TRIPLE).next();
-    final Triple abadanIsAFictionalFeature = createTripleIterator(ABADAN_HAS_TYPE_FICTIONAL_FEATURE_TRIPLE).next();
-    final Triple abadanHasPoint = createTripleIterator(ABADAN_POINT_TRIPLE).next();
-    TinkerPopOperations tinkerPopOperations =  new TinkerPopOperations(graphWrapper);
-    tinkerPopOperations.saveVre(getVres().getVre("Admin"));
-    final RdfImportErrorReporter errorReporter = mock(RdfImportErrorReporter.class);
-
-    RdfImportSession localSession = RdfImportSessionStubs.rdfImportSessionWithErrorReporter("vreName",
-      tinkerPopOperations, errorReporter);
-
-    TripleImporter localInstance = new TripleImporter(graphWrapper, VRE_NAME, localSession);
-
-    localInstance.importTriple(true, abadanIsAFeature);
-    localInstance.importTriple(true, abadanHasPoint);
-    localInstance.importTriple(true, abadanIsAFictionalFeature);
-    localSession.commit();
-    localSession.close();
-
-    verify(errorReporter).multipleRdfTypes(abadanIsAFictionalFeature);
   }
 
   @Test
