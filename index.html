@@ -697,6 +697,8 @@ table.tableblock.grid-all th.tableblock, table.tableblock.grid-all td.tableblock
 <li><a href="#_tabular_data_importer">Tabular data importer</a></li>
 <li><a href="#_rml_implementation">RML implementation</a></li>
 <li><a href="#_rdf_import">RDF import</a></li>
+<li><a href="#_resource_sync">Resource sync</a></li>
+<li><a href="#_resource_sync_example_server">Resource sync example server</a></li>
 <li><a href="#_solr_index_script">Solr index script</a></li>
 </ul>
 </li>
@@ -876,7 +878,7 @@ To build your own version, you can either have 'java 8' and 'maven 3' installed 
 <div class="ulist">
 <ul>
 <li>
-<p>Do a quick <strong>debug run</strong> using <code>./timbuctoo-instancev4/debugrun.sh</code> or <code>docker-compose up</code>.
+<p>Do a quick <strong>debug run</strong> using <code>./devtools/debugrun/debugrun.sh</code> or <code>docker-compose up</code>.
 If you do not use docker the external services, such as solr won&#8217;t be started.
 Timbuctoo will still run and the API will run fine, but some urls in the web GUI won&#8217;t work.</p>
 </li>
@@ -968,10 +970,21 @@ The processor calls the RDF importer in the background with the generated triple
 <dd>
 <p>The RDF importer can be provided with a dataset in n-triples format that will then be inserted as-is into the database.</p>
 </dd>
+<dt class="hdlist1">Resource sync</dt>
+<dd>
+<p>Timbuctoo can discover and download datasets from remote servers that contain resourcesync descriptions.</p>
+</dd>
 <dt class="hdlist1">Search GUI &amp; Index crawler</dt>
 <dd>
-<p>These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.</p>
+<p>== Summary</p>
 </dd>
+</dl>
+</div>
+<div class="paragraph">
+<p>These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.</p>
+</div>
+<div class="dlist">
+<dl>
 <dt class="hdlist1">Discover-GUI</dt>
 <dd>
 <p>A gui that is not aimed at precise querying, but rather to get a high-level overview of the data so that you know what queries to write.</p>
@@ -1949,7 +1962,7 @@ Given these tables:</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="diag-8a7ea75cb166d7e3bb9781fbaea82c0b.png" alt="diag 8a7ea75cb166d7e3bb9781fbaea82c0b" width="620" height="154">
+<img src="diag-bec9e42fdc5751a10c0733b9620fee40.png" alt="diag bec9e42fdc5751a10c0733b9620fee40" width="660" height="154">
 </div>
 </div>
 <div class="paragraph">
@@ -1990,7 +2003,7 @@ The second pass maps all the values that are a reference to another column.</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="diag-8b4bcab930ed825ca626661cf4ae487a.png" alt="diag 8b4bcab930ed825ca626661cf4ae487a" width="230" height="182">
+<img src="diag-24c0f06916b02306931d373f5b1c1b39.png" alt="diag 24c0f06916b02306931d373f5b1c1b39" width="270" height="182">
 </div>
 </div>
 <div class="paragraph">
@@ -2030,7 +2043,7 @@ The full implementation of sort and split is here: <a href="./rmldata/builders/M
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="diag-53dbf7cdede1b1c70fd27ce2b4a23a56.png" alt="diag 53dbf7cdede1b1c70fd27ce2b4a23a56" width="740" height="238">
+<img src="diag-01891fb443507cadb2ac0b38fe8796e9.png" alt="diag 01891fb443507cadb2ac0b38fe8796e9" width="780" height="238">
 </div>
 </div>
 <div class="paragraph">
@@ -2070,7 +2083,7 @@ For our own datasource the results will be written to neo4j as follows:</p>
 </div>
 <div class="imageblock">
 <div class="content">
-<img src="diag-8188f029c0a72f84c8e3d09e49c9cebb.png" alt="diag 8188f029c0a72f84c8e3d09e49c9cebb" width="413" height="686">
+<img src="diag-e4f660a5f932189c42bf6466a27f9733.png" alt="diag e4f660a5f932189c42bf6466a27f9733" width="413" height="686">
 </div>
 </div>
 </div>
@@ -2096,6 +2109,14 @@ This is perhaps a bit confusing.
 I can imagine that intuitively the datasource that provides the data also stores the index (technicaly there&#8217;s no clear preference).</p>
 </dd>
 </dl>
+</div>
+<div class="sect4">
+<h5 id="_upload_and_mapping_states">Upload and mapping states</h5>
+<div class="imageblock">
+<div class="content">
+<img src="diag-a316ef34b1ee3953443f2a575bf30bf2.png" alt="diag a316ef34b1ee3953443f2a575bf30bf2" width="700" height="518">
+</div>
+</div>
 </div>
 </div>
 </div>
@@ -2299,629 +2320,300 @@ v[65] --[hasBirthPlace]--&gt; v[73]</code></pre>
 </div>
 </div>
 <div class="sect2">
-<h3 id="_solr_index_script">Solr index script</h3>
+<h3 id="_resource_sync">Resource sync</h3>
 <div class="sect3">
 <h4 id="_summary_4">Summary</h4>
 <div class="paragraph">
-<p>These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.</p>
+<p>Timbuctoo can discover and download datasets from remote servers that contain resourcesync descriptions.</p>
 </div>
 </div>
 <div class="sect3">
 <h4 id="_context_6">Context</h4>
 <div class="paragraph">
-<p>We want to be able expose Timbuctoo collections through solr/lucene in a flexible way,
-enabling indexes on both the direct properties of records in a collection, as well as
-key properties of directly related objects; for instance a keyword value from a keyword
-collection, which was linked to a document from a document collection (like genre).</p>
+<p>The ResourceSync Framework is used to exchange rdf-data with remote quad stores.
+Features in this package include:</p>
 </div>
-</div>
-<div class="sect3">
-<h4 id="_usage_2">Usage</h4>
-<div class="paragraph">
-<p>Creating an index for a Timbuctoo collection is a 3-step process:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p><a href="#scraping">Scrape Timbuctoo data</a></p>
-</li>
-<li>
-<p><a href="#converting">Convert it to solr docs</a></p>
-</li>
-<li>
-<p><a href="#solr">Send solr docs to solr server</a></p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>For the impatient: <a href="#indexing">skip to complete example</a>.</p>
-</div>
-<div class="sect4">
-<h5 id="_libraries">Libraries</h5>
-<div class="paragraph">
-<p>For that purpose there are three classes in the dir <code>lib/timbuctoo_solr</code>.</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>TimbuctooIO <code>lib/timbuctoo_solr/timbuctoo_io.rb</code></p>
-</li>
-<li>
-<p>DefaultMapper <code>lib/timbuctoo_solr/default_mapper.rb</code></p>
-</li>
-<li>
-<p>SolrIO <code>lib/timbuctoo_solr/solr_io.rb</code></p>
-</li>
-</ol>
-</div>
-<div class="paragraph">
-<p>The next sections will explain the 3-step process in more detail, using examples which
-can be found in the <code>samples</code> dir.</p>
-</div>
-</div>
-<div class="sect4">
-<h5 id="__a_id_scraping_a_scraping"><a id="scraping"></a>Scraping</h5>
-<div class="paragraph">
-<p>A scrape of a Timbuctoo collection is done in batches using the method
-<code>scrape_collection</code> in TimbuctooIO. This can either be done with or without
-direct relations:</p>
-</div>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p><a href="http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10">Sample scrape response without relations</a></p>
-</li>
-<li>
-<p><a href="http://test.repository.huygens.knaw.nl/v2.1/domain/dcararchives?rows=10&amp;withRelations=true">Sample with relations</a></p>
-</li>
-</ol>
-</div>
-<div class="sect5">
-<h6 id="_basic_scrape">Basic scrape</h6>
-<div class="paragraph">
-<p>This script above scrapes the collection 'dcararchives' from the Timbuctoo test repository:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/basic-scrape.rb
-require '../lib/timbuctoo_solr/timbuctoo_io'
-
-timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
-timbuctoo_io.scrape_collection('dcararchives')</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Its default behaviour is to fetch the records in batches of 100, without relations, dumping
-each record individually to standard output.</p>
-</div>
-<div class="paragraph">
-<p>Sample of the output:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby">{
-  "beginDate" =&gt; "1700",
-  "countries" =&gt; ["NL"],
-  "endDate" =&gt; "1800",
-  "extent" =&gt; "1 folder",
-  "itemNo" =&gt; "9169",
-  "madeBy" =&gt; "MS",
-  "notes" =&gt; "18th century.",
-  "origFilename" =&gt; "/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD9_9169",
-  "refCode" =&gt; "AD.9",
-  "refCodeArchive" =&gt; "Archief Nederlandse Jezuieten",
-  "reminders" =&gt; "Gegevens ontvangen van Hans de Valk, 19-4-2007",
-  "titleEng" =&gt; "Documents relating to the RC mission on Curaçao in the 18th century",
-  "titleNld" =&gt; "Stukken betreffende de missie op Curaçao in de 18e eeuw",
-  "@displayName" =&gt; "Stukken betreffende de missie op Curaçao in de 18e eeuw",
-  "^rev" =&gt; 1,
-  "^modified" =&gt; {
-    "timeStamp" =&gt; 1411642687699,
-    "userId" =&gt; "importer",
-    "vreId" =&gt; "dcar"
-  },
-  "^created" =&gt; {
-    "timeStamp" =&gt; 1411642687699,
-    "userId" =&gt; "importer",
-    "vreId" =&gt; "dcar"
-  },
-  "@variationRefs" =&gt; [
-    {
-      "id" =&gt; "778bb9f8-a4fa-4a55-aed3-997da73112a0",
-      "type" =&gt; "archive"
-    },
-    {
-      "id" =&gt; "778bb9f8-a4fa-4a55-aed3-997da73112a0",
-      "type" =&gt; "dcararchive"
-    }
-  ],
-  "^deleted" =&gt; false,
-  "_id" =&gt; "778bb9f8-a4fa-4a55-aed3-997da73112a0"
-}
-{
-  "beginDate" =&gt; "1670",
-  "countries" =&gt; ["NL"],
-  "endDate" =&gt; "1870",
-  "extent" =&gt; "1 folder",
-  "itemNo" =&gt; "9170",
-  "madeBy" =&gt; "MS",
-  "notes" =&gt; "Undated.",
-  "origFilename" =&gt; "/data/data_Atlantische_wereld/Archieven/Archief_Nederlandse_Jezuieten_Nijmegen/Handschriftenverzameling/AD10_9170",
-  "refCode" =&gt; "AD.10",
-  "refCodeArchive" =&gt; "Archief Nederlandse Jezuieten",
-  "reminders" =&gt; "Gegevens ontvangen van Hans de Valk, 19-4-2007",
-  "titleEng" =&gt; "(Handwritten) notes concerning the Jesuit mission and missionaries in Suriname and Curaçao during the Republic and in the 19th century",
-  "titleNld" =&gt; "(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw",
-  "@displayName" =&gt; "(Handgeschreven) aantekeningen betreffende de missie en missionarissen SJ in Suriname en Curaçao zowel onder de Republiek als in de 19e eeuw",
-  "^rev" =&gt; 1,
-  "^modified" =&gt; {
-    "timeStamp" =&gt; 1411642687699,
-    "userId" =&gt; "importer",
-    "vreId" =&gt; "dcar"
-  },
-  "^created" =&gt; {
-    "timeStamp" =&gt; 1411642687699,
-    "userId" =&gt; "importer",
-    "vreId" =&gt; "dcar"
-  },
-  "@variationRefs" =&gt; [
-    {
-      "id" =&gt; "bead3064-ada9-4ee5-aad0-e5a926026574",
-      "type" =&gt; "archive"
-    }, {
-      "id" =&gt; "bead3064-ada9-4ee5-aad0-e5a926026574",
-      "type" =&gt; "dcararchive"
-    }
-  ],
-  "^deleted" =&gt; false,
-  "_id" =&gt; "bead3064-ada9-4ee5-aad0-e5a926026574"
-}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect5">
-<h6 id="_configuring_the_scrape">Configuring the scrape</h6>
-<div class="paragraph">
-<p>The code block below documents some options exposed by TimbuctooIO to alter scraping behaviour.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/basic-scrape.rb
-
-# Will dump scraped files (json) to specified :dump_dir
-timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl', {
-    :dump_files =&gt; true,
-    :dump_dir =&gt; './'
-})
-timbuctoo_io.scrape_collection('dcararchives', {
-    :with_relations =&gt; true, # also scrape direct relations
-    :batch_size =&gt; 1000, # scrape in batches of 1000
-})</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Dumping files has the advantage of not having to re-scrape the collection during development.
-The filenames of the dump files have a signature reflecting the parameters of the scrape.
-For instance, the above example outputs files with this format: <code>dcararchives_rows_1000_start_1000_with_relations.json</code></p>
-</div>
-</div>
-<div class="sect5">
-<h6 id="_re_scraping_from_locally_dumped_files">Re-scraping from locally dumped files</h6>
-<div class="paragraph">
-<p>To scrape from the locally dumped files in stead of Timbuctoo, add the <code>:from_file</code> flag to the
-<code>scrape_collection</code> method. In this case the value of <code>:dump_dir</code> in the constructor must
-match the location of the dumped files. If the (some of the) files are not present, TimbuctooIO
-will fall back on scraping the Timbuctoo server.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/basic-scrape.rb
-
-timbuctoo_io.scrape_collection('dcararchives', {
-    :with_relations =&gt; true, # also scrape direct relations
-    :batch_size =&gt; 1000, # scrape in batches of 1000
-    :from_file =&gt; true # scrape from local file dump in stead of Timbuctoo, if files are present
-})</code></pre>
-</div>
-</div>
-</div>
-<div class="sect5">
-<h6 id="_the_process_record_callback">The 'process_record' callback</h6>
-<div class="paragraph">
-<p>Each record scraped by <code>scrape_collection</code> is passed to a callback function, identified by
-the <code>:process_record</code> keyword argument. The default behaviour of <code>process_record</code> is
-to dump the (json deserialized) record to standard output (as seen above).
-The way to access the records in order to convert them is to set the <code>:process_record</code>
-parameter to a lambda function. The next examples illustrate this:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/scrape-callbacks.rb
-require 'json'
-require '../lib/timbuctoo_solr/timbuctoo_io'
-
-timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
-
-
-def process_record_callback(record)
-  puts record.to_json
-end
-
-timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record =&gt; lambda {|record| process_record_callback(record) } # lambda syntax
-})
-
-timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record =&gt; -&gt; (record) { process_record_callback(record) } # lambda shorthand syntax
-})
-
-timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record =&gt; method(:process_record_callback) # using lambda generator utility method 'method'
-})
-
-
-class RecordProcessor
-  def process_record_callback(record)
-    puts record.to_json
-  end
-end
-
-record_processor = RecordProcessor.new
-timbuctoo_io.scrape_collection('dcararchives', {
-    :process_record =&gt; record_processor.method(:process_record_callback) # referencing a method in a different class instance
-})</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect4">
-<h5 id="__a_id_converting_a_converting"><a id="converting"></a>Converting</h5>
-<div class="paragraph">
-<p>To convert records from Timbuctoo format to a format that can be indexed into solr the DefaultMapper can be used.
-The DefaultMapper expects a configuration upon construction, telling it which properties to map to a solr field.</p>
-</div>
-<div class="sect5">
-<h6 id="_mapping_direct_properties_using_defaultmapper">Mapping direct properties using DefaultMapper</h6>
-<div class="paragraph">
-<p>This example shows how to map Timbuctoo record properties to a solr format using the <a href="https://cwiki.apache.org/confluence/display/solr/Schemaless+Mode">data_driven_schema_configs</a>
-config set of Solr 6. This format uses field name suffixes to identify data types, and the field named 'id' as
-for  uniqueness constraint.</p>
-</div>
-<div class="paragraph">
-<p>This first example illustrates conversion of some properties in the 'wwcollectives' collection</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/conversion-1.rb
-require '../lib/timbuctoo_solr/timbuctoo_io'
-require '../lib/timbuctoo_solr/default_mapper'
-
-timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
-
-@collectives_mapper = DefaultMapper.new({
-  :properties =&gt; [ # configure direct properties of Timbuctoo record
-      {
-          :name =&gt; '_id', # the property name in the Timbuctoo data
-          :converted_name =&gt; 'id' # the name used for Solr
-      },
-      { :name =&gt; 'name',  :converted_name =&gt; 'name_t'}, # name field for full-text search
-      { :name =&gt; 'type',  :converted_name =&gt; 'type_s'}, # type field as string for filtering
-      { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s'}, # the human readable display name
-      {
-          :name =&gt; [ '^modified', 'timeStamp' ], # a nested property ({ "^modified": {"timeStamp": ... }})
-          :converted_name =&gt; 'modified_l' # this field is of type long
-      }
-  ]
-})
-
-def process(record)
-  p @collectives_mapper.convert(record)
-end
-
-
-timbuctoo_io.scrape_collection('wwcollectives', :process_record =&gt; method(:process))</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Some samples of the output:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>{"id"=&gt;"bead82cb-3396-4194-8e01-c965d21314d5", "name_t"=&gt;"Suomen Naisyhdistys", "type_s"=&gt;"ASSOCIATION", "displayName_s"=&gt;"Suomen Naisyhdistys", "modified_l"=&gt;1457519077226}
-{"id"=&gt;"3750675a-8a6f-4bca-84b3-c8a0f8927a24", "name_t"=&gt;"Naisasialiitto Unioni", "type_s"=&gt;"ASSOCIATION", "displayName_s"=&gt;"Naisasialiitto Unioni", "modified_l"=&gt;1457519140679}
-{"id"=&gt;"5040485d-58d2-4539-968c-8bf7182f83ba", "name_t"=&gt;"Suomalainen naisliitto", "type_s"=&gt;"ASSOCIATION", "displayName_s"=&gt;"Suomalainen naisliitto", "modified_l"=&gt;1457521488510}</code></pre>
-</div>
-</div>
-</div>
-<div class="sect5">
-<h6 id="_converting_the_value_of_a_timbuctoo_property">Converting the value of a Timbuctoo property</h6>
-<div class="paragraph">
-<p>The DefaultMapper configuration can be supplied with a type parameter per property. It ships one supported data type (int)
-which will pass the property value to the <code>convert_to_int</code> method, which attempts to cast the value using <code>to_i</code>.</p>
-</div>
-<div class="paragraph">
-<p>This example converts the string value of 'birthDate' into the int value of 'birthDate_i'</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/conversion-2.rb
-
-@person_mapper = DefaultMapper.new({
-  :properties =&gt; [
-    { :name =&gt; '_id', :converted_name =&gt; 'id' },
-    { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s'},
-    { :name =&gt; 'birthDate', :converted_name =&gt; 'birthDate_i', :type =&gt; 'int' }
-  ]
-})</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Asking the DefaultMapper to convert to any other type than 'int' will raise the following message:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>default_mapper.rb:55:in `convert_value': Type 'your_type' not supported please define method convert_to_your_type (RuntimeError)</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>As illustrated in <code>samples/conversion-raise.rb</code>.</p>
-</div>
-<div class="paragraph">
-<p>To remedy this we recommend inheriting from DefaultMapper and implementing the method 'convert_to_your_type':</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/type-conversion-1.rb
-
-class FooMapper &lt; DefaultMapper
-  def convert_to_foo_type(value)
-    "fooified #{value}"
-  end
-end
-
-@person_mapper = FooMapper.new({
-   :properties =&gt; [
-       { :name =&gt; '_id', :converted_name =&gt; 'id' },
-       { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s', :type =&gt; 'foo_type'},
-   ]
-})</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>For some common data types modules are provided in <code>lib/mixins/converters</code>, delegating the responsibility of hand-writing
-type converters. Ruby modules can be used as mixins inside a class using the <code>include</code> instruction.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/type-conversion-2.rb
-
-require '../lib/mixins/converters/to_names_converter'
-require '../lib/mixins/converters/to_year_converter'
-
-class PersonMapper &lt; DefaultMapper
-  include ToNamesConverter
-  include ToYearConverter
-end
-
-@person_mapper = PersonMapper.new({
-  :properties =&gt; [
-    { :name =&gt; '_id', :converted_name =&gt; 'id' },
-    { :name =&gt; 'birthDate', :converted_name =&gt; 'birthDate_i', :type =&gt; 'year' },
-    { :name =&gt; 'names', :converted_name =&gt; 'name_t', :type =&gt; 'names'},
-    { :name =&gt; 'names', :converted_name =&gt; 'nameSort_s', :type =&gt; 'name_sort'},
-    { :name =&gt; 'names', :converted_name =&gt; 'displayName_s', :type =&gt; 'names_display_name'},
-  ]
-})</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>When writing a custom converter which has a good chance of being reused by another indexer, we recommend
-adding this converter in a similar module under <code>lib/mixins/converters</code>.</p>
-</div>
-</div>
-<div class="sect5">
-<h6 id="_mapping_properties_of_direct_relations">Mapping properties of direct relations</h6>
-<div class="paragraph">
-<p>The DefaultMapper can also be configured with properties derived from directly related objects. This requires that
-<code>TimbuctooIO.scrape_collection</code> is invoked with <code>{ :with_relations &#8658; true }</code>.</p>
-</div>
-<div class="paragraph">
-<p>Example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/conversion-with-relations.rb
-
-@collectives_mapper = DefaultMapper.new({
-  :properties =&gt; [
-    { :name =&gt; '_id', :converted_name =&gt; 'id' },
-    { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s'}
-  ],
-  :relations =&gt; [
-    {
-      :relation_name =&gt; 'hasMember', # name of the relation to follow
-      :property_name =&gt; 'displayName', # get the displayName property of the related object
-      :converted_name =&gt; 'members_ss' # list of strings data type
-    },
-    {
-      :relation_name =&gt; 'hasMember', # name of the relation to follow
-      :property_name =&gt; 'path', # get the path property to the related object
-      :converted_name =&gt; 'memberId_ss' # list of strings data type
-    }
-  ]
-})</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>Sample of the output</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code>{"id"=&gt;"3286ea24-d4fb-4c94-8a06-e04b8aa5741b", "displayName_s"=&gt;"Accademia degli Arcadia", "members_ss"=&gt;["Paolina Secco Suardo Grismondi", "Hélène Baletti Riccoboni"], "memberId_ss"=&gt;["domain/wwpersons/676c4572-25ce-4c19-af97-903a08e388e8", "domain/wwpersons/8b1e5848-cf76-448c-9427-5221dba236ef"]}
-{"id"=&gt;"769cd459-63bb-4b32-bc82-3630dfe3ec64", "displayName_s"=&gt;"Academies of Rouen, Lyon, Bologne, Padoue, Cortone, Florence, Rome Arcadia (Briquet)", "members_ss"=&gt;["Anne-Marie du Boccage"], "memberId_ss"=&gt;["domain/wwpersons/16b64aed-2d82-481b-9796-56cb51b71711"]}
-{"id"=&gt;"f3fb32d9-b28b-4aa8-88f9-d8945e44a1bb", "displayName_s"=&gt;"Other : Political party", "members_ss"=&gt;[], "memberId_ss"=&gt;[]}</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>The same type conversion rules apply to properties derived from relations (see: <code>samples/type-conversion-1.rb</code>).</p>
-</div>
-</div>
-</div>
-<div class="sect4">
-<h5 id="__a_id_solr_a_solr"><a id="solr"></a>Solr</h5>
-<div class="paragraph">
-<p>The class SolrIO exposes a few basic CRUD methods. The samples in this section assume a local running solr 6 server (<a href="http://lucene.apache.org/solr/quickstart.html">quickstart</a>).
-The constructor is invoked with the solr url (usually including /solr without trailing slash). Optionally a value for the header 'Authorization'
-can be added in the constructor as well.</p>
-</div>
-<div class="sect5">
-<h6 id="_crud_methods_of_solrio">CRUD methods of SolrIO</h6>
-<div class="paragraph">
-<p>Use the <code>create</code> method to create an index. By default an index is created with the config set 'data_driven_schema_configs'
-If the index already exists, this method will raise an exception.</p>
-</div>
-<div class="paragraph">
-<p>Use the <code>update</code> method to send a batch of data to be indexed.</p>
-</div>
-<div class="paragraph">
-<p>Use the <code>delete_data</code> method to delete all contents of an index</p>
-</div>
-<div class="paragraph">
-<p>Use the <code>commit</code> method to commit the changes that were sent.</p>
-</div>
-<div class="paragraph">
-<p>Use the <code>delete_index</code> method to purge the entire index from solr.</p>
-</div>
-<div class="paragraph">
-<p>Example:</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/solr.rb
-require '../lib/timbuctoo_solr/solr_io'
-
-# Initialize for local solr
-solr_io = SolrIO.new('http://localhost:8983/solr')
-
-# Create index named 'testing'
-solr_io.create('testing')
-
-# Update index with batch of one record
-solr_io.update('testing', [{:id =&gt; "foobar", :value_i =&gt; 123}])
-solr_io.commit('testing')
-
-# Throw away the data
-solr_io.delete_data('testing')
-
-solr_io.commit('testing')
-
-solr_io.delete_index('testing')</code></pre>
-</div>
-</div>
-</div>
-</div>
-<div class="sect4">
-<h5 id="__a_id_indexing_a_indexing"><a id="indexing"></a>Indexing</h5>
-<div class="paragraph">
-<p>This sample code integrates most of the pieces listed above into one sample indexer. If you skipped directly to this section,
-please be aware that this sample does not illustrate all the possibilities.</p>
-</div>
-<div class="listingblock">
-<div class="content">
-<pre class="highlight"><code class="language-ruby" data-lang="ruby"># samples/indexer.rb
-require '../lib/timbuctoo_solr/timbuctoo_io'
-require '../lib/timbuctoo_solr/default_mapper'
-require '../lib/timbuctoo_solr/solr_io'
-
-class Indexer
-  def initialize
-    @timbuctoo_io = TimbuctooIO.new('http://test.repository.huygens.knaw.nl')
-    @solr_io = SolrIO.new('http://localhost:8983/solr')
-
-    @mapper = DefaultMapper.new({
-        :properties =&gt; [
-            { :name =&gt; '_id', :converted_name =&gt; 'id' },
-            { :name =&gt; '@displayName',  :converted_name =&gt; 'displayName_s'},
-            { :name =&gt; [ '^modified', 'timeStamp' ], :converted_name =&gt; 'modified_l'}
-        ],
-        :relations =&gt; [
-            {
-                :relation_name =&gt; 'has_archive_keyword', # name of the relation to follow
-                :property_name =&gt; 'displayName', # get the path property to the related object
-                :converted_name =&gt; 'keyword_ss' # list of strings data type
-            }
-        ]
-    })
-  end
-
-  def run
-    @solr_io.create('testing')
-    @timbuctoo_io.scrape_collection('dcararchives', :with_relations =&gt; true, :process_record =&gt; method(:process))
-    @solr_io.commit('testing')
-    @solr_io.delete_index('testing')
-  end
-
-  def process(record)
-    @solr_io.update('testing', [@mapper.convert(record)])
-  end
-end
-
-Indexer.new.run</code></pre>
-</div>
-</div>
-<div class="paragraph">
-<p>A more elaborate example is in <code>samples/complete-sample-runner.rb</code>.</p>
-</div>
-</div>
-</div>
-<div class="sect3">
-<h4 id="_open_issues">Open issues</h4>
-<div class="sect4">
-<h5 id="_1_no_control_over_text_indexes">1. No control over text indexes</h5>
-<div class="paragraph">
-<p>Our current solr index is the default data driven index.
-This one does not handle accented words very well.
-We also have no control over how capitalization is handled.
-We&#8217;re pretty sure that our users need us to handle these cases in a way that differs on a project by project basis.</p>
-</div>
-<div class="sect5">
-<h6 id="_development_steps">Development steps</h6>
 <div class="ulist">
 <ul>
 <li>
-<p>Run a local solr 6 instance (docker or directly under windows, you&#8217;ll need to be able to access the files)</p>
+<p>nl.knaw.huygens.timbuctoo.remote.rs.xml - marshal and unmarshal sitemap documents to and from java classes</p>
 </li>
 <li>
-<p>create the index <code>wwpersons_accent_research</code> on your local solr</p>
+<p>nl.knaw.huygens.timbuctoo.remote.rs.discover - discover and navigate a remote ResourceSync document tree</p>
 </li>
 <li>
-<p>Fill this index with the fulltext records (i.e. <code>*_t</code>) uit wwpersons</p>
+<p>nl.knaw.huygens.timbuctoo.remote.rs.view - render the result of an expedition for json.</p>
 </li>
 <li>
-<p>Configure it so that</p>
-<div class="olist arabic">
-<ol class="arabic">
-<li>
-<p>a search for <code>Bronte</code> and a search fot <code>Brontë</code> both return one instance for each of the three Brontë sisters</p>
+<p>nl/knaw/huygens/timbuctoo/remote/rs/ResourceSyncService.java - central service</p>
 </li>
 <li>
-<p>a search for <code>de*</code> return both "Descartes" and "Eugénie Avril de Sainte Croix". A Search for <code>De*</code> returns only Descartes</p>
-</li>
-<li>
-<p>Find out how we could make the index fully case-sensitive</p>
-</li>
-</ol>
-</div>
-</li>
-<li>
-<p>How can we make this approach work for all <code>*_t</code> fields?</p>
-</li>
-<li>
-<p>How can we make this approach work for only a specific field?</p>
+<p>nl/knaw/huygens/timbuctoo/server/endpoints/v2/remote/rs/Discover.java - web service API</p>
 </li>
 </ul>
 </div>
 </div>
+<div class="sect3">
+<h4 id="_data_model_4">Data model</h4>
+<div class="paragraph">
+<p>The <a href="http://www.openarchives.org/rs/1.0/resourcesync">resource sync specification</a> describes how various documents interlink in order to describe a set of resources and where the entrypoints should be placed.
+In it&#8217;s simplest form it is just one file containing a directory listing with a predefined name.
+This is needed because the HTTP spec itself does not define a "list" command.
+Resourcesync is a set of embelishments on the sitemap.xml de-facto standard.
+Timbuctoo uses resourcesync to discover datasets at a source and to get the list of files that comprise the dataset.</p>
+</div>
+<div class="paragraph">
+<p>The document linked above provides the full spec, but we found it convenient to draw a picture of the various documents:</p>
+</div>
+<div class="imageblock">
+<div class="content">
+<img src="diag-947ea63f3271394749dc3b59ea3c8229.png" alt="diag 947ea63f3271394749dc3b59ea3c8229" width="930" height="560">
+</div>
+</div>
+<div class="paragraph">
+<p>The horizontal arrows indicate entrypoints.
+If you provide timbuctoo (or another resourcesync destination) with a url it may try to find a link header/link tag, a resourcesync file in the folder .well-known at the root of the server, or a robots.txt.
+Each file provides links downwards, optionally they might also provide a link upwards.
+A source description contains links to one or more capability lists, each list is considered to contain 1 dataset by timbuctoo.
+A capability list will link to one or more files via a resource (index) list.
+All files in the resource list are considered to be part of the same dataset.
+A capability list may also point to a resource dump and/or changesets, these features are currently not supported and will be ignored.</p>
+</div>
+<div class="paragraph">
+<p>Walking up the resource chain is also not yet implemented.</p>
+</div>
+<div class="paragraph">
+<p>So to create a resourcesync capable server for timbuctoo you should:</p>
+</div>
+<div class="olist arabic">
+<ol class="arabic">
+<li>
+<p>Put a <a href="http://www.openarchives.org/rs/1.0.9/resourcesync#ex_7">source description</a> at <code>/.well-known/resourcesync</code> on your server</p>
+</li>
+<li>
+<p>Fill it with links to <a href="http://www.openarchives.org/rs/1.0.9/resourcesync#ex_6">capability lists</a> (1 per dataset that you wish to publish)</p>
+</li>
+<li>
+<p>Fill them with links to <a href="http://www.openarchives.org/rs/1.0.9/resourcesync#ex_1">Resource lists</a></p>
+</li>
+<li>
+<p>Fill those with links to the actual data files in one of the supported rdf formats (see below)</p>
+</li>
+</ol>
+</div>
+<div class="sect4">
+<h5 id="_valid_resources">Valid resources</h5>
+<div class="paragraph">
+<p>Timbuctoo cannot sync every filetype on the internet, only files containing rdf in several of the more well-known serialisation formats.
+To indicate the serialisation format you can specify the mimetype in the optional <code>md</code> field (meta data field) for each url from the resource list.
+Alternatively you can use a file extension to indicate the type of file.
+The explicit mimetype overrules the file extension.</p>
+</div>
+<div class="paragraph">
+<p>The filetypes that we can currently import are:</p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p>text/turtle (.ttl)</p>
+</li>
+<li>
+<p>application/rdf+xml (.rdf)</p>
+</li>
+<li>
+<p>application/n-triples (.nt)</p>
+</li>
+<li>
+<p>application/ld+json (.jsonld)</p>
+</li>
+<li>
+<p>text/trig (.trig)</p>
+</li>
+<li>
+<p>application/n-quads (.nq)</p>
+</li>
+<li>
+<p>application/trix+xml (.trix)</p>
+</li>
+<li>
+<p>application/rdf+thrift (.trdf)</p>
+</li>
+</ul>
+</div>
+<div class="paragraph">
+<p>So we expect an item resource list will look like:</p>
+</div>
+<div class="listingblock">
+<div class="content">
+<pre class="highlight"><code>...
+&lt;url&gt;
+    &lt;loc&gt;http://localhost/.well-known/resourcesync/dataset1/resource2.nq&lt;/loc&gt;
+    &lt;rs:md type="application/n-quads"/&gt; &lt;!-- this line is optional, but can be used to override the extension --&gt;
+&lt;/url&gt;
+...</code></pre>
+</div>
+</div>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_steps_to_test_the_api">Steps to test the API</h4>
+<div class="paragraph">
+<p>Got to the folder <code>{timbuctoo-root}/documentation/resourcesyncexample</code>.
+Simply run <code>docker-compose up</code> and the service will start at localhost port 80 (default http port).
+Open the uri <code><a href="http://localhost/.well-known/resourcesync" class="bare">localhost/.well-known/resourcesync</a></code> to list the resource sync files.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contents_of_this_example_server">Contents of this example server</h4>
+<div class="paragraph">
+<p>According to the resource sync spec we placed the source description (<code>sourcedescription.xml</code>) in the <code>./well-known/resourcesync</code> folder.
+This source description sums up the available.</p>
+</div>
+<div class="paragraph">
+<p>Another option is <code>robots.txt</code> that points to the resource list of <code>dataset1</code>.</p>
+</div>
+<div class="paragraph">
+<p>The third option is to use an html or a response with a link to the capability list of a data set.
+And example of this is <code>html_with_link.html</code> in teh folder of <code>dataset2</code>.</p>
+</div>
+<div class="paragraph">
+<p>For more information see: <a href="http://www.openarchives.org/rs/1.0/resourcesync#FrameworkOrg" class="bare">www.openarchives.org/rs/1.0/resourcesync#FrameworkOrg</a></p>
+</div>
+<div class="ulist">
+<ul>
+<li>
+<p><a href="http://localhost:8080/v2.1/remote/rs/discover/listgraphs/http%3A%2F%2Flocalhost" class="bare">localhost:8080/v2.1/remote/rs/discover/listgraphs/http%3A%2F%2Flocalhost</a>  - list the graph iri&#8217;s at the remote site</p>
+</li>
+<li>
+<p><a href="http://localhost:8080/v2.1/remote/rs/discover/listsets/http%3A%2F%2Flocalhost" class="bare">localhost:8080/v2.1/remote/rs/discover/listsets/http%3A%2F%2Flocalhost</a>  - same as previous, agnostic to base64-convention</p>
+</li>
+<li>
+<p><a href="http://localhost:8080/v2.1/remote/rs/discover/framework/http%3A%2F%2Flocalhost" class="bare">localhost:8080/v2.1/remote/rs/discover/framework/http%3A%2F%2Flocalhost</a>  - flat representation of the ResourceSync Framework documents</p>
+</li>
+<li>
+<p><a href="http://localhost:8080/v2.1/remote/rs/discover/tree/http%3A%2F%2Flocalhost" class="bare">localhost:8080/v2.1/remote/rs/discover/tree/http%3A%2F%2Flocalhost</a>  - hierarchical representation of the ResourceSync Framework documents</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_working_with_the_remote_rs_xml_package">Working with the ../remote/rs/xml package</h4>
+<div class="paragraph">
+<p>When downloading a ResourceSync doument we do not always know whether we find a &lt;sitemapindex&gt; or a &lt;urlset&gt;. The two kinds of document are represented as java classes <code>Urlset</code> and <code>Sitemapindex</code>, both have a common superclass, <code>RsRoot</code>. The class <code>RsBuilder</code> in this package will take a variety of input types and produces an Optional of <code>RsRoot</code>. If the unmarshal operation succeeded then either one of the methods
+<code>Optional&lt;Urlset&gt; getUrlset()</code> or <code>Optional&lt;Sitemapindex&gt; getSitemapindex()</code> will yield.</p>
+</div>
+<div class="paragraph">
+<p>The RsBuilder class also has a convenience method for marshaling a <code>RsRoot</code> subclass to its xml-representation: <code>String toXml(RsRoot rsRoot, boolean formattedOutput)</code>. If needed this class could be extended to marshal to different types: <code>toXmlString</code>, <code>toXmlFile</code> etc.</p>
+</div>
+<div class="paragraph">
+<p>To build a ResourceSync document from java, the JAXB-classes can be used and populated with values. However, extensive syntax checking is not done. To build valid ResourceSync documents you still need to consult the documentation.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_working_with_the_remote_rs_discover_package">Working with the ../remote/rs/discover package</h4>
+<div class="paragraph">
+<p>The principle behind the <code>AbstractUriExplorer</code> and <code>Result&lt;?&gt;</code> classes is agnostic to the ResourceSync Framework. It presents the opportunity to explore any URI and relate it to some kind of response or the absence of it. In case of a response, the response can be converted through some kind of function to some java class, the 'content' of the <code>Result</code>. Also any errors while getting the response or during conversion will be stored in the <code>Result</code> instance. Not handling errors in this code is natural. The maturity of possible errors will have a cause that is on the remote end. Here we register errors only to report them to end users.</p>
+</div>
+<div class="paragraph">
+<p>The above abstraction comes together in the <code>AbstractUriExplorer</code> method with the signature
+<code>
+&lt;T&gt; Result&lt;T&gt; execute(URI uri, Function_WithExceptions&lt;HttpResponse, T, ?&gt; func)
+</code>
+Furthermore, the principle that any document on the internet can have incoming links and outgoing links is expressed in the <code>Result</code> class with parents (for incoming links) and children (for outgoing links).</p>
+</div>
+<div class="paragraph">
+<p>The ResourceSync documents on a remote site can be seen as a tree or network; all documents have relations of some type to other documents. With the help of the concrete classes <code>LinkExplorer</code> and <code>RsExplorer</code> such a network can be explored. The <code>Expedition</code> class uses these explorers to test four methods of discovering a remote network of ResourceSync documents. At the moment an Expedition discovers <em>all</em> ResourceSync documents at the remote site, which might be overkill in case we are looking for a particular document and the remote site has substantial amounts of related documents.</p>
+</div>
+<div class="quoteblock">
+<blockquote>
+<div class="paragraph">
+<p>@ToDo: Introduce a Navigator class that is handed through <code>Expedition.explore</code> methods up to the <code>RsExplorer</code> class and that, having been given a target, knows whether the exploration has to go up, down or sideways through parent and child links in order to reach the target document. The enum <code>Capability</code> in the xml package already knows about parent and child relations between the various document types and might be useful in this navigation attempt.</p>
+</div>
+</blockquote>
+</div>
+<div class="paragraph">
+<p>All results come together in a <code>ResultIndex</code>, which is essentially a collection of mappings between URIs and <code>Result&lt;?&gt;`s. The `ResultIndexPivot</code> class is a wrapper around such a <code>ResultIndex</code> that facilitates data summarizations. Of course the <code>ResultIndex</code> itself can be used as a starting point to 'stream' summarizations without intermediate reduce operations.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_working_with_the_remote_rs_view_package">Working with the ../remote/rs/view package</h4>
+<div class="paragraph">
+<p>This package has several 'views' on results and result details that are shaped for (one way) Json serialization. Classes that take a <code>ResultIndex</code> are marked with the word 'Base': <code>SetListBase</code>, <code>FrameworkBase</code>, <code>TreeBase</code>.  The constructors of these classes take the result detail they are supposed to render and an <code>Interpreter</code> which introduces some flexibility on how a detail is rendered. The <code>Interpreter</code> and <code>Interpreters</code> classes should be extended with whatever interpreters are needed for more sophisticated renderings. Of course in such a case also particular methods in  the views have to be adopted to make use of the interpreter.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_the_discover_api">The Discover API</h4>
+<div class="paragraph">
+<p>The class <code>nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover</code> handles API calls that enable discovering a remote ResourceSync source. A CLARIAH-introduced convention of communicating the graph iri through the name of a directory is provided by means of an interpreter as mentioned in the previous paragraph. The methods <code>listSets</code> and <code>listGraphs</code> are essentially the same, except that the latter method uses the <code>Interpreters.base64EncodedItemNameInterpreter</code>.  Thus reducing the impact of changes in perhaps temporary conventions to a minimum.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_what_remains_to_be_done">What remains to be done</h4>
+<div class="ulist">
+<ul>
+<li>
+<p><span class="feature">be able to handle "resource index lists" in discovery and download</span></p>
+</li>
+<li>
+<p><span class="feature">resourcesync discovery should only request the source description document if you pass it a full url. (It currently also downloads all capability lists)</span></p>
+</li>
+<li>
+<p><span class="feature">resourcesync discovery walks the up-chain to get to the source description document if you pass a secondary level document (capabilitylist or resourcelist</span></p>
+</li>
+<li>
+<p><span class="feature">resourcesync discovery returns a list with only the secondary level document if the up-chain cannot be walked</span></p>
+</li>
+<li>
+<p><span class="feature">choose a format for describing the datasets and link it using <code>describedby</code> (something like dcat or VOID ) and make the discovery use that information for presenting the data to the user.</span></p>
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_resource_sync_example_server">Resource sync example server</h3>
+<div class="sect3">
+<h4 id="_background_2">Background</h4>
+<div class="paragraph">
+<p>Timbuctoo should be able to import RDF-data (n-quads) provided by a resource sync server.
+To be able to test this functionality.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_how_to_use">How to use</h4>
+<div class="paragraph">
+<p>Simply run <code>docker-compose up</code> and the service will start at localhost port 80 (default http port).
+Open the uri <code><a href="http://localhost/.well-known/resourcesync" class="bare">localhost/.well-known/resourcesync</a></code> to list the resource sync files.</p>
+</div>
+</div>
+<div class="sect3">
+<h4 id="_contents_of_this_example_server_2">Contents of this example server</h4>
+<div class="paragraph">
+<p>According to the resource sync spec we placed the source description (<code>sourcedescription.xml</code>) in the <code>./well-known/resourcesync</code> folder.
+This source description sums up the available.</p>
+</div>
+<div class="paragraph">
+<p>Another option is <code>robots.txt</code> that points to the resource list of <code>dataset1</code>.</p>
+</div>
+<div class="paragraph">
+<p>The third option is to use an html or a response with a link to the capability list of a data set.
+And example of this is <code>html_with_link.html</code> in teh folder of <code>dataset2</code>.</p>
+</div>
+<div class="paragraph">
+<p>For more information see: <a href="http://www.openarchives.org/rs/1.0/resourcesync#FrameworkOrg" class="bare">www.openarchives.org/rs/1.0/resourcesync#FrameworkOrg</a></p>
+</div>
+</div>
+</div>
+<div class="sect2">
+<h3 id="_solr_index_script">Solr index script</h3>
+<div class="sect3">
+<h4 id="_summary_5">Summary</h4>
+<div class="paragraph">
+<p>These ruby scripts harvest the timbuctoo CRUD endpoint, format the data and send it to solr.
+For more info follow the link below.</p>
+</div>
+<div class="paragraph">
+<p><a href="https://github.com/HuygensING/timbuctoo-faceted-search-indexer/blob/master/README.adoc" class="bare">github.com/HuygensING/timbuctoo-faceted-search-indexer/blob/master/README.adoc</a></p>
 </div>
 </div>
 </div>
@@ -3067,7 +2759,7 @@ We&#8217;re not aware of any research for building a system that fulfills the xa
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-12-07 12:22:32 UTC
+Last updated 2017-02-15 13:03:47 UTC
 </div>
 </div>
 </body>
