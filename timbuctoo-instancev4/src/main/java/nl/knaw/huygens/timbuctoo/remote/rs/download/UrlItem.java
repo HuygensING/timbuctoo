@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.download;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import org.slf4j.LoggerFactory;
 
 public class UrlItem {
   private String loc;
@@ -16,6 +17,7 @@ public class UrlItem {
   }
 
   public Metadata getMetadata() {
+    LoggerFactory.getLogger(UrlItem.class).info("getMetaData");
     return metadata;
   }
 

@@ -52,8 +52,10 @@ public class Import {
                           rdfExecutorService.submit(() -> {
                             transactionEnforcer.execute(timbuctooActions -> {
                               try {
+                                LOG.info("Loading files");
                                 Iterator<RemoteFile> files =
                                   resourceSyncFileLoader.loadFiles(importData.name).iterator();
+                                LOG.info("Found files '{}'", files.hasNext());
                                 while (files.hasNext()) {
                                   RemoteFile file = files.next();
                                   timbuctooActions.rdfUpdateImportSession(importData.vreName, session -> {
@@ -61,7 +63,9 @@ public class Import {
                                       new RdfImporter(graphWrapper, importData.vreName, vres, session);
                                     try {
                                       try {
+                                        LOG.info("Start import '{}'", file.getUrl());
                                         rdfImporter.importRdf(file.getData(), file.getMimeType());
+                                        LOG.info("Finish import '{}'", file.getUrl());
                                       } catch (Exception e) {
                                         LOG.error("import of file for '{}' failed", file.getUrl());
                                         throw e;
@@ -70,22 +74,23 @@ public class Import {
                                     } catch (Exception e) {
                                       LOG.error("Import failed", e);
                                       return rollback();
-                                    } finally {
-                                      try {
-                                        output.close();
-                                      } catch (IOException e) {
-                                        LOG.debug("Could not close output.", e);
-                                      }
                                     }
                                   });
                                 }
                                 return commit();
-                              } catch (IOException e) {
+                              } catch (Exception e) {
                                 LOG.error("Could not read files to import", e);
                                 return rollback();
+                              } finally {
+                                try {
+                                  output.close();
+                                } catch (IOException e) {
+                                  LOG.debug("Could not close output.", e);
+                                }
                               }
                             });
                           });
+
                           return Response.ok(output).build();
                         });
   }

@@ -12,11 +12,11 @@ public interface RemoteFile {
 
   String getMimeType();
 
-  static RemoteFile create(String url, InputStream data, Metadata metadata) {
+  static RemoteFile create(String url, InputStream data, String mimeType) {
     return ImmutableRemoteFile.builder()
       .data(data)
       .url(url)
-      .mimeType(metadata.getMimeType())
+      .mimeType(mimeType)
       .build();
   }
 }

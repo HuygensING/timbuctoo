@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.download;
 
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import org.slf4j.LoggerFactory;
 
 public class Metadata {
   @JacksonXmlProperty(localName = "capability", isAttribute = true)
@@ -17,6 +18,7 @@ public class Metadata {
   }
 
   public String getMimeType() {
+    LoggerFactory.getLogger(Metadata.class).info("getMimeType '{}'", mimeType);
     return mimeType;
   }
 
