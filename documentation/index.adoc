@@ -131,6 +131,8 @@ include::{javasourcesdir}/rml/README.adoc[]
 
 include::{javasourcesdir}/rdf/README.adoc[]
 
+include::{javasourcesdir}/remote/rs/README.adoc[]
+
 include::./resourcesyncexample/README.adoc[]
 
 = Solr index script

@@ -10,7 +10,8 @@ Simply run `docker-compose up` and the service will start at localhost port 80 (
 //end:startup[]
 Open the uri `http://localhost/.well-known/resourcesync` to list the resource sync files.
 
-== Structure
+== Contents of this example server
+
 According to the resource sync spec we placed the source description (`sourcedescription.xml`) in the `./well-known/resourcesync` folder.
 This source description sums up the available.
 
@@ -21,30 +22,3 @@ And example of this is `html_with_link.html` in teh folder of `dataset2`.
 
 For more information see: http://www.openarchives.org/rs/1.0/resourcesync#FrameworkOrg
 
-=== Valid resources
-Timbuctoo cannot sync every filetype on the internet, only files containing rdf in several of the more well-known serialisation formats.
-To indicate the serialisation format you can specify the mimetype in the optional `md` field (meta data field) for each url from the resource list.
-Alternatively you can use a file extension to indicate the type of file.
-The explicit mimetype overrules the file extension.
-
-The filetypes that we can currently import are:
-
- * text/turtle (.ttl)
- * application/rdf+xml (.rdf)
- * application/n-triples (.nt)
- * application/ld+json (.jsonld)
- * text/trig (.trig)
- * application/n-quads (.nq)
- * application/trix+xml (.trix)
- * application/rdf+thrift (.trdf)
-
-So we expect an item resource list will look like:
-
-```
-...
-<url>
-    <loc>http://localhost/.well-known/resourcesync/dataset1/resource2.nq</loc>
-    <rs:md type="application/n-quads"/> <!-- this line is optional, but can be used to override the extension -->
-</url>
-...
-```
