@@ -8,8 +8,8 @@ https://gitter.im/HuygensING/timbuctoo[image:https://badges.gitter.im/HuygensING
 [NOTE]
 ====
 This software is developed and supported by the http://huygens.knaw.nl[Huygens Institute] in the Netherlands. 
-We intend to support the software indefinitely, but *2018* is our current planning horizon.
-This notice will be updated before the end of 2018 with the new support duration.
+We intend to support the software indefinitely, but *2021* is our current planning horizon.
+This notice will be updated before the end of 2021 with the new support duration.
 
   * Support means that we'll review your https://github.com/huygensing/timbuctoo/pulls[pull requests], respond to https://github.com/huygensing/timbuctoo/issues[issues] and answer questions on the http://gitter.im/huygensing/timbuctoo[chat].
   * It does not mean that we'll fix every issue that you raise.
