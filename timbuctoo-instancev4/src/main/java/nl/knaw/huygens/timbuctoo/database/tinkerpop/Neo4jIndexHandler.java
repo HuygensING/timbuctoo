@@ -91,7 +91,11 @@ public class Neo4jIndexHandler implements IndexHandler {
       .map(QueryParserUtil::escape)
       .map(s -> s + "*")
       .collect(joining());
-    return fullMatches + " " + partialMatches;
+    if (fullMatches.isEmpty() && partialMatches.isEmpty()) {
+      return "*";
+    } else {
+      return fullMatches + " " + partialMatches;
+    }
   }
 
   @Override
