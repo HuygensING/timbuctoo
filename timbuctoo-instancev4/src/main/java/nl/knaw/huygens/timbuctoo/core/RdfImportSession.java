@@ -47,6 +47,26 @@ public class RdfImportSession {
     return new RdfImportSession(dataStoreOperations, reloadedVre, errorReporter, propertyFactory);
   }
 
+  public static RdfImportSession updateImportSession(String vreName, DataStoreOperations dataStoreOperations) {
+    LogRdfImportErrorReporter errorReporter = new LogRdfImportErrorReporter();
+
+    Vre vre = dataStoreOperations.ensureVreExists(vreName);
+
+    if (vre.getCollectionForTypeName(CreateCollection.defaultCollection(vreName).getEntityTypeName(vre)) == null) {
+      dataStoreOperations.addCollectionToVre(vre, CreateCollection.defaultCollection(vre.getVreName()));
+      dataStoreOperations.addPredicateValueTypeVertexToVre(vre);
+    }
+
+    Vre reloadedVre = dataStoreOperations.loadVres().getVre(vre.getVreName());
+
+    return new RdfImportSession(
+      dataStoreOperations,
+      reloadedVre,
+      errorReporter,
+      new PropertyFactory(errorReporter)
+    );
+  }
+
   public void close() {
     Vre reloadedVre = dataStoreOperations.loadVres().getVre(this.vre.getVreName());
     if (sessionState == SessionState.SUCCESS) {

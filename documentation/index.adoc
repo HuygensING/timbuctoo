@@ -80,7 +80,9 @@ include::{javasourcesdir}/bulkupload/README.adoc[tags=summary]
 RML processor::
 include::{javasourcesdir}/rml/README.adoc[tags=summary] 
 RDF importer::
-include::{javasourcesdir}/rdf/README.adoc[tags=summary] 
+include::{javasourcesdir}/rdf/README.adoc[tags=summary]
+Resource sync::
+include::{javasourcesdir}/remote/rs/README.adoc[tags=summary]
 Search GUI & Index crawler::
 == Summary
 
@@ -129,6 +131,9 @@ include::{javasourcesdir}/rml/README.adoc[]
 
 include::{javasourcesdir}/rdf/README.adoc[]
 
+include::{javasourcesdir}/remote/rs/README.adoc[]
+
+include::./resourcesyncexample/README.adoc[]
 
 = Solr index script
 == Summary

@@ -28,11 +28,7 @@ public class SetItemView {
 
     location = rsItem.getLoc();
     name = interpreter.getItemNameInterpreter().apply(rsItem);
-    // a nullItemNameInterpreter as default interpreter not allowed (Function<RsItem, String> returning null).
-    if (location.equals(name)) {
-      name = null;
-    }
-
+    
     capability = rsItem.getMetadata()
       .flatMap(RsMd::getCapability)
       .orElse(null);

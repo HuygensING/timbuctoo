@@ -341,6 +341,11 @@
       <artifactId>jackson-datatype-jdk8</artifactId>
       <version>2.6.3</version>
     </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.dataformat</groupId>
+      <artifactId>jackson-dataformat-xml</artifactId>
+      <version>2.6.3</version>
+    </dependency>
     <!-- ### Std lib additions ## -->
     <!-- Guava -->
     <dependency>

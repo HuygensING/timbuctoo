@@ -4,11 +4,11 @@ package nl.knaw.huygens.timbuctoo.remote.rs.discover;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -21,8 +21,8 @@ public class Result<T> implements Consumer<T> {
   private T content;
   private List<Throwable> errors = new ArrayList<>();
 
-  private Map<URI, Result<?>> parents = new HashMap<>();
-  private Map<URI, Result<?>> children = new HashMap<>();
+  private Map<URI, Result<?>> parents = new TreeMap<>();
+  private Map<URI, Result<?>> children = new TreeMap<>();
   private Set<String> invalidUris = new TreeSet<>();
 
   public Result(URI uri) {
