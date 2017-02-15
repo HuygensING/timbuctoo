@@ -21,26 +21,30 @@ And example of this is `html_with_link.html` in teh folder of `dataset2`.
 
 For more information see: http://www.openarchives.org/rs/1.0/resourcesync#FrameworkOrg
 
-=== Resource list
-We has one additional requirement in addition for the resource list.
-Resource sync has a optional `md` field (meta data field) for each url from the resource list.
-For the description of each resource we require the mandatory (by resource sync spec) `loc` field and the `md` field with the property `type` with the one of the following values:
+=== Valid resources
+Timbuctoo cannot sync every filetype on the internet, only files containing rdf in several of the more well-known serialisation formats.
+To indicate the serialisation format you can specify the mimetype in the optional `md` field (meta data field) for each url from the resource list.
+Alternatively you can use a file extension to indicate the type of file.
+The explicit mimetype overrules the file extension.
 
-* text/turtle
-* application/rdf+xml
-* application/n-triples
-* application/ld+json
-* text/trig
-* application/n-quads
-* application/trix+xml
-* application/rdf+thrift
+The filetypes that we can currently import are:
+
+ * text/turtle (.ttl)
+ * application/rdf+xml (.rdf)
+ * application/n-triples (.nt)
+ * application/ld+json (.jsonld)
+ * text/trig (.trig)
+ * application/n-quads (.nq)
+ * application/trix+xml (.trix)
+ * application/rdf+thrift (.trdf)
 
 So we expect an item resource list will look like:
+
 ```
 ...
 <url>
     <loc>http://localhost/.well-known/resourcesync/dataset1/resource2.nq</loc>
-    <rs:md type="application/n-quads"/>
+    <rs:md type="application/n-quads"/> <!-- this line is optional, but can be used to override the extension -->
 </url>
 ...
 ```
