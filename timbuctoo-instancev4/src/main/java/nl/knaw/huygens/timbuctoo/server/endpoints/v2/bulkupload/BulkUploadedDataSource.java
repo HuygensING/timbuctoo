@@ -68,7 +68,7 @@ public class BulkUploadedDataSource implements DataSource {
 
                          errorHandler.setCurrentVertex(vertex);
 
-                         return new Row(valueMap, errorHandler);
+                         return (Row) new BulkUploadedRow(valueMap, variableGetter, errorHandler);
                        })
                        .iterator();
   }
@@ -137,4 +137,39 @@ public class BulkUploadedDataSource implements DataSource {
   public String toString() {
     return String.format("    BulkUploadedDatasource: %s, %s\n", this.vreName, this.collectionName);
   }
+
+  private class BulkUploadedRow implements Row {
+    private final Map<String, Object> data;
+    private final VariableGetter variableGetter;
+    private final ErrorHandler errorHandler;
+
+    public BulkUploadedRow(Map<String, Object> data, VariableGetter variableGetter, ErrorHandler errorHandler) {
+      this.data = data;
+      this.variableGetter = variableGetter;
+      this.errorHandler = errorHandler;
+    }
+
+    @Override
+    public Object get(String key) {
+      if (data.containsKey(key)) {
+        return data.get(key);
+      } else if (expressions.containsKey(key)) {
+        variableGetter.setData(data);
+        try {
+          return expressions.get(key).evaluate(new Object[] { variableGetter });
+        } catch (Throwable throwable) {
+          LOG.error("Exception during evaluation of expression", throwable);
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public void handleLinkError(String childField, String parentCollection, String parentField) {
+      errorHandler.linkError(data, childField, parentCollection, parentField);
+    }
+  }
+
 }

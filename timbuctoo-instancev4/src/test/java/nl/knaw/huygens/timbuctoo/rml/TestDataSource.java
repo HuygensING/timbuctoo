@@ -43,7 +43,7 @@ class TestDataSource implements DataSource {
           .putAll(mutableValues);
 
         final ImmutableMap<String, Object> result = resultBuilder.build();
-        return new Row(result, errorHandler == null ? defaultErrorHandler : errorHandler);
+        return (Row) new TestRow(result, errorHandler == null ? defaultErrorHandler : errorHandler);
       })
       .iterator();
   }
@@ -51,5 +51,26 @@ class TestDataSource implements DataSource {
   @Override
   public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
     joinHandler.willBeJoinedOn(fieldName, referenceJoinValue, uri, outputFieldName);
+  }
+
+  private class TestRow implements Row {
+
+    private final Map<String, Object> data;
+    private final ErrorHandler errorHandler;
+
+    public TestRow(Map<String, Object> data, ErrorHandler errorHandler) {
+      this.data = data;
+      this.errorHandler = errorHandler;
+    }
+
+    @Override
+    public Object get(String key) {
+      return data.get(key);
+    }
+
+    @Override
+    public void handleLinkError(String childField, String parentCollection, String parentField) {
+      errorHandler.linkError(data, childField, parentCollection, parentField);
+    }
   }
 }
