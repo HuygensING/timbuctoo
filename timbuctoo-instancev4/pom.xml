@@ -247,6 +247,13 @@
       </exclusions>
     </dependency>
 
+    <!-- ### RML datasource expression implementation -->
+    <dependency>
+      <groupId>org.gnu</groupId>
+      <artifactId>jel</artifactId>
+      <version>2.0.1</version>
+    </dependency>
+
     <!-- ### Uploads file handling ## -->
     <!-- CSV -->
     <dependency>
@@ -505,6 +512,10 @@
     <repository>
       <id>oracle</id>
       <url>http://download.oracle.com/maven/</url>
+    </repository>
+    <repository>
+      <id>freehep</id>
+      <url>http://java.freehep.org/maven2/</url>
     </repository>
     <repository>
       <id>Huygens</id>

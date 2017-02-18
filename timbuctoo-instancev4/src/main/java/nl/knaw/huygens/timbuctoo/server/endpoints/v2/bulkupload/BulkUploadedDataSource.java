@@ -1,5 +1,10 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
+import gnu.jel.CompilationException;
+import gnu.jel.CompiledExpression;
+import gnu.jel.DVMap;
+import gnu.jel.Evaluator;
+import gnu.jel.Library;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
@@ -30,16 +35,31 @@ public class BulkUploadedDataSource implements DataSource {
   private final String collectionName;
   private final GraphWrapper graphWrapper;
   private final TimbuctooErrorHandler errorHandler;
+  private final Map<String, CompiledExpression> expressions;
+  private final VariableGetter variableGetter;
 
   private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
 
   public static final String HAS_NEXT_ERROR = "hasNextError";
 
-  public BulkUploadedDataSource(String vreName, String collectionName, GraphWrapper graphWrapper) {
+  public BulkUploadedDataSource(String vreName, String collectionName, Map<String, String> customFields,
+                                GraphWrapper graphWrapper) {
     this.vreName = vreName;
     this.collectionName = collectionName;
     this.graphWrapper = graphWrapper;
     this.errorHandler = new TimbuctooErrorHandler(graphWrapper, vreName, collectionName);
+    this.expressions = new HashMap<>();
+    DVMap resolver = new Resolver();
+    Class[] dynamicLibs = new Class[] { VariableGetter.class };
+    Library lib = new Library(null, dynamicLibs, new Class[0], resolver, null);
+    variableGetter = new VariableGetter();
+    customFields.forEach((key, value) -> {
+      try {
+        expressions.put(key, Evaluator.compile(value, lib));
+      } catch (CompilationException ce) {
+        LOG.error("Could not compile expression", ce);
+      }
+    });
   }
 
   @Override
@@ -172,4 +192,25 @@ public class BulkUploadedDataSource implements DataSource {
     }
   }
 
+  private class Resolver extends DVMap {
+    @Override
+    public String getTypeName(String varName) {
+      return "String";
+    }
+  }
+
+  public class VariableGetter {
+    private Map<String, Object> data = new HashMap<>();
+
+    private VariableGetter() {
+    }
+
+    public String getStringProperty(String name) {
+      return data.get(name) + "";
+    }
+
+    public void setData(Map<String, Object> data) {
+      this.data = data;
+    }
+  }
 }
