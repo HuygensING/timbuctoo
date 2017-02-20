@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.apache.jena.ext.com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.io.File;
@@ -23,7 +22,7 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 
 public class BulkUploadedDataSourceTest {
 
@@ -42,10 +41,10 @@ public class BulkUploadedDataSourceTest {
     List<Object> rows = stream(dataSource.getRows(new ThrowingErrorHandler()))
       .map(row -> row.get("special"))
       .collect(toList());
-    assertThat(rows, is(Lists.newArrayList(
+    assertThat(rows, containsInAnyOrder(
       "\"john\\\"\" 12",
       "\"bert\""
-    )));
+    ));
   }
 
   private class StaticLoader implements Loader {
