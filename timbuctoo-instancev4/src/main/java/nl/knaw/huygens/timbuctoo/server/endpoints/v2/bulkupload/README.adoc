@@ -1,0 +1,11 @@
+= BulkUpload
+
+== BulkUpload Rml expression support
+
+We have added support for more difficult rml expressions using the the Apache JEXL library.
+You have one function `stringify`, to format values to a nice string.
+You also have one variable `v`.
+This variable is a map.
+You van use it using by using like `v.name` where name is a column in the original excel file.
+
+For more information see: http://commons.apache.org/proper/commons-jexl/reference/index.html
