@@ -37,6 +37,7 @@ public class BulkUploadedDataSource implements DataSource {
   private final TimbuctooErrorHandler errorHandler;
   private final Map<String, CompiledExpression> expressions;
   private final VariableGetter variableGetter;
+  private final String stringRepresentation;
 
   private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
 
@@ -44,6 +45,10 @@ public class BulkUploadedDataSource implements DataSource {
 
   public BulkUploadedDataSource(String vreName, String collectionName, Map<String, String> customFields,
                                 GraphWrapper graphWrapper) {
+    StringBuffer result = new StringBuffer("    BulkUploadedDatasource: ");
+    result
+      .append(vreName).append(", ")
+      .append(collectionName).append("\n");
     this.vreName = vreName;
     this.collectionName = collectionName;
     this.graphWrapper = graphWrapper;
@@ -56,10 +61,12 @@ public class BulkUploadedDataSource implements DataSource {
     customFields.forEach((key, value) -> {
       try {
         expressions.put(key, Evaluator.compile(value, lib));
+        result.append("      ").append(key).append(": ").append(value).append("\n");
       } catch (CompilationException ce) {
         LOG.error("Could not compile expression", ce);
       }
     });
+    stringRepresentation = result.toString();
   }
 
   @Override
@@ -155,7 +162,7 @@ public class BulkUploadedDataSource implements DataSource {
 
   @Override
   public String toString() {
-    return String.format("    BulkUploadedDatasource: %s, %s\n", this.vreName, this.collectionName);
+    return stringRepresentation;
   }
 
   private class BulkUploadedRow implements Row {
