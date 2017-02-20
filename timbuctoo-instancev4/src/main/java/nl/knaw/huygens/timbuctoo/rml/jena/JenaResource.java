@@ -38,7 +38,9 @@ public class JenaResource implements RdfResource {
   @Override
   public Optional<String> asIri() {
     if (this.rdfNode.isResource()) {
-      return Optional.of(rdfNode.asResource().getURI());
+      Resource resource = rdfNode.asResource();
+      String uri = resource.getURI();
+      return uri == null ? Optional.of(resource.getId().getLabelString()) : Optional.of(uri);
     } else {
       return Optional.empty();
     }
