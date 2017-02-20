@@ -14,8 +14,8 @@ import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -108,15 +108,15 @@ public class BulkUploadedDataSource implements DataSource {
   }
 
   private static class TimbuctooErrorHandler implements ErrorHandler {
-    private final GraphWrapper graphWrapper;
     private final String vreName;
     private final String collectionName;
+    private final GraphTraversalSource traversal;
     private Vertex currentVertex;
     private Vertex lastError;
 
 
     public TimbuctooErrorHandler(GraphWrapper graphWrapper, String vreName, String collectionName) {
-      this.graphWrapper = graphWrapper;
+      this.traversal = graphWrapper.getGraph().traversal();
       this.vreName = vreName;
       this.collectionName = collectionName;
     }
@@ -127,31 +127,39 @@ public class BulkUploadedDataSource implements DataSource {
 
       Object fieldValue = rowData.get(childField);
       if (fieldValue != null) {
-        Graph graph = graphWrapper.getGraph();
-        currentVertex.property(ERROR_PREFIX + childField,
-          String.format("'%s' does not exist in field '%s' of collection '%s'.",
+        addError(childField, String.format(
+          "'%s' does not exist in field '%s' of collection '%s'.",
           fieldValue,
           parentField,
           parentCollection
         ));
-        //if the current entity is not already part of the rawEntities-with-errors chain
-        if (!currentVertex.edges(Direction.IN, HAS_NEXT_ERROR).hasNext()) {
-          //if there is no such chain
-          if (lastError == null) {
-            //start it
-            Vertex collection = graph.traversal().V()
-              .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
-              .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-              .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
-              .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
-              .next();
-            collection.addEdge(HAS_NEXT_ERROR, currentVertex);
-          } else {
-            //continue it
-            lastError.addEdge(HAS_NEXT_ERROR, currentVertex);
-          }
-          lastError = currentVertex;
+      }
+    }
+
+    @Override
+    public void valueGenerateFailed(String key, String message) {
+      addError(key, message);
+    }
+
+    private void addError(String childField, String errorMessage) {
+      currentVertex.property(ERROR_PREFIX + childField, errorMessage);
+      //if the current entity is not already part of the rawEntities-with-errors chain
+      if (!currentVertex.edges(Direction.IN, HAS_NEXT_ERROR).hasNext()) {
+        //if there is no such chain
+        if (lastError == null) {
+          //start it
+          Vertex collection = traversal.V()
+            .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+            .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+            .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
+            .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
+            .next();
+          collection.addEdge(HAS_NEXT_ERROR, currentVertex);
+        } else {
+          //continue it
+          lastError.addEdge(HAS_NEXT_ERROR, currentVertex);
         }
+        lastError = currentVertex;
       }
     }
 
@@ -185,7 +193,11 @@ public class BulkUploadedDataSource implements DataSource {
         try {
           return expressions.get(key).evaluate(new Object[] { variableGetter });
         } catch (Throwable throwable) {
-          LOG.error("Exception during evaluation of expression", throwable);
+          LOG.info("Error during mapping", throwable);
+          errorHandler.valueGenerateFailed(
+            data.keySet().iterator().next(),
+            "Could not execute expression for this row."
+          );
           return null;
         }
       } else {

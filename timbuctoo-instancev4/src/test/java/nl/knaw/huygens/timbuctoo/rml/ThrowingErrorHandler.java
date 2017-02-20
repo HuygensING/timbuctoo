@@ -7,4 +7,9 @@ public class ThrowingErrorHandler implements ErrorHandler {
   public void linkError(Map<String, Object> rowData, String childField, String parentCollection, String parentField) {
     throw new RuntimeException("Linking failed!");
   }
+
+  @Override
+  public void valueGenerateFailed(String key, String message) {
+    throw new RuntimeException(key + ": " + message);
+  }
 }
