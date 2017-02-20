@@ -143,6 +143,7 @@ public class BulkUploadedDataSource implements DataSource {
     }
 
     private void addError(String childField, String errorMessage) {
+      LOG.info("Field '{}' of '{}' has an error: {}", childField, currentVertex, errorMessage);
       currentVertex.property(ERROR_PREFIX + childField, errorMessage);
       //if the current entity is not already part of the rawEntities-with-errors chain
       if (!currentVertex.edges(Direction.IN, HAS_NEXT_ERROR).hasNext()) {
