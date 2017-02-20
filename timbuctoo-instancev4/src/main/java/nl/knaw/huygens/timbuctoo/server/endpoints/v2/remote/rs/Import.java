@@ -58,9 +58,8 @@ public class Import {
                                 LOG.info("Found files '{}'", files.hasNext());
                                 while (files.hasNext()) {
                                   RemoteFile file = files.next();
-                                  timbuctooActions.rdfUpdateImportSession(importData.vreName, session -> {
-                                    RdfImporter rdfImporter =
-                                      new RdfImporter(graphWrapper, importData.vreName, vres, session);
+                                  timbuctooActions.rdfUpdateImportSession(vreId, session -> {
+                                    RdfImporter rdfImporter = new RdfImporter(graphWrapper, vreId, vres, session);
                                     try {
                                       try {
                                         LOG.info("Start import '{}'", file.getUrl());
