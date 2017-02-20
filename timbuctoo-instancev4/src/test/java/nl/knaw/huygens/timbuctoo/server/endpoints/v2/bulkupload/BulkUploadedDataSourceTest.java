@@ -35,7 +35,7 @@ public class BulkUploadedDataSourceTest {
 
 
     Map<String, String> expressions = ImmutableMap.of(
-      "special", "name + (age == null ? \"\" : \" \" + age)"
+      "special", "v.name + (v.age == null ? \"\" : \" \" + v.age)"
     );
     BulkUploadedDataSource dataSource = new BulkUploadedDataSource("myVre", "collection", expressions, graph);
     Iterator<Row> rows = dataSource.getRows(new ThrowingErrorHandler());

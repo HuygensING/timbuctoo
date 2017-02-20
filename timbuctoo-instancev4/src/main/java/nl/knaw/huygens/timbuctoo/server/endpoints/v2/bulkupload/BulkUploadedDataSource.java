@@ -214,18 +214,35 @@ public class BulkUploadedDataSource implements DataSource {
   private class Resolver extends DVMap {
     @Override
     public String getTypeName(String varName) {
-      return "String";
+      if (varName.startsWith("v.") || "v".equals(varName) || "null".equals(varName)) {
+        return "String";
+      } else {
+        return null;
+      }
+    }
+  }
     }
   }
 
-  public class VariableGetter {
+  public static class VariableGetter {
     private Map<String, Object> data = new HashMap<>();
 
     private VariableGetter() {
     }
 
     public String getStringProperty(String name) {
-      return data.get(name) + "";
+      if (name.startsWith("v.")) {
+        String key = name.substring(2);
+        if (data.containsKey(key)) {
+          return data.get(key) + "";
+        } else {
+          return "";
+        }
+      } else if (name.equals("null")) {
+        return "";
+      } else {
+        return null;
+      }
     }
 
     public void setData(Map<String, Object> data) {
