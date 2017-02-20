@@ -35,12 +35,12 @@ public class BulkUploadedDataSourceTest {
 
 
     Map<String, String> expressions = ImmutableMap.of(
-      "special", "v.name + (v.age == null ? \"\" : \" \" + v.age)"
+      "special", "stringify(v.name) + (v.age == null ? \"\" : \" \" + v.age)"
     );
     BulkUploadedDataSource dataSource = new BulkUploadedDataSource("myVre", "collection", expressions, graph);
     Iterator<Row> rows = dataSource.getRows(new ThrowingErrorHandler());
-    assertThat(rows.next().get("special"), is("john 12"));
-    assertThat(rows.next().get("special"), is("bert"));
+    assertThat(rows.next().get("special"), is("\"john\\\"\" 12"));
+    assertThat(rows.next().get("special"), is("\"bert\""));
   }
 
   private class StaticLoader implements Loader {
@@ -51,7 +51,7 @@ public class BulkUploadedDataSourceTest {
       importer.registerPropertyName(1, "name");
       importer.registerPropertyName(2, "age");
       importer.startEntity();
-      importer.setValue(1, "john");
+      importer.setValue(1, "john\"");
       importer.setValue(2, "12");
       importer.finishEntity();
       importer.startEntity();

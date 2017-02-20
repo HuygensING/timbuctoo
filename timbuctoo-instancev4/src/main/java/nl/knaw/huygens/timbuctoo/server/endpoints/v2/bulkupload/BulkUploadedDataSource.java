@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import gnu.jel.CompilationException;
 import gnu.jel.CompiledExpression;
 import gnu.jel.DVMap;
@@ -56,7 +58,8 @@ public class BulkUploadedDataSource implements DataSource {
     this.expressions = new HashMap<>();
     DVMap resolver = new Resolver();
     Class[] dynamicLibs = new Class[] { VariableGetter.class };
-    Library lib = new Library(null, dynamicLibs, new Class[0], resolver, null);
+    Class[] staticLibs = new Class[] { Integer.class, Math.class, JsonEncoder.class };
+    Library lib = new Library(staticLibs, dynamicLibs, new Class[0], resolver, null);
     variableGetter = new VariableGetter();
     customFields.forEach((key, value) -> {
       try {
@@ -221,6 +224,12 @@ public class BulkUploadedDataSource implements DataSource {
       }
     }
   }
+
+  public static class JsonEncoder {
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
+    public static String stringify(Object obj) throws JsonProcessingException {
+      return objectMapper.writeValueAsString(obj);
     }
   }
 
