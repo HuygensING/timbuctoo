@@ -13,6 +13,6 @@ class PromiscuousCorsFilter implements ContainerResponseFilter {
     response.getHeaders().add("Access-Control-Allow-Headers", "origin, content-type, accept, authorization, vre_id");
     response.getHeaders().add("Access-Control-Allow-Credentials", "true");
     response.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, HEAD");
-    response.getHeaders().add("Access-Control-Expose-Headers", "Location, Link, X_AUTH_TOKEN");
+    response.getHeaders().add("Access-Control-Expose-Headers", "Location, Link, X_AUTH_TOKEN, VRE_ID");
   }
 }

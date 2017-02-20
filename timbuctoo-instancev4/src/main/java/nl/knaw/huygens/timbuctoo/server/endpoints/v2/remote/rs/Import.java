@@ -90,7 +90,7 @@ public class Import {
                             });
                           });
 
-                          return Response.ok(output).build();
+                          return Response.ok(output).header("VRE_ID", vreId).build();
                         });
   }
 
