@@ -2,11 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import gnu.jel.CompilationException;
-import gnu.jel.CompiledExpression;
-import gnu.jel.DVMap;
-import gnu.jel.Evaluator;
-import gnu.jel.Library;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
@@ -15,6 +11,11 @@ import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.MapContext;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -37,8 +38,7 @@ public class BulkUploadedDataSource implements DataSource {
   private final String collectionName;
   private final GraphWrapper graphWrapper;
   private final TimbuctooErrorHandler errorHandler;
-  private final Map<String, CompiledExpression> expressions;
-  private final VariableGetter variableGetter;
+  private final Map<String, JexlExpression> expressions;
   private final String stringRepresentation;
 
   private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
@@ -56,17 +56,15 @@ public class BulkUploadedDataSource implements DataSource {
     this.graphWrapper = graphWrapper;
     this.errorHandler = new TimbuctooErrorHandler(graphWrapper, vreName, collectionName);
     this.expressions = new HashMap<>();
-    DVMap resolver = new Resolver();
-    Class[] dynamicLibs = new Class[] { VariableGetter.class };
-    Class[] staticLibs = new Class[] { Integer.class, Math.class, JsonEncoder.class };
-    Library lib = new Library(staticLibs, dynamicLibs, new Class[0], resolver, null);
-    variableGetter = new VariableGetter();
+    Map<String, Object> ns = Maps.newHashMap();
+    ns.put(null, JsonEncoder.class); // make method stringify available in expressions.
+    JexlEngine jexl = new JexlBuilder().namespaces(ns).create();
     customFields.forEach((key, value) -> {
       try {
-        expressions.put(key, Evaluator.compile(value, lib));
+        expressions.put(key, jexl.createExpression(value));
         result.append("      ").append(key).append(": ").append(value).append("\n");
-      } catch (CompilationException ce) {
-        LOG.error("Could not compile expression", ce);
+      } catch (Exception e) { // Catch the runtime exceptions
+        LOG.error("Could not compile expression", e);
       }
     });
     stringRepresentation = result.toString();
@@ -98,7 +96,7 @@ public class BulkUploadedDataSource implements DataSource {
 
                          errorHandler.setCurrentVertex(vertex);
 
-                         return (Row) new BulkUploadedRow(valueMap, variableGetter, errorHandler);
+                         return (Row) new BulkUploadedRow(valueMap, errorHandler);
                        })
                        .iterator();
   }
@@ -178,12 +176,10 @@ public class BulkUploadedDataSource implements DataSource {
 
   private class BulkUploadedRow implements Row {
     private final Map<String, Object> data;
-    private final VariableGetter variableGetter;
     private final ErrorHandler errorHandler;
 
-    public BulkUploadedRow(Map<String, Object> data, VariableGetter variableGetter, ErrorHandler errorHandler) {
+    public BulkUploadedRow(Map<String, Object> data, ErrorHandler errorHandler) {
       this.data = data;
-      this.variableGetter = variableGetter;
       this.errorHandler = errorHandler;
     }
 
@@ -192,9 +188,10 @@ public class BulkUploadedDataSource implements DataSource {
       if (data.containsKey(key)) {
         return data.get(key);
       } else if (expressions.containsKey(key)) {
-        variableGetter.setData(data);
         try {
-          return expressions.get(key).evaluate(new Object[] { variableGetter });
+          JexlContext jexlContext = new MapContext();
+          jexlContext.set("v", data);
+          return expressions.get(key).evaluate(jexlContext);
         } catch (Throwable throwable) {
           LOG.info("Error during mapping", throwable);
           errorHandler.valueGenerateFailed(
@@ -214,17 +211,6 @@ public class BulkUploadedDataSource implements DataSource {
     }
   }
 
-  private class Resolver extends DVMap {
-    @Override
-    public String getTypeName(String varName) {
-      if (varName.startsWith("v.") || "v".equals(varName) || "null".equals(varName)) {
-        return "String";
-      } else {
-        return null;
-      }
-    }
-  }
-
   public static class JsonEncoder {
     private static ObjectMapper objectMapper = new ObjectMapper();
 
@@ -233,29 +219,4 @@ public class BulkUploadedDataSource implements DataSource {
     }
   }
 
-  public static class VariableGetter {
-    private Map<String, Object> data = new HashMap<>();
-
-    private VariableGetter() {
-    }
-
-    public String getStringProperty(String name) {
-      if (name.startsWith("v.")) {
-        String key = name.substring(2);
-        if (data.containsKey(key)) {
-          return data.get(key) + "";
-        } else {
-          return "";
-        }
-      } else if (name.equals("null")) {
-        return "";
-      } else {
-        return null;
-      }
-    }
-
-    public void setData(Map<String, Object> data) {
-      this.data = data;
-    }
-  }
 }
