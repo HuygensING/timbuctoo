@@ -7,19 +7,20 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
-import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import org.apache.jena.ext.com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
@@ -38,9 +39,13 @@ public class BulkUploadedDataSourceTest {
       "special", "stringify(v.name) + (v.age == null ? \"\" : \" \" + v.age)"
     );
     BulkUploadedDataSource dataSource = new BulkUploadedDataSource("myVre", "collection", expressions, graph);
-    Iterator<Row> rows = dataSource.getRows(new ThrowingErrorHandler());
-    assertThat(rows.next().get("special"), is("\"john\\\"\" 12"));
-    assertThat(rows.next().get("special"), is("\"bert\""));
+    List<Object> rows = stream(dataSource.getRows(new ThrowingErrorHandler()))
+      .map(row -> row.get("special"))
+      .collect(toList());
+    assertThat(rows, is(Lists.newArrayList(
+      "\"john\\\"\" 12",
+      "\"bert\""
+    )));
   }
 
   private class StaticLoader implements Loader {
