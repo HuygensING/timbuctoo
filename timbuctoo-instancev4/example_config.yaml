@@ -28,6 +28,7 @@ executeDatabaseInvariantCheckAt: -1
 #Public timbuctoo url
 baseUri: http://localhost:8080 # timbuctoo generates absolute urls using the server/path that is defined here
 timbuctooSearchUrl: http://timsearch
+userRedirectUrl: http://example.com
 
 #webhooks:
 #  vreAdded: <some url to send a post request to when a new VRE is added>

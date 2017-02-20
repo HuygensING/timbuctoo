@@ -1,37 +1,34 @@
-version: '2' # version of this docker-compose file
+version: '2'
 
 services:
-#  timbuctoodata:
-#    image: huygensing/timbuctoo:verifysrc
-#    command: "true"
-#    volumes:
-#      - /root/timbuctoo-prod-db
-#  timbuctoo:
-#    image: huygensing/timbuctoo:latest
-  timbuctoodata:
-    image: huygensing/timbuctoo:demodata
   timbuctoo:
-    image: huygensing/timbuctoo:demo
+    image: huygensing/timbuctoo
     environment:
       BASE_URI: http://localhost:8080
-      TIMBUCTOO_SEARCH_URL: http://localhost:8082
+      TIMBUCTOO_GUI_PUBLIC_URL: http://localhost:8082
+      TIMBUCTOO_SEARCH_URL: http://indexer/trigger
     ports:
       - "8080:80"
-      - "8081:81"
-    volumes_from:
-      - timbuctoodata
   solr:
-    image: solr
+    image: solr:6.4.1
+    #command override to enable CORS
+    command: bash -c "sed -i 's|</web-app>|<filter> <filter-name>cross-origin</filter-name> <filter-class>org.eclipse.jetty.servlets.CrossOriginFilter</filter-class> <init-param> <param-name>chainPreflight</param-name> <param-value>false</param-value> </init-param> </filter> <filter-mapping> <filter-name>cross-origin</filter-name> <url-pattern>/*</url-pattern> </filter-mapping></web-app>|' /opt/solr/server/etc/webdefault.xml && exec solr-foreground"
     ports:
-      - "8983:8983"
-  search-gui:
-    image: huygensing/timbuctoo:faceted-search-site
+      - "8081:8983"
+  indexer:
+    image: huygensing/timbuctoo-faceted-search-indexer
+    environment:
+      - TIMBUCTOO_SCRAPE_URL=http://timbuctoo
+      - SOLR_URL=http://solr:8983/solr
+    ports:
+      - "8083:80"
+  timbuctoo-gui:
+    image: huygensing/timbuctoo-gui
+    environment:
+      - TIMBUCTOO_URL=http://localhost:8080
+      - SOLR_QUERY_URL=http://localhost:8081/solr
+      - OWN_HOST_URL=http://localhost:8082
+      - INDEXER_URL=http://localhost:8083
+      - PREFIXPATH=/
     ports:
       - "8082:80"
-    links:
-      - timbuctoo
-      - solr
-    environment:
-      TIMBUCTOO_SCRAPE_URL: http://timbuctoo
-      TIMBUCTOO_BROWSER_URL: http://localhost:8080
-      SOLR_URL: http://solr:8983/solr
