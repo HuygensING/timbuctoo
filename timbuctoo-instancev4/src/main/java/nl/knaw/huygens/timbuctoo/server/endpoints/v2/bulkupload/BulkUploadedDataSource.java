@@ -57,7 +57,9 @@ public class BulkUploadedDataSource implements DataSource {
     this.errorHandler = new TimbuctooErrorHandler(graphWrapper, vreName, collectionName);
     this.expressions = new HashMap<>();
     Map<String, Object> ns = Maps.newHashMap();
-    ns.put(null, JsonEncoder.class); // make method stringify available in expressions.
+    ns.put("Json", JsonEncoder.class); // make method Json:stringify available in expressions
+    ns.put("Math", Math.class); // make all methods of Math available
+    ns.put("Integer", Integer.class); // make method Integer
     JexlEngine jexl = new JexlBuilder().namespaces(ns).create();
     customFields.forEach((key, value) -> {
       try {
