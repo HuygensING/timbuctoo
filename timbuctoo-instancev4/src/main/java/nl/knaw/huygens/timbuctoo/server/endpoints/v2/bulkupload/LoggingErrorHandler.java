@@ -24,4 +24,9 @@ public class LoggingErrorHandler implements ErrorHandler {
       );
     }
   }
+
+  @Override
+  public void valueGenerateFailed(String key, String message) {
+    LOG.error(key + ": " + message);
+  }
 }

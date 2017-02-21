@@ -1,5 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
@@ -8,9 +11,14 @@ import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
+import org.apache.commons.jexl3.JexlBuilder;
+import org.apache.commons.jexl3.JexlContext;
+import org.apache.commons.jexl3.JexlEngine;
+import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.MapContext;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
+import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
-import org.apache.tinkerpop.gremlin.structure.Graph;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.apache.tinkerpop.gremlin.structure.VertexProperty;
@@ -30,16 +38,38 @@ public class BulkUploadedDataSource implements DataSource {
   private final String collectionName;
   private final GraphWrapper graphWrapper;
   private final TimbuctooErrorHandler errorHandler;
+  private final Map<String, JexlExpression> expressions;
+  private final String stringRepresentation;
 
   private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
 
   public static final String HAS_NEXT_ERROR = "hasNextError";
 
-  public BulkUploadedDataSource(String vreName, String collectionName, GraphWrapper graphWrapper) {
+  public BulkUploadedDataSource(String vreName, String collectionName, Map<String, String> customFields,
+                                GraphWrapper graphWrapper) {
+    StringBuffer result = new StringBuffer("    BulkUploadedDatasource: ");
+    result
+      .append(vreName).append(", ")
+      .append(collectionName).append("\n");
     this.vreName = vreName;
     this.collectionName = collectionName;
     this.graphWrapper = graphWrapper;
     this.errorHandler = new TimbuctooErrorHandler(graphWrapper, vreName, collectionName);
+    this.expressions = new HashMap<>();
+    Map<String, Object> ns = Maps.newHashMap();
+    ns.put("Json", JsonEncoder.class); // make method Json:stringify available in expressions
+    ns.put("Math", Math.class); // make all methods of Math available
+    ns.put("Integer", Integer.class); // make method Integer
+    JexlEngine jexl = new JexlBuilder().namespaces(ns).create();
+    customFields.forEach((key, value) -> {
+      try {
+        expressions.put(key, jexl.createExpression(value));
+        result.append("      ").append(key).append(": ").append(value).append("\n");
+      } catch (Exception e) { // Catch the runtime exceptions
+        LOG.error("Could not compile expression", e);
+      }
+    });
+    stringRepresentation = result.toString();
   }
 
   @Override
@@ -68,7 +98,7 @@ public class BulkUploadedDataSource implements DataSource {
 
                          errorHandler.setCurrentVertex(vertex);
 
-                         return new Row(valueMap, errorHandler);
+                         return (Row) new BulkUploadedRow(valueMap, errorHandler);
                        })
                        .iterator();
   }
@@ -81,15 +111,15 @@ public class BulkUploadedDataSource implements DataSource {
   }
 
   private static class TimbuctooErrorHandler implements ErrorHandler {
-    private final GraphWrapper graphWrapper;
     private final String vreName;
     private final String collectionName;
+    private final GraphTraversalSource traversal;
     private Vertex currentVertex;
     private Vertex lastError;
 
 
     public TimbuctooErrorHandler(GraphWrapper graphWrapper, String vreName, String collectionName) {
-      this.graphWrapper = graphWrapper;
+      this.traversal = graphWrapper.getGraph().traversal();
       this.vreName = vreName;
       this.collectionName = collectionName;
     }
@@ -100,31 +130,40 @@ public class BulkUploadedDataSource implements DataSource {
 
       Object fieldValue = rowData.get(childField);
       if (fieldValue != null) {
-        Graph graph = graphWrapper.getGraph();
-        currentVertex.property(ERROR_PREFIX + childField,
-          String.format("'%s' does not exist in field '%s' of collection '%s'.",
+        addError(childField, String.format(
+          "'%s' does not exist in field '%s' of collection '%s'.",
           fieldValue,
           parentField,
           parentCollection
         ));
-        //if the current entity is not already part of the rawEntities-with-errors chain
-        if (!currentVertex.edges(Direction.IN, HAS_NEXT_ERROR).hasNext()) {
-          //if there is no such chain
-          if (lastError == null) {
-            //start it
-            Vertex collection = graph.traversal().V()
-              .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
-              .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
-              .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
-              .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
-              .next();
-            collection.addEdge(HAS_NEXT_ERROR, currentVertex);
-          } else {
-            //continue it
-            lastError.addEdge(HAS_NEXT_ERROR, currentVertex);
-          }
-          lastError = currentVertex;
+      }
+    }
+
+    @Override
+    public void valueGenerateFailed(String key, String message) {
+      addError(key, message);
+    }
+
+    private void addError(String childField, String errorMessage) {
+      LOG.info("Field '{}' of '{}' has an error: {}", childField, currentVertex, errorMessage);
+      currentVertex.property(ERROR_PREFIX + childField, errorMessage);
+      //if the current entity is not already part of the rawEntities-with-errors chain
+      if (!currentVertex.edges(Direction.IN, HAS_NEXT_ERROR).hasNext()) {
+        //if there is no such chain
+        if (lastError == null) {
+          //start it
+          Vertex collection = traversal.V()
+            .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
+            .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
+            .out(TinkerpopSaver.RAW_COLLECTION_EDGE_NAME)
+            .has(TinkerpopSaver.RAW_COLLECTION_NAME_PROPERTY_NAME, collectionName)
+            .next();
+          collection.addEdge(HAS_NEXT_ERROR, currentVertex);
+        } else {
+          //continue it
+          lastError.addEdge(HAS_NEXT_ERROR, currentVertex);
         }
+        lastError = currentVertex;
       }
     }
 
@@ -135,6 +174,52 @@ public class BulkUploadedDataSource implements DataSource {
 
   @Override
   public String toString() {
-    return String.format("    BulkUploadedDatasource: %s, %s\n", this.vreName, this.collectionName);
+    return stringRepresentation;
   }
+
+  private class BulkUploadedRow implements Row {
+    private final Map<String, Object> data;
+    private final ErrorHandler errorHandler;
+
+    public BulkUploadedRow(Map<String, Object> data, ErrorHandler errorHandler) {
+      this.data = data;
+      this.errorHandler = errorHandler;
+    }
+
+    @Override
+    public Object get(String key) {
+      if (data.containsKey(key)) {
+        return data.get(key);
+      } else if (expressions.containsKey(key)) {
+        try {
+          JexlContext jexlContext = new MapContext();
+          jexlContext.set("v", data);
+          return expressions.get(key).evaluate(jexlContext);
+        } catch (Throwable throwable) {
+          LOG.info("Error during mapping", throwable);
+          errorHandler.valueGenerateFailed(
+            data.keySet().iterator().next(),
+            "Could not execute expression for this row."
+          );
+          return null;
+        }
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public void handleLinkError(String childField, String parentCollection, String parentField) {
+      errorHandler.linkError(data, childField, parentCollection, parentField);
+    }
+  }
+
+  public static class JsonEncoder {
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
+    public static String stringify(Object obj) throws JsonProcessingException {
+      return objectMapper.writeValueAsString(obj);
+    }
+  }
+
 }

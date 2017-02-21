@@ -247,6 +247,13 @@
       </exclusions>
     </dependency>
 
+    <!-- ### RML datasource expression implementation -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-jexl3</artifactId>
+      <version>3.0</version>
+    </dependency>
+
     <!-- ### Uploads file handling ## -->
     <!-- CSV -->
     <dependency>
