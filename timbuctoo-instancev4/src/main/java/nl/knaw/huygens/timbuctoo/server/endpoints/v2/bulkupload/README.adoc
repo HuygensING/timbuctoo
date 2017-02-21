@@ -8,4 +8,41 @@ You also have one variable `v`.
 This variable is a map.
 You van use it using by using like `v.name` where name is a column in the original excel file.
 
-For more information see: http://commons.apache.org/proper/commons-jexl/reference/index.html
+The configuration of a custom field will look something like this:
+```
+...
+@graph": [{
+		"@id": "http://timbuctoo.huygens.knaw.nl/mapping/DUMMY_TestVijf/Persons",
+		"http://www.w3.org/2000/01/rdf-schema#subClassOf": "http://timbuctoo.huygens.knaw.nl/person",
+		"rml:logicalSource": {
+			"rml:source": {
+				"tim:rawCollection": "Persons",
+				"tim:vreName": "DUMMY_TestVijf",
+				"http://timbuctoo.huygens.knaw.nl/mapping#customField": [
+				      {
+					"http://timbuctoo.huygens.knaw.nl/mapping#name": "combinedName",
+					"http://timbuctoo.huygens.knaw.nl/mapping#expression": "v.given_name + \" \" + v.family_name"
+				      }
+				]
+			}
+		}
+...
+```
+
+The usage of a custom field is the same as a normal field (make sure to give the predicate a logical name):
+```
+    ...
+		}, {
+			"objectMap": {
+				"column": "combinedName",
+				"datatype": {
+					"@id": "https://www.w3.org/TR/2001/REC-xmlschema-2-20010502/#string"
+				}
+			},
+			"predicate": "http://timbuctoo.huygens.knaw.nl/combinedName"
+		},{
+		...
+```
+
+For more information on JEXL see: http://commons.apache.org/proper/commons-jexl/reference/index.html
+
