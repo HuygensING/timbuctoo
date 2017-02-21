@@ -22,8 +22,8 @@ import org.junit.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createSingleTriple;
-import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createTripleIterator;
+import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createSingleTriple;
+import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createTripleIterator;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.allOf;

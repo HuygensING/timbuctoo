@@ -4,8 +4,8 @@ import org.apache.jena.graph.Triple;
 import org.apache.jena.graph.impl.LiteralLabel;
 import org.junit.Test;
 
-import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createSingleTriple;
-import static nl.knaw.huygens.timbuctoo.rdf.TripleHelper.createSingleTripleWithLiteralObject;
+import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createSingleTriple;
+import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createSingleTripleWithLiteralObject;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;

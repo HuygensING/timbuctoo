@@ -11,7 +11,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-public class TripleHelper {
+public class TripleCreator {
 
   public static Triple createSingleTripleWithLiteralObject(String subject, String predicate, String object) {
     return createSingleTriple("<" + subject + "> " + "<" + predicate + "> " + object + ".");

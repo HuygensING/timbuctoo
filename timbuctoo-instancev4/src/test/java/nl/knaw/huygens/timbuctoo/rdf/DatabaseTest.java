@@ -142,7 +142,7 @@ public class DatabaseTest {
                                                    })
                                                    .wrap();
     final Database instance = new Database(graphWrapper, modifier);
-    Node blankNode = TripleHelper.createBlankNode();
+    Node blankNode = TripleCreator.createBlankNode();
     String expectedUri = VRE_NAME + ":" + blankNode.getBlankNodeLabel();
 
     Entity entity = instance.findOrCreateEntity(VRE_NAME, blankNode);
