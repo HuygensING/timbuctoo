@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.crud.converters;
+package nl.knaw.huygens.timbuctoo.crud.conversion;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

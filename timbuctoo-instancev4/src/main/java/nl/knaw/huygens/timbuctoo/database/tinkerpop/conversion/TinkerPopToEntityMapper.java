@@ -128,7 +128,7 @@ public class TinkerPopToEntityMapper {
     entity.setProperties(properties);
 
     Vertex entityVertex = entityT.asAdmin().clone().next();
-    // TODO make use converters for the types
+    // TODO make use conversion for the types
     entity.setRev(getProp(entityVertex, "rev", Integer.class).orElse(-1));
     entity.setDeleted(getProp(entityVertex, "deleted", Boolean.class).orElse(false));
     entity.setPid(getProp(entityVertex, "pid", String.class).orElse(null));

@@ -1,10 +1,10 @@
-package nl.knaw.huygens.timbuctoo.crud.converters.json;
+package nl.knaw.huygens.timbuctoo.crud.conversion.json;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.crud.converters.JsonToEntityMapper;
+import nl.knaw.huygens.timbuctoo.crud.conversion.JsonToEntityMapper;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import org.junit.Test;

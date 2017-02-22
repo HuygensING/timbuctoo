@@ -1,9 +1,9 @@
-package nl.knaw.huygens.timbuctoo.crud.converters.json;
+package nl.knaw.huygens.timbuctoo.crud.conversion.json;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.core.dto.property.AltNamesProperty;
-import nl.knaw.huygens.timbuctoo.crud.converters.JsonPropertyConverter;
+import nl.knaw.huygens.timbuctoo.crud.conversion.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.model.AltName;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
 import nl.knaw.huygens.timbuctoo.util.Tuple;

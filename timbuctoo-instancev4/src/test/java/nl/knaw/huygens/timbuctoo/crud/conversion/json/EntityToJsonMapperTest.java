@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.crud.converters.json;
+package nl.knaw.huygens.timbuctoo.crud.conversion.json;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.Lists;
@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
-import nl.knaw.huygens.timbuctoo.crud.converters.EntityToJsonMapper;
+import nl.knaw.huygens.timbuctoo.crud.conversion.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
