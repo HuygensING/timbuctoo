@@ -5,8 +5,12 @@ import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.rdf.LiteralTriple;
+import nl.knaw.huygens.timbuctoo.rdf.conversion.NTriplePropertyConverter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -14,6 +18,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.URI;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
@@ -23,6 +28,7 @@ import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAnd
 @Path("/v2.1/domain/{collection}/{id}")
 @Produces("application/n-triples")
 public class SingleEntityNTriple {
+  public static final Logger LOG = LoggerFactory.getLogger(SingleEntityNTriple.class);
   private final TransactionEnforcer transactionEnforcer;
 
   public SingleEntityNTriple(TransactionEnforcer transactionEnforcer) {
@@ -44,7 +50,20 @@ public class SingleEntityNTriple {
           rdfUri.toString();
         StringBuilder sb = new StringBuilder();
         addRdfProp(rdfString, sb, "id", entity.getId());
-        entity.getProperties().forEach(prop -> addRdfProp(rdfString, sb, prop.getName(), prop.getValue()));
+
+        NTriplePropertyConverter converter = new NTriplePropertyConverter(collection, rdfString);
+
+        for (TimProperty<?> timProperty : entity.getProperties()) {
+          try {
+            timProperty.convert(converter).getRight().forEach(triple -> sb.append(triple.getStringValue()));
+          } catch (IOException e) {
+            LOG.error(
+              "Could not convert property with name '{}' and value '{}'", timProperty.getName(), timProperty.getValue()
+            );
+          }
+        }
+
+
         return commitAndReturn(Response.ok(sb.toString()).build());
       } catch (InvalidCollectionException e) {
         return commitAndReturn(Response.status(BAD_REQUEST).entity(e.getMessage()).build());

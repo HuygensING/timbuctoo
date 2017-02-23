@@ -2,12 +2,12 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 
-public class LiteralTriple implements Triple {
+public class LinkTriple implements Triple {
   private final String subject;
   private final String predicate;
-  private final Object object;
+  private final String object;
 
-  public LiteralTriple(String subject, String predicate, Object object) {
+  public LinkTriple(String subject, String predicate, String object) {
     this.subject = subject;
     this.predicate = predicate;
     this.object = object;
@@ -25,13 +25,14 @@ public class LiteralTriple implements Triple {
 
   @Override
   public String getObject() {
-    return "" + object;
+    return object;
   }
 
   @Override
   public String getStringValue() {
     String subject = isBlankNode(getSubject()) ? getSubject() : String.format("<%s>", getSubject());
-    return String.format("%s <%s> %s .\n", subject, getPredicate(), getObject());
+    String object = isBlankNode(getObject()) ? getObject() : String.format("<%s>", getObject());
+    return String.format("<%s> <%s> <%s> .\n", subject, getPredicate(), object);
   }
 
   private boolean isBlankNode(String node) {
