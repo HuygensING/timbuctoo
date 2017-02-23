@@ -29,6 +29,7 @@ import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAnd
 @Produces("application/n-triples")
 public class SingleEntityNTriple {
   public static final Logger LOG = LoggerFactory.getLogger(SingleEntityNTriple.class);
+  public static final String SAME_AS_PRED = "http://www.w3.org/2002/07/owl#sameAs";
   private final TransactionEnforcer transactionEnforcer;
 
   public SingleEntityNTriple(TransactionEnforcer transactionEnforcer) {
@@ -50,9 +51,8 @@ public class SingleEntityNTriple {
           rdfUri.toString();
         StringBuilder sb = new StringBuilder();
         addRdfProp(rdfString, sb, "id", entity.getId());
-
+        entity.getRdfAlternatives().forEach(alt -> addRdfProp(rdfString, sb, SAME_AS_PRED, alt));
         NTriplePropertyConverter converter = new NTriplePropertyConverter(collection, rdfString);
-
         for (TimProperty<?> timProperty : entity.getProperties()) {
           try {
             timProperty.convert(converter).getRight().forEach(triple -> sb.append(triple.getStringValue()));
