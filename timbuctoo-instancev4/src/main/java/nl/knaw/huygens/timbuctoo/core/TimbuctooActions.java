@@ -151,6 +151,13 @@ public class TimbuctooActions implements AutoCloseable {
     }
   }
 
+  public ReadEntity getEntity(Collection collection, UUID id, Integer rev) throws NotFoundException {
+    return getEntity(collection, id, rev,
+      (entity, entityVertex) -> {
+      }, (traversalSource, vre, target, relationRef) -> {
+      });
+  }
+
   public ReadEntity getEntity(Collection collection, UUID id, Integer rev,
                               CustomEntityProperties customEntityProps,
                               CustomRelationProperties customRelationProps) throws NotFoundException {
@@ -320,6 +327,7 @@ public class TimbuctooActions implements AutoCloseable {
       throw new AuthorizationException("User with id " + user.getId() + " is not allowed to delete VRE " + vreName);
     }
   }
+
 
   //================== Inner classes ==================
   @FunctionalInterface
