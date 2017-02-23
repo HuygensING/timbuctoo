@@ -4,11 +4,14 @@ import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
+import nl.knaw.huygens.timbuctoo.core.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
+import nl.knaw.huygens.timbuctoo.rdf.LinkTriple;
 import nl.knaw.huygens.timbuctoo.rdf.LiteralTriple;
 import nl.knaw.huygens.timbuctoo.rdf.conversion.NTriplePropertyConverter;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +33,7 @@ import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAnd
 public class SingleEntityNTriple {
   public static final Logger LOG = LoggerFactory.getLogger(SingleEntityNTriple.class);
   public static final String SAME_AS_PRED = "http://www.w3.org/2002/07/owl#sameAs";
+  public static final String BASE_RDF_URI = "http://timbuctoo.huygens.knaw.nl/";
   private final TransactionEnforcer transactionEnforcer;
 
   public SingleEntityNTriple(TransactionEnforcer transactionEnforcer) {
@@ -47,11 +51,11 @@ public class SingleEntityNTriple {
         ReadEntity entity = timbuctooActions.getEntity(collection, id.get(), rev);
         URI rdfUri = entity.getRdfUri();
         String rdfString = rdfUri == null ?
-          "http://timbuctoo.huygens.knaw.nl/" + collectionName + "/" + entity.getId() :
+          BASE_RDF_URI + collectionName + "/" + entity.getId() :
           rdfUri.toString();
         StringBuilder sb = new StringBuilder();
         addRdfProp(rdfString, sb, "id", entity.getId());
-        entity.getRdfAlternatives().forEach(alt -> addRdfProp(rdfString, sb, SAME_AS_PRED, alt));
+        // entity.getRdfAlternatives().forEach(alt -> addRdfProp(rdfString, sb, SAME_AS_PRED, alt));
         NTriplePropertyConverter converter = new NTriplePropertyConverter(collection, rdfString);
         for (TimProperty<?> timProperty : entity.getProperties()) {
           try {
@@ -62,6 +66,9 @@ public class SingleEntityNTriple {
             );
           }
         }
+        entity.getRelations().forEach(rel -> sb.append(
+          new LinkTriple(rdfString, getRelationRdfUri(rel), getEntityRdfUri(rel)).getStringValue()
+        ));
 
 
         return commitAndReturn(Response.ok(sb.toString()).build());
@@ -73,10 +80,21 @@ public class SingleEntityNTriple {
     });
   }
 
+  private String getRelationRdfUri(RelationRef rel) {
+    return StringUtils.isBlank(rel.getRelationRdfUri()) ?
+      String.format("%s/relationtypes/%s", BASE_RDF_URI, rel.getRelationType()) :
+      rel.getEntityRdfUri();
+  }
+
+  private String getEntityRdfUri(RelationRef rel) {
+    return StringUtils.isBlank(rel.getEntityRdfUri()) ?
+      String.format("%s/%s/%s", BASE_RDF_URI, rel.getCollectionName(), rel.getEntityId()) :
+      rel.getEntityRdfUri();
+  }
+
   private void addRdfProp(String rdfString, StringBuilder sb, String propName, Object propValue) {
     sb.append(
       new LiteralTriple(rdfString, String.format("http://timbuctoo.huygens.knaw.nl/%s", propName), propValue)
         .getStringValue());
-    sb.append("\n");
   }
 }
