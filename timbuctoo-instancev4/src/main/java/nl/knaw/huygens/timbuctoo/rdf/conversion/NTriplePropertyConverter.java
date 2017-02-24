@@ -21,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.rdf.LinkTriple;
 import nl.knaw.huygens.timbuctoo.rdf.LiteralTriple;
 import nl.knaw.huygens.timbuctoo.rdf.Triple;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.IOException;
@@ -106,14 +107,14 @@ public class NTriplePropertyConverter extends PropertyConverter<List<Triple>> {
   public Tuple<String, List<Triple>> to(AltNamesProperty property) throws IOException {
     // TODO find a better way to serialize to n-triples
     return tuple(property.getName(),
-      Lists.newArrayList(new LiteralTriple(subjectUri, createPred(property.getName()), property.getValue()))
+      Lists.newArrayList(new LiteralTriple(subjectUri, createMetadata(property.getName()), property.getValue()))
     );
   }
 
   @Override
   public Tuple<String, List<Triple>> to(DatableProperty property) throws IOException {
     return tuple(property.getName(),
-      Lists.newArrayList(new LiteralTriple(subjectUri, createPred(property.getName()), property.getValue()))
+      Lists.newArrayList(new LiteralTriple(subjectUri, createMetadata(property.getName()), property.getValue()))
     );
   }
 
@@ -131,7 +132,7 @@ public class NTriplePropertyConverter extends PropertyConverter<List<Triple>> {
   public Tuple<String, List<Triple>> to(HyperLinksProperty property) throws IOException {
     String blankNode = "_:" + UUID.randomUUID();
     String propertyName = property.getName();
-    String pred = createPred(propertyName);
+    String pred = createMetadata(propertyName);
     List<Triple> triples = Lists.newArrayList(new LinkTriple(subjectUri, pred, blankNode));
     JsonNode jsonNode = objectMapper.readTree(property.getValue());
     for (Iterator<JsonNode> elements = jsonNode.elements(); elements.hasNext(); ) {
@@ -150,9 +151,12 @@ public class NTriplePropertyConverter extends PropertyConverter<List<Triple>> {
   @Override
   public Tuple<String, List<Triple>> to(PersonNamesProperty property) throws IOException {
     // TODO find a better way to serialize to n-triples
+    String objectValue =
+      "\"" + StringEscapeUtils.escapeJava(objectMapper.writeValueAsString(property.getValue())) + "\"";
+    String object = objectValue + "^^<" + createMetadata("personnames") + ">";
     return tuple(
       property.getName(),
-      Lists.newArrayList(new LiteralTriple(subjectUri, createPred(property.getName()), property.getValue()))
+      Lists.newArrayList(new LiteralTriple(subjectUri, createMetadata(property.getName()), object))
     );
   }
 
@@ -166,7 +170,7 @@ public class NTriplePropertyConverter extends PropertyConverter<List<Triple>> {
     // TODO find a better way to serialize to n-triples
     return tuple(
       property.getName(),
-      Lists.newArrayList(new LiteralTriple(subjectUri, createPred(property.getName()), property.getValue()))
+      Lists.newArrayList(new LiteralTriple(subjectUri, createMetadata(property.getName()), property.getValue()))
     );
   }
 
@@ -174,14 +178,14 @@ public class NTriplePropertyConverter extends PropertyConverter<List<Triple>> {
   public Tuple<String, List<Triple>> to(StringProperty property) throws IOException {
     return tuple(
       property.getName(),
-      Lists.newArrayList(new LiteralTriple(subjectUri, createPred(property.getName()), property.getValue()))
+      Lists.newArrayList(new LiteralTriple(subjectUri, createMetadata(property.getName()), property.getValue()))
     );
   }
 
   @Override
   public Tuple<String, List<Triple>> to(StringOfLimitedValuesProperty property) throws IOException {
     return tuple(property.getName(),
-      Lists.newArrayList(new LiteralTriple(subjectUri, createPred(property.getName()), property.getValue()))
+      Lists.newArrayList(new LiteralTriple(subjectUri, createMetadata(property.getName()), property.getValue()))
     );
   }
 
@@ -191,15 +195,15 @@ public class NTriplePropertyConverter extends PropertyConverter<List<Triple>> {
 
   }
 
-  private String createPred(String propertyName) {
+  private String createMetadata(String metadataName) {
     // FIXME find a way to look up the predicate of a property
-    return String.format("http://timbuctoo.huygens.knaw.nl/%s", propertyName);
+    return String.format("http://timbuctoo.huygens.knaw.nl/%s", metadataName);
   }
 
   private Tuple<String, List<Triple>> mapArrayProperty(String propertyName, String value) throws IOException {
     List<String> values = objectMapper.readValue(value, new TypeReference<List<String>>() {
     });
-    List<Triple> collect = values.stream().map(v -> new LiteralTriple(subjectUri, createPred(propertyName), v))
+    List<Triple> collect = values.stream().map(v -> new LiteralTriple(subjectUri, createMetadata(propertyName), v))
                                  .collect(Collectors.toList());
 
     return tuple(propertyName, collect);

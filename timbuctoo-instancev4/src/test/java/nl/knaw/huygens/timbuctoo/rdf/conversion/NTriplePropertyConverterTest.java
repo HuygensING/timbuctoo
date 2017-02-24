@@ -1,9 +1,14 @@
 package nl.knaw.huygens.timbuctoo.rdf.conversion;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import groovy.json.StringEscapeUtils;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.ArrayProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.HyperLinksProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.PersonNamesProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
+import nl.knaw.huygens.timbuctoo.model.PersonName;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.rdf.Triple;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.junit.Before;
@@ -82,6 +87,38 @@ public class NTriplePropertyConverterTest {
         hasProperty("subject", startsWith("_:")),
         hasProperty("predicate", endsWith(PROP_NAME + "label")),
         hasProperty("object", is("label"))
+      )
+    ));
+  }
+
+  @Test
+  public void toCreatesATripleWithAJsonVersionOfPersonNames() throws Exception {
+    PersonNames value = new PersonNames();
+    value.list.add(PersonName.newInstance("forename", "surname"));
+    ObjectMapper objectMapper = new ObjectMapper();
+    String objectValue = "\"" + StringEscapeUtils.escapeJava(objectMapper.writeValueAsString(value)) + "\"";
+
+    Tuple<String, List<Triple>> to = instance.to(new PersonNamesProperty(PROP_NAME, value));
+
+    assertThat(to.getRight(), contains(
+      allOf(
+        hasProperty("subject", is(SUBJECT_URI)),
+        hasProperty("predicate", endsWith(PROP_NAME)),
+        hasProperty("object", startsWith(objectValue))
+      )
+    ));
+  }
+
+  @Test
+  public void toAddsTheValueTypePersonNames() throws Exception {
+    PersonNames value = new PersonNames();
+    value.list.add(PersonName.newInstance("forename", "surname"));
+
+    Tuple<String, List<Triple>> to = instance.to(new PersonNamesProperty(PROP_NAME, value));
+
+    assertThat(to.getRight(), contains(
+      allOf(
+        hasProperty("object", endsWith("^^<http://timbuctoo.huygens.knaw.nl/personnames>"))
       )
     ));
   }
