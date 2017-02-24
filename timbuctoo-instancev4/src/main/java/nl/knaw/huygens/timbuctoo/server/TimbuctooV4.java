@@ -246,7 +246,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new Index(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
     register(environment,
       new SingleEntity(securityConfig.getLoggedInUsers(environment), crudServiceFactory, transactionEnforcer));
-    register(environment, new SingleEntityNTriple(transactionEnforcer));
+    register(environment, new SingleEntityNTriple(transactionEnforcer, uriHelper));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));

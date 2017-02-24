@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain;
 
+import com.google.common.collect.ImmutableMap;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.core.NotFoundException;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
@@ -11,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.rdf.LinkTriple;
 import nl.knaw.huygens.timbuctoo.rdf.LiteralTriple;
 import nl.knaw.huygens.timbuctoo.rdf.conversion.NTriplePropertyConverter;
+import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,8 +23,10 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
+import java.util.UUID;
 
 import static javax.ws.rs.core.Response.Status.BAD_REQUEST;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
@@ -35,9 +39,19 @@ public class SingleEntityNTriple {
   public static final String SAME_AS_PRED = "http://www.w3.org/2002/07/owl#sameAs";
   public static final String BASE_RDF_URI = "http://timbuctoo.huygens.knaw.nl/";
   private final TransactionEnforcer transactionEnforcer;
+  private final UriHelper uriHelper;
 
-  public SingleEntityNTriple(TransactionEnforcer transactionEnforcer) {
+  public SingleEntityNTriple(TransactionEnforcer transactionEnforcer, UriHelper uriHelper) {
     this.transactionEnforcer = transactionEnforcer;
+    this.uriHelper = uriHelper;
+  }
+
+  public static URI makeUrl(String collectionName, UUID id) {
+    return UriBuilder.fromResource(SingleEntityNTriple.class)
+                     .buildFromMap(ImmutableMap.of(
+                       "collection", collectionName,
+                       "id", id
+                     ));
   }
 
   @GET
@@ -51,7 +65,7 @@ public class SingleEntityNTriple {
         ReadEntity entity = timbuctooActions.getEntity(collection, id.get(), rev);
         URI rdfUri = entity.getRdfUri();
         String rdfString = rdfUri == null ?
-          BASE_RDF_URI + collectionName + "/" + entity.getId() :
+          uriHelper.fromResourceUri(makeUrl(collectionName, id.get())).toString() :
           rdfUri.toString();
         StringBuilder sb = new StringBuilder();
         addRdfProp(rdfString, sb, "id", entity.getId());
@@ -88,7 +102,7 @@ public class SingleEntityNTriple {
 
   private String getEntityRdfUri(RelationRef rel) {
     return StringUtils.isBlank(rel.getEntityRdfUri()) ?
-      String.format("%s%s/%s", BASE_RDF_URI, rel.getCollectionName(), rel.getEntityId()) :
+      uriHelper.fromResourceUri(makeUrl(rel.getCollectionName(), UUID.fromString(rel.getEntityId()))).toString() :
       rel.getEntityRdfUri();
   }
 
