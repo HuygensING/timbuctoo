@@ -82,13 +82,13 @@ public class SingleEntityNTriple {
 
   private String getRelationRdfUri(RelationRef rel) {
     return StringUtils.isBlank(rel.getRelationRdfUri()) ?
-      String.format("%s/relationtypes/%s", BASE_RDF_URI, rel.getRelationType()) :
+      String.format("%srelationtypes/%s", BASE_RDF_URI, rel.getRelationType()) :
       rel.getEntityRdfUri();
   }
 
   private String getEntityRdfUri(RelationRef rel) {
     return StringUtils.isBlank(rel.getEntityRdfUri()) ?
-      String.format("%s/%s/%s", BASE_RDF_URI, rel.getCollectionName(), rel.getEntityId()) :
+      String.format("%s%s/%s", BASE_RDF_URI, rel.getCollectionName(), rel.getEntityId()) :
       rel.getEntityRdfUri();
   }
 
