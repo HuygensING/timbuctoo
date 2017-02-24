@@ -55,7 +55,7 @@ public class SingleEntityNTriple {
           rdfUri.toString();
         StringBuilder sb = new StringBuilder();
         addRdfProp(rdfString, sb, "id", entity.getId());
-        // entity.getRdfAlternatives().forEach(alt -> addRdfProp(rdfString, sb, SAME_AS_PRED, alt));
+        entity.getRdfAlternatives().forEach(alt -> addRdfProp(rdfString, sb, SAME_AS_PRED, alt));
         NTriplePropertyConverter converter = new NTriplePropertyConverter(collection, rdfString);
         for (TimProperty<?> timProperty : entity.getProperties()) {
           try {
