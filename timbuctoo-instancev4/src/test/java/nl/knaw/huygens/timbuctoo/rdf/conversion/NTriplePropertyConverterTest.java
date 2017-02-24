@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.HyperLinksProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.rdf.Triple;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.util.List;
@@ -22,14 +23,17 @@ import static org.mockito.Mockito.mock;
 
 public class NTriplePropertyConverterTest {
 
-  public static final String PROP_NAME = "propName";
-  public static final String SUBJECT_URI = "http://example.com/subject";
+  private static final String PROP_NAME = "propName";
+  private static final String SUBJECT_URI = "http://example.com/subject";
+  private NTriplePropertyConverter instance;
+
+  @Before
+  public void setUp() throws Exception {
+    instance = new NTriplePropertyConverter(mock(Collection.class), SUBJECT_URI);
+  }
 
   @Test
   public void toAddsThePropertyNameToTheLeftOfTheTuple() throws Exception {
-    NTriplePropertyConverter instance = new NTriplePropertyConverter(mock(Collection.class),
-      SUBJECT_URI);
-
     Tuple<String, List<Triple>> to = instance.to(new StringProperty(PROP_NAME, "stringValue"));
 
     assertThat(to.getLeft(), is(PROP_NAME));
@@ -37,8 +41,6 @@ public class NTriplePropertyConverterTest {
 
   @Test
   public void toCreatesATripleWithAValueForAString() throws Exception {
-    NTriplePropertyConverter instance = new NTriplePropertyConverter(mock(Collection.class), SUBJECT_URI);
-
     Tuple<String, List<Triple>> to = instance.to(new StringProperty(PROP_NAME, "stringValue"));
 
     assertThat(to.getRight(), contains(allOf(
@@ -50,8 +52,6 @@ public class NTriplePropertyConverterTest {
 
   @Test
   public void toCreatesMultipleTriplesForAnArrayProperty() throws Exception {
-    NTriplePropertyConverter instance = new NTriplePropertyConverter(mock(Collection.class), SUBJECT_URI);
-
     Tuple<String, List<Triple>> to = instance.to(new ArrayProperty(PROP_NAME, "[ \"v1\", \"v2\", \"v3\" ]"));
 
     assertThat(to.getRight(), containsInAnyOrder(
@@ -63,10 +63,9 @@ public class NTriplePropertyConverterTest {
 
   @Test
   public void toCreatesABlankNodeForALink() throws Exception {
-    NTriplePropertyConverter instance = new NTriplePropertyConverter(mock(Collection.class), SUBJECT_URI);
-
-    Tuple<String, List<Triple>> to = instance.to(new HyperLinksProperty(PROP_NAME,
-      "[{\"url\":\"http://www.example.org\",\"label\":\"label\"}]"));
+    Tuple<String, List<Triple>> to = instance.to(
+      new HyperLinksProperty(PROP_NAME, "[{\"url\":\"http://www.example.org\",\"label\":\"label\"}]")
+    );
 
     assertThat(to.getRight(), containsInAnyOrder(
       allOf(
