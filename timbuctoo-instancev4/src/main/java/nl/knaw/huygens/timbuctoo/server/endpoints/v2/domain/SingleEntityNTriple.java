@@ -11,7 +11,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.rdf.LinkTriple;
 import nl.knaw.huygens.timbuctoo.rdf.LiteralTriple;
-import nl.knaw.huygens.timbuctoo.rdf.conversion.NTriplePropertyConverter;
+import nl.knaw.huygens.timbuctoo.rdf.conversion.TriplePropertyConverter;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -70,7 +70,7 @@ public class SingleEntityNTriple {
         StringBuilder sb = new StringBuilder();
         addRdfProp(rdfString, sb, "id", entity.getId());
         entity.getRdfAlternatives().forEach(alt -> addRdfProp(rdfString, sb, SAME_AS_PRED, alt));
-        NTriplePropertyConverter converter = new NTriplePropertyConverter(collection, rdfString);
+        TriplePropertyConverter converter = new TriplePropertyConverter(collection, rdfString);
         for (TimProperty<?> timProperty : entity.getProperties()) {
           try {
             timProperty.convert(converter).getRight().forEach(triple -> sb.append(triple.getStringValue()));

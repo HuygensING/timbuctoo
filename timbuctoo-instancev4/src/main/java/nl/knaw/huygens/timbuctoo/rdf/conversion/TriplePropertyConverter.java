@@ -32,11 +32,11 @@ import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
-public class NTriplePropertyConverter extends PropertyConverter<List<Triple>> {
+public class TriplePropertyConverter extends PropertyConverter<List<Triple>> {
   private final String subjectUri;
   private final ObjectMapper objectMapper;
 
-  public NTriplePropertyConverter(Collection collection, String subjectUri) {
+  public TriplePropertyConverter(Collection collection, String subjectUri) {
     super(collection);
     this.subjectUri = subjectUri;
     this.objectMapper = new ObjectMapper();

@@ -26,15 +26,15 @@ import static org.hamcrest.Matchers.startsWith;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
 
-public class NTriplePropertyConverterTest {
+public class TriplePropertyConverterTest {
 
   private static final String PROP_NAME = "propName";
   private static final String SUBJECT_URI = "http://example.com/subject";
-  private NTriplePropertyConverter instance;
+  private TriplePropertyConverter instance;
 
   @Before
   public void setUp() throws Exception {
-    instance = new NTriplePropertyConverter(mock(Collection.class), SUBJECT_URI);
+    instance = new TriplePropertyConverter(mock(Collection.class), SUBJECT_URI);
   }
 
   @Test
