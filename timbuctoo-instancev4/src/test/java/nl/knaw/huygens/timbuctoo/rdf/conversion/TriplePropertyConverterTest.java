@@ -118,7 +118,7 @@ public class TriplePropertyConverterTest {
 
     assertThat(to.getRight(), contains(
       allOf(
-        hasProperty("object", endsWith("^^<http://timbuctoo.huygens.knaw.nl/personnames>"))
+        hasProperty("datatype", is("http://timbuctoo.huygens.knaw.nl/personnames"))
       )
     ));
   }

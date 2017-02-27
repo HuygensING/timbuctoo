@@ -69,8 +69,13 @@ public class SingleEntityNTriple {
           uriHelper.fromResourceUri(makeUrl(collectionName, id.get())).toString() :
           rdfUri.toString();
         StringBuilder sb = new StringBuilder();
-        addRdfProp(rdfString, sb, "id", entity.getId());
-        entity.getRdfAlternatives().forEach(alt -> addRdfProp(rdfString, sb, SAME_AS_PRED, alt));
+
+        addRdfProp(rdfString, sb, "id", entity.getId() + "", "https://www.ietf.org/rfc/rfc4122.txt");
+
+        entity.getRdfAlternatives().forEach(alt ->
+          sb.append(asNtriples(new LinkTriple(rdfString, SAME_AS_PRED, alt)))
+        );
+
         TriplePropertyConverter converter = new TriplePropertyConverter(collection, rdfString);
         for (TimProperty<?> timProperty : entity.getProperties()) {
           try {
@@ -81,6 +86,7 @@ public class SingleEntityNTriple {
             );
           }
         }
+
         entity.getRelations().forEach(rel -> sb.append(
           asNtriples(new LinkTriple(rdfString, getRelationRdfUri(rel), getEntityRdfUri(rel)))
         ));
@@ -114,17 +120,18 @@ public class SingleEntityNTriple {
       String subject = isBlankNode(triple.getSubject()) ?
         triple.getSubject() :
         String.format("<%s>", triple.getSubject());
-      String object;
+      String serialisedObject;
       if (triple instanceof LinkTriple) {
-        object = isBlankNode(triple.getObject()) ? triple.getObject() : String.format("<%s>", triple.getObject());
+        String object = ((LinkTriple) triple).getObject();
+        serialisedObject = isBlankNode(object) ? object : String.format("<%s>", object);
       } else if (triple instanceof LiteralTriple) {
-        object = triple.getObject();
+        serialisedObject = ((LiteralTriple) triple).getObject();
       } else {
         throw new IllegalStateException(
           "A triple should be either a link or a value triple. It is of type " + triple.getClass().getName()
         );
       }
-      return String.format("%s <%s> %s .\n", subject, triple.getPredicate(), object);
+      return String.format("%s <%s> %s .\n", subject, triple.getPredicate(), serialisedObject);
     }
   }
 
@@ -132,11 +139,8 @@ public class SingleEntityNTriple {
     return node.startsWith("_:");
   }
 
-  private void addRdfProp(String rdfString, StringBuilder sb, String propName, Object propValue) {
-    sb.append(
-      asNtriples(
-        new LiteralTriple(rdfString, String.format("http://timbuctoo.huygens.knaw.nl/%s", propName), propValue)
-      )
-    );
+  private void addRdfProp(String subject, StringBuilder sb, String propName, String propValue, String dataType) {
+    String predicate = String.format("http://timbuctoo.huygens.knaw.nl/%s", propName);
+    sb.append(asNtriples(new LiteralTriple(subject, predicate, propValue, dataType)));
   }
 }

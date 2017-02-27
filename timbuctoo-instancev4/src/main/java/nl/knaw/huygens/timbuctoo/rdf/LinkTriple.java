@@ -23,7 +23,6 @@ public class LinkTriple implements Triple {
     return predicate;
   }
 
-  @Override
   public String getObject() {
     return object;
   }

@@ -6,6 +6,4 @@ public interface Triple {
 
   String getPredicate();
 
-  String getObject();
-
 }
