@@ -29,17 +29,6 @@ public class LinkTriple implements Triple {
   }
 
   @Override
-  public String getStringValue() {
-    String subject = isBlankNode(getSubject()) ? getSubject() : String.format("<%s>", getSubject());
-    String object = isBlankNode(getObject()) ? getObject() : String.format("<%s>", getObject());
-    return String.format("%s <%s> %s .\n", subject, getPredicate(), object);
-  }
-
-  private boolean isBlankNode(String node) {
-    return node.startsWith("_:");
-  }
-
-  @Override
   public String toString() {
     return ToStringBuilder.reflectionToString(this);
   }

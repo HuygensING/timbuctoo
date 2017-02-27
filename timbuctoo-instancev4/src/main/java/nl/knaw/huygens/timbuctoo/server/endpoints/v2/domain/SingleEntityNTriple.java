@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.rdf.LinkTriple;
 import nl.knaw.huygens.timbuctoo.rdf.LiteralTriple;
+import nl.knaw.huygens.timbuctoo.rdf.Triple;
 import nl.knaw.huygens.timbuctoo.rdf.conversion.TriplePropertyConverter;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +74,7 @@ public class SingleEntityNTriple {
         TriplePropertyConverter converter = new TriplePropertyConverter(collection, rdfString);
         for (TimProperty<?> timProperty : entity.getProperties()) {
           try {
-            timProperty.convert(converter).getRight().forEach(triple -> sb.append(triple.getStringValue()));
+            timProperty.convert(converter).getRight().forEach(triple -> sb.append(asNtriples(triple)));
           } catch (IOException e) {
             LOG.error(
               "Could not convert property with name '{}' and value '{}'", timProperty.getName(), timProperty.getValue()
@@ -81,7 +82,7 @@ public class SingleEntityNTriple {
           }
         }
         entity.getRelations().forEach(rel -> sb.append(
-          new LinkTriple(rdfString, getRelationRdfUri(rel), getEntityRdfUri(rel)).getStringValue()
+          asNtriples(new LinkTriple(rdfString, getRelationRdfUri(rel), getEntityRdfUri(rel)))
         ));
 
 
@@ -106,9 +107,36 @@ public class SingleEntityNTriple {
       rel.getEntityRdfUri();
   }
 
+  private String asNtriples(Triple triple) {
+    if (triple == null) {
+      return "";
+    } else {
+      String subject = isBlankNode(triple.getSubject()) ?
+        triple.getSubject() :
+        String.format("<%s>", triple.getSubject());
+      String object;
+      if (triple instanceof LinkTriple) {
+        object = isBlankNode(triple.getObject()) ? triple.getObject() : String.format("<%s>", triple.getObject());
+      } else if (triple instanceof LiteralTriple) {
+        object = triple.getObject();
+      } else {
+        throw new IllegalStateException(
+          "A triple should be either a link or a value triple. It is of type " + triple.getClass().getName()
+        );
+      }
+      return String.format("%s <%s> %s .\n", subject, triple.getPredicate(), object);
+    }
+  }
+
+  private boolean isBlankNode(String node) {
+    return node.startsWith("_:");
+  }
+
   private void addRdfProp(String rdfString, StringBuilder sb, String propName, Object propValue) {
     sb.append(
-      new LiteralTriple(rdfString, String.format("http://timbuctoo.huygens.knaw.nl/%s", propName), propValue)
-        .getStringValue());
+      asNtriples(
+        new LiteralTriple(rdfString, String.format("http://timbuctoo.huygens.knaw.nl/%s", propName), propValue)
+      )
+    );
   }
 }

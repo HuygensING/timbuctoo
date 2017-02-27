@@ -8,6 +8,4 @@ public interface Triple {
 
   String getObject();
 
-  String getStringValue();
-
 }
