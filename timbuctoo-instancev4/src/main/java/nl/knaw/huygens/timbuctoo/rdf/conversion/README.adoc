@@ -1,0 +1,7 @@
+# N-triples conversion
+
+This package generates an N-triples representation of our resources that should allow the lod-browser to also browse timbuctoo data. It is not ready for usage as resourcesync source. For this to work the following tasks should also be completed:
+
+- todo:feature["Some of the value-types can be represented in RDF in various ways. We need to decide which representation to implement and make sure that our importer and exporter use the same representation."]
+- todo:feature["Use an rdf library to create the triples for the export. (now I chose not to, because we are going to replace jena in the near future)"]
+- todo:feature["implement patch"]
