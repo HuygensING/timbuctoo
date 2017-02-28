@@ -1211,7 +1211,8 @@ public class TinkerPopOperations implements DataStoreOperations {
     Vertex vertex = assertEntity(vre, rdfUri);
     Object value;
     try {
-      // The TinkerPopConverter does not need a collection to convert the property to the right db type.
+      // The TinkerPopConverter does not need a collection for the external -> db case.
+      // It does need one for the db -> external case (but we're not using that one here)
       TinkerPopPropertyConverter propertyConverter = new TinkerPopPropertyConverter(null);
       Tuple<String, Object> convert = property.getTimProperty().convert(propertyConverter);
       value = convert.getRight();
