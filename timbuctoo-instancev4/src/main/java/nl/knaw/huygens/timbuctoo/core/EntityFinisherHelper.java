@@ -28,7 +28,7 @@ public class EntityFinisherHelper {
     if (property.isPresent()) {
       try {
         String rdfUri = (String) property.value();
-        if (rdfUri.startsWith("http://timbuctoo.huygens.knaw.nl/mapping/" + vreName + "/")) {
+        if (rdfUri.contains("/v2.1/domain/" + vreName + "/")) {
           String potentialTimId = rdfUri.substring(rdfUri.lastIndexOf('/') + 1);
           if (potentialTimId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
             id = UUID.fromString(potentialTimId);
