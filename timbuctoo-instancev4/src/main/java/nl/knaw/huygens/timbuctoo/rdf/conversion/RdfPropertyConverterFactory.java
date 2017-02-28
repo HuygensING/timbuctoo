@@ -33,7 +33,7 @@ public class RdfPropertyConverterFactory {
 
   public RdfPropertyConverter getConverter(String rdfPredicate, String rdfDataType) {
     switch (rdfDataType) {
-      case "http://timbuctoo.huygens.knaw.nl/schema/altnames":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/altnames":
         return new RdfPropertyConverter() {
           @Override
           public String getPropertyType() {
@@ -45,7 +45,7 @@ public class RdfPropertyConverterFactory {
             return new AltNamesProperty(null, objectMapper.readValue(rdfValue, AltNames.class));
           }
         };
-      case "http://timbuctoo.huygens.knaw.nl/schema/datable":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/datable":
         return new RdfPropertyConverter() {
           @Override
           public String getPropertyType() {
@@ -57,7 +57,7 @@ public class RdfPropertyConverterFactory {
             return new DatableProperty(null, rdfValue);
           }
         };
-      case "http://timbuctoo.huygens.knaw.nl/schema/hyperlinks":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/hyperlinks":
         return new RdfPropertyConverter() {
           @Override
           public String getPropertyType() {
@@ -85,7 +85,7 @@ public class RdfPropertyConverterFactory {
             throw new IOException(String.format("'%s' should be an array of hyperlinks.", null));
           }
         };
-      case "http://timbuctoo.huygens.knaw.nl/schema/person-names":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/person-names":
         return new RdfPropertyConverter() {
           @Override
           public String getPropertyType() {
@@ -97,7 +97,7 @@ public class RdfPropertyConverterFactory {
             return new PersonNamesProperty(null, objectMapper.readValue(rdfValue, PersonNames.class));
           }
         };
-      case "http://timbuctoo.huygens.knaw.nl/schema/encoded-array":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/encoded-array":
         return new RdfPropertyConverter() {
           @Override
           public String getPropertyType() {
@@ -109,7 +109,7 @@ public class RdfPropertyConverterFactory {
             return new ArrayProperty(null, objectMapper.writeValueAsString(rdfValue));
           }
         };
-      case "http://timbuctoo.huygens.knaw.nl/schema/encoded-array-of-limited-values":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/encoded-array-of-limited-values":
         return new RdfPropertyConverter() {
           @Override
           public String getPropertyType() {
@@ -121,7 +121,7 @@ public class RdfPropertyConverterFactory {
             return new ArrayOfLimitedValuesProperty(null, objectMapper.writeValueAsString(rdfValue));
           }
         };
-      case "http://timbuctoo.huygens.knaw.nl/schema/encoded-string-of-limited-values":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/encoded-string-of-limited-values":
         return new RdfPropertyConverter() {
           @Override
           public String getPropertyType() {
@@ -134,9 +134,9 @@ public class RdfPropertyConverterFactory {
           }
         };
       case "http://www.w3.org/2001/XMLSchema#string":
-      case "http://timbuctoo.huygens.knaw.nl/schema/string":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/string":
         return new StringRdfPropertyConverter();
-      case "http://timbuctoo.huygens.knaw.nl/schema/unencoded-string-of-limited-values":
+      case "http://timbuctoo.huygens.knaw.nl/datatypes/unencoded-string-of-limited-values":
         return new RdfPropertyConverter() {
           @Override
           public String getPropertyType() {
