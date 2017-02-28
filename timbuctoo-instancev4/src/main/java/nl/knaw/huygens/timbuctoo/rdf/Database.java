@@ -136,7 +136,7 @@ public class Database {
 
     systemPropertyModifier.setCreated(vertex, "rdf-importer");
     systemPropertyModifier.setModified(vertex, "rdf-importer");
-    if (nodeUri.startsWith("http://timbuctoo.huygens.knaw.nl/mapping/" + vreName)) {
+    if (nodeUri.contains("/v2.1/domain/" + vreName)) {
       String timId = nodeUri.substring(nodeUri.lastIndexOf("/") + 1);
       systemPropertyModifier.setTimId(vertex, timId);
     } else {
