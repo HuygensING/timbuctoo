@@ -1209,10 +1209,21 @@ public class TinkerPopOperations implements DataStoreOperations {
   @Override
   public void assertProperty(Vre vre, String rdfUri, RdfProperty property) {
     Vertex vertex = assertEntity(vre, rdfUri);
+    Object value;
+    try {
+      // The TinkerPopConverter does not need a collection to convert the property to the right db type.
+      TinkerPopPropertyConverter propertyConverter = new TinkerPopPropertyConverter(null);
+      Tuple<String, Object> convert = property.getTimProperty().convert(propertyConverter);
+      value = convert.getRight();
+    } catch (IOException e) {
+      LOG.error("Could not read timproperty of '{}' with value '{}'", property.getPredicateUri(), property.getValue());
+      value = property.getValue();
+    }
+    final Object val = value; // to be able to use the value in a lambda
 
     collectionsFor(vertex).forEachRemaining(collection -> {
       getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
-        vertex.property(createPropName(entityTypeName, property.getPredicateUri()), property.getValue());
+        vertex.property(createPropName(entityTypeName, property.getPredicateUri()), val);
       });
     });
 

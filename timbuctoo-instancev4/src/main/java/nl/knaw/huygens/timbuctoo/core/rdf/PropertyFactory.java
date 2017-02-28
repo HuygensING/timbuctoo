@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.CreateProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutableCreateProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ValueTypeInUse;
+import nl.knaw.huygens.timbuctoo.rdf.conversion.RdfPropertyConverterFactory;
 import org.apache.jena.rdf.model.impl.Util;
 
 import java.util.HashSet;
@@ -18,9 +19,11 @@ import static java.util.stream.Collectors.toList;
 
 public class PropertyFactory {
   private final RdfImportErrorReporter importErrorReporter;
+  private final RdfPropertyConverterFactory rdfPropertyConverterFactory;
 
   public PropertyFactory(RdfImportErrorReporter importErrorReporter) {
     this.importErrorReporter = importErrorReporter;
+    rdfPropertyConverterFactory = new RdfPropertyConverterFactory();
   }
 
   public List<CreateProperty> fromPredicates(List<PredicateInUse> predicates) {
@@ -56,13 +59,13 @@ public class PropertyFactory {
                                   .clientName(getPredicateName(pred))
                                   .rdfUri(pred.getPredicateUri())
                                   .typeUri(type.getTypeUri())
-                                  .propertyType(getPropertyType(type))
+                                  .propertyType(getPropertyType(pred.getPredicateUri(), type))
                                   .build();
   }
 
-  private String getPropertyType(ValueTypeInUse type) {
-    // TODO move to factory and add support for other types
-    return "string";
+  private String getPropertyType(String predicateUri, ValueTypeInUse type) {
+
+    return rdfPropertyConverterFactory.getConverter(predicateUri, type.getTypeUri()).getPropertyType();
   }
 
   private String getPredicateName(PredicateInUse pred) {
