@@ -42,7 +42,7 @@ public class RdfPropertyConverterFactory {
 
           @Override
           public TimProperty<?> convert(String rdfValue) throws IOException {
-            return new AltNamesProperty(rdfPredicate, objectMapper.readValue(rdfValue, AltNames.class));
+            return new AltNamesProperty(null, objectMapper.readValue(rdfValue, AltNames.class));
           }
         };
       case "http://timbuctoo.huygens.knaw.nl/schema/datable":
@@ -54,7 +54,7 @@ public class RdfPropertyConverterFactory {
 
           @Override
           public TimProperty<?> convert(String rdfValue) throws IOException {
-            return new DatableProperty(rdfPredicate, rdfValue);
+            return new DatableProperty(null, rdfValue);
           }
         };
       case "http://timbuctoo.huygens.knaw.nl/schema/hyperlinks":
@@ -80,9 +80,9 @@ public class RdfPropertyConverterFactory {
                   }
                 }
               }));
-              return new HyperLinksProperty(rdfPredicate, objectMapper.writeValueAsString(value));
+              return new HyperLinksProperty(null, objectMapper.writeValueAsString(value));
             }
-            throw new IOException(String.format("'%s' should be an array of hyperlinks.", rdfPredicate));
+            throw new IOException(String.format("'%s' should be an array of hyperlinks.", null));
           }
         };
       case "http://timbuctoo.huygens.knaw.nl/schema/person-names":
@@ -94,7 +94,7 @@ public class RdfPropertyConverterFactory {
 
           @Override
           public TimProperty<?> convert(String rdfValue) throws IOException {
-            return new PersonNamesProperty(rdfPredicate, objectMapper.readValue(rdfValue, PersonNames.class));
+            return new PersonNamesProperty(null, objectMapper.readValue(rdfValue, PersonNames.class));
           }
         };
       case "http://timbuctoo.huygens.knaw.nl/schema/encoded-array":
@@ -106,7 +106,7 @@ public class RdfPropertyConverterFactory {
 
           @Override
           public TimProperty<?> convert(String rdfValue) throws IOException {
-            return new ArrayProperty(rdfPredicate, objectMapper.writeValueAsString(rdfValue));
+            return new ArrayProperty(null, objectMapper.writeValueAsString(rdfValue));
           }
         };
       case "http://timbuctoo.huygens.knaw.nl/schema/encoded-array-of-limited-values":
@@ -118,7 +118,7 @@ public class RdfPropertyConverterFactory {
 
           @Override
           public TimProperty<?> convert(String rdfValue) throws IOException {
-            return new ArrayOfLimitedValuesProperty(rdfPredicate, objectMapper.writeValueAsString(rdfValue));
+            return new ArrayOfLimitedValuesProperty(null, objectMapper.writeValueAsString(rdfValue));
           }
         };
       case "http://timbuctoo.huygens.knaw.nl/schema/encoded-string-of-limited-values":
@@ -130,12 +130,12 @@ public class RdfPropertyConverterFactory {
 
           @Override
           public TimProperty<?> convert(String rdfValue) throws IOException {
-            return new EncodedStringOfLimitedValuesProperty(rdfPredicate, objectMapper.writeValueAsString(rdfValue));
+            return new EncodedStringOfLimitedValuesProperty(null, objectMapper.writeValueAsString(rdfValue));
           }
         };
       case "http://www.w3.org/2001/XMLSchema#string":
       case "http://timbuctoo.huygens.knaw.nl/schema/string":
-        return new StringRdfPropertyConverter(rdfPredicate);
+        return new StringRdfPropertyConverter();
       case "http://timbuctoo.huygens.knaw.nl/schema/unencoded-string-of-limited-values":
         return new RdfPropertyConverter() {
           @Override
@@ -145,12 +145,12 @@ public class RdfPropertyConverterFactory {
 
           @Override
           public TimProperty<?> convert(String rdfValue) throws IOException {
-            return new StringOfLimitedValuesProperty(rdfPredicate, rdfValue);
+            return new StringOfLimitedValuesProperty(null, rdfValue);
           }
         };
       default:
         LOG.warn("'{}' unknown rdf data type using the the default string converter", rdfDataType);
-        return new StringRdfPropertyConverter(rdfPredicate);
+        return new StringRdfPropertyConverter();
     }
   }
 
@@ -161,10 +161,8 @@ public class RdfPropertyConverterFactory {
   }
 
   private static class StringRdfPropertyConverter implements RdfPropertyConverter {
-    private final String rdfPredicate;
 
-    public StringRdfPropertyConverter(String rdfPredicate) {
-      this.rdfPredicate = rdfPredicate;
+    public StringRdfPropertyConverter() {
     }
 
     @Override
@@ -174,7 +172,7 @@ public class RdfPropertyConverterFactory {
 
     @Override
     public TimProperty<?> convert(String rdfValue) throws IOException {
-      return new StringProperty(rdfPredicate, rdfValue);
+      return new StringProperty(null, rdfValue);
     }
   }
 }
