@@ -196,6 +196,41 @@ public class Neo4JIndexHandlerTest {
   }
 
   @Test
+  public void findKeywordsByQuickSearchDoesNotFilterOnKeywordTypeWhenKeywordtypesIsNull() {
+    String id1 = UUID.randomUUID().toString();
+    String id2 = UUID.randomUUID().toString();
+    String id3 = UUID.randomUUID().toString();
+    TinkerPopGraphManager tinkerPopGraphManager = newGraph()
+      .withVertex(v -> v
+        .withTimId(id1)
+        .withProperty("keyword_type", "keywordType")
+        .withProperty("displayName", "query"))
+      .withVertex(v -> v
+        .withProperty("keyword_type", "otherType")
+        .withTimId(id2)
+        .withProperty("displayName", "query2"))
+      .withVertex(v -> v
+        .withProperty("keyword_type", "otherType")
+        .withTimId(id3)
+        .withProperty("displayName", "notmatching")
+      )
+      .wrap();
+    Neo4jIndexHandler instance = new Neo4jIndexHandler(tinkerPopGraphManager);
+    addToQuickSearchIndex(instance, collection,
+      tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id1).next());
+    addToQuickSearchIndex(instance, collection,
+      tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id2).next());
+    addToQuickSearchIndex(instance, collection,
+      tinkerPopGraphManager.getGraph().traversal().V().has("tim_id", id3).next());
+    QuickSearch quickSearch = QuickSearch.fromQueryString("query");
+
+    GraphTraversal<Vertex, Vertex> vertices =
+      instance.findKeywordsByQuickSearch(collection, quickSearch, null);
+
+    assertThat(vertices.map(v -> v.get().value("tim_id")).toList(), containsInAnyOrder(id1, id2));
+  }
+
+  @Test
   public void removeFromQuickSearchIndexRemovesTheVertexFromTheIndex() {
     String id1 = UUID.randomUUID().toString();
     TinkerPopGraphManager tinkerPopGraphManager = newGraph()

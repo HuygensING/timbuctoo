@@ -57,7 +57,10 @@ public class Neo4jIndexHandler implements IndexHandler {
   @Override
   public GraphTraversal<Vertex, Vertex> findKeywordsByQuickSearch(Collection collection, QuickSearch quickSearch,
                                                                   String keywordType) {
-    return traversalFromIndex(collection, quickSearch).has("keyword_type", keywordType);
+    if (keywordType != null) {
+      return traversalFromIndex(collection, quickSearch).has("keyword_type", keywordType);
+    }
+    return traversalFromIndex(collection, quickSearch);
   }
 
 
