@@ -67,6 +67,12 @@ public class ScaffoldMigrator {
                   .withProperty("date", localProperty("document_date", datable))
 
               )
+              .withCollection("keywords", collection -> collection
+              .withDescription("")
+              .withDisplayName(localProperty("keyword_value"))
+                .withProperty("value", localProperty("keyword_value"))
+                .withProperty("type", localProperty("keyword_type"))
+              )
               .withCollection("concepts", collection ->
                 collection
                   .withDescription("Concepts which do not conform to a specific archetype.")
