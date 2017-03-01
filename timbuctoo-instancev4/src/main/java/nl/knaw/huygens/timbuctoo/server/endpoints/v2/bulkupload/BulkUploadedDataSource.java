@@ -130,8 +130,10 @@ public class BulkUploadedDataSource implements DataSource {
 
       Object fieldValue = rowData.get(childField);
       if (fieldValue != null) {
+        // TODO mention collection that is used to map
         addError(childField, String.format(
-          "'%s' does not exist in field '%s' of collection '%s'.",
+          "[Mapping %s]' %s' does not exist in field '%s' of collection '%s'.",
+          collectionName,
           fieldValue,
           parentField,
           parentCollection
