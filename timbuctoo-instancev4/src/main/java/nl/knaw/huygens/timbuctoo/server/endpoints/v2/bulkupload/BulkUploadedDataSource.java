@@ -201,7 +201,7 @@ public class BulkUploadedDataSource implements DataSource {
           LOG.info("Error during mapping", throwable);
           errorHandler.valueGenerateFailed(
             data.keySet().iterator().next(),
-            "Could not execute expression for this row."
+            String.format("Could not execute expression '%s' for this row.", expressions.get(key))
           );
           return null;
         }
