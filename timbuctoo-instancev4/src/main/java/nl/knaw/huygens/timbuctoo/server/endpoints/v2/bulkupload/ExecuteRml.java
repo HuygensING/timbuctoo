@@ -75,6 +75,10 @@ public class ExecuteRml {
   @Produces("text/plain")
   public Response post(String rdfData, @PathParam("vre") String vreName,
                        @HeaderParam("Authorization") String authorizationHeader) {
+    if (vres.getVre(vreName) == null) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("Vre or data-set does not exist").build();
+    }
+
     Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
 
     if (filterResponse.isPresent()) {
