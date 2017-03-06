@@ -14,12 +14,17 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class EntityFinisherHelper {
   private static final Logger LOG = getLogger(EntityFinisherHelper.class);
   private final Change change;
+  private final UrlGenerator urlGenerator;
 
-  // TODO let TimbuctooActions use this class
   public EntityFinisherHelper() {
+    this((collection, id, rev) -> URI.create("http://example.org"), Clock.systemDefaultZone(), "rdf-importer");
+  }
+
+  public EntityFinisherHelper(UrlGenerator urlGenerator, Clock clock, String userId) {
+    this.urlGenerator = urlGenerator;
     change = new Change();
-    change.setTimeStamp(Clock.systemDefaultZone().instant().toEpochMilli()); // TODO make configurable
-    change.setUserId("rdf-importer"); // TODO make configurable
+    change.setTimeStamp(clock.instant().toEpochMilli());
+    change.setUserId(userId);
   }
 
   public UUID newId(Vertex vertex, String vreName) {

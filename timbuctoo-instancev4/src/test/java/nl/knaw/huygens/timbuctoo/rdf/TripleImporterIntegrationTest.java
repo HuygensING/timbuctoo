@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
+import nl.knaw.huygens.timbuctoo.core.EntityFinisherHelper;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
@@ -101,7 +102,7 @@ public class TripleImporterIntegrationTest {
     tinkerPopOperations.saveVre(vres.getVre("Admin"));
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
 
-    rdfImportSession = RdfImportSession.cleanImportSession(VRE_NAME, tinkerPopOperations);
+    rdfImportSession = RdfImportSession.cleanImportSession(VRE_NAME, tinkerPopOperations, new EntityFinisherHelper());
     instance = new TripleImporter(
       graphWrapper,
       VRE_NAME,
