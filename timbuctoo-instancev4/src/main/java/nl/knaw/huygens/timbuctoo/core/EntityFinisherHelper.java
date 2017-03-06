@@ -1,14 +1,13 @@
 package nl.knaw.huygens.timbuctoo.core;
 
+import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
-import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.slf4j.Logger;
 
+import java.net.URI;
 import java.time.Clock;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class EntityFinisherHelper {
@@ -27,25 +26,8 @@ public class EntityFinisherHelper {
     change.setUserId(userId);
   }
 
-  public UUID newId(Vertex vertex, String vreName) {
-    VertexProperty<Object> property = vertex.property(RDF_URI_PROP);
-    UUID id = UUID.randomUUID();
-    if (property.isPresent()) {
-      try {
-        String rdfUri = (String) property.value();
-        if (rdfUri.contains("/v2.1/domain/" + vreName + "/")) {
-          String potentialTimId = rdfUri.substring(rdfUri.lastIndexOf('/') + 1);
-          if (potentialTimId.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
-            id = UUID.fromString(potentialTimId);
-          }
-        }
-      } catch (Exception e) {
-        LOG.error("Can't get timid from rdf uri. Either my guards are to lax or the parser not smart enough " +
-          vertex.id(), e);
-      }
-    }
-
-    return id;
+  public UUID newId() {
+    return UUID.randomUUID();
   }
 
   public int getRev() {
@@ -54,5 +36,9 @@ public class EntityFinisherHelper {
 
   public Change getChangeTime() {
     return change;
+  }
+
+  public URI getRdfUri(String collection, UUID id) {
+    return urlGenerator.apply(collection, id, null);
   }
 }

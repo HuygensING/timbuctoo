@@ -131,17 +131,11 @@ public class Database {
 
   private Entity createEntity(String vreName, String nodeUri) {
     Vertex vertex = graphWrapper.getGraph().addVertex();
-    vertex.property(RDF_URI_PROP, nodeUri);
-    vertex.property(RDF_SYNONYM_PROP, new String[0]);
+    vertex.property(RDF_SYNONYM_PROP, new String[] {nodeUri});
 
     systemPropertyModifier.setCreated(vertex, "rdf-importer");
     systemPropertyModifier.setModified(vertex, "rdf-importer");
-    if (nodeUri.contains("/v2.1/domain/" + vreName)) {
-      String timId = nodeUri.substring(nodeUri.lastIndexOf("/") + 1);
-      systemPropertyModifier.setTimId(vertex, timId);
-    } else {
-      systemPropertyModifier.setTimId(vertex);
-    }
+    systemPropertyModifier.setTimId(vertex);
     systemPropertyModifier.setRev(vertex, 1);
     systemPropertyModifier.setIsLatest(vertex, true);
     systemPropertyModifier.setIsDeleted(vertex, false);
