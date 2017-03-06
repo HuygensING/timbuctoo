@@ -93,7 +93,10 @@ public class ExecuteRml {
 
     final Model model = ModelFactory.createDefaultModel();
     model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");
-    final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(model, dataSourceFactory);
+    final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(
+      model,
+      rdfResource -> dataSourceFactory.apply(rdfResource, vreName)
+    );
     if (rmlMappingDocument.getErrors().size() > 0) {
       return Response.status(Response.Status.BAD_REQUEST)
         .entity("failure: " + String.join("\nfailure: ", rmlMappingDocument.getErrors()) + "\n")

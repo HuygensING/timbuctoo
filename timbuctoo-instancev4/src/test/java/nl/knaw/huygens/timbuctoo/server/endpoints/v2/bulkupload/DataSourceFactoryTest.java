@@ -22,14 +22,13 @@ public class DataSourceFactoryTest {
     RdfResource wrappedResource = parseRdf("{\n" +
       "  \"@id\": \"http://example.com/target\"," +
       "  \"http://semweb.mmlab.be/ns/rml#source\": {\n" +
-      "    \"http://timbuctoo.huygens.knaw.nl/mapping#rawCollection\": \"CollectionName\",\n" +
-      "    \"http://timbuctoo.huygens.knaw.nl/mapping#vreName\": \"VreName\"\n" +
+      "    \"http://timbuctoo.huygens.knaw.nl/mapping#rawCollection\": \"CollectionName\"\n" +
       "  }\n" +
       "}\n");
 
     DataSourceFactory dataSourceFactory = new DataSourceFactory(newGraph().wrap());
 
-    DataSource result = dataSourceFactory.apply(wrappedResource)
+    DataSource result = dataSourceFactory.apply(wrappedResource, "VreName")
       .orElseThrow(() -> new AssertionError("No result found"));
 
     assertThat(result.toString(), is("    BulkUploadedDatasource: VreName, CollectionName\n"));
@@ -41,7 +40,6 @@ public class DataSourceFactoryTest {
       "  \"@id\": \"http://example.com/target\",\n" +
       "  \"http://semweb.mmlab.be/ns/rml#source\": {\n" +
       "    \"http://timbuctoo.huygens.knaw.nl/mapping#rawCollection\": \"CollectionName\",\n" +
-      "    \"http://timbuctoo.huygens.knaw.nl/mapping#vreName\": \"VreName\",\n" +
       "    \"http://timbuctoo.huygens.knaw.nl/mapping#customField\": [\n" +
       "      {\n" +
       "        \"http://timbuctoo.huygens.knaw.nl/mapping#name\": \"expr\",\n" +
@@ -53,7 +51,7 @@ public class DataSourceFactoryTest {
 
     DataSourceFactory dataSourceFactory = new DataSourceFactory(newGraph().wrap());
 
-    DataSource result = dataSourceFactory.apply(wrappedResource)
+    DataSource result = dataSourceFactory.apply(wrappedResource, "VreName")
       .orElseThrow(() -> new AssertionError("No result found"));
 
     assertThat(result.toString(), is(
