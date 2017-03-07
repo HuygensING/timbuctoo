@@ -4,6 +4,8 @@ import nl.knaw.huygens.timbuctoo.rml.Row;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
+import java.util.Optional;
+
 public class RrConstant implements RrTermMap {
   private final Node value;
 
@@ -12,8 +14,8 @@ public class RrConstant implements RrTermMap {
   }
 
   @Override
-  public Node generateValue(Row input) {
-    return value;
+  public Optional<Node> generateValue(Row input) {
+    return Optional.of(value);
   }
 
   @Override

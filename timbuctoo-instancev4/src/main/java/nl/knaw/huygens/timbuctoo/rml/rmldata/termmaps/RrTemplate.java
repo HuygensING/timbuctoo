@@ -1,12 +1,13 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.Row;
+import org.apache.commons.lang.StringUtils;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Stream;
 
 public class RrTemplate implements RrTermMap {
   private final String template;
@@ -49,21 +50,29 @@ public class RrTemplate implements RrTermMap {
   }
 
   @Override
-  public Node generateValue(Row input) {
+  public Optional<Node> generateValue(Row input) {
     Matcher regexMatcher = pattern.matcher(template);
     StringBuffer resultString = new StringBuffer();
     while (regexMatcher.find()) {
-      regexMatcher.appendReplacement(resultString, "" + input.get(regexMatcher.group(1)) );
+      Object value = input.get(regexMatcher.group(1));
+      if (value != null) {
+        regexMatcher.appendReplacement(resultString, "" + value);
+      }
     }
+
+    if (StringUtils.isBlank(resultString.toString())) {
+      return Optional.empty();
+    }
+
     regexMatcher.appendTail(resultString);
 
     switch (termType) {
       case IRI:
-        return NodeFactory.createURI(resultString.toString());
+        return Optional.of(NodeFactory.createURI(resultString.toString()));
       case BlankNode:
-        return NodeFactory.createBlankNode(resultString.toString());
+        return Optional.of(NodeFactory.createBlankNode(resultString.toString()));
       case Literal:
-        return NodeFactory.createLiteral(resultString.toString());
+        return Optional.of(NodeFactory.createLiteral(resultString.toString()));
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }
@@ -75,7 +84,7 @@ public class RrTemplate implements RrTermMap {
     Matcher regexMatcher = pattern.matcher(template);
     StringBuffer resultString = new StringBuffer();
     while (regexMatcher.find()) {
-      regexMatcher.appendReplacement(resultString, "«" + regexMatcher.group(1) + "»" );
+      regexMatcher.appendReplacement(resultString, "«" + regexMatcher.group(1) + "»");
     }
     regexMatcher.appendTail(resultString);
 

@@ -9,6 +9,7 @@ import org.apache.jena.graph.Triple;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,14 +44,20 @@ public class RrTriplesMap {
   Stream<Triple> getItems(ErrorHandler defaultErrorHandler) {
     return stream(dataSource.getRows(defaultErrorHandler))
       .flatMap(row -> {
-        Node subject = subjectMap.generateValue(row);
+        Optional<Node> subjectOpt = subjectMap.generateValue(row);
 
-        for (Tuple<RrRefObjectMap, String> subscription : subscriptions) {
-          subscription.getLeft().onNewSubject(row.get(subscription.getRight()), subject);
+        if (subjectOpt.isPresent()) {
+          Node subject = subjectOpt.get();
+          for (Tuple<RrRefObjectMap, String> subscription : subscriptions) {
+            subscription.getLeft().onNewSubject(row.get(subscription.getRight()), subject);
+          }
+
+          return predicateObjectMaps.stream()
+                                    .flatMap(predicateObjectMap -> predicateObjectMap.generateValue(subject, row));
+
+        } else {
+          return Stream.empty();
         }
-
-        return predicateObjectMaps.stream()
-          .flatMap(predicateObjectMap -> predicateObjectMap.generateValue(subject, row));
       });
   }
 

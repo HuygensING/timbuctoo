@@ -5,6 +5,8 @@ import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import org.apache.jena.graph.Node;
 
+import java.util.Optional;
+
 public class RrSubjectMap {
   private final RrTermMap termMap;
 
@@ -12,7 +14,7 @@ public class RrSubjectMap {
     this.termMap = termMap;
   }
 
-  public Node generateValue(Row row) {
+  public Optional<Node> generateValue(Row row) {
     return termMap.generateValue(row);
   }
 

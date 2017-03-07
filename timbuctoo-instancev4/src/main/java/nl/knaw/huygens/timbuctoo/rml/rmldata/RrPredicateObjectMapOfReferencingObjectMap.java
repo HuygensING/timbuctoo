@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 
+import java.util.Optional;
 import java.util.stream.Stream;
 
 public class RrPredicateObjectMapOfReferencingObjectMap implements RrPredicateObjectMap {
@@ -23,15 +24,20 @@ public class RrPredicateObjectMapOfReferencingObjectMap implements RrPredicateOb
 
   @Override
   public Stream<Triple> generateValue(Node subject, Row row) {
-    Node predicate = predicateMap.generateValue(row);
-    if (isInverted) {
-      return objectMap
-        .generateValue(row)
-        .map(value -> new Triple(value, predicate, subject));
+    Optional<Node> predicateOpt = predicateMap.generateValue(row);
+    if (predicateOpt.isPresent()) {
+      Node predicate = predicateOpt.get();
+      if (isInverted) {
+        return objectMap
+          .generateValue(row)
+          .map(value -> new Triple(value, predicate, subject));
+      } else {
+        return objectMap
+          .generateValue(row)
+          .map(value -> new Triple(subject, predicate, value));
+      }
     } else {
-      return objectMap
-        .generateValue(row)
-        .map(value -> new Triple(subject, predicate, value));
+      return Stream.empty();
     }
   }
 
