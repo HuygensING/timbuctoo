@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tinkerpop.gremlin.structure.Property;
 import org.slf4j.Logger;
 
@@ -20,6 +21,10 @@ public class SameAsTripleProcessor extends AbstractReferenceTripleProcessor {
 
   @Override
   protected void processAssertion(String vreName, String subject, String predicate, String object) {
+    if (StringUtils.isBlank(object)) {
+      return;
+    }
+
     Optional<Entity> objectEntityOpt = database.findEntity(vreName, object);
     Optional<Entity> subjectEntityOpt = database.findEntity(vreName, subject);
 
