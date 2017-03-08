@@ -35,7 +35,6 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class DatabaseTest {
@@ -54,37 +53,6 @@ public class DatabaseTest {
     entityNode = mock(Node.class);
     when(entityNode.getURI()).thenReturn(ENTITY_RDF_URI);
     modifier = mock(SystemPropertyModifier.class);
-  }
-
-  @Test
-  public void findOrCreateEntityCreateANewVertexWithTimbuctoosSystemProperties() {
-    TinkerPopGraphManager graphWrapper = newGraph().withVertex(v -> v.withLabel(Vre.DATABASE_LABEL)
-                                                                     .withProperty("name", VRE_NAME))
-                                                   .withVertex(v -> {
-                                                     v.withLabel(Vre.DATABASE_LABEL);
-                                                     v.withProperty(Vre.VRE_NAME_PROPERTY_NAME, "Admin");
-                                                     v.withOutgoingRelation(Vre.HAS_COLLECTION_RELATION_NAME,
-                                                       "defaultArchetype");
-                                                   })
-                                                   .withVertex("defaultArchetype", v -> {
-                                                     v.withProperty(ENTITY_TYPE_NAME_PROPERTY_NAME, "concept");
-                                                     v.withProperty(COLLECTION_NAME_PROPERTY_NAME, "concepts");
-                                                     v.withOutgoingRelation(HAS_ENTITY_NODE_RELATION_NAME,
-                                                       "entityCollection");
-                                                   })
-                                                   .withVertex("entityCollection", v -> {
-                                                   })
-                                                   .wrap();
-    final Database instance = new Database(graphWrapper, modifier);
-
-    Vertex entityVertex = instance.findOrCreateEntity(VRE_NAME, entityNode).vertex;
-
-    verify(modifier).setCreated(entityVertex, USER_ID);
-    verify(modifier).setModified(entityVertex, USER_ID);
-    verify(modifier).setTimId(entityVertex);
-    verify(modifier).setRev(entityVertex, 1);
-    verify(modifier).setIsLatest(entityVertex, true);
-    verify(modifier).setIsDeleted(entityVertex, false);
   }
 
   @Test

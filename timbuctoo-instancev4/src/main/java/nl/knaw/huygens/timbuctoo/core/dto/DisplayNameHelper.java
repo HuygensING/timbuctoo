@@ -27,23 +27,24 @@ public class DisplayNameHelper {
       if (displayNameGetter.hasNext()) {
         Try<JsonNode> traversalResult = displayNameGetter.next();
         if (!traversalResult.isSuccess()) {
-          LOG.error(databaseInvariant, "Retrieving displayname failed", traversalResult.getCause());
+          LOG.debug(databaseInvariant, "Retrieving displayname failed", traversalResult.getCause());
         } else {
           if (traversalResult.get() == null) {
-            LOG.error(databaseInvariant, "Displayname was null");
+            LOG.debug(databaseInvariant, "Displayname was null");
           } else {
             if (!traversalResult.get().isTextual()) {
-              LOG.error(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
+              LOG.debug(databaseInvariant, "Displayname was not a string but " + traversalResult.get().toString());
             } else {
               return Optional.of(traversalResult.get().asText());
             }
           }
         }
       } else {
-        LOG.error(databaseInvariant, "Displayname traversal resulted in no results: " + displayNameGetter);
+        LOG.debug(databaseInvariant, "Displayname traversal resulted in no results: " + displayNameGetter);
       }
     } else {
-      LOG.warn("No displayname configured for " + targetCollection.getEntityTypeName());
+      LOG.debug("No displayname configured for " + targetCollection.getEntityTypeName());
+      //FIXME: deze wordt gegooid tijdens de finish. da's raar
     }
     return Optional.empty();
   }

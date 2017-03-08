@@ -77,6 +77,7 @@ import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.VreStubs.minimalCorrectVre;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
@@ -2581,8 +2582,8 @@ public class TinkerPopOperationsTest {
 
     instance.assertEntity(vre, "http://example.org/1");
 
-    assertThat(graphManager.getGraph().traversal().V().has(RDF_URI_PROP, "http://example.org/1").count().next(),
-      is(1L));
+    assertThat(graphManager.getGraph().traversal().V().values(RDF_SYNONYM_PROP).next(),
+      is(new String[] {"http://example.org/1"}));
   }
 
   @Test
@@ -2596,7 +2597,7 @@ public class TinkerPopOperationsTest {
     assertThat(graphManager.getGraph().traversal().V()
                            .has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vre))
                            .out(HAS_ENTITY_NODE_RELATION_NAME)
-                           .out(HAS_ENTITY_RELATION_NAME).has(RDF_URI_PROP, "http://example.org/1").count().next(),
+                           .out(HAS_ENTITY_RELATION_NAME).count().next(),
       is(1L));
   }
 
@@ -2631,7 +2632,6 @@ public class TinkerPopOperationsTest {
     );
 
     List<Object> values = graphManager.getGraph().traversal().V()
-                                      .has(RDF_URI_PROP, "http://example.org/1")
                                       .values(defaultEntityTypeName(vre) + "_" + "http://example.org/propName")
                                       .toList();
     assertThat(values, contains("value"));
@@ -2665,7 +2665,6 @@ public class TinkerPopOperationsTest {
     );
 
     List<Object> values = graphManager.getGraph().traversal().V()
-                                      .has(RDF_URI_PROP, "http://example.org/1")
                                       .values(defaultEntityTypeName(vre) + "_" + "http://example.org/propName")
                                       .toList();
     assertThat(values, contains("somethingCompletelyDifferent"));
@@ -2689,7 +2688,6 @@ public class TinkerPopOperationsTest {
     );
 
     List<Object> values = graphManager.getGraph().traversal().V()
-                                      .has(RDF_URI_PROP, "http://example.org/1")
                                       .values(defaultEntityTypeName("vre") + "_" + "http://example.org/propName")
                                       .toList();
     assertThat(values, contains("value"));

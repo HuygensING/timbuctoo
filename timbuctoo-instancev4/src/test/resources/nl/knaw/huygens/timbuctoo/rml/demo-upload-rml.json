@@ -77,6 +77,13 @@
         },
         {
           "objectMap": {
+            "column": "viaf_id",
+            "termType": "http://www.w3.org/ns/r2rml#IRI"
+          },
+          "predicate": "http://www.w3.org/2002/07/owl#sameAs"
+        },
+        {
+          "objectMap": {
             "joinCondition": {
               "child": "birth_place_persistent_id",
               "parent": "persistent_id"

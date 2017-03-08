@@ -50,6 +50,8 @@ public interface IndexHandler {
 
   void upsertIntoRdfIndex(Vre vre, String nodeUri, Vertex vertex);
 
+  void upsertIntoAdminRdfIndex(String nodeUri, Vertex vertex);
+
   void removeFromRdfIndex(Vre vre, Vertex vertex);
 
   //=====================Edge tim_id index=====================

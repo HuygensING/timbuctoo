@@ -203,8 +203,18 @@ public class Neo4jIndexHandler implements IndexHandler {
 
   @Override
   public void upsertIntoRdfIndex(Vre vre, String nodeUri, Vertex vertex) {
-    Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
     String vreName = vre.getVreName();
+
+    upsertIntoRdfIndexByName(vreName, nodeUri, vertex);
+  }
+
+  @Override
+  public void upsertIntoAdminRdfIndex(String nodeUri, Vertex vertex) {
+    upsertIntoRdfIndexByName("Admin", nodeUri, vertex);
+  }
+
+  private void upsertIntoRdfIndexByName(String vreName, String nodeUri, Vertex vertex) {
+    Index<Node> rdfIndex = indexManager().forNodes(RDFINDEX_NAME);
     IndexHits<Node> oldVertex = rdfIndex.get(vreName, nodeUri);
     if (oldVertex.hasNext()) {
       rdfIndex.remove(oldVertex.next(), vreName, nodeUri);

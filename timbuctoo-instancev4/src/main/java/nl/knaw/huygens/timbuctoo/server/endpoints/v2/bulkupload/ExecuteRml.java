@@ -135,6 +135,8 @@ public class ExecuteRml {
                 LOG.error("Could not write to output stream", e);
               }
             });
+        } catch (Exception e) {
+          LOG.error("An unexpected exception occurred", e);
         } finally {
           try {
             transactionEnforcer.execute(timbuctooActions -> {
@@ -158,6 +160,8 @@ public class ExecuteRml {
                 }
               } catch (IOException e) {
                 LOG.error("Could not write to output stream", e);
+              } catch (Exception e) {
+                LOG.error("An unexpected exception occurred", e);
               }
               return commit();
             });

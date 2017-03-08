@@ -1311,14 +1311,14 @@ public class TinkerPopOperations implements DataStoreOperations {
              .path()
              .by() // collection
              .by() // entityNode
-             .by("rdfUri") // entity
+             .by(RDF_SYNONYM_PROP) // entity
              .by("typeUri") // valueType
              .by("predicateUri") // predicate;
              .forEachRemaining(p -> {
                List<Object> objects = p.objects();
                String predicate = (String) objects.get(4);
                String valueType = (String) objects.get(3);
-               String entityRdfUri = (String) objects.get(2);
+               String entityRdfUri = ((String[]) objects.get(2))[0];
                Map<String, List<String>> valueTypes = preds.computeIfAbsent(predicate, s -> Maps.newHashMap());
                valueTypes.computeIfAbsent(valueType, s -> Lists.newArrayList(entityRdfUri));
              });
@@ -1344,8 +1344,8 @@ public class TinkerPopOperations implements DataStoreOperations {
           .in(HAS_ENTITY_NODE_RELATION_NAME)
           .has("collectionName", P.neq(defaultColl.getCollectionName()))
       )
-      .has("rdfUri")
-      .map(v -> v.get().<String>value("rdfUri")).toList();
+      .has(RDF_SYNONYM_PROP)
+      .map(v -> v.get().<String[]>value(RDF_SYNONYM_PROP)[0]).toList();
   }
 
   private GraphTraversal<Vertex, Vertex> entitiesOfCollection(Collection coll) {
@@ -1357,22 +1357,32 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper) {
+    vre.getCollections().values().forEach(col -> {
+      Long isLatest = entitiesOfCollection(col).has("isLatest").count().next();
+      if (isLatest > 0) {
+        LOG.info("Zo, da's raar! " + isLatest + " " + col.getEntityTypeName());
+      }
+    });
     vre.getCollections().values().forEach(col -> entitiesOfCollection(col)
       .not(has("isLatest", false)) //everything without isLatest and everything with isLatest = true
       .forEachRemaining(v -> {
-        UUID uuid = entityFinisherHelper.newId();
-        URI rdfUri = entityFinisherHelper.getRdfUri(col.getCollectionName(), uuid);
-        v.property(RDF_URI_PROP, rdfUri.toString());
-        v.property("tim_id", uuid.toString());
-        v.property("rev", entityFinisherHelper.getRev());
-        setCreated(v, entityFinisherHelper.getChangeTime());
-        if (!v.property("isLatest").isPresent()) { //this is the first time the vertex passes this body
-          v.property("isLatest", true);
-          v = duplicateVertex(traversal, v, indexHandler);
+        try {
+          UUID uuid = entityFinisherHelper.newId();
+          URI rdfUri = entityFinisherHelper.getRdfUri(col.getCollectionName(), uuid);
+          v.property(RDF_URI_PROP, rdfUri.toString());
+          v.property("tim_id", uuid.toString());
+          v.property("rev", entityFinisherHelper.getRev());
+          setCreated(v, entityFinisherHelper.getChangeTime());
+          if (!v.property("isLatest").isPresent()) { //this is the first time the vertex passes this body
+            v.property("isLatest", true);
+            v = duplicateVertex(traversal, v, indexHandler);
+          }
+          listener.onCreate(col, v);
+          listener.onAddToCollection(col, Optional.empty(), v);
+          committer.tick();
+        } catch (Exception e) {
+          LOG.error("Exception at finishEntities", e);
         }
-        listener.onCreate(col, v);
-        listener.onAddToCollection(col, Optional.empty(), v);
-        committer.tick();
       })
     );
   }
@@ -1437,8 +1447,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   private Vertex createRdfEntity(Vre vre, String rdfUri) {
     Vertex vertex = traversal.addV().next();
-    vertex.property(RDF_URI_PROP, rdfUri);
-    vertex.property(RDF_SYNONYM_PROP, new String[0]);
+    vertex.property(RDF_SYNONYM_PROP, new String[]{rdfUri});
     vertex.property(
       "types",
       jsnA(
@@ -1447,18 +1456,37 @@ public class TinkerPopOperations implements DataStoreOperations {
       ).toString()
     );
     indexHandler.upsertIntoRdfIndex(vre, rdfUri, vertex);
+    indexHandler.upsertIntoAdminRdfIndex(rdfUri, vertex);
 
-    Vertex collection = getDefaultCollectionVertex(vre).vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
-                                                       .next();
-    collection.addEdge(HAS_ENTITY_RELATION_NAME, vertex);
+    getDefaultCollectionVertex(vre.getVreName()).ifPresent(vreVertex -> {
+      vreVertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
+               .next()
+               .addEdge(HAS_ENTITY_RELATION_NAME, vertex);
+    });
+    //
+    // getDefaultCollectionVertex("Admin").ifPresent(vreVertex -> {
+    //   vreVertex.vertices(Direction.OUT, HAS_ENTITY_NODE_RELATION_NAME)
+    //            .next()
+    //            .addEdge(HAS_ENTITY_RELATION_NAME, vertex);
+    // });
+
     return vertex;
   }
 
-  private Vertex getDefaultCollectionVertex(Vre vre) {
-    return defaultCollectionVerticesCache.computeIfAbsent(
-      vre.getVreName(),
-      name -> traversal.V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(name)).next()
-    );
+  private Optional<Vertex> getDefaultCollectionVertex(String vreName) {
+    if (defaultCollectionVerticesCache.containsKey(vreName)) {
+      return Optional.of(defaultCollectionVerticesCache.get(vreName));
+    } else {
+      GraphTraversal<Vertex, Vertex> vre =
+        traversal.V().has(ENTITY_TYPE_NAME_PROPERTY_NAME, defaultEntityTypeName(vreName));
+      if (vre.hasNext()) {
+        Vertex vreVertex = vre.next();
+        defaultCollectionVerticesCache.put(vreName, vreVertex);
+        return Optional.of(vreVertex);
+      } else {
+        return Optional.empty();
+      }
+    }
   }
 
   private Vertex getPredicateValueTypeVertexFor(Vre vre) {
