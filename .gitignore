@@ -19,3 +19,5 @@
 .floo
 .flooignore
 
+/devtools/run-with-services/database
+/devtools/run-with-services/auth

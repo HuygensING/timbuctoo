@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import org.apache.jena.graph.Node;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
-import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.structure.Edge;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
@@ -22,6 +21,7 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
+import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_SYNONYM_PROP;
 import static nl.knaw.huygens.timbuctoo.rdf.Database.RDF_URI_PROP;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -77,11 +77,8 @@ public class DatabaseTest {
                                                    .wrap();
     final Database instance = new Database(graphWrapper, modifier);
 
-    instance.findOrCreateEntity(VRE_NAME, entityNode);
+    Vertex entityVertex = instance.findOrCreateEntity(VRE_NAME, entityNode).vertex;
 
-    GraphTraversal<Vertex, Vertex> entityT = graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI);
-    assertThat(entityT.hasNext(), is(true));
-    Vertex entityVertex = entityT.next();
     verify(modifier).setCreated(entityVertex, USER_ID);
     verify(modifier).setModified(entityVertex, USER_ID);
     verify(modifier).setTimId(entityVertex);
@@ -114,11 +111,11 @@ public class DatabaseTest {
     Entity entity = instance.findOrCreateEntity(VRE_NAME, entityNode);
 
     assertThat(entity, is(notNullValue()));
-    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI)
+    assertThat(graphWrapper.getGraph().traversal().V(entity.vertex.id())
                            .in(HAS_ENTITY_RELATION_NAME).in(HAS_ENTITY_NODE_RELATION_NAME)
                            .has(ENTITY_TYPE_NAME_PROPERTY_NAME, DEFAULT_COLLECTION).hasNext(),
       is(true));
-    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, ENTITY_RDF_URI).next(),
+    assertThat(graphWrapper.getGraph().traversal().V(entity.vertex.id()).next(),
       is(likeVertex().withLabel(DEFAULT_COLLECTION).withType(DEFAULT_COLLECTION)));
   }
 
@@ -148,7 +145,7 @@ public class DatabaseTest {
     Entity entity = instance.findOrCreateEntity(VRE_NAME, blankNode);
 
     assertThat(entity, is(notNullValue()));
-    assertThat(graphWrapper.getGraph().traversal().V().has(RDF_URI_PROP, expectedUri).hasNext(), is(true));
+    assertThat(entity.vertex.value(RDF_SYNONYM_PROP), is(new String[] { expectedUri }));
   }
 
   @Test

@@ -144,8 +144,8 @@ public class EntityToJsonMapperTest {
     String otherEntity = UUID.randomUUID().toString();
     String relType = "relType";
     readEntity.setRelations(
-      Lists.newArrayList(new RelationRef(otherEntity, "rdfUri", "otherColl", "otherType", true, "relId", "rdfUri", 1,
-        relType, "displayName")));
+      Lists.newArrayList(new RelationRef(otherEntity, "rdfUri", new String[] {"origUri"}, "otherColl", "otherType",
+        true, "relId", "rdfUri", 1, relType, "displayName")));
     Collection collection = mock(Collection.class);
     when(collection.getEntityTypeName()).thenReturn(type);
 

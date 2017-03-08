@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.rdf.LiteralTriple;
 import nl.knaw.huygens.timbuctoo.rdf.Triple;
 import nl.knaw.huygens.timbuctoo.rdf.conversion.TriplePropertyConverter;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +35,7 @@ import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAndReturn;
 
 @Path("/v2.1/domain/{collection}/{id}")
-@Produces("application/n-triples")
+@Produces({"application/n-triples", "text/turtle"})
 public class SingleEntityNTriple {
   public static final Logger LOG = LoggerFactory.getLogger(SingleEntityNTriple.class);
   public static final String SAME_AS_PRED = "http://www.w3.org/2002/07/owl#sameAs";
@@ -125,7 +126,11 @@ public class SingleEntityNTriple {
         String object = ((LinkTriple) triple).getObject();
         serialisedObject = isBlankNode(object) ? object : String.format("<%s>", object);
       } else if (triple instanceof LiteralTriple) {
-        serialisedObject = ((LiteralTriple) triple).getObject();
+        serialisedObject = "\"" + StringEscapeUtils.escapeJava(((LiteralTriple) triple).getObject()) + "\"";
+        String type = ((LiteralTriple) triple).getDatatype();
+        if (type != null && !type.equals("http://www.w3.org/2001/XMLSchema#string")) {
+          serialisedObject = serialisedObject + "^^<" + type + ">";
+        }
       } else {
         throw new IllegalStateException(
           "A triple should be either a link or a value triple. It is of type " + triple.getClass().getName()

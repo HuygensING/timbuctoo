@@ -106,8 +106,7 @@ public class TriplePropertyConverter extends PropertyConverter<List<Triple>> {
   @Override
   public Tuple<String, List<Triple>> to(AltNamesProperty property) throws IOException {
     // TODO find a better way to serialize to n-triples
-    String objectValue =
-      "\"" + StringEscapeUtils.escapeJava(objectMapper.writeValueAsString(property.getValue())) + "\"";
+    String objectValue = objectMapper.writeValueAsString(property.getValue());
     return tuple(property.getName(),
       Lists.newArrayList(new LiteralTriple(
         subjectUri,
@@ -163,8 +162,7 @@ public class TriplePropertyConverter extends PropertyConverter<List<Triple>> {
   @Override
   public Tuple<String, List<Triple>> to(PersonNamesProperty property) throws IOException {
     // TODO find a better way to serialize to n-triples
-    String objectValue =
-      "\"" + StringEscapeUtils.escapeJava(objectMapper.writeValueAsString(property.getValue())) + "\"";
+    String objectValue = objectMapper.writeValueAsString(property.getValue());
     return tuple(
       property.getName(),
       Lists.newArrayList(new LiteralTriple(
@@ -183,7 +181,6 @@ public class TriplePropertyConverter extends PropertyConverter<List<Triple>> {
 
   @Override
   public Tuple<String, List<Triple>> to(EncodedStringOfLimitedValuesProperty property) throws IOException {
-    // TODO find a better way to serialize to n-triples
     return tuple(
       property.getName(),
       Lists.newArrayList(new LiteralTriple(

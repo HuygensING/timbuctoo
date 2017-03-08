@@ -268,7 +268,11 @@ public class TimbuctooActions implements AutoCloseable {
    * If you want to add data to a data set use {@link #rdfUpdateImportSession(String, Function)}.
    */
   public void rdfCleanImportSession(String vreName, Function<RdfImportSession, TransactionState> sessionConsumer) {
-    RdfImportSession session = RdfImportSession.cleanImportSession(vreName, dataStoreOperations);
+    RdfImportSession session = RdfImportSession.cleanImportSession(
+      vreName,
+      dataStoreOperations,
+      new EntityFinisherHelper(uriToRedirectToFromPersistentUrls, Clock.systemDefaultZone(), "rdf-importer")
+    );
 
     rdfImportSession(sessionConsumer, session);
   }
@@ -279,7 +283,11 @@ public class TimbuctooActions implements AutoCloseable {
    * Use {@link #rdfCleanImportSession(String, Function)} to clean the old data of a data set.
    */
   public void rdfUpdateImportSession(String vreName, Function<RdfImportSession, TransactionState> sessionConsumer) {
-    RdfImportSession session = RdfImportSession.updateImportSession(vreName, dataStoreOperations);
+    RdfImportSession session = RdfImportSession.updateImportSession(
+      vreName,
+      dataStoreOperations,
+      new EntityFinisherHelper(uriToRedirectToFromPersistentUrls, Clock.systemDefaultZone(), "rdf-importer")
+    );
     rdfImportSession(sessionConsumer, session);
   }
 

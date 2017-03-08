@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
 import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
+import nl.knaw.huygens.timbuctoo.core.EntityFinisherHelper;
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActions;
 import nl.knaw.huygens.timbuctoo.core.TimbuctooActionsStubs;
@@ -101,7 +102,7 @@ public class TripleImporterIntegrationTest {
     tinkerPopOperations.saveVre(vres.getVre("Admin"));
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
 
-    rdfImportSession = RdfImportSession.cleanImportSession(VRE_NAME, tinkerPopOperations);
+    rdfImportSession = RdfImportSession.cleanImportSession(VRE_NAME, tinkerPopOperations, new EntityFinisherHelper());
     instance = new TripleImporter(
       graphWrapper,
       VRE_NAME,
@@ -192,12 +193,18 @@ public class TripleImporterIntegrationTest {
     Optional<ReadEntity> abadanOpt = getReadEntity(DEFAULT_COLLECTION_NAME, ABADAN_URI);
     assertThat(abadanOpt, is(present()));
     assertThat(abadanOpt.get().getRelations(), hasItem(
-      allOf(hasProperty("entityRdfUri", equalTo(IRAN_URI)), hasProperty("relationRdfUri", equalTo(IS_PART_OF_URI)))
+      allOf(
+        hasProperty("entityAlternativeUris", is(new String[] {IRAN_URI})),
+        hasProperty("relationRdfUri", equalTo(IS_PART_OF_URI))
+      )
     ));
     Optional<ReadEntity> iranOpt = getReadEntity(DEFAULT_COLLECTION_NAME, IRAN_URI);
     assertThat(iranOpt, is(present()));
     assertThat(iranOpt.get().getRelations(), hasItem(
-      allOf(hasProperty("entityRdfUri", equalTo(ABADAN_URI)), hasProperty("relationRdfUri", equalTo(IS_PART_OF_URI)))
+      allOf(
+        hasProperty("entityAlternativeUris", is(new String[] {ABADAN_URI})),
+        hasProperty("relationRdfUri", equalTo(IS_PART_OF_URI))
+      )
     ));
   }
 

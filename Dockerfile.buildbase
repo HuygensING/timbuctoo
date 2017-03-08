@@ -1,6 +1,6 @@
 FROM openjdk:8-jdk-alpine
 
-RUN apk add --no-cache curl tar bash
+RUN apk add --no-cache curl tar bash jq inotify-tools
 
 ARG MAVEN_VERSION=3.3.9
 ARG USER_HOME_DIR="/root"
@@ -21,7 +21,6 @@ COPY ./ContractDiff/pom.xml ./ContractDiff/pom.xml
 COPY ./HttpCommand/pom.xml ./HttpCommand/pom.xml
 COPY ./security-client-agnostic/pom.xml ./security-client-agnostic/pom.xml
 COPY ./timbuctoo-test-services/pom.xml ./timbuctoo-test-services/pom.xml
-#COPY ./timbuctoo-instancev4/src ./timbuctoo-instancev4/src
 COPY ./timbuctoo-instancev4/pom.xml ./timbuctoo-instancev4/pom.xml
 COPY ./pom.xml ./pom.xml
 COPY ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml
@@ -29,3 +28,18 @@ COPY ./timbuctoo-instancev4/src/main/resources/checkstyle_config.xml ./timbuctoo
 RUN mvn clean package dependency:go-offline
 
 RUN rm -r ./*
+
+ENV BASE_URI=http://localhost:8080
+ENV TIMBUCTOO_SEARCH_URL=http://localhost:8082
+ENV TIMBUCTOO_GUI_PUBLIC_URL=http://localhost:8082/overview/
+EXPOSE 80 81
+
+RUN mkdir -p /data/auth/authorizations && \
+    mkdir -p /data/database && \
+    echo "[]" > /data/auth/logins.json && \
+    echo "[]" > /data/auth/users.json
+
+COPY ./devtools/run-with-services/rerun-launcher.sh /tools/rerun-launcher.sh
+COPY ./devtools/run-with-services/trigger.sh /tools/trigger.sh
+
+CMD ["/tools/rerun-launcher.sh"]

@@ -12,7 +12,8 @@ public class RdfImportSessionStubs {
       vreName,
       dataStoreOperations,
       errorReporter,
-      mock(PropertyFactory.class)
+      mock(PropertyFactory.class),
+      new EntityFinisherHelper()
     );
   }
 
@@ -23,7 +24,8 @@ public class RdfImportSessionStubs {
       vreName,
       dataStoreOperations,
       mock(RdfImportErrorReporter.class),
-      propertyFactory
+      propertyFactory,
+      new EntityFinisherHelper()
     );
   }
 }

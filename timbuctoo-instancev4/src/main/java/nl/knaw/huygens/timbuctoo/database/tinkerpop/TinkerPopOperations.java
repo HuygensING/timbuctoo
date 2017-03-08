@@ -1176,7 +1176,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     final Vertex displayName = graph.addVertex(ReadableProperty.DATABASE_LABEL);
     displayName.property(ReadableProperty.CLIENT_PROPERTY_NAME, "@displayName");
-    displayName.property(LocalProperty.DATABASE_PROPERTY_NAME, "rdfUri");
+    displayName.property(LocalProperty.DATABASE_PROPERTY_NAME, RDF_SYNONYM_PROP);
     displayName.property(ReadableProperty.PROPERTY_TYPE_NAME, RdfImportedDefaultDisplayname.TYPE);
     collectionVertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayName);
 
@@ -1357,11 +1357,13 @@ public class TinkerPopOperations implements DataStoreOperations {
 
   @Override
   public void finishEntities(Vre vre, EntityFinisherHelper entityFinisherHelper) {
-    String vreName = vre.getVreName();
     vre.getCollections().values().forEach(col -> entitiesOfCollection(col)
       .not(has("isLatest", false)) //everything without isLatest and everything with isLatest = true
       .forEachRemaining(v -> {
-        v.property("tim_id", entityFinisherHelper.newId(v, vreName).toString());
+        UUID uuid = entityFinisherHelper.newId();
+        URI rdfUri = entityFinisherHelper.getRdfUri(col.getCollectionName(), uuid);
+        v.property(RDF_URI_PROP, rdfUri.toString());
+        v.property("tim_id", uuid.toString());
         v.property("rev", entityFinisherHelper.getRev());
         setCreated(v, entityFinisherHelper.getChangeTime());
         if (!v.property("isLatest").isPresent()) { //this is the first time the vertex passes this body

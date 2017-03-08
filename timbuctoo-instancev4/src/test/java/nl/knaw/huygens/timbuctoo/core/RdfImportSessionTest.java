@@ -49,14 +49,14 @@ public class RdfImportSessionTest {
 
   @Test
   public void cleanImportSessionEnsuresTheVreIsAvailable() {
-    RdfImportSession.cleanImportSession(VRE_NAME, dataStoreOperations);
+    RdfImportSession.cleanImportSession(VRE_NAME, dataStoreOperations, new EntityFinisherHelper());
 
     verify(dataStoreOperations).ensureVreExists(VRE_NAME);
   }
 
   @Test
   public void cleanImportSessionEnsuresTheVreHasADefaultCollection() {
-    RdfImportSession.cleanImportSession(VRE_NAME, dataStoreOperations);
+    RdfImportSession.cleanImportSession(VRE_NAME, dataStoreOperations, new EntityFinisherHelper());
 
     verify(dataStoreOperations).addCollectionToVre(
       argThat(hasProperty("vreName", equalTo(VRE_NAME))),
@@ -66,7 +66,7 @@ public class RdfImportSessionTest {
 
   @Test
   public void cleanImportSessionEnsuresNoDataFromAPreviousSessionIsLeftBeforeTheDefaultCollectionIsAdded() {
-    RdfImportSession.cleanImportSession(VRE_NAME, dataStoreOperations);
+    RdfImportSession.cleanImportSession(VRE_NAME, dataStoreOperations, new EntityFinisherHelper());
 
     InOrder inOrder = inOrder(dataStoreOperations);
     inOrder.verify(dataStoreOperations).clearMappingErrors(
@@ -110,7 +110,11 @@ public class RdfImportSessionTest {
 
   @Test
   public void closeAddsAdministrativePropertiesToTheCreatedEntities() {
-    RdfImportSession instance = RdfImportSession.cleanImportSession(VRE_NAME, dataStoreOperations);
+    RdfImportSession instance = RdfImportSession.cleanImportSession(
+      VRE_NAME,
+      dataStoreOperations,
+      new EntityFinisherHelper()
+    );
     instance.commit();
     instance.close();
 

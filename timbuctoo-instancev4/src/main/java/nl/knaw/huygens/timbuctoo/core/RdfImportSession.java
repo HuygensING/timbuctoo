@@ -21,22 +21,30 @@ public class RdfImportSession {
   private SessionState sessionState;
 
   private RdfImportSession(DataStoreOperations dataStoreOperations, Vre vre, RdfImportErrorReporter errorReporter,
-                           PropertyFactory propertyFactory) {
+                           PropertyFactory propertyFactory, EntityFinisherHelper entityFinisherHelper) {
     this.dataStoreOperations = dataStoreOperations;
     this.vre = vre;
     this.errorReporter = errorReporter;
     this.propertyFactory = propertyFactory;
-    entityFinisherHelper = new EntityFinisherHelper();
+    this.entityFinisherHelper = entityFinisherHelper;
   }
 
-  public static RdfImportSession cleanImportSession(String vreName, DataStoreOperations dataStoreOperations) {
+  public static RdfImportSession cleanImportSession(String vreName, DataStoreOperations dataStoreOperations,
+                                                    EntityFinisherHelper entityFinisherHelper) {
     LogRdfImportErrorReporter errorReporter = new LogRdfImportErrorReporter();
-    return cleanImportSession(vreName, dataStoreOperations, errorReporter, new PropertyFactory(errorReporter));
+    return cleanImportSession(
+      vreName,
+      dataStoreOperations,
+      errorReporter,
+      new PropertyFactory(errorReporter),
+      entityFinisherHelper
+    );
   }
 
   static RdfImportSession cleanImportSession(String vreName, DataStoreOperations dataStoreOperations,
                                              RdfImportErrorReporter errorReporter,
-                                             PropertyFactory propertyFactory) {
+                                             PropertyFactory propertyFactory,
+                                             EntityFinisherHelper entityFinisherHelper) {
     Vre vre = dataStoreOperations.ensureVreExists(vreName);
     dataStoreOperations.clearMappingErrors(vre);
     dataStoreOperations.removeCollectionsAndEntities(vre);
@@ -44,10 +52,11 @@ public class RdfImportSession {
     dataStoreOperations.addPredicateValueTypeVertexToVre(vre);
     Vre reloadedVre = dataStoreOperations.loadVres().getVre(vre.getVreName());
 
-    return new RdfImportSession(dataStoreOperations, reloadedVre, errorReporter, propertyFactory);
+    return new RdfImportSession(dataStoreOperations, reloadedVre, errorReporter, propertyFactory, entityFinisherHelper);
   }
 
-  public static RdfImportSession updateImportSession(String vreName, DataStoreOperations dataStoreOperations) {
+  public static RdfImportSession updateImportSession(String vreName, DataStoreOperations dataStoreOperations,
+                                                     EntityFinisherHelper entityFinisherHelper) {
     LogRdfImportErrorReporter errorReporter = new LogRdfImportErrorReporter();
 
     Vre vre = dataStoreOperations.ensureVreExists(vreName);
@@ -63,7 +72,8 @@ public class RdfImportSession {
       dataStoreOperations,
       reloadedVre,
       errorReporter,
-      new PropertyFactory(errorReporter)
+      new PropertyFactory(errorReporter),
+      entityFinisherHelper
     );
   }
 
