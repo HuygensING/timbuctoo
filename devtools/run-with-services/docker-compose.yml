@@ -1,17 +1,20 @@
-version: '2.1'
+version: '2'
 
 volumes: 
   datavolume:
 services:
   timbuctoo:
-    image: huygensing/timbuctoo:${TIMBUCTOOTAG:-buildbase}
+    image: huygensing/timbuctoo:buildbase
+    build: 
+      dockerfile: Dockerfile.buildbase
+      context: ../../
     ports:
       - "8080:80"
       - "5005:5005"
     environment: 
       JAVA_OPTS: ${JAVA_OPTS}
-      BASE_URI: http://${public_ip}:8080
-      TIMBUCTOO_GUI_PUBLIC_URL: http://${public_ip}:8082
+      BASE_URI: http://localhost:8080
+      TIMBUCTOO_GUI_PUBLIC_URL: http://localhost:8082
       TIMBUCTOO_SEARCH_URL: http://indexer/trigger
     volumes:
       - ../../:/app
@@ -33,10 +36,10 @@ services:
   timbuctoo-gui:
     image: huygensing/timbuctoo-gui
     environment:
-      - TIMBUCTOO_URL=http://${public_ip:-localhost}:8080
-      - SOLR_QUERY_URL=http://${public_ip:-localhost}:8081/solr
-      - OWN_HOST_URL=http://${public_ip:-localhost}:8082
-      - INDEXER_URL=http://${public_ip:-localhost}:8083
+      - TIMBUCTOO_URL=http://localhost:8080
+      - SOLR_QUERY_URL=http://localhost:8081/solr
+      - OWN_HOST_URL=http://localhost:8082
+      - INDEXER_URL=http://localhost:8083
       - PREFIXPATH=/
     ports:
       - "8082:80"

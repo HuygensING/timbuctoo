@@ -4,6 +4,9 @@
 trap 'kill -TERM $timbuctooPid; wait $timbuctooPid' TERM INT
 
 touch /tools/trigger
+mkdir -p /data/auth/authorizations
+echo "[]" > /data/auth/logins.json
+echo "[]" > /data/auth/users.json
 
 function startTimbuctoo() {
   if [ -f /app/timbuctoo-instancev4/target/appassembler/bin/timbuctoo ]; then
@@ -26,7 +29,7 @@ fi
 
 startTimbuctoo
 
-while inotifywait -q -e close_write /tools/trigger /root/timbuctoo-prod-db/done; do
+while inotifywait -q -e close_write /tools/trigger; do
   #if /tools/trigger contains the text 'rebuild', then rebuild, send the result to build-log, when build is finished remove build-log
   #if it doesn't contain that text then no rebuild is triggered and timbuctoo is simply relaunched
   grep -q "rebuild" < /tools/trigger && mvn clean package -DskipTests &> /app/build-log && rm /app/build-log &

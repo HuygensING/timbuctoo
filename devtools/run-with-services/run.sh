@@ -69,26 +69,17 @@ elif [ "$task" = clean ]; then
 elif docker-compose exec timbuctoo echo '' 2> /dev/null; then #timbuctoo is already up
   docker-compose exec timbuctoo /tools/trigger.sh "$trigger_arg" "$JAVA_OPTS"
 else
-  if [ -z "$public_ip" ]; then
-    export public_ip=$(ifconfig | grep -Eo 'inet (addr:)?([0-9]*\.){3}[0-9]*' | grep -Eo '([0-9]*\.){3}[0-9]*' | grep -v '127.0.0.1')
-    if [ $(echo $public_ip | wc -l) != 1 ]; then
-      echo -n "Under what ip is your computer reachable from the network? (this should NOT be 127.0.0.<something>, instead it's probably a number such as 10.<something> or 192.168.<something>): "
-      read public_ip
-      export public_ip
-    fi
-  fi
   echo "Listening for debug signals on        [${DEBUG_PORT}]"
   echo "halting until debugger is attached    [${DEBUG_HALT}]"
   echo "Running command                       [server]"
   echo "using yaml at                         [$(realpath ../../timbuctoo-instancev4/docker_config.yaml)]"
   echo "pulling new images before launch      [y]"
-  echo "using this ip for generating urls:    [$public_ip]"
   echo ""
 
   echo "Checking for new containers..."
   docker-compose pull &> /dev/null
   docker-compose up -d
-  echo "You can now browse timbuctoo on http://$public_ip:8080"
+  echo "You can now browse timbuctoo on http://localhost:8080"
   docker-compose logs -f timbuctoo
   echo -e "\n\nContainers are still running in the background. Use $0 -q to terminate them."
 fi
