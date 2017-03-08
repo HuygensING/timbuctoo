@@ -280,15 +280,16 @@ public class TinkerPopToEntityMapper {
             String displayName = DisplayNameHelper.getDisplayname(traversalSource, target, targetCollection)
                                                   .orElse("<No displayname found>");
             String targetId = getProp(target, "tim_id", String.class).orElse("");
-            String targetRdfUri = getProp(target, "rdfUri", String.class).orElse("");
+            String targetRdfUri = getProp(target, RDF_URI_PROP, String.class).orElse("");
+            String[] targetAlternativeUris = getProp(target, RDF_SYNONYM_PROP, String[].class).orElse(new String[0]);
             boolean accepted = getProp(edge, "accepted", Boolean.class).orElse(true);
             String relationId = getProp(edge, "tim_id", String.class).orElse("");
             String relationRdfUri = getProp(edge, "rdfUri", String.class).orElse("");
             int relationRev = getProp(edge, "rev", Integer.class).orElse(1);
 
             RelationRef relationRef =
-              new RelationRef(targetId, targetRdfUri, targetCollection.getCollectionName(), targetEntityType, accepted,
-                relationId, relationRdfUri, relationRev, label, displayName);
+              new RelationRef(targetId, targetRdfUri, targetAlternativeUris, targetCollection.getCollectionName(),
+                targetEntityType, accepted, relationId, relationRdfUri, relationRev, label, displayName);
             customRelationProperties.execute(traversalSource, vre, target, relationRef);
             return relationRef;
           } catch (Exception e) {

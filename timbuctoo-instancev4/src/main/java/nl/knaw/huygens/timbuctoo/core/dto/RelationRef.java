@@ -12,6 +12,7 @@ import java.util.Optional;
 public class RelationRef {
   private final String entityId;
   private final String entityRdfUri;
+  private final String[] entityAlternativeUris;
   private final String collectionName;
   private final String entityType;
   private final boolean relationAccepted;
@@ -23,11 +24,12 @@ public class RelationRef {
   private final Map<String, Object> extraProperties;
 
 
-  public RelationRef(String entityId, String entityRdfUri, String collectionName, String entityType,
-                     boolean relationAccepted, String relationId, String relationRdfUri, int relationRev,
-                     String relationType, String displayName) {
+  public RelationRef(String entityId, String entityRdfUri, String[] entityAlternativeUris, String collectionName,
+                     String entityType, boolean relationAccepted, String relationId, String relationRdfUri,
+                     int relationRev, String relationType, String displayName) {
     this.entityId = entityId;
     this.entityRdfUri = entityRdfUri;
+    this.entityAlternativeUris = entityAlternativeUris;
     this.collectionName = collectionName;
     this.entityType = entityType;
     this.relationAccepted = relationAccepted;
@@ -100,5 +102,9 @@ public class RelationRef {
 
   public Optional<Object> getExtraProperty(String key) {
     return Optional.ofNullable(extraProperties.get(key));
+  }
+
+  public String[] getEntityAlternativeUris() {
+    return entityAlternativeUris;
   }
 }

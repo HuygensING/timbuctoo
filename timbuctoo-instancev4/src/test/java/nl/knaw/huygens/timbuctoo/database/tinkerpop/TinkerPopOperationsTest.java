@@ -72,6 +72,7 @@ import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsSt
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsListenerAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapperAndMappings;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.VertexDuplicator.VERSION_OF;
 import static nl.knaw.huygens.timbuctoo.model.GraphReadUtils.getProp;
 import static nl.knaw.huygens.timbuctoo.model.properties.PropertyTypes.localProperty;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
@@ -2897,14 +2898,14 @@ public class TinkerPopOperationsTest {
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
-    instance.assertEntity(vre, "http://example.org/entity1");
-    instance.assertEntity(vre, "http://example.org/entity2");
+    Vertex e1 = instance.assertEntity(vre, "http://example.org/entity1");
+    Vertex e2 = instance.assertEntity(vre, "http://example.org/entity2");
 
     instance.finishEntities(vre, new EntityFinisherHelper());
 
-    assertThat(graphManager.getGraph().traversal().V().has("rdfUri", "http://example.org/entity1")
+    assertThat(graphManager.getGraph().traversal().V(e1.id())
                            .has("tim_id").has("rev").has("modified").has("created").has("types").hasNext(), is(true));
-    assertThat(graphManager.getGraph().traversal().V().has("rdfUri", "http://example.org/entity2")
+    assertThat(graphManager.getGraph().traversal().V(e2.id())
                            .has("tim_id").has("rev").has("modified").has("created").has("types").hasNext(), is(true));
 
   }
@@ -2917,16 +2918,17 @@ public class TinkerPopOperationsTest {
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
     Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
-    instance.assertEntity(vre, "http://example.org/entity1");
+    Vertex orig = instance.assertEntity(vre, "http://example.org/entity1");
 
     instance.finishEntities(vre, new EntityFinisherHelper());
+    Vertex duplicate = orig.vertices(Direction.OUT, VERSION_OF).next();
 
     verify(changeListener)
-      .onCreate(eq(defaultCollection), argThat(is(likeVertex().withProperty("rdfUri", "http://example.org/entity1"))));
+      .onCreate(eq(defaultCollection), eq(duplicate));
     verify(changeListener).onAddToCollection(
       eq(defaultCollection),
       eq(Optional.empty()),
-      argThat(is(likeVertex().withProperty("rdfUri", "http://example.org/entity1")))
+      eq(duplicate)
     );
   }
 
@@ -2937,13 +2939,11 @@ public class TinkerPopOperationsTest {
     Vre vre = instance.ensureVreExists("vre");
     instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
     vre = instance.loadVres().getVre("vre");
-    instance.assertEntity(vre, "http://example.org/entity1");
+    Vertex orig = instance.assertEntity(vre, "http://example.org/entity1");
 
     instance.finishEntities(vre, new EntityFinisherHelper());
 
-    assertThat(graphManager.getGraph().traversal().V().has("rdfUri", "http://example.org/entity1")
-                           .has("tim_id").has("rev").has("modified").has("created").has("types").count().next(),
-      is(2L));
+    assertThat(orig.edges(Direction.OUT, VERSION_OF).hasNext(), is(true));
   }
 
   @Test
