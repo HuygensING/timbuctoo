@@ -1176,7 +1176,7 @@ public class TinkerPopOperations implements DataStoreOperations {
 
     final Vertex displayName = graph.addVertex(ReadableProperty.DATABASE_LABEL);
     displayName.property(ReadableProperty.CLIENT_PROPERTY_NAME, "@displayName");
-    displayName.property(LocalProperty.DATABASE_PROPERTY_NAME, "rdfUri");
+    displayName.property(LocalProperty.DATABASE_PROPERTY_NAME, RDF_SYNONYM_PROP);
     displayName.property(ReadableProperty.PROPERTY_TYPE_NAME, RdfImportedDefaultDisplayname.TYPE);
     collectionVertex.addEdge(HAS_DISPLAY_NAME_RELATION_NAME, displayName);
 
