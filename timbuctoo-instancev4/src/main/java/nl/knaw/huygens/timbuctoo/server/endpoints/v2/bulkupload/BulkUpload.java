@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.access.MdbLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv.CsvLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
@@ -163,7 +164,8 @@ public class BulkUpload {
 
   private Response executeUpload(List<FormDataBodyPart> parts, Map<String, String> form, String uploadType,
                                  String vreLabel, String vreName)
-    throws IOException {
+      throws IOException {
+
     ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
 
     Loader loader;
@@ -179,6 +181,8 @@ public class BulkUpload {
       }
     } else if (uploadType.equals("dataperfect")) {
       loader = new DataPerfectLoader();
+    } else if (uploadType.equals("mdb")) {
+      loader = new MdbLoader();
     } else {
       return status(Response.Status.BAD_REQUEST)
         .entity("failure: unknown uploadType" + uploadType)
