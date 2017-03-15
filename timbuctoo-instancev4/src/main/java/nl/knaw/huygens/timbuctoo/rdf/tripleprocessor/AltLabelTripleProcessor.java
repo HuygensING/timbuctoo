@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.model.properties.converters.ArrayToEncodedArray
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
-import org.apache.jena.graph.impl.LiteralLabel;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -29,12 +28,12 @@ public class AltLabelTripleProcessor extends AbstractValueTripleProcessor {
   }
 
   @Override
-  protected void processAssertion(String vreName, String subject, String predicate, LiteralLabel object) {
+  protected void processAssertion(String vreName, String subject, String predicate,
+                                  String lexicalValue, String typeUri) {
     final Entity entity = database.findOrCreateEntity(vreName, subject);
     final String propertyName = getLocalName(predicate);
-    final String value = object.getLexicalForm();
 
-    addToListProperty(entity, propertyName, value);
+    addToListProperty(entity, propertyName, lexicalValue);
   }
 
   private void addToListProperty(Entity entity, String propertyName, String newRawValue) {
@@ -61,12 +60,12 @@ public class AltLabelTripleProcessor extends AbstractValueTripleProcessor {
   }
 
   @Override
-  protected void processRetraction(String vreName, String subject, String predicate, LiteralLabel object) {
+  protected void processRetraction(String vreName, String subject, String predicate,
+                                   String lexicalValue, String typeUri) {
     final Entity entity = database.findOrCreateEntity(vreName, subject);
     final String propertyName = getLocalName(predicate);
-    final String value = object.getLexicalForm();
 
-    removeFromListProperty(entity, propertyName, value);
+    removeFromListProperty(entity, propertyName, lexicalValue);
   }
 
   private void removeFromListProperty(Entity entity, String propertyName, String valueToRemove) {

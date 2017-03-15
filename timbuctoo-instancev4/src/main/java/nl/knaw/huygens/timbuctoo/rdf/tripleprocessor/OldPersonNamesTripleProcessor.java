@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNames;
 import org.apache.jena.graph.Triple;
-import org.apache.jena.graph.impl.LiteralLabel;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -34,18 +33,18 @@ class OldPersonNamesTripleProcessor extends AbstractValueTripleProcessor {
   }
 
   public void process(String vreName, boolean isAssertion, Triple triple) {
-    process(vreName, triple.getSubject().getURI(), triple.getPredicate().getURI(), triple.getObject().getLiteral(),
-      isAssertion);
+    process(vreName, triple.getSubject().getURI(), triple.getPredicate().getURI(),
+      triple.getObject().getLiteral().getLexicalForm(), triple.getObject().getLiteral().getDatatypeURI(), isAssertion);
   }
 
   @Override
-  protected void processAssertion(String vreName, String subject, String predicate, LiteralLabel object) {
+  protected void processAssertion(String vreName, String subject, String predicate,
+                                  String lexicalValue, String typeUri) {
     final Entity entity = database.findOrCreateEntity(vreName, subject);
-    final String value = object.getLexicalForm();
     final String nameTypePredicate = getLocalName(predicate);
 
     try {
-      addNameComponentToEntity(entity, nameTypePredicate, value, subject);
+      addNameComponentToEntity(entity, nameTypePredicate, lexicalValue, subject);
     } catch (JsonProcessingException e) {
       LOG.error("Failed to write personNames json for {}.", entity);
       LOG.error("Error thrown", e);
@@ -73,13 +72,13 @@ class OldPersonNamesTripleProcessor extends AbstractValueTripleProcessor {
   }
 
   @Override
-  protected void processRetraction(String vreName, String subject, String predicate, LiteralLabel object) {
+  protected void processRetraction(String vreName, String subject, String predicate,
+                                   String lexicalValue, String typeUri) {
     final Entity entity = database.findOrCreateEntity(vreName, subject);
-    final String value = object.getLexicalForm();
     final String nameTypePredicate = getLocalName(predicate);
 
     try {
-      removeNameComponent(entity, nameTypePredicate, value, subject);
+      removeNameComponent(entity, nameTypePredicate, lexicalValue, subject);
     } catch (IOException e) {
       LOG.error("Failed to update personNames for {}", entity);
     }

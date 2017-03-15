@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
-import org.apache.jena.graph.impl.LiteralLabel;
 
 class PropertyTripleProcessor extends AbstractValueTripleProcessor {
   private final RdfImportSession rdfImportSession;
@@ -12,16 +11,18 @@ class PropertyTripleProcessor extends AbstractValueTripleProcessor {
   }
 
   @Override
-  protected void processAssertion(String vreName, String subject, String predicate, LiteralLabel object) {
-    RdfProperty property = new RdfProperty(predicate, object.getLexicalForm(), object.getDatatypeURI());
+  protected void processAssertion(String vreName, String subject, String predicate,
+                                  String lexicalValue, String typeUri) {
+    RdfProperty property = new RdfProperty(predicate, lexicalValue, typeUri);
 
     // FIXME Add support for multiple value types
     rdfImportSession.assertProperty(subject, property);
   }
 
   @Override
-  protected void processRetraction(String vreName, String subject, String predicate, LiteralLabel object) {
-    RdfProperty property = new RdfProperty(predicate, object.getLexicalForm(), object.getDatatypeURI());
+  protected void processRetraction(String vreName, String subject, String predicate,
+                                   String lexicalValue, String typeUri) {
+    RdfProperty property = new RdfProperty(predicate, lexicalValue, typeUri);
     rdfImportSession.retractProperty(subject, property);
   }
 

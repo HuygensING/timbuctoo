@@ -6,10 +6,6 @@ import nl.knaw.huygens.timbuctoo.model.PersonNameComponent;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNames;
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.TypeMapper;
-import org.apache.jena.graph.impl.LiteralLabel;
-import org.apache.jena.graph.impl.LiteralLabelFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -34,8 +30,6 @@ public class OldPersonNamesTripleProcessorTest {
   private static final String NAMES_PROPERTY_NAME = "names";
   private static final String PERSON_NAMES_TYPE_NAME = "person-names";
   private static final String FORENAME = "Jan";
-  private static final RDFDatatype NAME_DATA_TYPE = TypeMapper.getInstance().getSafeTypeByName(NAME_TYPE);
-  private static final LiteralLabel FORENAME_LITERAL = LiteralLabelFactory.create(FORENAME, NAME_DATA_TYPE);
   private static final String SURNAME = "Pietersz.";
   private static final String VRE_NAME = "vreName";
   private Entity entity;
@@ -53,7 +47,7 @@ public class OldPersonNamesTripleProcessorTest {
   public void processCreatesANewName() throws IOException {
     given(entity.getPropertyValue(NAMES_PROPERTY_NAME)).willReturn(Optional.empty());
 
-    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME_LITERAL, true);
+    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME, NAME_TYPE, true);
 
     verify(entity).addProperty(
       eq(NAMES_PROPERTY_NAME),
@@ -73,7 +67,7 @@ public class OldPersonNamesTripleProcessorTest {
     given(entity.getPropertyValue(NAMES_PROPERTY_NAME))
       .willReturn(Optional.of(new ObjectMapper().writeValueAsString(existing)));
 
-    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME_LITERAL, true);
+    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME, NAME_TYPE, true);
 
     verify(entity).addProperty(
       eq(NAMES_PROPERTY_NAME),
@@ -91,7 +85,7 @@ public class OldPersonNamesTripleProcessorTest {
     given(entity.getPropertyValue(NAMES_PROPERTY_NAME))
       .willReturn(Optional.of(new ObjectMapper().writeValueAsString(existing)));
 
-    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME_LITERAL, true);
+    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME, NAME_TYPE, true);
 
     verify(entity).addProperty(
       eq(NAMES_PROPERTY_NAME),
@@ -115,7 +109,7 @@ public class OldPersonNamesTripleProcessorTest {
     given(entity.getPropertyValue(NAMES_PROPERTY_NAME))
       .willReturn(Optional.of(new ObjectMapper().writeValueAsString(existing)));
 
-    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME_LITERAL, false);
+    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME, NAME_TYPE, false);
 
     verify(entity).addProperty(
       eq(NAMES_PROPERTY_NAME),
@@ -139,7 +133,7 @@ public class OldPersonNamesTripleProcessorTest {
     given(entity.getPropertyValue(NAMES_PROPERTY_NAME))
       .willReturn(Optional.of(new ObjectMapper().writeValueAsString(existing)));
 
-    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME_LITERAL, false);
+    instance.process(VRE_NAME, PERSON_URI, PREDICATE_URI, FORENAME, NAME_TYPE, false);
 
     verify(entity).addProperty(
       eq(NAMES_PROPERTY_NAME),

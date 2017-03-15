@@ -96,13 +96,19 @@ public class TripleProcessorDispatcher {
     } else if (subclassOfKnownArchetype(triple)) {
       archetype.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsAltLabel(triple)) {
-      altLabel.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
+      altLabel.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral().getLexicalForm(),
+        tripleParser.getObjectAsLiteral().getDatatypeURI(), isAssertion
+      );
     } else if (predicateIsTeiName(triple)) {
-      personNames.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
+      personNames.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral().getLexicalForm(),
+        tripleParser.getObjectAsLiteral().getDatatypeURI(), isAssertion
+      );
     } else if (predicateIsNameVariant(triple)) {
       personNameVariant.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (objectIsLiteral(triple)) {
-      property.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral(), isAssertion);
+      property.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral().getLexicalForm(),
+        tripleParser.getObjectAsLiteral().getDatatypeURI(), isAssertion
+      );
     } else if (objectIsNonLiteral(triple)) {
       relation.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else {
