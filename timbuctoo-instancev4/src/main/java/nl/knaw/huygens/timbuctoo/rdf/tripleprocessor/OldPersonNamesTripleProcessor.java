@@ -17,15 +17,19 @@ import java.util.Optional;
 import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.RdfNameHelper.getLocalName;
 import static org.slf4j.LoggerFactory.getLogger;
 
-class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
-  private static final Logger LOG = getLogger(PersonNamesTripleProcessor.class);
+/**
+ * @Deprecated this class is replaced by PersonNamesTripleProcessor and should be removed if the gui stops using it.
+ */
+@Deprecated
+class OldPersonNamesTripleProcessor extends AbstractValueTripleProcessor {
+  private static final Logger LOG = getLogger(OldPersonNamesTripleProcessor.class);
   private static final String NAMES_PROPERTY_NAME = "names";
   private static final String NAMES_TYPE_ID = new PersonNamesConverter().getUniqueTypeIdentifier();
 
   private final Database database;
   private ObjectMapper objectMapper = new ObjectMapper();
 
-  PersonNamesTripleProcessor(Database database) {
+  OldPersonNamesTripleProcessor(Database database) {
     this.database = database;
   }
 

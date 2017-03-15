@@ -29,7 +29,7 @@ public class TripleProcessorDispatcher {
   private final ArchetypeTripleProcessor archetype;
   private final SameAsTripleProcessor sameAs;
   private final AltLabelTripleProcessor altLabel;
-  private final PersonNamesTripleProcessor personNames;
+  private final OldPersonNamesTripleProcessor personNames;
 
   private Database database;
   private PersonNameVariantTripleProcessor personNameVariant;
@@ -42,7 +42,7 @@ public class TripleProcessorDispatcher {
     this.relation = new RelationTripleProcessor(database);
     this.sameAs = new SameAsTripleProcessor(database);
     this.altLabel = new AltLabelTripleProcessor(database);
-    this.personNames = new PersonNamesTripleProcessor(database);
+    this.personNames = new OldPersonNamesTripleProcessor(database);
     this.personNameVariant = new PersonNameVariantTripleProcessor(database);
   }
 

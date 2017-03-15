@@ -25,7 +25,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
-public class PersonNamesTripleProcessorTest {
+public class OldPersonNamesTripleProcessorTest {
   public static final String NAME_TYPE = "http://www.w3.org/2001/XMLSchema#string";
   private static final String PERSON_URI = "http://example.com/Jan";
   private static final String TEI_NAMESPACE = "http://www.tei-c.org/ns/1.0/";
@@ -39,12 +39,12 @@ public class PersonNamesTripleProcessorTest {
   private static final String SURNAME = "Pietersz.";
   private static final String VRE_NAME = "vreName";
   private Entity entity;
-  private PersonNamesTripleProcessor instance;
+  private OldPersonNamesTripleProcessor instance;
 
   @Before
   public void setup() {
     final Database database = mock(Database.class);
-    instance = new PersonNamesTripleProcessor(database);
+    instance = new OldPersonNamesTripleProcessor(database);
     entity = mock(Entity.class);
     given(database.findOrCreateEntity(VRE_NAME, PERSON_URI)).willReturn(entity);
   }
