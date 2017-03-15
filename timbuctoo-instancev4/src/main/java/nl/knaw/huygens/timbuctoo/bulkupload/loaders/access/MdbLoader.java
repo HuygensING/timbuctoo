@@ -40,40 +40,27 @@ public class MdbLoader implements Loader {
       Table table;
       try {
         File input = file.getRight();
-        System.out.println("input: " + input.getAbsolutePath());
         Database database = DatabaseBuilder.open(input);
         Set<String> tableNames = database.getTableNames();
         for (String tableName : tableNames) {
-          System.out.println("tableName: " + tableName);
           importer.startCollection(tableName);
           table = database.getTable(tableName);
           List<? extends Column> columns = table.getColumns();
-          String allColumns = "";
           for (int i = 0; i < columns.size(); i++) {
-            //          for (Column column : columns) {
             importer.registerPropertyName(i, columns.get(i).getName());
-            allColumns += " " + columns.get(i).getName();
           }
-          System.out.println("  all columns: " + allColumns);
 
-          int rowNum = 0;
           for (Row row : table) {
             importer.startEntity();
             for (int colNum = 0 ; colNum < columns.size(); colNum++) {
-              //for (Column column : columns) {
               Object cellValue = row.get(columns.get(colNum).getName());
-              //              if (rowValue != null) {
               if (cellValue == null) {
                 cellValue = "";
               }
               importer.setValue(colNum, "" + cellValue);
-              // System.out.println("Column '" + column.getName() + "' : " + rowValue);
-              //              }
             }
-            rowNum++;
             importer.finishEntity();
           }
-          System.out.println("number of rows: " + rowNum);
           importer.finishCollection();
         }
       } catch (IOException e) {
@@ -81,10 +68,5 @@ public class MdbLoader implements Loader {
         e.printStackTrace();
       }
     }
-
-
-
-
-
   }
 }
