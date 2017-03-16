@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutablePredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutableValueTypeInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfReadProperty;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.AddLabelChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.CollectionHasEntityRelationChangeListener;
@@ -77,6 +78,7 @@ import org.apache.tinkerpop.gremlin.structure.Property;
 import org.apache.tinkerpop.gremlin.structure.T;
 import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
+import org.apache.tinkerpop.gremlin.structure.VertexProperty;
 import org.neo4j.graphdb.GraphDatabaseService;
 import org.neo4j.graphdb.Node;
 import org.neo4j.graphdb.index.Index;
@@ -100,6 +102,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
@@ -156,8 +159,6 @@ public class TinkerPopOperations implements DataStoreOperations {
   private final SystemPropertyModifier systemPropertyModifier;
   private final GraphDatabaseService graphDatabase;
   private final IntermediateCommitter committer;
-  private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
-  private Optional<Boolean> isSuccess = Optional.empty();
   private final boolean ownTransaction;
   private final Map<String, Vertex> defaultCollectionVerticesCache = new HashMap<>();
   private final Map<String, Vertex> predicateValueTypeVerticesCache = new HashMap<>();
@@ -167,14 +168,15 @@ public class TinkerPopOperations implements DataStoreOperations {
     .put("wwdocuments", new WwDocumentDisplayNameDescriptor())
     .put("wwpersons", propertyDescriptorFactory.getComposite(
       propertyDescriptorFactory.getLocal("wwperson_names", PersonNames.class),
-      propertyDescriptorFactory.getLocal("wwperson_tempName",TempName.class))
+      propertyDescriptorFactory.getLocal("wwperson_tempName", TempName.class))
     )
     .put("wwkeywords", propertyDescriptorFactory.getLocal("wwkeyword_value", String.class))
     .put("wwlanguages", propertyDescriptorFactory.getLocal("wwlanguage_name", String.class))
-    .put("wwlocations",propertyDescriptorFactory.getLocal("names", LocationNames.class))
+    .put("wwlocations", propertyDescriptorFactory.getLocal("names", LocationNames.class))
     .put("wwcollectives", propertyDescriptorFactory.getLocal("wwcollective_name", String.class))
     .build();
-
+  private boolean requireCommit = false; //we only need an explicit success() call when the database is changed
+  private Optional<Boolean> isSuccess = Optional.empty();
 
 
   public TinkerPopOperations(TinkerPopGraphManager graphManager) {
@@ -661,10 +663,10 @@ public class TinkerPopOperations implements DataStoreOperations {
           displayName = customDescriptors.get(collectionName).get(vertex);
         } else {
           displayName = traversal.V(vertex.id()).union(collection.getDisplayName().traversalJson()).next()
-            .getOrElseGet(e -> {
-              LOG.error("Displayname generation for vertix with id " + vertex.id() + " failed", e);
-              return jsn("#Error#");
-            }).asText();
+                                 .getOrElseGet(e -> {
+                                   LOG.error("Displayname generation for vertix with id " + vertex.id() + " failed", e);
+                                   return jsn("#Error#");
+                                 }).asText();
         }
         return QuickSearchResult.create(
           displayName,
@@ -1207,8 +1209,8 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public void assertProperty(Vre vre, String rdfUri, RdfProperty property) {
-    Vertex vertex = assertEntity(vre, rdfUri);
+  public void assertProperty(Vre vre, String entityRdfUri, RdfProperty property) {
+    Vertex vertex = assertEntity(vre, entityRdfUri);
     Object value;
     try {
       // The TinkerPopConverter does not need a collection for the external -> db case.
@@ -1261,15 +1263,15 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public void retractProperty(Vre vre, String rdfUri, RdfProperty property) {
-    getVertexByRdfUri(vre, rdfUri).ifPresent(e -> {
-      collectionsFor(e).forEachRemaining(collection -> {
+  public void retractProperty(Vre vre, String entityRdfUri, RdfProperty property) {
+    getVertexByRdfUri(vre, entityRdfUri).ifPresent(entity -> {
+      collectionsFor(entity).forEachRemaining(collection -> {
         getProp(collection, ENTITY_TYPE_NAME_PROPERTY_NAME, String.class).ifPresent(entityTypeName -> {
-          e.property(createPropName(entityTypeName, property.getPredicateUri()), property.getValue()).remove();
+          entity.property(createPropName(entityTypeName, property.getPredicateUri()), property.getValue()).remove();
         });
       });
 
-      retractPredicateAndValueType(property, e);
+      retractPredicateAndValueType(property, entity);
     });
     committer.tick();
   }
@@ -1297,6 +1299,36 @@ public class TinkerPopOperations implements DataStoreOperations {
           valueType.remove();
         }
       });
+  }
+
+  @Override
+  public Optional<RdfReadProperty> retrieveProperty(Vre vre, String entityRdfUri, String propertyUri) {
+    Optional<Vertex> entityOpt = indexHandler.findVertexInRdfIndex(vre, entityRdfUri);
+
+    if (entityOpt.isPresent()) {
+      Vertex entity = entityOpt.get();
+
+      Iterable<Vertex> collectionOfEntity = () -> collectionsFor(entity);
+
+      Optional<Collection> colOpt = StreamSupport.stream(collectionOfEntity.spliterator(), false)
+                                                 .map(col -> getProp(col, COLLECTION_NAME_PROPERTY_NAME, String.class))
+                                                 .filter(colNameProp -> colNameProp.isPresent())
+                                                 .map(colNameProp -> colNameProp.get())
+                                                 .map(vre::getCollectionForCollectionName)
+                                                 .filter(Optional::isPresent)
+                                                 .map(Optional::get)
+                                                 .findFirst();
+      if (colOpt.isPresent()) {
+        Collection collection = colOpt.get();
+        VertexProperty<String> property = entity.property(createPropName(collection.getEntityTypeName(), propertyUri));
+
+        if (property.isPresent()) {
+          return Optional.of(new RdfReadProperty(propertyUri, property.value()));
+        }
+      }
+    }
+
+    return Optional.empty();
   }
 
   @Override

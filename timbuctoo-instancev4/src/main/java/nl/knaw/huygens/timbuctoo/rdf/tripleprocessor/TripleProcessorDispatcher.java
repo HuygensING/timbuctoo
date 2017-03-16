@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.rdf.Database;
 import org.apache.jena.graph.Triple;
 import org.slf4j.Logger;
 
+import java.util.Objects;
 import java.util.Set;
 
 import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.TripleParser.fromTriple;
@@ -13,6 +14,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class TripleProcessorDispatcher {
   static final String TIM_IS_NAME_VARIANT_OF = "http://timbuctoo.huygens.knaw.nl/isNameVariantOf";
+  private static final String TIM_PERSON_NAME_TYPE = "http://timbuctoo.huygens.knaw.nl/datatypes/person-name";
   private static final Logger LOG = getLogger(TripleProcessorDispatcher.class);
   private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   private static final String RDF_SUB_CLASS_OF = "http://www.w3.org/2000/01/rdf-schema#subClassOf";
@@ -30,6 +32,7 @@ public class TripleProcessorDispatcher {
   private final SameAsTripleProcessor sameAs;
   private final AltLabelTripleProcessor altLabel;
   private final OldPersonNamesTripleProcessor personNames;
+  private final PersonNamesTripleProcessor personNamesTripleProcessor;
 
   private Database database;
   private PersonNameVariantTripleProcessor personNameVariant;
@@ -44,6 +47,7 @@ public class TripleProcessorDispatcher {
     this.altLabel = new AltLabelTripleProcessor(database);
     this.personNames = new OldPersonNamesTripleProcessor(database);
     this.personNameVariant = new PersonNameVariantTripleProcessor(database);
+    this.personNamesTripleProcessor = new PersonNamesTripleProcessor(rdfImportSession);
   }
 
   private boolean subclassOfKnownArchetype(Triple triple) {
@@ -80,6 +84,10 @@ public class TripleProcessorDispatcher {
     return triple.getPredicate().getURI().equals(TIM_IS_NAME_VARIANT_OF);
   }
 
+  private boolean objectIsPersonName(Triple triple) {
+    return Objects.equals(triple.getObject().getLiteralDatatypeURI(), TIM_PERSON_NAME_TYPE);
+  }
+
   //FIXME: add unittests for isAssertion
   public void dispatch(String vreName, boolean isAssertion, Triple triple) {
     if (LOG.isDebugEnabled()) {
@@ -106,9 +114,13 @@ public class TripleProcessorDispatcher {
     } else if (predicateIsNameVariant(triple)) {
       personNameVariant.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (objectIsLiteral(triple)) {
-      property.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral().getLexicalForm(),
-        tripleParser.getObjectAsLiteral().getDatatypeURI(), isAssertion
-      );
+      String lexicalValue = tripleParser.getObjectAsLiteral().getLexicalForm();
+      String typeUri = tripleParser.getObjectAsLiteral().getDatatypeURI();
+      if (objectIsPersonName(triple)) {
+        personNamesTripleProcessor.process(vreName, subject, predicate, lexicalValue, typeUri, isAssertion);
+      } else {
+        property.process(vreName, subject, predicate, lexicalValue, typeUri, isAssertion);
+      }
     } else if (objectIsNonLiteral(triple)) {
       relation.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else {
@@ -117,5 +129,4 @@ public class TripleProcessorDispatcher {
       LOG.error("Triple matches no pattern: ", triple.toString());
     }
   }
-
 }

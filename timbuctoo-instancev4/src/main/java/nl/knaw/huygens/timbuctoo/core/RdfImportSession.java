@@ -3,12 +3,14 @@ package nl.knaw.huygens.timbuctoo.core;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateCollection;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfReadProperty;
 import nl.knaw.huygens.timbuctoo.core.rdf.PropertyFactory;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Optional;
 
 public class RdfImportSession {
 
@@ -104,6 +106,10 @@ public class RdfImportSession {
 
   public void retractProperty(String rdfUri, RdfProperty property) {
     dataStoreOperations.retractProperty(vre, rdfUri, property);
+  }
+
+  public Optional<RdfReadProperty> retrieveProperty(String entityUri, String propertyUri) {
+    return dataStoreOperations.retrieveProperty(vre, entityUri, propertyUri);
   }
 
   public RdfImportErrorReporter getErrorReporter() {
