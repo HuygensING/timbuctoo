@@ -2694,6 +2694,49 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
+  public void assertPropertyWillKeepTrackOfThePredicate() {
+    TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    instance.addPredicateValueTypeVertexToVre(vre);
+    vre = instance.loadVres().getVre("vre");
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+
+    instance.assertProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+    instance.assertProperty(
+      vre,
+      "http://example.org/2",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/2001/XMLSchema#float"
+      )
+    );
+
+    List<PredicateInUse> predicates = instance.getPredicatesFor(defaultCollection);
+    assertThat(predicates, contains(hasProperty("predicateUri", equalTo("http://example.org/propName"))));
+    List<ValueTypeInUse> valueTypes = predicates.get(0).getValueTypes();
+    assertThat(valueTypes, containsInAnyOrder(
+      allOf(
+        hasProperty("typeUri", equalTo("http://www.w3.org/2001/XMLSchema#float")),
+        hasProperty("entitiesConnected", contains("http://example.org/2"))
+      ),
+      allOf(
+        hasProperty("typeUri", equalTo("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")),
+        hasProperty("entitiesConnected", contains("http://example.org/1"))
+      )
+    ));
+  }
+
+  @Test
   public void retractPropertyRemovesTheProperty() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     TinkerPopOperations instance = forGraphWrapper(graphManager);
@@ -2803,49 +2846,6 @@ public class TinkerPopOperationsTest {
                                             .has(RDF_URI_PROP, "http://example.org/1")
                                             .count().next();
     assertThat(entitiesWithPropName, is(0L));
-  }
-
-  @Test
-  public void assertPropertyWillKeepTrackOfThePredicate() {
-    TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
-    Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
-    instance.addPredicateValueTypeVertexToVre(vre);
-    vre = instance.loadVres().getVre("vre");
-    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
-
-    instance.assertProperty(
-      vre,
-      "http://example.org/1",
-      new RdfProperty(
-        "http://example.org/propName",
-        "value",
-        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
-      )
-    );
-    instance.assertProperty(
-      vre,
-      "http://example.org/2",
-      new RdfProperty(
-        "http://example.org/propName",
-        "value",
-        "http://www.w3.org/2001/XMLSchema#float"
-      )
-    );
-
-    List<PredicateInUse> predicates = instance.getPredicatesFor(defaultCollection);
-    assertThat(predicates, contains(hasProperty("predicateUri", equalTo("http://example.org/propName"))));
-    List<ValueTypeInUse> valueTypes = predicates.get(0).getValueTypes();
-    assertThat(valueTypes, containsInAnyOrder(
-      allOf(
-        hasProperty("typeUri", equalTo("http://www.w3.org/2001/XMLSchema#float")),
-        hasProperty("entitiesConnected", contains("http://example.org/2"))
-      ),
-      allOf(
-        hasProperty("typeUri", equalTo("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")),
-        hasProperty("entitiesConnected", contains("http://example.org/1"))
-      )
-    ));
   }
 
   @Test
