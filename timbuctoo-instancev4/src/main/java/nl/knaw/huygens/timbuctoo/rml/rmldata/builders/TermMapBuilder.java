@@ -7,6 +7,9 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrConstant;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTemplate;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.TermType;
+import org.apache.jena.datatypes.BaseDatatype;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 
 import java.util.Optional;
 import java.util.Set;
@@ -61,13 +64,12 @@ public class TermMapBuilder {
     withColumnTerm(value, termType, language, datatype);
   }
 
-  public void withColumnTerm(String value, Optional<TermType> termType, Optional<String> language,
-                             Optional<String> datatype) {
-    if (termType.isPresent()) {
-      instance = new RrColumn(value, termType.get());
-    } else {
-      instance = new RrColumn(value, getDefaultTermType(true, language.isPresent(), datatype.isPresent()));
-    }
+  public void withColumnTerm(String value, Optional<TermType> termTypeOpt, Optional<String> language,
+                             Optional<String> datatypeOpt) {
+    TermType termType = termTypeOrDefault(termTypeOpt, language, datatypeOpt);
+    RDFDatatype dataType = dataTypeOrDefault(datatypeOpt);
+
+    instance = new RrColumn(value, termType, dataType);
   }
 
   public TermMapBuilder withTemplateTerm(String referenceString) {
@@ -90,17 +92,29 @@ public class TermMapBuilder {
     withTemplateTerm(value, termType, language, datatype);
   }
 
-  public void withTemplateTerm(String value, Optional<TermType> termType, Optional<String> language,
-                             Optional<String> datatype) {
-    if (termType.isPresent()) {
-      instance = new RrTemplate(value, termType.get());
-    } else {
-      instance = new RrTemplate(value, getDefaultTermType(false, language.isPresent(), datatype.isPresent()));
-    }
+  public void withTemplateTerm(String value, Optional<TermType> termTypeOpt, Optional<String> language,
+                             Optional<String> datatypeOpt) {
+    TermType termType = termTypeOrDefault(termTypeOpt, language, datatypeOpt);
+    RDFDatatype dataType = dataTypeOrDefault(datatypeOpt);
+    instance = new RrTemplate(value, termType, dataType);
   }
 
   RrTermMap build() {
     return instance;
+  }
+
+  private TermType termTypeOrDefault(Optional<TermType> termTypeOpt, Optional<String> language,
+                                     Optional<String> datatypeOpt) {
+    return termTypeOpt.orElseGet(() -> {
+      return getDefaultTermType(true, language.isPresent(), datatypeOpt.isPresent());
+    });
+  }
+
+  private RDFDatatype dataTypeOrDefault(Optional<String> datatypeOpt) {
+    if (datatypeOpt.isPresent()) {
+      return new BaseDatatype(datatypeOpt.get());
+    }
+    return RDFLangString.rdfLangString;
   }
 
 }
