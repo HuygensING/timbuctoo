@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.model.properties.converters.PersonNamesConverte
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 import nl.knaw.huygens.timbuctoo.rdf.UriBearingPersonNames;
-import org.apache.jena.graph.Triple;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -30,11 +29,6 @@ class OldPersonNamesTripleProcessor extends AbstractValueTripleProcessor {
 
   OldPersonNamesTripleProcessor(Database database) {
     this.database = database;
-  }
-
-  public void process(String vreName, boolean isAssertion, Triple triple) {
-    process(vreName, triple.getSubject().getURI(), triple.getPredicate().getURI(),
-      triple.getObject().getLiteral().getLexicalForm(), triple.getObject().getLiteral().getDatatypeURI(), isAssertion);
   }
 
   @Override
