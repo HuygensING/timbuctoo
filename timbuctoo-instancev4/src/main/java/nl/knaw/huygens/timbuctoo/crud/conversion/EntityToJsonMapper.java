@@ -8,10 +8,11 @@ import com.google.common.base.Strings;
 import nl.knaw.huygens.timbuctoo.core.dto.ReadEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
+import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.UrlGenerator;
 import nl.knaw.huygens.timbuctoo.model.Change;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.slf4j.Logger;
@@ -83,17 +84,14 @@ public class EntityToJsonMapper {
     // translate TimProperties to Json
     JsonPropertyConverter jsonPropertyConverter = new JsonPropertyConverter(collection);
     entity.getProperties().forEach(prop -> {
-      Tuple<String, JsonNode> convertedProperty = null;
       try {
-        convertedProperty = prop.convert(jsonPropertyConverter);
+        Tuple<String, JsonNode> convertedProperty = prop.convert(jsonPropertyConverter);
+        mappedEntity.set(convertedProperty.getLeft(), convertedProperty.getRight());
       } catch (IOException e) {
-        LOG.error(
-          databaseInvariant,
-          "Property '" + prop.getName() + "' is not encoded correctly",
-          e.getCause()
-        );
+        LOG.error(databaseInvariant, propConversionErrorMessage(id, prop));
+        LOG.error("Exception message: {}", e.getMessage());
+        LOG.debug("Stack trace", e);
       }
-      mappedEntity.set(convertedProperty.getLeft(), convertedProperty.getRight());
     });
 
     if (!Strings.isNullOrEmpty(entity.getDisplayName())) {
@@ -107,6 +105,16 @@ public class EntityToJsonMapper {
       mappedEntity.set("@relations", mapRelations(entity.getRelations(), relationMappingOptions));
     }
     return mappedEntity;
+  }
+
+  private String propConversionErrorMessage(String entityId, TimProperty<?> prop) {
+    return String.format(
+      "Property '%s' with value '%s' for entity with id '%s' cannot not be converted as '%s'",
+      prop.getName(),
+      prop.getValue(),
+      entityId,
+      prop.getPropertyType()
+    );
   }
 
   private JsonNode mapRelations(List<RelationRef> relations,

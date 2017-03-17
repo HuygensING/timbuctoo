@@ -24,4 +24,8 @@ public abstract class TimProperty<ValueT> {
   public ValueT getValue() {
     return value;
   }
+
+  public String getPropertyType() {
+    return this.getClass().getName();
+  }
 }
