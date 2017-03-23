@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.rdf.tripleprocessor.PersonNamesTripleProcessor.PERSON_NAMES_TYPE_URI;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasProperty;
@@ -36,19 +37,62 @@ public class PersonNamesTripleProcessorTest {
   }
 
   @Test
-  public void processAssertionAddsANameWhenTheEntityDoesNotHaveAName() {
+  public void processAssertionAssertsToTheSubject() {
     instance.process(VRE_NAME, SUBJECT_URI, PREDICATE_URI, OBJECT_VALUE, OBJECT_TYPE_URI, true);
 
     verify(rdfImportSession).assertProperty(
       eq(SUBJECT_URI),
       argThat(allOf(
-        hasProperty("predicateUri", equalTo(PREDICATE_URI)),
-        hasProperty("value", equalTo("{\"list\":[{\"components\":[{\"type\":\"FORENAME\"," +
-          "\"value\":\"Jacob\"},{\"type\":\"SURNAME\",\"value\":\"Goethals Vercruyssen\"}]}]}")),
-        hasProperty("typeUri", equalTo(OBJECT_TYPE_URI))
+        hasProperty("predicateUri"),
+        hasProperty("value"),
+        hasProperty("typeUri")
       ))
     );
   }
+
+  @Test
+  public void processAssertionAssertsARdfPropertyWithThePersonNameWrappedInAPersonNamesObject() {
+    instance.process(VRE_NAME, SUBJECT_URI, PREDICATE_URI, OBJECT_VALUE, OBJECT_TYPE_URI, true);
+
+    verify(rdfImportSession).assertProperty(
+      anyString(),
+      argThat(allOf(
+        hasProperty("predicateUri"),
+        hasProperty("value", equalTo("{\"list\":[{\"components\":[{\"type\":\"FORENAME\"," +
+          "\"value\":\"Jacob\"},{\"type\":\"SURNAME\",\"value\":\"Goethals Vercruyssen\"}]}]}")),
+        hasProperty("typeUri")
+      ))
+    );
+  }
+
+  @Test
+  public void processAssertionAssertsARdfPropertyWithAPredicatePropertyEqualToThePerdicateUri() {
+    instance.process(VRE_NAME, SUBJECT_URI, PREDICATE_URI, OBJECT_VALUE, OBJECT_TYPE_URI, true);
+
+    verify(rdfImportSession).assertProperty(
+      anyString(),
+      argThat(allOf(
+        hasProperty("predicateUri", equalTo(PREDICATE_URI)),
+        hasProperty("value"),
+        hasProperty("typeUri")
+      ))
+    );
+  }
+
+  @Test
+  public void processAssertionAssertsARdfPropertyWithTheTypeUriOfPersonNames() {
+    instance.process(VRE_NAME, SUBJECT_URI, PREDICATE_URI, OBJECT_VALUE, OBJECT_TYPE_URI, true);
+
+    verify(rdfImportSession).assertProperty(
+      anyString(),
+      argThat(allOf(
+        hasProperty("predicateUri"),
+        hasProperty("value"),
+        hasProperty("typeUri", equalTo(PERSON_NAMES_TYPE_URI))
+      ))
+    );
+  }
+
 
   @Test
   public void processAssertAddsSecondName() {
@@ -62,11 +106,11 @@ public class PersonNamesTripleProcessorTest {
     verify(rdfImportSession).assertProperty(
       eq(SUBJECT_URI),
       argThat(allOf(
-        hasProperty("predicateUri", equalTo(PREDICATE_URI)),
+        hasProperty("predicateUri"),
         hasProperty("value", equalTo("{\"list\":[{\"components\":[{\"type\":\"FORENAME\"," +
           "\"value\":\"Jan\"},{\"type\":\"SURNAME\",\"value\":\"Jansen\"}]},{\"components\":[{\"type\":\"FORENAME\"," +
           "\"value\":\"Jacob\"},{\"type\":\"SURNAME\",\"value\":\"Goethals Vercruyssen\"}]}]}")),
-        hasProperty("typeUri", equalTo(OBJECT_TYPE_URI))
+        hasProperty("typeUri")
       ))
     );
   }

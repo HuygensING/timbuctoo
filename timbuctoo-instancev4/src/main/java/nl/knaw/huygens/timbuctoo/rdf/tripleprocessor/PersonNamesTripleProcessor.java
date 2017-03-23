@@ -14,6 +14,7 @@ import java.util.Optional;
 
 public class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
 
+  static final String PERSON_NAMES_TYPE_URI = "http://timbuctoo.huygens.knaw.nl/datatypes/person-names";
   private static final Logger LOG = LoggerFactory.getLogger(PropertyTripleProcessor.class);
   private final RdfImportSession rdfImportSession;
   private final ObjectMapper objectMapper;
@@ -33,7 +34,8 @@ public class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
         getPersonNames(objectMapper, rdfPropertyOpt);
       personNames.list.add(personName);
       String names = objectMapper.writeValueAsString(personNames);
-      rdfImportSession.assertProperty(subject, new RdfProperty(predicate, names, typeUri));
+      // Because the person names is wrapped in a person names type, the type changes
+      rdfImportSession.assertProperty(subject, new RdfProperty(predicate, names, PERSON_NAMES_TYPE_URI));
     } catch (IOException e) {
       LOG.error("Could not convert '{}' to PersonName", lexicalValue);
     }
