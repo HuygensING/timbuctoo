@@ -28,6 +28,7 @@ public class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
   protected void processAssertion(String vreName, String subject, String predicate, String lexicalValue,
                                   String typeUri) {
     Optional<RdfReadProperty> rdfPropertyOpt = rdfImportSession.retrieveProperty(subject, predicate);
+    LOG.debug("Process PersonNames triple for subject '{}' with value '{}'", subject, lexicalValue);
     try {
       PersonName personName = objectMapper.readValue(lexicalValue, PersonName.class);
       PersonNames personNames =
@@ -44,6 +45,7 @@ public class PersonNamesTripleProcessor extends AbstractValueTripleProcessor {
   private PersonNames getPersonNames(ObjectMapper objectMapper, Optional<RdfReadProperty> rdfPropertyOpt)
     throws IOException {
     if (rdfPropertyOpt.isPresent()) {
+      LOG.debug("Update existing person names: {}", rdfPropertyOpt.get().getValue());
       return objectMapper.readValue(rdfPropertyOpt.get().getValue(), PersonNames.class);
     } else {
       return new PersonNames();
