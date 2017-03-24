@@ -29,7 +29,12 @@
       "rml:logicalSource": {
         "rml:source": {
           "tim:rawCollection": "Persons",
-          "tim:vreName": "{VRE_NAME}"
+          "http://timbuctoo.huygens.knaw.nl/mapping#customField": [
+            {
+              "http://timbuctoo.huygens.knaw.nl/mapping#name": "combinedNameValue",
+              "http://timbuctoo.huygens.knaw.nl/mapping#expression": "\"{\\\"components\\\":[{\\\"type\\\":\\\"FORENAME\\\",\\\"value\\\":\\\"\" + v.given_name + \"\\\"},{\\\"type\\\":\\\"SURNAME\\\",\\\"value\\\":\\\"\" + v.family_name + \"\\\"}]}\""
+            }
+          ]
         }
       },
       "subjectMap": {
@@ -42,17 +47,12 @@
         },
         {
           "objectMap": {
-            "column": "given_name",
-            "datatype": "https://www.w3.org/TR/2001/REC-xmlschema-2-20010502/#string"
+            "column": "combinedNameValue",
+            "datatype": {
+              "@id": "http://timbuctoo.huygens.knaw.nl/datatypes/person-name"
+            }
           },
-          "predicate": "http://www.tei-c.org/ns/1.0/forename"
-        },
-        {
-          "objectMap": {
-            "column": "family_name",
-            "datatype": "https://www.w3.org/TR/2001/REC-xmlschema-2-20010502/#string"
-          },
-          "predicate": "http://www.tei-c.org/ns/1.0/surname"
+          "predicate": "http://timbuctoo.huygens.knaw.nl/names"
         },
         {
           "objectMap": {

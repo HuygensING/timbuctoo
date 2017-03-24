@@ -102,6 +102,7 @@ public class RmlIntegrationTest {
     )));
 
     JsonNode persons = call("/v2.1/domain/" + personsCollection + "/autocomplete?query=helmhol*").get(JsonNode.class);
+    assertThat("No person found", persons.has(0), is(true));
     JsonNode personData = call(persons.get(0).get("key").asText()).get(JsonNode.class);
     assertThat(personData, matchesContract(jsnO(
       "@displayName", jsn("H.L.F. Helmholtz"),
