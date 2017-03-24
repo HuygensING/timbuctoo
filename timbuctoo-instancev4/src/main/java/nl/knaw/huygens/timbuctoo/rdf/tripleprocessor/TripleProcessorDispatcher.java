@@ -31,7 +31,6 @@ public class TripleProcessorDispatcher {
   private final ArchetypeTripleProcessor archetype;
   private final SameAsTripleProcessor sameAs;
   private final AltLabelTripleProcessor altLabel;
-  private final OldPersonNamesTripleProcessor personNames;
   private final PersonNamesTripleProcessor personNamesTripleProcessor;
 
   private Database database;
@@ -45,7 +44,6 @@ public class TripleProcessorDispatcher {
     this.relation = new RelationTripleProcessor(database);
     this.sameAs = new SameAsTripleProcessor(database);
     this.altLabel = new AltLabelTripleProcessor(database);
-    this.personNames = new OldPersonNamesTripleProcessor(database);
     this.personNameVariant = new PersonNameVariantTripleProcessor(database);
     this.personNamesTripleProcessor = new PersonNamesTripleProcessor(rdfImportSession);
   }
@@ -105,10 +103,6 @@ public class TripleProcessorDispatcher {
       archetype.process(vreName, subject, predicate, tripleParser.getObjectReference(), isAssertion);
     } else if (predicateIsAltLabel(triple)) {
       altLabel.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral().getLexicalForm(),
-        tripleParser.getObjectAsLiteral().getDatatypeURI(), isAssertion
-      );
-    } else if (predicateIsTeiName(triple)) {
-      personNames.process(vreName, subject, predicate, tripleParser.getObjectAsLiteral().getLexicalForm(),
         tripleParser.getObjectAsLiteral().getDatatypeURI(), isAssertion
       );
     } else if (predicateIsNameVariant(triple)) {
