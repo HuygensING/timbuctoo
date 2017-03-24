@@ -134,14 +134,6 @@ public class RmlIntegrationTest {
     )));
   }
 
-  @Test
-  public void failingBiaUpload() throws Exception {
-  }
-
-  @Test
-  public void succeedingBiaUpload() throws Exception {
-  }
-
   private Response rawUpload(String vrename, File resource) throws ParseException {
     MultiPart formdata = new MultiPart();
 
