@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.rdf;
 
+import org.apache.jena.datatypes.BaseDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
@@ -11,10 +12,23 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import static org.apache.jena.graph.NodeFactory.createLiteral;
+import static org.apache.jena.graph.NodeFactory.createURI;
+
 public class TripleCreator {
 
   public static Triple createSingleTripleWithLiteralObject(String subject, String predicate, String object) {
     return createSingleTriple("<" + subject + "> " + "<" + predicate + "> " + object + ".");
+  }
+
+
+  public static Triple createSingleTripleWithLiteralObject(
+    String subject,
+    String predicate,
+    String value,
+    String type
+  ) {
+    return new Triple(createURI(subject), createURI(predicate), createLiteral(value, new BaseDatatype(type)));
   }
 
   public static Triple createSingleTriple(String subject, String predicate, String object) {
@@ -36,6 +50,4 @@ public class TripleCreator {
     Model model = ModelFactory.createDefaultModel();
     return model.createResource().asNode();
   }
-
-
 }

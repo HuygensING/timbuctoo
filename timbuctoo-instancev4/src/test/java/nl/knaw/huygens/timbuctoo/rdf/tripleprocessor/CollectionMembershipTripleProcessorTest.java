@@ -23,7 +23,7 @@ public class CollectionMembershipTripleProcessorTest {
   private static final String OBJECT_URI = "http://example.com/" + OBJECT_NAME;
 
   @Test
-  public void processAddsTheEntityToTheRequestedCollectionIfItIsAnAssertion() {
+  public void processMovesTheEntityToTheKnownCollectionIfItIsAnAssertion() {
     Database database = mock(Database.class);
     Collection collectionFromTriple = mock(Collection.class);
     Collection archetypeCollection = mock(Collection.class);
@@ -38,29 +38,7 @@ public class CollectionMembershipTripleProcessorTest {
 
     instance.process("vreName", SUBJECT_URI, PREDICATE_URI, OBJECT_URI, true);
 
-    InOrder inOrder = inOrder(entity, database);
-    inOrder.verify(database).findOrCreateCollection("vreName", OBJECT_URI, OBJECT_NAME);
-    inOrder.verify(entity).addToCollection(collectionFromTriple);
-  }
-
-  @Test
-  public void processRemovesTheEntityFromTheDefaultCollectionWhenAsserted() {
-    Database database = mock(Database.class);
-    Collection collectionFromTriple = mock(Collection.class);
-    Collection archetypeCollection = mock(Collection.class);
-    when(collectionFromTriple.getArchetype()).thenReturn(Optional.of(archetypeCollection));
-    when(database.findOrCreateCollection(anyString(), anyString(), anyString())).thenReturn(collectionFromTriple);
-    Collection defaultCollection = mock(Collection.class);
-    when(database.getDefaultCollection("vreName")).thenReturn(defaultCollection);
-    Entity entity = mock(Entity.class);
-    when(database.findOrCreateEntity("vreName", SUBJECT_URI)).thenReturn(entity);
-    CollectionMembershipTripleProcessor instance = new CollectionMembershipTripleProcessor(database, mock(
-      RdfImportSession.class));
-
-    instance.process("vreName", SUBJECT_URI, PREDICATE_URI, OBJECT_URI, true);
-
-    verify(entity).removeFromCollection(defaultCollection);
-
+    verify(entity).moveToNewCollection(defaultCollection, collectionFromTriple);
   }
 
   @Test

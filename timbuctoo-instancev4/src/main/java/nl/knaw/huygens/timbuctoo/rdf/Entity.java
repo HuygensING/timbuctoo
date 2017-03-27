@@ -148,4 +148,11 @@ public class Entity {
       }
     });
   }
+
+  public void moveToNewCollection(Collection fromCollection, Collection toCollection) {
+    addToCollection(toCollection);
+    toCollection.copyFromPropertiesFrom(vertex, fromCollection);
+    removeFromCollection(fromCollection);
+
+  }
 }

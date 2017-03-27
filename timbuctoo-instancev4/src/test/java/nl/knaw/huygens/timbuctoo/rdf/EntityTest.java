@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.model.properties.converters.StringToStringConve
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 
 import java.util.Optional;
 import java.util.Set;
@@ -14,6 +15,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -124,5 +126,26 @@ public class EntityTest {
       argThat(is(collectionToRemoveFrom))
     );
     assertThat((Set<Collection>) collectionCaptor.getValue(), contains(otherCollection));
+  }
+
+  @Test
+  public void moveToNewCollectionsMoveThePropertiesFromTheOldCollectionToTheNewOne() {
+    Collection fromCollection = mock(Collection.class);
+    Collection toCollection = mock(Collection.class);
+    Vertex vertex = mock(Vertex.class);
+    Collection collectionToRemoveFrom = mock(Collection.class);
+    given(collectionToRemoveFrom.getArchetype()).willReturn(Optional.empty());
+    Collection otherCollection = mock(Collection.class);
+    Set<Collection> collections = Sets.newHashSet(collectionToRemoveFrom, otherCollection);
+    TypesHelper typesHelper = mock(TypesHelper.class);
+    PropertyHelper propertyHelper = mock(PropertyHelper.class);
+    Entity entity = new Entity(vertex, collections, typesHelper, propertyHelper);
+
+    entity.moveToNewCollection(fromCollection, toCollection);
+
+    InOrder inOrder = inOrder(fromCollection, toCollection);
+    inOrder.verify(toCollection).add(vertex);
+    inOrder.verify(toCollection).copyFromPropertiesFrom(vertex, fromCollection);
+    inOrder.verify(fromCollection).remove(vertex);
   }
 }

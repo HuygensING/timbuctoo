@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rdf;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.core.CollectionNameHelper;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
@@ -20,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.core.CollectionNameHelper.defaultEntityTypeName;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ARCHETYPE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
@@ -97,6 +99,16 @@ public class Collection {
     }
   }
 
+  public void copyFromPropertiesFrom(Vertex entityVertex, Collection fromCollection) {
+    fromCollection.getPropertiesFor(entityVertex).forEach( property -> {
+      addProperty(
+        entityVertex,
+        property.get(LocalProperty.CLIENT_PROPERTY_NAME),
+        property.get("value"),
+        property.get(LocalProperty.PROPERTY_TYPE_NAME)
+      );
+    });
+  }
 
   public void addProperty(Vertex entityVertex, String propName, String value, String type) {
     if (!collectionDescription.getVreName().equals("Admin")) {
@@ -282,5 +294,6 @@ public class Collection {
       return Optional.empty();
     }
   }
+
 
 }

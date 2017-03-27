@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createSingleTriple;
+import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createSingleTripleWithLiteralObject;
 import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createTripleIterator;
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
@@ -386,4 +387,41 @@ public class TripleImporterIntegrationTest {
     assertThat(type.get().getDisplayName(), is(ABADAN_URI));
   }
 
+  @Test
+  public void importAddsThePropertiesToTheArchetype() throws Exception {
+    Triple t1 =
+      createSingleTriple(
+        "http://timbuctoo.huygens.knaw.nl/mapping/DUMMY_demo-upload/Persons",
+        "http://www.w3.org/2000/01/rdf-schema#subClassOf",
+        "http://timbuctoo.huygens.knaw.nl/person"
+      );
+    Triple t2 =
+      TripleCreator.createSingleTripleWithLiteralObject(
+        "http://timbuctoo.huygens.knaw.nl/mapping/DUMMY_demo-upload/Persons/PE00000001",
+        "http://timbuctoo.huygens.knaw.nl/names",
+        "{\"components\":[{\"type\":\"FORENAME\",\"value\":\"Christiaen\"},{\"type\":\"SURNAME\"," +
+          "\"value\":\"Christiaensen\"}]}",
+        "http://timbuctoo.huygens.knaw.nl/datatypes/person-name"
+      );
+    Triple t3 =      createSingleTriple(
+      "http://timbuctoo.huygens.knaw.nl/mapping/DUMMY_demo-upload/Persons/PE00000001",
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#type",
+        "http://timbuctoo.huygens.knaw.nl/mapping/DUMMY_demo-upload/Persons"
+    );
+
+    instance.importTriple(true, t1);
+    instance.importTriple(true, t2);
+    instance.importTriple(true, t3);
+    rdfImportSession.commit();
+    rdfImportSession.close();
+
+    Optional<ReadEntity> readEntity =
+      getReadEntity("vreNamePersonss",
+        "http://timbuctoo.huygens.knaw.nl/mapping/DUMMY_demo-upload/Persons/PE00000001");
+
+    assertThat(readEntity, is(present()));
+    assertThat(readEntity.get().getProperties(), contains(hasProperty("name", equalTo("names"))));
+  }
+
 }
+
