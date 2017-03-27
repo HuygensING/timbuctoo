@@ -1,20 +1,28 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.util.Lists;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.skyscreamer.jsonassert.JSONCompare;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -26,16 +34,24 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.JsonContractMatcher.matchesContract;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.arrayWithSize;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 
 public class RmlIntegrationTest {
@@ -132,6 +148,95 @@ public class RmlIntegrationTest {
         )
       )
     )));
+  }
+
+  @Test
+  public void personNameVariantAreAddedToThePersonTheyBelongTo() throws Exception {
+    String vreName = "demo-upload";
+    String prefixedVreName = "DUMMY_" + vreName;
+    Response uploadResponse = rawUpload(
+      vreName,
+      new File(getResource(RmlIntegrationTest.class, "BIA_klein_ok.xlsx").toURI())
+    );
+
+    assertThat("Successful upload of excel", uploadResponse.getStatus(), is(200));
+    uploadResponse.readEntity(String.class); //needed for blocking side-effect
+
+    Response rmlResponse = map(
+      prefixedVreName,
+      asCharSource(getResource(
+        RmlIntegrationTest.class,
+        "alternative-names-rml.json"),
+        Charset.forName("UTF8")).read().replace("{VRE_NAME}", prefixedVreName)
+    );
+
+    String output = rmlResponse.readEntity(String.class); //also needed for blocking side-effect
+    String rmlResult = output.substring(output.lastIndexOf('\n') + 1);
+    assertThat("Succesful rml execution", rmlResult, is("success"));
+
+    JsonNode metadata = call("/v2.1/metadata/" + prefixedVreName + "?withCollectionInfo=true").get(JsonNode.class);
+    String personsType = prefixedVreName + "Persons";
+    String personsCollection = personsType + "s";
+
+    assertThat(metadata, matchesContract(jsnO(
+      personsCollection, jsnO()
+    )));
+
+    JsonNode personsNode = call("/v2.1/domain/" + personsCollection).get(JsonNode.class);
+
+    List<JsonNode> persons = Lists.newArrayList(personsNode.iterator());
+    assertThat(persons, hasSize(2));
+    int personWithTwoNamesIndex;
+    int personWithOneNameIndex;
+    if (persons.get(0).get("names").size() == 2) {
+      personWithTwoNamesIndex = 0;
+      personWithOneNameIndex = 1;
+    } else {
+      personWithTwoNamesIndex = 1;
+      personWithOneNameIndex = 0;
+    }
+    assertThat(personsNode.get(personWithTwoNamesIndex).get("names"), containsInAnyOrder(jsnO(
+      "components", jsnA(
+        jsnO(
+          "type", jsn("FORENAME"),
+          "value", jsn("Jacques Henrij")
+        ),
+        jsnO(
+          "type", jsn("SURNAME"),
+          "value", jsn("Abendanon")
+        )
+      )
+      ),
+      jsnO(
+        "components", jsnA(
+          jsnO(
+            "type", jsn("FORENAME"),
+            "value", jsn("Christiaen")
+          ),
+          jsnO(
+            "type", jsn("SURNAME"),
+            "value", jsn("Christiaensen")
+          )
+        )
+      )
+    ));
+
+
+    assertThat(personsNode.get(personWithOneNameIndex).get("names"), is(jsnA(
+      jsnO(
+        "components", jsnA(
+          jsnO(
+            "type", jsn("FORENAME"),
+            "value", jsn("Miguel")
+          ),
+          jsnO(
+            "type", jsn("SURNAME"),
+            "value", jsn("Asin y Palacios")
+          )
+        )
+      )
+      )
+    ));
   }
 
   private Response rawUpload(String vrename, File resource) throws ParseException {

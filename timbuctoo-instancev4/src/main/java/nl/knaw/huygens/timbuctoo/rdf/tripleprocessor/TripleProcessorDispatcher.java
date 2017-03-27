@@ -45,7 +45,7 @@ public class TripleProcessorDispatcher {
     this.sameAs = new SameAsTripleProcessor(database);
     this.altLabel = new AltLabelTripleProcessor(database);
     this.personNameVariant = new PersonNameVariantTripleProcessor(database);
-    this.personNamesTripleProcessor = new PersonNamesTripleProcessor(rdfImportSession);
+    this.personNamesTripleProcessor = new PersonNamesTripleProcessor(rdfImportSession, database);
   }
 
   private boolean subclassOfKnownArchetype(Triple triple) {
