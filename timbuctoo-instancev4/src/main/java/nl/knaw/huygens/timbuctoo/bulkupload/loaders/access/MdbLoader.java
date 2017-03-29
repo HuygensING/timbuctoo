@@ -26,47 +26,29 @@ import java.util.Set;
  */
 public class MdbLoader implements Loader {
 
-  public MdbLoader() {
-  }
-
   @Override
   public void loadData(List<Tuple<String, File>> files, Importer importer) throws InvalidFileException, IOException {
-    for (Tuple<String, File> file : files) {
-
-      String filename = file.getLeft();
-      //remove well-known extensions
-      filename = filename.substring(0, filename.length() - 4);
-
-      Table table;
-      try {
-        File input = file.getRight();
-        Database database = DatabaseBuilder.open(input);
-        Set<String> tableNames = database.getTableNames();
-        for (String tableName : tableNames) {
-          importer.startCollection(tableName);
-          table = database.getTable(tableName);
-          List<? extends Column> columns = table.getColumns();
-          for (int i = 0; i < columns.size(); i++) {
-            importer.registerPropertyName(i, columns.get(i).getName());
-          }
-
-          for (Row row : table) {
-            importer.startEntity();
-            for (int colNum = 0 ; colNum < columns.size(); colNum++) {
-              Object cellValue = row.get(columns.get(colNum).getName());
-              if (cellValue == null) {
-                cellValue = "";
-              }
-              importer.setValue(colNum, "" + cellValue);
-            }
-            importer.finishEntity();
-          }
-          importer.finishCollection();
-        }
-      } catch (IOException e) {
-        // TODO Auto-generated catch block
-        e.printStackTrace();
+    Database database = DatabaseBuilder.open(files.get(0).getRight());
+    for (String tableName : database.getTableNames()) {
+      importer.startCollection(tableName);
+      Table table = database.getTable(tableName);
+      List<? extends Column> columns = table.getColumns();
+      for (int i = 0; i < columns.size(); i++) {
+        importer.registerPropertyName(i, columns.get(i).getName());
       }
+
+      for (Row row : table) {
+        importer.startEntity();
+        for (int colNum = 0 ; colNum < columns.size(); colNum++) {
+          Object cellValue = row.get(columns.get(colNum).getName());
+          if (cellValue == null) {
+            cellValue = "";
+          }
+          importer.setValue(colNum, "" + cellValue);
+        }
+        importer.finishEntity();
+      }
+      importer.finishCollection();
     }
   }
 }
