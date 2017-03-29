@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.Row;
 import org.apache.commons.lang.StringUtils;
+import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 
@@ -12,11 +13,13 @@ import java.util.regex.Pattern;
 public class RrTemplate implements RrTermMap {
   private final String template;
   private final TermType termType;
+  private final RDFDatatype dataType;
   private final Pattern pattern;
 
-  public RrTemplate(String template, TermType termType) {
+  public RrTemplate(String template, TermType termType, RDFDatatype dataType) {
     this.template = template;
     this.termType = termType;
+    this.dataType = dataType;
     //regex can be tested by going to https://regex101.com/r/fV1zJ1/1
     //It has been tested with
     // http://jan/{} <- should not match
@@ -49,6 +52,8 @@ public class RrTemplate implements RrTermMap {
     );
   }
 
+
+
   @Override
   public Optional<Node> generateValue(Row input) {
     Matcher regexMatcher = pattern.matcher(template);
@@ -72,7 +77,7 @@ public class RrTemplate implements RrTermMap {
       case BlankNode:
         return Optional.of(NodeFactory.createBlankNode(resultString.toString()));
       case Literal:
-        return Optional.of(NodeFactory.createLiteral(resultString.toString()));
+        return Optional.of(NodeFactory.createLiteral(resultString.toString(), dataType));
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }

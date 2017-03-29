@@ -1,15 +1,20 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.time.Clock;
 import java.util.HashMap;
 import java.util.function.Consumer;
 
 public class ResultReporter {
+  public static final Logger LOG = LoggerFactory.getLogger(ResultReporter.class);
   private final Consumer<String> statusUpdate;
   private int curRow;
   private int failures;
   private String currentSheet = "";
   private long lastLogTime;
+
 
   public ResultReporter(Consumer<String> statusUpdate) {
     this.statusUpdate = statusUpdate;
@@ -56,6 +61,7 @@ public class ResultReporter {
 
   private void log(int columnNumber, String message) {
     this.failures++;
+    LOG.error("Import failure '{}' on column '{}'.", message, columnNumber);
     logStatusMessage();
   }
 

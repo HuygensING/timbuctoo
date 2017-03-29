@@ -66,7 +66,8 @@ public class BulkUploadedDataSource implements DataSource {
         expressions.put(key, jexl.createExpression(value));
         result.append("      ").append(key).append(": ").append(value).append("\n");
       } catch (Exception e) { // Catch the runtime exceptions
-        LOG.error("Could not compile expression", e);
+        LOG.error("Could not compile expression '{}'", value);
+        LOG.error("Exception thrown", e);
       }
     });
     stringRepresentation = result.toString();

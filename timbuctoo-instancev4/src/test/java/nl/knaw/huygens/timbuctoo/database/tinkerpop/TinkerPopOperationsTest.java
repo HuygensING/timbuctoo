@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ImmutableCreateProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfReadProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.ValueTypeInUse;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.changelistener.ChangeListener;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -64,10 +65,10 @@ import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_DISPLAY_NAME_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_NODE_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_ENTITY_RELATION_NAME;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
-import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndChangeListener;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.HAS_PROPERTY_RELATION_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.IS_RELATION_COLLECTION_PROPERTY_NAME;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.PropertyNameHelper.createPropName;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndChangeListener;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphMappingsListenerAndIndex;
 import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs.forGraphWrapper;
@@ -2694,6 +2695,49 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
+  public void assertPropertyWillKeepTrackOfThePredicate() {
+    TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
+    Vre vre = instance.ensureVreExists("vre");
+    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
+    instance.addPredicateValueTypeVertexToVre(vre);
+    vre = instance.loadVres().getVre("vre");
+    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
+
+    instance.assertProperty(
+      vre,
+      "http://example.org/1",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
+      )
+    );
+    instance.assertProperty(
+      vre,
+      "http://example.org/2",
+      new RdfProperty(
+        "http://example.org/propName",
+        "value",
+        "http://www.w3.org/2001/XMLSchema#float"
+      )
+    );
+
+    List<PredicateInUse> predicates = instance.getPredicatesFor(defaultCollection);
+    assertThat(predicates, contains(hasProperty("predicateUri", equalTo("http://example.org/propName"))));
+    List<ValueTypeInUse> valueTypes = predicates.get(0).getValueTypes();
+    assertThat(valueTypes, containsInAnyOrder(
+      allOf(
+        hasProperty("typeUri", equalTo("http://www.w3.org/2001/XMLSchema#float")),
+        hasProperty("entitiesConnected", contains("http://example.org/2"))
+      ),
+      allOf(
+        hasProperty("typeUri", equalTo("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")),
+        hasProperty("entitiesConnected", contains("http://example.org/1"))
+      )
+    ));
+  }
+
+  @Test
   public void retractPropertyRemovesTheProperty() {
     TinkerPopGraphManager graphManager = newGraph().wrap();
     TinkerPopOperations instance = forGraphWrapper(graphManager);
@@ -2806,46 +2850,57 @@ public class TinkerPopOperationsTest {
   }
 
   @Test
-  public void assertPropertyWillKeepTrackOfThePredicate() {
-    TinkerPopOperations instance = TinkerPopOperationsStubs.newInstance();
-    Vre vre = instance.ensureVreExists("vre");
-    instance.addCollectionToVre(vre, CreateCollection.defaultCollection("vre"));
-    instance.addPredicateValueTypeVertexToVre(vre);
-    vre = instance.loadVres().getVre("vre");
-    Collection defaultCollection = vre.getCollectionForTypeName(defaultEntityTypeName(vre));
-
+  public void retrievePropertyReturnsThePropertyOfTheEntity() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
+    String vreName = "vre";
+    Vre vre = minimalCorrectVre(instance, vreName);
+    String entityRdfUri = "http://example.org/1";
+    String predicateUri = "http://example.org/propName";
+    String value = "value";
     instance.assertProperty(
       vre,
-      "http://example.org/1",
+      entityRdfUri,
       new RdfProperty(
-        "http://example.org/propName",
-        "value",
+        predicateUri,
+        value,
         "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString"
       )
     );
-    instance.assertProperty(
-      vre,
-      "http://example.org/2",
-      new RdfProperty(
-        "http://example.org/propName",
-        "value",
-        "http://www.w3.org/2001/XMLSchema#float"
-      )
-    );
 
-    List<PredicateInUse> predicates = instance.getPredicatesFor(defaultCollection);
-    assertThat(predicates, contains(hasProperty("predicateUri", equalTo("http://example.org/propName"))));
-    List<ValueTypeInUse> valueTypes = predicates.get(0).getValueTypes();
-    assertThat(valueTypes, containsInAnyOrder(
-      allOf(
-        hasProperty("typeUri", equalTo("http://www.w3.org/2001/XMLSchema#float")),
-        hasProperty("entitiesConnected", contains("http://example.org/2"))
-      ),
-      allOf(
-        hasProperty("typeUri", equalTo("http://www.w3.org/1999/02/22-rdf-syntax-ns#langString")),
-        hasProperty("entitiesConnected", contains("http://example.org/1"))
-      )
-    ));
+    Optional<RdfReadProperty> rdfProperty = instance.retrieveProperty(vre, entityRdfUri, predicateUri);
+
+    assertThat(rdfProperty, is(present()));
+    assertThat(rdfProperty.get().getValue(), is(value));
+  }
+
+  @Test
+  public void retrievePropertyReturnsAnEmptyOptionalWhenTheEntityDoesNotExist() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
+    String vreName = "vre";
+    Vre vre = minimalCorrectVre(instance, vreName);
+    String entityRdfUri = "http://example.org/1";
+    String predicateUri = "http://example.org/propName";
+
+    Optional<RdfReadProperty> rdfProperty = instance.retrieveProperty(vre, entityRdfUri, predicateUri);
+
+    assertThat(rdfProperty, is(not(present())));
+  }
+
+  @Test
+  public void retrievePropertyReturnsAnEmtptyOptionWhenTheVertexDoesNotContainTheProperty() {
+    TinkerPopGraphManager graphManager = newGraph().wrap();
+    TinkerPopOperations instance = forGraphWrapper(graphManager);
+    String vreName = "vre";
+    Vre vre = minimalCorrectVre(instance, vreName);
+    String entityRdfUri = "http://example.org/1";
+    String predicateUri = "http://example.org/propName";
+    instance.assertEntity(vre, entityRdfUri); // make sure the vertex exist
+
+    Optional<RdfReadProperty> rdfProperty = instance.retrieveProperty(vre, entityRdfUri, predicateUri);
+
+    assertThat(rdfProperty, is(not(present())));
   }
 
   @Test

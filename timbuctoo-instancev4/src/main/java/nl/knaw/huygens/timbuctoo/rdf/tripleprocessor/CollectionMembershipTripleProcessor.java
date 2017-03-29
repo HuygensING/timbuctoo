@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rdf.tripleprocessor;
 
 import nl.knaw.huygens.timbuctoo.core.RdfImportSession;
+import nl.knaw.huygens.timbuctoo.rdf.Collection;
 import nl.knaw.huygens.timbuctoo.rdf.Database;
 import nl.knaw.huygens.timbuctoo.rdf.Entity;
 
@@ -22,8 +23,9 @@ class CollectionMembershipTripleProcessor extends AbstractReferenceTripleProcess
     if (entity.isInKnownCollection()) {
       rdfImportSession.getErrorReporter().multipleRdfTypes(subject, object);
     } else {
-      entity.addToCollection(database.findOrCreateCollection(vreName, object, getLocalName(object)));
-      entity.removeFromCollection(database.getDefaultCollection(vreName));
+      Collection newCollection = database.findOrCreateCollection(vreName, object, getLocalName(object));
+      Collection defaultCollection = database.getDefaultCollection(vreName);
+      entity.moveToNewCollection(defaultCollection, newCollection);
     }
   }
 

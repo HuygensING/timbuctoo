@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.CreateProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.PredicateInUse;
 import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfReadProperty;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.Change;
@@ -119,9 +120,14 @@ public interface DataStoreOperations extends AutoCloseable {
 
   void addPredicateValueTypeVertexToVre(Vre vre);
 
-  void assertProperty(Vre vre, String rdfUri, RdfProperty property);
+  void assertProperty(Vre vre, String entityRdfUri, RdfProperty property);
 
-  void retractProperty(Vre vre, String rdfUri, RdfProperty property);
+  void retractProperty(Vre vre, String entityRdfUri, RdfProperty property);
+
+  /**
+   * Tries to retrieve a property value.
+   */
+  Optional<RdfReadProperty> retrieveProperty(Vre vre, String entityRdfUri, String propertyUri);
 
   List<PredicateInUse> getPredicatesFor(Collection defaultCollection);
 

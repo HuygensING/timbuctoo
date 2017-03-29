@@ -133,6 +133,7 @@ public class RdfPropertyConverterFactory {
             return new EncodedStringOfLimitedValuesProperty(null, objectMapper.writeValueAsString(rdfValue));
           }
         };
+      case "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString":
       case "http://www.w3.org/2001/XMLSchema#string":
       case "http://timbuctoo.huygens.knaw.nl/datatypes/string":
         return new StringRdfPropertyConverter();
