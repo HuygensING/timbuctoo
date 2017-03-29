@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.TermType;
 import org.apache.jena.datatypes.BaseDatatype;
 import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 
 import java.util.Optional;
@@ -114,7 +115,7 @@ public class TermMapBuilder {
     if (datatypeOpt.isPresent()) {
       return new BaseDatatype(datatypeOpt.get());
     }
-    return RDFLangString.rdfLangString;
+    return XSDDatatype.XSDstring;
   }
 
 }

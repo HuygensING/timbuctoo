@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.TriplesMapBuilder;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
@@ -45,7 +46,7 @@ public class RmlMapperTest {
   }
 
   private static Node literal(String value) {
-    return NodeFactory.createLiteral(value, RDFLangString.rdfLangString);
+    return NodeFactory.createLiteral(value, XSDDatatype.XSDstring);
   }
 
   @Test
