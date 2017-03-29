@@ -273,6 +273,12 @@
       <artifactId>dans-dp-lib</artifactId>
       <version>36e6037f4b</version>
     </dependency>
+    <!-- MS Access -->
+    <dependency>
+        <groupId>com.healthmarketscience.jackcess</groupId>
+        <artifactId>jackcess</artifactId>
+        <version>2.1.6</version>
+    </dependency>
 
     <!-- ### HTML Parser ## -->
     <dependency>
