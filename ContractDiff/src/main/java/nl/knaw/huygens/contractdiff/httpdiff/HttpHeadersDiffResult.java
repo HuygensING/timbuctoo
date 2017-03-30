@@ -38,7 +38,7 @@ public class HttpHeadersDiffResult extends DiffResult {
     for (Map.Entry<String, DiffResult> result: innerResults.entries()) {
       resultStr += RESET + result.getValue().asConsole(result.getKey() + ": ", "  ", "") + "\n";
     }
-    return resultStr;
+    return resultStr + RESET;
   }
 
   @Override
@@ -47,7 +47,7 @@ public class HttpHeadersDiffResult extends DiffResult {
     for (Map.Entry<String, DiffResult> result: innerResults.entries()) {
       resultStr += "\n" + RESET + result.getValue().asConsole(result.getKey() + ": ", indent + "  ", "");
     }
-    return resultStr + delimiter;
+    return resultStr + delimiter + RESET;
   }
 
 
