@@ -138,6 +138,7 @@
     <neo4j.version>3.1.0</neo4j.version>
     <!-- The number after the dash is the Neo4j version -->
     <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
+    <rdf4j.version>2.2</rdf4j.version>
   </properties>
 
   <dependencies>
@@ -206,6 +207,17 @@
           <artifactId>neo4j-enterprise</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.jauco</groupId>
+      <artifactId>graphql-java</artifactId>
+      <version>newbranch-v2.4.0-gb43b528-32</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sleepycat</groupId>
+      <artifactId>je</artifactId>
+      <version>3.3.75</version>
     </dependency>
 
     <!-- ### handle ids ## -->
@@ -335,6 +347,18 @@
       <artifactId>apache-jena-libs</artifactId>
       <type>pom</type>
       <version>3.1.0</version>
+    </dependency>
+
+    <!-- Rdf4J -->
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-rdfxml</artifactId>
+      <version>${rdf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-turtle</artifactId>
+      <version>${rdf4j.version}</version>
     </dependency>
 
     <!-- ### make generating of value types easier -->
@@ -502,6 +526,12 @@
   </dependencies>
 
   <repositories>
+    <repository>
+      <id>oracleReleases</id>
+      <name>Oracle Released Java Packages</name>
+      <url>http://download.oracle.com/maven</url>
+      <layout>default</layout>
+    </repository>
     <repository>
       <id>central</id>
       <name>Central repository</name>

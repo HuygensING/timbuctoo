@@ -39,8 +39,8 @@ import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.MoveIndicesToIsLatestVertexMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.MoveIndicesToIsLatestVertexMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.PrepareForBiaImportMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.RemoveSearchResultsMigration;
@@ -84,6 +84,12 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
+import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
+import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -235,7 +241,20 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       pathWithoutVersionAndRevision
     );
 
+    environment.jersey().register(new JsonLdWriter());
+    environment.jersey().register(new JsonWriter());
+
     // register REST endpoints
+    TimbuctooManagedDataStoreFactory dataStoreFactory = new TimbuctooManagedDataStoreFactory("/database");
+    environment.lifecycle().manage(dataStoreFactory);
+    register(environment,
+      new GraphQl(
+        new GraphQlService(
+          dataStoreFactory,
+          new GraphQlTypeGenerator()
+        )
+      )
+    );
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new JsEnv(configuration));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
