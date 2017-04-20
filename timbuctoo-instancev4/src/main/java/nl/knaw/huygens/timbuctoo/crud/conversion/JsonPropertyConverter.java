@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.core.PropertyConverter;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringOfLimitedValuesProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
+import nl.knaw.huygens.timbuctoo.model.EdtfPattern;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -136,7 +137,11 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
 
   @Override
   public Tuple<String, JsonNode> to(DatableProperty property) throws IOException {
-    return new Tuple<>(property.getName(), objectMapper.readTree(property.getValue()));
+    if (EdtfPattern.matchingPattern(property.getValue()) == null) {
+      throw new IOException(String.format("'%s' is not a valid datable", property.getValue()));
+    }
+
+    return new Tuple<>(property.getName(), jsn(property.getValue()));
   }
 
   @Override

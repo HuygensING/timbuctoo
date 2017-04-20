@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.crud.conversion.json;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.core.dto.property.AltNamesProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.DatableProperty;
 import nl.knaw.huygens.timbuctoo.crud.conversion.JsonPropertyConverter;
 import nl.knaw.huygens.timbuctoo.model.AltName;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
@@ -32,5 +33,15 @@ public class JsonPropertyConverterTest {
       jsnO("nametype", jsn("type1"), "displayName", jsn("name1")),
       jsnO("nametype", jsn("type2"), "displayName", jsn("name2"))
     ));
+  }
+
+  @Test
+  public void toConvertsADatablePropertyToAString() throws Exception {
+    JsonPropertyConverter instance = new JsonPropertyConverter(null);
+    DatableProperty datableProperty = new DatableProperty("", "2016-01-02");
+
+    Tuple<String, JsonNode> value = instance.to(datableProperty);
+
+    assertThat(value.getRight(), is(jsn("2016-01-02")));
   }
 }
