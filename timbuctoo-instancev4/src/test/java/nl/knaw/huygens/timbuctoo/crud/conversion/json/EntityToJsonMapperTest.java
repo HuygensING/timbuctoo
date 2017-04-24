@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.ReadEntityImpl;
 import nl.knaw.huygens.timbuctoo.core.dto.RelationRef;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.core.dto.property.DatableProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.HyperLinksProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.crud.conversion.EntityToJsonMapper;
@@ -143,7 +144,7 @@ public class EntityToJsonMapperTest {
     readEntity.setRev(1);
     readEntity.setPid("pid");
     ArrayList<TimProperty<?>> properties = Lists.newArrayList();
-    properties.add(new DatableProperty("nonParsableProp", "Name"));
+    properties.add(new HyperLinksProperty("nonParsableProp", "Name"));
     readEntity.setProperties(properties);
     EntityToJsonMapper instance = new EntityToJsonMapper(
       userStore,

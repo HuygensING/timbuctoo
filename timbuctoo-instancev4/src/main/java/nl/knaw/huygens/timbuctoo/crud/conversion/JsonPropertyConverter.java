@@ -138,10 +138,6 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
 
   @Override
   public Tuple<String, JsonNode> to(DatableProperty property) throws IOException {
-    if (EdtfPattern.matchingPattern(property.getValue()) == null) {
-      throw new IOException(String.format("'%s' is not a valid datable", property.getValue()));
-    }
-
     return new Tuple<>(property.getName(), jsn(property.getValue()));
   }
 
