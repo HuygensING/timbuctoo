@@ -108,4 +108,12 @@ public class TinkerPopPropertyConverterTest {
     assertThat(value.getRight(), is("\"1800\""));
   }
 
+  @Test(expected = IOException.class)
+  public void toThrowsAnExceptionWhenTheDateFormatIsNotSupported() throws Exception {
+    TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(null);
+    DatableProperty property = new DatableProperty(PROPERTY_NAME, "01-02-180");
+
+    instance.to(property);
+  }
+
 }

@@ -53,6 +53,7 @@ public enum EdtfPattern {
   // some month in 2004: 2004-??
   YEAR_MONTH_RANGE("^\\d{4}-\\?{2}$"),
 
+  // TODO: remove not an EDTF date
   // day month year, hyphenated (for backward compatibility): 11-6-2004
   DAY_MONTH_YEAR("^\\d{1,2}-\\d{1,2}-\\d{4}$"),
   // month year, hyphenated (for backward compatibility): 6-2004
@@ -121,6 +122,10 @@ public enum EdtfPattern {
       }
     }
     return null;
+  }
+
+  public static boolean isValidEdtf(String text) {
+    return matchingPattern(text) != null;
   }
 
 }

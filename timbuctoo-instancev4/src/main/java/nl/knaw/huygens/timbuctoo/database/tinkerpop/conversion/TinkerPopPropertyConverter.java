@@ -15,6 +15,8 @@ import nl.knaw.huygens.timbuctoo.core.PropertyConverter;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringOfLimitedValuesProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.model.AltNames;
+import nl.knaw.huygens.timbuctoo.model.Datable;
+import nl.knaw.huygens.timbuctoo.model.EdtfPattern;
 import nl.knaw.huygens.timbuctoo.model.LocationNames;
 import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
@@ -115,7 +117,13 @@ public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
 
   @Override
   public Tuple<String, Object> to(DatableProperty property) throws IOException {
-    return tuple(property.getName(), objectMapper.writeValueAsString(property.getValue()));
+    String value = property.getValue();
+
+    if (!EdtfPattern.isValidEdtf(value)) {
+      throw new IOException("'" + property.getValue() + "' is not a supported datable format");
+    }
+
+    return tuple(property.getName(), objectMapper.writeValueAsString(value));
   }
 
   @Override
