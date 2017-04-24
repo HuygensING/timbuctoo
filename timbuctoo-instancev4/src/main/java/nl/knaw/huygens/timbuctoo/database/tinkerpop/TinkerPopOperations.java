@@ -1219,7 +1219,12 @@ public class TinkerPopOperations implements DataStoreOperations {
       Tuple<String, Object> convert = property.getTimProperty().convert(propertyConverter);
       value = convert.getRight();
     } catch (IOException e) {
-      LOG.error("Could not read timproperty of '{}' with value '{}'", property.getPredicateUri(), property.getValue());
+      LOG.error(
+        "Could not parse timproperty of '{}' with value '{}' for entity '{}'",
+        property.getPredicateUri(),
+        property.getValue(),
+        entityRdfUri
+      );
       value = property.getValue();
     }
     final Object val = value; // to be able to use the value in a lambda
