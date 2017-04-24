@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion.tinkerpop;
 
 
 import nl.knaw.huygens.timbuctoo.core.dto.property.ArrayOfLimitedValuesProperty;
+import nl.knaw.huygens.timbuctoo.core.dto.property.DatableProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.StringProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.TimProperty;
 import nl.knaw.huygens.timbuctoo.core.UnknownPropertyException;
@@ -23,7 +24,7 @@ import static org.mockito.Mockito.when;
 public class TinkerPopPropertyConverterTest {
 
   public static final String PROPERTY_NAME = "name";
-  public static final String PROPERTY_VALUE = "";
+  public static final String STRING_VALUE = "";
 
   @Test
   public void fromCreatesAStringPropertyWhenUsesTheUniqueTypeIdOfThePropertyToDetermineTheTimPropertyType()
@@ -34,7 +35,7 @@ public class TinkerPopPropertyConverterTest {
     when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.of(readableProperty));
     TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
 
-    TimProperty property = instance.from(PROPERTY_NAME, PROPERTY_VALUE);
+    TimProperty property = instance.from(PROPERTY_NAME, STRING_VALUE);
 
     assertThat(property, is(instanceOf(StringProperty.class)));
   }
@@ -46,7 +47,7 @@ public class TinkerPopPropertyConverterTest {
     when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.empty());
     TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
 
-    instance.from(PROPERTY_NAME, PROPERTY_VALUE);
+    instance.from(PROPERTY_NAME, STRING_VALUE);
   }
 
   @Test(expected = UnknownPropertyException.class)
@@ -58,7 +59,7 @@ public class TinkerPopPropertyConverterTest {
     when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.of(readableProperty));
     TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
 
-    instance.from(PROPERTY_NAME, PROPERTY_VALUE);
+    instance.from(PROPERTY_NAME, STRING_VALUE);
   }
 
   @Test(expected = IOException.class)
@@ -81,6 +82,30 @@ public class TinkerPopPropertyConverterTest {
     Tuple<String, Object> value = instance.to(property);
 
     assertThat(value.getLeft(), is("name"));
+  }
+
+  // Datable tests
+  @Test
+  public void fromReturnsADatablePropertyWithADecodedStringValue() throws Exception {
+    Collection collection = mock(Collection.class);
+    ReadableProperty readableProperty = mock(ReadableProperty.class);
+    when(readableProperty.getUniqueTypeId()).thenReturn("datable");
+    when(collection.getProperty(PROPERTY_NAME)).thenReturn(Optional.of(readableProperty));
+    TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(collection);
+
+    TimProperty<?> from = instance.from(PROPERTY_NAME, "\"1800\"");
+
+    assertThat(from.getValue(), is("1800"));
+  }
+
+  @Test
+  public void toReturnsAJsonEncodedStringForADatableProperty() throws Exception {
+    TinkerPopPropertyConverter instance = new TinkerPopPropertyConverter(null);
+    DatableProperty property = new DatableProperty(PROPERTY_NAME, "1800");
+
+    Tuple<String, Object> value = instance.to(property);
+
+    assertThat(value.getRight(), is("\"1800\""));
   }
 
 }

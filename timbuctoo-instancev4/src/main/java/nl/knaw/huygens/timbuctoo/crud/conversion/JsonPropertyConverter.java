@@ -49,7 +49,8 @@ public class JsonPropertyConverter extends PropertyConverter<JsonNode> {
         String.format("Could not convert '%s', datable should be presented as String", propertyName)
       );
     }
-    return new DatableProperty(propertyName, value.toString());
+
+    return new DatableProperty(propertyName, value.asText());
   }
 
   @Override

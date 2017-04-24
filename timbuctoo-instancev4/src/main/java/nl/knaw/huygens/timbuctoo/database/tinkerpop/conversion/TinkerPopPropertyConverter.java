@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop.conversion;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.core.dto.property.AltNamesProperty;
 import nl.knaw.huygens.timbuctoo.core.dto.property.ArrayOfLimitedValuesProperty;
@@ -39,7 +40,8 @@ public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
 
   @Override
   protected DatableProperty createDatableProperty(String propertyName, Object value) throws IOException {
-    return new DatableProperty(propertyName, toString(value));
+    String decodedValue = objectMapper.readValue(toString(value), String.class);
+    return new DatableProperty(propertyName, decodedValue);
   }
 
   @Override
@@ -113,7 +115,7 @@ public class TinkerPopPropertyConverter extends PropertyConverter<Object> {
 
   @Override
   public Tuple<String, Object> to(DatableProperty property) throws IOException {
-    return tuple(property.getName(), property.getValue());
+    return tuple(property.getName(), objectMapper.writeValueAsString(property.getValue()));
   }
 
   @Override
