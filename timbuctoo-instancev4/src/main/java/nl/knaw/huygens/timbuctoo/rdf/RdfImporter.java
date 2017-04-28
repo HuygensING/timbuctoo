@@ -26,7 +26,7 @@ public class RdfImporter {
   private Vres vres;
 
   public RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, RdfImportSession session) {
-    this(graphWrapper, vreName, vres, new TripleImporter(graphWrapper, vreName, session));
+    this(graphWrapper, vreName, vres, new TripleDataBaseImporter(graphWrapper, vreName, session));
   }
 
   RdfImporter(TinkerPopGraphManager graphWrapper, String vreName, Vres vres, TripleImporter tripleImporter) {

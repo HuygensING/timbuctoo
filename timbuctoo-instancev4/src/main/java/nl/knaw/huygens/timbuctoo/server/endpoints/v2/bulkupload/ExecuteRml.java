@@ -39,7 +39,7 @@ import java.util.Optional;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
 
-@Path("/v2.1/bulk-upload/{vre}/rml/execute")
+@Path("/v2.1/bulk-upload/{vre}/rml")
 public class ExecuteRml {
   public static final Logger LOG = LoggerFactory.getLogger(ExecuteRml.class);
   private final UriHelper uriHelper;
@@ -73,6 +73,7 @@ public class ExecuteRml {
   @POST
   @Consumes("application/ld+json")
   @Produces("text/plain")
+  @Path("execute")
   public Response post(String rdfData, @PathParam("vre") String vreName,
                        @HeaderParam("Authorization") String authorizationHeader) {
     if (vres.getVre(vreName) == null) {
@@ -175,5 +176,80 @@ public class ExecuteRml {
     }.start();
 
     return Response.ok().entity(output).build();
+  }
+
+  @POST
+  @Path("toFile")
+  public Response saveRdfToFile(String rdfData, @PathParam("vre") String vreName,
+                            @HeaderParam("Authorization") String authorizationHeader) {
+
+    if (vres.getVre(vreName) == null) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("Vre or data-set does not exist").build();
+    }
+
+    Optional<Response> filterResponse = permissionChecker.checkPermissionWithResponse(vreName, authorizationHeader);
+
+    if (filterResponse.isPresent()) {
+      return filterResponse.get();
+    }
+
+    if (rdfData == null || rdfData.length() == 0) {
+      return Response.status(Response.Status.BAD_REQUEST)
+                     .entity("failure: Body should contain a Json-LD object.")
+                     .build();
+    }
+
+    final Model model = ModelFactory.createDefaultModel();
+    model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");
+    final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(
+      model,
+      rdfResource -> dataSourceFactory.apply(rdfResource, vreName)
+    );
+    if (rmlMappingDocument.getErrors().size() > 0) {
+      return Response.status(Response.Status.BAD_REQUEST)
+                     .entity("failure: " + String.join("\nfailure: ", rmlMappingDocument.getErrors()) + "\n")
+                     .build();
+    }
+
+    Graph graph = graphWrapper.getGraph();
+    try (Transaction transaction = graph.tx()) {
+      GraphTraversal<Vertex, Vertex> vreT =
+        graph.traversal().V().hasLabel(Vre.DATABASE_LABEL).has(Vre.VRE_NAME_PROPERTY_NAME, vreName);
+      if (!vreT.hasNext()) {
+        return Response.status(Response.Status.NOT_FOUND)
+                       .entity(String.format("failure: VRE with name '%s' cannot be found", vreName))
+                       .build();
+      }
+      Vertex vreVertex = vreT.next();
+
+      if (!vreVertex.vertices(Direction.OUT, RAW_COLLECTION_EDGE_NAME).hasNext()) {
+        return Response.status(Response.Status.PRECONDITION_FAILED)
+                       .entity("failure: The VRE is missing raw collections to map.")
+                       .build();
+      }
+      transaction.close();
+    }
+
+    final ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
+
+    new Thread() {
+      public void run() {
+        try {
+          new RmlExecutorService(transactionEnforcer, vreName, graphWrapper, model, rmlMappingDocument, vres)
+            .saveToFile(msg -> {
+              try {
+                output.write(msg + "\n");
+              } catch (IOException e) {
+                LOG.error("Could not write to output stream", e);
+              }
+            });
+        } catch (Exception e) {
+          LOG.error("An unexpected exception occurred", e);
+        }
+      }
+    }.start();
+
+    return Response.ok().entity(output).build();
+
   }
 }

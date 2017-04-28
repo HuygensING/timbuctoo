@@ -27,7 +27,7 @@ public class RdfImporterTest {
   @Test
   public void importRdfReloadsTheDatabaseConfigurationAfterImport() {
     TinkerPopGraphManager graphWrapper = newGraph().wrap();
-    TripleImporter tripleImporter = mock(TripleImporter.class);
+    TripleImporter tripleImporter = mock(TripleDataBaseImporter.class);
     final Vres vres = mock(DatabaseConfiguredVres.class);
     RdfImporter instance = new RdfImporter(graphWrapper, VRE_NAME, vres, tripleImporter);
 

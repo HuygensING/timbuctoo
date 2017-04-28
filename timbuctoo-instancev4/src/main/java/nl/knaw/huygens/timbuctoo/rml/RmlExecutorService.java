@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.rml;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
+import nl.knaw.huygens.timbuctoo.rdf.TripleDataBaseImporter;
+import nl.knaw.huygens.timbuctoo.rdf.TripleFileImporter;
 import nl.knaw.huygens.timbuctoo.rdf.TripleImporter;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
@@ -12,11 +14,13 @@ import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.time.Clock;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
+import static nl.knaw.huygens.timbuctoo.core.TransactionState.rollback;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
@@ -46,7 +50,7 @@ public class RmlExecutorService {
       timbuctooActions.setVrePublishState(vreName, Vre.PublishState.MAPPING_EXECUTION);
 
       timbuctooActions.rdfCleanImportSession(vreName, session -> {
-        final TripleImporter importer = new TripleImporter(graphWrapper, vreName, session);
+        final TripleImporter importer = new TripleDataBaseImporter(graphWrapper, vreName, session);
 
         //first save the archetype mappings
         AtomicLong tripleCount = new AtomicLong(0);
@@ -92,6 +96,57 @@ public class RmlExecutorService {
               v.property(COLLECTION_LABEL_PROPERTY_NAME, typeName.substring(vreName.length()));
             }
           });
+
+        return commit();
+      });
+      return commit();
+    });
+    vres.reload();//FIXME naar importSession.close can be done when the Vres are retrieved via TimbuctooActions
+  }
+
+  public void saveToFile(Consumer<String> statusUpdate) {
+    transactionEnforcer.execute(timbuctooActions -> {
+      timbuctooActions.setVrePublishState(vreName, Vre.PublishState.MAPPING_EXECUTION);
+
+      timbuctooActions.rdfCleanImportSession(vreName, session -> {
+        final TripleFileImporter importer;
+        try {
+          importer = new TripleFileImporter(vreName);
+        } catch (FileNotFoundException e) {
+          return rollback();
+        }
+
+        //first save the archetype mappings
+        AtomicLong tripleCount = new AtomicLong(0);
+        AtomicLong curtime = new AtomicLong(Clock.systemUTC().millis());
+
+        //create the links from the collection entities to the archetypes
+        model
+          .listStatements(
+            null,
+            model.createProperty("http://www.w3.org/2000/01/rdf-schema#subClassOf"),
+            (String) null
+          )
+          .forEachRemaining(statement -> {
+              importer.importTriple(true, new Triple(
+                statement.getSubject().asNode(),
+                statement.getPredicate().asNode(),
+                statement.getObject().asNode()
+              ));
+              reportTripleCount(tripleCount, curtime, statusUpdate);
+            }
+          );
+
+        //generate and import rdf
+        rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
+          (triple) -> {
+            reportTripleCount(tripleCount, curtime, statusUpdate);
+            importer.importTriple(true, triple);
+          });
+
+        importer.close();
+
+        reportTripleCount(tripleCount, curtime, statusUpdate);
 
         return commit();
       });

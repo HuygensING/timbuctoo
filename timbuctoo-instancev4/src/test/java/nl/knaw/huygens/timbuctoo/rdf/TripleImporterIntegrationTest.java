@@ -104,7 +104,7 @@ public class TripleImporterIntegrationTest {
     timbuctooActions = TimbuctooActionsStubs.withDataStore(tinkerPopOperations);
 
     rdfImportSession = RdfImportSession.cleanImportSession(VRE_NAME, tinkerPopOperations, new EntityFinisherHelper());
-    instance = new TripleImporter(
+    instance = new TripleDataBaseImporter(
       graphWrapper,
       VRE_NAME,
       rdfImportSession);
