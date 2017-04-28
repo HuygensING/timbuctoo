@@ -38,13 +38,13 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
       put(
         subject + "\n" +
           predicate,
-          (valueType != null ? valueType : "") + "\n" +
-            object
+        (valueType != null ? valueType : "") + "\n" +
+          object
       );
       if (valueType == null && !predicate.isEmpty()) {
         put(
           object + "\n" +
-            predicate + "_inverse",
+            predicate + "_inverse",//FIXME! maybe make this a marker or something? instead of creating a new predicate
           "\n" + subject
         );
       }

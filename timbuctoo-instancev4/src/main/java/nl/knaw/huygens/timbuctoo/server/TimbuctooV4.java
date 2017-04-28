@@ -88,6 +88,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -97,6 +98,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
+import java.io.File;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -245,8 +247,15 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.jersey().register(new JsonWriter());
 
     // register REST endpoints
-    TimbuctooManagedDataStoreFactory dataStoreFactory = new TimbuctooManagedDataStoreFactory("/database");
+    String databaseLocation =
+      (configuration.getDatabaseConfiguration() == null ?
+        configuration.getDatabasePath() :
+        configuration.getDatabaseConfiguration().getDatabasePath()) +
+      File.pathSeparatorChar +
+      "bdb";
+    TimbuctooManagedDataStoreFactory dataStoreFactory = new TimbuctooManagedDataStoreFactory(databaseLocation);
     environment.lifecycle().manage(dataStoreFactory);
+    register(environment, new RdfUpload(dataStoreFactory));
     register(environment,
       new GraphQl(
         new GraphQlService(

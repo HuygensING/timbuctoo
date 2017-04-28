@@ -9,14 +9,16 @@ import java.io.FileNotFoundException;
 import java.net.URI;
 import java.util.Optional;
 
-class FileBasedLog implements LocalLog {
+public class FileBasedLog implements LocalLog {
 
   private final URI name;
   private final String file;
+  private final String contentType;
 
-  private FileBasedLog(URI name, String file) {
+  public FileBasedLog(URI name, String file, String contentType) {
     this.name = name;
     this.file = file;
+    this.contentType = contentType;
   }
 
   @Override
@@ -29,7 +31,7 @@ class FileBasedLog implements LocalLog {
     try {
       rdfParser.importRdf(
         name,
-        Optional.empty(),
+        contentType != null &&  contentType.length() > 0 ? Optional.of(contentType) : Optional.empty(),
         new FileInputStream(file),
         quadHandler
       );
