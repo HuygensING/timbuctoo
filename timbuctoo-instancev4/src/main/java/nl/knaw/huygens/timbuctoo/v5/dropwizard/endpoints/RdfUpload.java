@@ -1,80 +1,72 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreFactory;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.FileBasedLog;
+import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatus;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportManager;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.datastore.LogMetadata;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.datastore.LogStorage;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.dto.LocalLog;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.rdfreader.implementations.rdf4j.Rdf4jRdfParser;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogStorageFailedException;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-
-import static org.apache.poi.util.IOUtils.copy;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @Path("/v4/rdf-upload/{dataSet}")
 public class RdfUpload {
 
   protected final ImportManager importManager;
 
-  public RdfUpload(DataStoreFactory dataStoreFactory) {
-    NoOpLogMetadata noOp = new NoOpLogMetadata();
-    importManager = new ImportManager(noOp, noOp, new Rdf4jRdfParser(), dataStoreFactory);
+  public RdfUpload(ImportManager importManager) {
+    this.importManager = importManager;
   }
+
+  /*
+  curl \
+  -F "uri=http://timbuctoo.com/clusius.nt" \
+  -F "encoding=UTF-8" \
+  -F file=@/Users/jauco/Dropbox\ \(Huygens-ICT\)/Team-red/test_sets/bia_clusius.nt;type=application/n-triples \
+  http://localhost:8080/v4/rdf-upload/clusius/
+
+  curl http://localhost:8080/v4/rdf-upload/clusius/
+   */
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
   @POST
   public void upload(@FormDataParam("file") final InputStream rdfInputStream,
-                     @FormDataParam("file") final FormDataContentDisposition disposition,
+                     @FormDataParam("file") final FormDataBodyPart body,
+                     @FormDataParam("encoding") final String encoding,
                      @FormDataParam("uri") final URI uri,
-                     @PathParam("dataSet") final String dataSetId) throws IOException, LogProcessingFailedException {
-    File tempFile = File.createTempFile("timbuctoo-bulkupload-", null, null);
-    copy(rdfInputStream, new FileOutputStream(tempFile));
-
-    importManager.addLog(
+                     @PathParam("dataSet") final String dataSetId)
+      throws IOException, LogProcessingFailedException, LogStorageFailedException, ExecutionException,
+      InterruptedException {
+    Future<?> promise = importManager.addLog(
       dataSetId,
-      new FileBasedLog(uri, tempFile.getAbsolutePath(), disposition.getType())
+      uri,
+      body == null || body.getMediaType() == null ?
+        Optional.empty() :
+        Optional.of(body.getMediaType().toString()),
+      Optional.of(Charset.forName(encoding)),
+      rdfInputStream
     );
+    promise.get();
   }
 
-  private class NoOpLogMetadata implements LogMetadata, LogStorage {
-
-    @Override
-    public void addLog(String dataSet, URI logUri) {
-
-    }
-
-    @Override
-    public LocalLog startOrContinueAppendLog(String dataSet) {
-      return null;
-    }
-
-    @Override
-    public void appendToLogFinished(String dataSet) {
-
-    }
-
-    @Override
-    public QuadHandler startWritingToLog(LocalLog log) {
-      return null;
-    }
-
-    @Override
-    public void writeFinished(String dataSet) {
-
-    }
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  public Map<String, StoreStatus> upload(@PathParam("dataSet") final String dataSetId) throws IOException {
+    return importManager.getStatus(dataSetId);
   }
+
 }

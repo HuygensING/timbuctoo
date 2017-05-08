@@ -3,20 +3,22 @@ package nl.knaw.huygens.timbuctoo.remote.rs.download;
 import org.immutables.value.Value;
 
 import java.io.InputStream;
+import java.net.URI;
+import java.util.Optional;
 
 @Value.Immutable
 public interface RemoteFile {
-  String getUrl();
+  URI getUrl();
 
   InputStream getData();
 
-  String getMimeType();
+  Optional<String> getMimeType();
 
-  static RemoteFile create(String url, InputStream data, String mimeType) {
+  static RemoteFile create(URI url, InputStream data, String mimeType) {
     return ImmutableRemoteFile.builder()
       .data(data)
       .url(url)
-      .mimeType(mimeType)
+      .mimeType(Optional.ofNullable(mimeType))
       .build();
   }
 }

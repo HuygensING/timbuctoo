@@ -14,7 +14,7 @@ public class CollectionIndexSchemaFactory {
                                              CollectionIndexFetcherFactory fetcherFactory) {
 
     GraphQLObjectType.Builder result = newObject()
-      .name("Query");
+      .name("Collections");
 
     for (Map.Entry<String, GraphQLObjectType> typeMapping : typesMap.entrySet()) {
       String typeUri = typeMapping.getKey();

@@ -24,7 +24,7 @@ public class GraphQl {
   @POST
   public Response get(String query, @PathParam("dataSet") String dataSet) {
     try {
-      return ok(graphQlService.executeQuery(query, dataSet)).build();
+      return ok(graphQlService.executeQuery(dataSet, query)).build();
     } catch (GraphQlProcessingException | GraphQlFailedException e) {
       e.printStackTrace();
       return Response.status(500).entity(e.getMessage()).build();

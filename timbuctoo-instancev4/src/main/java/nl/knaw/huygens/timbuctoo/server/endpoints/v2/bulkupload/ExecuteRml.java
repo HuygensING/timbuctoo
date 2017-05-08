@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportManager;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
@@ -50,10 +51,11 @@ public class ExecuteRml {
   private final DataSourceFactory dataSourceFactory;
   private final TransactionEnforcer transactionEnforcer;
   private final Webhooks webhooks;
+  private final ImportManager importManager;
 
   public ExecuteRml(UriHelper uriHelper, TinkerPopGraphManager graphWrapper, Vres vres, JenaBasedReader rmlBuilder,
                     UserPermissionChecker permissionChecker, DataSourceFactory dataSourceFactory,
-                    TransactionEnforcer transactionEnforcer, Webhooks webhooks) {
+                    TransactionEnforcer transactionEnforcer, Webhooks webhooks, ImportManager importManager) {
     this.uriHelper = uriHelper;
     this.graphWrapper = graphWrapper;
     this.vres = vres;
@@ -62,6 +64,7 @@ public class ExecuteRml {
     this.dataSourceFactory = dataSourceFactory;
     this.transactionEnforcer = transactionEnforcer;
     this.webhooks = webhooks;
+    this.importManager = importManager;
   }
 
   public URI makeUri(String vreName) {
@@ -127,7 +130,11 @@ public class ExecuteRml {
     new Thread() {
       public void run() {
         try {
-          new RmlExecutorService(transactionEnforcer, vreName, graphWrapper, model, rmlMappingDocument, vres)
+          transactionEnforcer.execute(timbuctooActions -> {
+            timbuctooActions.setVrePublishState(vreName, Vre.PublishState.MAPPING_EXECUTION);
+            return commit();
+          });
+          new RmlExecutorService(vreName, model, rmlMappingDocument, importManager)
             .execute(msg -> {
               try {
                 output.write(msg + "\n");

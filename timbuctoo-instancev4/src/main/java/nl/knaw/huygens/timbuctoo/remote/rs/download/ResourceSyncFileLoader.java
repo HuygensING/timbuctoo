@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -97,14 +98,12 @@ public class ResourceSyncFileLoader {
         if (item.getRight() != null) {
           return tuple(item.getLeft(), item.getRight().getMimeType());
         } else {
-          String extension = item.getLeft().substring(item.getLeft().lastIndexOf(".") + 1);
-          return tuple(item.getLeft(), MIME_TYPE_FOR_EXTENSION.get(extension));
+          return tuple(item.getLeft(), (String) null);
         }
       })
-      .filter(item -> SUPPORTED_MIME_TYPES.contains(item.getRight()))
       .map(resource -> {
         try {
-          return RemoteFile.create(resource.getLeft(), getFile(resource.getLeft()), resource.getRight());
+          return RemoteFile.create(URI.create(resource.getLeft()), getFile(resource.getLeft()), resource.getRight());
         } catch (IOException e) {
           throw new RuntimeUpgrader(e);
         }

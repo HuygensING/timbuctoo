@@ -88,9 +88,12 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfDatasets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.rdfreader.implementations.rdf4j.Rdf4jRdfParser;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -251,11 +254,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       (configuration.getDatabaseConfiguration() == null ?
         configuration.getDatabasePath() :
         configuration.getDatabaseConfiguration().getDatabasePath()) +
-      File.pathSeparatorChar +
-      "bdb";
+      File.separatorChar +
+      "nextgen";
     TimbuctooManagedDataStoreFactory dataStoreFactory = new TimbuctooManagedDataStoreFactory(databaseLocation);
     environment.lifecycle().manage(dataStoreFactory);
-    register(environment, new RdfUpload(dataStoreFactory));
+    final ExecutorService importExecutorServer = environment.lifecycle().executorService("importManager").build();
+    ImportManager importManager = new ImportManager(new Rdf4jRdfParser(), dataStoreFactory, importExecutorServer);
+    register(environment, new RdfUpload(importManager));
     register(environment,
       new GraphQl(
         new GraphQlService(
@@ -264,6 +269,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         )
       )
     );
+    register(environment, new RdfDatasets(dataStoreFactory));
+
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new JsEnv(configuration));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
@@ -293,7 +300,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
       new DataSourceFactory(graphManager), transactionEnforcer,
-      configuration.getWebhooks().getWebHook(environment));
+      configuration.getWebhooks().getWebHook(environment),
+      importManager);
     register(environment, executeRml);
     SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
     register(environment, saveRml);
@@ -324,15 +332,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
-      transactionEnforcer,
-      graphManager,
-      rfdExecutorService,
       new VreAuthIniter(
         securityConfig.getLoggedInUsers(environment),
         transactionEnforcer,
         securityConfig.getVreAuthorizationCreator()
       ),
-      vres
+      importManager
     ));
 
     // Admin resources

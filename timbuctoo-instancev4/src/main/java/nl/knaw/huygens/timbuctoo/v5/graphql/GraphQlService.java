@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql;
 
-import com.sleepycat.je.DatabaseException;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLObjectType;
@@ -13,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingExceptio
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -47,7 +47,7 @@ public class GraphQlService {
         )
         .queryExecutionStrategy(new SerializerExecutionStrategy(dataStores.getTypeNameStore()))
         .build();
-    } catch (DatabaseException e) {
+    } catch (IOException e) {
       throw new GraphQlProcessingException(e);
     }
   }

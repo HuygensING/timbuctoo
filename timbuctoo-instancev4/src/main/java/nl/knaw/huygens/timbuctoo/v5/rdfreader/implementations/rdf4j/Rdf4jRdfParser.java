@@ -14,7 +14,7 @@ import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
 import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.Reader;
 import java.net.URI;
 import java.util.Optional;
 
@@ -22,7 +22,7 @@ import static org.eclipse.rdf4j.rio.Rio.getParserFormatForFileName;
 
 public class Rdf4jRdfParser implements RdfParser {
   @Override
-  public void importRdf(URI fileUri, Optional<String> mimeType, InputStream data, QuadHandler quadHandler)
+  public void loadFile(URI fileUri, Optional<String> mimeType, Reader data, QuadHandler quadHandler)
       throws LogProcessingFailedException {
 
     Optional<RDFFormat> format = mimeType.flatMap(Rio::getParserFormatForMIMEType);
@@ -35,7 +35,7 @@ public class Rdf4jRdfParser implements RdfParser {
       );
       RDFParser rdfParser = Rio.createParser(unwrappedFormat);
       rdfParser.setPreserveBNodeIDs(true);
-      rdfParser.setRDFHandler(new QuadHandlerDelegator(quadHandler));
+      rdfParser.setRDFHandler(new QuadHandlerDelegator(quadHandler, fileUri));
       rdfParser.parse(data, fileUri.toString());
     } catch (IOException | RDFParseException | UnsupportedRDFormatException e) {
       throw new LogProcessingFailedException(e);
@@ -51,15 +51,19 @@ public class Rdf4jRdfParser implements RdfParser {
   class QuadHandlerDelegator extends AbstractRDFHandler {
 
     private final QuadHandler quadHandler;
+    private final URI fileUri;
+    private long idx;
 
-    private QuadHandlerDelegator(QuadHandler quadHandler) {
+    private QuadHandlerDelegator(QuadHandler quadHandler, URI fileUri) {
       this.quadHandler = quadHandler;
+      this.fileUri = fileUri;
+      this.idx = 0;
     }
 
     @Override
     public void handleNamespace(String prefix, String uri) throws RDFHandlerException {
       try {
-        quadHandler.onPrefix(prefix, uri);
+        quadHandler.onPrefix(idx++, prefix, uri);
       } catch (LogProcessingFailedException e) {
         throw new RDFHandlerException(e);
       }
@@ -68,7 +72,7 @@ public class Rdf4jRdfParser implements RdfParser {
     @Override
     public void startRDF() throws RDFHandlerException {
       try {
-        quadHandler.start();
+        quadHandler.start(0);
       } catch (LogProcessingFailedException e) {
         throw new RDFHandlerException(e);
       }
@@ -85,18 +89,43 @@ public class Rdf4jRdfParser implements RdfParser {
 
     @Override
     public void handleStatement(Statement st) throws RDFHandlerException {
-      String valueType = null;
-      if (st.getObject() instanceof Literal) {
-        valueType = ((Literal) st.getObject()).getDatatype().toString();
-      }
       try {
-        quadHandler.onQuad(
-          st.getSubject().stringValue(),
-          st.getPredicate().stringValue(),
-          st.getObject().stringValue(),
-          valueType,
-          st.getContext().stringValue()
-        );
+        if (Thread.currentThread().isInterrupted()) {
+          quadHandler.cancel();
+          throw new RDFHandlerException("Interrupted");
+        }
+        String graph = st.getContext() == null ? fileUri.toString() : st.getContext().stringValue();
+        if (st.getObject() instanceof Literal) {
+          Literal literal = (Literal) st.getObject();
+          String valueType = literal.getDatatype().toString();
+          if (literal.getLanguage().isPresent()) {
+            quadHandler.onLanguageTaggedString(
+              idx++,
+              st.getSubject().stringValue(),
+              st.getPredicate().stringValue(),
+              st.getObject().stringValue(),
+              literal.getLanguage().get(),
+              graph
+            );
+          } else {
+            quadHandler.onLiteral(
+              idx++,
+              st.getSubject().stringValue(),
+              st.getPredicate().stringValue(),
+              st.getObject().stringValue(),
+              valueType,
+              graph
+            );
+          }
+        } else {
+          quadHandler.onRelation(
+            idx++,
+            st.getSubject().stringValue(),
+            st.getPredicate().stringValue(),
+            st.getObject().stringValue(),
+            graph
+          );
+        }
       } catch (LogProcessingFailedException e) {
         throw new RDFHandlerException(e);
       }

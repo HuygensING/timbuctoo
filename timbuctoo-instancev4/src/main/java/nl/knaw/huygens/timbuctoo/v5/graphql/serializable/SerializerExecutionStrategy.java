@@ -3,10 +3,9 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.serializable;
 import graphql.ExecutionResult;
 import graphql.ExecutionResultImpl;
 import graphql.execution.ExecutionContext;
-import graphql.execution.ExecutionParameters;
-import graphql.execution.NonNullableFieldWasNullException;
 import graphql.execution.SimpleExecutionStrategy;
 import graphql.language.Field;
+import graphql.schema.GraphQLList;
 import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
@@ -29,8 +28,8 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
   }
 
   @Override
-  public ExecutionResult execute(ExecutionContext executionContext, ExecutionParameters parameters)
-      throws NonNullableFieldWasNullException {
+  public ExecutionResult execute(ExecutionContext executionContext, GraphQLObjectType parentType, Object source,
+                                 Map<String, List<Field>> fields) {
 
     //Een "object" in graphql van be:
     // - an rdf subject
@@ -40,9 +39,9 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
 
     final Serializable wrappedData;
     final ExecutionResult result;
-    if (implementsInterface(parameters, "Entity")) {
-      boolean manuallyAddedUri = addUriField(parameters.fields());
-      result = super.execute(executionContext, parameters);
+    if (implementsInterface(parentType, "Entity")) {
+      boolean manuallyAddedUri = addUriField(fields);
+      result = super.execute(executionContext, parentType, source, fields);
 
       String uri = getUri(result);
 
@@ -50,12 +49,12 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
         ((Map) result.getData()).remove("uri");
       }
       wrappedData = new SerializableObject(makeScalarsSerializable(result.getData()), uri, typeNameStore);
-    } else if (implementsInterface(parameters, "Value")) {
-      result = super.execute(executionContext, parameters);
+    } else if (implementsInterface(parentType, "Value")) {
+      result = super.execute(executionContext, parentType, source, fields);
       Map<String, Object> resultData = result.getData();
       wrappedData = new SerializableValue(resultData.get("value"), (String) resultData.get("type"));
     } else {
-      result = super.execute(executionContext, parameters);
+      result = super.execute(executionContext, parentType, source, fields);
       wrappedData = new SerializableObject(makeScalarsSerializable(result.getData()), null, typeNameStore);
     }
 
@@ -66,15 +65,14 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
     );
   }
 
-  private boolean implementsInterface(ExecutionParameters parameters, String entity) {
-    GraphQLObjectType graphQlObjectType = parameters.typeInfo().castType(GraphQLObjectType.class);
-    return graphQlObjectType.getInterfaces().stream().anyMatch(i -> i.getName().equals(entity));
+  private boolean implementsInterface(GraphQLObjectType objectType, String entity) {
+    return objectType.getInterfaces().stream().anyMatch(i -> i.getName().equals(entity));
   }
 
   @Override
-  protected ExecutionResult completeValueForList(ExecutionContext executionContext, ExecutionParameters parameters,
+  protected ExecutionResult completeValueForList(ExecutionContext executionContext, GraphQLList fieldType,
                                                  List<Field> fields, Iterable<Object> input) {
-    ExecutionResult result = super.completeValueForList(executionContext, parameters, fields, input);
+    ExecutionResult result = super.completeValueForList(executionContext, fieldType, fields, input);
 
     List<Object> data = result.getData();
     for (int i = 0; i < data.size(); i++) {

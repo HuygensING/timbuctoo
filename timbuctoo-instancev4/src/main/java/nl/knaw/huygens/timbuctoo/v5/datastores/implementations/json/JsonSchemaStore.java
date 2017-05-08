@@ -1,122 +1,216 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatus;
+import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatusImpl;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.dto.Schema;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
-import nl.knaw.huygens.timbuctoo.v5.util.ThroughputLogger;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.ProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class JsonSchemaStore implements SchemaStore {
-  private final TripleStore tripleStore;
-  private Map<String, Type> types = null;
+  private final Schema jsonData;
   private static final Function<String, Type> TYPE_MAKER = Type::new;
   protected final File schemaFile;
   protected final ObjectMapper mapper;
+  private static final Logger LOG = getLogger(JsonSchemaStore.class);
 
-  public JsonSchemaStore(TripleStore tripleStore, File dataLocation) {
-    this.tripleStore = tripleStore;
-    mapper = new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true);
-    schemaFile = new File(dataLocation, "schema.json");
+  public JsonSchemaStore(File dataLocation, ObjectMapper objectMapper) throws IOException {
+    mapper = objectMapper;
+    schemaFile = dataLocation;
+    if (schemaFile.exists()) {
+      jsonData = mapper.readValue(schemaFile, Schema.class);
+      for (Map.Entry<String, Type> typeEntry : jsonData.types.entrySet()) {
+        typeEntry.getValue().setName(typeEntry.getKey());
+      }
+    } else {
+      jsonData = initialData();
+    }
+  }
+
+  private Schema initialData() {
+    Schema result = new Schema();
+    result.types = new HashMap<>();
+    result.storeStatus = new StoreStatusImpl(0);
+    return result;
   }
 
   @Override
   public Map<String, Type> getTypes() {
-    if (types == null) {
-      if (schemaFile.exists()) {
-        try {
-          types = mapper.readValue(schemaFile, new TypeReference<HashMap<String, Type>>() {
-          });
-          for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
-            typeEntry.getValue().setName(typeEntry.getKey());
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-          generate();
-        }
-        return types;
-      } else {
-        generate();
-      }
-    }
-    return types;
+    return jsonData.types;
   }
 
-  public void generate() {
-    Map<String, Type> curTypes = new HashMap<>();
-    String curSubject = "";
-    ThroughputLogger throughputLogger = new ThroughputLogger(10);
-    String prevPredicate = "";
-    boolean predicateUsedTwice;
-    try (AutoCloseableIterator<String[]> triples = tripleStore.getTriples()) {
-      while (triples.hasNext()) {
-        String[] triple = triples.next();
-        throughputLogger.tripleProcessed();
-        if (!curSubject.equals(triple[0])) {
-          curSubject = triple[0];
-          prevPredicate = "";
-          curTypes.clear();
-        }
-        if (RDF_TYPE.equals(triple[1])) {
-          curTypes.put(triple[2], types.computeIfAbsent(triple[2], TYPE_MAKER));
-        } else {
-          if (curTypes.isEmpty()) {
-            curTypes.put(UNKNOWN, types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
-          }
-          //if same predicate twice in a row
-          if (prevPredicate.equals(triple[1])) {
-            predicateUsedTwice = true;
-          } else {
-            predicateUsedTwice = false;
-          }
-          prevPredicate = triple[1];
-          for (Type type : curTypes.values()) {
-            Predicate predicate = type.getOrCreatePredicate(triple[1]);
-            if (predicateUsedTwice) {
-              predicate.setList(true);
-            } else {
-              predicate.incUsage(); //this predicate is used at an instance of this type
-            }
-            if (triple[3] != null) {
-              predicate.addValueType(triple[3]);
-            } else {
-              boolean hadType = false;
-              try (AutoCloseableIterator<String[]> objectTypes = tripleStore
-                .getTriples(triple[2], RDF_TYPE)) {
-                while (objectTypes.hasNext()) {
-                  hadType = true;
-                  predicate.addReferenceType(objectTypes.next()[2]);
-                }
-              }
-              if (!hadType) {
-                predicate.addReferenceType(UNKNOWN);
-              }
-            }
-          }
-        }
-      }
-    }
+  @Override
+  public void process(TripleStore tripleStore, long version) throws ProcessingFailedException {
+    Importer importer = new Importer(tripleStore, jsonData.storeStatus);
     try {
-      mapper.writeValue(schemaFile, types);
+      tripleStore.getTriples(importer);
+      jsonData.storeStatus.finishUpdate(version);
+      jsonData.types = importer.nextTypes;
+      saveData(jsonData);
+    } catch (LogProcessingFailedException e) {
+      jsonData.storeStatus.abortUpdate(e.getMessage());
+      saveData(jsonData);
+      throw new ProcessingFailedException(e.getCause());
+    }
+  }
+
+  private void saveData(Schema data) throws ProcessingFailedException {
+    try {
+      mapper.writeValue(schemaFile, data);
     } catch (IOException e) {
-      e.printStackTrace();
+      throw new ProcessingFailedException(e);
     }
   }
 
   @Override
   public void close() throws Exception {
+  }
 
+  @Override
+  public StoreStatus getStatus() {
+    return jsonData.storeStatus;
+  }
+
+  private class Importer implements QuadHandler {
+    private final TripleStore tripleStore;
+    private final StoreStatusImpl storeStatus;
+    Map<String, Type> nextTypes = new HashMap<>();
+    String curSubject = "";
+    String prevPredicate = "";
+    boolean predicateUsedTwice;
+    Map<String, Type> curTypes = new HashMap<>();
+
+
+    private Importer(TripleStore tripleStore, StoreStatusImpl storeStatus) {
+      this.tripleStore = tripleStore;
+      this.storeStatus = storeStatus;
+    }
+
+    @Override
+    public void start(long lineCount) throws LogProcessingFailedException {
+      storeStatus.startUpdate(lineCount);
+    }
+
+    private void onTriple(String subject) {
+      if (!curSubject.equals(subject)) {
+        curSubject = subject;
+        prevPredicate = "";
+        curTypes.clear();
+      }
+    }
+
+    private void handleStatement(String predicateStr, String object, String valueType)
+        throws LogProcessingFailedException {
+      if (curTypes.isEmpty()) {
+        curTypes.put(UNKNOWN, nextTypes.computeIfAbsent(UNKNOWN, TYPE_MAKER));
+      }
+      if (prevPredicate.equals(predicateStr)) {
+        predicateUsedTwice = true;
+      } else {
+        predicateUsedTwice = false;
+      }
+      prevPredicate = predicateStr;
+      final ArrayList<Predicate> predicates = new ArrayList<>();
+      for (Type type : curTypes.values()) {
+        predicates.add(type.getOrCreatePredicate(predicateStr));
+      }
+      for (Predicate predicate : predicates) {
+        if (predicateUsedTwice) {
+          predicate.setList(true);
+        } else {
+          predicate.incUsage(); //this predicate is used at an instance of this type
+        }
+      }
+      if (valueType != null) {
+        for (Predicate predicate : predicates) {
+          predicate.addValueType(valueType);
+        }
+      } else {
+        try (AutoCloseableIterator<String[]> triples = tripleStore.getTriples(object, RDF_TYPE)) {
+          boolean hadType = false;
+          while (triples.hasNext()) {
+            String[] triple = triples.next();
+            for (Predicate predicate : predicates) {
+              hadType = true;
+              predicate.addReferenceType(triple[2]);
+            }
+          }
+          if (!hadType) {
+            for (Predicate predicate : predicates) {
+              predicate.addReferenceType(UNKNOWN);
+            }
+          }
+        }
+      }
+    }
+
+    @Override
+    public void onPrefix(long line, String prefix, String iri) throws LogProcessingFailedException {
+    }
+
+    @Override
+    public void onRelation(long line, String subject, String predicate, String object, String graph)
+        throws LogProcessingFailedException {
+      if (storeStatus.getPosition() > line) {
+        return;
+      }
+      storeStatus.setPosition(line);
+      onTriple(subject);
+      if (RDF_TYPE.equals(predicate)) {
+        curTypes.put(object, nextTypes.computeIfAbsent(object, TYPE_MAKER));
+      } else {
+        handleStatement(predicate, object, null);
+      }
+    }
+
+    @Override
+    public void onLiteral(long line, String subject, String predicate, String object, String valueType, String graph)
+        throws LogProcessingFailedException {
+      if (storeStatus.getPosition() > line) {
+        return;
+      }
+      storeStatus.setPosition(line);
+      onTriple(subject);
+      handleStatement(predicate, object, valueType);
+    }
+
+    @Override
+    public void onLanguageTaggedString(long line, String subject, String predicate, String value, String language,
+                                       String graph)
+        throws LogProcessingFailedException {
+      if (storeStatus.getPosition() > line) {
+        return;
+      }
+      storeStatus.setPosition(line);
+      onTriple(subject);
+      handleStatement(predicate, value, LANGSTRING);
+    }
+
+    @Override
+    public void cancel() throws LogProcessingFailedException {
+    }
+
+    @Override
+    public void finish() throws LogProcessingFailedException {
+    }
   }
 }
