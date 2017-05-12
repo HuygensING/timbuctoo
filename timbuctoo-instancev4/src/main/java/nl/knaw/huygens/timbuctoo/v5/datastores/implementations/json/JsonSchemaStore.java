@@ -8,18 +8,20 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.ProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
@@ -62,7 +64,7 @@ public class JsonSchemaStore implements SchemaStore {
   public void process(TripleStore tripleStore, long version) throws ProcessingFailedException {
     Importer importer = new Importer(tripleStore, jsonData.storeStatus);
     try {
-      tripleStore.getTriples(importer);
+      tripleStore.getQuads(importer);
       jsonData.storeStatus.finishUpdate(version);
       jsonData.types = importer.nextTypes;
       saveData(jsonData);
@@ -145,13 +147,14 @@ public class JsonSchemaStore implements SchemaStore {
           predicate.addValueType(valueType);
         }
       } else {
-        try (AutoCloseableIterator<String[]> triples = tripleStore.getTriples(object, RDF_TYPE)) {
+        try (Stream<Quad> quads = tripleStore.getQuads(object, RDF_TYPE)) {
+          Iterator<Quad> iterator = quads.iterator();
           boolean hadType = false;
-          while (triples.hasNext()) {
-            String[] triple = triples.next();
+          while (iterator.hasNext()) {
+            Quad quad = iterator.next();
             for (Predicate predicate : predicates) {
               hadType = true;
-              predicate.addReferenceType(triple[2]);
+              predicate.addReferenceType(quad.getObject());
             }
           }
           if (!hadType) {

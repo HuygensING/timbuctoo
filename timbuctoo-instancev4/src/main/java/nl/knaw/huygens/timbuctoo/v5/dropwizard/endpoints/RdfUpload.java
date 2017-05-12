@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatus;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.FileSaver;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.LocalData;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogStorageFailedException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -21,15 +23,16 @@ import java.nio.charset.Charset;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
-@Path("/v4/rdf-upload/{dataSet}")
+@Path("/v4/{dataSet}/logs")
 public class RdfUpload {
 
   protected final ImportManager importManager;
+  private final FileSaver fileSaver;
 
-  public RdfUpload(ImportManager importManager) {
+  public RdfUpload(ImportManager importManager, FileSaver fileSaver) {
     this.importManager = importManager;
+    this.fileSaver = fileSaver;
   }
 
   /*
@@ -51,21 +54,20 @@ public class RdfUpload {
                      @PathParam("dataSet") final String dataSetId)
       throws IOException, LogProcessingFailedException, LogStorageFailedException, ExecutionException,
       InterruptedException {
-    Future<?> promise = importManager.addLog(
-      dataSetId,
-      uri,
+    LocalData data = fileSaver.store(
       body == null || body.getMediaType() == null ?
         Optional.empty() :
         Optional.of(body.getMediaType().toString()),
       Optional.of(Charset.forName(encoding)),
       rdfInputStream
     );
-    promise.get();
+    importManager.addLog(dataSetId, uri, data)
+      .get(); //block until the upload is done
   }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  public Map<String, StoreStatus> upload(@PathParam("dataSet") final String dataSetId) throws IOException {
+  public Map<String, StoreStatus> status(@PathParam("dataSet") final String dataSetId) throws IOException {
     return importManager.getStatus(dataSetId);
   }
 

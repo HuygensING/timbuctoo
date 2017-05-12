@@ -1,9 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.logprocessing;
 
+import nl.knaw.huygens.timbuctoo.v5.datastores.DataSetManager;
 import nl.knaw.huygens.timbuctoo.v5.datastores.DataStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.DataStores;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatus;
+import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.datastore.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogStorageFailedException;
@@ -13,13 +14,10 @@ import nl.knaw.huygens.timbuctoo.v5.util.ThroughputLogger;
 import org.slf4j.Logger;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
@@ -28,28 +26,27 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class ImportManager {
 
   private final RdfParser rdfParser;
-  private final DataStoreFactory dataStoreFactory;
+  private final DataSetManager dataSetManager;
   private final ExecutorService executorService;
   private static final Logger LOG = getLogger(ImportManager.class);
 
-  public ImportManager(RdfParser rdfParser, DataStoreFactory dataStoreFactory, ExecutorService executorService) {
+  public ImportManager(RdfParser rdfParser, DataSetManager dataSetManager, ExecutorService executorService) {
     this.rdfParser = rdfParser;
-    this.dataStoreFactory = dataStoreFactory;
+    this.dataSetManager = dataSetManager;
     this.executorService = executorService;
-    dataStoreFactory.onDataSetsAvailable(sets -> {
+    dataSetManager.onDataSetsAvailable(sets -> {
       for (String set : sets) {
         scheduleLogSync(set);
       }
     });
   }
 
-  public Future<?> addLog(String dataSet, URI identifier, Optional<String> mimeType, Optional<Charset> charset,
-                          InputStream rdfInputStream)
+  public Future<?> addLog(String dataSet, URI identifier, LocalData data)
       throws LogStorageFailedException, LogProcessingFailedException, IOException {
-    DataStores dataStores = dataStoreFactory.getDataStores(dataSet);
+    DataStores dataStores = dataSetManager.getDataStores(dataSet);
     LogStorage logStorage = dataStores.getLogStorage();
 
-    logStorage.saveLog(identifier, mimeType, charset, rdfInputStream);
+    logStorage.addLog(identifier, data);
     return scheduleLogSync(dataSet);
   }
 
@@ -63,7 +60,7 @@ public class ImportManager {
   private Future<?> scheduleLogSync(String dataSet) {
     return executorService.submit(() -> {
       try {
-        DataStores dataStores = dataStoreFactory.getDataStores(dataSet);
+        DataStores dataStores = dataSetManager.getDataStores(dataSet);
         for (DataSetLogEntry entry : dataStores.getLogStorage().getLogsFrom(dataStores.getCurrentVersion())) {
           MultiQuadHandler logProcessor = new MultiQuadHandler(new ThroughputLogger(10, dataSet));
 
@@ -73,7 +70,7 @@ public class ImportManager {
 
           if (logProcessor.hasSubscriptions()) {
             LocalData log = entry.getData();
-            rdfParser.loadFile(log.getName(), log.getMimeType(), log.getReader(), logProcessor);
+            rdfParser.loadFile(log.getUri(), log.getMimeType(), log.getReader(), logProcessor);
           }
 
           if (dataStores.getSchemaStore().getStatus().getCurrentVersion() < entry.getVersion()) {
@@ -87,16 +84,37 @@ public class ImportManager {
   }
 
   public Map<String, StoreStatus> getStatus(String dataSet) throws IOException {
-    return dataStoreFactory.getDataStores(dataSet).getStatus();
+    return dataSetManager.getDataStores(dataSet).getStatus();
+  }
+
+  public Future<?> storeQuads(String dataSet, Quad... quads)
+      throws LogStorageFailedException, LogProcessingFailedException, IOException {
+
+    DataStores dataStores = dataSetManager.getDataStores(dataSet);
+    LogStorage logStorage = dataStores.getLogStorage();
+
+    logStorage.getCurrentAppendLog(saver -> {
+      for (Quad quad : quads) {
+        saver.onQuad(
+          quad.getSubject(),
+          quad.getPredicate(),
+          quad.getObject(),
+          quad.getValuetype().orElse(null),
+          quad.getLanguage().orElse(null),
+          quad.getGraph()
+        );
+      }
+    });
+    return scheduleLogSync(dataSet);
   }
 
   public Future<?> generateQuads(String dataSet, RdfCreator generator)
       throws LogStorageFailedException, LogProcessingFailedException, IOException {
 
-    DataStores dataStores = dataStoreFactory.getDataStores(dataSet);
+    DataStores dataStores = dataSetManager.getDataStores(dataSet);
     LogStorage logStorage = dataStores.getLogStorage();
 
-    logStorage.startOrContinueAppendLog(generator);
+    logStorage.getCurrentAppendLog(generator);
     return scheduleLogSync(dataSet);
   }
 
@@ -176,3 +194,10 @@ public class ImportManager {
     }
   }
 }
+
+
+/*
+  - registerLogImport(LocalData)
+  - registerExcelConversion(LocalExcelData)
+  - registerRdfCreation(RdfCreator) //RdfCreator must be json-serializable
+ */

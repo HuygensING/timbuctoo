@@ -6,10 +6,14 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.function.Consumer;
 
-public interface DataStoreFactory {
-  DataStores getDataStores(String dataSetName) throws IOException;
+public interface DataSetManager {
+  DataStores getDataStores(String dataSetId) throws IOException;
 
   void onDataSetsAvailable(Consumer<Set<String>> subscription);
 
   Set<String> getDataSets();
+
+  void removeDataSet(String dataSetId) throws IOException;
+
+  boolean exists(String dataSetId);
 }

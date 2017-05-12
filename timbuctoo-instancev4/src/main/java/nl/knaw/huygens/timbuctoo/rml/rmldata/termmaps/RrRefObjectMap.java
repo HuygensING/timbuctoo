@@ -14,47 +14,49 @@ public class RrRefObjectMap {
   private final String parentTriplesMapUri;
   private final RrJoinCondition rrJoinCondition;
   private final DataSource dataSource;
-  private final String uniqueId;
+  private final String outputFieldName;
 
-  //Every time the referenced triplesMap creates a subject, the RrRefObjectMap will tell it's own datasource to store it
   public RrRefObjectMap(RrTriplesMap otherMap, RrJoinCondition rrJoinCondition, DataSource ownSource) {
     this.parentTriplesMapUri = otherMap.getUri();
     this.rrJoinCondition = rrJoinCondition;
     this.dataSource = ownSource;
-    this.uniqueId = UUID.randomUUID().toString();
-    otherMap.subscribeToSubjectsWith(this, rrJoinCondition.getParent());
+    this.outputFieldName = UUID.randomUUID().toString();
+    otherMap.subscribeToSubjectsWith(this, rrJoinCondition.getParentField());
   }
 
   public Stream<Node> generateValue(Row input) {
-    final Object result = input.get(uniqueId);
+    final List<String> result = input.getJoinValue(outputFieldName);
 
-    if (result == null) {
+    if (result == null || result.isEmpty()) {
       input.handleLinkError(
-        rrJoinCondition.getChild(),
+        rrJoinCondition.getChildField(),
         parentTriplesMapUri,
-        rrJoinCondition.getParent()
+        rrJoinCondition.getParentField()
       );
       return Stream.empty();
-    }
-
-    if (result instanceof List) {
-      return ((List<?>) result).stream().map(v -> NodeFactory.createURI("" + v));
     } else {
-      return Stream.of(NodeFactory.createURI("" + result));
+      return result.stream().map(NodeFactory::createURI);
     }
   }
 
-  public void onNewSubject(Object value, Node subject) {
-    dataSource.willBeJoinedOn(rrJoinCondition.getChild(), value, subject.getURI(), uniqueId);
+  /**
+   * Every time the referenced triplesMap creates a subject, the RrRefObjectMap will tell it's own datasource to store it
+   *
+   * @param value the row from the source record
+   * @param subject the subject under which the source record is now known
+   */
+  //
+  public void onNewSubject(String value, Node subject) {
+    dataSource.willBeJoinedOn(rrJoinCondition.getChildField(), value, subject.getURI(), outputFieldName);
   }
 
 
   @Override
   public String toString() {
     return String.format("      References %s on %s using %s\n",
-      this.rrJoinCondition.getParent(),
+      this.rrJoinCondition.getParentField(),
       this.parentTriplesMapUri,
-      this.rrJoinCondition.getChild()
+      this.rrJoinCondition.getChildField()
     );
   }
 }

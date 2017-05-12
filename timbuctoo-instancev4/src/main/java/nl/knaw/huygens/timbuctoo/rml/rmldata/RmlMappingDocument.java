@@ -23,7 +23,7 @@ public class RmlMappingDocument {
     if (errors.size() > 0) {
       throw new RuntimeException("Mapping contains errors");
     }
-    return triplesMaps.stream().flatMap(map -> map.getItems(defaultErrorHandler));
+    return triplesMaps.stream().flatMap(map -> map.getItems(defaultErrorHandler)); //flatMap calls stream.close()
   }
 
   public static MappingDocumentBuilder rmlMappingDocument() {

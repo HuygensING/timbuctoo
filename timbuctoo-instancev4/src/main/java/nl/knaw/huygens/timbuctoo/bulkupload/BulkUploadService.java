@@ -4,8 +4,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
-import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
+import nl.knaw.huygens.timbuctoo.bulkupload.savers.RdfSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -31,8 +30,8 @@ public class BulkUploadService {
     this.maxVertices = maxVerticesPerTransaction;
   }
 
-  public void saveToDb(String vreName, Loader loader, List<Tuple<String, File>> tempFiles, String vreLabel,
-                       Consumer<String> statusUpdate) throws IOException, InvalidFileException {
+  public void saveToDb(Loader loader, List<Tuple<String, File>> tempFiles,
+                       Consumer<String> statusUpdate, RdfSaver rdfSaver) throws IOException, InvalidFileException {
 
     String fileNamesDisplay;
     if (tempFiles.size() == 1) {
@@ -41,15 +40,10 @@ public class BulkUploadService {
       fileNamesDisplay = "multiple files: " + tempFiles.stream().map(Tuple::getLeft).collect(joining(", "));
     }
 
-    try (TinkerpopSaver saver =
-           new TinkerpopSaver(vres, graphwrapper, vreName, vreLabel, maxVertices, fileNamesDisplay)) {
-      try {
-        loader.loadData(tempFiles, new Importer(new StateMachine(saver), new ResultReporter(statusUpdate)));
-        saver.setUploadFinished(vreName, Vre.PublishState.MAPPING_CREATION);
-      } catch (IOException | InvalidFileException e) {
-        saver.setUploadFinished(vreName, Vre.PublishState.UPLOAD_FAILED);
-        throw e;
-      }
+    try {
+      loader.loadData(tempFiles, new Importer(new StateMachine<>(rdfSaver), new ResultReporter(statusUpdate)));
+    } catch (IOException | InvalidFileException e) {
+      throw e;
     }
   }
 }

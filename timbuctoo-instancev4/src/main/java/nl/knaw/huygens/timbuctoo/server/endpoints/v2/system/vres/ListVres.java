@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
+import nl.knaw.huygens.timbuctoo.model.vre.PublishState;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
@@ -48,7 +49,7 @@ public class ListVres {
             "uploadedFilename", jsn(vre.getMetadata().getUploadedFilename())
           ),
           "metadata", jsn(createUri(vre.getVreName()).toString()),
-          "isPublished", jsn(vre.getPublishState().equals(Vre.PublishState.AVAILABLE))
+          "isPublished", jsn(vre.getPublishState().equals(PublishState.AVAILABLE))
         );
       }));
       return TransactionStateAndResult.commitAndReturn(Response.ok(result).build());

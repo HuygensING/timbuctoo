@@ -23,8 +23,8 @@ public class StateMachineTest {
 
   @Test
   public void startEntitySavesThePropertyDescriptionsOnce() {
-    Saver saver = mock(Saver.class);
-    StateMachine instance = new StateMachine(saver);
+    Saver<Vertex> saver = mock(Saver.class);
+    StateMachine<Vertex> instance = new StateMachine<>(saver);
 
     instance.startCollection(COLLECTION_NAME);
     verify(saver, never()).addPropertyDescriptions(any(Vertex.class), any(ImportPropertyDescriptions.class));
@@ -38,8 +38,8 @@ public class StateMachineTest {
 
   @Test
   public void importsEveryEntityForACollection() {
-    Saver saver = mock(Saver.class);
-    StateMachine instance = new StateMachine(saver);
+    Saver<Vertex> saver = mock(Saver.class);
+    StateMachine<Vertex> instance = new StateMachine<>(saver);
 
     instance.startCollection(COLLECTION_NAME);
     instance.registerPropertyName(1, "name");
@@ -58,8 +58,8 @@ public class StateMachineTest {
 
   @Test
   public void setsKnownPropertyOnTheEntity() {
-    Saver saver = mock(Saver.class);
-    StateMachine instance = new StateMachine(saver);
+    Saver<Vertex> saver = mock(Saver.class);
+    StateMachine<Vertex> instance = new StateMachine<>(saver);
 
     instance.startCollection(COLLECTION_NAME);
     instance.registerPropertyName(1, "test");
@@ -80,8 +80,8 @@ public class StateMachineTest {
 
   @Test
   public void ignoresPropertiesWithoutValue() {
-    Saver saver = mock(Saver.class);
-    StateMachine instance = new StateMachine(saver);
+    Saver<Vertex> saver = mock(Saver.class);
+    StateMachine<Vertex> instance = new StateMachine<>(saver);
 
     instance.startCollection(COLLECTION_NAME);
     instance.registerPropertyName(1, "test");

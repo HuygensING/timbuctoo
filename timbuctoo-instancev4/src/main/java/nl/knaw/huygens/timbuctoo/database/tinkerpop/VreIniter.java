@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
+import nl.knaw.huygens.timbuctoo.model.vre.PublishState;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -43,7 +44,7 @@ public class VreIniter {
       }
       result.property(Vre.VRE_LABEL_PROPERTY_NAME, vreLabel);
       result.property(Vre.UPLOADED_FILE_NAME, fileName);
-      result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, Vre.PublishState.UPLOADING.toString());
+      result.property(Vre.PUBLISH_STATE_PROPERTY_NAME, PublishState.UPLOADING.toString());
       tx.commit();
     }
 

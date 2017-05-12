@@ -11,20 +11,23 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatusImpl;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
+import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public abstract class BerkeleyStore implements AutoCloseable {
@@ -153,54 +156,95 @@ public abstract class BerkeleyStore implements AutoCloseable {
     }
   }
 
-  public <T> AutoCloseableIterator<T> getItems(DatabaseFunction initialLookup, DatabaseFunction iteration,
-                                               Supplier<T> valueMaker) {
-    return new AutoCloseableIterator<T>() {
+  public Stream<Tuple<String, String>> getItems(String key, boolean keyIsPrefix) {
+    DatabaseEntry keyEntry = new DatabaseEntry();
+    DatabaseEntry valueEntry = new DatabaseEntry();
 
-      @Override
-      public void close() {
+    binding.objectToEntry(key, keyEntry);
+
+    if (keyIsPrefix) {
+      return getItems(
+        cursor -> cursor.getSearchKeyRange(keyEntry, valueEntry, LockMode.DEFAULT),
+        cursor -> {
+          OperationStatus result = cursor.getNext(keyEntry, valueEntry, LockMode.DEFAULT);
+          if (result == OperationStatus.SUCCESS) {
+            String newKey = binding.entryToObject(keyEntry);
+            if (!newKey.startsWith(key)) {
+              return OperationStatus.NOTFOUND;
+            }
+          }
+          return result;
+        },
+        () -> Tuple.tuple(binding.entryToObject(keyEntry), binding.entryToObject(keyEntry))
+      );
+    } else {
+      return getItems(
+        cursor -> cursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT),
+        cursor -> cursor.getNextDup(keyEntry, valueEntry, LockMode.DEFAULT),
+        () -> Tuple.tuple(binding.entryToObject(keyEntry), binding.entryToObject(keyEntry))
+      );
+
+    }
+  }
+
+  protected <T> Stream<T> getItems(DatabaseFunction initialLookup, DatabaseFunction iteration, Supplier<T> valueMaker) {
+
+    CursorIterator<T> data = new CursorIterator<>(initialLookup, iteration, valueMaker);
+    return stream(data).onClose(() -> {
+      try {
+        if (data.cursor != null) {
+          data.cursor.close();
+        }
+      } catch (DatabaseException e) {
+        LOG.error("Could not close cursor", e);
+      }
+    });
+  }
+
+  private class CursorIterator<T> implements Iterator<T> {
+    private final DatabaseFunction initialLookup;
+    private final DatabaseFunction iteration;
+    private final Supplier<T> valueMaker;
+    public Cursor cursor;
+    boolean shouldMove;
+    OperationStatus status;
+
+    public CursorIterator(DatabaseFunction initialLookup, DatabaseFunction iteration,
+                          Supplier<T> valueMaker) {
+      this.initialLookup = initialLookup;
+      this.iteration = iteration;
+      this.valueMaker = valueMaker;
+      cursor = null;
+      shouldMove = true;
+      status = null;
+    }
+
+    @Override
+    public boolean hasNext() {
+      if (shouldMove) {
         try {
-          if (cursor != null) {
-            cursor.close();
+          if (cursor == null) {
+            cursor = database.openCursor(null, null);
+            status = initialLookup.apply(cursor);
+          } else {
+            status = iteration.apply(cursor);
           }
         } catch (DatabaseException e) {
           //FIXME! log error
-          e.printStackTrace();
+          status = OperationStatus.NOTFOUND;
         }
+        shouldMove = false;
       }
+      return status == OperationStatus.SUCCESS;
+    }
 
-      Cursor cursor = null;
-      boolean shouldMove = true;
-      OperationStatus status = null;
-
-      @Override
-      public boolean hasNext() {
-        if (shouldMove) {
-          try {
-            if (cursor == null) {
-              cursor = database.openCursor(null, null);
-              status = initialLookup.apply(cursor);
-            } else {
-              status = iteration.apply(cursor);
-            }
-          } catch (DatabaseException e) {
-            //FIXME! log error
-            status = OperationStatus.NOTFOUND;
-          }
-          shouldMove = false;
-        }
-        return status == OperationStatus.SUCCESS;
+    @Override
+    public T next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
       }
-
-      @Override
-      public T next() {
-        if (!hasNext()) {
-          throw new NoSuchElementException();
-        }
-        shouldMove = true;
-        return valueMaker.get();
-      }
-    };
+      shouldMove = true;
+      return valueMaker.get();
+    }
   }
-
 }

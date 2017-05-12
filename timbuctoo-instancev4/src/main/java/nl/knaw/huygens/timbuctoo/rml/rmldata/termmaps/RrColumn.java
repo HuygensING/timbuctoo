@@ -20,18 +20,18 @@ public class RrColumn implements RrTermMap {
 
   @Override
   public Optional<Node> generateValue(Row input) {
-    Object value = input.get(referenceString);
+    String value = input.getRawValue(referenceString);
     if (value == null) {
       return Optional.empty();
     }
 
     switch (termType) {
       case IRI:
-        return Optional.of(NodeFactory.createURI("" + value));
+        return Optional.of(NodeFactory.createURI(value));
       case BlankNode:
-        return Optional.of(NodeFactory.createBlankNode("" + value));
+        return Optional.of(NodeFactory.createBlankNode(value));
       case Literal:
-        return Optional.of(NodeFactory.createLiteral("" + value, dataType));
+        return Optional.of(NodeFactory.createLiteral(value, dataType));
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }

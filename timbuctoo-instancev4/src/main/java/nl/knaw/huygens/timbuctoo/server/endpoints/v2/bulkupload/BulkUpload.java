@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.access.MdbLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv.CsvLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
+import nl.knaw.huygens.timbuctoo.bulkupload.savers.RdfSaver;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
@@ -44,8 +45,8 @@ import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.Response.status;
 import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAndReturn;
-import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.MAPPING_EXECUTION;
-import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.UPLOADING;
+import static nl.knaw.huygens.timbuctoo.model.vre.PublishState.MAPPING_EXECUTION;
+import static nl.knaw.huygens.timbuctoo.model.vre.PublishState.UPLOADING;
 import static org.apache.poi.util.IOUtils.copy;
 
 @Path("/v2.1/bulk-upload")
@@ -99,7 +100,7 @@ public class BulkUpload {
         }
 
         try {
-          return executeUpload(files, formData, uploadType, vreName, namespacedVre);
+          return executeUpload(files, formData, uploadType, namespacedVre);
         } catch (IOException e) {
           LOG.error("Reading upload failed", e);
           return status(Response.Status.BAD_REQUEST)
@@ -154,7 +155,7 @@ public class BulkUpload {
     }
 
     try {
-      return executeUpload(files, formData, uploadType, vre.getMetadata().getLabel(), vreName);
+      return executeUpload(files, formData, uploadType, vreName);
     } catch (IOException | IllegalArgumentException e) {
       return status(Response.Status.BAD_REQUEST)
                 .entity(e.getMessage())
@@ -163,7 +164,7 @@ public class BulkUpload {
   }
 
   private Response executeUpload(List<FormDataBodyPart> parts, Map<String, String> form, String uploadType,
-                                 String vreLabel, String vreName)
+                                 String vreName)
       throws IOException {
 
     ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
@@ -220,9 +221,9 @@ public class BulkUpload {
       public void run() {
         final int[] writeErrors = {0};
         try {
-          uploadService.saveToDb(vreName, loader, tempFiles, vreLabel, msg -> {
+          uploadService.saveToDb(loader, tempFiles, msg -> {
             writeMessage(writeErrors, msg);
-          });
+          }, new RdfSaver());
         } catch (InvalidFileException | IOException e) {
           LOG.error("Something went wrong while importing a file", e);
           writeMessage(writeErrors, "failure: The file could not be read");

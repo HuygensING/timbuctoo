@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLObjectType;
-import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.DataSetManager;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.DataStores;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexSchemaFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
@@ -20,19 +20,19 @@ import static graphql.schema.GraphQLSchema.newSchema;
 
 public class GraphQlService {
   private final Map<String, GraphQL> graphQls = new HashMap<>();
-  private final DataStoreFactory dataStoreFactory;
+  private final DataSetManager dataSetManager;
   private final CollectionIndexSchemaFactory schemaFactory;
   private final GraphQlTypeGenerator typeGenerator;
 
-  public GraphQlService(DataStoreFactory dataStoreFactory, GraphQlTypeGenerator typeGenerator) {
-    this.dataStoreFactory = dataStoreFactory;
+  public GraphQlService(DataSetManager dataSetManager, GraphQlTypeGenerator typeGenerator) {
+    this.dataSetManager = dataSetManager;
     this.typeGenerator = typeGenerator;
     this.schemaFactory = new CollectionIndexSchemaFactory();
   }
 
   public GraphQL loadSchema(String dataSetName) throws GraphQlProcessingException {
     try {
-      DataStores dataStores = dataStoreFactory.getDataStores(dataSetName);
+      DataStores dataStores = dataSetManager.getDataStores(dataSetName);
       Map<String, GraphQLObjectType> graphQlTypes = typeGenerator.makeGraphQlTypes(
         dataStores.getSchemaStore().getTypes(),
         dataStores.getTypeNameStore(),

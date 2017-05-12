@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 
-class ImportProperty {
+public class ImportProperty {
   private final ImportPropertyDescription desc;
   private final String value;
 
@@ -15,6 +15,10 @@ class ImportProperty {
 
   public Integer getId() {
     return desc.getId();
+  }
+
+  public Integer getOrder() {
+    return desc.getOrder();
   }
 
   public String getName() {

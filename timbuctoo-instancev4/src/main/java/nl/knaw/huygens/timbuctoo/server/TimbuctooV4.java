@@ -59,7 +59,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUpload;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactory;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
@@ -84,7 +83,7 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataSetManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
@@ -256,7 +255,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         configuration.getDatabaseConfiguration().getDatabasePath()) +
       File.separatorChar +
       "nextgen";
-    TimbuctooManagedDataStoreFactory dataStoreFactory = new TimbuctooManagedDataStoreFactory(databaseLocation);
+    TimbuctooManagedDataSetManager dataStoreFactory = new TimbuctooManagedDataSetManager(databaseLocation);
     environment.lifecycle().manage(dataStoreFactory);
     final ExecutorService importExecutorServer = environment.lifecycle().executorService("importManager").build();
     ImportManager importManager = new ImportManager(new Rdf4jRdfParser(), dataStoreFactory, importExecutorServer);
@@ -298,10 +297,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
     register(environment, rawCollection);
-    ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
-      new DataSourceFactory(graphManager), transactionEnforcer,
+    ExecuteRml executeRml = new ExecuteRml(uriHelper, new JenaBasedReader(), permissionChecker,
       configuration.getWebhooks().getWebHook(environment),
-      importManager);
+      importManager, dataStoreFactory);
     register(environment, executeRml);
     SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
     register(environment, saveRml);

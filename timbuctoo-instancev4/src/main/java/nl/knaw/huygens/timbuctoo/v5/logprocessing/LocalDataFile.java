@@ -40,7 +40,7 @@ public class LocalDataFile implements LocalData {
   }
 
   @Override
-  public URI getName() {
+  public URI getUri() {
     return name;
   }
 

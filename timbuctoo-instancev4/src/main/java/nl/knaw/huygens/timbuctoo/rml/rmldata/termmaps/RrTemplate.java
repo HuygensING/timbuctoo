@@ -59,9 +59,10 @@ public class RrTemplate implements RrTermMap {
     Matcher regexMatcher = pattern.matcher(template);
     StringBuffer resultString = new StringBuffer();
     while (regexMatcher.find()) {
-      Object value = input.get(regexMatcher.group(1));
+      String value = input.getRawValue(regexMatcher.group(1));
       if (value != null) {
-        regexMatcher.appendReplacement(resultString, "" + value);
+        //FIXME! if i have a template "{foo}" and the list is empty, will I get "{foo}" or ""? (should be "")
+        regexMatcher.appendReplacement(resultString, value);
       }
     }
 

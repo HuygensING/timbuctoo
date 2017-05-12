@@ -1,13 +1,20 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.triples;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.DataStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadLoader;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
+
+import java.util.Optional;
+import java.util.stream.Stream;
 
 public interface TripleStore extends AutoCloseable, DataStore<QuadLoader> {
-  void getTriples(QuadHandler handler) throws LogProcessingFailedException;
+  void getQuads(QuadHandler handler) throws LogProcessingFailedException;
 
-  AutoCloseableIterator<String[]> getTriples(String subject, String predicate);
+  Stream<Quad> getQuads(String subject);
+
+  Stream<Quad> getQuads(String subject, String predicate);
+
+  Optional<Quad> getFirst(String subject, String predicate);
 }

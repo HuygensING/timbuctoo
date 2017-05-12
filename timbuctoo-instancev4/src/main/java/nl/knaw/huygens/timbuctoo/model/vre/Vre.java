@@ -44,15 +44,6 @@ public class Vre {
   private final PublishState publishState;
   private final VreMetadata metadata;
 
-  public enum PublishState {
-    UPLOADING,
-    UPLOAD_FAILED,
-    MAPPING_CREATION,
-    MAPPING_EXECUTION,
-    MAPPING_CREATION_AFTER_ERRORS,
-    AVAILABLE
-  }
-
   private final String vreName;
   private Map<String, String> keywordTypes = Maps.newHashMap();
   private final LinkedHashMap<String, Collection> collections = Maps.newLinkedHashMap();

@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.core.dto.rdf.RdfReadProperty;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomEntityProperties;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.CustomRelationProperties;
 import nl.knaw.huygens.timbuctoo.model.Change;
+import nl.knaw.huygens.timbuctoo.model.vre.PublishState;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -94,7 +95,7 @@ public interface DataStoreOperations extends AutoCloseable {
 
   void deleteVre(String vreName);
 
-  void setVrePublishState(String vreName, Vre.PublishState publishState);
+  void setVrePublishState(String vreName, PublishState publishState);
 
   void removeCollectionsAndEntities(Vre vre);
 

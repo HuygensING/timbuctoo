@@ -8,19 +8,29 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import io.dropwizard.lifecycle.Managed;
+import nl.knaw.huygens.timbuctoo.rml.DataSource;
+import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.JexlRowFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.DataSetManager;
 import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreDataFetcherFactory;
-import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.DataStores;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.BdbCollectionIndex;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonLogStorage;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.BdbJoinHandler;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.BdbTripleStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.TripleStoreDataSource;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonLogStorage;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.datastore.LogStorage;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,7 +38,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 /**
  * Current datastores are:
@@ -36,14 +49,15 @@ import java.util.function.Consumer;
  *  - cursor based (cheap iteration)
  *  - sharded per dataset (you can't scale one dataset horizontally, but you can scale across datasets)
  */
-public class TimbuctooManagedDataStoreFactory implements Managed, DataStoreFactory {
+public class TimbuctooManagedDataSetManager implements Managed, DataSetManager {
   private final String databaseLocation;
   Map<String, DataStores> dataStoresMap = new HashMap<>();
   protected final EnvironmentConfig configuration;
   protected File dbHome;
   private List<Consumer<Set<String>>> subscriptions = new ArrayList<>();
+  private static final Logger LOG = getLogger(TimbuctooManagedDataSetManager.class);
 
-  public TimbuctooManagedDataStoreFactory(String databaseLocation) {
+  public TimbuctooManagedDataSetManager(String databaseLocation) {
     this.databaseLocation = databaseLocation;
     configuration = new EnvironmentConfig(new Properties());
     configuration.setTransactional(true);
@@ -53,13 +67,13 @@ public class TimbuctooManagedDataStoreFactory implements Managed, DataStoreFacto
   }
 
   @Override
-  public DataStores getDataStores(String dataSetName) throws IOException {
-    if (dataStoresMap.containsKey(dataSetName)) {
-      return dataStoresMap.get(dataSetName);
+  public DataStores getDataStores(String dataSetId) throws IOException {
+    if (dataStoresMap.containsKey(dataSetId)) {
+      return dataStoresMap.get(dataSetId);
     } else {
       try {
-        DataStores result = this.makeDataStores(dataSetName);
-        dataStoresMap.put(dataSetName, result);
+        DataStores result = this.makeDataStores(dataSetId);
+        dataStoresMap.put(dataSetId, result);
         return result;
       } catch (DatabaseException e) {
         throw new IOException(e);
@@ -82,6 +96,39 @@ public class TimbuctooManagedDataStoreFactory implements Managed, DataStoreFacto
       dirs = ImmutableSet.<String>builder().add(subDirs).build();
     }
     return dirs;
+  }
+
+  @Override
+  public void removeDataSet(String dataSetId) throws IOException {
+    DataStores removed = dataStoresMap.remove(dataSetId);
+    if (removed != null) {
+      try {
+        dataStoresMap.get(dataSetId).close();
+      } catch (Exception e) {
+        LOG.warn("Closing dataSet failed, but we're going to remove it anyway.", e);
+      }
+    }
+    File dataSetDir = new File(dbHome, dataSetId);
+    if (dataSetDir.exists()) {
+      Files.walkFileTree(dataSetDir.toPath(), new SimpleFileVisitor<Path>() {
+        @Override
+        public FileVisitResult visitFile(Path file, BasicFileAttributes attributes) throws IOException {
+          Files.delete(file);
+          return FileVisitResult.CONTINUE;
+        }
+
+        @Override
+        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+          Files.delete(dir);
+          return FileVisitResult.CONTINUE;
+        }
+      });
+    }
+  }
+
+  @Override
+  public boolean exists(String dataSetId) {
+    return new File(dbHome, dataSetId).isDirectory();
   }
 
   private DataStores makeDataStores(String dataSetName) throws DatabaseException, IOException {
@@ -108,12 +155,23 @@ public class TimbuctooManagedDataStoreFactory implements Managed, DataStoreFacto
     );
 
     final DataStoreDataFetcherFactory fetchers = new DataStoreDataFetcherFactory(tripleStore, collectionIndex);
+    BdbJoinHandler joinHandler = new BdbJoinHandler(dataSetEnvironment, dataSetName, objectMapper);
+
+    final BiFunction<String, Map<String, String>, DataSource> tripleStoreDataSourceFactory =
+      (collectionUri, customFields) -> new TripleStoreDataSource(
+        tripleStore,
+        collectionIndex,
+        dataSetName,
+        collectionUri,
+        new JexlRowFactory(customFields, joinHandler)
+      );
 
     return new DataStores(
       dataSetEnvironment,
       collectionIndex,
       prefixStore,
       tripleStore,
+      tripleStoreDataSourceFactory,
       schemaStore,
       fetchers,
       fetchers,

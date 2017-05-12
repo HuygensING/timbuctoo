@@ -3,7 +3,9 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.RemoteFile;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.VreAuthIniter;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.FileSaver;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.LocalData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,12 +23,14 @@ public class Import {
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final VreAuthIniter vreAuthIniter;
   private final ImportManager importManager;
+  private final FileSaver fileSaver;
 
   public Import(ResourceSyncFileLoader resourceSyncFileLoader, VreAuthIniter vreAuthIniter,
-                ImportManager importManager) {
+                ImportManager importManager, FileSaver fileSaver) {
     this.resourceSyncFileLoader = resourceSyncFileLoader;
     this.vreAuthIniter = vreAuthIniter;
     this.importManager = importManager;
+    this.fileSaver = fileSaver;
   }
 
   @POST
@@ -40,12 +44,15 @@ public class Import {
                             LOG.info("Found files '{}'", files.hasNext());
                             while (files.hasNext()) {
                               RemoteFile file = files.next();
-                              importManager.addLog(
-                                vreId,
-                                file.getUrl(),
+                              LocalData storedFile = fileSaver.store(
                                 file.getMimeType(),
                                 Optional.empty(),
                                 file.getData()
+                              );
+                              importManager.addLog(
+                                vreId,
+                                file.getUrl(),
+                                storedFile
                               );
                             }
                             return Response.ok().header("VRE_ID", vreId).build();

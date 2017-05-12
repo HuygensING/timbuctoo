@@ -19,8 +19,8 @@ public interface QuadSaver {
   void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
     throws LogStorageFailedException;
 
-  default void onTriple(String subject, String predicate, String object, String valueType, String language,
-                        String graph) throws LogStorageFailedException {
+  default void onQuad(String subject, String predicate, String object, String valueType, String language,
+                      String graph) throws LogStorageFailedException {
     if (valueType == null) {
       this.onRelation(subject, predicate, object, graph);
     } else if (RdfConstants.LANGSTRING.equals(valueType)) {

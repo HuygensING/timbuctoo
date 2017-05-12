@@ -1,8 +1,10 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.savers;
 
+import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportProperty;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescription;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.VreIniter;
+import nl.knaw.huygens.timbuctoo.model.vre.PublishState;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -14,12 +16,12 @@ import org.apache.tinkerpop.gremlin.structure.Transaction;
 import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.slf4j.Logger;
 
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class TinkerpopSaver implements AutoCloseable, Saver {
+public class TinkerpopSaver implements AutoCloseable, Saver<Vertex> {
   private static final Logger LOG = getLogger(TinkerpopSaver.class);
   public static final String RAW_COLLECTION_EDGE_NAME = "hasRawCollection";
   public static final String RAW_ITEM_EDGE_NAME = "hasItem";
@@ -34,6 +36,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   public static final String SAVED_MAPPING_STATE = "savedMappingState";
   private final GraphWrapper graphWrapper;
   private final Vertex vre;
+  private final String vreName;
   private final int maxVerticesPerTransaction;
   private final VreIniter vreIniter;
   private int saveCounter;
@@ -45,6 +48,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
                         int maxVerticesPerTransaction, String fileName) {
     this.graphWrapper = graphWrapper;
     tx = graphWrapper.getGraph().tx();
+    this.vreName = vreName;
     this.maxVerticesPerTransaction = maxVerticesPerTransaction;
     this.vreIniter = new VreIniter(graphWrapper, vres);
     this.vre = vreIniter.upsertVre(vreName, vreLabel, fileName);
@@ -64,15 +68,14 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
   }
 
   @Override
-  public Vertex addEntity(Vertex rawCollection, Map<String, ?> currentProperties) {
+  public Vertex addEntity(Vertex rawCollection, List<ImportProperty> currentProperties) {
     allowCommit();
 
     Vertex result = graphWrapper.getGraph().addVertex("tim_id", UUID.randomUUID().toString());
-    currentProperties.forEach((key, val) -> result.property(VALUE_PREFIX + key, val));
+    currentProperties.forEach((prop) -> result.property(VALUE_PREFIX + prop.getName(), prop.getValue()));
 
     addToLastItemOfCollection(rawCollection, result);
     addToCollection(rawCollection, result);
-
     return result;
   }
 
@@ -105,10 +108,10 @@ public class TinkerpopSaver implements AutoCloseable, Saver {
     }
   }
 
-  public void setUploadFinished(String vreName, Vre.PublishState publishState) {
+  public void setUploadFinished(PublishState publishState) {
     try (Transaction tx = graphWrapper.getGraph().tx()) {
 
-      final GraphTraversal<Vertex, Vertex> vreT = vreIniter.getVreTraversal(vreName);
+      final GraphTraversal<Vertex, Vertex> vreT = vreIniter.getVreTraversal(this.vreName);
       if (vreT.hasNext()) {
         vreT.next().property(Vre.PUBLISH_STATE_PROPERTY_NAME, publishState.toString());
       }

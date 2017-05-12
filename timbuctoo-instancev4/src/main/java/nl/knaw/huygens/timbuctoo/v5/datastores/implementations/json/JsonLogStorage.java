@@ -14,12 +14,10 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.slf4j.Logger;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.UUID;
@@ -50,28 +48,20 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
   }
 
   private LocalDataFile createLogEntry(URI logUri, Optional<String> mimeType, Optional<Charset> charset)
-      throws LogStorageFailedException {
-    final LocalDataFile log;
+      throws LogStorageFailedException, UnsupportedEncodingException {
     final String file = logUri.toASCIIString().replaceAll("[^a-zA-Z0-9_-]", "_") + UUID.randomUUID();
-    try {
-      log = new LocalDataFile(
-        logUri,
-        new File(logLocation, file),
-        charset.map(Charset::name),
-        mimeType
-      );
-      data.logEntries.add(log);
-      mapper.writeValue(logIndex, data);
-    } catch (IOException e) {
-      throw new LogStorageFailedException(e);
-    }
-    return log;
+    return new LocalDataFile(
+      logUri,
+      new File(logLocation, file),
+      charset.map(Charset::name),
+      mimeType
+    );
   }
 
   @Override
   public LocalData getLog(URI logUri) {
-    for (LocalDataFile logEntry : data.logEntries) {
-      if (logEntry.getName().equals(logUri)) {
+    for (LocalData logEntry : data.logEntries) {
+      if (logEntry.getUri().equals(logUri)) {
         return logEntry;
       }
     }
@@ -79,23 +69,28 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
   }
 
   @Override
-  public LocalData saveLog(URI identifier, Optional<String> mimeType, Optional<Charset> charset, InputStream rdf)
+  public void addLog(URI logUri, LocalData logEntry)
       throws LogStorageFailedException {
-    LocalDataFile logEntry = createLogEntry(identifier, mimeType, charset);
     try {
-      Files.copy(rdf, logEntry.getFile().toPath());
-      return logEntry;
+      data.logEntries.add(logEntry);
+      mapper.writeValue(logIndex, data);
     } catch (IOException e) {
       throw new LogStorageFailedException(e);
     }
   }
 
   @Override
-  public LocalData startOrContinueAppendLog(RdfCreator generator) throws LogStorageFailedException {
+  public LocalData getCurrentAppendLog(RdfCreator generator) throws LogStorageFailedException {
     URI logUri = logUriCreator.get();//For now we never append
     LocalData log = getLog(logUri);
     if (log == null) {
-      log = createLogEntry(logUri, Optional.of(RDFFormat.TURTLE.getDefaultMIMEType()), Optional.of(Charsets.UTF_8));
+      try {
+        log = createLogEntry(logUri, Optional.of(RDFFormat.TURTLE.getDefaultMIMEType()), Optional.of(Charsets.UTF_8));
+        data.logEntries.add(log);
+        mapper.writeValue(logIndex, data);
+      } catch (IOException e) {
+        throw new LogStorageFailedException(e);
+      }
     }
 
     try {
@@ -104,7 +99,7 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
       generator.sendQuads(writer);
       writer.finish();
       return log;
-    } catch (FileNotFoundException e) {
+    } catch (IOException e) {
       throw new LogStorageFailedException(e);
     }
 

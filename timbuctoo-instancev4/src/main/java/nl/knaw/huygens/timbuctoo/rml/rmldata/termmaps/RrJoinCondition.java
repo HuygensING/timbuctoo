@@ -4,20 +4,16 @@ public class RrJoinCondition {
   private String child;
   private String parent;
 
-  public RrJoinCondition(String child, String parent) {
-    this.child = child;
-    this.parent = parent;
+  public RrJoinCondition(String childField, String parentField) {
+    this.child = childField;
+    this.parent = parentField;
   }
 
-  public String getChild() {
+  public String getChildField() {
     return child;
   }
 
-  public String getParent() {
+  public String getParentField() {
     return parent;
-  }
-
-  public RrJoinCondition flipped() {
-    return new RrJoinCondition(parent, child);
   }
 }

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.dto;
 
 import com.sleepycat.je.Environment;
+import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
@@ -11,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.logprocessing.datastore.LogStorage;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 import static java.lang.Math.min;
 
@@ -19,19 +21,21 @@ public class DataStores implements AutoCloseable {
   private final CollectionIndex collectionIndex;
   private final TypeNameStore typeNameStore;
   private final TripleStore tripleStore;
+  private final BiFunction<String, Map<String, String>, DataSource> tripleStoreDataSourceFactory;
   private final SchemaStore schemaStore;
   private final CollectionIndexFetcherFactory collectionIndexFetcherFactory;
   private final DataFetcherFactory dataFetcherFactory;
   private final LogStorage logStorage;
 
   public DataStores(Environment commonEnvironment, CollectionIndex collectionIndex, TypeNameStore typeNameStore,
-                    TripleStore tripleStore,
+                    TripleStore tripleStore, BiFunction<String, Map<String, String>, DataSource> tripleStoreDataSourceFactory,
                     SchemaStore schemaStore, CollectionIndexFetcherFactory collectionIndexFetcherFactory,
                     DataFetcherFactory dataFetcherFactory, LogStorage logStorage) {
     this.commonEnvironment = commonEnvironment;
     this.collectionIndex = collectionIndex;
     this.typeNameStore = typeNameStore;
     this.tripleStore = tripleStore;
+    this.tripleStoreDataSourceFactory = tripleStoreDataSourceFactory;
     this.schemaStore = schemaStore;
     this.collectionIndexFetcherFactory = collectionIndexFetcherFactory;
     this.dataFetcherFactory = dataFetcherFactory;
@@ -57,6 +61,10 @@ public class DataStores implements AutoCloseable {
 
   public LogStorage getLogStorage() {
     return logStorage;
+  }
+
+  public BiFunction<String, Map<String, String>, DataSource> getDataSourceFactory() {
+    return tripleStoreDataSourceFactory;
   }
 
   public CollectionIndexFetcherFactory getCollectionIndexFetcherFactory() {

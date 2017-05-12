@@ -3,24 +3,24 @@ package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.Saver;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class StateMachine {
+public class StateMachine<T> {
   private Set<Integer> idsToSkip = new HashSet<>();
   private ImportPropertyDescriptions propertyDescriptions;
-  private final Saver saver;
-  private Vertex currentCollection;
+  private final Saver<T> saver;
+  private T currentCollection;
   private List<ImportProperty> currentProperties;
 
   private ImportState currentState = ImportState.NOTHING;
 
-  public StateMachine(Saver saver) {
+  public StateMachine(Saver<T> saver) {
     this.saver = saver;
   }
 
@@ -76,14 +76,14 @@ public class StateMachine {
   }
 
   public HashMap<Integer, Result> finishEntity() {
-    HashMap<String, Object> propertyValues = new HashMap<>();
     HashMap<Integer, Result> results = new HashMap<>();
+    List<ImportProperty> properties = new ArrayList<>(currentProperties.size());
     currentProperties.stream().filter(property -> property.getValue() != null).forEach(property -> {
-      propertyValues.put(property.getName(), property.getValue());
+      properties.add(property);
       results.put(property.getId(), Result.success());
     });
-    if (!propertyValues.isEmpty()) {
-      saver.addEntity(currentCollection, propertyValues);
+    if (!properties.isEmpty()) {
+      saver.addEntity(currentCollection, properties);
     }
     return results;
   }

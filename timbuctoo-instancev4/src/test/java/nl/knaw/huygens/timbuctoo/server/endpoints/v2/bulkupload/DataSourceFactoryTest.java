@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaResource;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import org.apache.commons.io.input.ReaderInputStream;
@@ -11,7 +10,7 @@ import org.junit.Test;
 
 import java.io.StringReader;
 
-import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
+import static nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceDescriptionParser.getDataSourceDescription;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
@@ -26,12 +25,9 @@ public class DataSourceFactoryTest {
       "  }\n" +
       "}\n");
 
-    DataSourceFactory dataSourceFactory = new DataSourceFactory(newGraph().wrap());
+    DataSourceDescription dataSourceDescription = getDataSourceDescription(wrappedResource).get();
 
-    DataSource result = dataSourceFactory.apply(wrappedResource, "VreName")
-      .orElseThrow(() -> new AssertionError("No result found"));
-
-    assertThat(result.toString(), is("    BulkUploadedDatasource: VreName, CollectionName\n"));
+    assertThat(dataSourceDescription.getCollection(), is("CollectionName"));
   }
 
   @Test
@@ -49,15 +45,9 @@ public class DataSourceFactoryTest {
       "  }\n" +
       "}\n");
 
-    DataSourceFactory dataSourceFactory = new DataSourceFactory(newGraph().wrap());
+    DataSourceDescription dataSourceDescription = getDataSourceDescription(wrappedResource).get();
 
-    DataSource result = dataSourceFactory.apply(wrappedResource, "VreName")
-      .orElseThrow(() -> new AssertionError("No result found"));
-
-    assertThat(result.toString(), is(
-      "    BulkUploadedDatasource: VreName, CollectionName\n" +
-      "      expr: v.someColumn + 2\n"
-    ));
+    assertThat(dataSourceDescription.getCustomFields().get("expr"), is("v.someColumn + 2"));
   }
 
   private RdfResource parseRdf(String timbuctooDataSource) {

@@ -4,4 +4,13 @@ public class RdfConstants {
   public static final String UNKNOWN = "http://timbuctoo.huygens.knaw.nl/v5#unknown";
   public static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   public static final String LANGSTRING = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString";
+  public static final String RAW_ROW = "http://timbuctoo.huygens.knaw.nl/rawData/";
+  public static final String BULK_GRAPH = "http://timbuctoo.huygens.knaw.nl/bulkUpload/";
+  public static final String STRING = "http://www.w3.org/2001/XMLSchema#string";
+  public static final String RDFS_LABEL = "http://rdfs/label";
+  public static final String HTTP_TIMBUCTOO_PROPS = "http://timbuctoo/props/";
+  public static final String HTTP_TIMBUCTOO_COLLECTIONS = "http://timbuctoo/collections/";
+  public static final String OF_COLLECTION = "http://timbuctoo.com/thing/ofCollection";
+  public static final String ORDER_PROP = "http://timbuctoo.com/things/order";
+  public static final String NS_RML = "http://semweb.mmlab.be/ns/rml#";
 }

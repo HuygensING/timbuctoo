@@ -1,11 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
-import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportManager;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadSaver;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogStorageFailedException;
 import org.apache.jena.graph.Triple;
@@ -16,15 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.Clock;
 import java.util.Iterator;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
-
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
-import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
 
 public class RmlExecutorService {
   public static final Logger LOG = LoggerFactory.getLogger(RmlExecutorService.class);
@@ -42,13 +32,8 @@ public class RmlExecutorService {
     this.importManager = importManager;
   }
 
-  public void execute(Consumer<String> statusUpdate)
-    throws LogStorageFailedException, IOException, LogProcessingFailedException {
-    // timbuctooActions.setVrePublishState(vreName, Vre.PublishState.MAPPING_EXECUTION);
+  public void execute() throws LogStorageFailedException, IOException, LogProcessingFailedException {
     importManager.generateQuads(vreName, saver -> {
-      AtomicLong tripleCount = new AtomicLong(0);
-      AtomicLong curtime = new AtomicLong(Clock.systemUTC().millis());
-
       //create the links from the collection entities to the archetypes
       StmtIterator statements = model
         .listStatements(
@@ -58,7 +43,7 @@ public class RmlExecutorService {
         );
       while (statements.hasNext()) {
         Statement statement = statements.next();
-        saver.onTriple(
+        saver.onQuad(
           statement.getSubject().toString(),
           statement.getPredicate().toString(),
           statement.getObject().toString(),
@@ -70,45 +55,31 @@ public class RmlExecutorService {
             (String) null,
           "http://somegraph"
         );
-        reportTripleCount(tripleCount, curtime, statusUpdate);
       }
 
       //generate and import rdf
-      Iterator<Triple> iterator = rmlMappingDocument.execute(new LoggingErrorHandler()).iterator();
+      final Iterator<Triple> iterator;
+      try (Stream<Triple> rmlExecution = rmlMappingDocument.execute(new LoggingErrorHandler())) {
+        iterator = rmlExecution.iterator();
+        while (iterator.hasNext()) {
+          Triple triple = iterator.next();
+          saver.onQuad(
+            triple.getSubject().toString(),
+            triple.getPredicate().toString(),
+            triple.getObject().toString(false),
+            triple.getObject().isLiteral() ?
+              triple.getObject().getLiteralDatatypeURI() :
+              (String) null,
+            triple.getObject().isLiteral() && !triple.getObject().getLiteralLanguage().isEmpty() ?
+              triple.getObject().getLiteralLanguage() :
+              (String) null,
+            "http://somegraph"
+          );
+        }
 
-      while (iterator.hasNext()) {
-        Triple triple = iterator.next();
-        reportTripleCount(tripleCount, curtime, statusUpdate);
-        saver.onTriple(
-          triple.getSubject().toString(),
-          triple.getPredicate().toString(),
-          triple.getObject().toString(false),
-          triple.getObject().isLiteral() ?
-            triple.getObject().getLiteralDatatypeURI() :
-            (String) null,
-          triple.getObject().isLiteral() && !triple.getObject().getLiteralLanguage().isEmpty() ?
-            triple.getObject().getLiteralLanguage() :
-            (String) null,
-          "http://somegraph"
-        );
-        reportTripleCount(tripleCount, curtime, statusUpdate);
       }
-
     });
 
-
-
   }
 
-  private void reportTripleCount(AtomicLong tripleCount, AtomicLong lastLogTime, Consumer<String> statusUpdate) {
-    final long curCount = tripleCount.incrementAndGet();
-    long curTime = Clock.systemUTC().millis();
-    if ((curTime - lastLogTime.get()) > 100) {
-      statusUpdate.accept(String.format("Processed %d triples", curCount));
-      lastLogTime.set(curTime);
-    }
-    if (LOG.isDebugEnabled()) {
-      LOG.debug(String.format("Processed %d triples", curCount));
-    }
-  }
 }

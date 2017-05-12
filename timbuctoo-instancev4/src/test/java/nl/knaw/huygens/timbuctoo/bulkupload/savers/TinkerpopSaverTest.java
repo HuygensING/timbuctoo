@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.savers;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
@@ -12,6 +11,7 @@ import org.apache.tinkerpop.gremlin.structure.Vertex;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -54,8 +54,8 @@ public class TinkerpopSaverTest {
     TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME, MAX_VERTICES_PER_TRANSACTION,
       VRE_NAME);
 
-    Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
-    Vertex second = instance.addEntity(rawCollection, Maps.newHashMap());
+    Vertex first = instance.addEntity(rawCollection, new ArrayList<>());
+    Vertex second = instance.addEntity(rawCollection, new ArrayList<>());
 
     List<Vertex> items = Lists.newArrayList(rawCollection.vertices(Direction.OUT, "hasItem"));
     assertThat(items, containsInAnyOrder(first, second));
@@ -66,9 +66,9 @@ public class TinkerpopSaverTest {
     final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME,
       MAX_VERTICES_PER_TRANSACTION, VRE_NAME);
 
-    Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
-    Vertex second = instance.addEntity(rawCollection, Maps.newHashMap());
-    Vertex third = instance.addEntity(rawCollection, Maps.newHashMap());
+    Vertex first = instance.addEntity(rawCollection, new ArrayList<>());
+    Vertex second = instance.addEntity(rawCollection, new ArrayList<>());
+    Vertex third = instance.addEntity(rawCollection, new ArrayList<>());
 
     List<Vertex> orderedList = graphWrapper.getGraph().traversal().V(rawCollection.id())
       .emit()
@@ -87,8 +87,8 @@ public class TinkerpopSaverTest {
     TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME, MAX_VERTICES_PER_TRANSACTION,
       VRE_NAME);
 
-    Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
-    instance.addEntity(rawCollection, Maps.newHashMap());
+    Vertex first = instance.addEntity(rawCollection, new ArrayList<>());
+    instance.addEntity(rawCollection, new ArrayList<>());
 
     List<Vertex> hasFirstItems = Lists.newArrayList(rawCollection.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME));
     assertThat(hasFirstItems, hasSize(1));
@@ -100,9 +100,9 @@ public class TinkerpopSaverTest {
     final TinkerpopSaver instance = new TinkerpopSaver(vres, graphWrapper, VRE_NAME, VRE_NAME,
       MAX_VERTICES_PER_TRANSACTION, VRE_NAME);
 
-    final Vertex first = instance.addEntity(rawCollection, Maps.newHashMap());
-    final Vertex second = instance.addEntity(rawCollection, Maps.newHashMap());
-    final Vertex third = instance.addEntity(rawCollection, Maps.newHashMap());
+    final Vertex first = instance.addEntity(rawCollection, new ArrayList<>());
+    final Vertex second = instance.addEntity(rawCollection, new ArrayList<>());
+    final Vertex third = instance.addEntity(rawCollection, new ArrayList<>());
 
     assertThat(first.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME).hasNext(), is(true));
     assertThat(first.vertices(Direction.OUT, NEXT_RAW_ITEM_EDGE_NAME).next(), is(second));

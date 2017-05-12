@@ -5,9 +5,11 @@ import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
+import nl.knaw.huygens.timbuctoo.bulkupload.savers.RdfSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
+import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.junit.Test;
@@ -19,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -31,15 +32,18 @@ public class BulkUploadedDataSourceTest {
     TinkerPopGraphManager graph = newGraph().wrap();
     Vres vres = new VresBuilder().build();
     BulkUploadService bulkUploadService = new BulkUploadService(vres, graph, 200);
-    bulkUploadService.saveToDb("myVre", new StaticLoader(), new ArrayList<>(), "myVre", s -> { });
+    bulkUploadService.saveToDb(new StaticLoader(), new ArrayList<>(), s -> { }, new RdfSaver());
 
 
     Map<String, String> expressions = ImmutableMap.of(
       "special", "Json:stringify(v.name) + (v.age == null ? \"\" : \" \" + v.age)"
     );
-    BulkUploadedDataSource dataSource = new BulkUploadedDataSource("myVre", "collection", expressions, graph);
-    List<Object> rows = stream(dataSource.getRows(new ThrowingErrorHandler()))
-      .map(row -> row.get("special"))
+    final HashMapBasedJoinHandler joinHandler = new HashMapBasedJoinHandler();
+    BulkUploadedDataSource dataSource = new BulkUploadedDataSource("myVre", "collection", graph,
+      new JexlRowFactory(expressions, joinHandler)
+    );
+    List<Object> rows = dataSource.getRows(new ThrowingErrorHandler())
+      .map(row -> row.getRawValue("special"))
       .collect(toList());
     assertThat(rows, containsInAnyOrder(
       "\"john\\\"\" 12",

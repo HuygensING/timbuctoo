@@ -51,6 +51,7 @@ import nl.knaw.huygens.timbuctoo.model.TempName;
 import nl.knaw.huygens.timbuctoo.model.properties.LocalProperty;
 import nl.knaw.huygens.timbuctoo.model.properties.RdfImportedDefaultDisplayname;
 import nl.knaw.huygens.timbuctoo.model.properties.ReadableProperty;
+import nl.knaw.huygens.timbuctoo.model.vre.PublishState;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.VreBuilder;
 import nl.knaw.huygens.timbuctoo.model.vre.VreMetadata;
@@ -384,7 +385,7 @@ public class TinkerPopOperations implements DataStoreOperations {
   }
 
   @Override
-  public void setVrePublishState(String vreName, Vre.PublishState publishState) {
+  public void setVrePublishState(String vreName, PublishState publishState) {
     final GraphTraversal<Vertex, Vertex> vreT = getVreTraversal(vreName);
 
     if (vreT.hasNext()) {

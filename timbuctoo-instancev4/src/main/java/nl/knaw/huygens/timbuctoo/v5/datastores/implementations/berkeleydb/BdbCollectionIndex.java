@@ -12,8 +12,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatusImpl;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadLoader;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.ProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 import org.slf4j.Logger;
+
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -38,7 +39,7 @@ public class BdbCollectionIndex extends BerkeleyStore implements CollectionIndex
   }
 
   @Override
-  public AutoCloseableIterator<String> getSubjects(String collectionName) {
+  public Stream<String> getSubjects(String collectionName) {
     DatabaseEntry key = new DatabaseEntry();
     binding.objectToEntry(collectionName, key);
     DatabaseEntry value = new DatabaseEntry();
