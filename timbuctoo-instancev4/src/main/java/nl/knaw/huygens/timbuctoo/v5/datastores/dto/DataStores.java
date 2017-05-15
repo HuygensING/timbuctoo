@@ -28,7 +28,8 @@ public class DataStores implements AutoCloseable {
   private final LogStorage logStorage;
 
   public DataStores(Environment commonEnvironment, CollectionIndex collectionIndex, TypeNameStore typeNameStore,
-                    TripleStore tripleStore, BiFunction<String, Map<String, String>, DataSource> tripleStoreDataSourceFactory,
+                    TripleStore tripleStore,
+                    BiFunction<String, Map<String, String>, DataSource> tripleStoreDataSourceFactory,
                     SchemaStore schemaStore, CollectionIndexFetcherFactory collectionIndexFetcherFactory,
                     DataFetcherFactory dataFetcherFactory, LogStorage logStorage) {
     this.commonEnvironment = commonEnvironment;

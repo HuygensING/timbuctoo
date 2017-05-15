@@ -52,6 +52,6 @@ public class DataUpload {
       rdfInputStream
     );
     importManager.addDataFile(dataSetId, uri, data)
-      .get(); //block until the upload is done
+      .get(null, null); //block until the upload is done
   }
 }

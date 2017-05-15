@@ -15,7 +15,7 @@ public interface LocalData {
   /**
    * The timbuctoo-wide unique address for the sequence of bytes in this file.
    *
-   * Different timbuctoo instances might use the same contentAddress for different files.
+   * <p>Different timbuctoo instances might use the same contentAddress for different files.
    */
   String getContentAddress();
 

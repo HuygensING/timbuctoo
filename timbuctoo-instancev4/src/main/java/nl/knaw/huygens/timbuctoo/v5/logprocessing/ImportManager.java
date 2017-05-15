@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.DataStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.DataStores;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatus;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.datastore.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogStorageFailedException;
@@ -116,6 +117,10 @@ public class ImportManager {
 
     logStorage.getCurrentAppendLog(generator);
     return scheduleLogSync(dataSet);
+  }
+
+  public GraphQl addDataFile(String dataSetId, URI uri, LocalData data) {
+    throw new UnsupportedOperationException("Yet to be implemented");
   }
 
   private static class MultiQuadHandler implements QuadHandler, QuadLoader {

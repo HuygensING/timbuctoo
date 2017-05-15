@@ -259,7 +259,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.lifecycle().manage(dataStoreFactory);
     final ExecutorService importExecutorServer = environment.lifecycle().executorService("importManager").build();
     ImportManager importManager = new ImportManager(new Rdf4jRdfParser(), dataStoreFactory, importExecutorServer);
-    register(environment, new RdfUpload(importManager));
+    register(environment, new RdfUpload(importManager, null));
     register(environment,
       new GraphQl(
         new GraphQlService(
@@ -335,7 +335,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         transactionEnforcer,
         securityConfig.getVreAuthorizationCreator()
       ),
-      importManager
+      importManager,
+      null
     ));
 
     // Admin resources

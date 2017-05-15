@@ -40,7 +40,8 @@ public class RrRefObjectMap {
   }
 
   /**
-   * Every time the referenced triplesMap creates a subject, the RrRefObjectMap will tell it's own datasource to store it
+   * Every time the referenced triplesMap creates a subject, the RrRefObjectMap will tell it's own data source to store
+   * it
    *
    * @param value the row from the source record
    * @param subject the subject under which the source record is now known

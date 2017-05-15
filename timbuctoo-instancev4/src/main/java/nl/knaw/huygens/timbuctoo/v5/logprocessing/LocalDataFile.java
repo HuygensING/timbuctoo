@@ -40,6 +40,11 @@ public class LocalDataFile implements LocalData {
   }
 
   @Override
+  public String getContentAddress() {
+    return this.file.getAbsolutePath();
+  }
+
+  @Override
   public URI getUri() {
     return name;
   }

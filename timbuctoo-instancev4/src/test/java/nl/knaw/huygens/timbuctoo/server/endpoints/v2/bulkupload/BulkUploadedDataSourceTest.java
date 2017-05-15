@@ -32,7 +32,7 @@ public class BulkUploadedDataSourceTest {
     TinkerPopGraphManager graph = newGraph().wrap();
     Vres vres = new VresBuilder().build();
     BulkUploadService bulkUploadService = new BulkUploadService(vres, graph, 200);
-    bulkUploadService.saveToDb(new StaticLoader(), new ArrayList<>(), s -> { }, new RdfSaver());
+    bulkUploadService.saveToDb(new StaticLoader(), new ArrayList<>(), s -> { }, new RdfSaver(null));
 
 
     Map<String, String> expressions = ImmutableMap.of(

@@ -223,7 +223,7 @@ public class BulkUpload {
         try {
           uploadService.saveToDb(loader, tempFiles, msg -> {
             writeMessage(writeErrors, msg);
-          }, new RdfSaver());
+          }, new RdfSaver(null));
         } catch (InvalidFileException | IOException e) {
           LOG.error("Something went wrong while importing a file", e);
           writeMessage(writeErrors, "failure: The file could not be read");
