@@ -13,6 +13,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Node_URI;
 import org.apache.jena.graph.Triple;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
+@Ignore
 public class RmlMapperTest {
 
   public static final String EXAMPLE_CLASS = "http://example.org/someClass";
