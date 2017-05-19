@@ -1,14 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.logprocessing;
 
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportTaskExecutor.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportTaskExecutor.DataSetStatus;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportTaskExecutor.LogPart;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.DataSet.DataSetStatus;
 import org.assertj.core.util.Sets;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
@@ -41,18 +38,6 @@ public class ImportTaskExecutorTest {
   }
 
   @Test
-  public void registerDataSetAddsTheTaskToTheExecutorService() {
-    Set<DataSet> dataSets = Sets.newHashSet();
-    ImportTaskExecutor instance = new ImportTaskExecutor(dataSets, executorServiceMock);
-    LogPart logPart = mock(LogPart.class);
-    DataSet dataSet = DataSetStubs.dataSetWithFirstTask(logPart);
-
-    instance.registerDataSet(dataSet);
-
-    verify(executorServiceMock).submit(logPart);
-  }
-
-  @Test
   public void registerImportLogForDataSetAddsAnImportLogToTheDataSet() {
     DataSet dataSet = DataSetStubs.dataSetWithName("dataSet");
     Set<DataSet> dataSets = Sets.newHashSet();
@@ -62,7 +47,7 @@ public class ImportTaskExecutorTest {
 
     instance.registerLogForDataset(logPart, "dataSet");
 
-    verify(dataSet).addLogImport(logPart);
+    verify(dataSet).addLogPart(logPart);
   }
 
   @Test
@@ -92,12 +77,6 @@ public class ImportTaskExecutorTest {
       DataSet dataSet = mock(DataSet.class);
       given(dataSet.getName()).willReturn(name);
       given(dataSet.getStatus()).willReturn(dataSetStatus);
-      return dataSet;
-    }
-
-    private static DataSet dataSetWithFirstTask(LogPart logPart) {
-      DataSet dataSet = mock(DataSet.class);
-      given(dataSet.nextTask()).willReturn(Optional.of(logPart));
       return dataSet;
     }
   }
