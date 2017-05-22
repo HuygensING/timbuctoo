@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.logprocessing;
 import com.google.common.collect.Lists;
 
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class DataSet implements Runnable {
 
@@ -15,7 +16,7 @@ public class DataSet implements Runnable {
 
   public DataSet(String name, List<LogPart> logParts) {
     this.name = name;
-    this.logParts = logParts;
+    this.logParts = new CopyOnWriteArrayList<>(logParts);
   }
 
   public String getName() {
