@@ -26,7 +26,7 @@ public class LogPartTest {
   @Test
   public void isUpToDateWillReturnFalseWhenSomeProcessStepsAreNotDone() {
     LogPart.ProcessStep processStep1 =
-      processStepDone(LogPart.ImportStepStatus.TODO);
+      processStepDone(LogPart.ProcessStepStatus.TODO);
     LogPart.ProcessStep processStep = processStep1;
     LogPart instance = new LogPart(Lists.newArrayList(processStep));
 
@@ -37,9 +37,9 @@ public class LogPartTest {
 
   @Test
   public void executeWillExecuteAllTheLogStepsThatAreNotDoneInSequence() {
-    LogPart.ProcessStep processStepToDo1 = processStepDone(LogPart.ImportStepStatus.TODO);
-    LogPart.ProcessStep processStepToDo2 = processStepDone(LogPart.ImportStepStatus.TODO);
-    LogPart.ProcessStep processStepDone = processStepDone(LogPart.ImportStepStatus.DONE);
+    LogPart.ProcessStep processStepToDo1 = processStepDone(LogPart.ProcessStepStatus.TODO);
+    LogPart.ProcessStep processStepToDo2 = processStepDone(LogPart.ProcessStepStatus.TODO);
+    LogPart.ProcessStep processStepDone = processStepDone(LogPart.ProcessStepStatus.DONE);
     LogPart instance = new LogPart(Lists.newArrayList(processStepDone, processStepToDo1, processStepToDo2));
 
     instance.execute();
@@ -52,9 +52,9 @@ public class LogPartTest {
 
   @Test
   public void executeWillFirstExecuteTheTasksWithTheStatusExecuting() {
-    LogPart.ProcessStep processStepToDo1 = processStepDone(LogPart.ImportStepStatus.TODO);
-    LogPart.ProcessStep processStepExecuting = processStepDone(LogPart.ImportStepStatus.EXECUTING);
-    LogPart.ProcessStep processStepToDo2 = processStepDone(LogPart.ImportStepStatus.TODO);
+    LogPart.ProcessStep processStepToDo1 = processStepDone(LogPart.ProcessStepStatus.TODO);
+    LogPart.ProcessStep processStepExecuting = processStepDone(LogPart.ProcessStepStatus.EXECUTING);
+    LogPart.ProcessStep processStepToDo2 = processStepDone(LogPart.ProcessStepStatus.TODO);
     LogPart instance = new LogPart(Lists.newArrayList(processStepToDo1, processStepExecuting, processStepToDo2));
 
     instance.execute();
@@ -64,7 +64,7 @@ public class LogPartTest {
     inOrder.verify(processStepToDo1).execute();
   }
 
-  private LogPart.ProcessStep processStepDone(LogPart.ImportStepStatus done) {
+  private LogPart.ProcessStep processStepDone(LogPart.ProcessStepStatus done) {
     LogPart.ProcessStep processStep = mock(LogPart.ProcessStep.class);
     given(processStep.getStatus()).willReturn(done);
     return processStep;

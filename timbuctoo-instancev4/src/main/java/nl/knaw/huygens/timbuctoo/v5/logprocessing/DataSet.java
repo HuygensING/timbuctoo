@@ -3,9 +3,11 @@ package nl.knaw.huygens.timbuctoo.v5.logprocessing;
 import com.google.common.collect.Lists;
 
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.Optional;
 
-public class DataSet implements Runnable {
+import static java.util.Collections.synchronizedList;
+
+public class DataSet {
 
   private final String name;
   private final List<LogPart> logParts;
@@ -16,7 +18,7 @@ public class DataSet implements Runnable {
 
   public DataSet(String name, List<LogPart> logParts) {
     this.name = name;
-    this.logParts = new CopyOnWriteArrayList<>(logParts);
+    this.logParts = synchronizedList(logParts);
   }
 
   public String getName() {
@@ -24,7 +26,6 @@ public class DataSet implements Runnable {
   }
 
   public boolean isUpToDate() {
-
     return logParts.stream().allMatch(LogPart::isUpToDate);
   }
 
@@ -36,9 +37,8 @@ public class DataSet implements Runnable {
     logParts.add(logPart);
   }
 
-  @Override
-  public void run() {
-    logParts.stream().filter(logPart -> !logPart.isUpToDate()).forEach(LogPart::execute);
+  public Optional<LogPart> nextLogToProcess() {
+    return logParts.stream().filter(logPart -> !logPart.isUpToDate()).findFirst();
   }
 
   class DataSetStatus {

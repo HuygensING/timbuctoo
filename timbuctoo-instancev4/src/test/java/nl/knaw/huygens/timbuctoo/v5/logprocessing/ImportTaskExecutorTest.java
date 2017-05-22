@@ -13,7 +13,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasKey;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -66,18 +65,4 @@ public class ImportTaskExecutorTest {
     assertThat(status, allOf(hasEntry("dataSet1", status1), hasEntry("dataSet2", status2)));
   }
 
-  private static class DataSetStubs {
-    public static DataSet dataSetWithName(String name) {
-      DataSet dataSet = mock(DataSet.class);
-      given(dataSet.getName()).willReturn(name);
-      return dataSet;
-    }
-
-    public static DataSet dataSetWithNameAndStatus(String name, DataSetStatus dataSetStatus) {
-      DataSet dataSet = mock(DataSet.class);
-      given(dataSet.getName()).willReturn(name);
-      given(dataSet.getStatus()).willReturn(dataSetStatus);
-      return dataSet;
-    }
-  }
 }

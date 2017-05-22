@@ -12,7 +12,7 @@ public class LogPart {
   }
 
   public boolean isUpToDate() {
-    return processSteps.stream().allMatch(processStep -> processStep.getStatus() == ImportStepStatus.DONE);
+    return processSteps.stream().allMatch(processStep -> processStep.getStatus() == ProcessStepStatus.DONE);
   }
 
   public List<ProcessStep> getStatus() {
@@ -21,12 +21,12 @@ public class LogPart {
 
   void execute() {
     processSteps.stream()
-                .filter(processStep -> processStep.getStatus() != ImportStepStatus.DONE)
+                .filter(processStep -> processStep.getStatus() != ProcessStepStatus.DONE)
                 .sorted((o1, o2) -> o2.getStatus().compareTo(o1.getStatus()))
                 .forEach(processStep -> processStep.execute());
   }
 
-  enum ImportStepStatus {
+  enum ProcessStepStatus {
     TODO,
     EXECUTING,
     DONE,
@@ -36,7 +36,7 @@ public class LogPart {
   public interface ProcessStep {
     int getLastLineDone();
 
-    ImportStepStatus getStatus();
+    ProcessStepStatus getStatus();
 
     void execute();
   }
