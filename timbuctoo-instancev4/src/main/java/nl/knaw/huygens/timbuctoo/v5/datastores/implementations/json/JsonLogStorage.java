@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.logprocessing.LocalDataFile;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfreader.implementations.rdf4j.Rdf4jWriter;
+import nl.knaw.huygens.timbuctoo.v5.util.ObjectMapperFactory;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.slf4j.Logger;
 
@@ -34,9 +35,9 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
   private final LogStorage data;
   private ObjectMapper mapper;
 
-  public JsonLogStorage(File logIndex, File logLocation, Supplier<URI> logUriCreator, ObjectMapper objectMapper)
-      throws DatabaseException, IOException {
-    mapper = objectMapper;
+  public JsonLogStorage(File logIndex, File logLocation, Supplier<URI> logUriCreator,
+                        ObjectMapperFactory objectMappers) throws DatabaseException, IOException {
+    mapper = objectMappers.getIndentedJava8Mapper();
     this.logIndex = logIndex;
     this.logLocation = logLocation;
     this.logUriCreator = logUriCreator;
@@ -60,7 +61,7 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
 
   @Override
   public LocalData getLog(URI logUri) {
-    for (LocalData logEntry : data.logEntries) {
+    for (LocalData logEntry : data.getLogEntries()) {
       if (logEntry.getUri().equals(logUri)) {
         return logEntry;
       }
@@ -72,7 +73,7 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
   public void addLog(URI logUri, LocalData logEntry)
       throws LogStorageFailedException {
     try {
-      data.logEntries.add(logEntry);
+      data.getLogEntries().add(logEntry);
       mapper.writeValue(logIndex, data);
     } catch (IOException e) {
       throw new LogStorageFailedException(e);
@@ -86,7 +87,7 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
     if (log == null) {
       try {
         log = createLogEntry(logUri, Optional.of(RDFFormat.TURTLE.getDefaultMIMEType()), Optional.of(Charsets.UTF_8));
-        data.logEntries.add(log);
+        data.getLogEntries().add(log);
         mapper.writeValue(logIndex, data);
       } catch (IOException e) {
         throw new LogStorageFailedException(e);
@@ -112,7 +113,7 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
       return new Iterator<DataSetLogEntry>() {
         @Override
         public boolean hasNext() {
-          return index[0] < data.logEntries.size();
+          return index[0] < data.getLogEntries().size();
         }
 
         @Override
@@ -121,7 +122,7 @@ public class JsonLogStorage implements nl.knaw.huygens.timbuctoo.v5.logprocessin
           return new DataSetLogEntry() {
             @Override
             public LocalData getData() {
-              return data.logEntries.get(localIndex);
+              return data.getLogEntries().get(localIndex);
             }
 
             @Override

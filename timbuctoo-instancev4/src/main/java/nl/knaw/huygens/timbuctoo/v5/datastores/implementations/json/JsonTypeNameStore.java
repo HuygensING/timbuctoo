@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadLoader;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.ProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.util.ObjectMapperFactory;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 import org.slf4j.Logger;
@@ -24,8 +25,8 @@ public class JsonTypeNameStore implements nl.knaw.huygens.timbuctoo.v5.datastore
   PrefixMapping prefixMapping;
   private static final Logger LOG = getLogger(JsonTypeNameStore.class);
 
-  public JsonTypeNameStore(File dataLocation, ObjectMapper objectMapper) throws IOException {
-    mapper = objectMapper;
+  public JsonTypeNameStore(File dataLocation, ObjectMapperFactory objectMappers) throws IOException {
+    mapper = objectMappers.getIndentedJava8Mapper();
     typeNameFile = dataLocation;
 
     prefixMapping = new PrefixMappingImpl();
@@ -2016,15 +2017,22 @@ public class JsonTypeNameStore implements nl.knaw.huygens.timbuctoo.v5.datastore
   //So I shorten by throwing away information and use a HashMap to be able to revert the process
   //and prevent collisions.
   @Override
-  public String makeGraphQlname(String uri) {
-    if (data.shorteneds.containsKey(uri)) {
-      return data.shorteneds.get(uri);
+  public String makeRelayCompatibleGraphQlname(String uri) {
+    //The relay spec requires that our own names are never 'PageInfo' or end with 'Connection'
+
+    Map<String, String> shorteneds = data.shorteneds;
+    if (shorteneds.containsKey(uri)) {
+      return shorteneds.get(uri);
     } else {
       String shortened = shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
-      while (data.shorteneds.containsKey(shortened)) {
+      while (shortened.equals("PageInfo") ||
+        shortened.endsWith("Connection") ||
+        shortened.endsWith("Edge") ||
+        shorteneds.containsKey(shortened)) {
+
         shortened += "_";
       }
-      data.shorteneds.put(uri, shortened);
+      shorteneds.put(uri, shortened);
       data.inverse.put(shortened, uri);
       return shortened;
     }

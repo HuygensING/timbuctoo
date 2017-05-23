@@ -14,6 +14,7 @@ import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatusImpl;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.util.ObjectMapperFactory;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -44,9 +45,9 @@ public abstract class BerkeleyStore implements AutoCloseable {
   private final ObjectMapper objectMapper;
   private static final Logger LOG = getLogger(BerkeleyStore.class);
 
-  protected BerkeleyStore(Environment dbEnvironment, String databaseName, ObjectMapper objectMapper)
+  protected BerkeleyStore(Environment dbEnvironment, String databaseName, ObjectMapperFactory objectMappers)
       throws DatabaseException {
-    this.objectMapper = objectMapper;
+    this.objectMapper = objectMappers.getIndentedJava8Mapper();
     this.dbEnvironment = dbEnvironment;
     databaseConfig = getDatabaseConfig();
     database = dbEnvironment.openDatabase(null, databaseName, databaseConfig);
@@ -111,6 +112,19 @@ public abstract class BerkeleyStore implements AutoCloseable {
     return result;
   }
 
+  public OperationStatus prefixSearch(Cursor cursor, DatabaseEntry key, DatabaseEntry value) throws DatabaseException {
+    return cursor.getSearchKeyRange(key, value, LockMode.DEFAULT);
+  }
+
+  public OperationStatus prefixNext(String prefix, OperationStatus result, DatabaseEntry key) {
+    if (result == OperationStatus.SUCCESS) {
+      String newKey = binding.entryToObject(key);
+      if (!newKey.startsWith(prefix)) {
+        return OperationStatus.NOTFOUND;
+      }
+    }
+    return result;
+  }
 
   @Override
   public void close() throws Exception {

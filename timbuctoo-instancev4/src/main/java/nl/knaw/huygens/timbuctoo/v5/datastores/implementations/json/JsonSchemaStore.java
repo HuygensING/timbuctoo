@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.ProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.util.ObjectMapperFactory;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -35,8 +36,8 @@ public class JsonSchemaStore implements SchemaStore {
   protected final ObjectMapper mapper;
   private static final Logger LOG = getLogger(JsonSchemaStore.class);
 
-  public JsonSchemaStore(File dataLocation, ObjectMapper objectMapper) throws IOException {
-    mapper = objectMapper;
+  public JsonSchemaStore(File dataLocation, ObjectMapperFactory objectMappers) throws IOException {
+    mapper = objectMappers.getIndentedJava8Mapper();
     schemaFile = dataLocation;
     if (schemaFile.exists()) {
       jsonData = mapper.readValue(schemaFile, Schema.class);

@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableSet;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
@@ -21,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonLogStora
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.datastore.LogStorage;
+import nl.knaw.huygens.timbuctoo.v5.util.ObjectMapperFactory;
 import org.slf4j.Logger;
 
 import java.io.File;
@@ -137,25 +135,24 @@ public class TimbuctooManagedDataSetManager implements Managed, DataSetManager {
     File bdbHome = new File(dataHome, "bdb");
     bdbHome.mkdirs();
     Environment dataSetEnvironment = new Environment(bdbHome, configuration);
-    ObjectMapper objectMapper =
-      new ObjectMapper().configure(SerializationFeature.INDENT_OUTPUT, true).registerModule(new Jdk8Module());
+    ObjectMapperFactory factory = new ObjectMapperFactory();
 
-    final BdbCollectionIndex collectionIndex = new BdbCollectionIndex(dataSetName, dataSetEnvironment, objectMapper);
-    final BdbTripleStore tripleStore = new BdbTripleStore(dataSetName, dataSetEnvironment, objectMapper);
+    final BdbCollectionIndex collectionIndex = new BdbCollectionIndex(dataSetName, dataSetEnvironment, factory);
+    final BdbTripleStore tripleStore = new BdbTripleStore(dataSetName, dataSetEnvironment, factory);
 
-    final JsonTypeNameStore prefixStore = new JsonTypeNameStore(new File(dataHome, "prefixes.json"), objectMapper);
-    final JsonSchemaStore schemaStore = new JsonSchemaStore(new File(dataHome, "schema.json"), objectMapper);
+    final JsonTypeNameStore prefixStore = new JsonTypeNameStore(new File(dataHome, "prefixes.json"), factory);
+    final JsonSchemaStore schemaStore = new JsonSchemaStore(new File(dataHome, "schema.json"), factory);
     File logDir = new File(dataHome, "logs");
     logDir.mkdirs();
     final LogStorage logStorage = new JsonLogStorage(
       new File(dataHome, "logs.json"),
       logDir,
       () -> URI.create("http://timbuctoo.com/" + UUID.randomUUID()),
-      objectMapper
+      factory
     );
 
     final DataStoreDataFetcherFactory fetchers = new DataStoreDataFetcherFactory(tripleStore, collectionIndex);
-    BdbJoinHandler joinHandler = new BdbJoinHandler(dataSetEnvironment, dataSetName, objectMapper);
+    BdbJoinHandler joinHandler = new BdbJoinHandler(dataSetEnvironment, dataSetName, factory);
 
     final BiFunction<String, Map<String, String>, DataSource> tripleStoreDataSourceFactory =
       (collectionUri, customFields) -> new TripleStoreDataSource(
@@ -172,6 +169,7 @@ public class TimbuctooManagedDataSetManager implements Managed, DataSetManager {
       prefixStore,
       tripleStore,
       tripleStoreDataSourceFactory,
+      joinHandler,
       schemaStore,
       fetchers,
       fetchers,

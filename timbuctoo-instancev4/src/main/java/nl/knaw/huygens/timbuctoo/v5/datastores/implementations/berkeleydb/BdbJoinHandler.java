@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.util.ObjectMapperFactory;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -20,8 +20,8 @@ public class BdbJoinHandler extends BerkeleyStore implements JoinHandler {
   private static final Logger LOG = getLogger(BdbJoinHandler.class);
 
   public BdbJoinHandler(Environment dbEnvironment, String databaseName,
-                        ObjectMapper objectMapper) throws DatabaseException {
-    super(dbEnvironment, "joinHandler" + databaseName, objectMapper);
+                        ObjectMapperFactory objectMappers) throws DatabaseException {
+    super(dbEnvironment, "joinHandler" + databaseName, objectMappers);
   }
 
   @Override
@@ -57,6 +57,7 @@ public class BdbJoinHandler extends BerkeleyStore implements JoinHandler {
     DatabaseConfig result = new DatabaseConfig();
     result.setTemporary(true);
     result.setTransactional(false);
+    result.setAllowCreate(true);
     return result;
   }
 }

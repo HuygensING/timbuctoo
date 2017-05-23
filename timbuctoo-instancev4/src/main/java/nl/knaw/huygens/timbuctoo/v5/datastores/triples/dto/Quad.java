@@ -12,19 +12,23 @@ public interface Quad {
 
   String getObject();
 
+  // Direction getDirection();
+
   Optional<String> getValuetype();
 
   Optional<String> getLanguage();
 
   String getGraph();
 
-  static Quad create(String subject, String predicate, String object, String valueType, String language, String graph) {
+  static Quad create(String subject, String predicate/*, Direction direction*/, String object, String valueType,
+                     String language, String graph) {
     return ImmutableQuad.builder()
       .subject(subject)
       .predicate(predicate)
+      // .direction(direction)
       .object(object)
-      .valuetype(valueType)
-      .language(language)
+      .valuetype(Optional.ofNullable(valueType))
+      .language(Optional.ofNullable(language))
       .graph(graph)
       .build();
   }

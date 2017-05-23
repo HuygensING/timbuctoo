@@ -40,7 +40,7 @@ public class JsonSerialization implements Serialization {
 
   @Override
   public void onProperty(String propertyName) throws IOException {
-    generator.writeFieldName(typeNameStore.makeGraphQlname(propertyName));
+    generator.writeFieldName(typeNameStore.makeRelayCompatibleGraphQlname(propertyName));
   }
 
   @Override

@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatus;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.StoreStatusImpl;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadLoader;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.ProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.util.ObjectMapperFactory;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
@@ -30,9 +31,9 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   protected TripleWriter tripleWriter;
   private static final Logger LOG = getLogger(BdbTripleStore.class);
 
-  public BdbTripleStore(String dataSetName, Environment dbEnvironment, ObjectMapper objectMapper)
+  public BdbTripleStore(String dataSetName, Environment dbEnvironment, ObjectMapperFactory objectMappers)
       throws DatabaseException {
-    super(dbEnvironment, "rdfData_" + dataSetName, objectMapper);
+    super(dbEnvironment, "rdfData_" + dataSetName, objectMappers);
   }
 
   protected DatabaseConfig getDatabaseConfig() {
@@ -63,37 +64,87 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
     binding.objectToEntry(terminatedSubject, key);
 
     return getItems(
-      cursor -> cursor.getSearchKeyRange(key, value, LockMode.DEFAULT),
-      cursor -> {
-        OperationStatus result = cursor.getNext(key, value, LockMode.DEFAULT);
-        if (result == OperationStatus.SUCCESS) {
-          String newKey = binding.entryToObject(key);
-          if (!newKey.startsWith(terminatedSubject)) {
-            return OperationStatus.NOTFOUND;
-          }
-        }
-        return result;
-      },
+      cursor -> prefixSearch(cursor, key, value),
+      cursor -> prefixNext(terminatedSubject, cursor.getNext(key, value, LockMode.DEFAULT), key),
       () -> formatResult(key, value)
     );
   }
 
   @Override
   public Stream<Quad> getQuads(String subject, String predicate) {
-
     DatabaseEntry key = new DatabaseEntry();
     DatabaseEntry value = new DatabaseEntry();
 
     if (predicate.equals(RDF_TYPE)) {
       predicate = "";
     }
-    binding.objectToEntry(subject + "\n" + predicate, key);
-    value.setData(new byte[0]);
+    String terminatedKey = subject + "\n" + predicate + "\n";
+    binding.objectToEntry(terminatedKey, key);
 
     return getItems(
       cursor -> cursor.getSearchKey(key, value, LockMode.DEFAULT),
-      cursor -> cursor.getNextDup(key, value, LockMode.DEFAULT),
+      cursor -> prefixNext(terminatedKey, cursor.getNext(key, value, LockMode.DEFAULT), key),
       () -> formatResult(key, value)
+    );
+  }
+
+  @Override
+  public Stream<Tuple<String, Quad>> getQuadsWithoutGraph(String subject, String predicate, boolean ascending) {
+    DatabaseEntry key = new DatabaseEntry();
+    DatabaseEntry value = new DatabaseEntry();
+    if (predicate.equals(RDF_TYPE)) {
+      predicate = "";
+    }
+    String terminatedKey = subject + "\n" + predicate + "\n";
+    binding.objectToEntry(terminatedKey, key);
+
+    return getItems(
+      cursor -> prefixSearch(cursor, key, value),
+      cursor -> prefixNext(
+        terminatedKey,
+        ascending ?
+          cursor.getNextNoDup(key, value, LockMode.DEFAULT) :
+          cursor.getPrevNoDup(key, value, LockMode.DEFAULT),
+        key
+      ),
+      () -> Tuple.tuple(binding.entryToObject(key), formatResult(key, value))
+    );
+  }
+
+  @Override
+  public Stream<Tuple<String, Quad>> getQuadsWithoutGraph(String marker, String subject, String predicate,
+                                                          boolean ascending) {
+    DatabaseEntry key = new DatabaseEntry();
+    DatabaseEntry value = new DatabaseEntry();
+
+    if (predicate.equals(RDF_TYPE)) {
+      predicate = "";
+    }
+    String terminatedKey = subject + "\n" + predicate + "\n";
+    binding.objectToEntry(marker, key);
+
+    return getItems(
+      cursor -> {
+        OperationStatus status = cursor.getSearchKey(key, value, LockMode.DEFAULT);
+        if (status == OperationStatus.SUCCESS) {
+          return prefixNext(
+            terminatedKey,
+            ascending ?
+              cursor.getNextNoDup(key, value, LockMode.DEFAULT) :
+              cursor.getPrevNoDup(key, value, LockMode.DEFAULT),
+            key
+          );
+        }
+        return status;
+      },
+      cursor -> prefixNext(
+        terminatedKey,
+        ascending ?
+          cursor.getNextNoDup(key, value, LockMode.DEFAULT) :
+          cursor.getPrevNoDup(key, value, LockMode.DEFAULT),
+        key
+      ),
+      () -> Tuple.tuple(binding.entryToObject(key), formatResult(key, value))
     );
   }
 
@@ -101,7 +152,7 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   public Optional<Quad> getFirst(String subject, String predicate) {
     try {
       return getItem(subject + "\n" + predicate)
-        .map(val -> makeQuad(new String[] {subject, predicate}, val.split("\n")));
+        .map(val -> makeQuad(new String[] {subject, predicate}, val));
     } catch (DatabaseException e) {
       LOG.error("Could not retrieve item " + subject + ", " + predicate, e);
       return Optional.empty();
@@ -147,18 +198,18 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
 
   private Quad formatResult(DatabaseEntry key, DatabaseEntry value) {
     String[] keyFields = binding.entryToObject(key).split("\n");
-    String[] valueFields = binding.entryToObject(value).split("\n", 2);
-    return makeQuad(keyFields, valueFields);
+    String valueStr = binding.entryToObject(value);
+    return makeQuad(keyFields, valueStr);
   }
 
-  private Quad makeQuad(String[] keyFields, String[] valueFields) {
+  private Quad makeQuad(String[] keyFields, String valueFields) {
     return Quad.create(
       keyFields[0],
       keyFields.length == 1 ? RDF_TYPE : keyFields[1],
-      valueFields[1],
-      valueFields[0].isEmpty() ? null : valueFields[0],
-      valueFields[0].startsWith(LANGSTRING) ? valueFields[0].substring(LANGSTRING.length() + 1) : null,
-      "http://Notsupported"
+      keyFields[4],
+      keyFields[2].isEmpty() ? null : keyFields[2],
+      keyFields[3].isEmpty() ? null : keyFields[3],
+      valueFields
     );
   }
 
@@ -192,12 +243,20 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
         predicate = "";
       }
       try {
-        put(subject + "\n" + predicate, "\n" + object);
+        put(subject + "\n" +
+          predicate + "\n" +
+          "" + "\n" +
+          "" + "\n" +
+          object,
+          graph
+        );
         if (!predicate.isEmpty()) {
-          put(
-            object + "\n" +
-              predicate + "_inverse",//FIXME! maybe make this a marker or something? instead of creating a new predicate
-            "\n" + subject
+          put(object + "\n" +
+            predicate + "_inverse" + "\n" + //FIXME! make this a marker instead of creating a new predicate
+            "" + "\n" +
+            "" + "\n" +
+            subject,
+            graph
           );
         }
         storeStatus.setPosition(line);
@@ -214,7 +273,13 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
       }
 
       try {
-        put(subject + "\n" + predicate, valueType + "\n" + object);
+        put(subject + "\n" +
+          predicate + "\n" +
+          valueType + "\n" +
+          "" + "\n" +
+          object,
+          graph
+        );
         storeStatus.setPosition(line);
       } catch (DatabaseException e) {
         throw new LogProcessingFailedException(e);
@@ -229,8 +294,13 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
         return;
       }
       try {
-        put(subject + "\n" + predicate, LANGSTRING + "-" + language + "\n" +
-          value); //FIXME! store languages properly
+        put(subject + "\n" +
+          predicate + "\n" +
+          LANGSTRING + "\n" +
+          language.replace('\n', ' ') + "\n" + //make sure the language has no newlines
+          value,
+          graph
+        );
         storeStatus.setPosition(line);
       } catch (DatabaseException e) {
         throw new LogProcessingFailedException(e);

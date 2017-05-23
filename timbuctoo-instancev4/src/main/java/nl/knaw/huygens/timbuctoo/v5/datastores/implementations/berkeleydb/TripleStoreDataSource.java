@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RowFactory;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.dto.MarkedSubject;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -57,9 +58,9 @@ public class TripleStoreDataSource implements DataSource {
         .filter(data -> data.getRight().isPresent())
         .map(data -> tuple(data.getLeft(), data.getRight().get().getObject()))
         .collect(toMap(Tuple::getLeft, Tuple::getRight));
-      try (Stream<String> subjects = collectionIndex.getSubjects(collectionUri)) {
+      try (Stream<MarkedSubject> subjects = collectionIndex.getSubjects(collectionUri, true)) {
         return subjects.map(subject -> {
-          try (Stream<Quad> quads = tripleStore.getQuads(subject)) {
+          try (Stream<Quad> quads = tripleStore.getQuads(subject.getSubject())) {
             Map<String, String> result = new HashMap<>();
             quads.forEach(quad -> {
               String propName = props.get(quad.getPredicate());
