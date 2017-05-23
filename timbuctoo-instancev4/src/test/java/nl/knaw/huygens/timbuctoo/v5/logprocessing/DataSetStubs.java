@@ -19,7 +19,7 @@ class DataSetStubs {
     return dataSet;
   }
 
-  public static DataSet dataSetWithLogs(List<LogPart> logParts) {
-    return new DataSet("name", logParts);
+  public static DataSet dataSetWithLogs(List<RdfLogEntry> rdfLogEntries) {
+    return new DataSet("name", rdfLogEntries);
   }
 }

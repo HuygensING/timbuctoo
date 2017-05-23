@@ -27,8 +27,7 @@ public class ImportTaskExecutorTest {
 
   @Test
   public void registerDataSetAddsANewDataSetToTheImportManager() {
-    Set<DataSet> dataSets = Sets.newHashSet();
-    ImportTaskExecutor instance = new ImportTaskExecutor(dataSets, executorServiceMock);
+    ImportTaskExecutor instance = new ImportTaskExecutor(executorServiceMock);
     DataSet dataSet = DataSetStubs.dataSetWithNameAndStatus("dataSet", mock(DataSetStatus.class));
 
     instance.registerDataSet(dataSet);
@@ -39,14 +38,13 @@ public class ImportTaskExecutorTest {
   @Test
   public void registerImportLogForDataSetAddsAnImportLogToTheDataSet() {
     DataSet dataSet = DataSetStubs.dataSetWithName("dataSet");
-    Set<DataSet> dataSets = Sets.newHashSet();
-    dataSets.add(dataSet);
-    ImportTaskExecutor instance = new ImportTaskExecutor(dataSets, executorServiceMock);
-    LogPart logPart = mock(LogPart.class);
+    ImportTaskExecutor instance = new ImportTaskExecutor(executorServiceMock);
+    instance.registerDataSet(dataSet);
+    RdfLogEntry rdfLogEntry = mock(RdfLogEntry.class);
 
-    instance.registerLogForDataset(logPart, "dataSet");
+    instance.registerLogForDataset(rdfLogEntry, "dataSet");
 
-    verify(dataSet).addLogPart(logPart);
+    verify(dataSet).addLogPart(rdfLogEntry);
   }
 
   @Test
@@ -55,10 +53,9 @@ public class ImportTaskExecutorTest {
     DataSet dataSet1 = DataSetStubs.dataSetWithNameAndStatus("dataSet1", status1);
     DataSetStatus status2 = mock(DataSetStatus.class);
     DataSet dataSet2 = DataSetStubs.dataSetWithNameAndStatus("dataSet2", status2);
-    Set<DataSet> dataSets = Sets.newHashSet();
-    dataSets.add(dataSet1);
-    dataSets.add(dataSet2);
-    ImportTaskExecutor instance = new ImportTaskExecutor(dataSets, executorServiceMock);
+    ImportTaskExecutor instance = new ImportTaskExecutor(executorServiceMock);
+    instance.registerDataSet(dataSet1);
+    instance.registerDataSet(dataSet2);
 
     Map<String, DataSetStatus> status = instance.getStatus();
 

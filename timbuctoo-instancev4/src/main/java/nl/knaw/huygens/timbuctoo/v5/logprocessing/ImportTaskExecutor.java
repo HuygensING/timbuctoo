@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.logprocessing;
 
+import com.google.common.collect.Sets;
+
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -12,8 +14,8 @@ public class ImportTaskExecutor {
   private final Set<DataSet> dataSets;
   private ExecutorService executorService;
 
-  public ImportTaskExecutor(Set<DataSet> dataSets, ExecutorService executorService) {
-    this.dataSets = dataSets;
+  public ImportTaskExecutor(ExecutorService executorService) {
+    this.dataSets = Sets.newHashSet();
     this.executorService = executorService;
   }
 
@@ -21,8 +23,8 @@ public class ImportTaskExecutor {
     this.dataSets.add(dataSet);
   }
 
-  public void registerLogForDataset(LogPart logPart, String dataSetName) {
-    dataSets.stream().filter(dataSet -> dataSetName.equals(dataSet.getName())).findAny().get().addLogPart(logPart);
+  public void registerLogForDataset(RdfLogEntry rdfLogEntry, String dataSetName) {
+    dataSets.stream().filter(dataSet -> dataSetName.equals(dataSet.getName())).findAny().get().addLogPart(rdfLogEntry);
   }
 
   public Map<String, DataSet.DataSetStatus> getStatus() {

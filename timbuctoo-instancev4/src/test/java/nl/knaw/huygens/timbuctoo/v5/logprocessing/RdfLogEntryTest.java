@@ -12,11 +12,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-public class LogPartTest {
+public class RdfLogEntryTest {
 
   @Test
   public void isUpToDateWillReturnTrueWhenAllTheProcessStepsAreDone() {
-    LogPart instance = new LogPart(Lists.newArrayList());
+    RdfLogEntry instance = new RdfLogEntry(Lists.newArrayList(), null, null, 0);
 
     boolean upToDate = instance.isUpToDate();
 
@@ -25,10 +25,10 @@ public class LogPartTest {
 
   @Test
   public void isUpToDateWillReturnFalseWhenSomeProcessStepsAreNotDone() {
-    LogPart.ProcessStep processStep1 =
-      processStepDone(LogPart.ProcessStepStatus.TODO);
-    LogPart.ProcessStep processStep = processStep1;
-    LogPart instance = new LogPart(Lists.newArrayList(processStep));
+    RdfLogEntry.ProcessStep processStep1 =
+      processStepDone(RdfLogEntry.ProcessStepStatus.TODO);
+    RdfLogEntry.ProcessStep processStep = processStep1;
+    RdfLogEntry instance = new RdfLogEntry(Lists.newArrayList(processStep), null, null, 0);
 
     boolean upToDate = instance.isUpToDate();
 
@@ -37,10 +37,12 @@ public class LogPartTest {
 
   @Test
   public void executeWillExecuteAllTheLogStepsThatAreNotDoneInSequence() {
-    LogPart.ProcessStep processStepToDo1 = processStepDone(LogPart.ProcessStepStatus.TODO);
-    LogPart.ProcessStep processStepToDo2 = processStepDone(LogPart.ProcessStepStatus.TODO);
-    LogPart.ProcessStep processStepDone = processStepDone(LogPart.ProcessStepStatus.DONE);
-    LogPart instance = new LogPart(Lists.newArrayList(processStepDone, processStepToDo1, processStepToDo2));
+    RdfLogEntry.ProcessStep processStepToDo1 = processStepDone(RdfLogEntry.ProcessStepStatus.TODO);
+    RdfLogEntry.ProcessStep processStepToDo2 = processStepDone(RdfLogEntry.ProcessStepStatus.TODO);
+    RdfLogEntry.ProcessStep processStepDone = processStepDone(RdfLogEntry.ProcessStepStatus.DONE);
+    RdfLogEntry
+      instance = new RdfLogEntry(Lists.newArrayList(processStepDone, processStepToDo1, processStepToDo2),
+      null, null, 0);
 
     instance.execute();
 
@@ -52,10 +54,11 @@ public class LogPartTest {
 
   @Test
   public void executeWillFirstExecuteTheTasksWithTheStatusExecuting() {
-    LogPart.ProcessStep processStepToDo1 = processStepDone(LogPart.ProcessStepStatus.TODO);
-    LogPart.ProcessStep processStepExecuting = processStepDone(LogPart.ProcessStepStatus.EXECUTING);
-    LogPart.ProcessStep processStepToDo2 = processStepDone(LogPart.ProcessStepStatus.TODO);
-    LogPart instance = new LogPart(Lists.newArrayList(processStepToDo1, processStepExecuting, processStepToDo2));
+    RdfLogEntry.ProcessStep processStepToDo1 = processStepDone(RdfLogEntry.ProcessStepStatus.TODO);
+    RdfLogEntry.ProcessStep processStepExecuting = processStepDone(RdfLogEntry.ProcessStepStatus.EXECUTING);
+    RdfLogEntry.ProcessStep processStepToDo2 = processStepDone(RdfLogEntry.ProcessStepStatus.TODO);
+    RdfLogEntry instance = new RdfLogEntry(Lists.newArrayList(processStepToDo1, processStepExecuting, processStepToDo2),
+      null, null, 0);
 
     instance.execute();
 
@@ -64,8 +67,8 @@ public class LogPartTest {
     inOrder.verify(processStepToDo1).execute();
   }
 
-  private LogPart.ProcessStep processStepDone(LogPart.ProcessStepStatus done) {
-    LogPart.ProcessStep processStep = mock(LogPart.ProcessStep.class);
+  private RdfLogEntry.ProcessStep processStepDone(RdfLogEntry.ProcessStepStatus done) {
+    RdfLogEntry.ProcessStep processStep = mock(RdfLogEntry.ProcessStep.class);
     given(processStep.getStatus()).willReturn(done);
     return processStep;
   }

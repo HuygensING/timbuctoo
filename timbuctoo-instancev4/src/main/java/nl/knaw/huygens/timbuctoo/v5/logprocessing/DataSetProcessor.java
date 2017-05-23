@@ -12,8 +12,8 @@ public class DataSetProcessor implements Runnable {
   @Override
   public void run() {
     while (!dataSet.isUpToDate()) {
-      Optional<LogPart> logPart = dataSet.nextLogToProcess();
-      logPart.ifPresent(LogPart::execute);
+      Optional<RdfLogEntry> logPart = dataSet.nextLogToProcess();
+      logPart.ifPresent(RdfLogEntry::execute);
     }
   }
 }

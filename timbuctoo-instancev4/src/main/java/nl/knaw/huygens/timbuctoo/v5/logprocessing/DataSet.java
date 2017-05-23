@@ -10,15 +10,15 @@ import static java.util.Collections.synchronizedList;
 public class DataSet {
 
   private final String name;
-  private final List<LogPart> logParts;
+  private final List<RdfLogEntry> rdfLogEntries;
 
   public DataSet(String name) {
     this(name, Lists.newArrayList());
   }
 
-  public DataSet(String name, List<LogPart> logParts) {
+  public DataSet(String name, List<RdfLogEntry> rdfLogEntries) {
     this.name = name;
-    this.logParts = synchronizedList(logParts);
+    this.rdfLogEntries = synchronizedList(rdfLogEntries);
   }
 
   public String getName() {
@@ -26,19 +26,19 @@ public class DataSet {
   }
 
   public boolean isUpToDate() {
-    return logParts.stream().allMatch(LogPart::isUpToDate);
+    return rdfLogEntries.stream().allMatch(RdfLogEntry::isUpToDate);
   }
 
   public DataSetStatus getStatus() {
     throw new UnsupportedOperationException("Yet to be implemented");
   }
 
-  public void addLogPart(LogPart logPart) {
-    logParts.add(logPart);
+  public void addLogPart(RdfLogEntry rdfLogEntry) {
+    rdfLogEntries.add(rdfLogEntry);
   }
 
-  public Optional<LogPart> nextLogToProcess() {
-    return logParts.stream().filter(logPart -> !logPart.isUpToDate()).findFirst();
+  public Optional<RdfLogEntry> nextLogToProcess() {
+    return rdfLogEntries.stream().filter(logPart -> !logPart.isUpToDate()).findFirst();
   }
 
   class DataSetStatus {

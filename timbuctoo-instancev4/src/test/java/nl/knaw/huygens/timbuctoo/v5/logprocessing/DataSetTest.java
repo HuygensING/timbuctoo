@@ -5,8 +5,8 @@ import org.junit.Test;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
-import static nl.knaw.huygens.timbuctoo.v5.logprocessing.LogPartStubs.logPartNotUpToDate;
-import static nl.knaw.huygens.timbuctoo.v5.logprocessing.LogPartStubs.logPartUpToDate;
+import static nl.knaw.huygens.timbuctoo.v5.logprocessing.RdfLogEntryStubs.logPartNotUpToDate;
+import static nl.knaw.huygens.timbuctoo.v5.logprocessing.RdfLogEntryStubs.logPartUpToDate;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -28,9 +28,9 @@ public class DataSetTest {
   @Test
   public void isUpToDateReturnsFalseIfALogIsNotUpToDate() {
     DataSet instance = new DataSet("name");
-    LogPart logPart = mock(LogPart.class);
-    given(logPart.isUpToDate()).willReturn(false);
-    instance.addLogPart(logPart);
+    RdfLogEntry rdfLogEntry = mock(RdfLogEntry.class);
+    given(rdfLogEntry.isUpToDate()).willReturn(false);
+    instance.addLogPart(rdfLogEntry);
 
     boolean upToDate = instance.isUpToDate();
 
@@ -40,24 +40,24 @@ public class DataSetTest {
   @Test
   public void nextLogToProcessReturnsTheNextNonUpToDateTaskOfTheDataSet() {
     DataSet instance = new DataSet("name");
-    LogPart logPartUpToDate = logPartUpToDate();
-    instance.addLogPart(logPartUpToDate);
-    LogPart logPartNotUpToDate = logPartNotUpToDate();
-    instance.addLogPart(logPartNotUpToDate);
+    RdfLogEntry rdfLogEntryUpToDate = logPartUpToDate();
+    instance.addLogPart(rdfLogEntryUpToDate);
+    RdfLogEntry rdfLogEntryNotUpToDate = logPartNotUpToDate();
+    instance.addLogPart(rdfLogEntryNotUpToDate);
 
-    Optional<LogPart> logPart = instance.nextLogToProcess();
+    Optional<RdfLogEntry> logPart = instance.nextLogToProcess();
 
     assertThat(logPart, is(present()));
-    assertThat(logPart.get(), is(sameInstance(logPartNotUpToDate)));
+    assertThat(logPart.get(), is(sameInstance(rdfLogEntryNotUpToDate)));
   }
 
   @Test
   public void nextLogToProcessReturnsAnEmptyOptionalWhenAllTheLogsAreUpToDate() {
     DataSet instance = new DataSet("name");
-    LogPart logPartUpToDate = logPartUpToDate();
-    instance.addLogPart(logPartUpToDate);
+    RdfLogEntry rdfLogEntryUpToDate = logPartUpToDate();
+    instance.addLogPart(rdfLogEntryUpToDate);
 
-    Optional<LogPart> logPart = instance.nextLogToProcess();
+    Optional<RdfLogEntry> logPart = instance.nextLogToProcess();
 
     assertThat(logPart, is(not(present())));
   }
