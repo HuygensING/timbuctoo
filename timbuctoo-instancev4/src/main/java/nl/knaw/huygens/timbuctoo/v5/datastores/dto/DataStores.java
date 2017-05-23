@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.dto;
 import com.sleepycat.je.Environment;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.BdbJoinHandler;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
@@ -22,6 +23,7 @@ public class DataStores implements AutoCloseable {
   private final TypeNameStore typeNameStore;
   private final TripleStore tripleStore;
   private final BiFunction<String, Map<String, String>, DataSource> tripleStoreDataSourceFactory;
+  private final BdbJoinHandler joinHandler;
   private final SchemaStore schemaStore;
   private final CollectionIndexFetcherFactory collectionIndexFetcherFactory;
   private final DataFetcherFactory dataFetcherFactory;
@@ -30,13 +32,15 @@ public class DataStores implements AutoCloseable {
   public DataStores(Environment commonEnvironment, CollectionIndex collectionIndex, TypeNameStore typeNameStore,
                     TripleStore tripleStore,
                     BiFunction<String, Map<String, String>, DataSource> tripleStoreDataSourceFactory,
-                    SchemaStore schemaStore, CollectionIndexFetcherFactory collectionIndexFetcherFactory,
+                    BdbJoinHandler joinHandler, SchemaStore schemaStore,
+                    CollectionIndexFetcherFactory collectionIndexFetcherFactory,
                     DataFetcherFactory dataFetcherFactory, LogStorage logStorage) {
     this.commonEnvironment = commonEnvironment;
     this.collectionIndex = collectionIndex;
     this.typeNameStore = typeNameStore;
     this.tripleStore = tripleStore;
     this.tripleStoreDataSourceFactory = tripleStoreDataSourceFactory;
+    this.joinHandler = joinHandler;
     this.schemaStore = schemaStore;
     this.collectionIndexFetcherFactory = collectionIndexFetcherFactory;
     this.dataFetcherFactory = dataFetcherFactory;
@@ -95,6 +99,7 @@ public class DataStores implements AutoCloseable {
     collectionIndex.close();
     tripleStore.close();
     schemaStore.close();
+    joinHandler.close();
     commonEnvironment.close();
   }
 
