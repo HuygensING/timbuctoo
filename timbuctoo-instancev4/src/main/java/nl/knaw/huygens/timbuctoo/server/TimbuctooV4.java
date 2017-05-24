@@ -91,7 +91,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.DataSetManager;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.FileSystemBasedDataSetManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -256,9 +256,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       "bdb";
     TimbuctooManagedDataStoreFactory dataStoreFactory = new TimbuctooManagedDataStoreFactory(databaseLocation);
     environment.lifecycle().manage(dataStoreFactory);
-    register(
-      environment,
-      new RdfUpload(dataStoreFactory, securityConfig.getLoggedInUsers(environment), new DataSetManager())
+    register(environment,new RdfUpload(
+        dataStoreFactory,
+        securityConfig.getLoggedInUsers(environment),
+        new FileSystemBasedDataSetManager(new File(new File(databaseLocation), "files"))
+      )
     );
     register(environment,
       new GraphQl(

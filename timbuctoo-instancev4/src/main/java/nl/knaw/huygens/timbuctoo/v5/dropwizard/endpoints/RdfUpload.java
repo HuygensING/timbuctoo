@@ -4,8 +4,7 @@ import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.DataSetManager;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.FileBasedLog;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.FileSystemBasedDataSetManager;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.datastore.LogMetadata;
@@ -14,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.v5.logprocessing.dto.LocalLog;
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfreader.implementations.rdf4j.Rdf4jRdfParser;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
@@ -24,8 +22,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -34,17 +30,16 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static org.apache.poi.util.IOUtils.copy;
-
 @Path("/v4/rdf-upload/{dataSet}")
 public class RdfUpload {
 
   protected final ImportManager importManager;
   private final LoggedInUsers loggedInUsers;
-  private final DataSetManager dataSetManager;
+  private final FileSystemBasedDataSetManager dataSetManager;
 
 
-  public RdfUpload(DataStoreFactory dataStoreFactory, LoggedInUsers loggedInUsers, DataSetManager dataSetManager) {
+  public RdfUpload(DataStoreFactory dataStoreFactory, LoggedInUsers loggedInUsers,
+                   FileSystemBasedDataSetManager dataSetManager) {
     this.loggedInUsers = loggedInUsers;
     this.dataSetManager = dataSetManager;
     NoOpLogMetadata noOp = new NoOpLogMetadata();
