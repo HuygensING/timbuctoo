@@ -91,7 +91,12 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
+<<<<<<< Updated upstream
+=======
 import nl.knaw.huygens.timbuctoo.v5.logprocessing.DataSetManager;
+import nl.knaw.huygens.timbuctoo.v5.logprocessing.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.rdfreader.implementations.rdf4j.Rdf4jRdfParser;
+>>>>>>> Stashed changes
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -256,10 +261,17 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       "bdb";
     TimbuctooManagedDataStoreFactory dataStoreFactory = new TimbuctooManagedDataStoreFactory(databaseLocation);
     environment.lifecycle().manage(dataStoreFactory);
-    register(
-      environment,
-      new RdfUpload(dataStoreFactory, securityConfig.getLoggedInUsers(environment), new DataSetManager())
-    );
+<<<<<<< Updated upstream
+    register(environment, new RdfUpload(dataStoreFactory));
+=======
+    final ExecutorService importExecutorServer = environment.lifecycle().executorService("importManager").build();
+    ImportManager importManager = new ImportManager(new Rdf4jRdfParser(), dataStoreFactory, importExecutorServer);
+    register(environment, new RdfUpload(
+        importManager,
+        new DataSetManager(),
+        securityConfig.getLoggedInUsers(environment)
+    ));
+>>>>>>> Stashed changes
     register(environment,
       new GraphQl(
         new GraphQlService(
