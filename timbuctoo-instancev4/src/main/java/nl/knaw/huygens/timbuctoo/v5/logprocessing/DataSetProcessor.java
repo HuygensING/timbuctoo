@@ -9,6 +9,10 @@ public class DataSetProcessor implements Runnable {
     this.dataSet = dataSet;
   }
 
+  public String getDataSetName(){
+    return dataSet.getName();
+  }
+
   @Override
   public void run() {
     while (!dataSet.isUpToDate()) {

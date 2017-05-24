@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.logprocessing;
 import com.google.common.collect.Sets;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
@@ -21,10 +22,21 @@ public class ImportTaskExecutor {
 
   public void registerDataSet(DataSet dataSet) {
     this.dataSets.add(dataSet);
+    if (!dataSet.isUpToDate()) {
+      this.executorService.submit(new DataSetProcessor(dataSet));
+    }
   }
 
   public void registerLogForDataset(RdfLogEntry rdfLogEntry, String dataSetName) {
-    dataSets.stream().filter(dataSet -> dataSetName.equals(dataSet.getName())).findAny().get().addLogPart(rdfLogEntry);
+    Optional<DataSet> dataSetOptional = dataSets.stream()
+                                                .filter(dataSet -> dataSetName.equals(dataSet.getName())).findAny();
+    dataSetOptional.ifPresent(dataSet -> {
+      dataSet.addLogPart(rdfLogEntry);
+      if(!dataSet.isUpToDate()){
+        executorService.submit(new DataSetProcessor(dataSet));
+      }
+    });
+
   }
 
   public Map<String, DataSet.DataSetStatus> getStatus() {

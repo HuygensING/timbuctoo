@@ -22,4 +22,8 @@ class DataSetStubs {
   public static DataSet dataSetWithLogs(List<RdfLogEntry> rdfLogEntries) {
     return new DataSet("name", rdfLogEntries);
   }
+
+  public static DataSet upToDateDataSetWithName(String name) {
+    return new DataSet(name);
+  }
 }
