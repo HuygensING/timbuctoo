@@ -7,9 +7,7 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 import java.util.concurrent.Future;
 
-public class DataSet {
-  public Future<?> addLog(URI uri, InputStream rdfInputStream, Optional<Charset> charset,
-                          Optional<MediaType> mediaType) {
-    throw new UnsupportedOperationException("Method not implemented");
-  }
+public interface DataSet {
+  Future<?> addLog(URI uri, InputStream rdfInputStream, Optional<Charset> charset,
+                   Optional<MediaType> mediaType);
 }

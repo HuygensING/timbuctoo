@@ -2,12 +2,14 @@ package nl.knaw.huygens.timbuctoo.v5.logprocessing;
 
 import com.google.common.io.Files;
 import org.assertj.core.util.Lists;
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.function.Supplier;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -17,11 +19,17 @@ import static org.hamcrest.Matchers.sameInstance;
 @RunWith(Parameterized.class)
 public class DataSetManagerTest {
 
+  private final Runnable cleaner;
   private DataSetManager dataSetManager;
 
-  public DataSetManagerTest(DataSetManager dataSetManager, String className) {
+  public DataSetManagerTest(Supplier<DataSetManager> dataSetManager, Runnable cleaner, String className) {
+    this.dataSetManager = dataSetManager.get();
+    this.cleaner = cleaner;
+  }
 
-    this.dataSetManager = dataSetManager;
+  @After
+  public void cleanUp() {
+    cleaner.run();
   }
 
   @Test
@@ -52,7 +60,11 @@ public class DataSetManagerTest {
   public static Collection<Object[]> instancesToTest() {
     File tempDir = Files.createTempDir();
     return Lists.<Object[]>newArrayList(
-      new Object[]{new FileSystemBasedDataSetManager(tempDir), FileSystemBasedDataSetManager.class.getName()}
+      new Object[]{
+        (Supplier<DataSetManager>) () -> new FileSystemBasedDataSetManager(tempDir),
+        (Runnable) () -> tempDir.delete(),
+        FileSystemBasedDataSetManager.class.getName()
+      }
     );
   }
 }

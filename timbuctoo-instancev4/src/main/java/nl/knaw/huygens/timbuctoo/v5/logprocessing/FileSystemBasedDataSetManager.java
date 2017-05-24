@@ -21,7 +21,7 @@ public class FileSystemBasedDataSetManager implements DataSetManager {
     File userDir = new File(dataDir, userPersistentId);
     File dataSetDir = new File(userDir, userPersistentId);
 
-    DataSet dataSet = dataSetMap.computeIfAbsent(userPersistentId + dataSetId, (key) -> new DataSet());
+    DataSet dataSet = dataSetMap.computeIfAbsent(userPersistentId + dataSetId, (key) -> new FileSystemBasedDataSet());
 
     userDir.mkdir();
     dataSetDir.mkdir();
