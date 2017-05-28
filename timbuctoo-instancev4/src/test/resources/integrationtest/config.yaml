@@ -9,6 +9,18 @@ securityConfiguration:
     authenticationServerUrl: DUMMY
     authenticationCredentials: DUMMY
 
+dataSet:
+  dataSetMetadataLocation: ""
+  dataStore:
+    "@class": nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataStoreFactory
+    databaseLocation: ""
+  fileStorage:
+    "@class": nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorageFactory
+    rootDir: ""
+  rdfIo:
+    "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
+    rdfFormat: application/n-quads
+
 # Timeouts
 # the 'duration' is a number
 # the timeUnit is a 'java.util.concurrent.TimeUnit'

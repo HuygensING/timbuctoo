@@ -1,16 +1,32 @@
 #Config with minimal info to launch a test build
 
+securityConfiguration:
+  autoLogoutTimeout:
+    duration: 8
+    timeUnit: HOURS
+  federatedAuthentication:
+    enabled: true
+    authenticationServerUrl: DUMMY
+    authenticationCredentials: DUMMY
+
+dataSet:
+  dataSetMetadataLocation: ""
+  dataStore:
+    "@class": nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataStoreFactory
+    databaseLocation: ""
+  fileStorage:
+    "@class": nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorageFactory
+    rootDir: ""
+  rdfIo:
+    "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
+    rdfFormat: application/n-quads
 
 # Timeouts
 # the 'duration' is a number
 # the timeUnit is a 'java.util.concurrent.TimeUnit'
-autoLogoutTimeout:
-  duration: 8
-  timeUnit: HOURS
 searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
-executeDatabaseInvariantCheckAt: -1
 
 #Public timbuctoo url
 baseUri: http://0.0.0.0:0 #will be replaced with the port that timbuctoo ends up listening on
@@ -29,9 +45,6 @@ persistenceManager:
 #  cypher:
 #  namingAuthority:
 #  prefix:
-
-federatedAuthentication:
-  enabled: false
 
 #Note! disable this for production builds
 allowGremlinEndpoint: true

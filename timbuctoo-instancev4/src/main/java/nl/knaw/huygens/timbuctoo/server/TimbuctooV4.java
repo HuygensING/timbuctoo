@@ -84,14 +84,14 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.FileSystemBasedDataSetManager;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -99,7 +99,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
-import java.io.File;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -248,24 +247,21 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.jersey().register(new JsonWriter());
 
     // register REST endpoints
-    String databaseLocation =
-      (configuration.getDatabaseConfiguration() == null ?
-        configuration.getDatabasePath() :
-        configuration.getDatabaseConfiguration().getDatabasePath()) +
-      File.pathSeparatorChar +
-      "bdb";
-    TimbuctooManagedDataStoreFactory dataStoreFactory = new TimbuctooManagedDataStoreFactory(databaseLocation);
-    environment.lifecycle().manage(dataStoreFactory);
-    register(environment,new RdfUpload(
-        dataStoreFactory,
-        securityConfig.getLoggedInUsers(environment),
-        new FileSystemBasedDataSetManager(new File(new File(databaseLocation), "files"))
-      )
+    DataSetFactory dataSetFactory = new DataSetFactory(
+      environment.lifecycle().executorService("dataSet").build(),
+      configuration.getDataSet()
     );
+    environment.lifecycle().manage(new DataSetManager(dataSetFactory));
+
+    register(environment, new RdfUpload(
+      securityConfig.getLoggedInUsers(environment),
+      dataSetFactory
+    ));
+
     register(environment,
       new GraphQl(
         new GraphQlService(
-          dataStoreFactory,
+          dataSetFactory,
           new GraphQlTypeGenerator()
         )
       )

@@ -4,7 +4,7 @@ import com.sleepycat.je.DatabaseException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -13,18 +13,18 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.ok;
 
-@Path("/v4/{dataSet}/graphql")
+@Path("/v4/{userId}/{dataSet}/graphql")
 public class GraphQl {
   private final GraphQlService graphQlService;
 
-  public GraphQl(GraphQlService service) throws DatabaseException, LogProcessingFailedException {
+  public GraphQl(GraphQlService service) throws DatabaseException, RdfProcessingFailedException {
     graphQlService = service;
   }
 
   @POST
-  public Response get(String query, @PathParam("dataSet") String dataSet) {
+  public Response get(String query, @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
     try {
-      return ok(graphQlService.executeQuery(query, dataSet)).build();
+      return ok(graphQlService.executeQuery(userId, dataSet, query)).build();
     } catch (GraphQlProcessingException | GraphQlFailedException e) {
       e.printStackTrace();
       return Response.status(500).entity(e.getMessage()).build();

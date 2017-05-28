@@ -9,15 +9,15 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.QuadHandler;
-import nl.knaw.huygens.timbuctoo.v5.logprocessing.exceptions.LogProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Supplier;
 
-public abstract class BerkeleyStore implements QuadHandler, AutoCloseable {
+public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
 
   protected final Environment dbEnvironment;
   protected final Database database;
@@ -36,30 +36,30 @@ public abstract class BerkeleyStore implements QuadHandler, AutoCloseable {
   protected abstract DatabaseConfig getDatabaseConfig();
 
   @Override
-  public void start() throws LogProcessingFailedException {
+  public void start() throws RdfProcessingFailedException {
     if (databaseConfig.getTransactional()) {
       try {
         transaction = dbEnvironment.beginTransaction(null, null);
       } catch (DatabaseException e) {
-        throw new LogProcessingFailedException(e);
+        throw new RdfProcessingFailedException(e);
       }
     }
   }
 
   @Override
-  public void finish() throws LogProcessingFailedException {
+  public void finish() throws RdfProcessingFailedException {
     if (databaseConfig.getTransactional()) {
       try {
         transaction.commit();
         transaction = null;
       } catch (DatabaseException e) {
-        throw new LogProcessingFailedException(e);
+        throw new RdfProcessingFailedException(e);
       }
     }
   }
 
   @Override
-  public void close() throws Exception {
+  public void close() throws DatabaseException {
     if (databaseConfig.getTransactional()) {
       if (transaction != null) {
         transaction.abort();

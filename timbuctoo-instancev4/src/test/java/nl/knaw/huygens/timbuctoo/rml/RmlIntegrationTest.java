@@ -1,13 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import io.dropwizard.testing.junit.DropwizardAppRule;
-import nl.knaw.huygens.timbuctoo.model.PersonNames;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.apache.commons.io.FileUtils;
 import org.assertj.core.util.Lists;
 import org.glassfish.jersey.client.ClientConfig;
@@ -15,14 +11,11 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.ExternalResource;
 import org.junit.rules.RuleChain;
-import org.skyscreamer.jsonassert.JSONAssert;
-import org.skyscreamer.jsonassert.JSONCompare;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -34,35 +27,33 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
 import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
-import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.JsonContractMatcher.matchesContract;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.arrayWithSize;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 
 public class RmlIntegrationTest {
 
-  public static final String DATABASE_PATH = resourceFilePath("integrationtest/database");
+  public static final String DATABASE_PATH = resourceFilePath("integrationtest/data");
   public static final String AUTH_PATH = resourceFilePath("integrationtest/authorizations");
 
   public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
     TimbuctooV4.class,
     resourceFilePath("integrationtest/config.yaml"),
-    config("databaseConfiguration.databasePath", DATABASE_PATH),
+    config("databaseConfiguration.databasePath", resourceFilePath("integrationtest/data/neo4j")),
+    config("dataSet.dataSetMetadataLocation", resourceFilePath("integrationtest/data/dataSets")),
+    config("dataSet.dataStore.databaseLocation", resourceFilePath("integrationtest/data/bdb")),
+    config("dataSet.fileStorage.rootDir", resourceFilePath("integrationtest/data/files")),
     config("securityConfiguration.localfile.authorizationsPath", AUTH_PATH),
     config("securityConfiguration.localfile.usersFilePath", resourceFilePath("integrationtest/users.json")),
     config("securityConfiguration.localfile.loginsFilePath", resourceFilePath("integrationtest/logins.json"))

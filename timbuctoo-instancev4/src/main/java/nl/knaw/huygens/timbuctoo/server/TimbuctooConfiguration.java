@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -82,6 +83,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @Valid
   @NotNull
   private HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration();
+  private DataSetConfiguration dataSetConfiguration;
 
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
@@ -211,4 +213,13 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private void setUserRedirectUrl(String userRedirectUrl) {
     this.userRedirectUrl = Optional.of(URI.create(userRedirectUrl));
   }
+
+  public DataSetConfiguration getDataSet() {
+    return dataSetConfiguration;
+  }
+
+  public void setDataSet(DataSetConfiguration dataSetFactory) {
+    this.dataSetConfiguration = dataSetFactory;
+  }
+
 }

@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql;
 
-import com.sleepycat.je.DatabaseException;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLObjectType;
-import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.dto.DataStores;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexSchemaFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
@@ -20,19 +20,19 @@ import static graphql.schema.GraphQLSchema.newSchema;
 
 public class GraphQlService {
   private final Map<String, GraphQL> graphQls = new HashMap<>();
-  private final DataStoreFactory dataStoreFactory;
+  private final DataSetFactory dataSetFactory;
   private final CollectionIndexSchemaFactory schemaFactory;
   private final GraphQlTypeGenerator typeGenerator;
 
-  public GraphQlService(DataStoreFactory dataStoreFactory, GraphQlTypeGenerator typeGenerator) {
-    this.dataStoreFactory = dataStoreFactory;
+  public GraphQlService(DataSetFactory dataSetFactory, GraphQlTypeGenerator typeGenerator) {
+    this.dataSetFactory = dataSetFactory;
     this.typeGenerator = typeGenerator;
     this.schemaFactory = new CollectionIndexSchemaFactory();
   }
 
-  public GraphQL loadSchema(String dataSetName) throws GraphQlProcessingException {
+  public GraphQL loadSchema(String userId, String dataSetName) throws GraphQlProcessingException {
     try {
-      DataStores dataStores = dataStoreFactory.getDataStores(dataSetName);
+      DataStores dataStores = dataSetFactory.getOrCreate(userId, dataSetName).getDataStores();
       Map<String, GraphQLObjectType> graphQlTypes = typeGenerator.makeGraphQlTypes(
         dataStores.getSchemaStore().getTypes(),
         dataStores.getTypeNameStore(),
@@ -47,19 +47,19 @@ public class GraphQlService {
         )
         .queryExecutionStrategy(new SerializerExecutionStrategy(dataStores.getTypeNameStore()))
         .build();
-    } catch (DatabaseException e) {
+    } catch (DataStoreCreationException e) {
       throw new GraphQlProcessingException(e);
     }
   }
 
-  public Serializable executeQuery(String dataSet, String query)
+  public Serializable executeQuery(String userId, String dataSet, String query)
       throws GraphQlProcessingException, GraphQlFailedException {
     try {
       GraphQL graphQl;
       if (graphQls.containsKey(dataSet)) {
         graphQl = graphQls.get(dataSet);
       } else {
-        graphQl = loadSchema(dataSet);
+        graphQl = loadSchema(userId, dataSet);
         graphQls.put(dataSet, graphQl);
       }
       ExecutionResult result = graphQl.execute(query);
