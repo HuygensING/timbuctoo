@@ -4,9 +4,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 public interface RdfProcessor {
-  String getStatus();
-
-  void start() throws RdfProcessingFailedException;
 
   void setPrefix(String cursor, String prefix, String iri) throws RdfProcessingFailedException;
 
@@ -52,6 +49,8 @@ public interface RdfProcessor {
       }
     }
   }
+
+  void start() throws RdfProcessingFailedException;
 
   void finish() throws RdfProcessingFailedException;
 }

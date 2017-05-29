@@ -1,17 +1,28 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.MultimapBuilder;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
-import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.RelationPredicate;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ValuePredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
@@ -21,8 +32,10 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   protected DatabaseEntry value;
   private String prefix;
 
-  public BdbTripleStore(String dataSetName, Environment dbEnvironment) throws DatabaseException {
-    super(dbEnvironment, "rdfData_" + dataSetName);
+  public BdbTripleStore(DataSet dataSet, BdbDatabaseFactory dbFactory, String userId, String datasetId)
+    throws DataStoreCreationException {
+    super(dbFactory, "rdfData", userId, datasetId);
+    dataSet.subscribeToRdf(this, null);
   }
 
   protected DatabaseConfig getDatabaseConfig() {
@@ -74,11 +87,6 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
     result[3] = valueFields[0].isEmpty() ? null : valueFields[0];
     result[4] = "http://Notsupported";
     return result;
-  }
-
-  @Override
-  public String getStatus() {
-    return null;
   }
 
   @Override
@@ -152,4 +160,34 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   @Override
   public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {}
+
+  @Override
+  public void processEntities(String cursor, EntityProcessor processor) throws RdfProcessingFailedException {
+    ListMultimap<String, PredicateData> predicates = MultimapBuilder.hashKeys().arrayListValues().build();
+    List<String> types = new ArrayList<>();
+    String curSubject = "";
+    processor.start();
+    try (AutoCloseableIterator<String[]> triples = this.getTriples()) {
+      while (triples.hasNext()) {
+        String[] triple = triples.next();
+        if (!curSubject.equals(triple[0])) {
+          processor.processEntity("", curSubject, predicates);
+          curSubject = triple[0];
+          predicates.clear();
+        }
+        if (triple[3] == null) {
+          types.clear();
+          try (AutoCloseableIterator<String[]> objectTypes = this.getTriples(triple[2], RDF_TYPE)) {
+            while (objectTypes.hasNext()) {
+              types.add(objectTypes.next()[2]);
+            }
+          }
+          predicates.put(triple[1], new RelationPredicate(triple[1], triple[2], types));
+        } else {
+          predicates.put(triple[1], new ValuePredicate(triple[1], triple[2], triple[3]));
+        }
+      }
+    }
+    processor.finish();
+  }
 }

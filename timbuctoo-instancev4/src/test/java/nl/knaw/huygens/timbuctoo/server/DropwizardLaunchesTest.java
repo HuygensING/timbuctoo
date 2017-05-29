@@ -21,7 +21,7 @@ public class DropwizardLaunchesTest {
     resourceFilePath("testrunstate/config.yaml"),
     config("databaseConfiguration.databasePath", resourceFilePath("testrunstate/data/neo4j")),
     config("dataSet.dataSetMetadataLocation", resourceFilePath("testrunstate/data/dataSets")),
-    config("dataSet.dataStore.databaseLocation", resourceFilePath("testrunstate/data/bdb")),
+    config("databases.databaseLocation", resourceFilePath("testrunstate/data/bdb")),
     config("dataSet.fileStorage.rootDir", resourceFilePath("testrunstate/data/files")),
     config("securityConfiguration.localfile.authorizationsPath", resourceFilePath("testrunstate/authorizations")),
     config("securityConfiguration.localfile.usersFilePath", resourceFilePath("testrunstate/users.json")),

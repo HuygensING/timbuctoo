@@ -11,9 +11,6 @@ securityConfiguration:
 
 dataSet:
   dataSetMetadataLocation: ""
-  dataStore:
-    "@class": nl.knaw.huygens.timbuctoo.v5.dropwizard.TimbuctooManagedDataStoreFactory
-    databaseLocation: ""
   fileStorage:
     "@class": nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorageFactory
     rootDir: ""

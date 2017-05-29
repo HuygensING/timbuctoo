@@ -45,7 +45,6 @@ public class DataSetFactory {
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
             configuration.getFileStorage().makeLogStorage(userId, dataSetId),
-            configuration.getDataStore().getDataStores(userId, dataSetId),
             executorService,
             configuration.getRdfIo()
           ));
@@ -59,18 +58,5 @@ public class DataSetFactory {
       }
       return userDataSets.get(dataSetId);
     }
-  }
-
-  public void start() throws Exception {
-    configuration.getDataStore().start();
-    for (Map.Entry<String, List<String>> userDataSets : storedDataSets.getData().entrySet()) {
-      for (String dataSetId : userDataSets.getValue()) {
-        getOrCreate(userDataSets.getKey(), dataSetId).processLogs(); //is an async method. Won't block startup
-      }
-    }
-  }
-
-  public void stop() throws Exception {
-    configuration.getDataStore().stop();
   }
 }

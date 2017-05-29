@@ -85,7 +85,6 @@ import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
@@ -246,12 +245,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.jersey().register(new JsonLdWriter());
     environment.jersey().register(new JsonWriter());
 
+    configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
+
     // register REST endpoints
-    DataSetFactory dataSetFactory = new DataSetFactory(
-      environment.lifecycle().executorService("dataSet").build(),
-      configuration.getDataSet()
-    );
-    environment.lifecycle().manage(new DataSetManager(dataSetFactory));
+    DataSetFactory dataSetFactory = configuration.getDataSet();
 
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(environment),
@@ -261,7 +258,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment,
       new GraphQl(
         new GraphQlService(
-          dataSetFactory,
+          configuration.getSchemaStoreFactory(),
+          configuration.getTypeNameStoreFactory(),
+          configuration.getDataFetcherFactoryFactory(),
+          configuration.getDataFetcherFactoryFactory(),
           new GraphQlTypeGenerator()
         )
       )

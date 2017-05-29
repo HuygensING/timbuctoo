@@ -62,7 +62,7 @@ public class Rdf4jRdfParser implements RdfParser {
       this.rdfProcessor = rdfProcessor;
       this.fileUri = fileUri;
       this.cursorPrefix = cursorPrefix;
-      this.startFrom = Integer.parseInt(startFrom);
+      this.startFrom = startFrom.isEmpty() ? 0 : Integer.parseInt(startFrom);
       this.idx = 0;
     }
 
@@ -111,8 +111,8 @@ public class Rdf4jRdfParser implements RdfParser {
             st.getSubject().stringValue(),
             st.getPredicate().stringValue(),
             st.getObject().stringValue(),
-            (st.getObject() instanceof Literal) ? ((Literal) st).getDatatype().toString() : null,
-            (st.getObject() instanceof Literal) ? ((Literal) st).getLanguage().orElse(null) : null,
+            (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getDatatype().toString() : null,
+            (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getLanguage().orElse(null) : null,
             graph
           );
         }

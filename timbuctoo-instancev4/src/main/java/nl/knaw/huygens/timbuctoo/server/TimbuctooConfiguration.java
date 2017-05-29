@@ -12,12 +12,29 @@ import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.CachedDataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreDataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.SingleDataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.BdbCollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.BdbTripleStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.HardCodedTypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -84,6 +101,8 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @NotNull
   private HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration();
   private DataSetConfiguration dataSetConfiguration;
+  private BdbDatabaseFactory bdbDatabaseFactory;
+  private ExecutorService dataSetExecutorService;
 
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
@@ -214,12 +233,78 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     this.userRedirectUrl = Optional.of(URI.create(userRedirectUrl));
   }
 
-  public DataSetConfiguration getDataSet() {
-    return dataSetConfiguration;
+  public BdbDatabaseFactory getDatabases() {
+    return bdbDatabaseFactory;
+  }
+
+  public void setDatabases(BdbDatabaseFactory bdbDatabaseFactory) {
+    this.bdbDatabaseFactory = bdbDatabaseFactory;
+  }
+
+  public DataSetFactory getDataSet() throws DataStoreCreationException {
+    try {
+      return new DataSetFactory(dataSetExecutorService, dataSetConfiguration);
+    } catch (IOException e) {
+      throw new DataStoreCreationException(e);
+    }
+  }
+
+  public void setDataSetExecutorService(ExecutorService executorService) {
+    dataSetExecutorService = executorService;
   }
 
   public void setDataSet(DataSetConfiguration dataSetFactory) {
     this.dataSetConfiguration = dataSetFactory;
+  }
+
+  public SingleDataStoreFactory<SchemaStore> getSchemaStoreFactory() {
+    return new CachedDataStoreFactory<>(
+      (userId, dataSetId) -> {
+        try {
+          return new JsonSchemaStore(
+            new File(dataSetConfiguration.getDataSetMetadataLocation()),
+            getDataSet().getOrCreate(userId, dataSetId)
+          );
+        } catch (IOException e) {
+          throw new DataStoreCreationException(e);
+        }
+      }
+    );
+  }
+
+  public SingleDataStoreFactory<TripleStore> getTripleStoreFactory() {
+    return new CachedDataStoreFactory<>(
+      (userId, dataSetId) -> new BdbTripleStore(
+        getDataSet().getOrCreate(userId, dataSetId),
+        getDatabases(),
+        userId,
+        dataSetId
+      )
+    );
+  }
+
+  public SingleDataStoreFactory<CollectionIndex> getCollectionIndexFactory() {
+    return new CachedDataStoreFactory<>(
+      (userId, dataSetId) -> new BdbCollectionIndex(
+        getDataSet().getOrCreate(userId, dataSetId),
+        getDatabases(),
+        userId,
+        dataSetId
+      )
+    );
+  }
+
+
+  public SingleDataStoreFactory<TypeNameStore> getTypeNameStoreFactory() {
+    return new CachedDataStoreFactory<>((userId, dataSetId) -> new HardCodedTypeNameStore(userId + "_" + dataSetId));
+  }
+
+  public SingleDataStoreFactory<DataStoreDataFetcherFactory> getDataFetcherFactoryFactory() {
+
+    return new CachedDataStoreFactory<>((userId, dataSetId) -> new DataStoreDataFetcherFactory(
+      getTripleStoreFactory().getOrCreate(userId, dataSetId),
+      getCollectionIndexFactory().getOrCreate(userId, dataSetId)
+    ));
   }
 
 }

@@ -4,17 +4,21 @@ import com.google.common.base.Charsets;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class BdbCollectionIndex extends BerkeleyStore implements CollectionIndex {
-  public BdbCollectionIndex(String dataSetName, Environment dbEnvironment) throws DatabaseException {
-    super(dbEnvironment, "collectionIndex_" + dataSetName);
+  public BdbCollectionIndex(DataSet dataSet, BdbDatabaseFactory factory, String userId, String dataSetId)
+    throws DataStoreCreationException {
+    super(factory, "collectionIndex", userId, dataSetId);
+    dataSet.subscribeToRdf(this, null);
   }
 
   @Override
@@ -24,11 +28,6 @@ public class BdbCollectionIndex extends BerkeleyStore implements CollectionIndex
     rdfConfig.setTransactional(true);
     rdfConfig.setSortedDuplicates(true);
     return rdfConfig;
-  }
-
-  @Override
-  public String getStatus() {
-    return null;
   }
 
   @Override

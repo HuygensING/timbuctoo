@@ -49,7 +49,7 @@ public class JenaBasedRdfParser implements RdfParser {
     public QuadHandlerDelegator(RdfProcessor rdfProcessor, String fileUri, String startFrom, String cursorPrefix) {
       this.rdfProcessor = rdfProcessor;
       this.fileUri = fileUri;
-      this.startFrom = Integer.parseInt(startFrom);
+      this.startFrom = startFrom.isEmpty() ? 0 : Integer.parseInt(startFrom);
       this.cursor = cursorPrefix;
       statementCounter = 0;
     }

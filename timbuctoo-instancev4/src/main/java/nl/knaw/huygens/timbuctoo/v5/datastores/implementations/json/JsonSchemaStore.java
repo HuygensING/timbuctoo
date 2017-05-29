@@ -1,16 +1,21 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.collect.ListMultimap;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateHandler;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
-import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -18,13 +23,11 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
 
 public class JsonSchemaStore implements SchemaStore {
-  private final TripleStore tripleStore;
   private Map<String, Type> types = null;
   private static final Function<String, Type> TYPE_MAKER = Type::new;
   private final JsonFileBackedData<Map<String, Type>> schemaFile;
 
-  public JsonSchemaStore(TripleStore tripleStore, File dataLocation) throws IOException {
-    this.tripleStore = tripleStore;
+  public JsonSchemaStore(File dataLocation, DataSet dataSet) throws IOException {
     schemaFile = JsonFileBackedData.getOrCreate(
       new File(dataLocation, "schema.json"),
       null,
@@ -36,79 +39,90 @@ public class JsonSchemaStore implements SchemaStore {
         return types;
       }
     );
-  }
+    dataSet.subscribeToEntities(new EntityProcessor() {
+      @Override
+      public void start() {
 
-  @Override
-  public Map<String, Type> getTypes() {
-    if (schemaFile.getData() == null) {
-      generate();
-    } else {
-      return schemaFile.getData();
-    }
-    return types;
-  }
+      }
 
-  public void generate() {
-    Map<String, Type> curTypes = new HashMap<>();
-    String curSubject = "";
-    String prevPredicate = "";
-    boolean predicateUsedTwice;
-    try (AutoCloseableIterator<String[]> triples = tripleStore.getTriples()) {
-      while (triples.hasNext()) {
-        String[] triple = triples.next();
-        if (!curSubject.equals(triple[0])) {
-          curSubject = triple[0];
-          prevPredicate = "";
-          curTypes.clear();
-        }
-        if (RDF_TYPE.equals(triple[1])) {
-          curTypes.put(triple[2], types.computeIfAbsent(triple[2], TYPE_MAKER));
+      @Override
+      public void processEntity(String cursor, String subjectUri, ListMultimap<String, PredicateData> addedPredicates) {
+        Map<String, Type> curTypes = new HashMap<>();
+        List<PredicateData> subjectTypes = addedPredicates.get(RDF_TYPE);
+        //create all the types that this subject belongs to
+        if (subjectTypes.isEmpty()) {
+          curTypes.put(UNKNOWN, types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
         } else {
-          if (curTypes.isEmpty()) {
-            curTypes.put(UNKNOWN, types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
+          for (PredicateData type : subjectTypes) {
+            type.handle(new PredicateHandler() {
+              @Override
+              public void onRelation(String uri, List<String> typesOfRelation) {
+                curTypes.put(uri, types.computeIfAbsent(uri, TYPE_MAKER));
+              }
+
+              @Override
+              public void onValue(String value, String dataType) {
+              }
+
+              @Override
+              public void onLanguageTaggedString(String value, String language) {
+              }
+            });
           }
-          //if same predicate twice in a row
-          if (prevPredicate.equals(triple[1])) {
-            predicateUsedTwice = true;
-          } else {
-            predicateUsedTwice = false;
-          }
-          prevPredicate = triple[1];
-          for (Type type : curTypes.values()) {
-            Predicate predicate = type.getOrCreatePredicate(triple[1]);
-            if (predicateUsedTwice) {
+        }
+        for (Type type : curTypes.values()) {
+          for (String predicateUri : addedPredicates.keys()) {
+            Predicate predicate = type.getOrCreatePredicate(predicateUri);
+            List<PredicateData> predicateValues = addedPredicates.get(predicateUri);
+            if (predicateValues.size() > 1) {
               predicate.setList(true);
-            } else {
-              predicate.incUsage(); //this predicate is used at an instance of this type
             }
-            if (triple[3] != null) {
-              predicate.addValueType(triple[3]);
-            } else {
-              boolean hadType = false;
-              try (AutoCloseableIterator<String[]> objectTypes = tripleStore
-                .getTriples(triple[2], RDF_TYPE)) {
-                while (objectTypes.hasNext()) {
-                  hadType = true;
-                  predicate.addReferenceType(objectTypes.next()[2]);
+            predicate.incUsage();
+            for (PredicateData predicateValue : predicateValues) {
+              predicateValue.handle(new PredicateHandler() {
+                @Override
+                public void onRelation(String uri, List<String> types) {
+                  if (types.isEmpty()) {
+                    predicate.addReferenceType(UNKNOWN);
+                  } else {
+                    for (String type : types) {
+                      predicate.addReferenceType(type);
+                    }
+                  }
                 }
-              }
-              if (!hadType) {
-                predicate.addReferenceType(UNKNOWN);
-              }
+
+                @Override
+                public void onValue(String value, String dataType) {
+                  predicate.addValueType(dataType);
+                }
+
+                @Override
+                public void onLanguageTaggedString(String value, String language) {
+                  predicate.addValueType(RdfConstants.LANGSTRING);
+                }
+              });
             }
           }
         }
       }
-    }
-    try {
-      schemaFile.updateData(types -> types);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
+
+      @Override
+      public void finish() {
+        try {
+          schemaFile.updateData(types -> types);
+        } catch (IOException e) {
+          e.printStackTrace();
+        }
+      }
+    }, null);
+  }
+
+  @Override
+  public Map<String, Type> getTypes() {
+    return schemaFile.getData();
   }
 
   @Override
   public void close() throws Exception {
-
   }
 }

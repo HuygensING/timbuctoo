@@ -22,4 +22,7 @@ public class LogList {
     this.processedUntil = marker;
   }
 
+  public List<LogEntry> getEntries() {
+    return logEntries;
+  }
 }

@@ -9,8 +9,11 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 
 import java.util.NoSuchElementException;
@@ -27,10 +30,12 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   private final DatabaseEntry keyEntry = new DatabaseEntry();
   private final DatabaseEntry valueEntry = new DatabaseEntry();
 
-  protected BerkeleyStore(Environment dbEnvironment, String databaseName) throws DatabaseException {
-    this.dbEnvironment = dbEnvironment;
+  protected BerkeleyStore(BdbDatabaseFactory dbEnvironment, String databaseName, String userId, String datasetId)
+    throws DataStoreCreationException {
     databaseConfig = getDatabaseConfig();
-    database = dbEnvironment.openDatabase(null, databaseName, databaseConfig);
+    Tuple<Environment, Database> database = dbEnvironment.getDatabase(userId, datasetId, databaseName, databaseConfig);
+    this.dbEnvironment = database.getLeft();
+    this.database = database.getRight();
   }
 
   protected abstract DatabaseConfig getDatabaseConfig();

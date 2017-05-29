@@ -44,16 +44,19 @@ import static org.hamcrest.core.Is.is;
 
 public class RmlIntegrationTest {
 
-  public static final String DATABASE_PATH = resourceFilePath("integrationtest/data");
   public static final String AUTH_PATH = resourceFilePath("integrationtest/authorizations");
 
+  public static final String NEO4J_PATH = resourceFilePath("integrationtest/data/neo4j");
+  public static final String DATASET_PATH = resourceFilePath("integrationtest/data/dataSets");
+  public static final String BDB_PATH = resourceFilePath("integrationtest/data/bdb");
+  public static final String FILES_PATH = resourceFilePath("integrationtest/data/files");
   public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
     TimbuctooV4.class,
     resourceFilePath("integrationtest/config.yaml"),
-    config("databaseConfiguration.databasePath", resourceFilePath("integrationtest/data/neo4j")),
-    config("dataSet.dataSetMetadataLocation", resourceFilePath("integrationtest/data/dataSets")),
-    config("dataSet.dataStore.databaseLocation", resourceFilePath("integrationtest/data/bdb")),
-    config("dataSet.fileStorage.rootDir", resourceFilePath("integrationtest/data/files")),
+    config("databaseConfiguration.databasePath", NEO4J_PATH),
+    config("dataSet.dataSetMetadataLocation", DATASET_PATH),
+    config("databases.databaseLocation", BDB_PATH),
+    config("dataSet.fileStorage.rootDir", FILES_PATH),
     config("securityConfiguration.localfile.authorizationsPath", AUTH_PATH),
     config("securityConfiguration.localfile.usersFilePath", resourceFilePath("integrationtest/users.json")),
     config("securityConfiguration.localfile.loginsFilePath", resourceFilePath("integrationtest/logins.json"))
@@ -273,7 +276,10 @@ public class RmlIntegrationTest {
     @Override
     protected void before() throws Throwable {
       super.before();
-      FileUtils.cleanDirectory(new File(DATABASE_PATH));
+      FileUtils.cleanDirectory(new File(NEO4J_PATH));
+      FileUtils.cleanDirectory(new File(DATASET_PATH));
+      FileUtils.cleanDirectory(new File(BDB_PATH));
+      FileUtils.cleanDirectory(new File(FILES_PATH));
       FileUtils.cleanDirectory(new File(AUTH_PATH));
     }
   }
