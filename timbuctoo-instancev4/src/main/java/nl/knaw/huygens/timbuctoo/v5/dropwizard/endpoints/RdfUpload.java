@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -27,11 +29,13 @@ import java.util.concurrent.Future;
 public class RdfUpload {
 
   private final LoggedInUsers loggedInUsers;
+  private final Authorizer authorizer;
   private final DataSetFactory dataSetManager;
 
 
-  public RdfUpload(LoggedInUsers loggedInUsers, DataSetFactory dataSetManager) {
+  public RdfUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetManager) {
     this.loggedInUsers = loggedInUsers;
+    this.authorizer = authorizer;
     this.dataSetManager = dataSetManager;
   }
 
@@ -49,8 +53,16 @@ public class RdfUpload {
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
+    String userId = user.get().getPersistentId();
 
-    DataSet dataSet = dataSetManager.getOrCreate(user.get().getPersistentId(), dataSetId);
+    try {
+      if (!authorizer.authorizationFor(userId + "_" + dataSetId, userId).isAllowedToWrite()) {
+        return Response.status(Response.Status.UNAUTHORIZED).build();
+      }
+    } catch (AuthorizationUnavailableException e) {
+      //ignore. no problem
+    }
+    DataSet dataSet = dataSetManager.getOrCreate(userId, dataSetId);
 
     Future<?> promise = dataSet.addLog(
       uri,
@@ -64,7 +76,7 @@ public class RdfUpload {
     return Response.noContent().build();
   }
 
-  private Optional<MediaType> getMediaType(@FormDataParam("file") FormDataBodyPart body) {
+  private Optional<MediaType> getMediaType(FormDataBodyPart body) {
     return body == null || body.getMediaType() == null ?
       Optional.empty() :
       Optional.of(body.getMediaType());

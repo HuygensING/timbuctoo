@@ -8,6 +8,7 @@ import io.dropwizard.client.HttpClientConfiguration;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
@@ -243,8 +244,12 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public DataSetFactory getDataSet() throws DataStoreCreationException {
     try {
-      return new DataSetFactory(dataSetExecutorService, dataSetConfiguration);
-    } catch (IOException e) {
+      return new DataSetFactory(
+        dataSetExecutorService,
+        getSecurityConfiguration().getVreAuthorizationCreator(),
+        dataSetConfiguration
+      );
+    } catch (IOException | AccessNotPossibleException e) {
       throw new DataStoreCreationException(e);
     }
   }

@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
 
@@ -20,12 +22,15 @@ import java.util.concurrent.ExecutorService;
 public class DataSetFactory {
 
   private final ExecutorService executorService;
+  private final VreAuthorizationCrud vreAuthorizationCrud;
   private final DataSetConfiguration configuration;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final JsonFileBackedData<Map<String, List<String>>> storedDataSets;
 
-  public DataSetFactory(ExecutorService executorService, DataSetConfiguration configuration) throws IOException {
+  public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
+                        DataSetConfiguration configuration) throws IOException {
     this.executorService = executorService;
+    this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
     dataSetMap = new HashMap<>();
     storedDataSets = JsonFileBackedData.getOrCreate(
@@ -36,10 +41,12 @@ public class DataSetFactory {
   }
 
   public DataSet getOrCreate(String userId, String dataSetId) throws DataStoreCreationException {
+    String authorizationKey = userId + "_" + dataSetId;
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
       if (!userDataSets.containsKey(dataSetId)) {
         try {
+          vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
           userDataSets.put(dataSetId, new DataSet(
             new File(configuration.getDataSetMetadataLocation(), userId + "_" + dataSetId + "-log.json"),
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
@@ -52,7 +59,7 @@ public class DataSetFactory {
             dataSets.computeIfAbsent(userId, key -> new ArrayList<>()).add(dataSetId);
             return dataSets;
           });
-        } catch (IOException e) {
+        } catch (AuthorizationCreationException | IOException e) {
           throw new DataStoreCreationException(e);
         }
       }

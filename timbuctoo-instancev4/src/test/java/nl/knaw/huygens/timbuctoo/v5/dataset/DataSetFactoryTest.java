@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.google.common.io.Files;
+import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
@@ -29,6 +31,7 @@ public class DataSetFactoryTest {
     tempFile = Files.createTempDir();
     dataSetFactory = new DataSetFactory(
       Executors.newSingleThreadExecutor(),
+      new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())),
       ImmutableDataSetConfiguration.builder()
         .dataSetMetadataLocation(tempFile.getAbsolutePath())
         .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))

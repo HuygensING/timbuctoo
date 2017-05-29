@@ -252,6 +252,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(environment),
+      securityConfig.getAuthorizer(),
       dataSetFactory
     ));
 
