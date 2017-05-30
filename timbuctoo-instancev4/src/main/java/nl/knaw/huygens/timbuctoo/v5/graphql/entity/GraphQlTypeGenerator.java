@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.entity;
 
 import graphql.Scalars;
+import graphql.language.InlineFragment;
+import graphql.language.Selection;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLObjectType;
@@ -10,39 +12,58 @@ import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
 import graphql.schema.TypeResolver;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLInterfaceType.newInterface;
 import static graphql.schema.GraphQLList.list;
 import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class GraphQlTypeGenerator {
+  private static final Logger LOG = getLogger(GraphQlTypeGenerator.class);
+
   public Map<String, GraphQLObjectType> makeGraphQlTypes(Map<String, Type> types, TypeNameStore typeNameStore,
                                                          DataFetcherFactory dataFetcherFactory) {
     Map<String, String> typeMappings = new HashMap<>();
     Map<String, GraphQLObjectType> typesMap = new HashMap<>();
     Map<String, GraphQLObjectType> wrappedValueTypes = new HashMap<>();
-    TypeResolver objectResolver = object -> {
-      String typeUri = ((BoundSubject) object).getType();
-      GraphQLObjectType objectType = typesMap.get(typeUri);
-      if (objectType == null) {
-        return wrappedValueTypes.get(typeUri);
-      } else {
-        return objectType;
+    TypeResolver objectResolver = environment -> {
+      //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
+      //In rdf things can have more then one type though (types are like java interfaces)
+      //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types that
+      //the user actually requested
+      Set<String> typeUris = ((BoundSubject) environment.getObject()).getType();
+      for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
+        if (selection instanceof InlineFragment) {
+          InlineFragment fragment = (InlineFragment) selection;
+          String typeUri = typeMappings.get(fragment.getTypeCondition().getName());
+          if (typeUris.contains(typeUri)) {
+            return typesMap.get(typeUri);
+          }
+        } else {
+          LOG.error("I have a union type whose selection is not an InlineFragment!");
+        }
       }
+      return typeUris.isEmpty() ? null : typesMap.get(typeUris.iterator().next());
     };
-    TypeResolver valueTypeResolver = object -> typesMap.get(((BoundSubject) object).getType());
+
+    TypeResolver valueTypeResolver = environment ->
+      typesMap.get(((BoundSubject) environment.getObject()).getType().iterator().next());
+
     GraphQLInterfaceType entityInterface = newInterface()
       .name("Entity")
       .field(newFieldDefinition()
@@ -125,25 +146,27 @@ public class GraphQlTypeGenerator {
           valueInterface
         );
       } else {
-        List<Object> types = new ArrayList<>();
+        List<GraphQLObjectType> types = new ArrayList<>();
         for (String valueType : pred.getValueTypes()) {
           types.add(valueType(valueType, wrappedValueTypes, typeMappings, typeNameStore, valueInterface));
         }
-        return unionField(result, pred, typeMappings, valueTypeResolver, dataFetcherFactory, fieldName, types);
+        ArrayList<GraphQLTypeReference> refs = newArrayList();
+        return unionField(result, pred, valueTypeResolver, dataFetcherFactory, refs, types);
       }
     } else {
       if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
         return objectField(result, pred, typeNameStore, dataFetcherFactory);
       } else {
-        List<Object> types = new ArrayList<>();
+        List<GraphQLTypeReference> refs = new ArrayList<>();
+        List<GraphQLObjectType> values = new ArrayList<>();
         for (String referenceType : pred.getReferenceTypes()) {
-          types.add(new GraphQLTypeReference(typeNameStore.makeGraphQlname(referenceType)));
+          refs.add(new GraphQLTypeReference(typeNameStore.makeGraphQlname(referenceType)));
         }
         for (String valueType : pred.getValueTypes()) {
-          types.add(valueType(valueType, wrappedValueTypes, typeMappings, typeNameStore, valueInterface));
+          values.add(valueType(valueType, wrappedValueTypes, typeMappings, typeNameStore, valueInterface));
         }
 
-        return unionField(result, pred, typeMappings, objectResolver, dataFetcherFactory, fieldName, types);
+        return unionField(result, pred, objectResolver, dataFetcherFactory, refs, values);
       }
     }
   }
@@ -160,10 +183,9 @@ public class GraphQlTypeGenerator {
   }
 
   private static GraphQLFieldDefinition unionField(GraphQLFieldDefinition.Builder result, Predicate pred,
-                                                   Map<String, String> typeMappings,
-                                                   TypeResolver valueTypeResolver,
-                                                   DataFetcherFactory dataFetcherFactory, String fieldName,
-                                                   List<Object> types) {
+                                            TypeResolver valueTypeResolver,
+                                            DataFetcherFactory dataFetcherFactory,
+                                            List<GraphQLTypeReference> refs, List<GraphQLObjectType> types) {
     GraphQLUnionType.Builder unionType = newUnionType()
       .name("Union_" + UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", ""))
       .typeResolver(valueTypeResolver);
@@ -174,8 +196,11 @@ public class GraphQlTypeGenerator {
         unionType.possibleType((GraphQLObjectType) type);
       }
     }
+    for (GraphQLTypeReference type : refs) {
+      unionType.possibleType(type);
+    }
     return result
-      .dataFetcher(dataFetcherFactory.unionFetcher(pred.getName(), pred.isList(), fieldName, typeMappings))
+      .dataFetcher(dataFetcherFactory.unionFetcher(pred.getName(), pred.isList()))
       .type(wrap(unionType.build(), pred.isOptional(), pred.isList()))
       .build();
   }

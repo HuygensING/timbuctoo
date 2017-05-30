@@ -31,7 +31,8 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
   @Override
   public ExecutionResult execute(ExecutionContext executionContext, ExecutionParameters parameters)
       throws NonNullableFieldWasNullException {
-
+    Map<String, List<Field>> fields = parameters.fields();
+    GraphQLObjectType parentType = parameters.typeInfo().castType(GraphQLObjectType.class);
     //Een "object" in graphql van be:
     // - an rdf subject
     // - a wrapped value type (a tuple of a value and a string signifying the type)
@@ -40,8 +41,8 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
 
     final Serializable wrappedData;
     final ExecutionResult result;
-    if (implementsInterface(parameters, "Entity")) {
-      boolean manuallyAddedUri = addUriField(parameters.fields());
+    if (implementsInterface(parentType, "Entity")) {
+      boolean manuallyAddedUri = addUriField(fields);
       result = super.execute(executionContext, parameters);
 
       String uri = getUri(result);
@@ -50,7 +51,7 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
         ((Map) result.getData()).remove("uri");
       }
       wrappedData = new SerializableObject(makeScalarsSerializable(result.getData()), uri, typeNameStore);
-    } else if (implementsInterface(parameters, "Value")) {
+    } else if (implementsInterface(parentType, "Value")) {
       result = super.execute(executionContext, parameters);
       Map<String, Object> resultData = result.getData();
       wrappedData = new SerializableValue(resultData.get("value"), (String) resultData.get("type"));
@@ -66,8 +67,7 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
     );
   }
 
-  private boolean implementsInterface(ExecutionParameters parameters, String entity) {
-    GraphQLObjectType graphQlObjectType = parameters.typeInfo().castType(GraphQLObjectType.class);
+  private boolean implementsInterface(GraphQLObjectType graphQlObjectType, String entity) {
     return graphQlObjectType.getInterfaces().stream().anyMatch(i -> i.getName().equals(entity));
   }
 

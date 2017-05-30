@@ -210,9 +210,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.github.jauco</groupId>
+      <groupId>com.graphql-java</groupId>
       <artifactId>graphql-java</artifactId>
-      <version>newbranch-v2.4.0-gb43b528-32</version>
+      <version>3.0.0</version>
     </dependency>
     <dependency>
       <groupId>com.sleepycat</groupId>

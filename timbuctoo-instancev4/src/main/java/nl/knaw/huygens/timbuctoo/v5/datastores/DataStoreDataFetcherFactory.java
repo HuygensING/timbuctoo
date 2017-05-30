@@ -1,17 +1,15 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores;
 
 import graphql.schema.DataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelationDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.TypedLiteralDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UnionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
-import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.DataFetcherFactory;
-
-import java.util.Map;
 
 public class DataStoreDataFetcherFactory implements DataFetcherFactory, CollectionIndexFetcherFactory {
   private final TripleStore tripleStore;
@@ -38,8 +36,8 @@ public class DataStoreDataFetcherFactory implements DataFetcherFactory, Collecti
   }
 
   @Override
-  public DataFetcher unionFetcher(String predicate, boolean isList, String fieldName, Map<String, String> types) {
-    return new UnionDataFetcher(predicate, isList, fieldName, types, tripleStore);
+  public DataFetcher unionFetcher(String predicate, boolean isList) {
+    return new UnionDataFetcher(predicate, isList, tripleStore);
   }
 
   @Override
