@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ValuePredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
@@ -47,7 +48,7 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   }
 
   @Override
-  public Stream<String[]> getTriples() {
+  public Stream<Quad> getQuads() {
     DatabaseEntry key = new DatabaseEntry();
     DatabaseEntry value = new DatabaseEntry();
 
@@ -56,7 +57,7 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   }
 
   @Override
-  public Stream<String[]> getTriples(String subject, String predicate) {
+  public Stream<Quad> getQuads(String subject, String predicate) {
     if (predicate.equals(RDF_TYPE)) {
       predicate = "";
     }
@@ -78,16 +79,17 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
     return cursor.getSearchKey(key, value, LockMode.DEFAULT);
   }
 
-  private String[] formatResult(DatabaseEntry key, DatabaseEntry value) {
-    String[] result = new String[5];
+  private Quad formatResult(DatabaseEntry key, DatabaseEntry value) {
     String[] keyFields = new String(key.getData(), Charsets.UTF_8).split("\n");
     String[] valueFields = new String(value.getData(), Charsets.UTF_8).split("\n", 2);
-    result[0] = keyFields[0];
-    result[1] = keyFields.length == 1 ? RDF_TYPE : keyFields[1];
-    result[2] = valueFields[1];
-    result[3] = valueFields[0].isEmpty() ? null : valueFields[0];
-    result[4] = "http://Notsupported";
-    return result;
+    return Quad.create(
+      keyFields[0],
+      keyFields.length == 1 ? RDF_TYPE : keyFields[1],
+      valueFields[1],
+      valueFields[0].isEmpty() ? null : valueFields[0],
+      null,
+      "http://Notsupported"
+    );
   }
 
   @Override
@@ -167,24 +169,27 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
     ListMultimap<String, PredicateData> predicates = MultimapBuilder.hashKeys().arrayListValues().build();
     String curSubject = "";
     processor.start();
-    try (Stream<String[]> triplesStream = this.getTriples()) {
-      Iterator<String[]> triples = triplesStream.iterator();
-      while (triples.hasNext()) {
-        String[] triple = triples.next();
-        if (!curSubject.equals(triple[0])) {
+    try (Stream<Quad> quadStream = this.getQuads()) {
+      Iterator<Quad> quads = quadStream.iterator();
+      while (quads.hasNext()) {
+        Quad quad = quads.next();
+        if (!curSubject.equals(quad.getSubject())) {
           processor.processEntity("", curSubject, predicates);
-          curSubject = triple[0];
+          curSubject = quad.getSubject();
           predicates.clear();
         }
-        if (triple[3] == null) {
-          try (Stream<String[]> objectTypes = this.getTriples(triple[2], RDF_TYPE)) {
-            List<String> types = objectTypes
-              .map(typeTriple -> typeTriple[2])
-              .collect(Collectors.toList());
-            predicates.put(triple[1], new RelationPredicate(triple[1], triple[2], types));
-          }
+        if (quad.getValuetype().isPresent()) {
+          predicates.put(
+            quad.getPredicate(),
+            new ValuePredicate(quad.getPredicate(), quad.getObject(), quad.getValuetype().get())
+          );
         } else {
-          predicates.put(triple[1], new ValuePredicate(triple[1], triple[2], triple[3]));
+          try (Stream<Quad> objectTypes = this.getQuads(quad.getObject(), RDF_TYPE)) {
+            List<String> types = objectTypes
+              .map(Quad::getObject)
+              .collect(Collectors.toList());
+            predicates.put(quad.getPredicate(), new RelationPredicate(quad.getPredicate(), quad.getObject(), types));
+          }
         }
       }
     }

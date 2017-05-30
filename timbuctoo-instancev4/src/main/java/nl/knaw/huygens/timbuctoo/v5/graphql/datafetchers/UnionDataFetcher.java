@@ -6,6 +6,7 @@ import graphql.language.Selection;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
 
 import java.util.HashSet;
@@ -51,15 +52,15 @@ public class UnionDataFetcher implements DataFetcher {
         }
       }
       BoundSubject source = environment.getSource();
-      try (Stream<String[]> triples = tripleStore.getTriples(source.getValue(), predicate)) {
+      try (Stream<Quad> quads = tripleStore.getQuads(source.getValue(), predicate)) {
         if (isList) {
-          return triples
+          return quads
             .map(triple -> makeItem(requestedTypes, triple))
             .filter(Objects::nonNull)
             .limit(20)
             .collect(toList());
         } else {
-          return triples.findFirst()
+          return quads.findFirst()
             .map(triple -> makeItem(requestedTypes, triple))
             .orElse(null);
         }
@@ -69,11 +70,11 @@ public class UnionDataFetcher implements DataFetcher {
     }
   }
 
-  private BoundSubject makeItem(Set<String> requestedTypes, String[] triple) {
-    if (triple[3] == null) {
-      return getTypes(triple[2], requestedTypes);
+  private BoundSubject makeItem(Set<String> requestedTypes, Quad quad) {
+    if (quad.getValuetype().isPresent()) {
+      return verifyType(quad.getObject(), quad.getValuetype().get(), requestedTypes);
     } else {
-      return verifyType(triple[2], triple[3], requestedTypes);
+      return getTypes(quad.getObject(), requestedTypes);
     }
   }
 
@@ -87,9 +88,9 @@ public class UnionDataFetcher implements DataFetcher {
 
   private BoundSubject getTypes(String uri, Set<String> requestedTypes) {
     Set<String> types;
-    try (Stream<String[]> triples = tripleStore.getTriples(uri, RDF_TYPE)) {
-      types = triples
-        .map(triple -> triple[2])
+    try (Stream<Quad> quads = tripleStore.getQuads(uri, RDF_TYPE)) {
+      types = quads
+        .map(Quad::getObject)
         .collect(Collectors.toSet());
     }
     for (String requestedType : requestedTypes) {
