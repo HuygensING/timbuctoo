@@ -33,6 +33,7 @@ public class DataSetFactory {
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
     dataSetMap = new HashMap<>();
+    new File(configuration.getDataSetMetadataLocation()).mkdirs();
     storedDataSets = JsonFileBackedData.getOrCreate(
       new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
       new HashMap<>(),
