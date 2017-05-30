@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex;
 
 import graphql.schema.GraphQLObjectType;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 
 import java.util.Map;
 
@@ -11,7 +12,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 public class CollectionIndexSchemaFactory {
 
   public GraphQLObjectType createQuerySchema(Map<String, GraphQLObjectType> typesMap,
-                                             CollectionIndexFetcherFactory fetcherFactory) {
+                                             DataFetcherFactory fetcherFactory) {
 
     GraphQLObjectType.Builder result = newObject()
       .name("Query");

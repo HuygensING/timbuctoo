@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
+package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto;
 
 import com.google.common.collect.Sets;
 

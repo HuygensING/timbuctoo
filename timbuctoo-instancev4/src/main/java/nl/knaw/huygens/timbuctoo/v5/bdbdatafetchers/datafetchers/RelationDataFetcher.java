@@ -1,10 +1,10 @@
-package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
+package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.Quad;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.BoundSubject;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
 
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -12,9 +12,9 @@ import java.util.stream.Stream;
 public class RelationDataFetcher implements DataFetcher {
   private final String predicate;
   private final boolean isList;
-  private final TripleStore tripleStore;
+  private final BdbTripleStore tripleStore;
 
-  public RelationDataFetcher(String predicate, boolean isList, TripleStore tripleStore) {
+  public RelationDataFetcher(String predicate, boolean isList, BdbTripleStore tripleStore) {
     this.predicate = predicate;
     this.isList = isList;
     this.tripleStore = tripleStore;

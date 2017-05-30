@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb;
+package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
 import com.google.common.base.Charsets;
 import com.sleepycat.je.DatabaseConfig;
@@ -6,8 +6,8 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 
@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
-public class BdbCollectionIndex extends BerkeleyStore implements CollectionIndex {
+public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, AutoCloseable {
   public BdbCollectionIndex(DataSet dataSet, BdbDatabaseFactory factory, String userId, String dataSetId)
     throws DataStoreCreationException {
     super(factory, "collectionIndex", userId, dataSetId);
@@ -69,7 +69,6 @@ public class BdbCollectionIndex extends BerkeleyStore implements CollectionIndex
   public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {}
 
-  @Override
   public Stream<String> getSubjects(String collectionName) {
     DatabaseEntry key = new DatabaseEntry(collectionName.getBytes(Charsets.UTF_8));
     DatabaseEntry value = new DatabaseEntry();

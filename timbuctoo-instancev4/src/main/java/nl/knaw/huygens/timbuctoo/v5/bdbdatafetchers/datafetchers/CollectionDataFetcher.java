@@ -1,9 +1,9 @@
-package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
+package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.BoundSubject;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbCollectionIndex;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,10 +11,10 @@ import java.util.stream.Stream;
 
 public class CollectionDataFetcher implements DataFetcher {
   private final String collectionName;
-  private final CollectionIndex collectionIndex;
+  private final BdbCollectionIndex collectionIndex;
   private static final int MAX_ITEMS = 20;
 
-  public CollectionDataFetcher(String collectionName, CollectionIndex collectionIndex) {
+  public CollectionDataFetcher(String collectionName, BdbCollectionIndex collectionIndex) {
 
     this.collectionName = collectionName;
     this.collectionIndex = collectionIndex;

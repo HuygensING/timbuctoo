@@ -243,7 +243,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
           configuration.getSchemaStoreFactory(),
           configuration.getTypeNameStoreFactory(),
           configuration.getDataFetcherFactoryFactory(),
-          configuration.getDataFetcherFactoryFactory(),
           new GraphQlTypeGenerator()
         )
       )

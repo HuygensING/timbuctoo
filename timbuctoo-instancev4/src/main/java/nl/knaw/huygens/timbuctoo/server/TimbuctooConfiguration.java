@@ -12,20 +12,16 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.CachedDataStoreFactory;
-import nl.knaw.huygens.timbuctoo.v5.datastores.DataStoreDataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.SingleDataStoreFactory;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.BdbCollectionIndex;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.HardCodedTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 
 import javax.validation.Valid;
@@ -240,39 +236,19 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     );
   }
 
-  public SingleDataStoreFactory<TripleStore> getTripleStoreFactory() {
-    return new CachedDataStoreFactory<>(
-      (userId, dataSetId) -> new BdbTripleStore(
-        getDataSet().getOrCreate(userId, dataSetId),
-        getDatabases(),
-        userId,
-        dataSetId
-      )
-    );
-  }
-
-  public SingleDataStoreFactory<CollectionIndex> getCollectionIndexFactory() {
-    return new CachedDataStoreFactory<>(
-      (userId, dataSetId) -> new BdbCollectionIndex(
-        getDataSet().getOrCreate(userId, dataSetId),
-        getDatabases(),
-        userId,
-        dataSetId
-      )
-    );
-  }
-
-
   public SingleDataStoreFactory<TypeNameStore> getTypeNameStoreFactory() {
     return new CachedDataStoreFactory<>((userId, dataSetId) -> new HardCodedTypeNameStore(userId + "_" + dataSetId));
   }
 
   public SingleDataStoreFactory<DataStoreDataFetcherFactory> getDataFetcherFactoryFactory() {
-
-    return new CachedDataStoreFactory<>((userId, dataSetId) -> new DataStoreDataFetcherFactory(
-      getTripleStoreFactory().getOrCreate(userId, dataSetId),
-      getCollectionIndexFactory().getOrCreate(userId, dataSetId)
-    ));
+    return new CachedDataStoreFactory<>(
+      (userId, dataSetId) -> new DataStoreDataFetcherFactory(
+        userId,
+        dataSetId,
+        getDataSet().getOrCreate(userId, dataSetId),
+        getDatabases()
+      )
+    );
   }
 
 }

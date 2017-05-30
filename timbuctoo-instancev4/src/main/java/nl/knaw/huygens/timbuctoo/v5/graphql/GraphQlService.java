@@ -7,9 +7,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.SingleDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexSchemaFactory;
-import nl.knaw.huygens.timbuctoo.v5.graphql.entity.DataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
@@ -27,18 +26,15 @@ public class GraphQlService {
   private final SingleDataStoreFactory<SchemaStore> schemaStoreFactory;
   private final SingleDataStoreFactory<TypeNameStore> typeNameStoreFactory;
   private final SingleDataStoreFactory<? extends DataFetcherFactory> dataFetcherFactoryFactory;
-  private final SingleDataStoreFactory<? extends CollectionIndexFetcherFactory> collectionIndexFetcherFactoryFactory;
   private final GraphQlTypeGenerator typeGenerator;
 
   public GraphQlService(SingleDataStoreFactory<SchemaStore> schemaStoreFactory,
                         SingleDataStoreFactory<TypeNameStore> typeNameStoreFactory,
                         SingleDataStoreFactory<? extends DataFetcherFactory> dataFetcherFactoryFactory,
-                        SingleDataStoreFactory<? extends CollectionIndexFetcherFactory> collIndexFetcherFactoryFactory,
                         GraphQlTypeGenerator typeGenerator) {
     this.schemaStoreFactory = schemaStoreFactory;
     this.typeNameStoreFactory = typeNameStoreFactory;
     this.dataFetcherFactoryFactory = dataFetcherFactoryFactory;
-    this.collectionIndexFetcherFactoryFactory = collIndexFetcherFactoryFactory;
     this.typeGenerator = typeGenerator;
     this.schemaFactory = new CollectionIndexSchemaFactory();
   }
@@ -55,7 +51,7 @@ public class GraphQlService {
         .newGraphQL(
           newSchema()
             .query(schemaFactory
-              .createQuerySchema(graphQlTypes, collectionIndexFetcherFactoryFactory.getOrCreate(userId, dataSetName))
+              .createQuerySchema(graphQlTypes, dataFetcherFactoryFactory.getOrCreate(userId, dataSetName))
             )
             .build()
         )

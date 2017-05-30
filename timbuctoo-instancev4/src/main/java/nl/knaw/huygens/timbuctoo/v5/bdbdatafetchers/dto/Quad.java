@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto;
+package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto;
 
 import org.immutables.value.Value;
 

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb;
+package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.ListMultimap;
@@ -11,13 +11,13 @@ import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RelationPredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ValuePredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.triples.dto.Quad;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
-public class BdbTripleStore extends BerkeleyStore implements TripleStore {
+public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
 
   protected DatabaseEntry key;
   protected DatabaseEntry value;
@@ -47,7 +47,6 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
     return rdfConfig;
   }
 
-  @Override
   public Stream<Quad> getQuads() {
     DatabaseEntry key = new DatabaseEntry();
     DatabaseEntry value = new DatabaseEntry();
@@ -56,7 +55,6 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
     return getItems(getNext, getNext, () -> formatResult(key, value));
   }
 
-  @Override
   public Stream<Quad> getQuads(String subject, String predicate) {
     if (predicate.equals(RDF_TYPE)) {
       predicate = "";

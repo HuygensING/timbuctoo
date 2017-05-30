@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.berkeleydb;
+package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
 import com.google.common.base.Charsets;
 import com.sleepycat.je.Cursor;
