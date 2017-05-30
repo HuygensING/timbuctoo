@@ -12,10 +12,8 @@ import java.util.stream.Stream;
 public class CollectionDataFetcher implements DataFetcher {
   private final String collectionName;
   private final BdbCollectionIndex collectionIndex;
-  private static final int MAX_ITEMS = 20;
 
   public CollectionDataFetcher(String collectionName, BdbCollectionIndex collectionIndex) {
-
     this.collectionName = collectionName;
     this.collectionIndex = collectionIndex;
   }
