@@ -16,7 +16,6 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.CachedDataStoreFactory;
-import nl.knaw.huygens.timbuctoo.v5.datastores.SingleDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.HardCodedTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
@@ -221,9 +220,10 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     this.dataSetConfiguration = dataSetFactory;
   }
 
-  public SingleDataStoreFactory<SchemaStore> getSchemaStoreFactory() {
-    return new CachedDataStoreFactory<>(
-      (userId, dataSetId) -> {
+  public CachedDataStoreFactory<SchemaStore> getSchemaStoreFactory() {
+    return new CachedDataStoreFactory<SchemaStore>() {
+      @Override
+      protected SchemaStore create(String userId, String dataSetId) throws DataStoreCreationException {
         try {
           return new JsonSchemaStore(
             new File(dataSetConfiguration.getDataSetMetadataLocation()),
@@ -233,22 +233,31 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
           throw new DataStoreCreationException(e);
         }
       }
-    );
+    };
   }
 
-  public SingleDataStoreFactory<TypeNameStore> getTypeNameStoreFactory() {
-    return new CachedDataStoreFactory<>((userId, dataSetId) -> new HardCodedTypeNameStore(userId + "_" + dataSetId));
+  public CachedDataStoreFactory<TypeNameStore> getTypeNameStoreFactory() {
+    return new CachedDataStoreFactory<TypeNameStore>() {
+      @Override
+      protected TypeNameStore create(String userId, String dataSetId) throws DataStoreCreationException {
+        return new HardCodedTypeNameStore(userId + "_" + dataSetId);
+      }
+    };
   }
 
-  public SingleDataStoreFactory<DataStoreDataFetcherFactory> getDataFetcherFactoryFactory() {
-    return new CachedDataStoreFactory<>(
-      (userId, dataSetId) -> new DataStoreDataFetcherFactory(
-        userId,
-        dataSetId,
-        getDataSet().getOrCreate(userId, dataSetId),
-        getDatabases()
-      )
-    );
+  public CachedDataStoreFactory<DataStoreDataFetcherFactory> getDataFetcherFactoryFactory() {
+    return new CachedDataStoreFactory<DataStoreDataFetcherFactory>() {
+
+      @Override
+      protected DataStoreDataFetcherFactory create(String userId, String dataSetId) throws DataStoreCreationException {
+        return new DataStoreDataFetcherFactory(
+          userId,
+          dataSetId,
+          getDataSet().getOrCreate(userId, dataSetId),
+          getDatabases()
+        );
+      }
+    };
   }
 
 }

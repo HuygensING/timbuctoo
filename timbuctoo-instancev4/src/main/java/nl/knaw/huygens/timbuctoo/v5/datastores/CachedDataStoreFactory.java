@@ -5,20 +5,16 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationExcep
 import java.util.HashMap;
 import java.util.Map;
 
-public class CachedDataStoreFactory<T> implements SingleDataStoreFactory<T> {
-  private final SingleDataStoreFactory<T> inner;
-  private Map<String, T> cache = new HashMap();
+public abstract class CachedDataStoreFactory<T> {
+  private Map<String, T> cache = new HashMap<>();
 
-  public CachedDataStoreFactory(SingleDataStoreFactory<T> inner) {
-    this.inner = inner;
-  }
+  protected abstract T create(String userId, String dataSetId) throws DataStoreCreationException;
 
-  @Override
   public T getOrCreate(String userId, String dataSetId) throws DataStoreCreationException {
     synchronized (cache) {
       String key = userId + "_" + dataSetId;
       if (!cache.containsKey(key)) {
-        cache.put(key, inner.getOrCreate(userId, dataSetId));
+        cache.put(key, create(userId, dataSetId));
       }
       return cache.get(key);
     }

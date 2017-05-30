@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLObjectType;
-import nl.knaw.huygens.timbuctoo.v5.datastores.SingleDataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.CachedDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
@@ -23,14 +23,14 @@ import static graphql.schema.GraphQLSchema.newSchema;
 public class GraphQlService {
   private final Map<String, GraphQL> graphQls = new HashMap<>();
   private final CollectionIndexSchemaFactory schemaFactory;
-  private final SingleDataStoreFactory<SchemaStore> schemaStoreFactory;
-  private final SingleDataStoreFactory<TypeNameStore> typeNameStoreFactory;
-  private final SingleDataStoreFactory<? extends DataFetcherFactory> dataFetcherFactoryFactory;
+  private final CachedDataStoreFactory<SchemaStore> schemaStoreFactory;
+  private final CachedDataStoreFactory<TypeNameStore> typeNameStoreFactory;
+  private final CachedDataStoreFactory<? extends DataFetcherFactory> dataFetcherFactoryFactory;
   private final GraphQlTypeGenerator typeGenerator;
 
-  public GraphQlService(SingleDataStoreFactory<SchemaStore> schemaStoreFactory,
-                        SingleDataStoreFactory<TypeNameStore> typeNameStoreFactory,
-                        SingleDataStoreFactory<? extends DataFetcherFactory> dataFetcherFactoryFactory,
+  public GraphQlService(CachedDataStoreFactory<SchemaStore> schemaStoreFactory,
+                        CachedDataStoreFactory<TypeNameStore> typeNameStoreFactory,
+                        CachedDataStoreFactory<? extends DataFetcherFactory> dataFetcherFactoryFactory,
                         GraphQlTypeGenerator typeGenerator) {
     this.schemaStoreFactory = schemaStoreFactory;
     this.typeNameStoreFactory = typeNameStoreFactory;
