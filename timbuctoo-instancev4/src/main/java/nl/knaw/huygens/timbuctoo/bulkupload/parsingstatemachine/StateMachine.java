@@ -11,16 +11,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-public class StateMachine {
+public class StateMachine<T> {
   private Set<Integer> idsToSkip = new HashSet<>();
   private ImportPropertyDescriptions propertyDescriptions;
-  private final Saver saver;
-  private Vertex currentCollection;
+  private final Saver<T> saver;
+  private T currentCollection;
   private List<ImportProperty> currentProperties;
 
   private ImportState currentState = ImportState.NOTHING;
 
-  public StateMachine(Saver saver) {
+  public StateMachine(Saver<T> saver) {
     this.saver = saver;
   }
 

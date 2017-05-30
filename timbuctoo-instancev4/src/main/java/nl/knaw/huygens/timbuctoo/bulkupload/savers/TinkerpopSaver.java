@@ -19,7 +19,7 @@ import java.util.UUID;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class TinkerpopSaver implements AutoCloseable, Saver {
+public class TinkerpopSaver implements AutoCloseable, Saver<Vertex> {
   private static final Logger LOG = getLogger(TinkerpopSaver.class);
   public static final String RAW_COLLECTION_EDGE_NAME = "hasRawCollection";
   public static final String RAW_ITEM_EDGE_NAME = "hasItem";

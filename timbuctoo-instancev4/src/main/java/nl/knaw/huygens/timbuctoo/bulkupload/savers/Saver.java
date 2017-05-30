@@ -1,14 +1,13 @@
 package nl.knaw.huygens.timbuctoo.bulkupload.savers;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.Map;
 
-public interface Saver {
-  Vertex addEntity(Vertex collection, Map<String, ?> currentProperties);
+public interface Saver<T> {
+  T addEntity(T collection, Map<String, ?> currentProperties);
 
-  Vertex addCollection(String collectionName);
+  T addCollection(String collectionName);
 
-  void addPropertyDescriptions(Vertex collection, ImportPropertyDescriptions importPropertyDescriptions);
+  void addPropertyDescriptions(T collection, ImportPropertyDescriptions importPropertyDescriptions);
 }
