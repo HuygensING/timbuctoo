@@ -1,10 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
-import org.apache.commons.io.FileUtils;
+import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.assertj.core.util.Lists;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -14,8 +15,6 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
-import org.junit.rules.ExternalResource;
-import org.junit.rules.RuleChain;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -31,7 +30,6 @@ import java.util.List;
 
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
-import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -44,28 +42,20 @@ import static org.hamcrest.core.Is.is;
 
 public class RmlIntegrationTest {
 
-  public static final String AUTH_PATH = resourceFilePath("integrationtest/authorizations");
-
-  public static final String NEO4J_PATH = resourceFilePath("integrationtest/data/neo4j");
-  public static final String DATASET_PATH = resourceFilePath("integrationtest/data/dataSets");
-  public static final String BDB_PATH = resourceFilePath("integrationtest/data/bdb");
-  public static final String FILES_PATH = resourceFilePath("integrationtest/data/files");
-  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
-    TimbuctooV4.class,
-    resourceFilePath("integrationtest/config.yaml"),
-    config("databaseConfiguration.databasePath", NEO4J_PATH),
-    config("dataSet.dataSetMetadataLocation", DATASET_PATH),
-    config("databases.databaseLocation", BDB_PATH),
-    config("dataSet.fileStorage.rootDir", FILES_PATH),
-    config("securityConfiguration.localfile.authorizationsPath", AUTH_PATH),
-    config("securityConfiguration.localfile.usersFilePath", resourceFilePath("integrationtest/users.json")),
-    config("securityConfiguration.localfile.loginsFilePath", resourceFilePath("integrationtest/logins.json"))
-  );
+  static {
+    EvilEnvironmentVariableHacker.setEnv(ImmutableMap.of(
+      "timbuctoo_dataPath", resourceFilePath("integrationtest"),
+      "timbuctoo_port", "0",
+      "timbuctoo_adminPort", "0"
+    ));
+  }
 
   @ClassRule
-  public static final RuleChain chain = RuleChain
-    .outerRule(new CleaningRule())
-      .around(APP);
+  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
+    TimbuctooV4.class,
+    "example_config.yaml"
+  );
+
 
   private static final String AUTH = "FAKE_AUTH_TOKEN";
   private static Client client;
@@ -270,17 +260,5 @@ public class RmlIntegrationTest {
       // .register(new LoggingFilter(Logger.getLogger(LoggingFilter.class.getName()), true))
       .request()
       .header("Authorization", AUTH);
-  }
-
-  private static class CleaningRule extends ExternalResource {
-    @Override
-    protected void before() throws Throwable {
-      super.before();
-      FileUtils.cleanDirectory(new File(NEO4J_PATH));
-      FileUtils.cleanDirectory(new File(DATASET_PATH));
-      FileUtils.cleanDirectory(new File(BDB_PATH));
-      FileUtils.cleanDirectory(new File(FILES_PATH));
-      FileUtils.cleanDirectory(new File(AUTH_PATH));
-    }
   }
 }

@@ -83,10 +83,9 @@ if [ "$REBUILD" = 1 ]; then
   cd -
 fi
 
-JAVA_OPTS="$JAVA_OPTS -Ddw.databasePath=./temp_for_debugrun/database \
--Ddw.authorizationsPath=./temp_for_debugrun/authorizations \
--Ddw.loginsFilePath=./temp_for_debugrun/logins.json \
--Ddw.usersFilePath=./temp_for_debugrun/users.json"
+export timbuctoo_dataPath="./temp_for_debugrun"
+export timbuctoo_port="8080"
+export timbuctoo_adminPort="8081"
 
 if [ "$CLEAN" = "true" ]; then
   echo "Removing database and auth dirs"

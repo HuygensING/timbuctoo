@@ -36,7 +36,6 @@ import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
@@ -135,7 +134,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     bootstrap.setConfigurationSourceProvider(
       new SubstitutingSourceProvider(
         bootstrap.getConfigurationSourceProvider(),
-        new EnvironmentVariableSubstitutor(false)));
+        new EnvironmentVariableSubstitutor(true)));
   }
 
   @Override
@@ -155,21 +154,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
 
     // Support services
-    SecurityFactory securityConfig;
-    if (configuration.getSecurityConfiguration() == null) {
-      securityConfig = new SecurityFactory();
-      //map old style to new style. Needed until timbuctoo is migrated away from rpm based releases and we can more
-      //easily update the configuration
-      securityConfig.setLocalfileAccessFactory(new LocalfileAccessFactory(
-        configuration.getAuthorizationsPath().toAbsolutePath().toString(),
-        configuration.getLoginsFilePath(),
-        configuration.getUsersFilePath()
-      ));
-      securityConfig.setAutoLogoutTimeout(configuration.getAutoLogoutTimeout());
-      securityConfig.setAuthHandler(configuration.getFederatedAuthentication().makeHandler(environment));
-    } else {
-      securityConfig = configuration.getSecurityConfiguration();
-    }
+    SecurityFactory securityConfig = configuration.getSecurityConfiguration();
 
     securityConfig.getHealthChecks().forEachRemaining(check -> {
       register(environment, check.getLeft(), check.getRight());
@@ -187,10 +172,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
 
     TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
-    if (tinkerPopConfig == null) {
-      tinkerPopConfig = new TinkerPopConfig();
-      tinkerPopConfig.setDatabasePath(configuration.getDatabasePath());
-    }
     final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->

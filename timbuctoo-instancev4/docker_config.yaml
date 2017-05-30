@@ -1,31 +1,47 @@
 #This config allows you to run a local debug version of timbuctoo
 #it also explains the options that you need to configure a production-worthy version
 
+securityConfiguration:
+  localfile:
+    # This directory Timbuctoo reads and writes the authorizations a file for each vre.
+    authorizationsPath: "/data/auth/authorizations"
+    #These files contain 1 user with username="user" and password="password"
+    loginsFilePath: "/data/auth/logins.json"
+    usersFilePath: "/data/auth/users.json"
+  autoLogoutTimeout:
+    duration: 8
+    timeUnit: HOURS
+  federatedAuthentication:
+    enabled: true
+    authenticationServerUrl: DUMMY
+    authenticationCredentials: DUMMY
 
-#database files
-databasePath: "/root/timbuctoo-prod-db" #do not refer to a soft link
-# JSON files
-# This directory Timbuctoo reads and writes the authorizations a file for each vre.
-authorizationsPath: "/data/auth/authorizations"
-#These files contain 1 user with username="user" and password="password"
-loginsFilePath: "/data/auth/logins.json"
-usersFilePath: "/data/auth/users.json"
+baseUri: ${BASE_URI} # used to generate next and previous links of a search result
+timbuctooSearchUrl: ${TIMBUCTOO_SEARCH_URL}
+userRedirectUrl: ${TIMBUCTOO_GUI_PUBLIC_URL}
+
+databases:
+  databaseLocation: /root/data/bdb
+
+databaseConfiguration:
+  databasePath: "/root/timbuctoo-prod-db"
+
+dataSet:
+  dataSetMetadataLocation: /root/data/datasets
+  fileStorage:
+    "@class": nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorageFactory
+    rootDir: /root/data/files
+  rdfIo:
+    "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
+    rdfFormat: application/n-quads
 
 # Timeouts
 # the 'duration' is a number
 # the timeUnit is a 'java.util.concurrent.TimeUnit'
-autoLogoutTimeout:
-  duration: 8
-  timeUnit: HOURS
 searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
 executeDatabaseInvariantCheckAt: -1
-
-#Public timbuctoo url
-baseUri: ${BASE_URI} # used to generate next and previous links of a search result
-timbuctooSearchUrl: ${TIMBUCTOO_SEARCH_URL}
-userRedirectUrl: ${TIMBUCTOO_GUI_PUBLIC_URL}
 
 webhooks:
   vreAdded: ${TIMBUCTOO_SEARCH_URL}
@@ -47,11 +63,6 @@ persistenceManager:
 #  cypher:
 #  namingAuthority:
 #  prefix:
-
-federatedAuthentication:
-  enabled: true
-  authenticationServerUrl: DUMMY
-  authenticationCredentials: DUMMY
 
 #Note! disable this for production builds
 allowGremlinEndpoint: true

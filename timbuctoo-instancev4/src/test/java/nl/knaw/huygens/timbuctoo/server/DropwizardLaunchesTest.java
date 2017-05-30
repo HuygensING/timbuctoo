@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.server;
 
+import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
+import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.junit.ClassRule;
 import org.junit.Test;
 
@@ -9,30 +11,30 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Response;
 
-import static io.dropwizard.testing.ConfigOverride.config;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DropwizardLaunchesTest {
 
+  static {
+    EvilEnvironmentVariableHacker.setEnv(ImmutableMap.of(
+      "timbuctoo_dataPath", resourceFilePath("testrunstate"),
+      "timbuctoo_port", "0",
+      "timbuctoo_adminPort", "0"
+    ));
+  }
+
   @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> RULE = new DropwizardAppRule<>(
+  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
     TimbuctooV4.class,
-    resourceFilePath("testrunstate/config.yaml"),
-    config("databaseConfiguration.databasePath", resourceFilePath("testrunstate/data/neo4j")),
-    config("dataSet.dataSetMetadataLocation", resourceFilePath("testrunstate/data/dataSets")),
-    config("databases.databaseLocation", resourceFilePath("testrunstate/data/bdb")),
-    config("dataSet.fileStorage.rootDir", resourceFilePath("testrunstate/data/files")),
-    config("securityConfiguration.localfile.authorizationsPath", resourceFilePath("testrunstate/authorizations")),
-    config("securityConfiguration.localfile.usersFilePath", resourceFilePath("testrunstate/users.json")),
-    config("securityConfiguration.localfile.loginsFilePath", resourceFilePath("testrunstate/logins.json"))
+    "example_config.yaml"
   );
 
 
   @Test
   public void dropwizardLaunches() throws Exception {
     Client client = ClientBuilder.newClient();
-    WebTarget target = client.target(String.format("http://localhost:%d/healthcheck", RULE.getAdminPort()));
+    WebTarget target = client.target(String.format("http://localhost:%d/healthcheck", APP.getAdminPort()));
 
     Response response = target.request().get();
 

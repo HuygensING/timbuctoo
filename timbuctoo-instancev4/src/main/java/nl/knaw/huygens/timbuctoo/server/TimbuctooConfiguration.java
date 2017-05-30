@@ -64,9 +64,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private WebhookFactory webhooks = new WebhookFactory();
 
   @JsonProperty
-  @Deprecated
-  private String databasePath;
-  @JsonProperty
   private TinkerPopConfig databaseConfiguration;
   @Deprecated
   @JsonProperty
@@ -108,26 +105,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
-  }
-
-  @Deprecated
-  public Timeout getAutoLogoutTimeout() {
-    return autoLogoutTimeout.createTimeout();
-  }
-
-  @Deprecated
-  public String getLoginsFilePath() {
-    return loginsFilePath;
-  }
-
-  @Deprecated
-  public String getUsersFilePath() {
-    return usersFilePath;
-  }
-
-  @Deprecated
-  public String getDatabasePath() {
-    return databasePath;
   }
 
   public TinkerPopConfig getDatabaseConfiguration() {
@@ -178,20 +155,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @Override
   public Timeout getSearchResultAvailabilityTimeout() {
     return searchResultAvailabilityTimeout.createTimeout();
-  }
-
-  @Valid
-  @Deprecated
-  private FederatedAuthConfiguration federatedAuthentication;
-
-  @JsonProperty("federatedAuthentication")
-  public FederatedAuthConfiguration getFederatedAuthentication() {
-    return federatedAuthentication;
-  }
-
-  @JsonProperty("federatedAuthentication")
-  public void setFederatedAuthentication(FederatedAuthConfiguration federatedAuthentication) {
-    this.federatedAuthentication = federatedAuthentication;
   }
 
   @Deprecated
