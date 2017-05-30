@@ -2,8 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -25,7 +23,9 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-@Path("/v4/rdf-upload/{dataSet}")
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
+
+@Path("/v5/{userId}/{dataSet}/upload/rdf")
 public class RdfUpload {
 
   private final LoggedInUsers loggedInUsers;
@@ -46,22 +46,15 @@ public class RdfUpload {
                          @FormDataParam("encoding") final String encoding,
                          @FormDataParam("uri") final URI uri,
                          @HeaderParam("authorization") final String authHeader,
+                         @PathParam("userId") final String userId,
                          @PathParam("dataSet") final String dataSetId)
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
-    Optional<User> user = loggedInUsers.userFor(authHeader);
-    if (!user.isPresent()) {
-      return Response.status(Response.Status.UNAUTHORIZED).build();
+    final Response response = checkWriteAccess(authorizer, loggedInUsers, authHeader, userId, dataSetId);
+    if (response != null) {
+      return response;
     }
-    String userId = user.get().getPersistentId();
 
-    try {
-      if (!authorizer.authorizationFor(userId + "_" + dataSetId, userId).isAllowedToWrite()) {
-        return Response.status(Response.Status.UNAUTHORIZED).build();
-      }
-    } catch (AuthorizationUnavailableException e) {
-      //ignore. no problem
-    }
     DataSet dataSet = dataSetManager.getOrCreate(userId, dataSetId);
 
     Future<?> promise = dataSet.addLog(

@@ -13,7 +13,7 @@ import javax.ws.rs.core.Response;
 
 import static javax.ws.rs.core.Response.ok;
 
-@Path("/v4/{userId}/{dataSet}/graphql")
+@Path("/v5/{userId}/{dataSet}/graphql")
 public class GraphQl {
   private final GraphQlService graphQlService;
 

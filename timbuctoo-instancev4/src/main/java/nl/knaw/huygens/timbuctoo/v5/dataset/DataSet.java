@@ -150,7 +150,7 @@ public class DataSet {
         }
       } else {
         RdfCreator creator = entry.getRdfCreator().get();
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();//FIXME: write to tempFile
 
         String token = "";
         Optional<MediaType> mediaType;
