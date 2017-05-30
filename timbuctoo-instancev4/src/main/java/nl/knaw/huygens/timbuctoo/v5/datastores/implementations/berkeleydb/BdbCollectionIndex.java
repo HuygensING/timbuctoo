@@ -10,7 +10,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
+
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
@@ -69,7 +70,7 @@ public class BdbCollectionIndex extends BerkeleyStore implements CollectionIndex
                                       String graph) throws RdfProcessingFailedException {}
 
   @Override
-  public AutoCloseableIterator<String> getSubjects(String collectionName) {
+  public Stream<String> getSubjects(String collectionName) {
     DatabaseEntry key = new DatabaseEntry(collectionName.getBytes(Charsets.UTF_8));
     DatabaseEntry value = new DatabaseEntry();
 

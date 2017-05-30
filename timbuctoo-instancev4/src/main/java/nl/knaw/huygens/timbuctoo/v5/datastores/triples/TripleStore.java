@@ -2,10 +2,11 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.triples;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
+
+import java.util.stream.Stream;
 
 public interface TripleStore extends RdfProcessor, EntityProvider, AutoCloseable {
-  AutoCloseableIterator<String[]> getTriples();
+  Stream<String[]> getTriples();
 
-  AutoCloseableIterator<String[]> getTriples(String subject, String predicate);
+  Stream<String[]> getTriples(String subject, String predicate);
 }

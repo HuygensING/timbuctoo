@@ -1,8 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
+
+import java.util.stream.Stream;
 
 public interface CollectionIndex extends RdfProcessor, AutoCloseable {
-  AutoCloseableIterator<String> getSubjects(String collectionName);
+  Stream<String> getSubjects(String collectionName);
 }

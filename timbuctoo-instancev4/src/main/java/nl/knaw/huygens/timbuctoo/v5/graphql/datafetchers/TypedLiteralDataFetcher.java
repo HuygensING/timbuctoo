@@ -2,12 +2,11 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class TypedLiteralDataFetcher implements DataFetcher {
   private final String predicate;
@@ -24,22 +23,16 @@ public class TypedLiteralDataFetcher implements DataFetcher {
   public Object get(DataFetchingEnvironment environment) {
     if (environment.getSource() instanceof BoundSubject) {
       BoundSubject source = environment.getSource();
-      try (AutoCloseableIterator<String[]> triples = tripleStore.getTriples(source.getValue(), predicate)) {
+      try (Stream<String[]> triples = tripleStore.getTriples(source.getValue(), predicate)) {
         if (isList) {
-          List<BoundSubject> result = new ArrayList<>();
-          int count = 0;
-          while (count++ < 20 && triples.hasNext()) {
-            String[] triple = triples.next();
-            result.add(new BoundSubject(triple[2], triple[3]));
-          }
-          return result;
+          return triples
+            .map(triple -> new BoundSubject(triple[2], triple[3]))
+            .limit(20)
+            .collect(Collectors.toList());
         } else {
-          if (triples.hasNext()) {
-            String[] triple = triples.next();
-            return new BoundSubject(triple[2], triple[3]);
-          } else {
-            return null;
-          }
+          return triples.findFirst()
+            .map(triple -> new BoundSubject(triple[2], triple[3]))
+            .orElse(null);
         }
       }
     } else {

@@ -5,16 +5,17 @@ import graphql.language.InlineFragment;
 import graphql.language.Selection;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class UnionDataFetcher implements DataFetcher {
@@ -50,33 +51,29 @@ public class UnionDataFetcher implements DataFetcher {
         }
       }
       BoundSubject source = environment.getSource();
-      try (AutoCloseableIterator<String[]> triples = tripleStore.getTriples(source.getValue(), predicate)) {
+      try (Stream<String[]> triples = tripleStore.getTriples(source.getValue(), predicate)) {
         if (isList) {
-          List<BoundSubject> result = new ArrayList<>();
-          int count = 0;
-          while (count++ < 20 && triples.hasNext()) {
-            String[] triple = triples.next();
-            BoundSubject typedSubject;
-            if (triple[3] == null) {
-              typedSubject = getTypes(triple[2], requestedTypes);
-            } else {
-              typedSubject = verifyType(triple[2], triple[3], requestedTypes);
-            }
-            if (typedSubject != null) {
-              result.add(typedSubject);
-            }
-          }
-          return result;
+          return triples
+            .map(triple -> makeItem(requestedTypes, triple))
+            .filter(Objects::nonNull)
+            .limit(20)
+            .collect(toList());
         } else {
-          if (triples.hasNext()) {
-            return getTypes(triples.next()[2], requestedTypes);
-          } else {
-            return null;
-          }
+          return triples.findFirst()
+            .map(triple -> makeItem(requestedTypes, triple))
+            .orElse(null);
         }
       }
     } else {
       throw new IllegalStateException("Source is not a BoundSubject");
+    }
+  }
+
+  private BoundSubject makeItem(Set<String> requestedTypes, String[] triple) {
+    if (triple[3] == null) {
+      return getTypes(triple[2], requestedTypes);
+    } else {
+      return verifyType(triple[2], triple[3], requestedTypes);
     }
   }
 
@@ -89,11 +86,11 @@ public class UnionDataFetcher implements DataFetcher {
   }
 
   private BoundSubject getTypes(String uri, Set<String> requestedTypes) {
-    Set<String> types = new HashSet<>();
-    try (AutoCloseableIterator<String[]> triples = tripleStore.getTriples(uri, RDF_TYPE)) {
-      while (triples.hasNext()) {
-        types.add(triples.next()[2]);
-      }
+    Set<String> types;
+    try (Stream<String[]> triples = tripleStore.getTriples(uri, RDF_TYPE)) {
+      types = triples
+        .map(triple -> triple[2])
+        .collect(Collectors.toSet());
     }
     for (String requestedType : requestedTypes) {
       if (types.contains(requestedType)) {

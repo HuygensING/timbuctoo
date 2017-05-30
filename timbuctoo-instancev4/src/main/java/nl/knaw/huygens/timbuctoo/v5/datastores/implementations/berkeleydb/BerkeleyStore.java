@@ -14,11 +14,16 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
+import org.slf4j.Logger;
 
+import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
 
@@ -29,6 +34,8 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   private final DatabaseConfig databaseConfig;
   private final DatabaseEntry keyEntry = new DatabaseEntry();
   private final DatabaseEntry valueEntry = new DatabaseEntry();
+  private static final Logger LOG = getLogger(BerkeleyStore.class);
+
 
   protected BerkeleyStore(BdbDatabaseFactory dbEnvironment, String databaseName, String userId, String datasetId)
     throws DataStoreCreationException {
@@ -86,54 +93,65 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
     OperationStatus apply(Cursor cursor) throws DatabaseException;
   }
 
-  public <T> AutoCloseableIterator<T> getItems(DatabaseFunction initialLookup, DatabaseFunction iteration,
-                                               Supplier<T> valueMaker) {
-    return new AutoCloseableIterator<T>() {
+  public <T> Stream<T> getItems(DatabaseFunction initialLookup, DatabaseFunction iteration,
+                                Supplier<T> valueMaker) {
+    CursorIterator<T> data = new CursorIterator<>(initialLookup, iteration, valueMaker);
 
-      @Override
-      public void close() {
-        try {
-          if (cursor != null) {
-            cursor.close();
-          }
-        } catch (DatabaseException e) {
-          //FIXME! log error
-          e.printStackTrace();
+    return stream(data).onClose(() -> {
+      try {
+        if (data.cursor != null) {
+          data.cursor.close();
         }
+      } catch (DatabaseException e) {
+        LOG.error("Could not close cursor", e);
       }
-
-      Cursor cursor = null;
-      boolean shouldMove = true;
-      OperationStatus status = null;
-
-      @Override
-      public boolean hasNext() {
-        if (shouldMove) {
-          try {
-            if (cursor == null) {
-              cursor = database.openCursor(null, null);
-              status = initialLookup.apply(cursor);
-            } else {
-              status = iteration.apply(cursor);
-            }
-          } catch (DatabaseException e) {
-            //FIXME! log error
-            status = OperationStatus.NOTFOUND;
-          }
-          shouldMove = false;
-        }
-        return status == OperationStatus.SUCCESS;
-      }
-
-      @Override
-      public T next() {
-        if (!hasNext()) {
-          throw new NoSuchElementException();
-        }
-        shouldMove = true;
-        return valueMaker.get();
-      }
-    };
+    });
   }
 
+  private class CursorIterator<T> implements Iterator<T> {
+    private final DatabaseFunction initialLookup;
+    private final DatabaseFunction iteration;
+    private final Supplier<T> valueMaker;
+    public Cursor cursor;
+    boolean shouldMove;
+    OperationStatus status;
+
+    public CursorIterator(DatabaseFunction initialLookup, DatabaseFunction iteration,
+                          Supplier<T> valueMaker) {
+      this.initialLookup = initialLookup;
+      this.iteration = iteration;
+      this.valueMaker = valueMaker;
+      cursor = null;
+      shouldMove = true;
+      status = null;
+    }
+
+    @Override
+    public boolean hasNext() {
+      if (shouldMove) {
+        try {
+          if (cursor == null) {
+            cursor = database.openCursor(null, null);
+            status = initialLookup.apply(cursor);
+          } else {
+            status = iteration.apply(cursor);
+          }
+        } catch (DatabaseException e) {
+          LOG.error("Database exception!", e);
+          status = OperationStatus.NOTFOUND;
+        }
+        shouldMove = false;
+      }
+      return status == OperationStatus.SUCCESS;
+    }
+
+    @Override
+    public T next() {
+      if (!hasNext()) {
+        throw new NoSuchElementException();
+      }
+      shouldMove = true;
+      return valueMaker.get();
+    }
+  }
 }

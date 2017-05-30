@@ -18,11 +18,12 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.triples.TripleStore;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
-import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
@@ -46,7 +47,7 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   }
 
   @Override
-  public AutoCloseableIterator<String[]> getTriples() {
+  public Stream<String[]> getTriples() {
     DatabaseEntry key = new DatabaseEntry();
     DatabaseEntry value = new DatabaseEntry();
 
@@ -55,7 +56,7 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   }
 
   @Override
-  public AutoCloseableIterator<String[]> getTriples(String subject, String predicate) {
+  public Stream<String[]> getTriples(String subject, String predicate) {
     if (predicate.equals(RDF_TYPE)) {
       predicate = "";
     }
@@ -164,10 +165,10 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
   @Override
   public void processEntities(String cursor, EntityProcessor processor) throws RdfProcessingFailedException {
     ListMultimap<String, PredicateData> predicates = MultimapBuilder.hashKeys().arrayListValues().build();
-    List<String> types = new ArrayList<>();
     String curSubject = "";
     processor.start();
-    try (AutoCloseableIterator<String[]> triples = this.getTriples()) {
+    try (Stream<String[]> triplesStream = this.getTriples()) {
+      Iterator<String[]> triples = triplesStream.iterator();
       while (triples.hasNext()) {
         String[] triple = triples.next();
         if (!curSubject.equals(triple[0])) {
@@ -176,13 +177,12 @@ public class BdbTripleStore extends BerkeleyStore implements TripleStore {
           predicates.clear();
         }
         if (triple[3] == null) {
-          types.clear();
-          try (AutoCloseableIterator<String[]> objectTypes = this.getTriples(triple[2], RDF_TYPE)) {
-            while (objectTypes.hasNext()) {
-              types.add(objectTypes.next()[2]);
-            }
+          try (Stream<String[]> objectTypes = this.getTriples(triple[2], RDF_TYPE)) {
+            List<String> types = objectTypes
+              .map(typeTriple -> typeTriple[2])
+              .collect(Collectors.toList());
+            predicates.put(triple[1], new RelationPredicate(triple[1], triple[2], types));
           }
-          predicates.put(triple[1], new RelationPredicate(triple[1], triple[2], types));
         } else {
           predicates.put(triple[1], new ValuePredicate(triple[1], triple[2], triple[3]));
         }

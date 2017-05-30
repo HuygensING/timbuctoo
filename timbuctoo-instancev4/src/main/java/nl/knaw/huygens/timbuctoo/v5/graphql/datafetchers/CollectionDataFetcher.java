@@ -2,12 +2,12 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.util.AutoCloseableIterator;
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.BoundSubject;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class CollectionDataFetcher implements DataFetcher {
   private final String collectionName;
@@ -22,13 +22,11 @@ public class CollectionDataFetcher implements DataFetcher {
 
   @Override
   public List<BoundSubject> get(DataFetchingEnvironment environment) {
-    List<BoundSubject> result = new ArrayList<>(20);
-    try (AutoCloseableIterator<String> subjects = collectionIndex.getSubjects(collectionName)) {
-      int counter = 0;
-      while (counter++ < MAX_ITEMS && subjects.hasNext()) {
-        result.add(new BoundSubject(subjects.next()));
-      }
+    try (Stream<String> subjects = collectionIndex.getSubjects(collectionName)) {
+      return subjects
+        .map(BoundSubject::new)
+        .limit(20)
+        .collect(Collectors.toList());
     }
-    return result;
   }
 }
