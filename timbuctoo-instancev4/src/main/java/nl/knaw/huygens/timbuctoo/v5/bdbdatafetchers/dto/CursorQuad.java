@@ -16,19 +16,16 @@ public interface CursorQuad extends CursorContainer {
 
   Optional<String> getLanguage();
 
-  String getGraph();
-
   String getCursor();
 
   static CursorQuad create(String subject, String predicate, String object, String valueType, String language,
-                           String graph, String cursor) {
+                           String cursor) {
     return ImmutableCursorQuad.builder()
       .subject(subject)
       .predicate(predicate)
       .object(object)
       .valuetype(Optional.ofNullable(valueType))
       .language(Optional.ofNullable(language))
-      .graph(graph)
       .cursor(cursor)
       .build();
   }

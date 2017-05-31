@@ -6,6 +6,7 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
+import com.sleepycat.je.OperationStatus;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
@@ -36,70 +37,70 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
   protected DatabaseConfig getDatabaseConfig() {
     DatabaseConfig rdfConfig = new DatabaseConfig();
     rdfConfig.setAllowCreate(true);
-    rdfConfig.setSortedDuplicates(true);
     return rdfConfig;
   }
 
-  public Stream<CursorQuad> getQuads() {
-    DatabaseEntry key = new DatabaseEntry();
-    DatabaseEntry value = new DatabaseEntry();
-
-    BerkeleyStore.DatabaseFunction getNext = cursor -> cursor.getNext(key, value, LockMode.DEFAULT);
-    return getItems(getNext, getNext, () -> formatResult(key, value));
-  }
-
   public Stream<CursorQuad> getQuads(String subject, String predicate) {
-    if (predicate.equals(RDF_TYPE)) {
-      predicate = "";
-    }
     DatabaseEntry key = new DatabaseEntry();
-    binder.objectToEntry((subject + "\n" + predicate), key);
+    binder.objectToEntry((subject + "\n" + predicate + "\n"), key);
     DatabaseEntry value = new DatabaseEntry();
 
     return getItems(
-      cursor -> cursor.getSearchKey(key, value, LockMode.DEFAULT),
-      cursor -> cursor.getNextDup(key, value, LockMode.DEFAULT),
-      () -> formatResult(key, value)
+      cursor -> {
+        OperationStatus status = cursor.getSearchKeyRange(key, value, LockMode.DEFAULT);
+        if (status == OperationStatus.SUCCESS) {
+          if (!binder.entryToObject(key).startsWith(subject + "\n" + predicate + "\n")) {
+            return OperationStatus.NOTFOUND;
+          }
+        }
+        return status;
+      },
+      cursor -> {
+        OperationStatus status = cursor.getNext(key, value, LockMode.DEFAULT);
+        if (status == OperationStatus.SUCCESS) {
+          if (!binder.entryToObject(key).startsWith(subject + "\n" + predicate + "\n")) {
+            return OperationStatus.NOTFOUND;
+          }
+        }
+        return status;
+      },
+      () -> formatResult(key)
     );
   }
 
-  private CursorQuad formatResult(DatabaseEntry key, DatabaseEntry value) {
+  private CursorQuad formatResult(DatabaseEntry key) {
     String[] keyFields = binder.entryToObject(key).split("\n");
-    String[] valueFields = binder.entryToObject(value).split("\n", 2);
     return CursorQuad.create(
       keyFields[0],
-      keyFields.length == 1 ? RDF_TYPE : keyFields[1],
-      valueFields[1],
-      valueFields[0].isEmpty() ? null : valueFields[0],
-      null,
-      "http://Notsupported",
+      keyFields[1],
+      keyFields[4],
+      keyFields[2].isEmpty() ? null : keyFields[2],
+      keyFields[3].isEmpty() ? null : keyFields[3],
       ""
     );
   }
 
   @Override
-  public void setPrefix(String cursor, String prefix, String iri) throws RdfProcessingFailedException {
-
-  }
+  public void setPrefix(String cursor, String prefix, String iri) throws RdfProcessingFailedException {}
 
   @Override
   public void addRelation(String cursor, String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
-    if (predicate.equals(RDF_TYPE)) {
-      predicate = "";
-    }
     try {
-      put(
-        subject + "\n" +
-          predicate,
-          "" + "\n" +
-          object
+      put(subject + "\n" +
+        predicate + "\n" +
+        /*dataType*/ "\n" +
+        /*language*/ "\n" +
+        object,
+        ""
       );
-      if (!predicate.isEmpty()) {
-        put(
-          object + "\n" +
-            predicate + "_inverse",
-          "\n" + subject
+      if (!predicate.equals(RDF_TYPE)) {
+        put(object+ "\n" +
+            predicate + "\n" +
+            /*dataType*/ "\n" +
+            /*language*/ "\n" +
+            subject,
+          ""
         );
       }
     } catch (DatabaseException e) {
@@ -111,11 +112,12 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
   public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
     try {
-      put(
-        subject + "\n" +
-          predicate,
-          dataType + "\n" +
-          value
+      put(subject + "\n" +
+        predicate + "\n" +
+        dataType + "\n" +
+        /*language*/ "\n" +
+        value,
+        ""
       );
     } catch (DatabaseException e) {
       throw new RdfProcessingFailedException(e);
@@ -126,11 +128,12 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
   public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
     try {
-      put(
-        subject + "\n" +
-          predicate,
-        RdfConstants.LANGSTRING + "_" + language + "\n" +
-          value
+      put(subject + "\n" +
+          predicate + "\n" +
+          RdfConstants.LANGSTRING + "\n" +
+          language + "\n" +
+          value,
+        ""
       );
     } catch (DatabaseException e) {
       throw new RdfProcessingFailedException(e);
@@ -154,7 +157,12 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     ListMultimap<String, PredicateData> predicates = MultimapBuilder.hashKeys().arrayListValues().build();
     String curSubject = "";
     processor.start();
-    try (Stream<CursorQuad> quadStream = this.getQuads()) {
+
+    DatabaseEntry key = new DatabaseEntry();
+    DatabaseEntry value = new DatabaseEntry();
+    DatabaseFunction getNext = dbCursor -> dbCursor.getNext(key, value, LockMode.DEFAULT);
+
+    try (Stream<CursorQuad> quadStream = getItems(getNext, getNext, () -> formatResult(key))) {
       Iterator<CursorQuad> quads = quadStream.iterator();
       while (quads.hasNext()) {
         CursorQuad quad = quads.next();
