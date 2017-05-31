@@ -36,47 +36,76 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
 
   protected DatabaseConfig getDatabaseConfig() {
     DatabaseConfig rdfConfig = new DatabaseConfig();
+    rdfConfig.setSortedDuplicates(true);
     rdfConfig.setAllowCreate(true);
     return rdfConfig;
   }
 
-  public Stream<CursorQuad> getQuads(String subject, String predicate) {
+  public Stream<CursorQuad> getQuads(String subject, String predicate, String cursor) {
     DatabaseEntry key = new DatabaseEntry();
-    binder.objectToEntry((subject + "\n" + predicate + "\n"), key);
     DatabaseEntry value = new DatabaseEntry();
 
+    DatabaseFunction iterateForwards = dbCursor -> dbCursor.getNextDup(key, value, LockMode.DEFAULT);
+    DatabaseFunction iterateBackwards = dbCursor -> dbCursor.getPrevDup(key, value, LockMode.DEFAULT);
+
+    DatabaseFunction initializer;
+    DatabaseFunction iterator;
+    if (cursor.isEmpty()) {
+      binder.objectToEntry((subject + "\n" + predicate), key);
+      initializer = dbCursor -> dbCursor.getSearchKey(key, value, LockMode.DEFAULT);
+      iterator = iterateForwards;
+    } else {
+      if (cursor.equals("LAST")) {
+        binder.objectToEntry((subject + "\n" + predicate), key);
+        initializer = dbCursor -> {
+          OperationStatus status = dbCursor.getSearchKey(key, value, LockMode.DEFAULT);
+          if (status == OperationStatus.SUCCESS) {
+            status = dbCursor.getNextNoDup(key, value, LockMode.DEFAULT);
+            if (status == OperationStatus.SUCCESS) {
+              return dbCursor.getPrev(key, value, LockMode.DEFAULT);
+            } else {
+              return dbCursor.getLast(key, value, LockMode.DEFAULT);
+            }
+          } else {
+            return status;
+          }
+        };
+        iterator = iterateBackwards;
+      } else {
+        String[] fields = cursor.substring(2).split("\n");
+        binder.objectToEntry(fields[0] + "\n" + fields[1], key);
+        binder.objectToEntry(fields[2] + "\n" + fields[3] + "\n" + fields[4], value);
+        if (cursor.startsWith("D\n")) {
+          iterator = iterateBackwards;
+        } else {
+          iterator = iterateForwards;
+        }
+        initializer = dbCursor -> {
+          OperationStatus status = dbCursor.getSearchBoth(key, value, LockMode.DEFAULT);
+          if (status == OperationStatus.SUCCESS) {
+            return iterator.apply(dbCursor);
+          }
+          return status;
+        };
+      }
+    }
     return getItems(
-      cursor -> {
-        OperationStatus status = cursor.getSearchKeyRange(key, value, LockMode.DEFAULT);
-        if (status == OperationStatus.SUCCESS) {
-          if (!binder.entryToObject(key).startsWith(subject + "\n" + predicate + "\n")) {
-            return OperationStatus.NOTFOUND;
-          }
-        }
-        return status;
-      },
-      cursor -> {
-        OperationStatus status = cursor.getNext(key, value, LockMode.DEFAULT);
-        if (status == OperationStatus.SUCCESS) {
-          if (!binder.entryToObject(key).startsWith(subject + "\n" + predicate + "\n")) {
-            return OperationStatus.NOTFOUND;
-          }
-        }
-        return status;
-      },
-      () -> formatResult(key)
+      initializer,
+      iterator,
+      () -> formatResult(key, value)
     );
   }
 
-  private CursorQuad formatResult(DatabaseEntry key) {
-    String[] keyFields = binder.entryToObject(key).split("\n");
+  private CursorQuad formatResult(DatabaseEntry key, DatabaseEntry value) {
+    String cursor = binder.entryToObject(key) + "\n" + binder.entryToObject(value);
+    String[] keyFields = cursor.split("\n", 5);
     return CursorQuad.create(
       keyFields[0],
       keyFields[1],
       keyFields[4],
       keyFields[2].isEmpty() ? null : keyFields[2],
       keyFields[3].isEmpty() ? null : keyFields[3],
-      ""
+      cursor
     );
   }
 
@@ -88,19 +117,17 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
       throws RdfProcessingFailedException {
     try {
       put(subject + "\n" +
-        predicate + "\n" +
+        predicate,
         /*dataType*/ "\n" +
         /*language*/ "\n" +
-        object,
-        ""
+        object
       );
       if (!predicate.equals(RDF_TYPE)) {
-        put(object+ "\n" +
-            predicate + "\n" +
+        put(object + "\n" +
+            predicate + "_inverse",//FIXME!
             /*dataType*/ "\n" +
             /*language*/ "\n" +
-            subject,
-          ""
+            subject
         );
       }
     } catch (DatabaseException e) {
@@ -113,11 +140,10 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
       throws RdfProcessingFailedException {
     try {
       put(subject + "\n" +
-        predicate + "\n" +
+        predicate,
         dataType + "\n" +
         /*language*/ "\n" +
-        value,
-        ""
+        value
       );
     } catch (DatabaseException e) {
       throw new RdfProcessingFailedException(e);
@@ -129,11 +155,10 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
                                       String graph) throws RdfProcessingFailedException {
     try {
       put(subject + "\n" +
-          predicate + "\n" +
+          predicate,
           RdfConstants.LANGSTRING + "\n" +
           language + "\n" +
-          value,
-        ""
+          value
       );
     } catch (DatabaseException e) {
       throw new RdfProcessingFailedException(e);
@@ -162,7 +187,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     DatabaseEntry value = new DatabaseEntry();
     DatabaseFunction getNext = dbCursor -> dbCursor.getNext(key, value, LockMode.DEFAULT);
 
-    try (Stream<CursorQuad> quadStream = getItems(getNext, getNext, () -> formatResult(key))) {
+    try (Stream<CursorQuad> quadStream = getItems(getNext, getNext, () -> formatResult(key, value))) {
       Iterator<CursorQuad> quads = quadStream.iterator();
       while (quads.hasNext()) {
         CursorQuad quad = quads.next();
@@ -177,7 +202,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
             new ValuePredicate(quad.getPredicate(), quad.getObject(), quad.getValuetype().get())
           );
         } else {
-          try (Stream<CursorQuad> objectTypes = this.getQuads(quad.getObject(), RDF_TYPE)) {
+          try (Stream<CursorQuad> objectTypes = this.getQuads(quad.getObject(), RDF_TYPE, "")) {
             List<String> types = objectTypes
               .map(CursorQuad::getObject)
               .collect(Collectors.toList());

@@ -23,13 +23,13 @@ public abstract class WalkTriplesDataFetcher implements RelatedDataFetcher {
   protected abstract TypedValue makeItem(CursorQuad quad);
 
   public PaginatedList getList(TypedValue source, PaginationArguments arguments) {
-    try (Stream<CursorQuad> quads = tripleStore.getQuads(source.getValue(), predicate)) {
+    try (Stream<CursorQuad> quads = tripleStore.getQuads(source.getValue(), predicate, arguments.getCursor())) {
       return getPaginatedList(quads, this::makeItem);
     }
   }
 
   public TypedValue getItem(TypedValue source) {
-    try (Stream<CursorQuad> quads = tripleStore.getQuads(source.getValue(), predicate)) {
+    try (Stream<CursorQuad> quads = tripleStore.getQuads(source.getValue(), predicate, "")) {
       return quads.findFirst()
         .map(this::makeItem)
         .orElse(null);

@@ -23,7 +23,7 @@ public class UnionDataFetcher extends WalkTriplesDataFetcher {
     if (quad.getValuetype().isPresent()) {
       return TypedValue.create(quad.getObject(), quad.getValuetype().get());
     } else {
-      try (Stream<CursorQuad> quads = tripleStore.getQuads(quad.getObject(), RDF_TYPE)) {
+      try (Stream<CursorQuad> quads = tripleStore.getQuads(quad.getObject(), RDF_TYPE, "")) {
         final Set<String> types = quads
           .map(CursorQuad::getObject)
           .collect(toSet());
