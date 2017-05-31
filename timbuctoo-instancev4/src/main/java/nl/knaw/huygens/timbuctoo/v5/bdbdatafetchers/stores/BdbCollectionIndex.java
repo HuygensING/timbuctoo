@@ -5,6 +5,7 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorSubject;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
@@ -69,14 +70,14 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {}
 
-  public Stream<String> getSubjects(String collectionName) {
+  public Stream<CursorSubject> getSubjects(String collectionName) {
     DatabaseEntry key = new DatabaseEntry(collectionName.getBytes(Charsets.UTF_8));
     DatabaseEntry value = new DatabaseEntry();
 
     return getItems(
       cursor -> cursor.getSearchKey(key, value, LockMode.DEFAULT),
       cursor -> cursor.getNextDup(key, value, LockMode.DEFAULT),
-      () -> new String(value.getData(), Charsets.UTF_8)
+      () -> CursorSubject.create("", new String(value.getData(), Charsets.UTF_8))
     );
   }
 }

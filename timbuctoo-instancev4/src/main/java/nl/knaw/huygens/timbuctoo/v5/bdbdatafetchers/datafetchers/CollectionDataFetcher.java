@@ -1,15 +1,17 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.BoundSubject;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorSubject;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbCollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 
-import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class CollectionDataFetcher implements DataFetcher {
+import static nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.PaginationHelper.getPaginatedList;
+
+public class CollectionDataFetcher implements CollectionFetcher {
   private final String collectionName;
   private final BdbCollectionIndex collectionIndex;
 
@@ -19,12 +21,14 @@ public class CollectionDataFetcher implements DataFetcher {
   }
 
   @Override
-  public List<BoundSubject> get(DataFetchingEnvironment environment) {
-    try (Stream<String> subjects = collectionIndex.getSubjects(collectionName)) {
-      return subjects
-        .map(BoundSubject::new)
-        .limit(20)
-        .collect(Collectors.toList());
+  public PaginatedList getList(PaginationArguments arguments) {
+    try (Stream<CursorSubject> subjectStream = collectionIndex.getSubjects(collectionName)) {
+      return getPaginatedList(subjectStream, CursorSubject::getSubject);
     }
+  }
+
+  @Override
+  public TypedValue getItem(String uri) {
+    return null;
   }
 }

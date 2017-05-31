@@ -1,46 +1,38 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
-import graphql.schema.DataFetcher;
-import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.BoundSubject;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.Quad;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public abstract class WalkTriplesDataFetcher implements DataFetcher {
+import static nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.PaginationHelper.getPaginatedList;
+
+public abstract class WalkTriplesDataFetcher implements RelatedDataFetcher {
   private final String predicate;
-  private final boolean isList;
   private final BdbTripleStore tripleStore;
 
-  public WalkTriplesDataFetcher(String predicate, boolean isList, BdbTripleStore tripleStore) {
+  public WalkTriplesDataFetcher(String predicate, BdbTripleStore tripleStore) {
     this.predicate = predicate;
-    this.isList = isList;
     this.tripleStore = tripleStore;
   }
 
-  protected abstract BoundSubject makeItem(Quad quad);
+  protected abstract TypedValue makeItem(CursorQuad quad);
 
-  @Override
-  public Object get(DataFetchingEnvironment environment) {
-    if (environment.getSource() instanceof BoundSubject) {
-      BoundSubject source = environment.getSource();
-      try (Stream<Quad> quads = tripleStore.getQuads(source.getValue(), predicate)) {
-        if (isList) {
-          return quads
-            .map(this::makeItem)
-            .limit(20)
-            .collect(Collectors.toList());
-        } else {
-          return quads.findFirst()
-            .map(this::makeItem)
-            .orElse(null);
-        }
-      }
-    } else {
-      throw new IllegalStateException("Source is not a BoundSubject");
+  public PaginatedList getList(TypedValue source, PaginationArguments arguments) {
+    try (Stream<CursorQuad> quads = tripleStore.getQuads(source.getValue(), predicate)) {
+      return getPaginatedList(quads, this::makeItem);
     }
   }
 
+  public TypedValue getItem(TypedValue source) {
+    try (Stream<CursorQuad> quads = tripleStore.getQuads(source.getValue(), predicate)) {
+      return quads.findFirst()
+        .map(this::makeItem)
+        .orElse(null);
+    }
+  }
 }

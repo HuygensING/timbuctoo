@@ -5,7 +5,7 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 @Value.Immutable
-public interface Quad {
+public interface CursorQuad extends CursorContainer {
   String getSubject();
 
   String getPredicate();
@@ -18,14 +18,18 @@ public interface Quad {
 
   String getGraph();
 
-  static Quad create(String subject, String predicate, String object, String valueType, String language, String graph) {
-    return ImmutableQuad.builder()
+  String getCursor();
+
+  static CursorQuad create(String subject, String predicate, String object, String valueType, String language,
+                           String graph, String cursor) {
+    return ImmutableCursorQuad.builder()
       .subject(subject)
       .predicate(predicate)
       .object(object)
       .valuetype(Optional.ofNullable(valueType))
       .language(Optional.ofNullable(language))
       .graph(graph)
+      .cursor(cursor)
       .build();
   }
 

@@ -1,17 +1,17 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.BoundSubject;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.Quad;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
 
 public class RelationDataFetcher extends WalkTriplesDataFetcher {
 
-  public RelationDataFetcher(String predicate, boolean isList, BdbTripleStore tripleStore) {
-    super(predicate, isList, tripleStore);
+  public RelationDataFetcher(String predicate, BdbTripleStore tripleStore) {
+    super(predicate, tripleStore);
   }
 
   @Override
-  protected BoundSubject makeItem(Quad triple) {
-    return new BoundSubject(triple.getObject());
+  protected TypedValue makeItem(CursorQuad triple) {
+    return TypedValue.create(triple.getObject());
   }
 }

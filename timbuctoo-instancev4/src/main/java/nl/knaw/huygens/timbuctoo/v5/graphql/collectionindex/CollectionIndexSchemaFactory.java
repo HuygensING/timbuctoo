@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex;
 
 import graphql.schema.GraphQLObjectType;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 
 import java.util.Map;
@@ -24,10 +25,9 @@ public class CollectionIndexSchemaFactory {
       result.field(newFieldDefinition()
         .name(typeName)
         .type(list(objectType))
-        .dataFetcher(fetcherFactory.collectionFetcher(typeUri))
+        .dataFetcher(new CollectionFetcherWrapper(fetcherFactory.collectionFetcher(typeUri)))
       );
     }
-
 
     return result.build();
   }

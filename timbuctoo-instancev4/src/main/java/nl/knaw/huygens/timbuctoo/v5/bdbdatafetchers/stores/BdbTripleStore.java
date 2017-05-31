@@ -9,6 +9,7 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProvider;
@@ -17,7 +18,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RelationPredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ValuePredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.Quad;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
@@ -47,7 +47,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     return rdfConfig;
   }
 
-  public Stream<Quad> getQuads() {
+  public Stream<CursorQuad> getQuads() {
     DatabaseEntry key = new DatabaseEntry();
     DatabaseEntry value = new DatabaseEntry();
 
@@ -55,7 +55,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     return getItems(getNext, getNext, () -> formatResult(key, value));
   }
 
-  public Stream<Quad> getQuads(String subject, String predicate) {
+  public Stream<CursorQuad> getQuads(String subject, String predicate) {
     if (predicate.equals(RDF_TYPE)) {
       predicate = "";
     }
@@ -77,16 +77,17 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     return cursor.getSearchKey(key, value, LockMode.DEFAULT);
   }
 
-  private Quad formatResult(DatabaseEntry key, DatabaseEntry value) {
+  private CursorQuad formatResult(DatabaseEntry key, DatabaseEntry value) {
     String[] keyFields = new String(key.getData(), Charsets.UTF_8).split("\n");
     String[] valueFields = new String(value.getData(), Charsets.UTF_8).split("\n", 2);
-    return Quad.create(
+    return CursorQuad.create(
       keyFields[0],
       keyFields.length == 1 ? RDF_TYPE : keyFields[1],
       valueFields[1],
       valueFields[0].isEmpty() ? null : valueFields[0],
       null,
-      "http://Notsupported"
+      "http://Notsupported",
+      ""
     );
   }
 
@@ -167,10 +168,10 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     ListMultimap<String, PredicateData> predicates = MultimapBuilder.hashKeys().arrayListValues().build();
     String curSubject = "";
     processor.start();
-    try (Stream<Quad> quadStream = this.getQuads()) {
-      Iterator<Quad> quads = quadStream.iterator();
+    try (Stream<CursorQuad> quadStream = this.getQuads()) {
+      Iterator<CursorQuad> quads = quadStream.iterator();
       while (quads.hasNext()) {
-        Quad quad = quads.next();
+        CursorQuad quad = quads.next();
         if (!curSubject.equals(quad.getSubject())) {
           processor.processEntity("", curSubject, predicates);
           curSubject = quad.getSubject();
@@ -182,9 +183,9 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
             new ValuePredicate(quad.getPredicate(), quad.getObject(), quad.getValuetype().get())
           );
         } else {
-          try (Stream<Quad> objectTypes = this.getQuads(quad.getObject(), RDF_TYPE)) {
+          try (Stream<CursorQuad> objectTypes = this.getQuads(quad.getObject(), RDF_TYPE)) {
             List<String> types = objectTypes
-              .map(Quad::getObject)
+              .map(CursorQuad::getObject)
               .collect(Collectors.toList());
             predicates.put(quad.getPredicate(), new RelationPredicate(quad.getPredicate(), quad.getObject(), types));
           }

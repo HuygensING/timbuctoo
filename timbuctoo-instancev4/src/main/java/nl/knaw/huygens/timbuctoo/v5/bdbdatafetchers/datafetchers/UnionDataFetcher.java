@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.BoundSubject;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.Quad;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
 
 import java.util.Set;
@@ -13,21 +13,21 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 public class UnionDataFetcher extends WalkTriplesDataFetcher {
   private final BdbTripleStore tripleStore;
 
-  public UnionDataFetcher(String predicate, boolean isList, BdbTripleStore tripleStore) {
-    super(predicate, isList, tripleStore);
+  public UnionDataFetcher(String predicate, BdbTripleStore tripleStore) {
+    super(predicate, tripleStore);
     this.tripleStore = tripleStore;
   }
 
   @Override
-  protected BoundSubject makeItem(Quad quad) {
+  protected TypedValue makeItem(CursorQuad quad) {
     if (quad.getValuetype().isPresent()) {
-      return new BoundSubject(quad.getObject(), quad.getValuetype().get());
+      return TypedValue.create(quad.getObject(), quad.getValuetype().get());
     } else {
-      try (Stream<Quad> quads = tripleStore.getQuads(quad.getObject(), RDF_TYPE)) {
+      try (Stream<CursorQuad> quads = tripleStore.getQuads(quad.getObject(), RDF_TYPE)) {
         final Set<String> types = quads
-          .map(Quad::getObject)
+          .map(CursorQuad::getObject)
           .collect(toSet());
-        return new BoundSubject(quad.getObject(), types);
+        return TypedValue.create(quad.getObject(), types);
       }
     }
   }

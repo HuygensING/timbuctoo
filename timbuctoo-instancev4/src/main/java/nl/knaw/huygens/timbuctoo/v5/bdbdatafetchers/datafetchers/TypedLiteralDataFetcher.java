@@ -1,19 +1,19 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.BoundSubject;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.Quad;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
 
 public class TypedLiteralDataFetcher extends WalkTriplesDataFetcher {
 
-  public TypedLiteralDataFetcher(String predicate, boolean isList, BdbTripleStore tripleStore) {
-    super(predicate, isList, tripleStore);
+  public TypedLiteralDataFetcher(String predicate, BdbTripleStore tripleStore) {
+    super(predicate, tripleStore);
   }
 
   @Override
-  protected BoundSubject makeItem(Quad triple) {
+  protected TypedValue makeItem(CursorQuad triple) {
     return triple.getValuetype()
-      .map(valueType -> new BoundSubject(triple.getObject(), valueType))
-      .orElseGet(() -> new BoundSubject(triple.getObject()));
+      .map(valueType -> TypedValue.create(triple.getObject(), valueType))
+      .orElseGet(() -> TypedValue.create(triple.getObject()));
   }
 }
