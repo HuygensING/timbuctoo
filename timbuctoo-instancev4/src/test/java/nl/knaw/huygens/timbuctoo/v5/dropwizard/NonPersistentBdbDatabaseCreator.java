@@ -36,8 +36,9 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
   public Tuple<Environment, Database> getDatabase(String userId, String dataSetId, String databaseName,
                                                   DatabaseConfig config) throws DataStoreCreationException {
     try {
-      config.setTemporary(true);
-      Environment dataSetEnvironment = new Environment(new File(dbHome, userId + "_" + dataSetId), configuration);
+      File envHome = new File(dbHome, userId + "_" + dataSetId);
+      envHome.mkdirs();
+      Environment dataSetEnvironment = new Environment(envHome, configuration);
       Database database = dataSetEnvironment.openDatabase(null, databaseName, config);
       databases.add(database);
       return Tuple.tuple(dataSetEnvironment, database);

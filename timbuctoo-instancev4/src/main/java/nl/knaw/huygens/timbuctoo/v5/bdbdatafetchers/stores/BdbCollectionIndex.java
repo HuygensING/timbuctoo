@@ -4,6 +4,7 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
+import com.sleepycat.je.OperationStatus;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorSubject;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
@@ -69,15 +70,70 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {}
 
-  public Stream<CursorSubject> getSubjects(String collectionName) {
+  public Stream<CursorSubject> getSubjects(String collectionName, String cursor) {
     DatabaseEntry key = new DatabaseEntry();
-    binder.objectToEntry(collectionName, key);
     DatabaseEntry value = new DatabaseEntry();
 
+    DatabaseFunction initializer;
+    DatabaseFunction iterator;
+
+    DatabaseFunction forwardMovingIterator = dbCursor -> dbCursor.getNextDup(key, value, LockMode.DEFAULT);
+    DatabaseFunction backwardMovingIterator = dbCursor -> dbCursor.getPrevDup(key, value, LockMode.DEFAULT);
+
+    if (cursor.isEmpty()) {
+      //initializer starts at the collection
+      binder.objectToEntry(collectionName, key);
+      initializer = dbCursor -> dbCursor.getSearchKey(key, value, LockMode.DEFAULT);
+
+      iterator = forwardMovingIterator;
+    } else {
+      if ("LAST".equals(cursor)) {
+        //initializer starts at the next collection and moves one step back
+        binder.objectToEntry(collectionName, key);
+        initializer = dbCursor -> {
+          OperationStatus status = dbCursor.getSearchKey(key, value, LockMode.DEFAULT);
+          if (status == OperationStatus.SUCCESS) {
+            status = dbCursor.getNextNoDup(key, value, LockMode.DEFAULT);
+            if (status == OperationStatus.SUCCESS) {
+              status = dbCursor.getPrev(key, value, LockMode.DEFAULT);
+            } else {
+              //go to end
+              status = dbCursor.getLast(key, value, LockMode.DEFAULT);
+            }
+          }
+          return status;
+        };
+
+        iterator = backwardMovingIterator;
+      } else {
+        //initializer starts at the cursor.substring(2)
+        binder.objectToEntry(collectionName, key);
+        binder.objectToEntry(cursor.substring(2), value);
+        if (cursor.startsWith("D\n")) {
+          iterator = backwardMovingIterator;
+        } else {
+          iterator = forwardMovingIterator;
+        }
+        initializer = dbCursor -> {
+          OperationStatus status = dbCursor.getSearchBoth(key, value, LockMode.DEFAULT);
+          if (status == OperationStatus.SUCCESS) {
+            return iterator.apply(dbCursor);
+          } else {
+            return status;
+          }
+        };
+      }
+    }
+
     return getItems(
-      cursor -> cursor.getSearchKey(key, value, LockMode.DEFAULT),
-      cursor -> cursor.getNextDup(key, value, LockMode.DEFAULT),
-      () -> CursorSubject.create("", binder.entryToObject(value))
+      initializer,
+      iterator,
+      () -> {
+        String subject = binder.entryToObject(value);
+        return CursorSubject.create(subject, subject);
+      }
     );
   }
+
+
 }

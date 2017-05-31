@@ -22,7 +22,7 @@ public class CollectionDataFetcher implements CollectionFetcher {
 
   @Override
   public PaginatedList getList(PaginationArguments arguments) {
-    try (Stream<CursorSubject> subjectStream = collectionIndex.getSubjects(collectionName)) {
+    try (Stream<CursorSubject> subjectStream = collectionIndex.getSubjects(collectionName, arguments.getCursor())) {
       return getPaginatedList(subjectStream, CursorSubject::getSubject);
     }
   }

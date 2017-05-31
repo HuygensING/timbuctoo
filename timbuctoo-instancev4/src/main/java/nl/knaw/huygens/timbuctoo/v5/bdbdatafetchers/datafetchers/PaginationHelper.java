@@ -18,9 +18,9 @@ public class PaginationHelper {
       .limit(20)
       .peek(cs -> {
         if (cursors[0] == null) {
-          cursors[0] = cs.getCursor();
+          cursors[0] = "D\n" + cs.getCursor();
         }
-        cursors[1] = cs.getCursor();
+        cursors[1] = "A\n" + cs.getCursor();
       })
       .map(makeItem)
       .collect(Collectors.toList());
