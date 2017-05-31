@@ -14,7 +14,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseCreator;
 import org.slf4j.Logger;
 
 import java.util.Iterator;
@@ -39,7 +39,7 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   protected final EntryBinding<String> binder = TupleBinding.getPrimitiveBinding(String.class);
 
 
-  protected BerkeleyStore(BdbDatabaseFactory dbEnvironment, String databaseName, String userId, String datasetId)
+  protected BerkeleyStore(BdbDatabaseCreator dbEnvironment, String databaseName, String userId, String datasetId)
     throws DataStoreCreationException {
     databaseConfig = getDatabaseConfig();
     Tuple<Environment, Database> database = dbEnvironment.getDatabase(userId, datasetId, databaseName, databaseConfig);

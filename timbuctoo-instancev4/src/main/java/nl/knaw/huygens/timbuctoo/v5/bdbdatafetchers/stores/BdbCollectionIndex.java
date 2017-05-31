@@ -9,14 +9,14 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseCreator;
 
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, AutoCloseable {
-  public BdbCollectionIndex(DataProvider dataProvider, BdbDatabaseFactory factory, String userId, String dataSetId)
+  public BdbCollectionIndex(DataProvider dataProvider, BdbDatabaseCreator factory, String userId, String dataSetId)
     throws DataStoreCreationException {
     super(factory, "collectionIndex", userId, dataSetId);
     dataProvider.subscribeToRdf(this, null);

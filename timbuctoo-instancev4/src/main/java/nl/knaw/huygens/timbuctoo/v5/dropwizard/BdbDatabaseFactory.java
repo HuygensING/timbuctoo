@@ -16,7 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-public class BdbDatabaseFactory implements Managed {
+public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
   private final String databaseLocation;
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
@@ -33,6 +33,7 @@ public class BdbDatabaseFactory implements Managed {
     configuration.setSharedCache(true);
   }
 
+  @Override
   public Tuple<Environment, Database> getDatabase(String userId, String dataSetId, String databaseName,
                                                   DatabaseConfig config)
     throws DataStoreCreationException {

@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbCollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
@@ -19,7 +19,7 @@ public class DataStoreDataFetcherFactory implements DataFetcherFactory {
   private final BdbTripleStore tripleStore;
   private final BdbCollectionIndex collectionIndex;
 
-  public DataStoreDataFetcherFactory(String userId, String dataSetId, DataProvider dataProvider, BdbDatabaseFactory dbFactory)
+  public DataStoreDataFetcherFactory(String userId, String dataSetId, DataProvider dataProvider, BdbDatabaseCreator dbFactory)
     throws DataStoreCreationException {
     this.tripleStore = new BdbTripleStore(dataProvider, dbFactory, userId, dataSetId);
     this.collectionIndex = new BdbCollectionIndex(dataProvider, dbFactory, userId, dataSetId);

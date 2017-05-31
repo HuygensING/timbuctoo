@@ -15,7 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RelationPredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ValuePredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.util.Iterator;
@@ -27,7 +27,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
 
-  public BdbTripleStore(DataProvider dataProvider, BdbDatabaseFactory dbFactory, String userId, String datasetId)
+  public BdbTripleStore(DataProvider dataProvider, BdbDatabaseCreator dbFactory, String userId, String datasetId)
     throws DataStoreCreationException {
     super(dbFactory, "rdfData", userId, datasetId);
     dataProvider.subscribeToRdf(this, null);
