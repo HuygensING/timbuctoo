@@ -99,7 +99,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
             dbFactory
           );
           result.typeNameStore = new HardCodedTypeNameStore(userId + "_" + dataSetId);
-          result.schemaStore = new JsonSchemaStore(metaDataLocation, dataSet);
+          result.schemaStore = new JsonSchemaStore(metaDataLocation, userId, dataSetId, dataSet);
           result.dataSet = dataSet;
           userDataSets.put(dataSetId, result);
           storedDataSets.updateData(dataSets -> {

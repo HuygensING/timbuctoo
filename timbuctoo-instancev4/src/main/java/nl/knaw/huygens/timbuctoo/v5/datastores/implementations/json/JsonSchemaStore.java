@@ -23,13 +23,13 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
 
 public class JsonSchemaStore implements SchemaStore {
-  private Map<String, Type> types = null;
   private static final Function<String, Type> TYPE_MAKER = Type::new;
   private final JsonFileBackedData<Map<String, Type>> schemaFile;
 
-  public JsonSchemaStore(File dataLocation, DataProvider dataProvider) throws IOException {
+  public JsonSchemaStore(File dataLocation, String userId, String dataSetId, DataProvider dataProvider)
+    throws IOException {
     schemaFile = JsonFileBackedData.getOrCreate(
-      new File(dataLocation, "schema.json"),
+      new File(dataLocation, userId + "-" + dataSetId + "_schema.json"),
       null,
       new TypeReference<Map<String, Type>>() {},
       types -> {
@@ -40,6 +40,8 @@ public class JsonSchemaStore implements SchemaStore {
       }
     );
     dataProvider.subscribeToEntities(new EntityProcessor() {
+      private Map<String, Type> types = new HashMap<>();
+
       @Override
       public void start() {
 
@@ -109,7 +111,7 @@ public class JsonSchemaStore implements SchemaStore {
       @Override
       public void finish() {
         try {
-          schemaFile.updateData(types -> types);
+          schemaFile.updateData(oldTypes -> types);
         } catch (IOException e) {
           e.printStackTrace();
         }
