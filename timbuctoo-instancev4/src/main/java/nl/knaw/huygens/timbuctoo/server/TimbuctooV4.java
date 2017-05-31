@@ -228,7 +228,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
 
-    // register REST endpoints
+    environment.lifecycle().manage(configuration.getDatabases());
+
     DataSetFactory dataSetFactory = configuration.getDataSet();
 
     register(environment, new RdfUpload(
