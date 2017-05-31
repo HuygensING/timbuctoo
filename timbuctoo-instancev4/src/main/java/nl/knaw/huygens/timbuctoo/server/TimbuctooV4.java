@@ -139,6 +139,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
   @Override
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
+    // environment.jersey().property(ServerProperties.TRACING, "ALL");
+    // // environment.jersey().property(ServerProperties.TRACING_THRESHOLD, "VERBOSE");
+
     //Make sure we know what version is running
     Properties properties = new Properties();
     InputStream gitproperties = getClass().getClassLoader().getResourceAsStream("git.properties");
