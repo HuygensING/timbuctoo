@@ -3,10 +3,12 @@ package nl.knaw.huygens.timbuctoo.v5.graphql;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLObjectType;
-import nl.knaw.huygens.timbuctoo.v5.datastores.CachedDataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexSchemaFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
@@ -24,14 +26,14 @@ import static graphql.schema.GraphQLSchema.newSchema;
 public class GraphQlService {
   private final Map<String, GraphQL> graphQls = new HashMap<>();
   private final CollectionIndexSchemaFactory schemaFactory;
-  private final CachedDataStoreFactory<SchemaStore> schemaStoreFactory;
-  private final CachedDataStoreFactory<TypeNameStore> typeNameStoreFactory;
-  private final CachedDataStoreFactory<? extends DataFetcherFactory> dataFetcherFactoryFactory;
+  private final SchemaStoreFactory schemaStoreFactory;
+  private final TypeNameStoreFactory typeNameStoreFactory;
+  private final DataFetcherFactoryFactory dataFetcherFactoryFactory;
   private final GraphQlTypeGenerator typeGenerator;
 
-  public GraphQlService(CachedDataStoreFactory<SchemaStore> schemaStoreFactory,
-                        CachedDataStoreFactory<TypeNameStore> typeNameStoreFactory,
-                        CachedDataStoreFactory<? extends DataFetcherFactory> dataFetcherFactoryFactory,
+  public GraphQlService(SchemaStoreFactory schemaStoreFactory,
+                        TypeNameStoreFactory typeNameStoreFactory,
+                        DataFetcherFactoryFactory dataFetcherFactoryFactory,
                         GraphQlTypeGenerator typeGenerator) {
     this.schemaStoreFactory = schemaStoreFactory;
     this.typeNameStoreFactory = typeNameStoreFactory;
@@ -43,10 +45,14 @@ public class GraphQlService {
   public GraphQL loadSchema(String userId, String dataSetName) throws GraphQlProcessingException {
     try {
       PaginationArgumentsHelper paginationArgumentsHelper = new PaginationArgumentsHelper();
+      TypeNameStore typeNameStore = typeNameStoreFactory.createTypeNameStore(userId, dataSetName);
+      DataFetcherFactory dataFetcherFactory = dataFetcherFactoryFactory.createDataFetcherFactory(userId, dataSetName);
+      SchemaStore schemaStore = schemaStoreFactory.createSchemaStore(userId, dataSetName);
+
       Map<String, GraphQLObjectType> graphQlTypes = typeGenerator.makeGraphQlTypes(
-        schemaStoreFactory.getOrCreate(userId, dataSetName).getTypes(),
-        typeNameStoreFactory.getOrCreate(userId, dataSetName),
-        dataFetcherFactoryFactory.getOrCreate(userId, dataSetName),
+        schemaStore.getTypes(),
+        typeNameStore,
+        dataFetcherFactory,
         paginationArgumentsHelper
       );
 
@@ -56,13 +62,13 @@ public class GraphQlService {
             .query(schemaFactory
               .createQuerySchema(
                 graphQlTypes,
-                dataFetcherFactoryFactory.getOrCreate(userId, dataSetName),
+                dataFetcherFactory,
                 paginationArgumentsHelper
               )
             )
             .build()
         )
-        .queryExecutionStrategy(new SerializerExecutionStrategy(typeNameStoreFactory.getOrCreate(userId, dataSetName)))
+        .queryExecutionStrategy(new SerializerExecutionStrategy(typeNameStore))
         .build();
     } catch (DataStoreCreationException e) {
       throw new GraphQlProcessingException(e);

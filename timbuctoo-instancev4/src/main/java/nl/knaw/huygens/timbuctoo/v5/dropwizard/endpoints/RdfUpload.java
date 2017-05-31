@@ -55,7 +55,7 @@ public class RdfUpload {
       return response;
     }
 
-    DataSet dataSet = dataSetManager.getOrCreate(userId, dataSetId);
+    DataSet dataSet = dataSetManager.createDataSet(userId, dataSetId);
 
     Future<?> promise = dataSet.addLog(
       uri,

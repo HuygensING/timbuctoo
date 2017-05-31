@@ -12,20 +12,13 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
-import nl.knaw.huygens.timbuctoo.v5.datastores.CachedDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.HardCodedTypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
@@ -205,7 +198,8 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
       return new DataSetFactory(
         dataSetExecutorService,
         getSecurityConfiguration().getVreAuthorizationCreator(),
-        dataSetConfiguration
+        dataSetConfiguration,
+        getDatabases()
       );
     } catch (IOException | AccessNotPossibleException e) {
       throw new DataStoreCreationException(e);
@@ -218,46 +212,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
 
   public void setDataSet(DataSetConfiguration dataSetFactory) {
     this.dataSetConfiguration = dataSetFactory;
-  }
-
-  public CachedDataStoreFactory<SchemaStore> getSchemaStoreFactory() {
-    return new CachedDataStoreFactory<SchemaStore>() {
-      @Override
-      protected SchemaStore create(String userId, String dataSetId) throws DataStoreCreationException {
-        try {
-          return new JsonSchemaStore(
-            new File(dataSetConfiguration.getDataSetMetadataLocation()),
-            getDataSet().getOrCreate(userId, dataSetId)
-          );
-        } catch (IOException e) {
-          throw new DataStoreCreationException(e);
-        }
-      }
-    };
-  }
-
-  public CachedDataStoreFactory<TypeNameStore> getTypeNameStoreFactory() {
-    return new CachedDataStoreFactory<TypeNameStore>() {
-      @Override
-      protected TypeNameStore create(String userId, String dataSetId) throws DataStoreCreationException {
-        return new HardCodedTypeNameStore(userId + "_" + dataSetId);
-      }
-    };
-  }
-
-  public CachedDataStoreFactory<DataStoreDataFetcherFactory> getDataFetcherFactoryFactory() {
-    return new CachedDataStoreFactory<DataStoreDataFetcherFactory>() {
-
-      @Override
-      protected DataStoreDataFetcherFactory create(String userId, String dataSetId) throws DataStoreCreationException {
-        return new DataStoreDataFetcherFactory(
-          userId,
-          dataSetId,
-          getDataSet().getOrCreate(userId, dataSetId),
-          getDatabases()
-        );
-      }
-    };
   }
 
 }

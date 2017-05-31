@@ -4,6 +4,7 @@ import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import org.junit.After;
@@ -36,7 +37,8 @@ public class DataSetFactoryTest {
         .dataSetMetadataLocation(tempFile.getAbsolutePath())
         .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
         .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
-        .build()
+        .build(),
+      new NonPersistentBdbDatabaseCreator()
     );
   }
 
@@ -47,24 +49,24 @@ public class DataSetFactoryTest {
 
   @Test
   public void getOrCreateReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
-    DataSet dataSet1 = dataSetFactory.getOrCreate("user", "dataset");
-    DataSet dataSet2 = dataSetFactory.getOrCreate("user", "dataset");
+    DataSet dataSet1 = dataSetFactory.createDataSet("user", "dataset");
+    DataSet dataSet2 = dataSetFactory.createDataSet("user", "dataset");
 
     assertThat(dataSet1, is(sameInstance(dataSet2)));
   }
 
   @Test
   public void getOrCreateReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
-    DataSet dataSet1 = dataSetFactory.getOrCreate("user", "dataset");
-    DataSet dataSet2 = dataSetFactory.getOrCreate("user", "other");
+    DataSet dataSet1 = dataSetFactory.createDataSet("user", "dataset");
+    DataSet dataSet2 = dataSetFactory.createDataSet("user", "other");
 
     assertThat(dataSet1, is(not(sameInstance(dataSet2))));
   }
 
   @Test
   public void getOrCreateReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
-    DataSet dataSet1 = dataSetFactory.getOrCreate("user", "dataset");
-    DataSet dataSet2 = dataSetFactory.getOrCreate("other", "dataset");
+    DataSet dataSet1 = dataSetFactory.createDataSet("user", "dataset");
+    DataSet dataSet2 = dataSetFactory.createDataSet("other", "dataset");
 
     assertThat(dataSet1, is(not(sameInstance(dataSet2))));
   }

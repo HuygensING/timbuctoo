@@ -240,9 +240,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment,
       new GraphQl(
         new GraphQlService(
-          configuration.getSchemaStoreFactory(),
-          configuration.getTypeNameStoreFactory(),
-          configuration.getDataFetcherFactoryFactory(),
+          dataSetFactory,
+          dataSetFactory,
+          dataSetFactory,
           new GraphQlTypeGenerator()
         )
       )
