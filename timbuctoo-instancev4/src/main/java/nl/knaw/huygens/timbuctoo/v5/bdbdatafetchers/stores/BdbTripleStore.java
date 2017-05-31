@@ -7,7 +7,7 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateData;
@@ -27,10 +27,10 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
 
-  public BdbTripleStore(DataSet dataSet, BdbDatabaseFactory dbFactory, String userId, String datasetId)
+  public BdbTripleStore(DataProvider dataProvider, BdbDatabaseFactory dbFactory, String userId, String datasetId)
     throws DataStoreCreationException {
     super(dbFactory, "rdfData", userId, datasetId);
-    dataSet.subscribeToRdf(this, null);
+    dataProvider.subscribeToRdf(this, null);
   }
 
   protected DatabaseConfig getDatabaseConfig() {

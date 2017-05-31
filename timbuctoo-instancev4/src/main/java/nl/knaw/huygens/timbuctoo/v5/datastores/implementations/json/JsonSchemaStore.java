@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.ListMultimap;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateHandler;
@@ -27,7 +27,7 @@ public class JsonSchemaStore implements SchemaStore {
   private static final Function<String, Type> TYPE_MAKER = Type::new;
   private final JsonFileBackedData<Map<String, Type>> schemaFile;
 
-  public JsonSchemaStore(File dataLocation, DataSet dataSet) throws IOException {
+  public JsonSchemaStore(File dataLocation, DataProvider dataProvider) throws IOException {
     schemaFile = JsonFileBackedData.getOrCreate(
       new File(dataLocation, "schema.json"),
       null,
@@ -39,7 +39,7 @@ public class JsonSchemaStore implements SchemaStore {
         return types;
       }
     );
-    dataSet.subscribeToEntities(new EntityProcessor() {
+    dataProvider.subscribeToEntities(new EntityProcessor() {
       @Override
       public void start() {
 

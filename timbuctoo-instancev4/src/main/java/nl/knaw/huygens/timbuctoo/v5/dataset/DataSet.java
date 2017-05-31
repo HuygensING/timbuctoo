@@ -38,7 +38,7 @@ import static org.slf4j.LoggerFactory.getLogger;
  * - provides methods for adding data (files and rdf). Will persist that data
  * - makes sure that the derived stores are kept in sync
  */
-public class DataSet {
+public class DataSet implements DataProvider {
   private final FileStorage fileStorage;
   private final FileStorage imageStorage;
   private final LogStorage logStorage;
@@ -200,6 +200,7 @@ public class DataSet {
     }
   }
 
+  @Override
   public void subscribeToRdf(RdfProcessor processor, String cursor) {
     subscribedProcessors.add(Tuple.tuple(cursor, processor));
     if (processor instanceof EntityProvider) {
@@ -207,6 +208,7 @@ public class DataSet {
     }
   }
 
+  @Override
   public void subscribeToEntities(EntityProcessor processor, String cursor) {
     subscribedEntityProcessors.add(Tuple.tuple(cursor, processor));
   }

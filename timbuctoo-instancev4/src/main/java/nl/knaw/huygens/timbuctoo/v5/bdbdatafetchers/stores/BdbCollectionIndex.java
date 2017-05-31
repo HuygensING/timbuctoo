@@ -5,7 +5,7 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorSubject;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -16,10 +16,10 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, AutoCloseable {
-  public BdbCollectionIndex(DataSet dataSet, BdbDatabaseFactory factory, String userId, String dataSetId)
+  public BdbCollectionIndex(DataProvider dataProvider, BdbDatabaseFactory factory, String userId, String dataSetId)
     throws DataStoreCreationException {
     super(factory, "collectionIndex", userId, dataSetId);
-    dataSet.subscribeToRdf(this, null);
+    dataProvider.subscribeToRdf(this, null);
   }
 
   @Override

@@ -24,7 +24,7 @@ public class DataSetFactory {
   private final ExecutorService executorService;
   private final VreAuthorizationCrud vreAuthorizationCrud;
   private final DataSetConfiguration configuration;
-  private final Map<String, Map<String, DataSet>> dataSetMap;
+  private final Map<String, Map<String, DataProvider>> dataSetMap;
   private final JsonFileBackedData<Map<String, List<String>>> storedDataSets;
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
@@ -44,7 +44,7 @@ public class DataSetFactory {
   public DataSet getOrCreate(String userId, String dataSetId) throws DataStoreCreationException {
     String authorizationKey = userId + "_" + dataSetId;
     synchronized (dataSetMap) {
-      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
+      Map<String, DataProvider> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
       if (!userDataSets.containsKey(dataSetId)) {
         try {
           vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
