@@ -1,9 +1,15 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
+import com.google.common.base.Charsets;
 import org.immutables.value.Value;
+
+import java.util.Base64;
 
 @Value.Immutable
 public interface PaginationArguments {
+
+  Base64.Decoder DECODER = Base64.getDecoder();
+
   /**
    * Cursor is either
    *  - the empty string which indicates pagination from the first item forwards
@@ -20,30 +26,21 @@ public interface PaginationArguments {
   int getCount();
 
   static PaginationArguments create() {
-    return ImmutablePaginationArguments.builder()
-      .count(-1)
-      .cursor("")
-      .build();
+    return create(-1, "");
   }
 
   static PaginationArguments create(int count) {
-    return ImmutablePaginationArguments.builder()
-      .count(count)
-      .cursor("")
-      .build();
+    return create(count, "");
   }
 
   static PaginationArguments create(String cursor) {
-    return ImmutablePaginationArguments.builder()
-      .count(-1)
-      .cursor(cursor)
-      .build();
+    return create(-1, cursor);
   }
 
   static PaginationArguments create(int count, String cursor) {
     return ImmutablePaginationArguments.builder()
       .count(count)
-      .cursor(cursor)
+      .cursor(new String(DECODER.decode(cursor), Charsets.UTF_8))
       .build();
   }
 }

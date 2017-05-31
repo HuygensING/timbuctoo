@@ -19,7 +19,8 @@ public class DataStoreDataFetcherFactory implements DataFetcherFactory {
   private final BdbTripleStore tripleStore;
   private final BdbCollectionIndex collectionIndex;
 
-  public DataStoreDataFetcherFactory(String userId, String dataSetId, DataProvider dataProvider, BdbDatabaseCreator dbFactory)
+  public DataStoreDataFetcherFactory(String userId, String dataSetId, DataProvider dataProvider,
+                                     BdbDatabaseCreator dbFactory)
     throws DataStoreCreationException {
     this.tripleStore = new BdbTripleStore(dataProvider, dbFactory, userId, dataSetId);
     this.collectionIndex = new BdbCollectionIndex(dataProvider, dbFactory, userId, dataSetId);

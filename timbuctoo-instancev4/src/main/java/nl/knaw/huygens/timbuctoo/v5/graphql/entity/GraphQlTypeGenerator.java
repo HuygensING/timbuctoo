@@ -16,6 +16,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherWrapper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import org.slf4j.Logger;
@@ -30,7 +32,6 @@ import java.util.UUID;
 import static com.google.common.collect.Lists.newArrayList;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLInterfaceType.newInterface;
-import static graphql.schema.GraphQLList.list;
 import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLUnionType.newUnionType;
@@ -40,7 +41,8 @@ public class GraphQlTypeGenerator {
   private static final Logger LOG = getLogger(GraphQlTypeGenerator.class);
 
   public Map<String, GraphQLObjectType> makeGraphQlTypes(Map<String, Type> types, TypeNameStore typeNameStore,
-                                                         DataFetcherFactory dataFetcherFactory) {
+                                                         DataFetcherFactory dataFetcherFactory,
+                                                         PaginationArgumentsHelper paginationArgumentsHelper) {
     Map<String, String> typeMappings = new HashMap<>();
     Map<String, GraphQLObjectType> typesMap = new HashMap<>();
     Map<String, GraphQLObjectType> wrappedValueTypes = new HashMap<>();
@@ -79,7 +81,7 @@ public class GraphQlTypeGenerator {
       .name("Value")
       .field(newFieldDefinition()
         .name("type")
-        .type(Scalars.GraphQLString)
+        .type(nonNull(Scalars.GraphQLString))
       )
       .typeResolver(valueTypeResolver)
       .build();
@@ -92,7 +94,7 @@ public class GraphQlTypeGenerator {
         valueTypeResolver, typeMappings,
         wrappedValueTypes,
         objectResolver,
-        entityInterface, typeNameStore, dataFetcherFactory, valueInterface
+        entityInterface, typeNameStore, dataFetcherFactory, valueInterface, paginationArgumentsHelper
       );
       typesMap.put(typeUri, objectType);
     }
@@ -106,7 +108,8 @@ public class GraphQlTypeGenerator {
                                                   GraphQLInterfaceType entityInterface,
                                                   TypeNameStore typeNameStore,
                                                   DataFetcherFactory dataFetcherFactory,
-                                                  GraphQLInterfaceType valueInterface) {
+                                                  GraphQLInterfaceType valueInterface,
+                                                  PaginationArgumentsHelper argumentsHelper) {
     GraphQLObjectType.Builder graphqlType = newObject()
       .name(typeNameStore.makeGraphQlname(type.getName()))
       .withInterface(entityInterface)
@@ -117,7 +120,9 @@ public class GraphQlTypeGenerator {
       );
     for (Predicate predicate : type.getPredicates().values()) {
       GraphQLFieldDefinition fieldDefinition = makeField(predicate, typeMappings, wrappedValueTypes,
-        typeResolver, valueTypeResolver, typeNameStore, dataFetcherFactory, valueInterface
+        typeResolver, valueTypeResolver, typeNameStore, dataFetcherFactory, valueInterface,
+        argumentsHelper
+
       );
       if (fieldDefinition != null) {
         graphqlType.field(fieldDefinition);
@@ -130,7 +135,8 @@ public class GraphQlTypeGenerator {
                                                   Map<String, GraphQLObjectType> wrappedValueTypes,
                                                   TypeResolver objectResolver, TypeResolver valueTypeResolver,
                                                   TypeNameStore typeNameStore, DataFetcherFactory dataFetcherFactory,
-                                                  GraphQLInterfaceType valueInterface) {
+                                                  GraphQLInterfaceType valueInterface,
+                                                  PaginationArgumentsHelper argumentsHelper) {
     String fieldName = typeNameStore.makeGraphQlname(pred.getName());
     GraphQLFieldDefinition.Builder result = newFieldDefinition()
       .name(fieldName);
@@ -146,7 +152,7 @@ public class GraphQlTypeGenerator {
           wrappedValueTypes,
           dataFetcherFactory,
           typeNameStore,
-          valueInterface
+          valueInterface, argumentsHelper
         );
       } else {
         List<GraphQLObjectType> types = new ArrayList<>();
@@ -154,11 +160,13 @@ public class GraphQlTypeGenerator {
           types.add(valueType(valueType, wrappedValueTypes, typeMappings, typeNameStore, valueInterface));
         }
         ArrayList<GraphQLTypeReference> refs = newArrayList();
-        return unionField(result, pred, valueTypeResolver, dataFetcherFactory, refs, types);
+        return unionField(result, pred, valueTypeResolver, dataFetcherFactory, refs, types,
+          argumentsHelper
+        );
       }
     } else {
       if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
-        return objectField(result, pred, typeNameStore, dataFetcherFactory);
+        return objectField(result, pred, typeNameStore, dataFetcherFactory, argumentsHelper);
       } else {
         List<GraphQLTypeReference> refs = new ArrayList<>();
         List<GraphQLObjectType> values = new ArrayList<>();
@@ -169,26 +177,48 @@ public class GraphQlTypeGenerator {
           values.add(valueType(valueType, wrappedValueTypes, typeMappings, typeNameStore, valueInterface));
         }
 
-        return unionField(result, pred, objectResolver, dataFetcherFactory, refs, values);
+        return unionField(result, pred, objectResolver, dataFetcherFactory, refs, values,
+          argumentsHelper
+        );
       }
     }
   }
 
   private static GraphQLFieldDefinition objectField(GraphQLFieldDefinition.Builder result, Predicate pred,
                                                     TypeNameStore typeNameStore,
-                                                    DataFetcherFactory dataFetcherFactory) {
-    return result
-      .dataFetcher(new DataFetcherWrapper(pred.isList(), dataFetcherFactory.relationFetcher(pred.getName())))
-      .type(wrap(new GraphQLTypeReference(typeNameStore.makeGraphQlname(
-        pred.getReferenceTypes().iterator().next()
-      )), pred.isOptional(), pred.isList()))
-      .build();
+                                                    DataFetcherFactory dataFetcherFactory,
+                                                    PaginationArgumentsHelper argumentsHelper) {
+    GraphQLTypeReference type = new GraphQLTypeReference(typeNameStore.makeGraphQlname(
+      pred.getReferenceTypes().iterator().next()
+    ));
+    RelatedDataFetcher dataFetcher = dataFetcherFactory.relationFetcher(pred.getName());
+    return finishField(result, pred, argumentsHelper, type, dataFetcher);
   }
 
+  private static GraphQLFieldDefinition finishField(GraphQLFieldDefinition.Builder result, Predicate pred,
+                                                    PaginationArgumentsHelper argumentsHelper,
+                                                    GraphQLOutputType type, RelatedDataFetcher dataFetcher) {
+    result
+      .dataFetcher(new DataFetcherWrapper(pred.isList(), dataFetcher));
+
+    if (pred.isList()) {
+      argumentsHelper.makePaginatedList(result, type);
+    } else if (!pred.isOptional()) {
+      result.type(nonNull(type));
+    } else {
+      result.type(type);
+    }
+
+    return result.build();
+  }
+
+
+
   private static GraphQLFieldDefinition unionField(GraphQLFieldDefinition.Builder result, Predicate pred,
-                                            TypeResolver valueTypeResolver,
-                                            DataFetcherFactory dataFetcherFactory,
-                                            List<GraphQLTypeReference> refs, List<GraphQLObjectType> types) {
+                                                   TypeResolver valueTypeResolver,
+                                                   DataFetcherFactory dataFetcherFactory,
+                                                   List<GraphQLTypeReference> refs, List<GraphQLObjectType> types,
+                                                   PaginationArgumentsHelper argumentsHelper) {
     GraphQLUnionType.Builder unionType = newUnionType()
       .name("Union_" + UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", ""))
       .typeResolver(valueTypeResolver);
@@ -202,42 +232,26 @@ public class GraphQlTypeGenerator {
     for (GraphQLTypeReference type : refs) {
       unionType.possibleType(type);
     }
-    return result
-      .dataFetcher(new DataFetcherWrapper(pred.isList(), dataFetcherFactory.unionFetcher(pred.getName())))
-      .type(wrap(unionType.build(), pred.isOptional(), pred.isList()))
-      .build();
+    RelatedDataFetcher dataFetcher = dataFetcherFactory.unionFetcher(pred.getName());
+    GraphQLUnionType type = unionType.build();
+    return finishField(result, pred, argumentsHelper, type, dataFetcher);
   }
 
-  private static GraphQLFieldDefinition valueField(GraphQLFieldDefinition.Builder fieldDefinition,
+  private static GraphQLFieldDefinition valueField(GraphQLFieldDefinition.Builder result,
                                                    Predicate pred, Map<String, String> typeMappings,
                                                    Map<String, GraphQLObjectType> wrappedValueTypes,
                                                    DataFetcherFactory dataFetcherFactory,
-                                                   TypeNameStore typeNameStore, GraphQLInterfaceType valueInterface) {
-    return fieldDefinition
-      .dataFetcher(new DataFetcherWrapper(pred.isList(), dataFetcherFactory.typedLiteralFetcher(pred.getName())))
-      .type(wrap(
-        valueType(
-          pred.getValueTypes().iterator().next(),
-          wrappedValueTypes,
-          typeMappings,
-          typeNameStore,
-          valueInterface
-        ),
-        pred.isOptional(),
-        pred.isList()
-        )
-      )
-      .build();
-  }
-
-  private static GraphQLOutputType wrap(GraphQLOutputType outputType, boolean isOptional, boolean isList) {
-    if (isList) {
-      return list(outputType);
-    } else if (!isOptional) {
-      return nonNull(outputType);
-    } else {
-      return outputType;
-    }
+                                                   TypeNameStore typeNameStore, GraphQLInterfaceType valueInterface,
+                                                   PaginationArgumentsHelper argumentsHelper) {
+    GraphQLObjectType type = valueType(
+      pred.getValueTypes().iterator().next(),
+      wrappedValueTypes,
+      typeMappings,
+      typeNameStore,
+      valueInterface
+    );
+    RelatedDataFetcher dataFetcher = dataFetcherFactory.typedLiteralFetcher(pred.getName());
+    return finishField(result, pred, argumentsHelper, type, dataFetcher);
   }
 
   private static GraphQLObjectType valueType(String typeUri, Map<String, GraphQLObjectType> wrappedValueTypes,

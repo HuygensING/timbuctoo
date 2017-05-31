@@ -2,7 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
+
+import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper.getPaginationArguments;
 
 public class CollectionFetcherWrapper implements DataFetcher {
   private final CollectionFetcher fetcher;
@@ -14,10 +15,6 @@ public class CollectionFetcherWrapper implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment environment) {
     return fetcher.getList(getPaginationArguments(environment));
-  }
-
-  private PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
-    return null;
   }
 
 }

@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexSchemaFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
@@ -41,17 +42,23 @@ public class GraphQlService {
 
   public GraphQL loadSchema(String userId, String dataSetName) throws GraphQlProcessingException {
     try {
+      PaginationArgumentsHelper paginationArgumentsHelper = new PaginationArgumentsHelper();
       Map<String, GraphQLObjectType> graphQlTypes = typeGenerator.makeGraphQlTypes(
         schemaStoreFactory.getOrCreate(userId, dataSetName).getTypes(),
         typeNameStoreFactory.getOrCreate(userId, dataSetName),
-        dataFetcherFactoryFactory.getOrCreate(userId, dataSetName)
+        dataFetcherFactoryFactory.getOrCreate(userId, dataSetName),
+        paginationArgumentsHelper
       );
 
       return GraphQL
         .newGraphQL(
           newSchema()
             .query(schemaFactory
-              .createQuerySchema(graphQlTypes, dataFetcherFactoryFactory.getOrCreate(userId, dataSetName))
+              .createQuerySchema(
+                graphQlTypes,
+                dataFetcherFactoryFactory.getOrCreate(userId, dataSetName),
+                paginationArgumentsHelper
+              )
             )
             .build()
         )

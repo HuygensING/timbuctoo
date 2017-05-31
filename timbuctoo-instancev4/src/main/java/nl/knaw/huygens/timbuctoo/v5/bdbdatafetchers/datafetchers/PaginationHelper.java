@@ -11,11 +11,11 @@ import java.util.stream.Stream;
 
 public class PaginationHelper {
   static <T extends CursorContainer> PaginatedList getPaginatedList(Stream<T> subjectStream,
-                                                                    Function<T, TypedValue> makeItem) {
+                                                                    Function<T, TypedValue> makeItem, int count) {
     String[] cursors = new String[2];
 
     List<TypedValue> subjects = subjectStream
-      .limit(20)
+      .limit(count)
       .peek(cs -> {
         if (cursors[0] == null) {
           cursors[0] = "D\n" + cs.getCursor();
@@ -24,11 +24,20 @@ public class PaginationHelper {
       })
       .map(makeItem)
       .collect(Collectors.toList());
-    return PaginatedList.create(
-      cursors[0],
-      cursors[1],
-      subjects
-    );
+
+    if (subjects.isEmpty()) {
+      return PaginatedList.create(
+        "NONE",
+        "",
+        subjects
+      );
+    } else {
+      return PaginatedList.create(
+        cursors[0],
+        cursors[1],
+        subjects
+      );
+    }
   }
 
 }

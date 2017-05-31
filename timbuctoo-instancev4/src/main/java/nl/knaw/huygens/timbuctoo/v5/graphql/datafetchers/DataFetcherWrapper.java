@@ -3,7 +3,8 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
+
+import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper.getPaginationArguments;
 
 public class DataFetcherWrapper implements DataFetcher {
   private final boolean isList;
@@ -29,7 +30,4 @@ public class DataFetcherWrapper implements DataFetcher {
     }
   }
 
-  private PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
-    return null;
-  }
 }

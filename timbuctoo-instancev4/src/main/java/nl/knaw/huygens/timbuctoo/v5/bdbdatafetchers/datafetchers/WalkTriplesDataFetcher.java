@@ -24,7 +24,7 @@ public abstract class WalkTriplesDataFetcher implements RelatedDataFetcher {
 
   public PaginatedList getList(TypedValue source, PaginationArguments arguments) {
     try (Stream<CursorQuad> quads = tripleStore.getQuads(source.getValue(), predicate, arguments.getCursor())) {
-      return getPaginatedList(quads, this::makeItem);
+      return getPaginatedList(quads, this::makeItem, arguments.getCount());
     }
   }
 

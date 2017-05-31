@@ -1,19 +1,21 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex;
 
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 
 import java.util.Map;
 
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLList.list;
 import static graphql.schema.GraphQLObjectType.newObject;
 
 public class CollectionIndexSchemaFactory {
 
   public GraphQLObjectType createQuerySchema(Map<String, GraphQLObjectType> typesMap,
-                                             DataFetcherFactory fetcherFactory) {
+                                             DataFetcherFactory fetcherFactory,
+                                             PaginationArgumentsHelper paginationArgumentsHelper) {
 
     GraphQLObjectType.Builder result = newObject()
       .name("Query");
@@ -22,11 +24,11 @@ public class CollectionIndexSchemaFactory {
       String typeUri = typeMapping.getKey();
       GraphQLObjectType objectType = typeMapping.getValue();
       String typeName = objectType.getName();
-      result.field(newFieldDefinition()
+      GraphQLFieldDefinition.Builder field = newFieldDefinition()
         .name(typeName)
-        .type(list(objectType))
-        .dataFetcher(new CollectionFetcherWrapper(fetcherFactory.collectionFetcher(typeUri)))
-      );
+        .dataFetcher(new CollectionFetcherWrapper(fetcherFactory.collectionFetcher(typeUri)));
+      paginationArgumentsHelper.makePaginatedList(field, objectType);
+      result.field(field);
     }
 
     return result.build();
