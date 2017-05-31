@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
-import com.google.common.base.Charsets;
+import com.sleepycat.bind.EntryBinding;
+import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.Cursor;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
@@ -35,6 +36,7 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   private final DatabaseEntry keyEntry = new DatabaseEntry();
   private final DatabaseEntry valueEntry = new DatabaseEntry();
   private static final Logger LOG = getLogger(BerkeleyStore.class);
+  protected final EntryBinding<String> binder = TupleBinding.getPrimitiveBinding(String.class);
 
 
   protected BerkeleyStore(BdbDatabaseFactory dbEnvironment, String databaseName, String userId, String datasetId)
@@ -84,9 +86,11 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   }
 
   protected void put(String key, String value) throws DatabaseException {
-    keyEntry.setData(key.getBytes(Charsets.UTF_8));
-    valueEntry.setData(value.getBytes(Charsets.UTF_8));
-    database.put(transaction, keyEntry, valueEntry);
+    synchronized (keyEntry) {
+      binder.objectToEntry(key, keyEntry);
+      binder.objectToEntry(value, valueEntry);
+      database.put(transaction, keyEntry, valueEntry);
+    }
   }
 
   public interface DatabaseFunction {

@@ -1,14 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
-import com.sleepycat.je.Cursor;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
-import com.sleepycat.je.OperationStatus;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
@@ -29,10 +26,6 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
-
-  protected DatabaseEntry key;
-  protected DatabaseEntry value;
-  private String prefix;
 
   public BdbTripleStore(DataSet dataSet, BdbDatabaseFactory dbFactory, String userId, String datasetId)
     throws DataStoreCreationException {
@@ -59,27 +52,20 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     if (predicate.equals(RDF_TYPE)) {
       predicate = "";
     }
-    key = new DatabaseEntry((subject + "\n" + predicate).getBytes(Charsets.UTF_8));
-    value = new DatabaseEntry();
+    DatabaseEntry key = new DatabaseEntry();
+    binder.objectToEntry((subject + "\n" + predicate), key);
+    DatabaseEntry value = new DatabaseEntry();
 
     return getItems(
-      this::initializer,
-      this::iterator,
+      cursor -> cursor.getSearchKey(key, value, LockMode.DEFAULT),
+      cursor -> cursor.getNextDup(key, value, LockMode.DEFAULT),
       () -> formatResult(key, value)
     );
   }
 
-  private OperationStatus iterator(Cursor cursor) throws DatabaseException {
-    return cursor.getNextDup(key, value, LockMode.DEFAULT);
-  }
-
-  private OperationStatus initializer(Cursor cursor) throws DatabaseException {
-    return cursor.getSearchKey(key, value, LockMode.DEFAULT);
-  }
-
   private CursorQuad formatResult(DatabaseEntry key, DatabaseEntry value) {
-    String[] keyFields = new String(key.getData(), Charsets.UTF_8).split("\n");
-    String[] valueFields = new String(value.getData(), Charsets.UTF_8).split("\n", 2);
+    String[] keyFields = binder.entryToObject(key).split("\n");
+    String[] valueFields = binder.entryToObject(value).split("\n", 2);
     return CursorQuad.create(
       keyFields[0],
       keyFields.length == 1 ? RDF_TYPE : keyFields[1],

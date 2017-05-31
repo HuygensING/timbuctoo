@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
-import com.google.common.base.Charsets;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
@@ -71,13 +70,14 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
                                       String graph) throws RdfProcessingFailedException {}
 
   public Stream<CursorSubject> getSubjects(String collectionName) {
-    DatabaseEntry key = new DatabaseEntry(collectionName.getBytes(Charsets.UTF_8));
+    DatabaseEntry key = new DatabaseEntry();
+    binder.objectToEntry(collectionName, key);
     DatabaseEntry value = new DatabaseEntry();
 
     return getItems(
       cursor -> cursor.getSearchKey(key, value, LockMode.DEFAULT),
       cursor -> cursor.getNextDup(key, value, LockMode.DEFAULT),
-      () -> CursorSubject.create("", new String(value.getData(), Charsets.UTF_8))
+      () -> CursorSubject.create("", binder.entryToObject(value))
     );
   }
 }
