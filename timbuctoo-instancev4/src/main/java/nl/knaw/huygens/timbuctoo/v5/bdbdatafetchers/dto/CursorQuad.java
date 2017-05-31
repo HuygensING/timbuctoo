@@ -16,6 +16,7 @@ public interface CursorQuad extends CursorContainer {
 
   Optional<String> getLanguage();
 
+  @Value.Auxiliary
   String getCursor();
 
   static CursorQuad create(String subject, String predicate, String object, String valueType, String language,
