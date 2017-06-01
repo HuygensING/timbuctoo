@@ -27,12 +27,17 @@ public class FileSystemCachedFile implements CachedFile {
   }
 
   @Override
-  public InputStream getStream() throws IOException {
-    return new FileInputStream(file);
+  public File getFile() {
+    return this.file;
   }
 
   @Override
   public Optional<MediaType> getMimeType() {
     return mimeType;
+  }
+
+  @Override
+  public void close() throws Exception {
+
   }
 }

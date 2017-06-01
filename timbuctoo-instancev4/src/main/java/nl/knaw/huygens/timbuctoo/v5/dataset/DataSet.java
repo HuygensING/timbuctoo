@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationExcep
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -95,6 +96,10 @@ public class DataSet implements DataProvider {
     } catch (IOException e) {
       throw new FileStorageFailedException(e);
     }
+  }
+
+  public CachedFile getFile(String fileToken) throws IOException {
+    return fileStorage.getFile(fileToken);
   }
 
   public String addImage(InputStream imageStream, String imageName, Optional<MediaType> mediaType)

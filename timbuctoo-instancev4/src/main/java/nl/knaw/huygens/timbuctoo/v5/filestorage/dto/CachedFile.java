@@ -1,14 +1,13 @@
 package nl.knaw.huygens.timbuctoo.v5.filestorage.dto;
 
 import javax.ws.rs.core.MediaType;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.File;
 import java.util.Optional;
 
-public interface CachedFile {
+public interface CachedFile extends AutoCloseable {
   String getName();
 
-  InputStream getStream() throws IOException;
+  File getFile();
 
   Optional<MediaType> getMimeType();
 }
