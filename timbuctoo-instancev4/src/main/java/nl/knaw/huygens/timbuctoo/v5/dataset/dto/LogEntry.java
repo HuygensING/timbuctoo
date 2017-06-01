@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import org.immutables.value.Value;
 
@@ -7,6 +9,8 @@ import java.net.URI;
 import java.util.Optional;
 
 @Value.Immutable
+@JsonSerialize(as = ImmutableLogEntry.class)
+@JsonDeserialize(as = ImmutableLogEntry.class)
 public interface LogEntry {
   URI getName();
 

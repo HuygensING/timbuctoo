@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import nl.knaw.huygens.timbuctoo.v5.util.jacksonserializers.TimbuctooCustomSerializers;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class JsonFileBackedData<T> {
   private static ObjectMapper objectMapper = new ObjectMapper()
     .registerModule(new Jdk8Module())
     .registerModule(new GuavaModule())
+    .registerModule(new TimbuctooCustomSerializers())
     .enable(SerializationFeature.INDENT_OUTPUT);
 
   private static final Map<String, JsonFileBackedData> existing = new HashMap<>();
