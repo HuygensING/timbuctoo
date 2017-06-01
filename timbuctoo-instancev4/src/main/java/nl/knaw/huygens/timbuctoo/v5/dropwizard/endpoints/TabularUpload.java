@@ -60,7 +60,7 @@ public class TabularUpload {
   @POST
   public Response upload(@FormDataParam("file") final InputStream rdfInputStream,
                          @FormDataParam("file") final FormDataBodyPart body,
-                         @FormDataParam("fileUpload") final FormDataContentDisposition fileInfo,
+                         @FormDataParam("file") final FormDataContentDisposition fileInfo,
                          @FormDataParam("type") final String fileType,
                          FormDataMultiPart formData,
                          @HeaderParam("authorization") final String authHeader,
@@ -80,7 +80,7 @@ public class TabularUpload {
     String fileToken = dataSet.addFile(
       rdfInputStream,
       fileInfo.getName(),
-      Optional.ofNullable(body.getMediaType())
+      Optional.of(body.getMediaType())
     );
 
     Loader loader = LoaderFactory.createFor(configFromFormData(formData));
