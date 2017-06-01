@@ -29,6 +29,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,7 +39,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.UriBuilder.fromResource;
-import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
 
 @Path("/v5/{userId}/{dataSetId}/upload/table")
 public class TabularUpload {
@@ -60,24 +61,26 @@ public class TabularUpload {
   public Response upload(@FormDataParam("file") final InputStream rdfInputStream,
                          @FormDataParam("file") final FormDataBodyPart body,
                          @FormDataParam("fileUpload") final FormDataContentDisposition fileInfo,
-                         @FormDataParam("type") final String filetype,
+                         @FormDataParam("type") final String fileType,
                          FormDataMultiPart formData,
                          @HeaderParam("authorization") final String authHeader,
                          @PathParam("userId") final String userId,
                          @PathParam("dataSetId") final String dataSetId)
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
-    final Response response = checkWriteAccess(authorizer, loggedInUsers, authHeader, userId, dataSetId);
-    if (response != null) {
-      return response;
     }
+
+    // final Response response = checkWriteAccess(authorizer, loggedInUsers, authHeader, userId, dataSetId);
+    // if (response != null) {
+    //   return response;
+    // }
 
     DataSet dataSet = dataSetFactory.createDataSet(userId, dataSetId);
 
     String fileToken = dataSet.addFile(
       rdfInputStream,
       fileInfo.getName(),
-      Optional.of(MediaType.valueOf(filetype))
+      Optional.ofNullable(body.getMediaType())
     );
 
     Loader loader = LoaderFactory.createFor(configFromFormData(formData));
