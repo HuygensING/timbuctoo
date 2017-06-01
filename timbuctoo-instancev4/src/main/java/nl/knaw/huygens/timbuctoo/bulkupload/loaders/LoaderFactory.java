@@ -5,7 +5,9 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv.CsvLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 
+import java.util.Arrays;
 import java.util.Map;
+import java.util.Optional;
 
 public class LoaderFactory {
   public static Loader createFor(LoaderConfig loaderConfig) {
@@ -20,6 +22,30 @@ public class LoaderFactory {
         return new MdbLoader();
       default:
         throw new IllegalStateException("Loader unknown for type: " + loaderConfig.type);
+    }
+  }
+
+  public enum LoaderConfigType {
+    CSV("csv"),
+    XLSX("xlsx"),
+    DATAPERFECT("dataperfect"),
+    MDB("mdb");
+
+    private final String typeName;
+
+    LoaderConfigType(String typeName) {
+
+      this.typeName = typeName;
+    }
+
+    public static Optional<LoaderConfigType> fromString(String typeName) {
+      return Arrays.stream(LoaderConfigType.values())
+                   .filter(type -> type.typeName.equals(typeName))
+                   .findFirst();
+    }
+
+    public String getTypeString() {
+      return this.typeName;
     }
   }
 

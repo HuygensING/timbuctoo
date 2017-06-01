@@ -68,6 +68,14 @@ public class TabularUpload {
                          @PathParam("dataSetId") final String dataSetId)
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
+
+    if (fileType == null || !LoaderFactory.LoaderConfigType.fromString(fileType).isPresent()) {
+      List<String> typeNames = Arrays.stream(LoaderFactory.LoaderConfigType.values())
+                                   .map(type -> type.getTypeString())
+                                   .collect(Collectors.toList());
+      return Response.status(Response.Status.BAD_REQUEST)
+                     .entity("type should have one of the following values: " + typeNames)
+                     .build();
     }
 
     // final Response response = checkWriteAccess(authorizer, loggedInUsers, authHeader, userId, dataSetId);
