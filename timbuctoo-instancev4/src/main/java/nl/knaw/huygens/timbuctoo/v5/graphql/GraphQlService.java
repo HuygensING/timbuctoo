@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql;
 
+import com.google.common.collect.Sets;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLObjectType;
@@ -66,7 +67,7 @@ public class GraphQlService {
                 paginationArgumentsHelper
               )
             )
-            .build()
+            .build(Sets.newHashSet(graphQlTypes.values()))
         )
         .queryExecutionStrategy(new SerializerExecutionStrategy(typeNameStore))
         .build();
