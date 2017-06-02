@@ -39,6 +39,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.UriBuilder.fromResource;
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
 
 @Path("/v5/{userId}/{dataSetId}/upload/table")
 public class TabularUpload {
@@ -64,7 +65,7 @@ public class TabularUpload {
                          @FormDataParam("type") final String fileType,
                          FormDataMultiPart formData,
                          @HeaderParam("authorization") final String authHeader,
-                         @PathParam("userId") final String userId,
+                         @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId)
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
@@ -78,12 +79,14 @@ public class TabularUpload {
                      .build();
     }
 
-    // final Response response = checkWriteAccess(authorizer, loggedInUsers, authHeader, userId, dataSetId);
-    // if (response != null) {
-    //   return response;
-    // }
+    final Response response = checkWriteAccess(
+      dataSetFactory::dataSetExists, authorizer, loggedInUsers, authHeader, ownerId, dataSetId
+    );
+    if (response != null) {
+      return response;
+    }
 
-    DataSet dataSet = dataSetFactory.createDataSet(userId, dataSetId);
+    DataSet dataSet = dataSetFactory.createDataSet(ownerId, dataSetId);
 
     String fileToken = dataSet.addFile(
       rdfInputStream,
@@ -98,13 +101,13 @@ public class TabularUpload {
     status.put(importId, importStatusConsumer);
 
     dataSet.generateLog(
-      UriBuilder.fromUri("http://timbuctoo.huygens.knaw.nl").path(userId).path(dataSetId).path(fileToken).build(),
+      UriBuilder.fromUri("http://timbuctoo.huygens.knaw.nl").path(ownerId).path(dataSetId).path(fileToken).build(),
       new TabularRdfCreator(dataSet, loader, dataSetId, importStatusConsumer::append, fileToken)
     );
 
     return Response.created(fromResource(TabularUpload.class)
       .path(importId.toString())
-      .buildFromMap(ImmutableMap.of("userId", userId, "dataSetId", dataSetId))
+      .buildFromMap(ImmutableMap.of("userId", ownerId, "dataSetId", dataSetId))
     ).build();
   }
 
