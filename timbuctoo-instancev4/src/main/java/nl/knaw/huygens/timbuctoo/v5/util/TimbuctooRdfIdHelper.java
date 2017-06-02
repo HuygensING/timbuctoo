@@ -10,7 +10,6 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RAW_ROW;
 public class TimbuctooRdfIdHelper {
 
   public static String rawEntity(String dataSet, String fileName, int entityId) {
-
     return RAW_ROW + "" + encode(dataSet) + "/" + encode(fileName) + "/" + entityId;
   }
 
@@ -29,5 +28,9 @@ public class TimbuctooRdfIdHelper {
 
   public static String propertyDescription(String dataSetId, String fileName, String propertyName) {
     return HTTP_TIMBUCTOO_PROPS + encode(dataSetId) + "/" + encode(fileName) + "/" + encode(propertyName);
+  }
+
+  public static String dataSet(String dataSetId) {
+    return RdfConstants.HTTP_TIMBUCTOO_DATA_SETS + encode(dataSetId);
   }
 }

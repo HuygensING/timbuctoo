@@ -22,13 +22,15 @@ public class RdfSaver implements Saver<String> {
 
   private static final Logger LOG = LoggerFactory.getLogger(RdfSaver.class);
   private final String dataSetId;
-  private String fileName;
+  private final String dataSetUri;
+  private final String fileName;
   private final RdfSerializer saver;
   private int curEntity;
   private int curCollection;
 
   public RdfSaver(String dataSetId, String fileName, RdfSerializer saver) {
     this.dataSetId = dataSetId;
+    this.dataSetUri = TimbuctooRdfIdHelper.dataSet(dataSetId);
     this.fileName = fileName;
     this.saver = saver;
     this.curEntity = 0;
@@ -40,14 +42,15 @@ public class RdfSaver implements Saver<String> {
     String subject = TimbuctooRdfIdHelper.rawEntity(dataSetId, fileName, ++curEntity);
 
     try {
-      saver.onRelation(subject, RDF_TYPE, collection, dataSetId);
+      saver.onRelation(subject, RDF_TYPE, collection, dataSetUri);
     } catch (LogStorageFailedException e) {
       LOG.error("Could not save entity");
     }
 
     for (Map.Entry<String, ?> property : currentProperties.entrySet()) {
       try {
-        saver.onValue(subject, property.getKey(), "" + property.getValue(), STRING, dataSetId);
+        String propName = TimbuctooRdfIdHelper.propertyDescription(dataSetId, fileName, property.getKey());
+        saver.onValue(subject, propName, "" + property.getValue(), STRING, dataSetUri);
       } catch (LogStorageFailedException e) {
         LOG.error("Could not add property '{}' with value '{}'", property.getKey(), property.getValue());
       }
@@ -61,13 +64,13 @@ public class RdfSaver implements Saver<String> {
     String subject = TimbuctooRdfIdHelper.rawCollection(dataSetId, fileName, ++curCollection);
 
     try {
-      saver.onValue(subject, RDFS_LABEL, collectionName, STRING, dataSetId);
+      saver.onValue(subject, RDFS_LABEL, collectionName, STRING, dataSetUri);
     } catch (LogStorageFailedException e) {
       LOG.error("Could not add label '{}' to collection '{}'", collectionName, subject);
     }
 
     try {
-      saver.onValue(subject, TIMBUCTOO_ORDER, "" + curCollection, INTEGER, dataSetId);
+      saver.onValue(subject, TIMBUCTOO_ORDER, "" + curCollection, INTEGER, dataSetUri);
     } catch (LogStorageFailedException e) {
       LOG.error(
         "Could not add proprerty '{}' with value '{}' to collection '{}'", TIMBUCTOO_ORDER, curCollection, subject
@@ -83,16 +86,16 @@ public class RdfSaver implements Saver<String> {
       // TODO create uri for property name
       String propertyUri = TimbuctooRdfIdHelper.propertyDescription(dataSetId, fileName, prop.getPropertyName());
       try {
-          saver.onRelation(propertyUri, RDF_TYPE, TIM_PROP_DESC, dataSetId);
-          saver.onValue(propertyUri, TIM_PROP_ID, "" + prop.getId(), INTEGER, dataSetId);
-          saver.onValue(propertyUri, TIMBUCTOO_ORDER, "" + prop.getOrder(), INTEGER, dataSetId);
-          saver.onValue(propertyUri, RDFS_LABEL, prop.getPropertyName(), STRING, dataSetId);
+          saver.onRelation(propertyUri, RDF_TYPE, TIM_PROP_DESC, dataSetUri);
+          saver.onValue(propertyUri, TIM_PROP_ID, "" + prop.getId(), INTEGER, dataSetUri);
+          saver.onValue(propertyUri, TIMBUCTOO_ORDER, "" + prop.getOrder(), INTEGER, dataSetUri);
+          saver.onValue(propertyUri, RDFS_LABEL, prop.getPropertyName(), STRING, dataSetUri);
         } catch (LogStorageFailedException e) {
           LOG.error("Could add property description for '{}'", propertyUri);
         }
 
         try {
-          saver.onRelation(propertyUri, OF_COLLECTION, collection, dataSetId);
+          saver.onRelation(propertyUri, OF_COLLECTION, collection, dataSetUri);
         } catch (LogStorageFailedException e) {
           LOG.error("Could not add property description '{}' to collection '{}'", propertyUri, collection);
         }

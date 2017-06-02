@@ -29,4 +29,11 @@ public class TimbuctooRdfIdHelperTest {
     assertThat(propertyDescription, is("http://timbuctoo/props/data%26set/file%24name/prop%2Bname"));
   }
 
+  @Test
+  public void dataSetGeneratesAUri() {
+    String dataSet = TimbuctooRdfIdHelper.dataSet("data&set");
+
+    assertThat(dataSet, is("http://timbuctoo/datasets/data%26set"));
+  }
+
 }
