@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
+
 @Path("/v5/{userId}/{dataSet}/upload/rdf")
 public class RdfUpload {
 
@@ -48,10 +50,12 @@ public class RdfUpload {
                          @PathParam("dataSet") final String dataSetId)
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
-    // final Response response = checkWriteAccess(authorizer, loggedInUsers, authHeader, userId, dataSetId);
-    // if (response != null) {
-    //   return response;
-    // }
+    final Response response = checkWriteAccess(
+      dataSetManager::dataSetExists, authorizer, loggedInUsers, authHeader, userId, dataSetId
+    );
+    if (response != null) {
+      return response;
+    }
 
     DataSet dataSet = dataSetManager.createDataSet(userId, dataSetId);
 

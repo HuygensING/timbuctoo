@@ -114,6 +114,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     }
   }
 
+  public boolean dataSetExists(String ownerId, String dataSet) {
+    return false;
+  }
+
 
   private class DataStores {
     public DataFetcherFactory dataFetcherFactory;
