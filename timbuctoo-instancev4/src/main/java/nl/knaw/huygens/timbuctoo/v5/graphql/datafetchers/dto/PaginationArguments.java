@@ -25,18 +25,6 @@ public interface PaginationArguments {
    */
   int getCount();
 
-  static PaginationArguments create() {
-    return create(-1, "");
-  }
-
-  static PaginationArguments create(int count) {
-    return create(count, "");
-  }
-
-  static PaginationArguments create(String cursor) {
-    return create(-1, cursor);
-  }
-
   static PaginationArguments create(int count, String cursor) {
     return ImmutablePaginationArguments.builder()
       .count(count)

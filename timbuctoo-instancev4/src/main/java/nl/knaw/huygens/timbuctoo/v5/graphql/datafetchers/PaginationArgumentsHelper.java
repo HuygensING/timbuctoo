@@ -17,20 +17,22 @@ import static graphql.schema.GraphQLObjectType.newObject;
 
 public class PaginationArgumentsHelper {
 
+
+  public static final int DEFAULT_COUNT = 20;
   Map<String, GraphQLOutputType> paginatableTypes = new HashMap<>();
 
   static PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
+    String cursor = "";
+    int count = DEFAULT_COUNT;
     if (environment.containsArgument("cursor")) {
-      if (environment.containsArgument("count")) {
-        return PaginationArguments.create(environment.getArgument("count"), environment.getArgument("cursor"));
-      } else {
-        return PaginationArguments.create((String) environment.getArgument("cursor"));
-      }
-    } else if (environment.containsArgument("count")) {
-      return PaginationArguments.create((int) environment.getArgument("count"));
-    } else {
-      return PaginationArguments.create();
+      cursor = environment.getArgument("cursor");
     }
+
+    if (environment.containsArgument("count")) {
+      count = environment.getArgument("count");
+    }
+
+    return PaginationArguments.create(count, cursor);
   }
 
   public void makePaginatedList(GraphQLFieldDefinition.Builder result, GraphQLOutputType outputType) {
@@ -63,7 +65,7 @@ public class PaginationArgumentsHelper {
       .argument(newArgument()
         .name("count")
         .type(Scalars.GraphQLInt)
-        .defaultValue(20)
+        .defaultValue(DEFAULT_COUNT)
         .description("The amount of items to request. You might get less items then requested.")
       );
   }

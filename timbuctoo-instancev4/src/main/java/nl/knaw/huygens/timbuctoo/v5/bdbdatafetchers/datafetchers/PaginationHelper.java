@@ -10,12 +10,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class PaginationHelper {
+
+  public static final int MAX_COUNT = 10_000;
+
   static <T extends CursorContainer> PaginatedList getPaginatedList(Stream<T> subjectStream,
                                                                     Function<T, TypedValue> makeItem, int count) {
     String[] cursors = new String[2];
 
     List<TypedValue> subjects = subjectStream
-      .limit(count)
+      .limit((count < 0 || count > MAX_COUNT) ? MAX_COUNT : count)
       .peek(cs -> {
         if (cursors[0] == null) {
           cursors[0] = "D\n" + cs.getCursor();
