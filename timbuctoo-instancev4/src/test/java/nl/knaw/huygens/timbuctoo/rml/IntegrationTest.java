@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
@@ -27,6 +28,9 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
@@ -35,12 +39,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.JsonContractMatcher.matchesContract;
+import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 
-public class RmlIntegrationTest {
+public class IntegrationTest {
 
   static {
     EvilEnvironmentVariableHacker.setEnv(ImmutableMap.of(
@@ -73,7 +78,7 @@ public class RmlIntegrationTest {
     String prefixedVreName = "DUMMY_" + vreName;
     Response uploadResponse = rawUpload(
       vreName,
-      new File(getResource(RmlIntegrationTest.class, "demo-upload.xlsx").toURI())
+      new File(getResource(IntegrationTest.class, "demo-upload.xlsx").toURI())
     );
 
     assertThat(uploadResponse.getStatus(), is(200));
@@ -81,7 +86,7 @@ public class RmlIntegrationTest {
 
     Response rmlResponse = map(
       prefixedVreName,
-      asCharSource(getResource(RmlIntegrationTest.class, "demo-upload-rml.json"), Charset.forName("UTF8")).read()
+      asCharSource(getResource(IntegrationTest.class, "demo-upload-rml.json"), Charset.forName("UTF8")).read()
         .replace("{VRE_NAME}", prefixedVreName)
     );
 
@@ -140,7 +145,7 @@ public class RmlIntegrationTest {
     String prefixedVreName = "DUMMY_" + vreName;
     Response uploadResponse = rawUpload(
       vreName,
-      new File(getResource(RmlIntegrationTest.class, "BIA_klein_ok.xlsx").toURI())
+      new File(getResource(IntegrationTest.class, "BIA_klein_ok.xlsx").toURI())
     );
 
     assertThat("Successful upload of excel", uploadResponse.getStatus(), is(200));
@@ -149,7 +154,7 @@ public class RmlIntegrationTest {
     Response rmlResponse = map(
       prefixedVreName,
       asCharSource(getResource(
-        RmlIntegrationTest.class,
+        IntegrationTest.class,
         "alternative-names-rml.json"),
         Charset.forName("UTF8")).read().replace("{VRE_NAME}", prefixedVreName)
     );
@@ -223,20 +228,98 @@ public class RmlIntegrationTest {
     ));
   }
 
-  private Response rawUpload(String vrename, File resource) throws ParseException {
-    MultiPart formdata = new MultiPart();
 
-    formdata.bodyPart(new FormDataBodyPart("vreName", vrename));
+  @Test
+  public void succeedingRdfUploadWithGraphql() throws Exception {
+    String vreName = "clusius-" + UUID.randomUUID();
+    Response uploadResponse = multipartPost(
+      "/v5/DUMMY/" + vreName + "/upload/rdf",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
+    uploadResponse.readEntity(String.class);
+
+    Response graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity("{\n" +
+        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_Residence {\n" +
+        "    items {\n" +
+        "      uri\n" +
+        "    }\n" +
+        "  }\n" +
+        "}", MediaType.valueOf("application/graphql")));
+    ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
+    assertThat(objectNode
+      .get("data")
+      .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_Residence")
+      .get("items").size(),
+      is(20)
+    );
+
+    graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity("{\n" +
+        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_Residence {\n" +
+        "    items {\n" +
+        "      http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
+        "        http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
+        "          value\n" +
+        "        }\n" +
+        "      }\n" +
+        "    }\n" +
+        "  }\n" +
+        "}", MediaType.valueOf("application/graphql")));
+    objectNode = graphqlCall.readEntity(ObjectNode.class);
+    assertThat(
+      stream(objectNode
+        .get("data")
+        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_Residence")
+        .get("items").iterator())
+        .map(item -> item
+          .get("http___timbuctoo_huygens_knaw_nl_properties_hasLocation")
+          .get("http___timbuctoo_huygens_knaw_nl_properties_name")
+          .get("value"))
+        .filter(Objects::nonNull)
+        .count(),
+      is(20L)
+    );
+  }
+
+
+  private Response rawUpload(String vrename, File resource) throws ParseException {
+    Map<String, String> arguments = ImmutableMap.of(
+      "vreName", vrename
+    );
+    String path = "/v2.1/bulk-upload";
+
+    return multipartPost(
+      path,
+      resource,
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      arguments
+    );
+  }
+
+  private Response multipartPost(String path, File resource, String mediaType, Map<String, String> arguments)
+    throws ParseException {
+    MultiPart formdata = new MultiPart();
+    arguments.forEach((key, value) -> formdata.bodyPart(new FormDataBodyPart(key, value)));
 
     formdata.bodyPart(new FormDataBodyPart(
       new FormDataContentDisposition(
         "form-data; name=\"file\"; filename=\"" + resource.getName().replace("\"", "") + "\""
       ),
       resource,
-      new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+      MediaType.valueOf(mediaType)
     ));
 
-    Response result = call("/v2.1/bulk-upload")
+    Response result = call(path)
       .post(Entity.entity(formdata, "multipart/form-data; boundary=Boundary_1_498293219_1483974344746"));
     return result;
   }
@@ -252,7 +335,9 @@ public class RmlIntegrationTest {
     if (path.startsWith("http://") || path.startsWith("https://")) {
       server = path;
     } else {
-      server = String.format("http://localhost:%d" + path, APP.getLocalPort());
+      int localPort = APP.getLocalPort();
+      // int localPort = 8080;
+      server = String.format("http://localhost:%d" + path, localPort);
     }
     return client
       .target(server)
