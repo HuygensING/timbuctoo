@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class JsonFileBackedData<T> {
   private static ObjectMapper objectMapper = new ObjectMapper()
@@ -23,14 +24,14 @@ public class JsonFileBackedData<T> {
   private static final Map<String, JsonFileBackedData> existing = new HashMap<>();
 
   //We make sure that there's only one instance per file so that we don't have multiple simultaneous writes
-  public static <T> JsonFileBackedData<T> getOrCreate(File file, T emptyValue, TypeReference<T> valueType)
+  public static <T> JsonFileBackedData<T> getOrCreate(File file, Supplier<T> emptyValue, TypeReference<T> valueType)
       throws IOException {
     return getOrCreate(file, emptyValue, valueType, null);
   }
 
   //We make sure that there's only one instance per file so that we don't have multiple simultaneous writes
-  public static <T> JsonFileBackedData<T> getOrCreate(File file, T emptyValue, TypeReference<T> valueType,
-                                                                   Function<T, T> hydrator) throws IOException {
+  public static <T> JsonFileBackedData<T> getOrCreate(File file, Supplier<T> emptyValue, TypeReference<T> valueType,
+                                                      Function<T, T> hydrator) throws IOException {
     synchronized (existing) {
       if (existing.containsKey(file.getCanonicalPath())) {
         return existing.get(file.getCanonicalPath());
@@ -44,7 +45,7 @@ public class JsonFileBackedData<T> {
   private final File file;
   private T value;
 
-  private JsonFileBackedData(File file, T emptyValue, TypeReference<T> valueType, Function<T,T> hydrator)
+  private JsonFileBackedData(File file, Supplier<T> emptyValue, TypeReference<T> valueType, Function<T,T> hydrator)
       throws IOException {
     this.file = file;
     if (file.exists()) {
@@ -53,7 +54,7 @@ public class JsonFileBackedData<T> {
         value = hydrator.apply(value);
       }
     } else {
-      value = emptyValue;
+      value = emptyValue.get();
       objectMapper.writeValue(file, value);
     }
     //is synchronized because ctor is called from a synchronized block

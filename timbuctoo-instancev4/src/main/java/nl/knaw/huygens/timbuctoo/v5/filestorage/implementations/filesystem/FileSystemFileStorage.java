@@ -30,7 +30,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     dir.mkdirs();
     fileInfo = JsonFileBackedData.getOrCreate(
       new File(dir, "dataSetList.json"),
-      FileInfoList.create(),
+      FileInfoList::create,
       new TypeReference<FileInfoList>() {}
     );
   }

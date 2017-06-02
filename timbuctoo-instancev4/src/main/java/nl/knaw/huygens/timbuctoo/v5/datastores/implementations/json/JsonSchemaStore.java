@@ -30,7 +30,7 @@ public class JsonSchemaStore implements SchemaStore {
     throws IOException {
     schemaFile = JsonFileBackedData.getOrCreate(
       new File(dataLocation, userId + "-" + dataSetId + "_schema.json"),
-      null,
+      () -> null,
       new TypeReference<Map<String, Type>>() {},
       types -> {
         for (Map.Entry<String, Type> typeEntry : types.entrySet()) {

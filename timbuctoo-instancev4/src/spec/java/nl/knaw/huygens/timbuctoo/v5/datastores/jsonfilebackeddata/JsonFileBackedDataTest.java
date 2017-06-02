@@ -21,7 +21,7 @@ public class JsonFileBackedDataTest {
       tmpFile.delete(); //the file must either not exist, or contain valid data
       JsonFileBackedData<Map<String, String>> instance = JsonFileBackedData.getOrCreate(
         tmpFile,
-        new HashMap<>(),
+        () -> new HashMap<>(),
         new TypeReference<Map<String, String>>() {
         }
       );
@@ -40,7 +40,7 @@ public class JsonFileBackedDataTest {
 
       JsonFileBackedData<Map<String, String>> reloadedInstance = JsonFileBackedData.getOrCreate(
         tmpFile,
-        new HashMap<>(),
+        () -> new HashMap<>(),
         new TypeReference<Map<String, String>>() {
         }
       );
@@ -58,7 +58,7 @@ public class JsonFileBackedDataTest {
       tmpFile.delete(); //the file must either not exist, or contain valid data
       JsonFileBackedData<Map<String, String>> instance = JsonFileBackedData.getOrCreate(
         tmpFile,
-        null,
+        () -> null,
         new TypeReference<Map<String, String>>() {
         }
       );

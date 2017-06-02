@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationExcept
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.HardCodedTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStoreFactory;
@@ -48,7 +48,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     new File(configuration.getDataSetMetadataLocation()).mkdirs();
     storedDataSets = JsonFileBackedData.getOrCreate(
       new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
-      new HashMap<>(),
+      HashMap::new,
       new TypeReference<Map<String, List<String>>>() {}
     );
   }
@@ -98,7 +98,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
             dataSet,
             dbFactory
           );
-          result.typeNameStore = new HardCodedTypeNameStore(userId + "_" + dataSetId);
+          result.typeNameStore = new JsonTypeNameStore(
+            new File(metaDataLocation, userId + "_" + dataSetId + "-prefixes.json"),
+            dataSet
+          );
           result.schemaStore = new JsonSchemaStore(metaDataLocation, userId, dataSetId, dataSet);
           result.dataSet = dataSet;
           userDataSets.put(dataSetId, result);

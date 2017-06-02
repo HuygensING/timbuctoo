@@ -63,7 +63,7 @@ public class DataSet implements DataProvider {
     try {
       logListStore = JsonFileBackedData.getOrCreate(
         logListLocation,
-        new LogList(),
+        LogList::new,
         new TypeReference<LogList>() {}
       );
     } catch (IOException e) {
