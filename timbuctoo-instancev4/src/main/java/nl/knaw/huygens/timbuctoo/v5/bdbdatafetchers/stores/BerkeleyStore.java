@@ -8,6 +8,7 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
+import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -17,7 +18,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationExcep
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseCreator;
 import org.slf4j.Logger;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -83,6 +86,28 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
       cursor.close();
     }
     database.close();
+  }
+
+  public List<String> dump(String prefix, int start, int count, LockMode lockMode) throws DatabaseException {
+    DatabaseEntry key = new DatabaseEntry();
+    binder.objectToEntry(prefix, key);
+    DatabaseEntry value = new DatabaseEntry();
+
+    Cursor cursor = database.openCursor(null, null);
+    OperationStatus status = cursor.getSearchKeyRange(key, value, LockMode.READ_UNCOMMITTED);
+    List<String> result = new ArrayList<>();
+    int index = 0;
+    while (status == OperationStatus.SUCCESS && index < (start + count)) {
+      if (index >= start) {
+        result.add(
+          binder.entryToObject(key) + " -> " + binder.entryToObject(value)
+        );
+      }
+      index++;
+      status = cursor.getNext(key, value, LockMode.READ_UNCOMMITTED);
+    }
+    cursor.close();
+    return result;
   }
 
   protected void put(String key, String value) throws DatabaseException {
