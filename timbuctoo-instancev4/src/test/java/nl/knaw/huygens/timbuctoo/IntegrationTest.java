@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.rml;
+package nl.knaw.huygens.timbuctoo;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
