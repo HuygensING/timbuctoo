@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbCollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 
 import java.util.stream.Stream;
 
@@ -27,8 +26,4 @@ public class CollectionDataFetcher implements CollectionFetcher {
     }
   }
 
-  @Override
-  public TypedValue getItem(String uri) {
-    return null;
-  }
 }

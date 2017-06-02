@@ -248,7 +248,7 @@ public class IntegrationTest {
     Response graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity("{\n" +
-        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_Residence {\n" +
+        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
         "    items {\n" +
         "      uri\n" +
         "    }\n" +
@@ -257,7 +257,7 @@ public class IntegrationTest {
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(objectNode
       .get("data")
-      .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_Residence")
+      .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
       .get("items").size(),
       is(20)
     );
@@ -265,7 +265,7 @@ public class IntegrationTest {
     graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity("{\n" +
-        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_Residence {\n" +
+        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
         "    items {\n" +
         "      http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
         "        http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
@@ -279,7 +279,7 @@ public class IntegrationTest {
     assertThat(
       stream(objectNode
         .get("data")
-        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_Residence")
+        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
         .get("items").iterator())
         .map(item -> item
           .get("http___timbuctoo_huygens_knaw_nl_properties_hasLocation")
