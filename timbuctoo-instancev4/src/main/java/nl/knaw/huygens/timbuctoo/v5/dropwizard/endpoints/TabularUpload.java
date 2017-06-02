@@ -99,7 +99,7 @@ public class TabularUpload {
 
     dataSet.generateLog(
       UriBuilder.fromUri("http://timbuctoo.huygens.knaw.nl").path(userId).path(dataSetId).path(fileToken).build(),
-      new TabularRdfCreator(dataSet, loader, dataSetId, fileInfo.getFileName(), importStatusConsumer::append, fileToken)
+      new TabularRdfCreator(dataSet, loader, dataSetId, importStatusConsumer::append, fileToken)
     );
 
     return Response.created(fromResource(TabularUpload.class)

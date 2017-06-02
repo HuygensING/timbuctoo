@@ -18,16 +18,14 @@ public class TabularRdfCreator implements RdfCreator {
   private final DataSet dataSet;
   private final Loader loader;
   private final String dataSetId;
-  private final String fileName;
   private final Consumer<String> importStatusConsumer; // TODO hoe gaan we deze reconstrueren na deserialisatie
   private final String fileToken;
 
-  public TabularRdfCreator(DataSet dataSet, Loader loader, String dataSetId,
-                           String fileName, Consumer<String> importStatusConsumer, String fileToken) {
+  public TabularRdfCreator(DataSet dataSet, Loader loader, String dataSetId, Consumer<String> importStatusConsumer,
+                           String fileToken) {
     this.dataSet = dataSet;
     this.loader = loader;
     this.dataSetId = dataSetId;
-    this.fileName = fileName;
     this.importStatusConsumer = importStatusConsumer;
     this.fileToken = fileToken;
   }
@@ -36,9 +34,9 @@ public class TabularRdfCreator implements RdfCreator {
   public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
 
     try (CachedFile file = dataSet.getFile(fileToken)) {
-      loader.loadData(Lists.newArrayList(tuple(fileName, file.getFile())),
+      loader.loadData(Lists.newArrayList(tuple(file.getName(), file.getFile())),
         new Importer(
-          new StateMachine<>(new RdfSaver(dataSetId, fileName, saver)),
+          new StateMachine<>(new RdfSaver(dataSetId, file.getName(), saver)),
           new ResultReporter(importStatusConsumer)
         )
       );
