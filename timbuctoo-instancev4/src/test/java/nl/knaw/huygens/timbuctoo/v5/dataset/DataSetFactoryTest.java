@@ -34,10 +34,10 @@ public class DataSetFactoryTest {
       Executors.newSingleThreadExecutor(),
       new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())),
       ImmutableDataSetConfiguration.builder()
-        .dataSetMetadataLocation(tempFile.getAbsolutePath())
-        .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
-        .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
-        .build(),
+                                   .dataSetMetadataLocation(tempFile.getAbsolutePath())
+                                   .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
+                                   .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
+                                   .build(),
       new NonPersistentBdbDatabaseCreator()
     );
   }
@@ -69,6 +69,31 @@ public class DataSetFactoryTest {
     DataSet dataSet2 = dataSetFactory.createDataSet("other", "dataset");
 
     assertThat(dataSet1, is(not(sameInstance(dataSet2))));
+  }
+
+  @Test
+  public void dataSetExistsReturnsFalseIfTheUserIsNotKnown() {
+    boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
+
+    assertThat(dataSetExists, is(false));
+  }
+
+  @Test
+  public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws DataStoreCreationException {
+    dataSetFactory.createDataSet("ownerId", "otherDataSetId");
+
+    boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
+
+    assertThat(dataSetExists, is(false));
+  }
+
+  @Test
+  public void dataSetExistsReturnsTrueIfTheUserOwnsADataSetWithTheDataSetId() throws DataStoreCreationException {
+    dataSetFactory.createDataSet("ownerId", "dataSetId");
+
+    boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
+
+    assertThat(dataSetExists, is(true));
   }
 
 }

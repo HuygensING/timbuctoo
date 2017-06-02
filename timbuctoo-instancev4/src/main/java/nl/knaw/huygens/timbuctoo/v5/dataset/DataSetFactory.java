@@ -115,7 +115,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   }
 
   public boolean dataSetExists(String ownerId, String dataSet) {
-    return false;
+    return dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSet);
   }
 
 
