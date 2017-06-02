@@ -7,12 +7,16 @@ import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import org.assertj.core.util.Lists;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
+import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -21,6 +25,8 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.File;
@@ -43,6 +49,7 @@ import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.core.Is.is;
 
 public class IntegrationTest {
@@ -289,6 +296,30 @@ public class IntegrationTest {
         .count(),
       is(20L)
     );
+  }
+
+  @Test
+  public void uploadReturnsAUriOfForTheUploadProgress() {
+    Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
+    WebTarget target =
+      client.target(String.format("http://localhost:%d/v5/DUMMY/dataset/upload/table", APP.getLocalPort()));
+
+    FormDataMultiPart multiPart = new FormDataMultiPart();
+    multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+    FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(
+      "file",
+      new File(getResource(IntegrationTest.class, "2017_04_17_BIA_Clusius.xlsx").getFile())
+    );
+    multiPart.bodyPart(fileDataBodyPart);
+    multiPart.field("type", "xlsx");
+
+
+    Response response = target.request()
+                              .header(HttpHeaders.AUTHORIZATION, "fake")
+                              .post(Entity.entity(multiPart, multiPart.getMediaType()));
+
+    assertThat(response.getStatus(), Matchers.is(201));
+    assertThat(response.getHeaderString(HttpHeaders.LOCATION), Matchers.is(notNullValue()));
   }
 
 
