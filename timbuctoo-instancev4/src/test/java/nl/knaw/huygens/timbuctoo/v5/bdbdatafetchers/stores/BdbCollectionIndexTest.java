@@ -58,6 +58,33 @@ public class BdbCollectionIndexTest {
 
   }
 
+
+  @Test
+  public void itPersistsAcrossRestarts() throws Exception {
+    dataProvider.start();
+    dataProvider.onQuad(EX + "subject1", RDF_TYPE, EX + "type1", null, null, "http://some graph");
+    dataProvider.onQuad(EX + "subject2", RDF_TYPE, EX + "type1", null, null, "http://some graph");
+    dataProvider.onQuad(EX + "subject3", RDF_TYPE, EX + "type1", null, null, "http://some graph");
+    dataProvider.onQuad(EX + "subject4", RDF_TYPE, EX + "type1", null, null, "http://some graph");
+    dataProvider.finish();
+    collectionIndex.close();
+    collectionIndex = new BdbCollectionIndex(
+      dataProvider,
+      databaseCreator,
+      "userId",
+      "dataSetId"
+    );
+    Stream<CursorSubject> forward = collectionIndex.getSubjects(EX + "type1", "");
+    assertThat(forward.collect(Collectors.toList()), Matchers.contains(
+      CursorSubject.create(EX + "subject1", EX + "subject1"),
+      CursorSubject.create(EX + "subject2", EX + "subject2"),
+      CursorSubject.create(EX + "subject3", EX + "subject3"),
+      CursorSubject.create(EX + "subject4", EX + "subject4")
+    ));
+    forward.close();
+  }
+
+
   @Test
   public void itHandlesForwardIterationFromACursor() throws Exception {
     dataProvider.start();

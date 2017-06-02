@@ -16,13 +16,15 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseCreator;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -34,7 +36,7 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   protected final Environment dbEnvironment;
   protected final Database database;
   private Transaction transaction;
-  private Set<Cursor> cursors;
+  private final Map<Cursor, String> cursors = new HashMap<>();
   private final DatabaseConfig databaseConfig;
   private final DatabaseEntry keyEntry = new DatabaseEntry();
   private final DatabaseEntry valueEntry = new DatabaseEntry();
@@ -82,8 +84,9 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
         transaction.abort();
       }
     }
-    for (Cursor cursor : cursors) {
-      cursor.close();
+    for (Map.Entry<Cursor, String> cursor : cursors.entrySet()) {
+      cursor.getKey().close();
+      LOG.error("Cursor was not closed. It was opened at: \n" + cursor.getValue());
     }
     database.close();
   }
@@ -124,12 +127,18 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
 
   public <T> Stream<T> getItems(DatabaseFunction initialLookup, DatabaseFunction iteration,
                                 Supplier<T> valueMaker) {
-    CursorIterator<T> data = new CursorIterator<>(initialLookup, iteration, valueMaker);
+    CursorIterator<T> data = new CursorIterator<>(
+      initialLookup,
+      iteration,
+      valueMaker,
+      ExceptionUtils.getStackTrace(new Throwable())
+    );
 
     return stream(data).onClose(() -> {
       try {
         if (data.cursor != null) {
           data.cursor.close();
+          cursors.remove(data.cursor);
         }
       } catch (DatabaseException e) {
         LOG.error("Could not close cursor", e);
@@ -141,15 +150,17 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
     private final DatabaseFunction initialLookup;
     private final DatabaseFunction iteration;
     private final Supplier<T> valueMaker;
+    private final String stackTrace;
     public Cursor cursor;
     boolean shouldMove;
     OperationStatus status;
 
     public CursorIterator(DatabaseFunction initialLookup, DatabaseFunction iteration,
-                          Supplier<T> valueMaker) {
+                          Supplier<T> valueMaker, String stackTrace) {
       this.initialLookup = initialLookup;
       this.iteration = iteration;
       this.valueMaker = valueMaker;
+      this.stackTrace = stackTrace;
       cursor = null;
       shouldMove = true;
       status = null;
@@ -161,6 +172,7 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
         try {
           if (cursor == null) {
             cursor = database.openCursor(null, null);
+            cursors.put(cursor, stackTrace);
             status = initialLookup.apply(cursor);
           } else {
             status = iteration.apply(cursor);

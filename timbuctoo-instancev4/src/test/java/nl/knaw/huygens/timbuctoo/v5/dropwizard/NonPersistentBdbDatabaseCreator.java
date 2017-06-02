@@ -25,7 +25,6 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
   public NonPersistentBdbDatabaseCreator() {
     configuration = new EnvironmentConfig(new Properties());
     configuration.setTransactional(true);
-    configuration.setTxnNoSync(true);
     configuration.setAllowCreate(true);
     configuration.setSharedCache(true);
     dbHome = Files.createTempDir();
