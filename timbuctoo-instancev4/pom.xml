@@ -693,7 +693,7 @@
           </includes>
           <systemPropertyVariables>
             <concordion.output.dir>${concordion.output.dir}</concordion.output.dir>
-            <dw.logging.level>OFF</dw.logging.level><!-- Do you want no logging output from your tests? because that's how you get no logging output from your tests-->
+            <!--<dw.logging.level>OFF</dw.logging.level>&lt;!&ndash; Do you want no logging output from your tests? because that's how you get no logging output from your tests&ndash;&gt;-->
           </systemPropertyVariables>
         </configuration>
         <executions>
