@@ -8,7 +8,8 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import io.dropwizard.lifecycle.Managed;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 
 import java.io.File;
@@ -34,8 +35,8 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
   }
 
   @Override
-  public Tuple<Environment, Database> getDatabase(String userId, String dataSetId, String databaseName,
-                                                  DatabaseConfig config)
+  public BdbWrapper getDatabase(String userId, String dataSetId, String databaseName,
+                                DatabaseConfig config)
     throws DataStoreCreationException {
     String environmentKey = userId + "_" + dataSetId;
     String databaseKey = environmentKey + "_" + databaseName;
@@ -56,7 +57,7 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
         throw new DataStoreCreationException(e);
       }
     }
-    return Tuple.tuple(environmentMap.get(environmentKey), databases.get(databaseKey));
+    return new BdbWrapper(environmentMap.get(environmentKey), databases.get(databaseKey), config);
   }
 
   public void start() throws Exception {

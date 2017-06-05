@@ -6,7 +6,8 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -36,15 +37,15 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
   }
 
   @Override
-  public Tuple<Environment, Database> getDatabase(String userId, String dataSetId, String databaseName,
-                                                  DatabaseConfig config) throws DataStoreCreationException {
+  public BdbWrapper getDatabase(String userId, String dataSetId, String databaseName,
+                                DatabaseConfig config) throws DataStoreCreationException {
     try {
       File envHome = new File(dbHome, userId + "_" + dataSetId);
       envHome.mkdirs();
       Environment dataSetEnvironment = new Environment(envHome, configuration);
       Database database = dataSetEnvironment.openDatabase(null, databaseName, config);
       databases.add(database);
-      return Tuple.tuple(dataSetEnvironment, database);
+      return new BdbWrapper(dataSetEnvironment, database, config);
     } catch (DatabaseException e) {
       throw new DataStoreCreationException(e);
     }

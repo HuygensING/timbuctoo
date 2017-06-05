@@ -5,12 +5,13 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
+import nl.knaw.huygens.timbuctoo.v5.bdb.DatabaseFunction;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorSubject;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
 
 import java.util.stream.Stream;
 

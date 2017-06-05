@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -116,6 +117,23 @@ public class JexlRowFactory implements RowFactory {
     @Override
     public void handleLinkError(String childField, String parentCollection, String parentField) {
       errorHandler.linkError(data, childField, parentCollection, parentField);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == null || getClass() != obj.getClass()) {
+        return false;
+      } else {
+        final MapBasedRow other = (MapBasedRow) obj;
+        return Objects.equals(this.data, other.data) &&
+          Objects.equals(this.joinedData, other.joinedData) &&
+          Objects.equals(this.expressions, other.expressions);
+      }
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(this.data, this.joinedData, this.expressions);
     }
   }
 }
