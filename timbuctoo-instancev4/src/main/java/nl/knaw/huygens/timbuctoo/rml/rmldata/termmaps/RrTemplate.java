@@ -5,16 +5,22 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;
+import org.slf4j.Logger;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class RrTemplate implements RrTermMap {
   private final String template;
   private final TermType termType;
   private final RDFDatatype dataType;
   private final Pattern pattern;
+  private static final Logger LOG = getLogger(RrTemplate.class);
 
   public RrTemplate(String template, TermType termType, RDFDatatype dataType) {
     this.template = template;
@@ -52,16 +58,24 @@ public class RrTemplate implements RrTermMap {
     );
   }
 
-
-
   @Override
   public Optional<Node> generateValue(Row input) {
     Matcher regexMatcher = pattern.matcher(template);
     StringBuffer resultString = new StringBuffer();
     while (regexMatcher.find()) {
-      Object value = input.get(regexMatcher.group(1));
-      if (value != null) {
-        regexMatcher.appendReplacement(resultString, "" + value);
+      String value = input.getRawValue(regexMatcher.group(1));
+      if (value == null) {
+        return Optional.empty();
+      } else {
+        if (termType == TermType.IRI) {
+          try {
+            value = URLEncoder.encode(value, "UTF-8").replace("+", "%20");
+          } catch (UnsupportedEncodingException e) {
+            LOG.error("Java is being really stoopid and throws an unsupportedEncodingException for UTF-8.");
+            throw new RuntimeException(e);
+          }
+        }
+        regexMatcher.appendReplacement(resultString, value);
       }
     }
 

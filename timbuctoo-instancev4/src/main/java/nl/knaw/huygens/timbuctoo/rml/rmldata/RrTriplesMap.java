@@ -47,7 +47,7 @@ public class RrTriplesMap {
         if (subjectOpt.isPresent()) {
           Node subject = subjectOpt.get();
           for (Tuple<RrRefObjectMap, String> subscription : subscriptions) {
-            subscription.getLeft().onNewSubject(row.get(subscription.getRight()), subject);
+            subscription.getLeft().onNewSubject(row.getRawValue(subscription.getRight()), subject);
           }
 
           return predicateObjectMaps.stream()

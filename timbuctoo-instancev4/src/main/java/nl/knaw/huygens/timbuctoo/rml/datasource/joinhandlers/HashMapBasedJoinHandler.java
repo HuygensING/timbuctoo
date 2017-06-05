@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class HashMapBasedJoinHandler implements JoinHandler {
-  private Map<String, Tuple<String, Map<Object, List<String>>>> cachedUris = new HashMap<>();
+  private Map<String, Tuple<String, Map<String, List<String>>>> cachedUris = new HashMap<>();
 
 
   /**
@@ -46,17 +46,16 @@ public class HashMapBasedJoinHandler implements JoinHandler {
    * @param valueMap the valueMap for the current row from DataSource
    */
   @Override
-  public void resolveReferences(Map<String, Object> valueMap) {
-    for (Map.Entry<String, Tuple<String, Map<Object, List<String>>>> stringMapEntry : cachedUris
-      .entrySet()) {
-      final Tuple<String, Map<Object, List<String>>> stringMapTuple = cachedUris.get(stringMapEntry.getKey());
+  public Map<String, List<String>> resolveReferences(Map<String, String> valueMap) {
+    Map<String, List<String>> result = new HashMap<>();
+    for (Map.Entry<String, Tuple<String, Map<String, List<String>>>> stringMapEntry : cachedUris.entrySet()) {
+      final Tuple<String, Map<String, List<String>>> stringMapTuple = stringMapEntry.getValue();
 
-      List<String> uri = cachedUris.get(
-        stringMapEntry.getKey()).getRight().get(valueMap.get(stringMapTuple.getLeft())
-      );
+      List<String> uris = stringMapTuple.getRight().get(valueMap.get(stringMapTuple.getLeft()));
 
-      valueMap.put(stringMapEntry.getKey(), uri);
+      result.put(stringMapEntry.getKey(), uris);
     }
+    return result;
   }
 
   /**
@@ -82,17 +81,19 @@ public class HashMapBasedJoinHandler implements JoinHandler {
    * }
    * </p>
    *
-   * @param fieldName the column key from the referencing datasource
+   * @param fieldName the column key from the referencing datasource. During the join we get a map of
    * @param referenceJoinValue the cell value in this datasource
-   * @param uri the uri of the referenced object
-   * @param outputFieldName the key (UUID) that is generated to look up the uri
+   * @param uri the subject that was generated for the row that contains the referenceJoinValue
+   * @param outputFieldName the key that the referencing ObjectMap will use to look up the uri
    */
   @Override
-  public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
-    cachedUris.computeIfAbsent(outputFieldName, x -> Tuple.tuple(fieldName, new HashMap<>()))
-      .getRight()
-      .computeIfAbsent(referenceJoinValue, x -> new ArrayList<>())
-      .add(uri);
+  public void willBeJoinedOn(String fieldName, String referenceJoinValue, String uri, String outputFieldName) {
+    if (referenceJoinValue != null) {
+      cachedUris.computeIfAbsent(outputFieldName, x -> Tuple.tuple(fieldName, new HashMap<>()))
+        .getRight()
+        .computeIfAbsent(referenceJoinValue, x -> new ArrayList<>())
+        .add(uri);
+    }
   }
 }
 

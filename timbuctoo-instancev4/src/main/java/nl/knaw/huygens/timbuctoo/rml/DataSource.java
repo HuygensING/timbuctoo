@@ -5,5 +5,5 @@ import java.util.stream.Stream;
 public interface DataSource {
   Stream<Row> getRows(ErrorHandler defaultErrorHandler);
 
-  void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName);
+  void willBeJoinedOn(String fieldName, String referenceJoinValue, String uri, String outputFieldName);
 }

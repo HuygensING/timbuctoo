@@ -14,7 +14,7 @@ public class LoggingErrorHandler implements ErrorHandler {
   public static final Logger LOG = LoggerFactory.getLogger(LoggingErrorHandler.class);
 
   @Override
-  public void linkError(Map<String, Object> rowData, String childField, String parentCollection, String parentField) {
+  public void linkError(Map<String, String> rowData, String childField, String parentCollection, String parentField) {
     if (rowData.get(childField) != null) {
       LOG.error("Row's field '{}' with value '{}' could not be linked to field '{}' of the collection '{}'",
         childField,
