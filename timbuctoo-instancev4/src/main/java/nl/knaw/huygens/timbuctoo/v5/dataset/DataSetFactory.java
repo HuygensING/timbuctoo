@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -22,7 +23,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * - stores all configuration parameters so it can inject them in the dataset constructor
@@ -37,6 +42,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   private final BdbDatabaseCreator dbFactory;
   private final Map<String, Map<String, DataStores>> dataSetMap;
   private final JsonFileBackedData<Map<String, List<String>>> storedDataSets;
+  private final HashMap<UUID, StringBuffer> statusMap;
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
                         DataSetConfiguration configuration, BdbDatabaseCreator dbFactory) throws IOException {
@@ -51,6 +57,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       HashMap::new,
       new TypeReference<Map<String, List<String>>>() {}
     );
+    statusMap = new HashMap<>();
   }
 
   @Override
@@ -121,6 +128,19 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     return dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSet);
   }
 
+  public Optional<String> getStatus(UUID uuid) {
+    return statusMap.containsKey(uuid) ? Optional.of(statusMap.get(uuid).toString()) : Optional.empty();
+  }
+
+  public Tuple<UUID, RdfCreator> registerRdfCreator(Function<Consumer<String>, RdfCreator> rdfCreatorBuilder) {
+    StringBuffer stringBuffer = new StringBuffer();
+    UUID uuid = UUID.randomUUID();
+    statusMap.put(uuid, stringBuffer);
+
+    RdfCreator rdfCreator = rdfCreatorBuilder.apply(stringBuffer::append);
+
+    return Tuple.tuple(uuid, rdfCreator);
+  }
 
   private class DataStores {
     public DataFetcherFactory dataFetcherFactory;

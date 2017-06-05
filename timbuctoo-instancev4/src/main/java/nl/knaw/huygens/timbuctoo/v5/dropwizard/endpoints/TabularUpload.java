@@ -7,8 +7,10 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory.LoaderConfig;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
@@ -36,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import static javax.ws.rs.core.UriBuilder.fromResource;
@@ -47,13 +50,11 @@ public class TabularUpload {
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
   private final DataSetFactory dataSetFactory;
-  private final ConcurrentHashMap<UUID, StringBuffer> status;
 
   public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetFactory) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
     this.dataSetFactory = dataSetFactory;
-    this.status = new ConcurrentHashMap<>();
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -96,17 +97,17 @@ public class TabularUpload {
 
     Loader loader = LoaderFactory.createFor(configFromFormData(formData));
 
-    UUID importId = UUID.randomUUID();
-    StringBuffer importStatusConsumer = new StringBuffer();
-    status.put(importId, importStatusConsumer);
+    Tuple<UUID, RdfCreator> rdfCreator = dataSetFactory.registerRdfCreator(
+      (statusConsumer) -> new TabularRdfCreator(dataSet, loader, dataSetId, statusConsumer, fileToken)
+    );
 
     dataSet.generateLog(
       UriBuilder.fromUri("http://timbuctoo.huygens.knaw.nl").path(ownerId).path(dataSetId).path(fileToken).build(),
-      new TabularRdfCreator(dataSet, loader, dataSetId, importStatusConsumer::append, fileToken)
+      rdfCreator.getRight()
     );
 
     return Response.created(fromResource(TabularUpload.class)
-      .path(importId.toString())
+      .path(rdfCreator.getLeft().toString())
       .buildFromMap(ImmutableMap.of("userId", ownerId, "dataSetId", dataSetId))
     ).build();
   }
@@ -114,7 +115,13 @@ public class TabularUpload {
   @GET
   @Path("{importId}")
   public Response getStatus(@PathParam("importId") final UUIDParam importId) {
-    return Response.ok(status.get(importId.get())).build();
+    Optional<String> status = dataSetFactory.getStatus(importId.get());
+
+    if (status.isPresent()) {
+      return Response.ok(status).build();
+    }
+
+    return Response.status(Response.Status.NOT_FOUND).build();
   }
 
   private LoaderConfig configFromFormData(FormDataMultiPart formData) {
