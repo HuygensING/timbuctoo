@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.VALUE_PREFIX;
@@ -74,7 +75,7 @@ public class BulkUploadedDataSource implements DataSource {
   }
 
   @Override
-  public Iterator<Row> getRows(ErrorHandler defaultErrorHandler) {
+  public Stream<Row> getRows(ErrorHandler defaultErrorHandler) {
     return graphWrapper.getGraph().traversal().V()
                        .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
                        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
@@ -100,8 +101,7 @@ public class BulkUploadedDataSource implements DataSource {
                          errorHandler.setCurrentVertex(vertex);
 
                          return (Row) new BulkUploadedRow(valueMap, errorHandler);
-                       })
-                       .iterator();
+                       });
   }
 
   @Override

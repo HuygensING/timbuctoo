@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 public interface DataSource {
-  Iterator<Row> getRows(ErrorHandler defaultErrorHandler);
+  Stream<Row> getRows(ErrorHandler defaultErrorHandler);
 
   void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName);
 }

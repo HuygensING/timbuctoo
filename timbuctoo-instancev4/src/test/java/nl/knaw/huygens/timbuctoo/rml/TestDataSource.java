@@ -2,13 +2,13 @@ package nl.knaw.huygens.timbuctoo.rml;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
+import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.stream;
 
@@ -27,7 +27,7 @@ class TestDataSource implements DataSource {
   }
 
   @Override
-  public Iterator<Row> getRows(ErrorHandler defaultErrorHandler) {
+  public Stream<Row> getRows(ErrorHandler defaultErrorHandler) {
     return stream(data)
       .map(values -> {
         Map<String, Object> mutableValues = Maps.newHashMap(values);
@@ -44,8 +44,7 @@ class TestDataSource implements DataSource {
 
         final ImmutableMap<String, Object> result = resultBuilder.build();
         return (Row) new TestRow(result, errorHandler == null ? defaultErrorHandler : errorHandler);
-      })
-      .iterator();
+      });
   }
 
   @Override
