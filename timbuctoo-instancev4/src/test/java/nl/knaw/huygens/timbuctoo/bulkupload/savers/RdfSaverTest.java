@@ -18,8 +18,11 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIMBUCTOO_ORDER;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_RAW_ROW;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -68,7 +71,7 @@ public class RdfSaverTest {
   public void addEntityAddsTheEntityToTheCollection() throws Exception {
     String entity = instance.addEntity(COLLECTION, Maps.newHashMap());
 
-    verify(rdfSerializer).onRelation(entity, RDF_TYPE, COLLECTION, DATA_SET_URI);
+    verify(rdfSerializer).onRelation(entity, TIM_HAS_ROW, COLLECTION, DATA_SET_URI);
   }
 
   @Test
@@ -205,86 +208,57 @@ public class RdfSaverTest {
 
     String generatedRdf = rdfSerializer.toString();
     // Use assertEquals because the failing Hamcrest output is hard to compare
+    String collection = "http://timbuctoo/collections/dataSet/fileName/";
+    String prop = "http://timbuctoo/props/dataSet/fileName/";
+    String rawData = "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/";
+    String graphName = "http://timbuctoo/datasets/dataSet";
+    String propdescType = "http://timbuctoo.com/things/propertyDescription/";
     assertEquals(generatedRdf,
-      "http://timbuctoo/collections/dataSet/fileName/1 http://rdfs/label collection1^^http://www" +
-        ".w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/collections/dataSet/fileName/1 http://timbuctoo.com/things/order 1^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName1 http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-        "http://timbuctoo.com/things/propertyDescription/ http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName1 http://timbuctoo.com/things/propertyId 1^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName1 http://timbuctoo.com/things/order 0^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName1 http://rdfs/label propName1^^http://www" +
-        ".w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName1 http://timbuctoo.com/thing/ofCollection " +
-        "http://timbuctoo/collections/dataSet/fileName/1 http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName2 http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-        "http://timbuctoo.com/things/propertyDescription/ http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName2 http://timbuctoo.com/things/propertyId 2^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName2 http://timbuctoo.com/things/order 1^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName2 http://rdfs/label propName2^^http://www" +
-        ".w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/propName2 http://timbuctoo.com/thing/ofCollection " +
-        "http://timbuctoo/collections/dataSet/fileName/1 http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/1 http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-        "http://timbuctoo/collections/dataSet/fileName/1 http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/1 " +
-        "http://timbuctoo/props/dataSet/fileName/propName1 value1^^http://www.w3.org/2001/XMLSchema#string " +
-        "http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/1 " +
-        "http://timbuctoo/props/dataSet/fileName/propName2 val2^^http://www.w3.org/2001/XMLSchema#string " +
-        "http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/2 http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-        "http://timbuctoo/collections/dataSet/fileName/1 http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/2 " +
-        "http://timbuctoo/props/dataSet/fileName/propName1 entVal1^^http://www.w3.org/2001/XMLSchema#string " +
-        "http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/2 " +
-        "http://timbuctoo/props/dataSet/fileName/propName2 entVal2^^http://www.w3.org/2001/XMLSchema#string " +
-        "http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/collections/dataSet/fileName/2 http://rdfs/label collection2^^http://www" +
-        ".w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/collections/dataSet/fileName/2 http://timbuctoo.com/things/order 2^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop3 http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-        "http://timbuctoo.com/things/propertyDescription/ http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop3 http://timbuctoo.com/things/propertyId 1^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop3 http://timbuctoo.com/things/order 0^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop3 http://rdfs/label prop3^^http://www" +
-        ".w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop3 http://timbuctoo.com/thing/ofCollection " +
-        "http://timbuctoo/collections/dataSet/fileName/1 http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop4 http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-        "http://timbuctoo.com/things/propertyDescription/ http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop4 http://timbuctoo.com/things/propertyId 2^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop4 http://timbuctoo.com/things/order 1^^http://www" +
-        ".w3.org/2001/XMLSchema#integer http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop4 http://rdfs/label prop4^^http://www" +
-        ".w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo/props/dataSet/fileName/prop4 http://timbuctoo.com/thing/ofCollection " +
-        "http://timbuctoo/collections/dataSet/fileName/1 http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/3 http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-        "http://timbuctoo/collections/dataSet/fileName/2 http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/3 http://timbuctoo/props/dataSet/fileName/prop3 " +
-        "value1^^http://www.w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/3 http://timbuctoo/props/dataSet/fileName/prop4 " +
-        "val2^^http://www.w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/4 http://www.w3.org/1999/02/22-rdf-syntax-ns#type " +
-        "http://timbuctoo/collections/dataSet/fileName/2 http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/4 http://timbuctoo/props/dataSet/fileName/prop3 " +
-        "entVal1^^http://www.w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n" +
-        "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/4 http://timbuctoo/props/dataSet/fileName/prop4 " +
-        "entVal2^^http://www.w3.org/2001/XMLSchema#string http://timbuctoo/datasets/dataSet\n"
+      collection + "1 "     + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
+        collection + "1 "   + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "propName1 " + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "propName1 " + TIM_PROP_ID        + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "propName1 " + TIMBUCTOO_ORDER    + " 0" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "propName1 " + RDFS_LABEL         + " propName1" +           "^^" + STRING + " "  + graphName + "\n" +
+        prop + "propName1 " + TIM_PROP_NAME      + " propName1" +           "^^" + STRING + " "  + graphName + "\n" +
+        prop + "propName1 " + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
+        prop + "propName2 " + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "propName2 " + TIM_PROP_ID        + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "propName2 " + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "propName2 " + RDFS_LABEL         + " propName2" +           "^^" + STRING + " "  + graphName + "\n" +
+        prop + "propName2 " + TIM_PROP_NAME      + " propName2" +           "^^" + STRING + " "  + graphName + "\n" +
+        prop + "propName2 " + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
+        rawData + "1 "      + RDF_TYPE           + " " + TIM_RAW_ROW + " "                       + graphName + "\n" +
+        rawData + "1 "      + TIM_HAS_ROW        + " " + collection + "1 "                       + graphName + "\n" +
+        rawData + "1 "      + prop + "propName1" + " value1" +              "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "1 "      + prop + "propName2" + " val2" +                "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "2 "      + RDF_TYPE           + " " + TIM_RAW_ROW + " "                       + graphName + "\n" +
+        rawData + "2 "      + TIM_HAS_ROW        + " " + collection + "1 "                       + graphName + "\n" +
+        rawData + "2 "      + prop + "propName1" + " entVal1" +             "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "2 "      + prop + "propName2" + " entVal2" +             "^^" + STRING + " "  + graphName + "\n" +
+        collection + "2 "   + RDFS_LABEL         + " collection2" +         "^^" + STRING + " "  + graphName + "\n" +
+        collection + "2 "   + TIMBUCTOO_ORDER    + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "prop3 "     + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "prop3 "     + TIM_PROP_ID        + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "prop3 "     + TIMBUCTOO_ORDER    + " 0" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "prop3 "     + RDFS_LABEL         + " prop3" +               "^^" + STRING + " "  + graphName + "\n" +
+        prop + "prop3 "     + TIM_PROP_NAME      + " prop3" +               "^^" + STRING + " "  + graphName + "\n" +
+        prop + "prop3 "     + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
+        prop + "prop4 "     + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "prop4 "     + TIM_PROP_ID        + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "prop4 "     + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "prop4 "     + RDFS_LABEL         + " prop4" +               "^^" + STRING + " "  + graphName + "\n" +
+        prop + "prop4 "     + TIM_PROP_NAME      + " prop4" +               "^^" + STRING + " "  + graphName + "\n" +
+        prop + "prop4 "     + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
+        rawData + "3 "      + RDF_TYPE           + " " + TIM_RAW_ROW + " "                       + graphName + "\n" +
+        rawData + "3 "      + TIM_HAS_ROW        + " " + collection + "2 "                       + graphName + "\n" +
+        rawData + "3 "      + prop + "prop3"     + " value1" +              "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "3 "      + prop + "prop4"     + " val2" +                "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "4 "      + RDF_TYPE           + " " + TIM_RAW_ROW + " "                       + graphName + "\n" +
+        rawData + "4 "      + TIM_HAS_ROW        + " " + collection + "2 "                       + graphName + "\n" +
+        rawData + "4 "      + prop + "prop3"     + " entVal1" +             "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "4 "      + prop + "prop4"     + " entVal2" +             "^^" + STRING + " "  + graphName + "\n"
     );
-
-
   }
 
   private static class RdfToStringFaker implements RdfSerializer {

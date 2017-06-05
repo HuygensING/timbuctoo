@@ -15,4 +15,7 @@ public class RdfConstants {
   public static final String OF_COLLECTION = "http://timbuctoo.com/thing/ofCollection";
   public static final String HTTP_TIMBUCTOO_PROPS = "http://timbuctoo/props/";
   public static final String HTTP_TIMBUCTOO_DATA_SETS = "http://timbuctoo/datasets/";
+  public static final String TIM_PROP_NAME = "http://timpropname";
+  public static final String TIM_HAS_ROW = "http://timhasrow";
+  public static final String TIM_RAW_ROW = "http://timrawrow";
 }

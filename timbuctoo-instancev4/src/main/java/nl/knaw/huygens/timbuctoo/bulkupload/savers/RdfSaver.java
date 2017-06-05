@@ -15,8 +15,11 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIMBUCTOO_ORDER;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_RAW_ROW;
 
 public class RdfSaver implements Saver<String> {
 
@@ -42,7 +45,8 @@ public class RdfSaver implements Saver<String> {
     String subject = TimbuctooRdfIdHelper.rawEntity(dataSetId, fileName, ++curEntity);
 
     try {
-      saver.onRelation(subject, RDF_TYPE, collection, dataSetUri);
+      saver.onRelation(subject, RDF_TYPE, TIM_RAW_ROW, dataSetUri);
+      saver.onRelation(subject, TIM_HAS_ROW, collection, dataSetUri);
     } catch (LogStorageFailedException e) {
       LOG.error("Could not save entity");
     }
@@ -90,6 +94,7 @@ public class RdfSaver implements Saver<String> {
           saver.onValue(propertyUri, TIM_PROP_ID, "" + prop.getId(), INTEGER, dataSetUri);
           saver.onValue(propertyUri, TIMBUCTOO_ORDER, "" + prop.getOrder(), INTEGER, dataSetUri);
           saver.onValue(propertyUri, RDFS_LABEL, prop.getPropertyName(), STRING, dataSetUri);
+        saver.onValue(propertyUri, TIM_PROP_NAME, prop.getPropertyName(), STRING, dataSetUri);
         } catch (LogStorageFailedException e) {
           LOG.error("Could add property description for '{}'", propertyUri);
         }
