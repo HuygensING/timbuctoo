@@ -9,6 +9,7 @@ import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,11 +17,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import static org.slf4j.LoggerFactory.getLogger;
+
 public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
 
   protected final EnvironmentConfig configuration;
   protected final File dbHome;
   private final List<Database> databases;
+  private static final Logger LOG = getLogger(NonPersistentBdbDatabaseCreator.class);
 
   public NonPersistentBdbDatabaseCreator() {
     configuration = new EnvironmentConfig(new Properties());
@@ -50,6 +54,26 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
     for (Database database : databases) {
       database.close();
     }
-    FileUtils.cleanDirectory(dbHome);
+    boolean wasDeleted = false;
+    int tries = 0;
+    while (!wasDeleted) {
+      try {
+        FileUtils.cleanDirectory(dbHome);
+        wasDeleted = true;
+      } catch (IOException e) {
+        tries++;
+        if (tries >= 10) {
+          wasDeleted = true;
+        } else {
+          try {
+            Thread.sleep(1);
+          } catch (InterruptedException e1) {
+            LOG.error("Trying to clean up and delete directory, but it failed the first time around and then the " +
+              "thread was interrupted");
+            wasDeleted = true;
+          }
+        }
+      }
+    }
   }
 }
