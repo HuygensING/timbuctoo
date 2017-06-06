@@ -23,7 +23,6 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_RAW_ROW;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -203,7 +202,7 @@ public class RdfSaverTest {
     ImportPropertyDescriptions importPropertyDescriptions1 = new ImportPropertyDescriptions();
     importPropertyDescriptions1.getOrCreate(1).setPropertyName("prop3");
     importPropertyDescriptions1.getOrCreate(2).setPropertyName("prop4");
-    instance.addPropertyDescriptions(collection1, importPropertyDescriptions1);
+    instance.addPropertyDescriptions(collection2, importPropertyDescriptions1);
     instance.addEntity(collection2, ImmutableMap.of("prop3", "value1", "prop4", "val2"));
     instance.addEntity(collection2, ImmutableMap.of("prop3", "entVal1", "prop4", "entVal2"));
 
@@ -214,7 +213,7 @@ public class RdfSaverTest {
     String rawData = "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/";
     String graphName = "http://timbuctoo/datasets/dataSet";
     String propdescType = "http://timbuctoo.com/things/propertyDescription/";
-    assertEquals(generatedRdf,
+    assertEquals(generatedRdf.replaceAll("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "{UUID}"),
       collection + "1 "     + RDF_TYPE           + " " + TIM_COLLECTION + " "                    + graphName + "\n" +
         collection + "1 "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "1 "   + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
@@ -230,14 +229,22 @@ public class RdfSaverTest {
         prop + "propName2 " + RDFS_LABEL         + " propName2" +           "^^" + STRING + " "  + graphName + "\n" +
         prop + "propName2 " + TIM_PROP_NAME      + " propName2" +           "^^" + STRING + " "  + graphName + "\n" +
         prop + "propName2 " + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
-        rawData + "1 "      + RDF_TYPE           + " " + TIM_RAW_ROW + " "                       + graphName + "\n" +
+        prop + "tim_id "    + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "tim_id "    + TIM_PROP_ID        + " -1" +                  "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "tim_id "    + TIMBUCTOO_ORDER    + " -1" +                  "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "tim_id "    + RDFS_LABEL         + " tim_id" +              "^^" + STRING + " "  + graphName + "\n" +
+        prop + "tim_id "    + TIM_PROP_NAME      + " tim_id" +              "^^" + STRING + " "  + graphName + "\n" +
+        prop + "tim_id "    + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
+        rawData + "1 "      + RDF_TYPE           + " " + collection + "1 "                       + graphName + "\n" +
         rawData + "1 "      + TIM_HAS_ROW        + " " + collection + "1 "                       + graphName + "\n" +
         rawData + "1 "      + prop + "propName1" + " value1" +              "^^" + STRING + " "  + graphName + "\n" +
         rawData + "1 "      + prop + "propName2" + " val2" +                "^^" + STRING + " "  + graphName + "\n" +
-        rawData + "2 "      + RDF_TYPE           + " " + TIM_RAW_ROW + " "                       + graphName + "\n" +
+        rawData + "1 "      + prop + "tim_id"    + " {UUID}" +              "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "2 "      + RDF_TYPE           + " " + collection + "1 "                       + graphName + "\n" +
         rawData + "2 "      + TIM_HAS_ROW        + " " + collection + "1 "                       + graphName + "\n" +
         rawData + "2 "      + prop + "propName1" + " entVal1" +             "^^" + STRING + " "  + graphName + "\n" +
         rawData + "2 "      + prop + "propName2" + " entVal2" +             "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "2 "      + prop + "tim_id"    + " {UUID}" +              "^^" + STRING + " "  + graphName + "\n" +
         collection + "2 "   + RDF_TYPE           + " " + TIM_COLLECTION + " "                    + graphName + "\n" +
         collection + "2 "   + RDFS_LABEL         + " collection2" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "2 "   + TIMBUCTOO_ORDER    + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
@@ -246,21 +253,29 @@ public class RdfSaverTest {
         prop + "prop3 "     + TIMBUCTOO_ORDER    + " 0" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "prop3 "     + RDFS_LABEL         + " prop3" +               "^^" + STRING + " "  + graphName + "\n" +
         prop + "prop3 "     + TIM_PROP_NAME      + " prop3" +               "^^" + STRING + " "  + graphName + "\n" +
-        prop + "prop3 "     + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
+        prop + "prop3 "     + OF_COLLECTION      + " " + collection + "2 "                       + graphName + "\n" +
         prop + "prop4 "     + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
         prop + "prop4 "     + TIM_PROP_ID        + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "prop4 "     + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "prop4 "     + RDFS_LABEL         + " prop4" +               "^^" + STRING + " "  + graphName + "\n" +
         prop + "prop4 "     + TIM_PROP_NAME      + " prop4" +               "^^" + STRING + " "  + graphName + "\n" +
-        prop + "prop4 "     + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
-        rawData + "3 "      + RDF_TYPE           + " " + TIM_RAW_ROW + " "                       + graphName + "\n" +
+        prop + "prop4 "     + OF_COLLECTION      + " " + collection + "2 "                       + graphName + "\n" +
+        prop + "tim_id "    + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "tim_id "    + TIM_PROP_ID        + " -1" +                  "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "tim_id "    + TIMBUCTOO_ORDER    + " -1" +                  "^^" + INTEGER + " " + graphName + "\n" +
+        prop + "tim_id "    + RDFS_LABEL         + " tim_id" +              "^^" + STRING + " "  + graphName + "\n" +
+        prop + "tim_id "    + TIM_PROP_NAME      + " tim_id" +              "^^" + STRING + " "  + graphName + "\n" +
+        prop + "tim_id "    + OF_COLLECTION      + " " + collection + "2 "                       + graphName + "\n" +
+        rawData + "3 "      + RDF_TYPE           + " " + collection + "2 "                       + graphName + "\n" +
         rawData + "3 "      + TIM_HAS_ROW        + " " + collection + "2 "                       + graphName + "\n" +
         rawData + "3 "      + prop + "prop3"     + " value1" +              "^^" + STRING + " "  + graphName + "\n" +
         rawData + "3 "      + prop + "prop4"     + " val2" +                "^^" + STRING + " "  + graphName + "\n" +
-        rawData + "4 "      + RDF_TYPE           + " " + TIM_RAW_ROW + " "                       + graphName + "\n" +
+        rawData + "3 "      + prop + "tim_id"    + " {UUID}" +              "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "4 "      + RDF_TYPE           + " " + collection + "2 "                       + graphName + "\n" +
         rawData + "4 "      + TIM_HAS_ROW        + " " + collection + "2 "                       + graphName + "\n" +
         rawData + "4 "      + prop + "prop3"     + " entVal1" +             "^^" + STRING + " "  + graphName + "\n" +
-        rawData + "4 "      + prop + "prop4"     + " entVal2" +             "^^" + STRING + " "  + graphName + "\n"
+        rawData + "4 "      + prop + "prop4"     + " entVal2" +             "^^" + STRING + " "  + graphName + "\n" +
+        rawData + "4 "      + prop + "tim_id"    + " {UUID}" +              "^^" + STRING + " "  + graphName + "\n"
     );
   }
 

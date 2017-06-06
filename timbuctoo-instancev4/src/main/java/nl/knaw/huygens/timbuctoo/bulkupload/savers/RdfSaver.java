@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.OF_COLLECTION;
@@ -20,7 +21,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_RAW_ROW;
+import static nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper.propertyDescription;
 
 public class RdfSaver implements Saver<String> {
 
@@ -46,7 +47,7 @@ public class RdfSaver implements Saver<String> {
     String subject = TimbuctooRdfIdHelper.rawEntity(dataSetId, fileName, ++curEntity);
 
     try {
-      saver.onRelation(subject, RDF_TYPE, TIM_RAW_ROW, dataSetUri);
+      saver.onRelation(subject, RDF_TYPE, collection, dataSetUri);
       saver.onRelation(subject, TIM_HAS_ROW, collection, dataSetUri);
     } catch (LogStorageFailedException e) {
       LOG.error("Could not save entity");
@@ -54,12 +55,20 @@ public class RdfSaver implements Saver<String> {
 
     for (Map.Entry<String, ?> property : currentProperties.entrySet()) {
       try {
-        String propName = TimbuctooRdfIdHelper.propertyDescription(dataSetId, fileName, property.getKey());
+        String propName = propertyDescription(dataSetId, fileName, property.getKey());
         saver.onValue(subject, propName, "" + property.getValue(), STRING, dataSetUri);
       } catch (LogStorageFailedException e) {
         LOG.error("Could not add property '{}' with value '{}'", property.getKey(), property.getValue());
       }
     }
+
+    String timIdPropname = propertyDescription(dataSetId, fileName, "tim_id");
+    try {
+      saver.onValue(subject, timIdPropname, UUID.randomUUID().toString(), STRING, dataSetUri);
+    } catch (LogStorageFailedException e) {
+      LOG.error("Could not add tim_id property.");
+    }
+
 
     return subject;
   }
@@ -73,6 +82,7 @@ public class RdfSaver implements Saver<String> {
       saver.onValue(subject, RDFS_LABEL, collectionName, STRING, dataSetUri);
     } catch (LogStorageFailedException e) {
       LOG.error("Could not add label '{}' to collection '{}'", collectionName, subject);
+      //FIXME: should break the processing
     }
 
     try {
@@ -90,24 +100,31 @@ public class RdfSaver implements Saver<String> {
   public void addPropertyDescriptions(String collection, ImportPropertyDescriptions importPropertyDescriptions) {
     importPropertyDescriptions.forEach(prop -> {
       // TODO create uri for property name
-      String propertyUri = TimbuctooRdfIdHelper.propertyDescription(dataSetId, fileName, prop.getPropertyName());
-      try {
-          saver.onRelation(propertyUri, RDF_TYPE, TIM_PROP_DESC, dataSetUri);
-          saver.onValue(propertyUri, TIM_PROP_ID, "" + prop.getId(), INTEGER, dataSetUri);
-          saver.onValue(propertyUri, TIMBUCTOO_ORDER, "" + prop.getOrder(), INTEGER, dataSetUri);
-          saver.onValue(propertyUri, RDFS_LABEL, prop.getPropertyName(), STRING, dataSetUri);
-        saver.onValue(propertyUri, TIM_PROP_NAME, prop.getPropertyName(), STRING, dataSetUri);
-        } catch (LogStorageFailedException e) {
-          LOG.error("Could add property description for '{}'", propertyUri);
-        }
+      String propertyName = prop.getPropertyName();
+      Integer id = prop.getId();
+      int order = prop.getOrder();
+      addPropertyDescription(collection, propertyName, id, order);
+    });
+    addPropertyDescription(collection, "tim_id", -1, -1);
+  }
 
-        try {
-          saver.onRelation(propertyUri, OF_COLLECTION, collection, dataSetUri);
-        } catch (LogStorageFailedException e) {
-          LOG.error("Could not add property description '{}' to collection '{}'", propertyUri, collection);
-        }
+  public void addPropertyDescription(String collection, String propertyName, Integer id, int order) {
+    String propertyUri = propertyDescription(dataSetId, fileName, propertyName);
+    try {
+      saver.onRelation(propertyUri, RDF_TYPE, TIM_PROP_DESC, dataSetUri);
+      //FIXME: add collection hasProperty propdesc
+      saver.onValue(propertyUri, TIM_PROP_ID, "" + id, INTEGER, dataSetUri);
+      saver.onValue(propertyUri, TIMBUCTOO_ORDER, "" + order, INTEGER, dataSetUri);
+      saver.onValue(propertyUri, RDFS_LABEL, propertyName, STRING, dataSetUri);
+      saver.onValue(propertyUri, TIM_PROP_NAME, propertyName, STRING, dataSetUri);
+    } catch (LogStorageFailedException e) {
+      LOG.error("Could add property description for '{}'", propertyUri);
+    }
 
-      }
-    );
+    try {
+      saver.onRelation(propertyUri, OF_COLLECTION, collection, dataSetUri);
+    } catch (LogStorageFailedException e) {
+      LOG.error("Could not add property description '{}' to collection '{}'", propertyUri, collection);
+    }
   }
 }
