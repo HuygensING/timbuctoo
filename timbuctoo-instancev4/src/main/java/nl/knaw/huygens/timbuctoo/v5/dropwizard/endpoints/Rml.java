@@ -75,12 +75,13 @@ public class Rml {
           Iterator<Triple> iterator = triples.iterator();
           while (iterator.hasNext()) {
             Triple triple = iterator.next();
+            boolean isLiteral = triple.getObject().isLiteral();
             saver.onQuad(
               triple.getSubject().toString(),
               triple.getPredicate().toString(),
-              triple.getObject().toString(),
-              triple.getObject().isLiteral() ? triple.getObject().getLiteralDatatypeURI() : null,
-              triple.getObject().isLiteral() ? triple.getObject().getLiteralLanguage() : null,
+              isLiteral ? triple.getObject().getLiteral().toString(false) : triple.getObject().toString(),
+              isLiteral ? triple.getObject().getLiteralDatatypeURI() : null,
+              isLiteral ? triple.getObject().getLiteralLanguage() : null,
               graph
             );
           }
