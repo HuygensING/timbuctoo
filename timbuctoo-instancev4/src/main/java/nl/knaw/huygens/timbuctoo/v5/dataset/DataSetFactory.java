@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -14,8 +15,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStoreFactory;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.rml.DataSourceStore;
+import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,6 +83,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
 
   }
 
+  public RdfDataSourceFactory createDataSource(String userId, String dataSetId) throws DataStoreCreationException {
+    return make(userId, dataSetId).dataSource;
+  }
+
   private DataStores make(String userId, String dataSetId) throws DataStoreCreationException {
     String authorizationKey = userId + "_" + dataSetId;
     synchronized (dataSetMap) {
@@ -111,6 +117,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
           );
           result.schemaStore = new JsonSchemaStore(metaDataLocation, userId, dataSetId, dataSet);
           result.dataSet = dataSet;
+          result.dataSource = new RdfDataSourceFactory(new DataSourceStore(userId, dataSetId, dbFactory, dataSet));
           userDataSets.put(dataSetId, result);
           storedDataSets.updateData(dataSets -> {
             dataSets.computeIfAbsent(userId, key -> new ArrayList<>()).add(dataSetId);
@@ -137,7 +144,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     UUID uuid = UUID.randomUUID();
     statusMap.put(uuid, stringBuffer);
 
-    RdfCreator rdfCreator = rdfCreatorBuilder.apply(stringBuffer::append);
+    RdfCreator rdfCreator = rdfCreatorBuilder.apply((str) -> {
+      stringBuffer.setLength(0);
+      stringBuffer.append(str);
+    });
 
     return Tuple.tuple(uuid, rdfCreator);
   }
@@ -147,5 +157,6 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     public SchemaStore schemaStore;
     public TypeNameStore typeNameStore;
     public DataSet dataSet;
+    public RdfDataSourceFactory dataSource;
   }
 }

@@ -88,6 +88,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
@@ -245,6 +246,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new TabularUpload(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
+      dataSetFactory
+    ));
+
+    register(environment, new Rml(
       dataSetFactory
     ));
 
