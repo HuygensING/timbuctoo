@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.JexlRowFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
@@ -31,7 +30,6 @@ public class DataSourceStoreTest {
   @Test
   public void itWorks() throws Exception {
     NonPersistentBdbDatabaseCreator dbCreator = new NonPersistentBdbDatabaseCreator();
-    DummyDataProvider dataProvider = new DummyDataProvider();
     DataSourceStore dataSourceStore = new DataSourceStore(
       "userId",
       "dataSetId",
@@ -76,7 +74,8 @@ public class DataSourceStoreTest {
             }
 
             @Override
-            public void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
+            public void onLanguageTaggedString(String subject, String predicate, String value, String language,
+                                               String graph)
               throws LogStorageFailedException {
               try {
                 processor.addValue("", subject, predicate, value, language, graph);
@@ -111,7 +110,7 @@ public class DataSourceStoreTest {
           ImportPropertyDescriptions importPropertyDescriptions1 = new ImportPropertyDescriptions();
           importPropertyDescriptions1.getOrCreate(1).setPropertyName("prop3");
           importPropertyDescriptions1.getOrCreate(2).setPropertyName("prop4");
-          instance.addPropertyDescriptions(collection1, importPropertyDescriptions1);
+          instance.addPropertyDescriptions(collection2, importPropertyDescriptions1);
           instance.addEntity(collection2, ImmutableMap.of("prop3", "value1", "prop4", "val2"));
           instance.addEntity(collection2, ImmutableMap.of("prop3", "entVal1", "prop4", "entVal2"));
 
