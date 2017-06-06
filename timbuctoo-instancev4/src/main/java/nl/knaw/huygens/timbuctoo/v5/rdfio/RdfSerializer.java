@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.rdfio;
 
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
@@ -22,4 +23,17 @@ public interface RdfSerializer extends AutoCloseable {
       throws LogStorageFailedException;
 
   void close() throws LogStorageFailedException;
+
+  default void onQuad(String subject, String predicate, String object,
+                      String dataType, String language, String graph) throws LogStorageFailedException {
+    if (dataType == null || dataType.isEmpty()) {
+      this.onRelation(subject, predicate, object, graph);
+    } else {
+      if (language != null && !language.isEmpty() && dataType.equals(RdfConstants.LANGSTRING)) {
+        this.onLanguageTaggedString(subject, predicate, object, language, graph);
+      } else {
+        this.onValue(subject, predicate, object, dataType, graph);
+      }
+    }
+  }
 }
