@@ -15,6 +15,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIMBUCTOO_ORDER;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_COLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
@@ -68,6 +69,7 @@ public class RdfSaver implements Saver<String> {
     String subject = TimbuctooRdfIdHelper.rawCollection(dataSetId, fileName, ++curCollection);
 
     try {
+      saver.onRelation(subject, RDF_TYPE, TIM_COLLECTION, dataSetUri);
       saver.onValue(subject, RDFS_LABEL, collectionName, STRING, dataSetUri);
     } catch (LogStorageFailedException e) {
       LOG.error("Could not add label '{}' to collection '{}'", collectionName, subject);

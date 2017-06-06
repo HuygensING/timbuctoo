@@ -18,6 +18,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIMBUCTOO_ORDER;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_COLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
@@ -214,7 +215,8 @@ public class RdfSaverTest {
     String graphName = "http://timbuctoo/datasets/dataSet";
     String propdescType = "http://timbuctoo.com/things/propertyDescription/";
     assertEquals(generatedRdf,
-      collection + "1 "     + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
+      collection + "1 "     + RDF_TYPE           + " " + TIM_COLLECTION + " "                    + graphName + "\n" +
+        collection + "1 "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "1 "   + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "propName1 " + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
         prop + "propName1 " + TIM_PROP_ID        + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
@@ -236,6 +238,7 @@ public class RdfSaverTest {
         rawData + "2 "      + TIM_HAS_ROW        + " " + collection + "1 "                       + graphName + "\n" +
         rawData + "2 "      + prop + "propName1" + " entVal1" +             "^^" + STRING + " "  + graphName + "\n" +
         rawData + "2 "      + prop + "propName2" + " entVal2" +             "^^" + STRING + " "  + graphName + "\n" +
+        collection + "2 "   + RDF_TYPE           + " " + TIM_COLLECTION + " "                    + graphName + "\n" +
         collection + "2 "   + RDFS_LABEL         + " collection2" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "2 "   + TIMBUCTOO_ORDER    + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "prop3 "     + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +

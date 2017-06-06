@@ -9,6 +9,7 @@ public class RdfConstants {
   public static final String INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
   public static final String RAW_ROW = "http://timbuctoo.huygens.knaw.nl/rawData/";
   public static final String HTTP_TIMBUCTOO_COLLECTIONS = "http://timbuctoo/collections/";
+  public static final String TIM_COLLECTION = "http://timbuctoo/collection";
   public static final String TIMBUCTOO_ORDER = "http://timbuctoo.com/things/order";
   public static final String TIM_PROP_DESC = "http://timbuctoo.com/things/propertyDescription/";
   public static final String TIM_PROP_ID = "http://timbuctoo.com/things/propertyId";
