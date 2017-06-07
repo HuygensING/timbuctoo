@@ -79,7 +79,7 @@ public class Rml {
             saver.onQuad(
               triple.getSubject().toString(),
               triple.getPredicate().toString(),
-              isLiteral ? triple.getObject().getLiteral().toString(false) : triple.getObject().toString(),
+              isLiteral ? triple.getObject().getLiteral().getLexicalForm() : triple.getObject().toString(),
               isLiteral ? triple.getObject().getLiteralDatatypeURI() : null,
               isLiteral ? triple.getObject().getLiteralLanguage() : null,
               graph
