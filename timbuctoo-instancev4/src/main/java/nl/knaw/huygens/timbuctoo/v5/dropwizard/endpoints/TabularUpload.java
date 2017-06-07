@@ -38,6 +38,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -101,15 +102,19 @@ public class TabularUpload {
       (statusConsumer) -> new TabularRdfCreator(dataSet, loader, dataSetId, statusConsumer, fileToken)
     );
 
-    dataSet.generateLog(
+    Future<?> promise = dataSet.generateLog(
       UriBuilder.fromUri("http://timbuctoo.huygens.knaw.nl").path(ownerId).path(dataSetId).path(fileToken).build(),
       rdfCreator.getRight()
     );
 
-    return Response.created(fromResource(TabularUpload.class)
-      .path(rdfCreator.getLeft().toString())
-      .buildFromMap(ImmutableMap.of("userId", ownerId, "dataSetId", dataSetId))
-    ).build();
+    promise.get(); // Wait until the import is done.
+
+    return Response.noContent().build();
+
+    // return Response.created(fromResource(TabularUpload.class)
+    //   .path(rdfCreator.getLeft().toString())
+    //   .buildFromMap(ImmutableMap.of("userId", ownerId, "dataSetId", dataSetId))
+    // ).build();
   }
 
   @GET

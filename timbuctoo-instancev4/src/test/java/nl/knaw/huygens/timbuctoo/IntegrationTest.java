@@ -299,7 +299,7 @@ public class IntegrationTest {
   }
 
   @Test
-  public void uploadReturnsAUriOfForTheUploadProgress() {
+  public void tabularUpload() {
     Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
     WebTarget target =
       client.target(String.format("http://localhost:%d/v5/DUMMY/dataset/upload/table", APP.getLocalPort()));
@@ -318,8 +318,8 @@ public class IntegrationTest {
                               .header(HttpHeaders.AUTHORIZATION, "fake")
                               .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-    assertThat(response.getStatus(), Matchers.is(201));
-    assertThat(response.getHeaderString(HttpHeaders.LOCATION), Matchers.is(notNullValue()));
+    assertThat(response.getStatus(), Matchers.is(204));
+    // assertThat(response.getHeaderString(HttpHeaders.LOCATION), Matchers.is(notNullValue()));
   }
 
 
