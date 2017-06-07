@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        height: 100%;
+        margin: 0;
+        width: 100%;
+        overflow: hidden;
+      }
+      #graphiql {
+        height: 100vh;
+      }
+    </style>
+    <link rel="stylesheet" href="./graphiql.css" />
+
+    <script src="./es6-promise.auto.min.js"></script>
+    <script src="./fetch.min.js"></script>
+    <script src="./react.js"></script>
+    <script src="./react-dom.js"></script>
+    <script src="./graphiql.js"></script>
+
+  </head>
+  <body>
+    <div id="graphiql">Loading...</div>
+    <script>
+      var userId = location.hash.substr(1).split("/")[0] || "DUMMY";
+      var dataSetId = location.hash.substr(1).split("/")[1] || "defaultDataSet";
+      location.hash = userId + "/" + dataSetId;
+      var dataSets = {};
+      var dataSetList = [];
+      
+      function setDataSet(userId, name) {
+        location.hash = userId + "/" + name;
+        location.reload();
+      }
+      
+      function graphQLFetcher(graphQLParams) {
+        if (dataSets[dataSetId]) {
+          return fetch(dataSets[dataSetId], {
+            method: 'post',
+            headers: { 'Accept': 'application/json' },
+            body: graphQLParams.query,
+          }).then(response => {
+            var s = response.json();
+            return s
+          }).then(parsed => {
+            data = parsed
+            return data;
+          });
+        } else {
+          return Promise.resolve('"no dataSet selected"')
+        }
+      }
+      
+      fetch(`/v5/dataSets/${userId}`, {
+        method: 'get',
+        headers: { 'Accept': 'application/json' },
+      }).then(response => {
+        return response.json();
+      }).then(response => {
+        dataSets = response;
+        dataSetList = Object.keys(dataSets).map(dataSet => React.createElement(GraphiQL.MenuItem, {
+          key: dataSet,
+          onSelect: function () {setDataSet(userId, dataSet)},
+          label: dataSet,
+        }));
+      }).then(list => 
+        ReactDOM.render(React.createElement(GraphiQL, 
+          {
+            fetcher: graphQLFetcher,
+          },
+          React.createElement(
+            GraphiQL.Toolbar,
+            null,
+            React.createElement(
+              GraphiQL.Menu,
+              {label: "select dataset"},
+              dataSetList
+            )
+          )
+        ), document.getElementById("graphiql"))
+      );
+    </script>
+  </body>
+</html>

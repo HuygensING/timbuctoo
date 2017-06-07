@@ -21,11 +21,11 @@ import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -43,7 +43,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   private final DataSetConfiguration configuration;
   private final BdbDatabaseCreator dbFactory;
   private final Map<String, Map<String, DataStores>> dataSetMap;
-  private final JsonFileBackedData<Map<String, List<String>>> storedDataSets;
+  private final JsonFileBackedData<Map<String, Set<String>>> storedDataSets;
   private final HashMap<UUID, StringBuffer> statusMap;
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
@@ -57,7 +57,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     storedDataSets = JsonFileBackedData.getOrCreate(
       new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
       HashMap::new,
-      new TypeReference<Map<String, List<String>>>() {}
+      new TypeReference<Map<String, Set<String>>>() {}
     );
     statusMap = new HashMap<>();
   }
@@ -120,7 +120,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
           result.dataSource = new RdfDataSourceFactory(new DataSourceStore(userId, dataSetId, dbFactory, dataSet));
           userDataSets.put(dataSetId, result);
           storedDataSets.updateData(dataSets -> {
-            dataSets.computeIfAbsent(userId, key -> new ArrayList<>()).add(dataSetId);
+            dataSets.computeIfAbsent(userId, key -> new HashSet<>()).add(dataSetId);
             return dataSets;
           });
         } catch (AuthorizationCreationException | IOException e) {
@@ -133,6 +133,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
 
   public boolean dataSetExists(String ownerId, String dataSet) {
     return dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSet);
+  }
+
+  public Map<String, Set<String>> getDataSets() {
+    return storedDataSets.getData();
   }
 
   public Optional<String> getStatus(UUID uuid) {

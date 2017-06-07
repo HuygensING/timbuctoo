@@ -86,6 +86,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
@@ -253,16 +254,18 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       dataSetFactory
     ));
 
-    register(environment,
-      new GraphQl(
-        new GraphQlService(
-          dataSetFactory,
-          dataSetFactory,
-          dataSetFactory,
-          new GraphQlTypeGenerator()
-        )
-      )
+    GraphQl graphQlEndpoint = new GraphQl(
+      new GraphQlService(
+        dataSetFactory,
+        dataSetFactory,
+        dataSetFactory,
+        new GraphQlTypeGenerator()
+      ),
+      uriHelper
     );
+    register(environment, graphQlEndpoint);
+    register(environment, new GetDataSets(dataSetFactory, graphQlEndpoint));
+
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new JsEnv(configuration));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
