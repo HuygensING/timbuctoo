@@ -96,7 +96,7 @@ public class JexlRowFactory implements RowFactory {
           BulkUploadedDataSource.LOG.info("Error during mapping", throwable);
           errorHandler.valueGenerateFailed(
             key,
-            String.format("Could not execute expression '%s' for this row.", expressions.get(key))
+            String.format("Could not execute expression '%s' for row with values: '%s.", expressions.get(key), data)
           );
           return null;
         }
