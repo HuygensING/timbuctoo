@@ -23,11 +23,15 @@ public class FileSystemFileStorageFactory implements FileStorageFactory {
 
   @Override
   public FileStorage makeFileStorage(String userId, String dataSetId) throws IOException {
-    return new FileSystemFileStorage(new File(new File(rootDir, userId), dataSetId));
+    return new FileSystemFileStorage(createPath(userId, dataSetId));
   }
 
   @Override
   public LogStorage makeLogStorage(String userId, String dataSetId) throws IOException {
-    return new FileSystemFileStorage(new File(new File(rootDir, userId), dataSetId));
+    return new FileSystemFileStorage(createPath(userId, dataSetId));
+  }
+
+  private File createPath(String userId, String dataSetId) {
+    return new File(new File(new File(rootDir, userId), dataSetId), "files");
   }
 }

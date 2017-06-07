@@ -91,12 +91,15 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     String authorizationKey = userId + "_" + dataSetId;
     synchronized (dataSetMap) {
       Map<String, DataStores> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
+      File userLocation = new File(configuration.getDataSetMetadataLocation(), userId);
+      userLocation.mkdir();
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          File metaDataLocation = new File(configuration.getDataSetMetadataLocation());
+          File dataSetLocation = new File(userLocation, dataSetId);
+          dataSetLocation.mkdir();
           vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
           DataSet dataSet = new DataSet(
-            new File(metaDataLocation, userId + "_" + dataSetId + "-log.json"),
+            new File(dataSetLocation, "log.json"),
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
             configuration.getFileStorage().makeLogStorage(userId, dataSetId),
@@ -112,10 +115,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
             dbFactory
           );
           result.typeNameStore = new JsonTypeNameStore(
-            new File(metaDataLocation, userId + "_" + dataSetId + "-prefixes.json"),
+            new File(dataSetLocation, "prefixes.json"),
             dataSet
           );
-          result.schemaStore = new JsonSchemaStore(metaDataLocation, userId, dataSetId, dataSet);
+          result.schemaStore = new JsonSchemaStore(dataSet, new File(dataSetLocation, "schema.json"));
           result.dataSet = dataSet;
           result.dataSource = new RdfDataSourceFactory(new DataSourceStore(userId, dataSetId, dbFactory, dataSet));
           userDataSets.put(dataSetId, result);

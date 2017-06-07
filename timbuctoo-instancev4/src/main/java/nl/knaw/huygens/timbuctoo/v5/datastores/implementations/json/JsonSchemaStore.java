@@ -26,10 +26,10 @@ public class JsonSchemaStore implements SchemaStore {
   private static final Function<String, Type> TYPE_MAKER = Type::new;
   private final JsonFileBackedData<Map<String, Type>> schemaFile;
 
-  public JsonSchemaStore(File dataLocation, String userId, String dataSetId, DataProvider dataProvider)
+  public JsonSchemaStore(DataProvider dataProvider, File schemaLocation)
     throws IOException {
     schemaFile = JsonFileBackedData.getOrCreate(
-      new File(dataLocation, userId + "-" + dataSetId + "_schema.json"),
+      schemaLocation,
       () -> null,
       new TypeReference<Map<String, Type>>() {},
       types -> {

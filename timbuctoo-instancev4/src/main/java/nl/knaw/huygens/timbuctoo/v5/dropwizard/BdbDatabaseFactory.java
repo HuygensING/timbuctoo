@@ -43,7 +43,7 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
     if (!databases.containsKey(databaseKey)) {
       if (!environmentMap.containsKey(environmentKey)) {
         try {
-          File dbDir = new File(dbHome, environmentKey);
+          File dbDir = new File(new File(new File(dbHome, userId), dataSetId), "databases");
           dbDir.mkdirs();
           Environment dataSetEnvironment = new Environment(dbDir, configuration);
           environmentMap.put(environmentKey, dataSetEnvironment);
