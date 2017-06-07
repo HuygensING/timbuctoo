@@ -19,13 +19,11 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingExceptio
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static graphql.schema.GraphQLSchema.newSchema;
 
 public class GraphQlService {
-  private final Map<String, GraphQL> graphQls = new HashMap<>();
   private final CollectionIndexSchemaFactory schemaFactory;
   private final SchemaStoreFactory schemaStoreFactory;
   private final TypeNameStoreFactory typeNameStoreFactory;
@@ -79,13 +77,7 @@ public class GraphQlService {
   public Serializable executeQuery(String userId, String dataSet, String query)
       throws GraphQlProcessingException, GraphQlFailedException {
     try {
-      GraphQL graphQl;
-      if (graphQls.containsKey(dataSet)) {
-        graphQl = graphQls.get(dataSet);
-      } else {
-        graphQl = loadSchema(userId, dataSet);
-        graphQls.put(dataSet, graphQl);
-      }
+      GraphQL graphQl = loadSchema(userId, dataSet);
       ExecutionResult result = graphQl.execute(query);
       if (result.getErrors().isEmpty()) {
         return result.getData();
