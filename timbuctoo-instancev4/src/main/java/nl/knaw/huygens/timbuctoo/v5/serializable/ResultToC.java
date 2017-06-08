@@ -7,6 +7,14 @@ public class ResultToC {
   private ResultToC contents;
   private int maxCount = -1;
 
+  public LinkedHashMap<String, ResultToC> getFields() {
+    return fields;
+  }
+
+  public int getMaxCount() {
+    return maxCount;
+  }
+
   public void notifyCount(int otherCount) {
     maxCount = maxCount < otherCount ? otherCount : maxCount;
   }

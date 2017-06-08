@@ -17,7 +17,7 @@ public interface Serialization {
   void finish() throws IOException;
 
   /**
-   * This method is called everytime a new graphql Object is opened, except for objects that represent wrapped scalars.
+   * This method is called every time a new graphql Object is opened, except for objects that represent wrapped scalars.
    * @param uri the uri of the entity
    */
   void onStartEntity(String uri) throws IOException;

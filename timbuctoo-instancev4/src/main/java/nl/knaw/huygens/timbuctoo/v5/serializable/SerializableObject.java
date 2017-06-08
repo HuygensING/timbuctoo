@@ -35,7 +35,11 @@ public class SerializableObject implements Serializable {
   }
 
   public void performSerialization(Serialization serialization) throws IOException {
-    serialization.initialize(() -> this.generateToC(new ResultToC()), typeNameStore);
+    serialization.initialize(() -> {
+      ResultToC result = new ResultToC();
+      this.generateToC(result);
+      return result;
+    }, typeNameStore);
     this.serialize(serialization);
     serialization.finish();
 

@@ -24,9 +24,9 @@ public class SerializableList implements Serializable {
   @Override
   public void generateToC(ResultToC siblingEntity) {
     siblingEntity.notifyCount(data.size());
-    ResultToC contents = siblingEntity.getContents();
+    //ResultToC contents = siblingEntity.getContents();
     for (Serializable value : data) {
-      value.generateToC(contents);
+      value.generateToC(siblingEntity);
     }
   }
 
