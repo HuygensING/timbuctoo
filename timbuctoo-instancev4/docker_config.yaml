@@ -21,7 +21,7 @@ timbuctooSearchUrl: ${TIMBUCTOO_SEARCH_URL}
 userRedirectUrl: ${TIMBUCTOO_GUI_PUBLIC_URL}
 
 databases:
-  databaseLocation: /root/data/bdb
+  databaseLocation: /root/data/datasets
 
 databaseConfiguration:
   databasePath: "/root/timbuctoo-prod-db"
@@ -30,7 +30,7 @@ dataSet:
   dataSetMetadataLocation: /root/data/datasets
   fileStorage:
     "@class": nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorageFactory
-    rootDir: /root/data/files
+    rootDir: /root/data/datasets
   rdfIo:
     "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
     rdfFormat: application/n-quads
