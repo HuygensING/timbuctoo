@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataSetPathHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.rml.DataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
@@ -45,6 +46,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   private final Map<String, Map<String, DataStores>> dataSetMap;
   private final JsonFileBackedData<Map<String, Set<String>>> storedDataSets;
   private final HashMap<UUID, StringBuffer> statusMap;
+  private final DataSetPathHelper dataSetPathHelper;
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
                         DataSetConfiguration configuration, BdbDatabaseCreator dbFactory) throws IOException {
@@ -53,7 +55,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     this.configuration = configuration;
     this.dbFactory = dbFactory;
     dataSetMap = new HashMap<>();
-    new File(configuration.getDataSetMetadataLocation()).mkdirs();
+    dataSetPathHelper = new DataSetPathHelper(configuration.getDataSetMetadataLocation());
     storedDataSets = JsonFileBackedData.getOrCreate(
       new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
       HashMap::new,
@@ -91,15 +93,11 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     String authorizationKey = userId + "_" + dataSetId;
     synchronized (dataSetMap) {
       Map<String, DataStores> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
-      File userLocation = new File(configuration.getDataSetMetadataLocation(), userId);
-      userLocation.mkdir();
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          File dataSetLocation = new File(userLocation, dataSetId);
-          dataSetLocation.mkdir();
           vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
           DataSet dataSet = new DataSet(
-            new File(dataSetLocation, "log.json"),
+            dataSetPathHelper.fileInDataSet(userId, dataSetId, "log.json"),
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
             configuration.getFileStorage().makeLogStorage(userId, dataSetId),
@@ -115,10 +113,13 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
             dbFactory
           );
           result.typeNameStore = new JsonTypeNameStore(
-            new File(dataSetLocation, "prefixes.json"),
+            dataSetPathHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
             dataSet
           );
-          result.schemaStore = new JsonSchemaStore(dataSet, new File(dataSetLocation, "schema.json"));
+          result.schemaStore = new JsonSchemaStore(
+            dataSet,
+            dataSetPathHelper.fileInDataSet(userId, dataSetId, "schema.json")
+          );
           result.dataSet = dataSet;
           result.dataSource = new RdfDataSourceFactory(new DataSourceStore(userId, dataSetId, dbFactory, dataSet));
           userDataSets.put(dataSetId, result);
