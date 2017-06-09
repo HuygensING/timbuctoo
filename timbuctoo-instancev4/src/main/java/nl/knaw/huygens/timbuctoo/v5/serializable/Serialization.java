@@ -45,7 +45,7 @@ public interface Serialization {
    *
    * <p>Will be followed by an onStartEntity, onStartList, onRdfValue or onValue.
    */
-  void onListItem(int index);
+  void onListItem(int index) throws IOException;
 
   /**
    * Called when the list is closed
