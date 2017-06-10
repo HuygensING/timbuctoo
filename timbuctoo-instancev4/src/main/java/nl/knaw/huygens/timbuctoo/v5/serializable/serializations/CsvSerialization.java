@@ -20,7 +20,6 @@ import java.util.List;
  *   source_id, {source leaf-fields}, target_id, {target leaf-fields}, relation
  * </pre>
  * The id's are generated values. Multiple values for one leaf-field are overwritten.
- *
  * This serialization can be used in <a href="http://hdlab.stanford.edu/palladio/">Palladio</a>.
  */
 public class CsvSerialization extends EntityFirstSerialization {
