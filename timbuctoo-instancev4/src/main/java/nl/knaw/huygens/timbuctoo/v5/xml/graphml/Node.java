@@ -8,6 +8,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.namespace.QName;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Node {
@@ -36,7 +37,15 @@ public class Node {
   }
 
   public Node addData(Data data) {
-    dataList.add(data);
+    // @ToDo make lists of properties with same key or leave as is. long lists of data cannot be visualized anyway.
+    // <data key=unique>value1 | value2</data>
+    Optional<Data> maybeData = dataList.stream().filter(d -> d.getKey().equals(data.getKey())).findFirst();
+    if (maybeData.isPresent()) {
+      Data oldData = maybeData.get();
+      oldData.withValue("[multiple values]");
+    } else {
+      dataList.add(data);
+    }
     return this;
   }
 

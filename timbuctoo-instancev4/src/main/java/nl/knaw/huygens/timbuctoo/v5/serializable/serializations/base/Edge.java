@@ -8,28 +8,38 @@ import java.util.Objects;
  */
 public class Edge {
 
+  private final String id;
   private final String name;
-  //private boolean multiEdge;
+  private boolean multiple;
   private Entity sourceEntity;
   private Entity targetEntity;
   private Object target;
   private String targetType;
 
-  public Edge(String name) {
+  public Edge(String name, int index) {
     this.name = name;
+    this.id = "e" + index;
+  }
+
+  public Edge(String name) {
+    this(name, -1);
+  }
+
+  public String getId() {
+    return id;
   }
 
   public String getName() {
     return name;
   }
 
-  // public boolean isMultiEdge() {
-  //   return multiEdge;
-  // }
-  //
-  // public void setMultiEdge(boolean multiEdge) {
-  //   this.multiEdge = multiEdge;
-  // }
+  public boolean isMultiple() {
+    return multiple;
+  }
+
+  public void setMultiple(boolean multiple) {
+    this.multiple = multiple;
+  }
 
   public Entity getSourceEntity() {
     return sourceEntity;
@@ -81,26 +91,37 @@ public class Edge {
     return targetEntity == null ? null : targetEntity.getUri();
   }
 
-  public Edge copy() {
-    Edge edge = new Edge(name);
-    //edge.multiEdge = multiEdge;
+  public Edge copy(int index) {
+    Edge edge = new Edge(name, index);
+    edge.multiple = multiple;
     edge.sourceEntity = sourceEntity;
     edge.targetEntity = targetEntity;
     edge.target = target;
     edge.targetType = targetType;
-
     return edge;
+  }
+
+  public String getTargetString() {
+    return (targetEntity == null ? target + (targetType == null ? "" : "(" + targetType + ")") : targetEntity.getUri());
+  }
+
+  public Object getTargetObject() {
+    return (targetEntity == null ? target : targetEntity.getUri());
+  }
+
+  public String getTargetAsString() {
+    return (targetEntity == null ? target == null ? "" : target.toString() : targetEntity.getUri());
   }
 
   @Override
   public String toString() {
-    return super.toString() +
-      " [" +
+    return //super.toString() +
+      "<(" + id + ") " +
       (sourceEntity == null ? "<>" : sourceEntity.getUri()) +
-      " - " + name +
-      " -> " +
-      (targetEntity == null ? target + (targetType == null ? "" : "(" + targetType + ")") : targetEntity.getUri()) +
-      "]";
+      " --" + name +
+      "--> " +
+      getTargetString() +
+      ">";
   }
 
   @Override

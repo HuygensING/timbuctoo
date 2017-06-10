@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
 import com.sun.xml.txw2.output.IndentingXMLStreamWriter;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.serializable.TocGenerator;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.Edge;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.Entity;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.EntityFirstSerialization;
@@ -22,7 +23,6 @@ import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
-import java.util.Set;
 
 /**
  * Created on 2017-06-07 13:16.
@@ -34,8 +34,6 @@ public class GephiGraphMlSerialization extends EntityFirstSerialization {
 
   private final XMLStreamWriter xsw;
   private final Marshaller marshaller;
-
-  private int edgeCount;
 
   public GephiGraphMlSerialization(OutputStream outputStream) throws IOException {
     XMLOutputFactory xof = XMLOutputFactory.newFactory();
@@ -54,12 +52,14 @@ public class GephiGraphMlSerialization extends EntityFirstSerialization {
   }
 
   @Override
-  public void onFlatToc(Set<String> flatToc, TypeNameStore typeNameStore) throws IOException {
+  public void initialize(TocGenerator tocGenerator, TypeNameStore typeNameStore) throws IOException {
+    super.initialize(tocGenerator, typeNameStore);
     try {
       marshaller.marshal(new Key(ID_EDGE_LABEL).withFor("edge").withAttrName("EdgeLabel").withAttrType("string")
                                                .asJaxbElement(), xsw);
-      flatToc.add(ID_NODE_LABEL);
-      for (String field : flatToc) {
+      marshaller.marshal(new Key(ID_NODE_LABEL).withFor("node").withAttrName("Label").withAttrType("string")
+                                               .asJaxbElement(), xsw);
+      for (String field : getLeafFieldNames()) {
         marshaller.marshal(new Key(field).withFor("node").withAttrName(field).withAttrType("string")
                                                  .asJaxbElement(), xsw);
       }
@@ -89,7 +89,7 @@ public class GephiGraphMlSerialization extends EntityFirstSerialization {
   @Override
   public void onDeclaredEntityEdge(Edge edge) throws IOException {
     if (edge.isNodeEdge()) {
-      GmlEdge gmlEdge = new GmlEdge("e" + edgeCount++)
+      GmlEdge gmlEdge = new GmlEdge(edge.getId())
         .addData(new Data().withKey(ID_EDGE_LABEL).withValue(edge.getName()))
         .withSource(edge.getSourceUri())
         .withTarget(edge.getTargetUri());

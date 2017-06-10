@@ -11,27 +11,27 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
 
 /**
- * Created on 2017-06-08 08:42.
+ * Created on 2017-06-08 13:05.
  */
-public class GraphVizSerializationTest extends SerializationTest {
+public class CsvSerializationTest extends SerializationTest {
 
   @Test
   public void performSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    GraphVizSerialization gs = new GraphVizSerialization(out);
+    CsvSerialization cs = new CsvSerialization(out);
     SerializableObject graph = createGraph_01(createTypeNameStore());
 
-    graph.performSerialization(gs);
+    graph.performSerialization(cs);
     String result = out.toString();
     //System.out.println(result);
-    String expected = "digraph {\n" +
-      "\t\"uri0\" -> \"uri1\" [label=\"hasBeer\"];\n" +
-      "\t\"uri1\" -> \"uri2\" [label=\"hasChild\"];\n" +
-      "\t\"uri2\" -> \"uri3\" [label=\"hasSibling\"];\n" +
-      "\t\"uri3\" -> \"uri4\" [label=\"fooBar\"];\n" +
-      "\t\"uri1\" -> \"uri3\" [label=\"hasChild\"];\n" +
-      "}\n";
-    assertThat(result, equalTo(expected));
-    //saveAs(out, "graphviz_01.gv");
+    //saveAs(out, "csv_01.csv");
+
+    assertThat(result,
+      equalTo("s_id,s_wroteBook,s_foo,s_name,s_uri,t_id,t_wroteBook,t_foo,t_name,t_uri,relation\n" +
+      "n3,,foo3,name3,uri3,n4,,foo4,name4,uri4,fooBar\n" +
+      "n2,J'ai un rêve,foo2,name2,uri2,n3,,foo3,name3,uri3,hasSibling\n" +
+      "n1,,foo1,name1,uri1,n5,,foo3,name3,uri3,hasChild\n" +
+      "n1,,foo1,name1,uri1,n2,J'ai un rêve,foo2,name2,uri2,hasChild\n" +
+      "n0,,foo0,name0,uri0,n1,,foo1,name1,uri1,hasBeer\n"));
   }
 }

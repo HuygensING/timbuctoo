@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableObject;
+import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.SerializationTest;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.xml.sax.ErrorHandler;
@@ -15,7 +16,6 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.URL;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -28,7 +28,7 @@ public class GephiGraphMlSerializationTest extends SerializationTest {
 
   @Test
   public void performSerialization() throws Exception {
-    OutputStream out = new ByteArrayOutputStream();
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
     GephiGraphMlSerialization ggs = new GephiGraphMlSerialization(out);
     SerializableObject graph = createGraph_01(createTypeNameStore());
 
@@ -36,16 +36,15 @@ public class GephiGraphMlSerializationTest extends SerializationTest {
     String result = out.toString();
 
     //System.out.println(result);
+    //saveAs(out, "gephi_01.graphml");
+
     String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
       "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\">\n" +
       "  <key id=\"edgelabel\" attr.name=\"EdgeLabel\" attr.type=\"string\" for=\"edge\"></key>\n" +
-      "  <key id=\"fooBar\" attr.name=\"fooBar\" attr.type=\"string\" for=\"node\"></key>\n" +
+      "  <key id=\"label\" attr.name=\"Label\" attr.type=\"string\" for=\"node\"></key>\n" +
+      "  <key id=\"wroteBook\" attr.name=\"wroteBook\" attr.type=\"string\" for=\"node\"></key>\n" +
       "  <key id=\"foo\" attr.name=\"foo\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"hasChild\" attr.name=\"hasChild\" attr.type=\"string\" for=\"node\"></key>\n" +
       "  <key id=\"name\" attr.name=\"name\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"hasBeer\" attr.name=\"hasBeer\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"label\" attr.name=\"label\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"hasSibling\" attr.name=\"hasSibling\" attr.type=\"string\" for=\"node\"></key>\n" +
       "  <key id=\"uri\" attr.name=\"uri\" attr.type=\"string\" for=\"node\"></key>\n" +
       "  <graph edgedefault=\"directed\">\n" +
       "    <node id=\"uri4\">\n" +
@@ -58,15 +57,16 @@ public class GephiGraphMlSerializationTest extends SerializationTest {
       "      <data key=\"name\">name3</data>\n" +
       "      <data key=\"uri\">uri3</data>\n" +
       "    </node>\n" +
-      "    <edge id=\"e0\" source=\"uri3\" target=\"uri4\">\n" +
+      "    <edge id=\"e16\" source=\"uri3\" target=\"uri4\">\n" +
       "      <data key=\"edgelabel\">fooBar</data>\n" +
       "    </edge>\n" +
       "    <node id=\"uri2\">\n" +
       "      <data key=\"foo\">foo2</data>\n" +
       "      <data key=\"name\">name2</data>\n" +
       "      <data key=\"uri\">uri2</data>\n" +
+      "      <data key=\"wroteBook\">[multiple values]</data>\n" +
       "    </node>\n" +
-      "    <edge id=\"e1\" source=\"uri2\" target=\"uri3\">\n" +
+      "    <edge id=\"e12\" source=\"uri2\" target=\"uri3\">\n" +
       "      <data key=\"edgelabel\">hasSibling</data>\n" +
       "    </edge>\n" +
       "    <node id=\"uri1\">\n" +
@@ -74,10 +74,10 @@ public class GephiGraphMlSerializationTest extends SerializationTest {
       "      <data key=\"name\">name1</data>\n" +
       "      <data key=\"uri\">uri1</data>\n" +
       "    </node>\n" +
-      "    <edge id=\"e2\" source=\"uri1\" target=\"uri3\">\n" +
+      "    <edge id=\"e24\" source=\"uri1\" target=\"uri3\">\n" +
       "      <data key=\"edgelabel\">hasChild</data>\n" +
       "    </edge>\n" +
-      "    <edge id=\"e3\" source=\"uri1\" target=\"uri2\">\n" +
+      "    <edge id=\"e8\" source=\"uri1\" target=\"uri2\">\n" +
       "      <data key=\"edgelabel\">hasChild</data>\n" +
       "    </edge>\n" +
       "    <node id=\"uri0\">\n" +
@@ -85,7 +85,7 @@ public class GephiGraphMlSerializationTest extends SerializationTest {
       "      <data key=\"name\">name0</data>\n" +
       "      <data key=\"uri\">uri0</data>\n" +
       "    </node>\n" +
-      "    <edge id=\"e4\" source=\"uri0\" target=\"uri1\">\n" +
+      "    <edge id=\"e3\" source=\"uri0\" target=\"uri1\">\n" +
       "      <data key=\"edgelabel\">hasBeer</data>\n" +
       "    </edge>\n" +
       "  </graph>\n" +

@@ -8,12 +8,22 @@ import java.util.List;
  */
 public class Entity {
 
+  private final String id;
   private final String uri;
   private List<Edge> inEdges = new ArrayList<>();
   private List<Edge> outEdges = new ArrayList<>();
 
-  public Entity(String uri) {
+  public Entity(String uri, int index) {
     this.uri = uri;
+    this.id = "n" + index;
+  }
+
+  public String getId() {
+    return id;
+  }
+
+  public Entity(String uri) {
+    this(uri, -1);
   }
 
   public String getUri() {
@@ -38,7 +48,7 @@ public class Entity {
 
   @Override
   public String toString() {
-    return super.toString() +
-      " uri=" + uri + " in=" + inEdges + " out=" + outEdges;
+    return //super.toString() +
+      " { (" + id + ") uri=" + uri + " in=" + inEdges + " out=" + outEdges + "}";
   }
 }
