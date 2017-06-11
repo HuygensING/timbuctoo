@@ -8,9 +8,11 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
 
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
@@ -36,7 +38,21 @@ public class GraphQl {
   }
 
   @POST
-  public Response get(String query, @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
+  public Response post(String query, @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
+    return executeGraphQlQuery(query, userId, dataSet);
+  }
+
+
+  @GET
+  public Response get(@QueryParam("query") String query,
+                      @PathParam("userId") String userId,
+                      @PathParam("dataSet") String dataSet
+  ) {
+    return executeGraphQlQuery(query, userId, dataSet);
+  }
+
+  private Response executeGraphQlQuery(String query, @PathParam("userId") String userId,
+                                       @PathParam("dataSet") String dataSet) {
     try {
       return ok(graphQlService.executeQuery(userId, dataSet, query)).build();
     } catch (GraphQlProcessingException | GraphQlFailedException e) {
@@ -44,5 +60,4 @@ public class GraphQl {
       return Response.status(500).entity(e.getMessage()).build();
     }
   }
-
 }
