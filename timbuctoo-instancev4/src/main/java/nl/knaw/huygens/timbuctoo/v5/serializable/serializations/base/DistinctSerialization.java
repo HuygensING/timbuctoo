@@ -23,6 +23,9 @@ public class DistinctSerialization extends BaseSerialization {
 
   @Override
   public void onEntity(Entity entity) throws IOException {
+    if (entity == null || entity.getUri() == null) {
+      return;
+    }
     if (!distinctUris.contains(entity.getUri())) {
       distinctUris.add(entity.getUri());
       onDistinctEntity(entity);
@@ -38,6 +41,9 @@ public class DistinctSerialization extends BaseSerialization {
   }
 
   public boolean isEntityDeclared(Entity entity) {
+    if (entity == null || entity.getUri() == null) {
+      return false;
+    }
     return distinctUris.contains(entity.getUri());
   }
 }
