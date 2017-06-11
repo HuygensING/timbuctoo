@@ -22,12 +22,12 @@ import java.util.List;
  * The id's are generated values. Multiple values for one leaf-field are overwritten.
  * This serialization can be used in <a href="http://hdlab.stanford.edu/palladio/">Palladio</a>.
  */
-public class CsvSerialization extends EntityFirstSerialization {
+public class PalladioCsvSerialization extends EntityFirstSerialization {
 
   private final PrintStream printStream;
   private List<String> columns;
 
-  public CsvSerialization(OutputStream outputStream) throws IOException {
+  public PalladioCsvSerialization(OutputStream outputStream) throws IOException {
     printStream = new PrintStream(outputStream, true, StandardCharsets.UTF_8.name());
   }
 

@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.Serializati
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
-import java.io.OutputStream;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -13,12 +12,12 @@ import static org.hamcrest.core.IsEqual.equalTo;
 /**
  * Created on 2017-06-08 13:05.
  */
-public class CsvSerializationTest extends SerializationTest {
+public class PalladioCsvSerializationTest extends SerializationTest {
 
   @Test
   public void performSerialization() throws Exception {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
-    CsvSerialization cs = new CsvSerialization(out);
+    PalladioCsvSerialization cs = new PalladioCsvSerialization(out);
     SerializableObject graph = createGraph_01(createTypeNameStore());
 
     graph.performSerialization(cs);
