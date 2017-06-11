@@ -15,19 +15,19 @@ public class ResultToC {
     return maxCount;
   }
 
-  public void notifyCount(int otherCount) {
+  void notifyCount(int otherCount) {
     maxCount = maxCount < otherCount ? otherCount : maxCount;
   }
 
-  public ResultToC getField(String key) {
+  ResultToC getField(String key) {
     return fields.computeIfAbsent(key, k -> new ResultToC());
   }
 
-  public void notifyValueField(String key) {
+  void notifyValueField(String key) {
     fields.computeIfAbsent(key, k -> null);
   }
 
-  public ResultToC getContents() {
+  ResultToC getContents() {
     if (contents == null) {
       contents = new ResultToC();
     }
