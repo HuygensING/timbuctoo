@@ -55,12 +55,12 @@ public class CsvSerialization implements Serialization {
 
   @Override
   public void onStartEntity(String uri) throws IOException {
-    // throw new UnsupportedOperationException("Not implemented yet");
+    // nothing special to do
   }
 
   @Override
   public void onProperty(String propertyName) throws IOException {
-    // throw new UnsupportedOperationException("Not implemented yet");
+    // nothing special to do
   }
 
   @Override
@@ -73,17 +73,17 @@ public class CsvSerialization implements Serialization {
 
   @Override
   public void onStartList() throws IOException {
-    // throw new UnsupportedOperationException("Not implemented yet");
+    // nothing special to do
   }
 
   @Override
   public void onListItem(int index) throws IOException {
-    // throw new UnsupportedOperationException("Not implemented yet");
+    // nothing special to do
   }
 
   @Override
   public void onCloseList() throws IOException {
-    // throw new UnsupportedOperationException("Not implemented yet");
+    // nothing special to do
   }
 
   @Override
