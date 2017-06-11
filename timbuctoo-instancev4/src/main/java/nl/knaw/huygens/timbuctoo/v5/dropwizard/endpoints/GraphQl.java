@@ -12,6 +12,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
@@ -51,7 +52,17 @@ public class GraphQl {
     return executeGraphQlQuery(query, userId, dataSet);
   }
 
-  private Response executeGraphQlQuery(String query, @PathParam("userId") String userId,
+  @Path("csv")
+  @GET
+  @Produces("text/csv")
+  public Response getCsv(@QueryParam("query") String query,
+                         @PathParam("userId") String userId,
+                         @PathParam("dataSet") String dataSet
+  ) {
+    return executeGraphQlQuery(query, userId, dataSet);
+  }
+
+  private Response executeGraphQlQuery(@QueryParam("query") String query, @PathParam("userId") String userId,
                                        @PathParam("dataSet") String dataSet) {
     try {
       return ok(graphQlService.executeQuery(userId, dataSet, query)).build();
@@ -60,4 +71,6 @@ public class GraphQl {
       return Response.status(500).entity(e.getMessage()).build();
     }
   }
+
+
 }
