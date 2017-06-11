@@ -84,6 +84,9 @@ import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GephiWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.XmlWriter;
@@ -230,6 +233,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       pathWithoutVersionAndRevision
     );
 
+    environment.jersey().register(new CsvWriter());
+    environment.jersey().register(new GephiWriter());
+    environment.jersey().register(new GraphVizWriter());
     environment.jersey().register(new JsonLdWriter());
     environment.jersey().register(new JsonWriter());
     environment.jersey().register(new XmlWriter());
