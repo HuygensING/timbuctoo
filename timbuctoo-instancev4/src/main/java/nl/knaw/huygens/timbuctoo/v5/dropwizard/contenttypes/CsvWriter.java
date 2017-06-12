@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes;
 
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.CsvSerialization;
-import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.PalladioCsvSerialization;
 
 import javax.ws.rs.Produces;
 
