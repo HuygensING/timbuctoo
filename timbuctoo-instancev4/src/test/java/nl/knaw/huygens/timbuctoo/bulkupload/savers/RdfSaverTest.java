@@ -38,7 +38,7 @@ public class RdfSaverTest {
 
   private static final String COLLECTION = "coll";
   private static final String DATA_SET_ID = "dataSet";
-  private static final String DATA_SET_URI = "http://timbuctoo/datasets/dataSet";
+  private static final String DATA_SET_URI = "http://timbuctoo.huygens.knaw.nl/v5/datasets/dataSet";
   private RdfSaver instance;
   private RdfSerializer rdfSerializer;
 
@@ -171,7 +171,7 @@ public class RdfSaverTest {
     importPropertyDescriptions.getOrCreate(2).setPropertyName("propName2");
 
     instance.addPropertyDescriptions(COLLECTION, importPropertyDescriptions);
-
+  
     verify(rdfSerializer).onRelation(
       argThat(containsString("propName1")),
       eq(OF_COLLECTION),
@@ -208,13 +208,13 @@ public class RdfSaverTest {
 
     String generatedRdf = rdfSerializer.toString();
     // Use assertEquals because the failing Hamcrest output is hard to compare
-    String collection = "http://timbuctoo/collections/dataSet/fileName/";
-    String prop = "http://timbuctoo/props/dataSet/fileName/";
-    String rawData = "http://timbuctoo.huygens.knaw.nl/rawData/dataSet/fileName/";
-    String graphName = "http://timbuctoo/datasets/dataSet";
-    String propdescType = "http://timbuctoo.com/things/propertyDescription/";
-    assertEquals(generatedRdf.replaceAll("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "{UUID}"),
-      collection + "1 "     + RDF_TYPE           + " " + TIM_COLLECTION + " "                    + graphName + "\n" +
+    String collection = "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSet/fileName/";
+    String prop = "http://timbuctoo.huygens.knaw.nl/v5/props/dataSet/fileName/";
+    String rawData = "http://timbuctoo.huygens.knaw.nl/v5/rawData/dataSet/fileName/";
+    String graphName = "http://timbuctoo.huygens.knaw.nl/v5/datasets/dataSet";
+    String propdescType = "http://timbuctoo.huygens.knaw.nl/v5/propertyDescription/";
+    assertEquals(
+        collection + "1 "   + RDF_TYPE           + " " + TIM_COLLECTION + " "                    + graphName + "\n" +
         collection + "1 "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "1 "   + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "propName1 " + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
@@ -275,7 +275,8 @@ public class RdfSaverTest {
         rawData + "4 "      + TIM_HAS_ROW        + " " + collection + "2 "                       + graphName + "\n" +
         rawData + "4 "      + prop + "prop3"     + " entVal1" +             "^^" + STRING + " "  + graphName + "\n" +
         rawData + "4 "      + prop + "prop4"     + " entVal2" +             "^^" + STRING + " "  + graphName + "\n" +
-        rawData + "4 "      + prop + "tim_id"    + " {UUID}" +              "^^" + STRING + " "  + graphName + "\n"
+        rawData + "4 "      + prop + "tim_id"    + " {UUID}" +              "^^" + STRING + " "  + graphName + "\n",
+        generatedRdf.replaceAll("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}", "{UUID}")
     );
   }
 

@@ -124,11 +124,11 @@ public class DataSourceStoreTest {
     );
 
     RdfDataSource rdfDataSource = new RdfDataSource(dataSourceStore,
-      "http://timbuctoo/collections/dataSetId/fileName/1",
+      "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSetId/fileName/1",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
     RdfDataSource rdfDataSource2 = new RdfDataSource(dataSourceStore,
-      "http://timbuctoo/collections/dataSetId/fileName/2",
+      "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSetId/fileName/2",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
 

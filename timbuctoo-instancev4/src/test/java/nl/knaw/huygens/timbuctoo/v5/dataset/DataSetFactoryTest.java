@@ -28,7 +28,7 @@ public class DataSetFactoryTest {
   protected File tempFile;
 
   @Before
-  public void init() throws IOException {
+  public void init() throws IOException, InterruptedException {
     tempFile = Files.createTempDir();
     dataSetFactory = new DataSetFactory(
       Executors.newSingleThreadExecutor(),
