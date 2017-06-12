@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes;
 
 import io.dropwizard.jersey.setup.JerseyEnvironment;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedMimeTypes;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -9,7 +9,7 @@ import java.util.Set;
 
 import static java.lang.String.format;
 
-public class SerializerWriterRegistry implements SupportedMimeTypes {
+public class SerializerWriterRegistry implements SupportedExportFormats {
   private final JerseyEnvironment jersey;
   private HashSet<String> supportedMimeTypes;
 

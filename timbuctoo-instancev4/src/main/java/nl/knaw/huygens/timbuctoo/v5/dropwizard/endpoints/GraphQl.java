@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.sleepycat.je.DatabaseException;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
@@ -24,13 +25,11 @@ import static javax.ws.rs.core.Response.ok;
 public class GraphQl {
   private final GraphQlService graphQlService;
   private final UriHelper uriHelper;
-  private final SupportedMimeTypes supportedMimeTypes;
 
-  public GraphQl(GraphQlService service, UriHelper uriHelper, SupportedMimeTypes supportedMimeTypes)
+  public GraphQl(GraphQlService service, UriHelper uriHelper)
     throws DatabaseException, RdfProcessingFailedException {
     graphQlService = service;
     this.uriHelper = uriHelper;
-    this.supportedMimeTypes = supportedMimeTypes;
   }
 
   public URI makeUrl(String userId, String dataSetId) {
@@ -74,13 +73,5 @@ public class GraphQl {
       return Response.status(500).entity(e.getMessage()).build();
     }
   }
-
-  @Path("supported_formats")
-  @GET
-  @Produces("application/json")
-  public Response getSupportedMimeTypes() {
-    return ok(supportedMimeTypes.getSupportedMimeTypes()).build();
-  }
-
 
 }

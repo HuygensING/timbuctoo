@@ -96,7 +96,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedMimeTypes;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
@@ -114,7 +114,6 @@ import java.nio.channels.ServerSocketChannel;
 import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Properties;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -247,6 +246,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     serializerWriterRegistry.register(new PalladioCsvWriter());
     serializerWriterRegistry.register(new XmlWriter());
 
+    register(environment, new SupportedFormats(serializerWriterRegistry));
+
     configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
 
     environment.lifecycle().manage(configuration.getDatabases());
@@ -276,8 +277,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetFactory,
         new GraphQlTypeGenerator()
       ),
-      uriHelper,
-      serializerWriterRegistry
+      uriHelper
     );
     register(environment, graphQlEndpoint);
     register(environment, new GetDataSets(dataSetFactory, graphQlEndpoint));
