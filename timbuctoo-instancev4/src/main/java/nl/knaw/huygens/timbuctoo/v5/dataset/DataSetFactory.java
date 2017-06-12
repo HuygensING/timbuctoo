@@ -34,7 +34,7 @@ import java.util.function.Function;
 
 /**
  * - stores all configuration parameters so it can inject them in the dataset constructor
- * - makes DataSets a singleton
+ * - makes CreateDataSet a singleton
  * - keeps track of all created dataSets across restarts (stores them in a file)
  */
 public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFactory, TypeNameStoreFactory {
