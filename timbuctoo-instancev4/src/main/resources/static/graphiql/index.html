@@ -32,20 +32,32 @@
       location.hash = userId + "/" + dataSetId;
       var dataSets = {};
       var dataSetList = [];
-      
+      var acceptMediaType = "application/json";
+      var mediaTypeMenuItems = [];
+
       function setDataSet(userId, name) {
         location.hash = userId + "/" + name;
         location.reload();
+      }
+
+      function setAcceptMediaType(mediaType) {
+          acceptMediaType = mediaType;
       }
       
       function graphQLFetcher(graphQLParams) {
         if (dataSets[dataSetId]) {
           return fetch(dataSets[dataSetId], {
             method: 'post',
-            headers: { 'Accept': 'application/json' },
+            headers: { 'Accept': acceptMediaType },
             body: graphQLParams.query,
           }).then(response => {
-            var s = response.json();
+            var s;
+              let contentType = response.headers.get('Content-Type');
+              if(contentType === 'application/json' || contentType.endsWith("+json")) {
+              s = response.json();
+            } else {
+              s = response.text();
+            }
             return s
           }).then(parsed => {
             data = parsed
@@ -55,6 +67,7 @@
           return Promise.resolve('"no dataSet selected"')
         }
       }
+
       
       fetch(`/v5/dataSets/${userId}`, {
         method: 'get',
@@ -68,22 +81,44 @@
           onSelect: function () {setDataSet(userId, dataSet)},
           label: dataSet,
         }));
-      }).then(list => 
-        ReactDOM.render(React.createElement(GraphiQL, 
-          {
-            fetcher: graphQLFetcher,
-          },
-          React.createElement(
-            GraphiQL.Toolbar,
-            null,
-            React.createElement(
-              GraphiQL.Menu,
-              {label: "select dataset"},
-              dataSetList
-            )
-          )
-        ), document.getElementById("graphiql"))
-      );
+      }).then(function (list) {
+          fetch(`/v5/supported_formats/export`, {
+              method: 'get',
+              headers: {'Accept': 'application/json'}
+          }).then(function (mediaTypes) {
+              return mediaTypeMenuItems = mediaTypes.json();
+          }).then(function (mediaTypes) {
+              return mediaTypes.map(function (type) {
+                  return React.createElement(GraphiQL.MenuItem, {
+                      key: type,
+                      onSelect: function () {
+                          setAcceptMediaType(type);
+                      },
+                      label: type,
+                  })
+              })
+          }).then(function (mediaTypeMenuItems) {
+              ReactDOM.render(React.createElement(GraphiQL,
+                  {
+                      fetcher: graphQLFetcher,
+                  },
+                  React.createElement(
+                      GraphiQL.Toolbar,
+                      null,
+                      React.createElement(
+                          GraphiQL.Menu,
+                          {label: "select dataset"},
+                          dataSetList
+                      ),
+                      React.createElement(
+                          GraphiQL.Menu,
+                          {label: "select accept media type"},
+                          mediaTypeMenuItems
+                      )
+                  )
+              ), document.getElementById("graphiql"))
+          });
+      });
     </script>
   </body>
 </html>
