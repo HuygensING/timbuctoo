@@ -8,13 +8,25 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableObject;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableUntypedValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.BaseSerialization;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
+import javax.xml.XMLConstants;
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -51,16 +63,21 @@ public abstract class SerializationTest {
     LinkedHashMap<String, Serializable> data2 = new LinkedHashMap<>();
     SerializableObject so2 = createSerializableObject(data2, 2, typeNameStore);
     data2.put("hasSibling", so3);
-    data2.put("wroteBook", new SerializableList(listFor2));
-
     List<Serializable> listFor1 = new ArrayList<>();
     listFor1.add(so2);
     listFor1.add(so3);
-    SerializableList slForSo1 = new SerializableList(listFor1);
+    LinkedHashMap<String, Serializable> data101 = new LinkedHashMap<>();
+    SerializableObject so101 = createSerializableObject(data101, 101, typeNameStore);
+    data101.put("items", new SerializableList(listFor2));
+    data2.put("wroteBook", so101);
+
+    LinkedHashMap<String, Serializable> data102 = new LinkedHashMap<>();
+    SerializableObject so102 = createSerializableObject(data102, 102, typeNameStore);
+    data102.put("items", new SerializableList(listFor1));
 
     LinkedHashMap<String, Serializable> data1 = new LinkedHashMap<>();
     SerializableObject so1 = createSerializableObject(data1, 1, typeNameStore);
-    data1.put("hasChild", slForSo1);
+    data1.put("hasChild", so102);
 
     LinkedHashMap<String, Serializable> data0 = new LinkedHashMap<>();
     SerializableObject so0 = createSerializableObject(data0, 0, typeNameStore);
@@ -123,5 +140,35 @@ public abstract class SerializationTest {
       //
       // }
     };
+  }
+
+  protected void validate(String schemaLocation, String result) throws Exception {
+    InputStream in = IOUtils.toInputStream(result, "UTF-8");
+    Source source = new StreamSource(in);
+
+    SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    Schema schema = sf.newSchema(new URL(schemaLocation));
+
+    Validator validator = schema.newValidator();
+    validator.setErrorHandler(new GraphErrorHandler());
+    validator.validate(source);
+  }
+
+  protected static class GraphErrorHandler implements ErrorHandler {
+
+    @Override
+    public void warning(SAXParseException exception) throws SAXException {
+      throw exception;
+    }
+
+    @Override
+    public void error(SAXParseException exception) throws SAXException {
+      throw exception;
+    }
+
+    @Override
+    public void fatalError(SAXParseException exception) throws SAXException {
+      throw exception;
+    }
   }
 }

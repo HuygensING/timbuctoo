@@ -19,7 +19,7 @@ public class CsvSerializationTest extends SerializationTest {
 
     graph.performSerialization(cs);
     String result = out.toString();
-    System.out.println(result);
+    //System.out.println(result);
     saveAs(out, "csv_02.csv");
   }
 }

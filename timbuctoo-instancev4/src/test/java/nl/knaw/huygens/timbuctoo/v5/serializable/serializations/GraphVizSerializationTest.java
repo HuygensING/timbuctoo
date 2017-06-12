@@ -24,14 +24,17 @@ public class GraphVizSerializationTest extends SerializationTest {
     graph.performSerialization(gs);
     String result = out.toString();
     //System.out.println(result);
+    saveAs(out,"graphviz_02.gv");
+
     String expected = "digraph {\n" +
       "\t\"uri0\" -> \"uri1\" [label=\"hasBeer\"];\n" +
-      "\t\"uri1\" -> \"uri2\" [label=\"hasChild\"];\n" +
+      "\t\"uri1\" -> \"uri102\" [label=\"hasChild\"];\n" +
+      "\t\"uri102\" -> \"uri2\" [label=\"items\"];\n" +
       "\t\"uri2\" -> \"uri3\" [label=\"hasSibling\"];\n" +
       "\t\"uri3\" -> \"uri4\" [label=\"fooBar\"];\n" +
-      "\t\"uri1\" -> \"uri3\" [label=\"hasChild\"];\n" +
+      "\t\"uri2\" -> \"uri101\" [label=\"wroteBook\"];\n" +
+      "\t\"uri102\" -> \"uri3\" [label=\"items\"];\n" +
       "}\n";
     assertThat(result, equalTo(expected));
-    //saveAs(out, "graphviz_01.gv");
   }
 }
