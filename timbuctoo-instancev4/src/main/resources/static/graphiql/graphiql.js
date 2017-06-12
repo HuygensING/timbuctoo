@@ -2288,10 +2288,12 @@ var _initialiseProps = function _initialiseProps() {
 
       // _fetchQuery may return a subscription.
       var subscription = _this6._fetchQuery(editedQuery, variables, operationName, function (result) {
+        // return the raw value of non-JSON results
+        var formattedResult = typeof(result) === 'object' ? JSON.stringify(result, null, 2) : result;
         if (queryID === _this6._editorQueryID) {
           _this6.setState({
             isWaitingForResponse: false,
-            response: JSON.stringify(result, null, 2)
+            response: formattedResult
           });
         }
       });
