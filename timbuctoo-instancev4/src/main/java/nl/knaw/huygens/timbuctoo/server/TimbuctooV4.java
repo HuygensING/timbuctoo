@@ -84,6 +84,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GexfWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GephiWriter;
@@ -240,6 +241,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(environment.jersey());
     serializerWriterRegistry.register(new CsvWriter());
     serializerWriterRegistry.register(new GephiWriter());
+    serializerWriterRegistry.register(new GexfWriter());
     serializerWriterRegistry.register(new GraphVizWriter());
     serializerWriterRegistry.register(new JsonLdWriter());
     serializerWriterRegistry.register(new JsonWriter());
