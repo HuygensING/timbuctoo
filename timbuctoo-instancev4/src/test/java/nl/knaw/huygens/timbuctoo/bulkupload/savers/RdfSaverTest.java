@@ -174,7 +174,7 @@ public class RdfSaverTest {
 
     verify(rdfSerializer).onRelation(
       argThat(containsString("propName1")),
-      eq("http://timbuctoo.com/thing/ofCollection"),
+      eq(OF_COLLECTION),
       eq(COLLECTION),
       eq(DATA_SET_URI)
     );
