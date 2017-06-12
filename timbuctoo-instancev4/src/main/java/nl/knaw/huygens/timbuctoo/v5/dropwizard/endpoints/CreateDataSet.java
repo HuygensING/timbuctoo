@@ -10,9 +10,10 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
+import java.util.Objects;
 import java.util.Optional;
 
-@Path("/v5/dataSets/{dataSetId}")
+@Path("/v5/dataSets/{userId}/{dataSetId}/create")
 public class CreateDataSet {
   private final LoggedInUsers loggedInUsers;
   private final DataSetFactory dataSetFactory;
@@ -23,7 +24,8 @@ public class CreateDataSet {
   }
 
   @POST
-  public Response create(@PathParam("dataSetId") String dataSetId, @HeaderParam("Authorization") String authorization)
+  public Response create(@PathParam("userId") String userId, @PathParam("dataSetId") String dataSetId,
+                         @HeaderParam("Authorization") String authorization)
     throws DataStoreCreationException {
     Optional<User> user = loggedInUsers.userFor(authorization);
     if (!user.isPresent()) {
@@ -31,6 +33,10 @@ public class CreateDataSet {
     }
 
     String persistentId = user.get().getPersistentId();
+    if (!Objects.equals(persistentId, userId)) {
+      return Response.status(Response.Status.FORBIDDEN).build();
+    }
+
     dataSetFactory.createDataSet(persistentId, dataSetId);
 
 
