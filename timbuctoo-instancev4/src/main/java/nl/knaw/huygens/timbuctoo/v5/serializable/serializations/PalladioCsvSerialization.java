@@ -4,10 +4,13 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.serializable.TocGenerator;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.Edge;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.EntityFirstSerialization;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,22 +27,27 @@ import java.util.List;
  */
 public class PalladioCsvSerialization extends EntityFirstSerialization {
 
-  private final PrintStream printStream;
+  private final CSVPrinter csvPrinter;
   private List<String> columns;
 
   public PalladioCsvSerialization(OutputStream outputStream) throws IOException {
-    printStream = new PrintStream(outputStream, true, StandardCharsets.UTF_8.name());
+    csvPrinter = new CSVPrinter(new PrintWriter(outputStream), CSVFormat.EXCEL);
   }
 
   @Override
   public void initialize(TocGenerator tocGenerator, TypeNameStore typeNameStore) throws IOException {
     super.initialize(tocGenerator, typeNameStore);
     columns = getLeafFieldNames();
-    printStream.print("s_id,");
-    columns.forEach(f -> printStream.print("s_" + f + ","));
-    printStream.print("t_id,");
-    columns.forEach(f -> printStream.print("t_" + f + ","));
-    printStream.println("relation");
+    csvPrinter.print("s_id");
+    for (String column : columns) {
+      csvPrinter.print("s_" + column);
+    }
+    csvPrinter.print("t_id");
+    for (String f : columns) {
+      csvPrinter.print("t_" + f);
+    }
+    csvPrinter.print("relation");
+    csvPrinter.println();
   }
 
   @Override
@@ -59,11 +67,22 @@ public class PalladioCsvSerialization extends EntityFirstSerialization {
           targetFields.set(index, outEdge.getTargetAsString());
         }
       }
-      printStream.print(edge.getSourceEntity().getId() + ",");
-      sourceFields.forEach(v -> printStream.print(v + ","));
-      printStream.print(edge.getTargetEntity().getId() + ",");
-      targetFields.forEach(v -> printStream.print(v + ","));
-      printStream.println(edge.getName());
+      csvPrinter.print(edge.getSourceEntity().getId());
+      for (String sourceField : sourceFields) {
+        csvPrinter.print(sourceField);
+      }
+      csvPrinter.print(edge.getTargetEntity().getId());
+      for (String v : targetFields) {
+        csvPrinter.print(v);
+      }
+      csvPrinter.print(edge.getName());
+      csvPrinter.println();
     }
+  }
+
+  @Override
+  public void finish() throws IOException {
+    csvPrinter.flush();
+    csvPrinter.close();
   }
 }
