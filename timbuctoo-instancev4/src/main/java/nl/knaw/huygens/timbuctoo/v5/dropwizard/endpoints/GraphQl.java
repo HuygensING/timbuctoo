@@ -24,10 +24,13 @@ import static javax.ws.rs.core.Response.ok;
 public class GraphQl {
   private final GraphQlService graphQlService;
   private final UriHelper uriHelper;
+  private final SupportedMimeTypes supportedMimeTypes;
 
-  public GraphQl(GraphQlService service, UriHelper uriHelper) throws DatabaseException, RdfProcessingFailedException {
+  public GraphQl(GraphQlService service, UriHelper uriHelper, SupportedMimeTypes supportedMimeTypes)
+    throws DatabaseException, RdfProcessingFailedException {
     graphQlService = service;
     this.uriHelper = uriHelper;
+    this.supportedMimeTypes = supportedMimeTypes;
   }
 
   public URI makeUrl(String userId, String dataSetId) {
@@ -70,6 +73,13 @@ public class GraphQl {
       e.printStackTrace();
       return Response.status(500).entity(e.getMessage()).build();
     }
+  }
+
+  @Path("supported_formats")
+  @GET
+  @Produces("application/json")
+  public Response getSupportedMimeTypes() {
+    return ok(supportedMimeTypes.getSupportedMimeTypes()).build();
   }
 
 

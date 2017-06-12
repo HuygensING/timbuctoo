@@ -84,6 +84,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GephiWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
@@ -95,6 +96,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedMimeTypes;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
@@ -112,6 +114,7 @@ import java.nio.channels.ServerSocketChannel;
 import java.time.Clock;
 import java.util.LinkedHashMap;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -234,13 +237,15 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       pathWithoutVersionAndRevision
     );
 
-    environment.jersey().register(new CsvWriter());
-    environment.jersey().register(new GephiWriter());
-    environment.jersey().register(new GraphVizWriter());
-    environment.jersey().register(new JsonLdWriter());
-    environment.jersey().register(new JsonWriter());
-    environment.jersey().register(new PalladioCsvWriter());
-    environment.jersey().register(new XmlWriter());
+
+    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(environment.jersey());
+    serializerWriterRegistry.register(new CsvWriter());
+    serializerWriterRegistry.register(new GephiWriter());
+    serializerWriterRegistry.register(new GraphVizWriter());
+    serializerWriterRegistry.register(new JsonLdWriter());
+    serializerWriterRegistry.register(new JsonWriter());
+    serializerWriterRegistry.register(new PalladioCsvWriter());
+    serializerWriterRegistry.register(new XmlWriter());
 
     configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
 
@@ -271,7 +276,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetFactory,
         new GraphQlTypeGenerator()
       ),
-      uriHelper
+      uriHelper,
+      serializerWriterRegistry
     );
     register(environment, graphQlEndpoint);
     register(environment, new GetDataSets(dataSetFactory, graphQlEndpoint));

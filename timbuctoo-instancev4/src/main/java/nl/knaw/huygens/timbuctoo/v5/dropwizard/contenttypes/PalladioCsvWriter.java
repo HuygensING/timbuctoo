@@ -4,10 +4,17 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.PalladioCsvSeria
 
 import javax.ws.rs.Produces;
 
-@Produces("text/palladio+csv")
+@Produces(PalladioCsvWriter.MIME_TYPE)
 public class PalladioCsvWriter extends SerializerWriter {
+
+  public static final String MIME_TYPE = "text/palladio+csv";
 
   public PalladioCsvWriter() {
     super(PalladioCsvSerialization::new);
+  }
+
+  @Override
+  public String getMimeType() {
+    return MIME_TYPE;
   }
 }

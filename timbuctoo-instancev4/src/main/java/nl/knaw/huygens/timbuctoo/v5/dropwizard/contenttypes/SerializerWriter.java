@@ -37,4 +37,6 @@ public abstract class SerializerWriter implements MessageBodyWriter<Serializable
       throws IOException, WebApplicationException {
     serializable.performSerialization(serializationFactory.create(entityStream));
   }
+
+  public abstract String getMimeType() ;
 }

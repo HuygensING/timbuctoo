@@ -4,9 +4,17 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.JsonSerializatio
 
 import javax.ws.rs.Produces;
 
-@Produces("application/json")
+@Produces(JsonWriter.MIME_TYPE)
 public class JsonWriter extends SerializerWriter {
+
+  public static final String MIME_TYPE = "application/json";
+
   public JsonWriter() {
     super(JsonSerialization::new);
+  }
+
+  @Override
+  public String getMimeType() {
+    return MIME_TYPE;
   }
 }

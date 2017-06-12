@@ -4,9 +4,17 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.GephiGraphMlSeri
 
 import javax.ws.rs.Produces;
 
-@Produces("application/graphml+xml")
+@Produces(GephiWriter.MIME_TYPE)
 public class GephiWriter extends SerializerWriter {
+
+  public static final String MIME_TYPE = "application/graphml+xml";
+
   public GephiWriter() {
     super(GephiGraphMlSerialization::new);
+  }
+
+  @Override
+  public String getMimeType() {
+    return MIME_TYPE;
   }
 }

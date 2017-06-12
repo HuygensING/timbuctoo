@@ -4,9 +4,17 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.JsonLdSerializat
 
 import javax.ws.rs.Produces;
 
-@Produces("application/ld+json")
+@Produces(JsonLdWriter.MIME_TYPE)
 public class JsonLdWriter extends SerializerWriter {
+
+  public static final String MIME_TYPE = "application/ld+json";
+
   public JsonLdWriter() {
     super(JsonLdSerialization::new);
+  }
+
+  @Override
+  public String getMimeType() {
+    return MIME_TYPE;
   }
 }
