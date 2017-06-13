@@ -102,17 +102,17 @@ public abstract class SerializationTest {
     return new TypeNameStore() {
       @Override
       public String makeGraphQlname(String uri) {
-        return "nameFromUri=" + uri;
+        return uri;
       }
 
       @Override
       public String makeUri(String graphQlName) {
-        return "uriFromName=" + graphQlName;
+        return graphQlName;
       }
 
       @Override
       public String shorten(String uri) {
-        return "shortened=" + uri;
+        return uri;
       }
 
       @Override

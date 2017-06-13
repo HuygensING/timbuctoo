@@ -24,6 +24,12 @@ public class EntityFirstSerialization extends DistinctSerialization {
     return isEntityDeclared(edge.getSourceEntity()) && (edge.isValueEdge() || isEntityDeclared(edge.getTargetEntity()));
   }
 
+  /**
+   * Called for each distinct edge in the graph. Subclasses may override but should call super.
+   *
+   * @param entity a distinct entity from the graph
+   * @throws IOException if the entity could not be written to the output stream
+   */
   @Override
   public void onDistinctEntity(Entity entity) throws IOException {
     Set<Edge> edgesToPublish = new HashSet<>();
@@ -38,6 +44,14 @@ public class EntityFirstSerialization extends DistinctSerialization {
     }
   }
 
+  /**
+   * Called for each distinct edge in the graph; entities on both ends of the edge have been passed previously
+   * through {@link DistinctSerialization#onDistinctEntity(Entity)}. This implementation does nothing, subclasses
+   * may override.
+   *
+   * @param edge a distinct edge from the graph
+   * @throws IOException if the edge could not be written to the output stream
+   */
   public void onDeclaredEntityEdge(Edge edge) throws IOException {
 
   }

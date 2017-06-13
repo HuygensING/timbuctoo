@@ -32,10 +32,25 @@ public class DistinctSerialization extends BaseSerialization {
     }
   }
 
+  /**
+   * Called for each distinct edge in the graph. Both source entity and target entity are on the given edge, though
+   * no guarantee is given for completeness of these entities. This implementation does nothing,
+   * subclasses may override.
+   *
+   * @param edge a distinct edge from the graph
+   * @throws IOException if the edge could not be written to the output stream
+   */
   public void onDistinctEdge(Edge edge) throws IOException {
     //System.out.println(edge);
   }
 
+  /**
+   * Called for each distinct entity in the graph. Outgoing edges on the entity are populated, no guarantee is
+   * given for completeness of incomming edges. This implementation does nothing, subclasses may override.
+   *
+   * @param entity a distinct entity from the graph
+   * @throws IOException if the entity could not be written to the output stream
+   */
   public void onDistinctEntity(Entity entity) throws IOException {
     //System.out.println(entity);
   }
