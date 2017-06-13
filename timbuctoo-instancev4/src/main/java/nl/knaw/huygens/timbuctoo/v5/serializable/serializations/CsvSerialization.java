@@ -92,12 +92,12 @@ public class CsvSerialization implements Serialization {
   }
 
   private void writeValue(Object value) throws IOException {
+    writtenValue = true;
     csvPrinter.print(value);
   }
 
   @Override
   public void onValue(Object value) throws IOException {
-    writtenValue = true;
     writeValue(value);
   }
 }
