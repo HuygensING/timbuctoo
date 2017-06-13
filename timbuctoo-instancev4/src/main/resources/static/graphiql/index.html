@@ -51,18 +51,18 @@
           return fetch(dataSets[dataSetId], {
             method: 'post',
             headers: { 'Accept': acceptMediaType },
-            body: graphQLParams.query,
-          }).then(response => {
+            body: graphQLParams.query
+          }).then(function (response) {
             var s;
-              let contentType = response.headers.get('Content-Type');
-              if(contentType === 'application/json' || contentType.endsWith("+json")) {
+            var contentType = response.headers.get('Content-Type');
+            if(contentType === 'application/json' || contentType.endsWith("+json")) {
               s = response.json();
             } else {
               s = response.text();
             }
             return s
-          }).then(parsed => {
-            data = parsed
+          }).then(function (parsed) {
+            var data = parsed;
             return data;
           });
         } else {
@@ -71,20 +71,22 @@
       }
 
       
-      fetch(`/v5/dataSets/${userId}`, {
+      fetch("/v5/dataSets/" + userId, {
         method: 'get',
-        headers: { 'Accept': 'application/json' },
-      }).then(response => {
+        headers: { 'Accept': 'application/json' }
+      }).then(function (response) {
         return response.json();
-      }).then(response => {
+      }).then(function (response) {
         dataSets = response;
-        dataSetList = Object.keys(dataSets).map(dataSet => React.createElement(GraphiQL.MenuItem, {
-          key: dataSet,
-          onSelect: function () {setDataSet(userId, dataSet)},
-          label: dataSet,
-        }));
+        dataSetList = Object.keys(dataSets).map(function (dataSet)  {
+          React.createElement(GraphiQL.MenuItem, {
+              key: dataSet,
+              onSelect: function () {setDataSet(userId, dataSet)},
+              label: dataSet
+            })
+          });
       }).then(function (list) {
-          fetch(`/v5/supported_formats/export`, {
+          fetch("/v5/supported_formats/export", {
               method: 'get',
               headers: {'Accept': 'application/json'}
           }).then(function (mediaTypes) {
@@ -96,7 +98,7 @@
                       onSelect: function () {
                           setAcceptMediaType(type);
                       },
-                      label: type,
+                      label: type
                   })
               })
           }).then(function (newMenuItems) {
@@ -109,8 +111,8 @@
               {
                   fetcher: graphQLFetcher,
                   onEditQuery: function(query) {
-                      let encodedQuery = encodeURIComponent(query);
-                      googleQuery = `=IMPORTDATA(\"${location.origin}/v5/${userId}/${dataSetId}/graphql/csv?query=${encodedQuery}\")`;
+                      var encodedQuery = encodeURIComponent(query);
+                      googleQuery = "=IMPORTDATA(\"" + location.origin + "/v5/" + userId + "/" + dataSetId + "/graphql/csv?query=" + encodedQuery + "\")";
                       reRender();
                   }
               },
