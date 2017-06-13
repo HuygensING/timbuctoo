@@ -34,7 +34,7 @@ public class BdbTripleStoreTest {
       "userId",
       "dataSetId"
     );
-    Thread.sleep(100); // to make the test work on slow systems
+    Thread.sleep(2000); // to make the test work on slow systems
   }
 
   @After
