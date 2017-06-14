@@ -60,7 +60,8 @@ public class GephiGraphMlSerialization extends EntityFirstSerialization {
       marshaller.marshal(new Key(ID_NODE_LABEL).withFor("node").withAttrName("Label").withAttrType("string")
                                                .asJaxbElement(), xsw);
       for (String field : getLeafFieldNames()) {
-        marshaller.marshal(new Key(field).withFor("node").withAttrName(field).withAttrType("string")
+        String propertyName = getTypeNameStore().makeGraphQlname(field);
+        marshaller.marshal(new Key(propertyName).withFor("node").withAttrName(propertyName).withAttrType("string")
                                                  .asJaxbElement(), xsw);
       }
       xsw.writeStartElement(Gml.NAMESPACE, Graph.LOCAL_NAME);
@@ -72,10 +73,12 @@ public class GephiGraphMlSerialization extends EntityFirstSerialization {
 
   @Override
   public void onDistinctEntity(Entity entity) throws IOException {
-    Node node = new Node(entity.getUri());
+    String shortSource = getTypeNameStore().shorten(entity.getUri());
+    Node node = new Node(shortSource);
     for (Edge edge : entity.getOutEdges()) {
       if (edge.isValueEdge()) {
-        node.addData(new Data().withKey(edge.getName()).withValue(edge.getTarget().toString()));
+        String propertyName = getTypeNameStore().makeGraphQlname(edge.getName());
+        node.addData(new Data().withKey(propertyName).withValue(edge.getTarget().toString()));
       }
     }
     try {
@@ -89,10 +92,13 @@ public class GephiGraphMlSerialization extends EntityFirstSerialization {
   @Override
   public void onDeclaredEntityEdge(Edge edge) throws IOException {
     if (edge.isNodeEdge()) {
+      String propertyName = getTypeNameStore().makeGraphQlname(edge.getName());
+      String shortSource = getTypeNameStore().shorten(edge.getSourceUri());
+      String shortTarget = getTypeNameStore().shorten(edge.getTargetUri());
       GmlEdge gmlEdge = new GmlEdge(edge.getId())
-        .addData(new Data().withKey(ID_EDGE_LABEL).withValue(edge.getName()))
-        .withSource(edge.getSourceUri())
-        .withTarget(edge.getTargetUri());
+        .addData(new Data().withKey(ID_EDGE_LABEL).withValue(propertyName))
+        .withSource(shortSource)
+        .withTarget(shortTarget);
       try {
         marshaller.marshal(gmlEdge.asJaxbElement(), xsw);
       } catch (JAXBException e) {

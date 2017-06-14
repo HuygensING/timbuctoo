@@ -64,7 +64,7 @@ public class CsvSerialization implements Serialization {
   }
 
   @Override
-  public void onCloseEntity() throws IOException {
+  public void onCloseEntity(String uri) throws IOException {
     if (writtenValue) {
       csvPrinter.println();
       writtenValue = false;

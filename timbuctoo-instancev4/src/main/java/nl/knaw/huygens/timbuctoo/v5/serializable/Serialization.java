@@ -33,7 +33,7 @@ public interface Serialization {
   /**
    * Called at the end of an entity
    */
-  void onCloseEntity() throws IOException;
+  void onCloseEntity(String uri) throws IOException;
 
   /**
    * Called when a new list is started

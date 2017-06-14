@@ -24,6 +24,9 @@ import java.util.List;
  * </pre>
  * The id's are generated values. Multiple values for one leaf-field are overwritten.
  * This serialization can be used in <a href="http://hdlab.stanford.edu/palladio/">Palladio</a>.
+ * <p>
+ *   Loose entities are not rendered: are they source entities or target entities?
+ * </p>
  */
 public class PalladioCsvSerialization extends EntityFirstSerialization {
 
@@ -40,11 +43,11 @@ public class PalladioCsvSerialization extends EntityFirstSerialization {
     columns = getLeafFieldNames();
     csvPrinter.print("s_id");
     for (String column : columns) {
-      csvPrinter.print("s_" + column);
+      csvPrinter.print("s_" + getTypeNameStore().makeGraphQlname(column));
     }
     csvPrinter.print("t_id");
-    for (String f : columns) {
-      csvPrinter.print("t_" + f);
+    for (String column : columns) {
+      csvPrinter.print("t_" + getTypeNameStore().makeGraphQlname(column));
     }
     csvPrinter.print("relation");
     csvPrinter.println();
@@ -75,7 +78,7 @@ public class PalladioCsvSerialization extends EntityFirstSerialization {
       for (String v : targetFields) {
         csvPrinter.print(v);
       }
-      csvPrinter.print(edge.getName());
+      csvPrinter.print(getTypeNameStore().makeGraphQlname(edge.getName()));
       csvPrinter.println();
     }
   }

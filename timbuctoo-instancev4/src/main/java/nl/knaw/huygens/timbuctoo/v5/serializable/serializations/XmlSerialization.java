@@ -58,7 +58,7 @@ public class XmlSerialization implements Serialization {
   }
 
   @Override
-  public void onCloseEntity() throws IOException {
+  public void onCloseEntity(String uri) throws IOException {
     writeXml(indentingXmlStreamWriter::writeEndElement);
   }
 

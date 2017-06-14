@@ -88,9 +88,13 @@ public abstract class SerializationTest {
   protected SerializableObject createSerializableObject(
     LinkedHashMap<String, Serializable> data, int ix, TypeNameStore typeNameStore) {
     String uri = "uri" + ix;
-    data.put("foo", new SerializableUntypedValue("foo" + ix));
-    data.put("name", new SerializableValue("name" + ix, "string"));
-    data.put("uri", new SerializableValue(uri, "string"));
+    if (ix > 100) { // this is a list object
+      uri = null;
+    } else { // this is a 'normal' object
+      data.put("foo", new SerializableUntypedValue("foo" + ix));
+      data.put("name", new SerializableValue("name" + ix, "string"));
+      data.put("uri", new SerializableValue(uri, "string"));
+    }
     return new SerializableObject(data, uri, typeNameStore);
   }
 

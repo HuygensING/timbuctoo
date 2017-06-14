@@ -61,16 +61,17 @@ public class GexfSerialization extends EntityFirstSerialization {
       xsw.writeAttribute("type", "string");
       xsw.writeEndElement(); // attribute
 
-      xsw.writeStartElement(GEXF_NAMESPACE, "attribute");
-      xsw.writeAttribute("id", "node_id");
-      xsw.writeAttribute("title", "node_id");
-      xsw.writeAttribute("type", "string");
-      xsw.writeEndElement(); // attribute
+      // xsw.writeStartElement(GEXF_NAMESPACE, "attribute");
+      // xsw.writeAttribute("id", "node_id");
+      // xsw.writeAttribute("title", "node_id");
+      // xsw.writeAttribute("type", "string");
+      // xsw.writeEndElement(); // attribute
 
       for (String field : getLeafFieldNames()) {
+        String propertyName = getTypeNameStore().makeGraphQlname(field);
         xsw.writeStartElement(GEXF_NAMESPACE, "attribute");
-        xsw.writeAttribute("id", field);
-        xsw.writeAttribute("title", field);
+        xsw.writeAttribute("id", propertyName);
+        xsw.writeAttribute("title", propertyName);
         xsw.writeAttribute("type", "string");
         xsw.writeEndElement(); // attribute
       }
@@ -105,18 +106,25 @@ public class GexfSerialization extends EntityFirstSerialization {
         elementNodesStarted = true;
       }
       xsw.writeStartElement(GEXF_NAMESPACE, "node");
-      xsw.writeAttribute("id", entity.getUri());
+      String shortUri = getTypeNameStore().shorten(entity.getUri());
+      xsw.writeAttribute("id", shortUri);
       xsw.writeStartElement(GEXF_NAMESPACE, "attvalues");
+
+      // xsw.writeStartElement(GEXF_NAMESPACE, "attvalue");
+      // xsw.writeAttribute("for", "id");
+      // xsw.writeAttribute("value", entity.getUri());
+      // xsw.writeEndElement(); // attvalue
 
       xsw.writeStartElement(GEXF_NAMESPACE, "attvalue");
       xsw.writeAttribute("for", "label");
-      xsw.writeAttribute("value", entity.getUri());
+      xsw.writeAttribute("value", shortUri);
       xsw.writeEndElement(); // attvalue
 
       for (Edge edge : entity.getOutEdges()) {
         if (edge.isValueEdge()) {
+          String propertyName = getTypeNameStore().makeGraphQlname(edge.getName());
           xsw.writeStartElement(GEXF_NAMESPACE, "attvalue");
-          xsw.writeAttribute("for", edge.getName());
+          xsw.writeAttribute("for", propertyName);
           xsw.writeAttribute("value", edge.getTargetAsString());
           xsw.writeEndElement(); // attvalue
         }
@@ -141,14 +149,17 @@ public class GexfSerialization extends EntityFirstSerialization {
           xsw.writeStartElement(GEXF_NAMESPACE, "edges");
           elementEdgesStarted = true;
         }
+        String propertyName = getTypeNameStore().makeGraphQlname(edge.getName());
+        String shortSource = getTypeNameStore().shorten(edge.getSourceUri());
+        String shortTarget = getTypeNameStore().shorten(edge.getTargetUri());
         xsw.writeStartElement(GEXF_NAMESPACE, "edge");
         xsw.writeAttribute("id", edge.getId());
-        xsw.writeAttribute("source", edge.getSourceUri());
-        xsw.writeAttribute("target", edge.getTargetUri());
+        xsw.writeAttribute("source", shortSource);
+        xsw.writeAttribute("target", shortTarget);
         xsw.writeStartElement(GEXF_NAMESPACE, "attvalues");
         xsw.writeStartElement(GEXF_NAMESPACE, "attvalue");
         xsw.writeAttribute("for", "label");
-        xsw.writeAttribute("value", edge.getName());
+        xsw.writeAttribute("value", propertyName);
         xsw.writeEndElement(); // attvalue
         xsw.writeEndElement(); // attvalues
         xsw.writeEndElement(); // edge

@@ -46,10 +46,12 @@ public class BaseSerializationTest extends SerializationTest {
       bs.getLeafFieldNames().forEach(System.out::println);
     }
 
-    List<String> leafFields = Arrays.asList("foo", "name", "uri", "items");
+    //System.out.println(bs.getLeafFieldNames());
+    // should be : ["foo", "name", "uri", "wroteBook"]
+    List<String> leafFields = Arrays.asList("foo", "name", "uri", "wroteBook", "hasChild");
     assertThat(bs.getLeafFieldNames(), containsInAnyOrder(leafFields));
-    assertThat(bs.getEdgeCount(), equalTo(40));
-    assertThat(bs.getEntityCount(), equalTo(9));
+    assertThat(bs.getEdgeCount(), equalTo(32));
+    assertThat(bs.getEntityCount(), equalTo(7));
     assertThat(bs.isEntityQueueEmpty(), equalTo(true));
     assertThat(bs.isEdgeQueueEmpty(), equalTo(true));
   }

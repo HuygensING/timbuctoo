@@ -30,15 +30,11 @@ public class GraphVizSerializationTest extends SerializationTest {
       "\t\"uri4\";\n" +
       "\t\"uri3\";\n" +
       "\t\"uri3\" -> \"uri4\" [label=\"fooBar\"];\n" +
-      "\t\"uri101\";\n" +
       "\t\"uri2\";\n" +
       "\t\"uri2\" -> \"uri3\" [label=\"hasSibling\"];\n" +
-      "\t\"uri2\" -> \"uri101\" [label=\"wroteBook\"];\n" +
-      "\t\"uri102\";\n" +
-      "\t\"uri102\" -> \"uri3\" [label=\"items\"];\n" +
-      "\t\"uri102\" -> \"uri2\" [label=\"items\"];\n" +
       "\t\"uri1\";\n" +
-      "\t\"uri1\" -> \"uri102\" [label=\"hasChild\"];\n" +
+      "\t\"uri1\" -> \"uri3\" [label=\"hasChild\"];\n" +
+      "\t\"uri1\" -> \"uri2\" [label=\"hasChild\"];\n" +
       "\t\"uri0\";\n" +
       "\t\"uri0\" -> \"uri1\" [label=\"hasBeer\"];\n" +
       "}\n";

@@ -55,7 +55,7 @@ public class JsonLdSerialization implements Serialization {
   }
 
   @Override
-  public void onCloseEntity() throws IOException {
+  public void onCloseEntity(String uri) throws IOException {
     generator.writeEndObject();
   }
 

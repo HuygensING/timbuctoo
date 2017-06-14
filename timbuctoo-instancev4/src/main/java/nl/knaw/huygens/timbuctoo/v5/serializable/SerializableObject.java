@@ -24,7 +24,7 @@ public class SerializableObject implements Serializable {
       serialization.onProperty(entry.getKey());
       entry.getValue().serialize(serialization);
     }
-    serialization.onCloseEntity();
+    serialization.onCloseEntity(uri);
   }
 
   @Override
