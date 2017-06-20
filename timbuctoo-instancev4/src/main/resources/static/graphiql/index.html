@@ -79,7 +79,7 @@
       }).then(function (response) {
         dataSets = response;
         dataSetList = Object.keys(dataSets).map(function (dataSet)  {
-          React.createElement(GraphiQL.MenuItem, {
+         return React.createElement(GraphiQL.MenuItem, {
               key: dataSet,
               onSelect: function () {setDataSet(userId, dataSet)},
               label: dataSet
