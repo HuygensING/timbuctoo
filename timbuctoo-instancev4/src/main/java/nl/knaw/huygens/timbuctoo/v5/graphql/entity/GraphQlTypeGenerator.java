@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -64,7 +65,7 @@ public class GraphQlTypeGenerator {
           LOG.error("I have a union type whose selection is not an InlineFragment!");
         }
       }
-      return typeUris.isEmpty() ? null : typesMap.get(typeUris.iterator().next());
+      return typeUris.isEmpty() ? typesMap.get(RdfConstants.UNKNOWN) : typesMap.get(typeUris.iterator().next());
     };
     TypeResolver valueTypeResolver = environment ->
       typesMap.get(((TypedValue) environment.getObject()).getType().iterator().next());
