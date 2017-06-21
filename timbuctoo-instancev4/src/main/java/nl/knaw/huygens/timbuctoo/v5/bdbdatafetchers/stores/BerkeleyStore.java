@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
+import com.google.common.base.Stopwatch;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.DatabaseConfig;
@@ -16,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationExcep
 import org.slf4j.Logger;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
@@ -24,6 +26,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
 
   private final BdbWrapper bdbWrapper;
+  private Stopwatch stopwatch;
   private Transaction transaction;
   private final DatabaseConfig databaseConfig;
   private final DatabaseEntry keyEntry = new DatabaseEntry();
@@ -43,11 +46,18 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   @Override
   public void start() throws RdfProcessingFailedException {
     transaction = bdbWrapper.beginTransaction();
+    stopwatch = Stopwatch.createStarted();
+    LOG.info("Started importing...");
   }
 
   @Override
   public void finish() throws RdfProcessingFailedException {
+    LOG.info("Finished importing. It took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds (pre-sync)");
+    stopwatch.reset();
+    stopwatch.start();
     bdbWrapper.commit(transaction);
+    bdbWrapper.sync();
+    LOG.info("Sync took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds");
   }
 
   public <T> Stream<T> getItems(DatabaseFunction initialLookup,

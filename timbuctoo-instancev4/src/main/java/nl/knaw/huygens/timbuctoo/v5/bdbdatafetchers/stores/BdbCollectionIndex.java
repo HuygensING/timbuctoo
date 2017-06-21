@@ -28,8 +28,8 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   protected DatabaseConfig getDatabaseConfig() {
     DatabaseConfig rdfConfig = new DatabaseConfig();
     rdfConfig.setAllowCreate(true);
-    rdfConfig.setTransactional(true);
     rdfConfig.setSortedDuplicates(true);
+    rdfConfig.setDeferredWrite(true);
     return rdfConfig;
   }
 

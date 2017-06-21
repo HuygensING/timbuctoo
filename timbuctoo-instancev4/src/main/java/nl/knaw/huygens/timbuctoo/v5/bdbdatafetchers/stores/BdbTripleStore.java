@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.sleepycat.je.DatabaseConfig;
@@ -7,6 +8,7 @@ import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.bdb.DatabaseFunction;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
@@ -17,17 +19,21 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RelationPredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ValuePredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+import org.slf4j.Logger;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
+
+  private static final Logger LOG = getLogger(BdbTripleStore.class);
 
   public BdbTripleStore(DataProvider dataProvider, BdbDatabaseCreator dbFactory, String userId, String datasetId)
     throws DataStoreCreationException {
@@ -39,6 +45,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     DatabaseConfig rdfConfig = new DatabaseConfig();
     rdfConfig.setSortedDuplicates(true);
     rdfConfig.setAllowCreate(true);
+    rdfConfig.setDeferredWrite(true);
     return rdfConfig;
   }
 
@@ -188,12 +195,26 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     DatabaseEntry value = new DatabaseEntry();
     DatabaseFunction getNext = dbCursor -> dbCursor.getNext(key, value, LockMode.DEFAULT);
 
+    Stopwatch stopwatch = Stopwatch.createStarted();
+    int prevTripleCount = 0;
+    int tripleCount = 0;
+    int subjectCount = 0;
     try (Stream<CursorQuad> quadStream = getItems(getNext, getNext, () -> formatResult(key, value))) {
       Iterator<CursorQuad> quads = quadStream.iterator();
       while (quads.hasNext()) {
+        tripleCount++;
+        long elapsed = stopwatch.elapsed(TimeUnit.SECONDS);
+        if (elapsed > 5) {
+          LOG.info("Processed " + tripleCount + " triples and " + subjectCount + " subjects (" +
+            ((tripleCount - prevTripleCount) / (elapsed == 0 ? 1 : elapsed)) + " triples/s)" );
+          stopwatch.reset();
+          stopwatch.start();
+          prevTripleCount = tripleCount;
+        }
         CursorQuad quad = quads.next();
         if (!curSubject.equals(quad.getSubject())) {
-          processor.processEntity("", curSubject, predicates);
+          subjectCount++;
+          processor.processEntity("", curSubject, predicates, inversePredicates);
           curSubject = quad.getSubject();
           predicates.clear();
         }
@@ -212,6 +233,10 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
         }
       }
     }
+    long elapsed = stopwatch.elapsed(TimeUnit.SECONDS);
+    LOG.info("Done. Processed " + tripleCount + " triples and " + subjectCount + " subjects (" +
+      ((tripleCount - prevTripleCount) / (elapsed == 0 ? 1 : elapsed)) + " triples/s)" );
+
     processor.finish();
   }
 }

@@ -114,6 +114,10 @@ public class BdbWrapper {
     return result;
   }
 
+  public void sync() {
+    database.sync();
+  }
+
   private class CursorIterator<T> implements Iterator<T> {
     private final DatabaseFunction initialLookup;
     private final DatabaseFunction iteration;
