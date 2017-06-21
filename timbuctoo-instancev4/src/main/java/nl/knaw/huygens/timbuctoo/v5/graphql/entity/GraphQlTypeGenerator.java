@@ -40,6 +40,8 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class GraphQlTypeGenerator {
   private static final Logger LOG = getLogger(GraphQlTypeGenerator.class);
+  public static final String ENTITY_INTERFACE_NAME = "Entity";
+  public static final String VALUE_INTERFACE_NAME = "Value";
 
   public Map<String, GraphQLObjectType> makeGraphQlTypes(Map<String, Type> types, TypeNameStore typeNameStore,
                                                          DataFetcherFactory dataFetcherFactory,
@@ -71,7 +73,7 @@ public class GraphQlTypeGenerator {
       typesMap.get(((TypedValue) environment.getObject()).getType().iterator().next());
 
     GraphQLInterfaceType entityInterface = newInterface()
-      .name("Entity")
+      .name(ENTITY_INTERFACE_NAME)
       .field(newFieldDefinition()
         .name("uri")
         .type(Scalars.GraphQLID)
@@ -79,7 +81,7 @@ public class GraphQlTypeGenerator {
       .typeResolver(objectResolver)
       .build();
     GraphQLInterfaceType valueInterface = newInterface()
-      .name("Value")
+      .name(VALUE_INTERFACE_NAME)
       .field(newFieldDefinition()
         .name("type")
         .type(nonNull(Scalars.GraphQLString))
@@ -99,6 +101,9 @@ public class GraphQlTypeGenerator {
       );
       typesMap.put(typeUri, objectType);
     }
+
+    typesMap.putAll(wrappedValueTypes);
+
     return typesMap;
   }
 
@@ -259,7 +264,7 @@ public class GraphQlTypeGenerator {
                                              Map<String, String> typeMappings, TypeNameStore typeNameStore,
                                              GraphQLInterfaceType valueInterface) {
     if (!wrappedValueTypes.containsKey(typeUri)) {
-      String typeName = "valuetype_" + typeNameStore.makeGraphQlname(typeUri);
+      String typeName = "value_" + typeNameStore.makeGraphQlname(typeUri);
       typeMappings.put(typeName, typeUri);
       GraphQLScalarType matchedValueType = matchedValueType(typeUri);
       wrappedValueTypes.put(

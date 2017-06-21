@@ -14,6 +14,7 @@ import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator.ENTITY_INTERFACE_NAME;
 
 public class CollectionIndexSchemaFactory {
 
@@ -27,26 +28,28 @@ public class CollectionIndexSchemaFactory {
     for (Map.Entry<String, GraphQLObjectType> typeMapping : typesMap.entrySet()) {
       String typeUri = typeMapping.getKey();
       GraphQLObjectType objectType = typeMapping.getValue();
-      String typeName = objectType.getName();
+      if (objectType.getInterfaces().stream().anyMatch(x -> x.getName().equals(ENTITY_INTERFACE_NAME))) {
+        String typeName = objectType.getName();
 
-      GraphQLFieldDefinition.Builder collectionField = newFieldDefinition()
-        .name(typeName + "List")
-        .dataFetcher(new CollectionFetcherWrapper(fetcherFactory.collectionFetcher(typeUri)));
-      paginationArgumentsHelper.makePaginatedList(collectionField, objectType);
-      result.field(collectionField);
+        GraphQLFieldDefinition.Builder collectionField = newFieldDefinition()
+          .name(typeName + "List")
+          .dataFetcher(new CollectionFetcherWrapper(fetcherFactory.collectionFetcher(typeUri)));
+        paginationArgumentsHelper.makePaginatedList(collectionField, objectType);
+        result.field(collectionField);
 
-      String uriArgument = "uri";
-      GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
-        .name(typeName)
-        .type(objectType)
-        .dataFetcher(new LookupFetcher(fetcherFactory.entityFetcher(), uriArgument))
-        .argument(
-          newArgument()
-            .name(uriArgument)
-            .type(nonNull(Scalars.GraphQLID))
-            .description("The uri of the item that you wish to retrieve")
-        );
-      result.field(lookupField);
+        String uriArgument = "uri";
+        GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
+          .name(typeName)
+          .type(objectType)
+          .dataFetcher(new LookupFetcher(fetcherFactory.entityFetcher(), uriArgument))
+          .argument(
+            newArgument()
+              .name(uriArgument)
+              .type(nonNull(Scalars.GraphQLID))
+              .description("The uri of the item that you wish to retrieve")
+          );
+        result.field(lookupField);
+      }
     }
 
     return result.build();
