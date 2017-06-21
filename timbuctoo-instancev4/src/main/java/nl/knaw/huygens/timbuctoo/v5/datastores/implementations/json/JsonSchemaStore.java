@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,10 +22,13 @@ import java.util.function.Function;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.UNKNOWN;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class JsonSchemaStore implements SchemaStore {
   private static final Function<String, Type> TYPE_MAKER = Type::new;
   private final JsonFileBackedData<Map<String, Type>> schemaFile;
+  private static final Logger LOG = getLogger(JsonSchemaStore.class);
+
 
   public JsonSchemaStore(DataProvider dataProvider, File schemaLocation)
     throws IOException {
@@ -34,7 +38,10 @@ public class JsonSchemaStore implements SchemaStore {
       new TypeReference<Map<String, Type>>() {},
       types -> {
         for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
-          typeEntry.getValue().setName(typeEntry.getKey());
+          Type type = typeEntry.getValue();
+          String typeName = typeEntry.getKey();
+
+          type.setName(typeName);
         }
         return types;
       }
@@ -44,11 +51,12 @@ public class JsonSchemaStore implements SchemaStore {
 
       @Override
       public void start() {
-
+        LOG.info("Processing entities");
       }
 
       @Override
-      public void processEntity(String cursor, String subjectUri, ListMultimap<String, PredicateData> addedPredicates) {
+      public void processEntity(String cursor, String subjectUri, ListMultimap<String, PredicateData> addedPredicates,
+                                Map<String, Boolean> inverseLists) {
         Map<String, Type> curTypes = new HashMap<>();
         List<PredicateData> subjectTypes = addedPredicates.get(RDF_TYPE);
         //create all the types that this subject belongs to
@@ -72,7 +80,16 @@ public class JsonSchemaStore implements SchemaStore {
             });
           }
         }
+        if (addedPredicates.size() > 100) {
+          LOG.info("There's " + addedPredicates.size() + " predicates!");
+        }
         for (Type type : curTypes.values()) {
+          for (Map.Entry<String, Boolean> inversePredicate : inverseLists.entrySet()) {
+            Predicate predicate = type.getOrCreatePredicate(inversePredicate.getKey() + "_inverse");
+            predicate.setList(inversePredicate.getValue());
+            predicate.incUsage();
+          }
+
           for (String predicateUri : addedPredicates.keys()) {
             Predicate predicate = type.getOrCreatePredicate(predicateUri);
             List<PredicateData> predicateValues = addedPredicates.get(predicateUri);
@@ -110,6 +127,41 @@ public class JsonSchemaStore implements SchemaStore {
 
       @Override
       public void finish() {
+        LOG.info("Finished processing entities");
+        for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
+          Type type = typeEntry.getValue();
+          String typeName = typeEntry.getKey();
+
+          for (Predicate predicate : type.getPredicates().values()) {
+            if (predicate.getName().endsWith("_inverse") || RdfConstants.RDF_TYPE.equals(predicate.getName())) {
+              continue;
+            }
+            for (String referenceType : predicate.getReferenceTypes()) {
+              try {
+                types.get(referenceType)
+                  .getPredicates().get(predicate.getName() + "_inverse")
+                  .addReferenceType(typeName);
+              } catch (Exception e) {
+                String cause = "Referenced type not found";
+                try {
+                  if (types.containsKey(referenceType)) {
+                    cause = "type has no predicates";
+                    if (types.get(referenceType).getPredicates() != null) {
+                      cause = "type does not have the predicate " + predicate.getName() + "_inverse";
+                      if (types.get(referenceType).getPredicates().containsKey(predicate.getName() + "_inverse")) {
+                        cause = "Something failed during addreferencetype(" + typeName + ")";
+                      }
+                    }
+                  }
+                  LOG.error("Error during inverse generation (ignored): " + cause , e);
+                } catch (Exception e2) {
+                  LOG.error("Error during inverse generation " + cause, e);
+                  LOG.error("Error during recovery generation ", e2);
+                }
+              }
+            }
+          }
+        }
         try {
           schemaFile.updateData(oldTypes -> types);
         } catch (IOException e) {

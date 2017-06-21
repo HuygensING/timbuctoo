@@ -22,8 +22,10 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationExcep
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -188,6 +190,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
   @Override
   public void processEntities(String cursor, EntityProcessor processor) throws RdfProcessingFailedException {
     ListMultimap<String, PredicateData> predicates = MultimapBuilder.hashKeys().arrayListValues().build();
+    Map<String, Boolean> inversePredicates = new HashMap<>();
     String curSubject = "";
     processor.start();
 
@@ -217,18 +220,29 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
           processor.processEntity("", curSubject, predicates, inversePredicates);
           curSubject = quad.getSubject();
           predicates.clear();
+          inversePredicates.clear();
         }
-        if (quad.getValuetype().isPresent()) {
-          predicates.put(
-            quad.getPredicate(),
-            new ValuePredicate(quad.getPredicate(), quad.getObject(), quad.getValuetype().get())
-          );
+        String predicate = quad.getPredicate();
+        if (predicate.endsWith("_inverse")) {
+          String origPredicateName = predicate.substring(0, predicate.length() - "_inverse".length());
+          if (inversePredicates.containsKey(origPredicateName)) { //if we encounter it more then once
+            inversePredicates.put(origPredicateName, true);
+          } else {
+            inversePredicates.put(origPredicateName, false);
+          }
         } else {
-          try (Stream<CursorQuad> objectTypes = this.getQuads(quad.getObject(), RDF_TYPE, "")) {
-            List<String> types = objectTypes
-              .map(CursorQuad::getObject)
-              .collect(Collectors.toList());
-            predicates.put(quad.getPredicate(), new RelationPredicate(quad.getPredicate(), quad.getObject(), types));
+          if (quad.getValuetype().isPresent()) {
+            predicates.put(
+              predicate,
+              new ValuePredicate(predicate, quad.getObject(), quad.getValuetype().get())
+            );
+          } else {
+            try (Stream<CursorQuad> objectTypes = this.getQuads(quad.getObject(), RDF_TYPE, "")) {
+              List<String> types = objectTypes
+                .map(CursorQuad::getObject)
+                .collect(Collectors.toList());
+              predicates.put(predicate, new RelationPredicate(predicate, quad.getObject(), types));
+            }
           }
         }
       }

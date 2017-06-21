@@ -43,6 +43,11 @@ public class Predicate {
     owner.setOccurrences(occurrences);
   }
 
+  public void incUsage(long occurrences) {
+    this.occurrences += occurrences;
+    owner.setOccurrences(this.occurrences);
+  }
+
   public boolean isOptional() {
     return occurrences < owner.getOccurrences();
   }
@@ -79,4 +84,5 @@ public class Predicate {
   public void setList(boolean list) {
     this.list = list;
   }
+
 }
