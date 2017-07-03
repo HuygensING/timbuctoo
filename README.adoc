@@ -53,6 +53,75 @@ Which is the added value timbuctoo will bring.
 
 video::186090384[vimeo, width=640, height=355]
 
+== How does Timbuctoo work?
+
+//tag::timbuctoowork[]
+   Placeholder Text
+   
+//end::timbuctoowork[]
+
+
+== Getting Started
+
+//tag::gettingstarted[]
+ . *Prerequisites*
+The following prerequisites need to be installed on the machine before running the Timbuctoo program:
+    * https://java.com/en/download/[Java]
+    * https://maven.apache.org/download.cgi[Maven] 
+    * https://git-scm.com/downloads[Git]
+    * https://www.docker.com/[Docker]
+ . *Installation*
+After the above requirements are fulfilled you can follow the following instructions to install Timbuctoo:
+    * Clone the https://github.com/HuygensING/timbuctoo.git[Timbuctoo Github repository] into a local directory using the command:
+
+    git clone https://github.com/HuygensING/timbuctoo.git
+ 
+ . *Starting Timbuctoo*
+    - On the Timbuctoo root directory run the Maven build command:
+
+      mvn clean package
+      
+    - On the "/devtools/debugrun" directory within your Timbuctoo repository, run:
+
+      ./debugrun.sh 
+
+ . *Uploading data*
+    - You can run a curl command of the following format to upload data into Timbuctoo:
+
+    curl -v -F "file=@/<complete_path_to_file>/<filename>.ttl" -F "encoding=UTF-8" -F "uri=http://example.org/uva.ttl" -H "Authorization: fake" http://localhost:8080/v5/DUMMY/hpp6demo/upload/rdf
+
+
+ . *Querying data*
+    - With Timbuctoo running, you can access the GraphIQL in-browser IDE by pointing your web-browser to the following address:
+
+    http://localhost:8080/static/graphiql
+
+    - Choose the appropriate dataset from the "select dataset" dropdown and the appropriate type from the "select accept media type" dropdown
+
+    - Use a query of the following basic format to query for data from the selected dataset:
+
+         {
+           field(arg: "value") {
+             subField
+           }
+         }
+
+    - Press "Ctrl + Enter" or the "play button" on the top of the IDE window to run your query. The result will be displayed on the right pane.
+
+//end::gettingstarted[]
+
+== FAQs/Q&A
+
+//tag::faqs[]
+
+**I can't access my data from the GraphiQL and I get the error _"SyntaxError: JSON.parse: unexpected character at line 1 column 1 of the JSON data"_ on the right pane when I try to query for data.**
+
+It is likely that the filepath given while using the *curl* command to load the dataset was incorrect. Please note that the filepath to the dataset should be given in full (i.e. complete path from
+   root) with a '@' symbol preceding it.
+//end::faqs[]
+
+
+
 == License
 
 Timbuctoo is licensed under the link:./LICENSE.txt[GPL license]
