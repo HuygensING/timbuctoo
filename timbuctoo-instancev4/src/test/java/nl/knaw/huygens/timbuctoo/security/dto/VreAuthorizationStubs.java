@@ -21,6 +21,11 @@ public class VreAuthorizationStubs {
       public List<String> getRoles() {
         return Lists.newArrayList(role);
       }
+
+      @Override
+      public boolean hasAdminAccess() {
+        throw new UnsupportedOperationException("Not implemented");
+      }
     };
   }
 }

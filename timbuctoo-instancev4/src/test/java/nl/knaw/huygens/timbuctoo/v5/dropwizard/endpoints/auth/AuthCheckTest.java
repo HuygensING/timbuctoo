@@ -1,13 +1,18 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
+import nl.knaw.huygens.timbuctoo.crud.Authorization;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
+import java.util.List;
 import java.util.Optional;
 
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
+import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkAdminAccess;
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
@@ -43,4 +48,105 @@ public class AuthCheckTest {
     assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
   }
 
+  @Test
+  public void checkAdminAccessReturnsNullIfTheUserHasAdminPermissionsForTheDataSet() throws Exception {
+    User notOwner = User.create(null, "user");
+    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
+    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
+    Authorizer authorizer = mock(Authorizer.class);
+    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForAdmin());
+    Response response = checkAdminAccess(
+      (user, dataSet) -> true,
+      authorizer,
+      loggedInUsers,
+      "auth",
+      "ownerId",
+      "dataSet"
+    );
+
+    assertThat(response, is(nullValue()));
+  }
+
+  @Test
+  public void checkAdminAccessReturnsAnUnauthorizedResponseIfTheUserIsUnknown() throws Exception {
+    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
+    given(loggedInUsers.userFor(anyString())).willReturn(Optional.empty());
+    Response response = checkAdminAccess(
+      (user, dataSet) -> true,
+      null,
+      loggedInUsers,
+      "auth",
+      "ownerId",
+      "dataSet"
+    );
+
+    assertThat(response, is(notNullValue()));
+    assertThat(response.getStatus(), is(UNAUTHORIZED.getStatusCode()));
+  }
+
+  @Test
+  public void checkAdminAccessReturnsAForbiddenResponseIfTheUserIsNotAnAdminForTheDataSet() throws Exception {
+    User notOwner = User.create(null, "user");
+    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
+    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
+    Authorizer authorizer = mock(Authorizer.class);
+    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForNonAdmin());
+    Response response = checkAdminAccess(
+      (user, dataSet) -> true,
+      authorizer,
+      loggedInUsers,
+      "auth",
+      "ownerId",
+      "dataSet"
+    );
+
+    assertThat(response, is(notNullValue()));
+    assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
+  }
+
+  @Test
+  public void checkAdminAccessReturnsNullIfTheUserIsAnAdminForTheDataSet() throws Exception {
+    User notOwner = User.create(null, "user");
+    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
+    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
+    Authorizer authorizer = mock(Authorizer.class);
+    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForAdmin());
+    Response response = checkAdminAccess(
+      (user, dataSet) -> true,
+      authorizer,
+      loggedInUsers,
+      "auth",
+      "ownerId",
+      "dataSet"
+    );
+
+    assertThat(response, is(nullValue()));
+  }
+
+  private static Authorization authorizationForNonAdmin() {
+    return auhtorization(false);
+  }
+
+  private static Authorization authorizationForAdmin() {
+    return auhtorization(true);
+  }
+
+  private static Authorization auhtorization(boolean isAdmin) {
+    return new Authorization() {
+      @Override
+      public List<String> getRoles() {
+        throw new UnsupportedOperationException("Not implemented");
+      }
+
+      @Override
+      public boolean isAllowedToWrite() {
+        throw new UnsupportedOperationException("Not implemented");
+      }
+
+      @Override
+      public boolean hasAdminAccess() {
+        return isAdmin;
+      }
+    };
+  }
 }

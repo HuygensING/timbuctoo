@@ -64,4 +64,50 @@ public class VreAuthorizationTest {
     assertThat(allowedToWrite, is(false));
   }
 
+  // admin access
+  @Test
+  public void hasAdminAccessReturnsTrueIfTheRolesContainAdmin() throws Exception {
+    VreAuthorization instance = VreAuthorization.create("", "", ADMIN_ROLE);
+
+    boolean allowedToWrite = instance.hasAdminAccess();
+
+    assertThat(allowedToWrite, is(true));
+  }
+
+  @Test
+  public void hasAdminAccessReturnsFalseIfTheRolesOnlyContainUnverifiedUser() throws Exception {
+    VreAuthorization instance = VreAuthorization.create("", "", UNVERIFIED_USER_ROLE);
+
+    boolean allowedToWrite = instance.hasAdminAccess();
+
+    assertThat(allowedToWrite, is(false));
+  }
+
+  @Test
+  public void hasAdminAccessReturnsFalseIfTheRolesContainUnverifiedUserAndAdmin() throws Exception {
+    VreAuthorization instance = VreAuthorization.create("", "", UNVERIFIED_USER_ROLE, USER_ROLE);
+
+    boolean allowedToWrite = instance.hasAdminAccess();
+
+    assertThat(allowedToWrite, is(false));
+  }
+
+  @Test
+  public void hasAdminAccessReturnsTrueIfTheRolesContainUnverifiedUserAndAdmin() throws Exception {
+    VreAuthorization instance = VreAuthorization.create("", "", UNVERIFIED_USER_ROLE, ADMIN_ROLE);
+
+    boolean allowedToWrite = instance.hasAdminAccess();
+
+    assertThat(allowedToWrite, is(true));
+  }
+
+  @Test
+  public void hasAdminAccessReturnsFalseIfTheRolesAreEmpty() throws Exception {
+    VreAuthorization instance = VreAuthorization.create("", "");
+
+    boolean allowedToWrite = instance.hasAdminAccess();
+
+    assertThat(allowedToWrite, is(false));
+  }
+
 }

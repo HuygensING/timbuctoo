@@ -6,4 +6,6 @@ public interface Authorization {
   List<String> getRoles();
 
   boolean isAllowedToWrite();
+
+  boolean hasAdminAccess();
 }
