@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory.LoaderConfig;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -49,7 +49,7 @@ public class Rml {
                          @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId)
     throws DataStoreCreationException, LogStorageFailedException, ExecutionException, InterruptedException {
-    DataSet dataSet = dataSetFactory.createDataSet(ownerId, dataSetId);
+    ImportManager importManager = dataSetFactory.createDataSet(ownerId, dataSetId);
     RdfDataSourceFactory dataSourceFactory = dataSetFactory.createDataSource(ownerId, dataSetId);
 
     final Model model = ModelFactory.createDefaultModel();
@@ -66,7 +66,7 @@ public class Rml {
     //FIXME: trigger onprefix for all rml prefixes
     //FIXME: store rml and retrieve it from tripleStore when mapping
     String graph = "http://aasad" + UUID.randomUUID();  //FIXME:
-    Future<?> future = dataSet.generateLog(
+    Future<?> future = importManager.generateLog(
       URI.create(graph),
       new RdfCreator() {
         @Override

@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -57,9 +57,9 @@ public class RdfUpload {
       return response;
     }
 
-    DataSet dataSet = dataSetManager.createDataSet(userId, dataSetId);
+    ImportManager importManager = dataSetManager.createDataSet(userId, dataSetId);
 
-    Future<?> promise = dataSet.addLog(
+    Future<?> promise = importManager.addLog(
       uri,
       rdfInputStream,
       Optional.of(Charset.forName(encoding)),

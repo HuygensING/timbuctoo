@@ -15,15 +15,15 @@ import java.util.function.Consumer;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
 public class TabularRdfCreator implements RdfCreator {
-  private final DataSet dataSet;
+  private final ImportManager importManager;
   private final Loader loader;
   private final String dataSetId;
   private final Consumer<String> importStatusConsumer; // TODO hoe gaan we deze reconstrueren na deserialisatie
   private final String fileToken;
 
-  public TabularRdfCreator(DataSet dataSet, Loader loader, String dataSetId, Consumer<String> importStatusConsumer,
-                           String fileToken) {
-    this.dataSet = dataSet;
+  public TabularRdfCreator(ImportManager importManager, Loader loader, String dataSetId,
+                           Consumer<String> importStatusConsumer, String fileToken) {
+    this.importManager = importManager;
     this.loader = loader;
     this.dataSetId = dataSetId;
     this.importStatusConsumer = importStatusConsumer;
@@ -33,7 +33,7 @@ public class TabularRdfCreator implements RdfCreator {
   @Override
   public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
 
-    try (CachedFile file = dataSet.getFile(fileToken)) {
+    try (CachedFile file = importManager.getFile(fileToken)) {
       loader.loadData(Lists.newArrayList(tuple(file.getName(), file.getFile())),
         new Importer(
           new StateMachine<>(new RdfSaver(dataSetId, file.getName(), saver)),

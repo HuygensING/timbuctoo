@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
-import com.google.common.collect.ImmutableMap;
 import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
@@ -8,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory.LoaderConfig;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.TabularRdfCreator;
@@ -36,13 +35,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import static javax.ws.rs.core.UriBuilder.fromResource;
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
 
 @Path("/v5/{userId}/{dataSetId}/upload/table")
@@ -88,9 +84,9 @@ public class TabularUpload {
       return response;
     }
 
-    DataSet dataSet = dataSetFactory.createDataSet(ownerId, dataSetId);
+    ImportManager importManager = dataSetFactory.createDataSet(ownerId, dataSetId);
 
-    String fileToken = dataSet.addFile(
+    String fileToken = importManager.addFile(
       rdfInputStream,
       fileInfo.getName(),
       Optional.of(body.getMediaType())
@@ -99,10 +95,10 @@ public class TabularUpload {
     Loader loader = LoaderFactory.createFor(configFromFormData(formData));
 
     Tuple<UUID, RdfCreator> rdfCreator = dataSetFactory.registerRdfCreator(
-      (statusConsumer) -> new TabularRdfCreator(dataSet, loader, dataSetId, statusConsumer, fileToken)
+      (statusConsumer) -> new TabularRdfCreator(importManager, loader, dataSetId, statusConsumer, fileToken)
     );
 
-    Future<?> promise = dataSet.generateLog(
+    Future<?> promise = importManager.generateLog(
       UriBuilder.fromUri("http://timbuctoo.huygens.knaw.nl").path(ownerId).path(dataSetId).path(fileToken).build(),
       rdfCreator.getRight()
     );

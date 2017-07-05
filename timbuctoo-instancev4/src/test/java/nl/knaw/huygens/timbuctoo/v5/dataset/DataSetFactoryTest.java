@@ -49,26 +49,26 @@ public class DataSetFactoryTest {
 
   @Test
   public void getOrCreateReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
-    DataSet dataSet1 = dataSetFactory.createDataSet("user", "dataset");
-    DataSet dataSet2 = dataSetFactory.createDataSet("user", "dataset");
+    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createDataSet("user", "dataset");
 
-    assertThat(dataSet1, is(sameInstance(dataSet2)));
+    assertThat(importManager1, is(sameInstance(importManager2)));
   }
 
   @Test
   public void getOrCreateReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
-    DataSet dataSet1 = dataSetFactory.createDataSet("user", "dataset");
-    DataSet dataSet2 = dataSetFactory.createDataSet("user", "other");
+    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createDataSet("user", "other");
 
-    assertThat(dataSet1, is(not(sameInstance(dataSet2))));
+    assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
 
   @Test
   public void getOrCreateReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
-    DataSet dataSet1 = dataSetFactory.createDataSet("user", "dataset");
-    DataSet dataSet2 = dataSetFactory.createDataSet("other", "dataset");
+    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createDataSet("other", "dataset");
 
-    assertThat(dataSet1, is(not(sameInstance(dataSet2))));
+    assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
 
   @Test

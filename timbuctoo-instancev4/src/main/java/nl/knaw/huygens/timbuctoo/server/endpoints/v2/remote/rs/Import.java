@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 import com.google.common.base.Charsets;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.RemoteFile;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import org.slf4j.Logger;
@@ -33,7 +33,7 @@ public class Import {
   @POST
   public Response importData(@HeaderParam("Authorization") String authorization, ImportData importData)
     throws DataStoreCreationException {
-    DataSet dataSet = dataSetFactory.createDataSet(importData.userId, importData.dataSetId);
+    ImportManager importManager = dataSetFactory.createDataSet(importData.userId, importData.dataSetId);
     try {
       LOG.info("Loading files");
       Iterator<RemoteFile> files =
@@ -47,7 +47,7 @@ public class Import {
         } catch (IllegalArgumentException e) {
           LOG.error("Failed to get mediatype", e);
         }
-        dataSet.addLog(
+        importManager.addLog(
           URI.create(file.getUrl()),
           file.getData(),
           Optional.of(Charsets.UTF_8),

@@ -80,8 +80,8 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     return make(userId, dataSetId).typeNameStore;
   }
 
-  public DataSet createDataSet(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).dataSet;
+  public ImportManager createDataSet(String userId, String dataSetId) throws DataStoreCreationException {
+    return make(userId, dataSetId).importManager;
 
   }
 
@@ -96,7 +96,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       if (!userDataSets.containsKey(dataSetId)) {
         try {
           vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
-          DataSet dataSet = new DataSet(
+          ImportManager importManager = new ImportManager(
             dataSetPathHelper.fileInDataSet(userId, dataSetId, "log.json"),
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
             configuration.getFileStorage().makeFileStorage(userId, dataSetId),
@@ -109,19 +109,21 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
           result.dataFetcherFactory = new DataStoreDataFetcherFactory(
             userId,
             dataSetId,
-            dataSet,
+            importManager,
             dbFactory
           );
           result.typeNameStore = new JsonTypeNameStore(
             dataSetPathHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
-            dataSet
+            importManager
           );
           result.schemaStore = new JsonSchemaStore(
-            dataSet,
+            importManager,
             dataSetPathHelper.fileInDataSet(userId, dataSetId, "schema.json")
           );
-          result.dataSet = dataSet;
-          result.dataSource = new RdfDataSourceFactory(new DataSourceStore(userId, dataSetId, dbFactory, dataSet));
+          result.importManager = importManager;
+          result.dataSource = new RdfDataSourceFactory(
+            new DataSourceStore(userId, dataSetId, dbFactory, importManager)
+          );
           userDataSets.put(dataSetId, result);
           storedDataSets.updateData(dataSets -> {
             dataSets.computeIfAbsent(userId, key -> new HashSet<>()).add(dataSetId);
@@ -164,7 +166,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     public DataFetcherFactory dataFetcherFactory;
     public SchemaStore schemaStore;
     public TypeNameStore typeNameStore;
-    public DataSet dataSet;
+    public ImportManager importManager;
     public RdfDataSourceFactory dataSource;
   }
 }

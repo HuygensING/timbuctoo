@@ -26,10 +26,10 @@ import static com.google.common.io.Resources.getResource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class DataSetTest {
+public class ImportManagerTest {
 
   protected File logListLocation;
-  protected DataSet dataSet;
+  protected ImportManager importManager;
   protected File filesDir;
   protected FileSystemFileStorage fileStorage;
 
@@ -39,7 +39,7 @@ public class DataSetTest {
     logListLocation.delete();
     filesDir = Files.createTempDir();
     fileStorage = new FileSystemFileStorage(filesDir);
-    this.dataSet = new DataSet(
+    this.importManager = new ImportManager(
       logListLocation,
       fileStorage,
       fileStorage,
@@ -57,16 +57,16 @@ public class DataSetTest {
 
   @Test
   public void addLogSavesTheLogToDisk() throws Exception {
-    File file = new File(getResource(DataSetTest.class, "clusius.ttl").toURI());
+    File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
     URI name = URI.create("http://example.com/clusius.ttl");
-    dataSet.addLog(
+    importManager.addLog(
       name,
       new FileInputStream(file),
       Optional.of(Charsets.UTF_8),
       Optional.of(MediaType.valueOf("text/turtle"))
     );
 
-    LogEntry logEntry = dataSet.getLogEntries().get(0);
+    LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getName(), is(name));
     //The first character is an @. if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(64));
@@ -74,13 +74,13 @@ public class DataSetTest {
 
   @Test
   public void callsStoresWhenANewLogIsAdded() throws Exception {
-    File file = new File(getResource(DataSetTest.class, "clusius.ttl").toURI());
+    File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
     URI name = URI.create("http://example.com/clusius.ttl");
     CountingProcessor processor = new CountingProcessor();
-    dataSet.subscribeToRdf(processor, null);
+    importManager.subscribeToRdf(processor, null);
 
 
-    Future<?> promise = dataSet.addLog(
+    Future<?> promise = importManager.addLog(
       name,
       new FileInputStream(file),
       Optional.of(Charsets.UTF_8),
@@ -94,16 +94,16 @@ public class DataSetTest {
   public void generateLogSavesTheLogAndCallsTheStores() throws Exception {
     URI name = URI.create("http://example.com/clusius.ttl");
     CountingProcessor processor = new CountingProcessor();
-    dataSet.subscribeToRdf(processor, null);
+    importManager.subscribeToRdf(processor, null);
 
-    Future<?> promise = dataSet.generateLog(
+    Future<?> promise = importManager.generateLog(
       name,
       new DummyRdfCreator()
     );
 
     promise.get();
     assertThat(processor.getCounter(), is(3));
-    LogEntry logEntry = dataSet.getLogEntries().get(0);
+    LogEntry logEntry = importManager.getLogEntries().get(0);
     assertThat(logEntry.getName(), is(name));
     //The first character is an < (start of a uri in nquads) if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(60));

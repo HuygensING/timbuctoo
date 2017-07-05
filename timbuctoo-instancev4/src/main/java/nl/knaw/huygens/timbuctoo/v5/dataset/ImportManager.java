@@ -39,21 +39,21 @@ import static org.slf4j.LoggerFactory.getLogger;
  * - provides methods for adding data (files and rdf). Will persist that data
  * - makes sure that the derived stores are kept in sync
  */
-public class DataSet implements DataProvider {
+public class ImportManager implements DataProvider {
   private final FileStorage fileStorage;
   private final FileStorage imageStorage;
   private final LogStorage logStorage;
   private final RdfIoFactory serializerFactory;
   private final ExecutorService executorService;
   private final RdfParser rdfParser;
-  private static final Logger LOG = getLogger(DataSet.class);
+  private static final Logger LOG = getLogger(ImportManager.class);
   private final JsonFileBackedData<LogList> logListStore;
   private final List<Tuple<String, RdfProcessor>> subscribedProcessors;
   private final List<Tuple<String, EntityProcessor>> subscribedEntityProcessors;
   private EntityProvider entityProvider;
 
-  public DataSet(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
-                 ExecutorService executorService, RdfIoFactory rdfIoFactory)
+  public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
+                       ExecutorService executorService, RdfIoFactory rdfIoFactory)
       throws DataStoreCreationException {
     this.fileStorage = fileStorage;
     this.imageStorage = imageStorage;
