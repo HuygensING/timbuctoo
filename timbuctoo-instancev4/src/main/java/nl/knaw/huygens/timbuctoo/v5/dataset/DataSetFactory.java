@@ -43,7 +43,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   private final VreAuthorizationCrud vreAuthorizationCrud;
   private final DataSetConfiguration configuration;
   private final BdbDatabaseCreator dbFactory;
-  private final Map<String, Map<String, DataStores>> dataSetMap;
+  private final Map<String, Map<String, DataSet>> dataSetMap;
   private final JsonFileBackedData<Map<String, Set<String>>> storedDataSets;
   private final HashMap<UUID, StringBuffer> statusMap;
   private final DataSetPathHelper dataSetPathHelper;
@@ -89,10 +89,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     return make(userId, dataSetId).dataSource;
   }
 
-  private DataStores make(String userId, String dataSetId) throws DataStoreCreationException {
+  private DataSet make(String userId, String dataSetId) throws DataStoreCreationException {
     String authorizationKey = userId + "_" + dataSetId;
     synchronized (dataSetMap) {
-      Map<String, DataStores> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
+      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
       if (!userDataSets.containsKey(dataSetId)) {
         try {
           vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
@@ -105,7 +105,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
             configuration.getRdfIo()
           );
 
-          DataStores result = new DataStores();
+          DataSet result = new DataSet();
           result.dataFetcherFactory = new DataStoreDataFetcherFactory(
             userId,
             dataSetId,
@@ -162,7 +162,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     return Tuple.tuple(uuid, rdfCreator);
   }
 
-  private class DataStores {
+  private class DataSet {
     public DataFetcherFactory dataFetcherFactory;
     public SchemaStore schemaStore;
     public TypeNameStore typeNameStore;
