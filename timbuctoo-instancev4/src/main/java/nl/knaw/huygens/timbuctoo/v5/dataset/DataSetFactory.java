@@ -95,46 +95,56 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
       if (!userDataSets.containsKey(dataSetId)) {
+        DataSet dataSet = createNewDataSet(userId, dataSetId, authorizationKey);
+        userDataSets.put(dataSetId, dataSet);
         try {
-          vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
-          ImportManager importManager = new ImportManager(
-            dataSetPathHelper.fileInDataSet(userId, dataSetId, "log.json"),
-            configuration.getFileStorage().makeFileStorage(userId, dataSetId),
-            configuration.getFileStorage().makeFileStorage(userId, dataSetId),
-            configuration.getFileStorage().makeLogStorage(userId, dataSetId),
-            executorService,
-            configuration.getRdfIo()
-          );
-
-          DataSet result = new DataSet();
-          result.dataFetcherFactory = new DataStoreDataFetcherFactory(
-            userId,
-            dataSetId,
-            importManager,
-            dbFactory
-          );
-          result.typeNameStore = new JsonTypeNameStore(
-            dataSetPathHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
-            importManager
-          );
-          result.schemaStore = new JsonSchemaStore(
-            importManager,
-            dataSetPathHelper.fileInDataSet(userId, dataSetId, "schema.json")
-          );
-          result.importManager = importManager;
-          result.dataSource = new RdfDataSourceFactory(
-            new DataSourceStore(userId, dataSetId, dbFactory, importManager)
-          );
-          userDataSets.put(dataSetId, result);
           storedDataSets.updateData(dataSets -> {
             dataSets.computeIfAbsent(userId, key -> new HashSet<>()).add(dataSetId);
             return dataSets;
           });
-        } catch (AuthorizationCreationException | IOException e) {
+        } catch (IOException e) {
           throw new DataStoreCreationException(e);
         }
       }
       return userDataSets.get(dataSetId);
+    }
+  }
+
+  private DataSet createNewDataSet(String userId, String dataSetId, String authorizationKey)
+    throws DataStoreCreationException {
+    try {
+      vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
+      ImportManager importManager = new ImportManager(
+        dataSetPathHelper.fileInDataSet(userId, dataSetId, "log.json"),
+        configuration.getFileStorage().makeFileStorage(userId, dataSetId),
+        configuration.getFileStorage().makeFileStorage(userId, dataSetId),
+        configuration.getFileStorage().makeLogStorage(userId, dataSetId),
+        executorService,
+        configuration.getRdfIo()
+      );
+
+      DataSet dataSet = new DataSet();
+      dataSet.dataFetcherFactory = new DataStoreDataFetcherFactory(
+        userId,
+        dataSetId,
+        importManager,
+        dbFactory
+      );
+      dataSet.typeNameStore = new JsonTypeNameStore(
+        dataSetPathHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
+        importManager
+      );
+      dataSet.schemaStore = new JsonSchemaStore(
+        importManager,
+        dataSetPathHelper.fileInDataSet(userId, dataSetId, "schema.json")
+      );
+      dataSet.importManager = importManager;
+      dataSet.dataSource = new RdfDataSourceFactory(
+        new DataSourceStore(userId, dataSetId, dbFactory, importManager)
+      );
+      return dataSet;
+    } catch (AuthorizationCreationException | IOException e) {
+      throw new DataStoreCreationException(e);
     }
   }
 
@@ -177,10 +187,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   }
 
   private class DataSet {
-    public DataFetcherFactory dataFetcherFactory;
-    public SchemaStore schemaStore;
-    public TypeNameStore typeNameStore;
-    public ImportManager importManager;
-    public RdfDataSourceFactory dataSource;
+    private DataFetcherFactory dataFetcherFactory;
+    private SchemaStore schemaStore;
+    private TypeNameStore typeNameStore;
+    private ImportManager importManager;
+    private RdfDataSourceFactory dataSource;
   }
 }
