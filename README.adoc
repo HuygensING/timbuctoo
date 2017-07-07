@@ -53,14 +53,6 @@ Which is the added value timbuctoo will bring.
 
 video::186090384[vimeo, width=640, height=355]
 
-== How does Timbuctoo work?
-
-//tag::timbuctoowork[]
-   (To be added)
-   
-//end::timbuctoowork[]
-
-
 == Getting Started
 
 //tag::gettingstarted[]
