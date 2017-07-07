@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -199,7 +200,7 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
         dataSetExecutorService,
         getSecurityConfiguration().getVreAuthorizationCreator(),
         dataSetConfiguration,
-        getDatabases()
+        new BdbDataStoreFactory(getDatabases())
       );
     } catch (IOException | AccessNotPossibleException e) {
       throw new DataStoreCreationException(e);

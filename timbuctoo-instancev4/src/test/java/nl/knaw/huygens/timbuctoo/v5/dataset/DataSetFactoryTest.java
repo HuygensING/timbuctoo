@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
@@ -38,7 +39,7 @@ public class DataSetFactoryTest {
                                    .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
                                    .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
                                    .build(),
-      new NonPersistentBdbDatabaseCreator()
+      new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator())
     );
   }
 
