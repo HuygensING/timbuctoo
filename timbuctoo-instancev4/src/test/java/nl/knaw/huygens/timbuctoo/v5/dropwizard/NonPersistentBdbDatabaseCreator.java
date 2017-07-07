@@ -80,7 +80,7 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
       environmentMap.remove(environmentKey);
     }
   }
-  
+
 
   public void close() throws DatabaseException, IOException {
     for (Database database : databases.values()) {

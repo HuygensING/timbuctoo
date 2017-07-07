@@ -93,6 +93,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.PalladioCsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.XmlWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
@@ -284,6 +285,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, graphQlEndpoint);
     register(environment, new GetDataSets(dataSetFactory, graphQlEndpoint));
     register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(environment), dataSetFactory));
+    register(environment, new DataSet(
+      securityConfig.getLoggedInUsers(environment),
+        securityConfig.getAuthorizer(), dataSetFactory
+      )
+    );
 
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new JsEnv(configuration));
