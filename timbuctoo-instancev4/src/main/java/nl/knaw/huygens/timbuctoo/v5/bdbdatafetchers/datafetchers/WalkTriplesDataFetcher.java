@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
+import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
@@ -13,9 +13,9 @@ import static nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.Paginati
 
 public abstract class WalkTriplesDataFetcher implements RelatedDataFetcher {
   private final String predicate;
-  private final BdbTripleStore tripleStore;
+  private final QuadStore tripleStore;
 
-  public WalkTriplesDataFetcher(String predicate, BdbTripleStore tripleStore) {
+  public WalkTriplesDataFetcher(String predicate, QuadStore tripleStore) {
     this.predicate = predicate;
     this.tripleStore = tripleStore;
   }

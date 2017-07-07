@@ -7,6 +7,8 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbCollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
@@ -68,7 +70,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   @Override
   public DataFetcherFactory createDataFetcherFactory(String userId, String dataSetId)
     throws DataStoreCreationException {
-    return make(userId, dataSetId).dataFetcherFactory;
+    return make(userId, dataSetId).createDataFetcherFactory();
   }
 
   @Override
@@ -124,12 +126,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       );
 
       DataSet dataSet = new DataSet();
-      dataSet.dataFetcherFactory = new DataStoreDataFetcherFactory(
-        userId,
-        dataSetId,
-        importManager,
-        dbFactory
-      );
+      QuadStore quadStore = new BdbTripleStore(importManager, dbFactory, userId, dataSetId);
+      SubjectStore subjectStore = new BdbCollectionIndex(importManager, dbFactory, userId, dataSetId);
+      dataSet.quadStore = quadStore;
+      dataSet.subjectStore = subjectStore;
       dataSet.typeNameStore = new JsonTypeNameStore(
         dataSetPathHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
         importManager
@@ -187,10 +187,15 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   }
 
   private class DataSet {
-    private DataFetcherFactory dataFetcherFactory;
     private SchemaStore schemaStore;
     private TypeNameStore typeNameStore;
     private ImportManager importManager;
     private RdfDataSourceFactory dataSource;
+    private QuadStore quadStore;
+    private SubjectStore subjectStore;
+
+    public DataFetcherFactory createDataFetcherFactory() {
+      return new DataStoreDataFetcherFactory(quadStore, subjectStore);
+    }
   }
 }
