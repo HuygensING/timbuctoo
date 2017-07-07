@@ -10,13 +10,16 @@ import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import org.apache.commons.io.FileUtils;
+import org.assertj.core.util.Maps;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -24,8 +27,9 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
 
   protected final EnvironmentConfig configuration;
   protected final File dbHome;
-  private final List<Database> databases;
+  private final Map<String, Database> databases;
   private static final Logger LOG = getLogger(NonPersistentBdbDatabaseCreator.class);
+  private Map<String, Environment> environmentMap;
 
   public NonPersistentBdbDatabaseCreator() {
     configuration = new EnvironmentConfig(new Properties());
@@ -33,26 +37,53 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
     configuration.setAllowCreate(true);
     configuration.setSharedCache(true);
     dbHome = Files.createTempDir();
-    databases = new ArrayList<>();
+    databases = Maps.newHashMap();
+    environmentMap = Maps.newHashMap();
   }
 
   @Override
   public BdbWrapper getDatabase(String userId, String dataSetId, String databaseName,
                                 DatabaseConfig config) throws DataStoreCreationException {
     try {
-      File envHome = new File(dbHome, userId + "_" + dataSetId);
+      String environmentKey = environmentKey(userId, dataSetId);
+      File envHome = new File(dbHome, environmentKey);
       envHome.mkdirs();
       Environment dataSetEnvironment = new Environment(envHome, configuration);
       Database database = dataSetEnvironment.openDatabase(null, databaseName, config);
-      databases.add(database);
+      databases.put(environmentKey + "_" + databaseName, database);
+      environmentMap.put(environmentKey, dataSetEnvironment);
       return new BdbWrapper(dataSetEnvironment, database, config);
     } catch (DatabaseException e) {
       throw new DataStoreCreationException(e);
     }
   }
 
+  private String environmentKey(String userId, String dataSetId) {
+    return userId + "_" + dataSetId;
+  }
+
+  @Override
+  public void removeDatabasesFor(String userId, String dataSetId) {
+    String environmentKey = environmentKey(userId, dataSetId);
+
+    List<String> dbsToRemove = databases.keySet().stream()
+                                        .filter(dbName -> dbName.startsWith(environmentKey))
+                                        .collect(Collectors.toList());
+
+    for (String dbToRemove : dbsToRemove) {
+      databases.get(dbToRemove).close();
+      databases.remove(dbToRemove);
+    }
+
+    if (environmentMap.containsKey(environmentKey)) {
+      environmentMap.get(environmentKey).close();
+      environmentMap.remove(environmentKey);
+    }
+  }
+  
+
   public void close() throws DatabaseException, IOException {
-    for (Database database : databases) {
+    for (Database database : databases.values()) {
       database.close();
     }
     boolean wasDeleted = false;

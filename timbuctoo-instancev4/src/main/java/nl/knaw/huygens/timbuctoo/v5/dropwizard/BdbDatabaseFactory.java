@@ -15,8 +15,10 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataS
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
   private final String databaseLocation;
@@ -39,7 +41,7 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
   public BdbWrapper getDatabase(String userId, String dataSetId, String databaseName,
                                 DatabaseConfig config)
     throws DataStoreCreationException {
-    String environmentKey = userId + "_" + dataSetId;
+    String environmentKey = environmentKey(userId, dataSetId);
     String databaseKey = environmentKey + "_" + databaseName;
     if (!databases.containsKey(databaseKey)) {
       if (!environmentMap.containsKey(environmentKey)) {
@@ -60,6 +62,30 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
     return new BdbWrapper(environmentMap.get(environmentKey), databases.get(databaseKey), config);
   }
 
+  private String environmentKey(String userId, String dataSetId) {
+    return userId + "_" + dataSetId;
+  }
+
+  @Override
+  public void removeDatabasesFor(String userId, String dataSetId) {
+    String environmentKey = environmentKey(userId, dataSetId);
+
+    List<String> dbsToRemove = databases.keySet().stream()
+                                        .filter(dbName -> dbName.startsWith(environmentKey))
+                                        .collect(Collectors.toList());
+
+    for (String dbToRemove : dbsToRemove) {
+      databases.get(dbToRemove).close();
+      databases.remove(dbToRemove);
+    }
+
+    if (environmentMap.containsKey(environmentKey)) {
+      environmentMap.get(environmentKey).close();
+      environmentMap.remove(environmentKey);
+    }
+  }
+
+  @Override
   public void start() throws Exception {
     File dbHome = new File(databaseLocation);
     dbHome.mkdirs();
@@ -69,6 +95,7 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
     dataSetPathHelper = new DataSetPathHelper(dbHome);
   }
 
+  @Override
   public void stop() throws Exception {
     for (Database database : databases.values()) {
       database.close();
