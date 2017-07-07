@@ -56,7 +56,7 @@ video::186090384[vimeo, width=640, height=355]
 == How does Timbuctoo work?
 
 //tag::timbuctoowork[]
-   Placeholder Text
+   (To be added)
    
 //end::timbuctoowork[]
 
@@ -64,19 +64,23 @@ video::186090384[vimeo, width=640, height=355]
 == Getting Started
 
 //tag::gettingstarted[]
- . *Prerequisites*
+
+=== Prerequisites
 The following prerequisites need to be installed on the machine before running the Timbuctoo program:
+
     * https://java.com/en/download/[Java]
     * https://maven.apache.org/download.cgi[Maven] 
     * https://git-scm.com/downloads[Git]
     * https://www.docker.com/[Docker]
- . *Installation*
+
+=== Installation
 After the above requirements are fulfilled you can follow the following instructions to install Timbuctoo:
+
     * Clone the https://github.com/HuygensING/timbuctoo.git[Timbuctoo Github repository] into a local directory using the command:
 
     git clone https://github.com/HuygensING/timbuctoo.git
  
- . *Starting Timbuctoo*
+=== Starting Timbuctoo
     - On the Timbuctoo root directory run the Maven build command:
 
       mvn clean package
@@ -85,14 +89,17 @@ After the above requirements are fulfilled you can follow the following instruct
 
       ./debugrun.sh 
 
- . *Uploading data*
+=== Uploading data
     - You can run a curl command of the following format to upload data into Timbuctoo:
 
     curl -v -F "file=@/<complete_path_to_file>/<filename>.ttl" -F "encoding=UTF-8" -F "uri=http://example.org/uva.ttl" -H "Authorization: fake" http://localhost:8080/v5/DUMMY/hpp6demo/upload/rdf
 
+    - You can use the provided *_bia_clusius.ttl_* data as a example dataset. It is available in the following folder:
 
- . *Querying data*
-    - With Timbuctoo running, you can access the GraphIQL in-browser IDE by pointing your web-browser to the following address:
+    <complete path to directory>/huygens/timbuctoo/timbuctoo-instancev4/src/test/resources/nl/knaw/huygens/timbuctoo/bia_clusius.ttl"
+
+=== Querying data
+    - With Timbuctoo running, you can access the https://github.com/graphql/graphiql[GraphIQL in-browser IDE] by pointing your web-browser to the following address:
 
     http://localhost:8080/static/graphiql
 
