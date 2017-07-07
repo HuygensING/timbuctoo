@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataS
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.rml.DataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -160,6 +161,19 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     });
 
     return Tuple.tuple(uuid, rdfCreator);
+  }
+
+  public void removeDataSet(String ownerId, String dataSetName) throws IOException {
+    dbFactory.removeDatabasesFor(ownerId, dataSetName);
+    // remove from datasets.json
+    storedDataSets.updateData(dataSets -> {
+      dataSets.get(ownerId).remove(dataSetName);
+      return dataSets;
+    });
+    dataSetMap.get(ownerId).remove(dataSetName);
+
+    // remove folder
+    FileUtils.deleteDirectory(dataSetPathHelper.dataSetPath(ownerId, dataSetName));
   }
 
   private class DataSet {

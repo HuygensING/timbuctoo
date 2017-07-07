@@ -96,4 +96,24 @@ public class DataSetFactoryTest {
     assertThat(dataSetExists, is(true));
   }
 
+  @Test
+  public void deleteDataSetRemovesTheDataSetFromDisk() throws Exception {
+    dataSetFactory.createDataSet("user", "dataSet");
+    File dataSetPath = new File(new File(tempFile, "user"), "dataSet");
+    assertThat(dataSetPath.exists(), is(true));
+
+    dataSetFactory.removeDataSet("user", "dataSet");
+
+    assertThat(dataSetPath.exists(), is(false));
+  }
+
+  @Test
+  public void deleteDataSetRemovesTheDataSetFromTheIndex() throws Exception {
+    dataSetFactory.createDataSet("user", "dataSet");
+
+    dataSetFactory.removeDataSet("user", "dataSet");
+
+    assertThat(dataSetFactory.dataSetExists("user", "dataSet"), is(false));
+  }
+
 }
