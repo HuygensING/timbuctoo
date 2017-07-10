@@ -7,10 +7,10 @@ public interface DataStoreFactory {
   QuadStore createQuadStore(DataProvider importManager, String userId,
                             String dataSetId) throws DataStoreCreationException;
 
-  SubjectStore createSubjectStore(DataProvider importManager, String userId,
-                                  String dataSetId) throws DataStoreCreationException;
+  CollectionIndex createCollectionIndex(DataProvider dataProvider, String userId,
+                                        String dataSetId) throws DataStoreCreationException;
 
-  DataSourceStore createDataSourceStore(ImportManager importManager, String userId, String dataSetId)
+  DataSourceStore createDataSourceStore(DataProvider dataProvider, String userId, String dataSetId)
     throws DataStoreCreationException;
 
   void removeDataStoresFor(String userId, String dataSetId);

@@ -79,7 +79,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     return make(userId, dataSetId).typeNameStore;
   }
 
-  public ImportManager createDataSet(String userId, String dataSetId) throws DataStoreCreationException {
+  public ImportManager createImportManager(String userId, String dataSetId) throws DataStoreCreationException {
     return make(userId, dataSetId).importManager;
 
   }
@@ -123,9 +123,9 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
 
       DataSet dataSet = new DataSet();
       QuadStore quadStore = dataStoreFactory.createQuadStore(importManager, userId, dataSetId);
-      SubjectStore subjectStore = dataStoreFactory.createSubjectStore(importManager, userId, dataSetId);
+      CollectionIndex collectionIndex = dataStoreFactory.createCollectionIndex(importManager, userId, dataSetId);
       dataSet.quadStore = quadStore;
-      dataSet.subjectStore = subjectStore;
+      dataSet.collectionIndex = collectionIndex;
       dataSet.typeNameStore = new JsonTypeNameStore(
         dataSetPathHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
         importManager
@@ -188,10 +188,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     private ImportManager importManager;
     private RdfDataSourceFactory dataSource;
     private QuadStore quadStore;
-    private SubjectStore subjectStore;
+    private CollectionIndex collectionIndex;
 
     public DataFetcherFactory createDataFetcherFactory() {
-      return new DataStoreDataFetcherFactory(quadStore, subjectStore);
+      return new DataStoreDataFetcherFactory(quadStore, collectionIndex);
     }
   }
 }

@@ -1,11 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataStoreFactory;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.dataset.SubjectStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.rml.DataSourceStore;
 
@@ -25,15 +24,15 @@ public class BdbDataStoreFactory implements DataStoreFactory {
   }
 
   @Override
-  public SubjectStore createSubjectStore(DataProvider importManager, String userId,
-                                         String dataSetId) throws DataStoreCreationException {
-    return new BdbCollectionIndex(importManager, dbFactory, userId, dataSetId);
+  public CollectionIndex createCollectionIndex(DataProvider dataProvider, String userId,
+                                               String dataSetId) throws DataStoreCreationException {
+    return new BdbCollectionIndex(dataProvider, dbFactory, userId, dataSetId);
   }
 
   @Override
-  public DataSourceStore createDataSourceStore(ImportManager importManager, String userId, String dataSetId)
+  public DataSourceStore createDataSourceStore(DataProvider dataProvider, String userId, String dataSetId)
     throws DataStoreCreationException {
-    return new DataSourceStore(userId, dataSetId, dbFactory, importManager);
+    return new DataSourceStore(userId, dataSetId, dbFactory, dataProvider);
   }
 
   @Override

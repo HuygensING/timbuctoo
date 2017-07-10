@@ -57,7 +57,7 @@ public class RdfUpload {
       return response;
     }
 
-    ImportManager importManager = dataSetManager.createDataSet(userId, dataSetId);
+    ImportManager importManager = dataSetManager.createImportManager(userId, dataSetId);
 
     Future<?> promise = importManager.addLog(
       uri,

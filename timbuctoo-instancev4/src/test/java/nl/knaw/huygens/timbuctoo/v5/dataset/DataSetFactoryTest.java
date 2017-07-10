@@ -50,24 +50,24 @@ public class DataSetFactoryTest {
 
   @Test
   public void getOrCreateReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createDataSet("user", "dataset");
+    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createImportManager("user", "dataset");
 
     assertThat(importManager1, is(sameInstance(importManager2)));
   }
 
   @Test
   public void getOrCreateReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createDataSet("user", "other");
+    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createImportManager("user", "other");
 
     assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
 
   @Test
   public void getOrCreateReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createDataSet("other", "dataset");
+    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createImportManager("other", "dataset");
 
     assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
@@ -81,7 +81,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws DataStoreCreationException {
-    dataSetFactory.createDataSet("ownerId", "otherDataSetId");
+    dataSetFactory.createImportManager("ownerId", "otherDataSetId");
 
     boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
 
@@ -90,7 +90,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void dataSetExistsReturnsTrueIfTheUserOwnsADataSetWithTheDataSetId() throws DataStoreCreationException {
-    dataSetFactory.createDataSet("ownerId", "dataSetId");
+    dataSetFactory.createImportManager("ownerId", "dataSetId");
 
     boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
 
@@ -99,7 +99,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void deleteDataSetRemovesTheDataSetFromDisk() throws Exception {
-    dataSetFactory.createDataSet("user", "dataSet");
+    dataSetFactory.createImportManager("user", "dataSet");
     File dataSetPath = new File(new File(tempFile, "user"), "dataSet");
     assertThat(dataSetPath.exists(), is(true));
 
@@ -110,7 +110,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void deleteDataSetRemovesTheDataSetFromTheIndex() throws Exception {
-    dataSetFactory.createDataSet("user", "dataSet");
+    dataSetFactory.createImportManager("user", "dataSet");
 
     dataSetFactory.removeDataSet("user", "dataSet");
 
