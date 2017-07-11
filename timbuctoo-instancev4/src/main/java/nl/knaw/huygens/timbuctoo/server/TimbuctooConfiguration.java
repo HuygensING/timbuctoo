@@ -16,7 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.dropwizard;
+package nl.knaw.huygens.timbuctoo.v5.bdb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,9 +7,6 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
-import io.dropwizard.lifecycle.Managed;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataSetPathHelper;
 
