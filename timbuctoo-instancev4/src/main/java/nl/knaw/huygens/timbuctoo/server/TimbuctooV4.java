@@ -83,6 +83,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetFactoryManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GephiWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GexfWriter;
@@ -253,9 +254,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
 
-    environment.lifecycle().manage(configuration.getDatabases());
-
     DataSetFactory dataSetFactory = configuration.getDataSet();
+
+    environment.lifecycle().manage(new DataSetFactoryManager(dataSetFactory));
 
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(environment),

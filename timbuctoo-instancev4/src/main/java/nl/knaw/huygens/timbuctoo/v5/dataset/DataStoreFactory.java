@@ -15,4 +15,7 @@ public interface DataStoreFactory {
 
   void removeDataStoresFor(String userId, String dataSetId);
 
+  void stop();
+
+  void start();
 }

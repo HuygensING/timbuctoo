@@ -40,4 +40,14 @@ public class BdbDataStoreFactory implements DataStoreFactory {
     dbFactory.removeDatabasesFor(userId, dataSetId);
   }
 
+  @Override
+  public void stop() {
+    dbFactory.stop();
+  }
+
+  @Override
+  public void start() {
+    dbFactory.start();
+  }
+
 }

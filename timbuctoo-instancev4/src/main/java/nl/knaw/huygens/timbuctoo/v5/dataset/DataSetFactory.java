@@ -182,6 +182,15 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     FileUtils.deleteDirectory(dataSetPathHelper.dataSetPath(ownerId, dataSetName));
   }
 
+  public void stop() {
+    // TODO let data set close all its stores
+    dataStoreFactory.stop();
+  }
+
+  public void start() {
+    dataStoreFactory.start();
+  }
+
   private class DataSet {
     private SchemaStore schemaStore;
     private TypeNameStore typeNameStore;

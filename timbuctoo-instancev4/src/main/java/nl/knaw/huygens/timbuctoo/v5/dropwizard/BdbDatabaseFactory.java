@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
+public class BdbDatabaseFactory implements BdbDatabaseCreator {
   private final String databaseLocation;
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
@@ -86,7 +86,7 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
   }
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     File dbHome = new File(databaseLocation);
     dbHome.mkdirs();
     if (!dbHome.isDirectory()) {
@@ -96,7 +96,7 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
   }
 
   @Override
-  public void stop() throws Exception {
+  public void stop() {
     for (Database database : databases.values()) {
       database.close();
     }
