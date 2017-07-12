@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
+import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 
@@ -38,8 +39,8 @@ public class DataSourceFactory {
         return Optional.of(new BulkUploadedDataSource(
           vreName,
           rawCollection.iterator().next().asLiteral().get().getValue(),
-          expressions,
-          graphWrapper
+          graphWrapper,
+          new JexlRowFactory(expressions, new HashMapBasedJoinHandler())
         ));
       }
     }

@@ -1,0 +1,149 @@
+package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
+
+import io.dropwizard.jersey.params.UUIDParam;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory.LoaderConfig;
+import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.TabularRdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataMultiPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
+
+@Path("/v5/{userId}/{dataSetId}/upload/table")
+public class TabularUpload {
+
+  private final LoggedInUsers loggedInUsers;
+  private final Authorizer authorizer;
+  private final DataSetFactory dataSetFactory;
+
+  public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetFactory) {
+    this.loggedInUsers = loggedInUsers;
+    this.authorizer = authorizer;
+    this.dataSetFactory = dataSetFactory;
+  }
+
+  @Consumes(MediaType.MULTIPART_FORM_DATA)
+  @Produces(MediaType.APPLICATION_JSON)
+  @POST
+  public Response upload(@FormDataParam("file") final InputStream rdfInputStream,
+                         @FormDataParam("file") final FormDataBodyPart body,
+                         @FormDataParam("file") final FormDataContentDisposition fileInfo,
+                         @FormDataParam("type") final String fileType,
+                         FormDataMultiPart formData,
+                         @HeaderParam("authorization") final String authHeader,
+                         @PathParam("userId") final String ownerId,
+                         @PathParam("dataSetId") final String dataSetId)
+    throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
+    LogStorageFailedException {
+
+    if (fileType == null || !LoaderFactory.LoaderConfigType.fromString(fileType).isPresent()) {
+      List<String> typeNames = Arrays.stream(LoaderFactory.LoaderConfigType.values())
+                                   .map(type -> type.getTypeString())
+                                   .collect(Collectors.toList());
+      return Response.status(Response.Status.BAD_REQUEST)
+                     .entity("type should have one of the following values: " + typeNames)
+                     .build();
+    }
+
+    final Response response = checkWriteAccess(
+      dataSetFactory::dataSetExists, authorizer, loggedInUsers, authHeader, ownerId, dataSetId
+    );
+    if (response != null) {
+      return response;
+    }
+
+    ImportManager importManager = dataSetFactory.createDataSet(ownerId, dataSetId);
+
+    String fileToken = importManager.addFile(
+      rdfInputStream,
+      fileInfo.getName(),
+      Optional.of(body.getMediaType())
+    );
+
+    Loader loader = LoaderFactory.createFor(configFromFormData(formData));
+
+    Tuple<UUID, RdfCreator> rdfCreator = dataSetFactory.registerRdfCreator(
+      (statusConsumer) -> new TabularRdfCreator(importManager, loader, dataSetId, statusConsumer, fileToken)
+    );
+
+    Future<?> promise = importManager.generateLog(
+      UriBuilder.fromUri("http://timbuctoo.huygens.knaw.nl").path(ownerId).path(dataSetId).path(fileToken).build(),
+      rdfCreator.getRight()
+    );
+
+    promise.get(); // Wait until the import is done.
+
+    return Response.noContent().build();
+
+    // return Response.created(fromResource(TabularUpload.class)
+    //   .path(rdfCreator.getLeft().toString())
+    //   .buildFromMap(ImmutableMap.of("userId", ownerId, "dataSetId", dataSetId))
+    // ).build();
+  }
+
+  @GET
+  @Path("{importId}")
+  public Response getStatus(@PathParam("importId") final UUIDParam importId) {
+    Optional<String> status = dataSetFactory.getStatus(importId.get());
+
+    if (status.isPresent()) {
+      return Response.ok(status).build();
+    }
+
+    return Response.status(Response.Status.NOT_FOUND).build();
+  }
+
+  private LoaderConfig configFromFormData(FormDataMultiPart formData) {
+    FormDataBodyPart typeField = formData.getField("type");
+    String typeString = typeField != null ? typeField.getValue() : "xlsx";
+
+    if (typeString.equals("csv")) {
+      Map<String, String> extraConfig = formData.getFields().entrySet().stream()
+                                                .filter(entry -> !entry.getKey().equals("file"))
+                                                .filter(entry -> !entry.getKey().equals("vreId"))
+                                                .filter(entry -> !entry.getKey().equals("uploadType"))
+                                                .filter(entry -> entry.getValue().size() > 0 &&
+                                                  entry.getValue().get(0) != null)
+                                                .collect(Collectors.toMap(Map.Entry::getKey,
+                                                  entry -> entry.getValue().get(0).getValue()));
+      return LoaderConfig.csvConfig(extraConfig);
+    }
+
+    return LoaderConfig.configFor(typeString);
+
+
+  }
+
+}

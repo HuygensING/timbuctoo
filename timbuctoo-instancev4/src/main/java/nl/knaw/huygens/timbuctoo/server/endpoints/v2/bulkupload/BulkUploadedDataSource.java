@@ -2,20 +2,14 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
-import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
+import nl.knaw.huygens.timbuctoo.rml.datasource.RowFactory;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
-import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlContext;
-import org.apache.commons.jexl3.JexlEngine;
-import org.apache.commons.jexl3.JexlExpression;
-import org.apache.commons.jexl3.MapContext;
 import org.apache.tinkerpop.gremlin.neo4j.process.traversal.LabelP;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -28,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
 import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.VALUE_PREFIX;
@@ -38,15 +33,15 @@ public class BulkUploadedDataSource implements DataSource {
   private final String collectionName;
   private final GraphWrapper graphWrapper;
   private final TimbuctooErrorHandler errorHandler;
-  private final Map<String, JexlExpression> expressions;
   private final String stringRepresentation;
+  private final RowFactory rowFactory;
 
-  private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
+  private final JoinHandler joinHandler;
 
   public static final String HAS_NEXT_ERROR = "hasNextError";
 
-  public BulkUploadedDataSource(String vreName, String collectionName, Map<String, String> customFields,
-                                GraphWrapper graphWrapper) {
+  public BulkUploadedDataSource(String vreName, String collectionName, GraphWrapper graphWrapper,
+                                RowFactory rowFactory) {
     StringBuffer result = new StringBuffer("    BulkUploadedDatasource: ");
     result
       .append(vreName).append(", ")
@@ -55,26 +50,13 @@ public class BulkUploadedDataSource implements DataSource {
     this.collectionName = collectionName;
     this.graphWrapper = graphWrapper;
     this.errorHandler = new TimbuctooErrorHandler(graphWrapper, vreName, collectionName);
-    this.expressions = new HashMap<>();
-    Map<String, Object> ns = Maps.newHashMap();
-    ns.put("Json", JsonEncoder.class); // make method Json:stringify available in expressions
-    ns.put("Math", Math.class); // make all methods of Math available
-    ns.put("Integer", Integer.class); // make method Integer
-    JexlEngine jexl = new JexlBuilder().namespaces(ns).create();
-    customFields.forEach((key, value) -> {
-      try {
-        expressions.put(key, jexl.createExpression(value));
-        result.append("      ").append(key).append(": ").append(value).append("\n");
-      } catch (Exception e) { // Catch the runtime exceptions
-        LOG.error("Could not compile expression '{}'", value);
-        LOG.error("Exception thrown", e);
-      }
-    });
+    this.rowFactory = rowFactory;
+    this.joinHandler = this.rowFactory.getJoinHandler();
     stringRepresentation = result.toString();
   }
 
   @Override
-  public Iterator<Row> getRows(ErrorHandler defaultErrorHandler) {
+  public Stream<Row> getRows(ErrorHandler defaultErrorHandler) {
     return graphWrapper.getGraph().traversal().V()
                        .has(T.label, LabelP.of(Vre.DATABASE_LABEL))
                        .has(Vre.VRE_NAME_PROPERTY_NAME, vreName)
@@ -83,32 +65,31 @@ public class BulkUploadedDataSource implements DataSource {
                        .out(TinkerpopSaver.RAW_ITEM_EDGE_NAME)
                        .toStream()
                        .map(vertex -> {
-                         Map<String, Object> valueMap = new HashMap<>();
+                         Map<String, String> valueMap = new HashMap<>();
                          final Iterator<VertexProperty<Object>> properties = vertex.properties();
                          while (properties.hasNext()) {
                            VertexProperty prop = properties.next();
+                           Object value = prop.value();
+                           if (value == null) {
+                             continue;
+                           }
                            if (prop.key().startsWith(VALUE_PREFIX)) {
-                             valueMap.put(prop.key().substring(VALUE_PREFIX.length()), prop.value());
+                             valueMap.put(prop.key().substring(VALUE_PREFIX.length()), value.toString());
                            }
                            if (prop.key().equals("tim_id")) {
-                             valueMap.put(prop.key(), prop.value());
+                             valueMap.put(prop.key(), value.toString());
                            }
                          }
 
-                         joinHandler.resolveReferences(valueMap);
-
                          errorHandler.setCurrentVertex(vertex);
 
-                         return (Row) new BulkUploadedRow(valueMap, errorHandler);
-                       })
-                       .iterator();
+                         return rowFactory.makeRow(valueMap, errorHandler);
+                       });
   }
 
   @Override
-  public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
-    if (referenceJoinValue != null) {
-      joinHandler.willBeJoinedOn(fieldName, referenceJoinValue, uri, outputFieldName);
-    }
+  public void willBeJoinedOn(String fieldName, String referenceJoinValue, String uri, String outputFieldName) {
+    joinHandler.willBeJoinedOn(fieldName, referenceJoinValue, uri, outputFieldName);
   }
 
   private static class TimbuctooErrorHandler implements ErrorHandler {
@@ -126,7 +107,7 @@ public class BulkUploadedDataSource implements DataSource {
     }
 
     @Override
-    public void linkError(Map<String, Object> rowData, String childField, String parentCollection,
+    public void linkError(Map<String, String> rowData, String childField, String parentCollection,
                           String parentField) {
 
       Object fieldValue = rowData.get(childField);
@@ -177,44 +158,7 @@ public class BulkUploadedDataSource implements DataSource {
 
   @Override
   public String toString() {
-    return stringRepresentation;
-  }
-
-  private class BulkUploadedRow implements Row {
-    private final Map<String, Object> data;
-    private final ErrorHandler errorHandler;
-
-    public BulkUploadedRow(Map<String, Object> data, ErrorHandler errorHandler) {
-      this.data = data;
-      this.errorHandler = errorHandler;
-    }
-
-    @Override
-    public Object get(String key) {
-      if (data.containsKey(key)) {
-        return data.get(key);
-      } else if (expressions.containsKey(key)) {
-        try {
-          JexlContext jexlContext = new MapContext();
-          jexlContext.set("v", data);
-          return expressions.get(key).evaluate(jexlContext);
-        } catch (Throwable throwable) {
-          LOG.info("Error during mapping", throwable);
-          errorHandler.valueGenerateFailed(
-            key,
-            String.format("Could not execute expression '%s' for this row.", expressions.get(key))
-          );
-          return null;
-        }
-      } else {
-        return null;
-      }
-    }
-
-    @Override
-    public void handleLinkError(String childField, String parentCollection, String parentField) {
-      errorHandler.linkError(data, childField, parentCollection, parentField);
-    }
+    return stringRepresentation + rowFactory.toString();
   }
 
   public static class JsonEncoder {

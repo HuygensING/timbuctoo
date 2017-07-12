@@ -138,6 +138,7 @@
     <neo4j.version>3.1.0</neo4j.version>
     <!-- The number after the dash is the Neo4j version -->
     <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
+    <rdf4j.version>2.2</rdf4j.version>
   </properties>
 
   <dependencies>
@@ -206,6 +207,17 @@
           <artifactId>neo4j-enterprise</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.graphql-java</groupId>
+      <artifactId>graphql-java</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.sleepycat</groupId>
+      <artifactId>je</artifactId>
+      <version>7.4.5</version>
     </dependency>
 
     <!-- ### handle ids ## -->
@@ -287,6 +299,13 @@
       <version>1.9.2</version>
     </dependency>
 
+    <!-- ### Xml indenting ## -->
+    <dependency>
+      <groupId>org.glassfish.jaxb</groupId>
+      <artifactId>txw2</artifactId>
+      <version>2.2.11</version>
+    </dependency>
+
     <!-- ### Logging and reporting ## -->
     <!--GELF logback handler for sending logs to a remote log server-->
     <dependency>
@@ -335,6 +354,45 @@
       <artifactId>apache-jena-libs</artifactId>
       <type>pom</type>
       <version>3.1.0</version>
+    </dependency>
+
+    <!-- Rdf4J -->
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-rdfxml</artifactId>
+      <version>${rdf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-turtle</artifactId>
+      <version>${rdf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-ntriples</artifactId>
+      <version>${rdf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-trig</artifactId>
+      <version>${rdf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-n3</artifactId>
+      <version>${rdf4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.rdf4j</groupId>
+      <artifactId>rdf4j-rio-nquads</artifactId>
+      <version>${rdf4j.version}</version>
+    </dependency>
+
+    <!-- character encoding detection -->
+    <dependency>
+      <groupId>com.googlecode.juniversalchardet</groupId>
+      <artifactId>juniversalchardet</artifactId>
+      <version>1.0.3</version>
     </dependency>
 
     <!-- ### make generating of value types easier -->
@@ -503,6 +561,12 @@
 
   <repositories>
     <repository>
+      <id>oracleReleases</id>
+      <name>Oracle Released Java Packages</name>
+      <url>http://download.oracle.com/maven</url>
+      <layout>default</layout>
+    </repository>
+    <repository>
       <id>central</id>
       <name>Central repository</name>
       <url>http://repo1.maven.org/maven2/</url>
@@ -636,7 +700,7 @@
           </includes>
           <systemPropertyVariables>
             <concordion.output.dir>${concordion.output.dir}</concordion.output.dir>
-            <dw.logging.level>OFF</dw.logging.level><!-- Do you want no logging output from your tests? because that's how you get no logging output from your tests-->
+            <!--<dw.logging.level>OFF</dw.logging.level>&lt;!&ndash; Do you want no logging output from your tests? because that's how you get no logging output from your tests&ndash;&gt;-->
           </systemPropertyVariables>
         </configuration>
         <executions>
@@ -781,180 +845,6 @@
                   <commandlineArgs>
                     ${basedir}/src/spec/resources/ ${basedir}/target/concordion/
                   </commandlineArgs>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    <profile>
-      <id>buildRpm</id>
-      <activation>
-        <property>
-          <name>buildRpm</name>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>appassembler-maven-plugin</artifactId>
-            <version>${appassembler.version}</version>
-            <executions>
-              <execution>
-                <id>generate-jsw-scripts</id>
-                <phase>package</phase>
-                <goals>
-                  <goal>generate-daemons</goal>
-                </goals>
-                <configuration>
-                  <repositoryLayout>flat</repositoryLayout>
-                  <daemons>
-                    <daemon>
-                      <id>timbuctoo_daemon</id>
-                      <wrapperMainClass>org.tanukisoftware.wrapper.WrapperSimpleApp</wrapperMainClass>
-                      <mainClass>nl.knaw.huygens.timbuctoo.server.TimbuctooV4</mainClass>
-                      <commandLineArguments>
-                        <commandLineArgument>server</commandLineArgument>
-                        <commandLineArgument>${rpm.app-home}/conf/config.yaml</commandLineArgument>
-                      </commandLineArguments>
-                      <wrapperLogFile>${rpm.app-home}/logs/timbuctoo.log</wrapperLogFile>
-                      <platforms>
-                        <platform>jsw</platform>
-                      </platforms>
-                      <generatorConfigurations>
-                        <generatorConfiguration>
-                          <generator>jsw</generator>
-                          <includes>
-                            <include>linux-x86-64</include>
-                          </includes>
-                          <configuration>
-                            <property>
-                              <name>run.as.user.envvar</name>
-                              <value>timbuctoo</value>
-                            </property>
-                          </configuration>
-                        </generatorConfiguration>
-                      </generatorConfigurations>
-                    </daemon>
-                  </daemons>
-                </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <!-- Create rpm during package phase for server releases, only works for systems of the Red Hat family -->
-            <!-- The plugin depends on the 'rpm-build' package. -->
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>rpm-maven-plugin</artifactId>
-            <version>${rpm-maven-plugin.version}</version>
-            <executions>
-              <execution>
-                <id>attach-rpm</id>
-                <goals>
-                  <goal>attached-rpm</goal> <!-- Makes rpm a secondary artifact -->
-                </goals>
-                <configuration>
-                  <group>Repository</group>
-                  <description>Timbuctoo standalone app RPM package.</description>
-                  <needarch>true</needarch>
-                  <mappings>
-                    <mapping>
-                      <directory>${rpm.app-home}</directory>
-                      <filemode>775</filemode>
-                      <username>timbuctoo</username>
-                      <groupname>timbuctoo</groupname>
-                    </mapping>
-                    <mapping>
-                      <directory>${rpm.app-home}/lib</directory>
-                      <filemode>775</filemode>
-                      <username>timbuctoo</username>
-                      <groupname>timbuctoo</groupname>
-                      <sources>
-                        <source>
-                          <targetArchitecture>x86_64</targetArchitecture>
-                          <location>
-                            ${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/lib
-                          </location>
-                        </source>
-                      </sources>
-                    </mapping>
-                    <mapping>
-                      <directory>${rpm.app-home}/etc</directory>
-                      <filemode>775</filemode>
-                      <username>timbuctoo</username>
-                      <groupname>timbuctoo</groupname>
-                      <sources>
-                        <source>
-                          <targetArchitecture>x86_64</targetArchitecture>
-                          <location>
-                            ${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/etc
-                          </location>
-                        </source>
-                      </sources>
-                    </mapping>
-                    <mapping>
-                      <directory>${rpm.app-home}/bin</directory>
-                      <filemode>775</filemode>
-                      <username>timbuctoo</username>
-                      <groupname>timbuctoo</groupname>
-                      <sources>
-                        <source>
-                          <targetArchitecture>x86_64</targetArchitecture>
-                          <location>
-                            ${project.build.directory}/generated-resources/appassembler/jsw/timbuctoo_daemon/bin/
-                          </location>
-                        </source>
-                        <source>
-                          <location>
-                            ${project.basedir}/src/main/resources/service/localUserImporter.sh
-                          </location>
-                        </source>
-                        <source>
-                          <location>
-                            ${project.basedir}/src/main/resources/service/localUserImport.readme
-                          </location>
-                        </source>
-                      </sources>
-                    </mapping>
-                    <mapping>
-                      <directory>${rpm.app-home}/conf</directory>
-                      <filemode>775</filemode>
-                      <username>timbuctoo</username>
-                      <groupname>timbuctoo</groupname>
-                      <configuration>true</configuration>
-                      <sources>
-                        <source>
-                          <destination>config.yaml</destination>
-                          <location>${project.basedir}/src/main/resources/service/config.yaml</location>
-                        </source>
-                      </sources>
-                    </mapping>
-                    <mapping>
-                      <directory>${rpm.app-home}/logs</directory>
-                      <filemode>775</filemode>
-                      <username>timbuctoo</username>
-                      <groupname>timbuctoo</groupname>
-                    </mapping>
-                    <mapping>
-                      <directory>${rpm.app-home}/monit</directory>
-                      <filemode>775</filemode>
-                      <username>timbuctoo</username>
-                      <groupname>timbuctoo</groupname>
-                      <sources>
-                        <source>
-                          <targetArchitecture>x86_64</targetArchitecture>
-                          <location>
-                            ${project.basedir}/src/main/resources/service/timbuctoo.monit
-                          </location>
-                        </source>
-                      </sources>
-                    </mapping>
-                  </mappings>
-                  <preinstallScriptlet>
-                    <scriptFile>${project.build.scriptSourceDirectory}/rpm_scripts/create_user_and_group.sh</scriptFile>
-                  </preinstallScriptlet>
                 </configuration>
               </execution>
             </executions>

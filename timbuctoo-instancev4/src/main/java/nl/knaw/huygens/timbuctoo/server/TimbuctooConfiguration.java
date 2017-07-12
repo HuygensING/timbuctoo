@@ -8,15 +8,22 @@ import io.dropwizard.client.HttpClientConfiguration;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbDatabaseFactory;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.Optional;
+import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,9 +51,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @JsonProperty
   private WebhookFactory webhooks = new WebhookFactory();
 
-  @JsonProperty
-  @Deprecated
-  private String databasePath;
   @JsonProperty
   private TinkerPopConfig databaseConfiguration;
   @Deprecated
@@ -82,30 +86,13 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   @Valid
   @NotNull
   private HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration();
+  private DataSetConfiguration dataSetConfiguration;
+  private BdbDatabaseFactory bdbDatabaseFactory;
+  private ExecutorService dataSetExecutorService;
 
 
   public PersistenceManagerFactory getPersistenceManagerFactory() {
     return persistenceManager;
-  }
-
-  @Deprecated
-  public Timeout getAutoLogoutTimeout() {
-    return autoLogoutTimeout.createTimeout();
-  }
-
-  @Deprecated
-  public String getLoginsFilePath() {
-    return loginsFilePath;
-  }
-
-  @Deprecated
-  public String getUsersFilePath() {
-    return usersFilePath;
-  }
-
-  @Deprecated
-  public String getDatabasePath() {
-    return databasePath;
   }
 
   public TinkerPopConfig getDatabaseConfiguration() {
@@ -158,20 +145,6 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return searchResultAvailabilityTimeout.createTimeout();
   }
 
-  @Valid
-  @Deprecated
-  private FederatedAuthConfiguration federatedAuthentication;
-
-  @JsonProperty("federatedAuthentication")
-  public FederatedAuthConfiguration getFederatedAuthentication() {
-    return federatedAuthentication;
-  }
-
-  @JsonProperty("federatedAuthentication")
-  public void setFederatedAuthentication(FederatedAuthConfiguration federatedAuthentication) {
-    this.federatedAuthentication = federatedAuthentication;
-  }
-
   @Deprecated
   public Path getAuthorizationsPath() {
     return authorizationsPath;
@@ -211,4 +184,34 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
   private void setUserRedirectUrl(String userRedirectUrl) {
     this.userRedirectUrl = Optional.of(URI.create(userRedirectUrl));
   }
+
+  public BdbDatabaseFactory getDatabases() {
+    return bdbDatabaseFactory;
+  }
+
+  public void setDatabases(BdbDatabaseFactory bdbDatabaseFactory) {
+    this.bdbDatabaseFactory = bdbDatabaseFactory;
+  }
+
+  public DataSetFactory getDataSet() throws DataStoreCreationException {
+    try {
+      return new DataSetFactory(
+        dataSetExecutorService,
+        getSecurityConfiguration().getVreAuthorizationCreator(),
+        dataSetConfiguration,
+        getDatabases()
+      );
+    } catch (IOException | AccessNotPossibleException e) {
+      throw new DataStoreCreationException(e);
+    }
+  }
+
+  public void setDataSetExecutorService(ExecutorService executorService) {
+    dataSetExecutorService = executorService;
+  }
+
+  public void setDataSet(DataSetConfiguration dataSetFactory) {
+    this.dataSetConfiguration = dataSetFactory;
+  }
+
 }

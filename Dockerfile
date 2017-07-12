@@ -11,6 +11,7 @@ COPY ./pom.xml ./pom.xml
 # FIXME: do a maven install and then run appassembler with generateRepository=false and specify /root/.m2 as the REPO
 # variable
 # This will save unnecessary package copying from the local repository to the target folder. Making the image smaller
+COPY ./timbuctoo-instancev4/example_config.yaml ./timbuctoo-instancev4/example_config.yaml
 RUN mvn clean package
 
 COPY ./timbuctoo-instancev4/docker_config.yaml ./timbuctoo-instancev4/docker_config.yaml

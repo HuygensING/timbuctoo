@@ -29,10 +29,10 @@ package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
  */
 public class Importer {
 
-  private final StateMachine importer;
+  private final StateMachine<?> importer;
   private final ResultReporter resultReporter;
 
-  public Importer(StateMachine importer, ResultReporter resultReporter) {
+  public Importer(StateMachine<?> importer, ResultReporter resultReporter) {
     this.importer = importer;
     this.resultReporter = resultReporter;
   }

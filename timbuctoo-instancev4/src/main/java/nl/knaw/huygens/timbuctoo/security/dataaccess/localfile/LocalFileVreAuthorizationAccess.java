@@ -15,6 +15,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static nl.knaw.huygens.timbuctoo.util.EscapeFunnyCharacters.escapeFunnyCharacters;
+
 public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   private final ObjectMapper objectMapper;
   private final Path authorizationsFolder;
@@ -94,6 +96,7 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   }
 
   private File getFile(String vreId) {
-    return authorizationsFolder.resolve(String.format("%s.json", vreId)).toFile();
+    return authorizationsFolder.resolve(String.format("%s.json", escapeFunnyCharacters(vreId))).toFile();
   }
+
 }

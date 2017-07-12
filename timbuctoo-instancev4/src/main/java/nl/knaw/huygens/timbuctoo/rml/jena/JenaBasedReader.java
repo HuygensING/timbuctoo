@@ -105,10 +105,6 @@ public class JenaBasedReader {
   }
 
   private void buildTermMap(RdfResource object, TermMapBuilder termMapBuilder) {
-    object.out(NS_RR + "constant").forEach(term -> {
-      termMapBuilder.withConstantTerm(term.asIri().orElseThrow(() -> new RuntimeException("")));
-    });
-
     Set<RdfResource> termType = object.out(NS_RR + "termType");
     Set<RdfResource> language = object.out(NS_RR + "language");
     //check if language is only literals and the rest is only Resource
@@ -120,6 +116,10 @@ public class JenaBasedReader {
     object.out(NS_RR + "template").forEach(templateValue ->
       termMapBuilder.withTemplateTerm(templateValue, termType, language, datatype)
     );
+    object.out(NS_RR + "constant").forEach(templateValue -> {
+      termMapBuilder.withConstantTerm(templateValue, termType, language, datatype);
+    });
+
   }
 
 }

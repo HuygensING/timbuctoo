@@ -1,23 +1,20 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 public class RrJoinCondition {
-  private String child;
-  private String parent;
+  private String childField;
+  private String parentField;
 
-  public RrJoinCondition(String child, String parent) {
-    this.child = child;
-    this.parent = parent;
+  public RrJoinCondition(String childField, String parentField) {
+    this.childField = childField;
+    this.parentField = parentField;
   }
 
-  public String getChild() {
-    return child;
+  public String getChildField() {
+    return childField;
   }
 
-  public String getParent() {
-    return parent;
+  public String getParentField() {
+    return parentField;
   }
 
-  public RrJoinCondition flipped() {
-    return new RrJoinCondition(parent, child);
-  }
 }

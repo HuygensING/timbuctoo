@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.rml.datasource;
 
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 
+import java.util.List;
 import java.util.Map;
 
 public interface JoinHandler {
@@ -13,7 +14,7 @@ public interface JoinHandler {
    *
    * @param valueMap the valueMap for the current row from DataSource
    */
-  void resolveReferences(Map<String, Object> valueMap);
+  Map<String, List<String>> resolveReferences(Map<String, String> valueMap);
 
   /**
    * Every time a referenced triplesMap creates a subject, the RrRefObjectMap will tell it's own datasource to store it
@@ -25,6 +26,6 @@ public interface JoinHandler {
    * @param uri the uri of the referenced object
    * @param outputFieldName the key (UUID) that is generated to look up the uri
    */
-  void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName);
+  void willBeJoinedOn(String fieldName, String referenceJoinValue, String uri, String outputFieldName);
 
 }

@@ -87,7 +87,7 @@
       <property name="option" value="EOL"/>
     </module>
     <module name="PackageName">
-      <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+      <property name="format" value="^[a-z]+(\.[a-z][a-z0-9_]*)*$"/>
       <message key="name.invalidPattern"
                value="Package name ''{0}'' must match pattern ''{1}''."/>
     </module>
@@ -144,7 +144,7 @@
       <property name="basicOffset" value="2"/>
       <property name="braceAdjustment" value="0"/>
       <property name="caseIndent" value="2"/>
-      <property name="throwsIndent" value="4"/>
+      <property name="throwsIndent" value="2"/>
       <property name="lineWrappingIndentation" value="2"/>
       <property name="arrayInitIndent" value="2"/>
     </module>

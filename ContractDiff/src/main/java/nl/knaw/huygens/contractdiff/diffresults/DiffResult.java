@@ -4,7 +4,7 @@ import com.google.common.xml.XmlEscapers;
 
 public abstract class DiffResult {
 
-  protected static final String RESET = "\u001B[30m";
+  protected static final String RESET = "\u001B[0m";
   protected static final String GOOD = "\u001B[32m";
   protected static final String BAD = "\u001B[31m";
   protected static final String SUBDUED = "\u001B[37m";

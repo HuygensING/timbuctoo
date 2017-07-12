@@ -13,8 +13,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
-
 public class RrTriplesMap {
   private final List<Tuple<RrRefObjectMap, String>> subscriptions = new ArrayList<>();
   private final RrSubjectMap subjectMap;
@@ -42,14 +40,14 @@ public class RrTriplesMap {
   }
 
   Stream<Triple> getItems(ErrorHandler defaultErrorHandler) {
-    return stream(dataSource.getRows(defaultErrorHandler))
+    return dataSource.getRows(defaultErrorHandler)
       .flatMap(row -> {
         Optional<Node> subjectOpt = subjectMap.generateValue(row);
 
         if (subjectOpt.isPresent()) {
           Node subject = subjectOpt.get();
           for (Tuple<RrRefObjectMap, String> subscription : subscriptions) {
-            subscription.getLeft().onNewSubject(row.get(subscription.getRight()), subject);
+            subscription.getLeft().onNewSubject(row.getRawValue(subscription.getRight()), subject);
           }
 
           return predicateObjectMaps.stream()

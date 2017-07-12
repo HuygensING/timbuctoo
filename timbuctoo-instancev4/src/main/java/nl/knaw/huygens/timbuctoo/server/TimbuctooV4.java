@@ -36,11 +36,10 @@ import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
-import nl.knaw.huygens.timbuctoo.server.databasemigration.MoveIndicesToIsLatestVertexMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
+import nl.knaw.huygens.timbuctoo.server.databasemigration.MoveIndicesToIsLatestVertexMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.PrepareForBiaImportMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.RelationTypeRdfUriMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.RemoveSearchResultsMigration;
@@ -63,7 +62,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.DataSourceFactor
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.ExecuteRml;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.SaveRml;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.VreAuthIniter;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Autocomplete;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
@@ -84,6 +82,25 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GephiWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GexfWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.PalladioCsvWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.XmlWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
+import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
+import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -128,11 +145,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     bootstrap.setConfigurationSourceProvider(
       new SubstitutingSourceProvider(
         bootstrap.getConfigurationSourceProvider(),
-        new EnvironmentVariableSubstitutor(false)));
+        new EnvironmentVariableSubstitutor(true)));
   }
 
   @Override
   public void run(TimbuctooConfiguration configuration, Environment environment) throws Exception {
+    // environment.jersey().property(ServerProperties.TRACING, "ALL");
+    // // environment.jersey().property(ServerProperties.TRACING_THRESHOLD, "VERBOSE");
+
     //Make sure we know what version is running
     Properties properties = new Properties();
     InputStream gitproperties = getClass().getClassLoader().getResourceAsStream("git.properties");
@@ -148,21 +168,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
 
     // Support services
-    SecurityFactory securityConfig;
-    if (configuration.getSecurityConfiguration() == null) {
-      securityConfig = new SecurityFactory();
-      //map old style to new style. Needed until timbuctoo is migrated away from rpm based releases and we can more
-      //easily update the configuration
-      securityConfig.setLocalfileAccessFactory(new LocalfileAccessFactory(
-        configuration.getAuthorizationsPath().toAbsolutePath().toString(),
-        configuration.getLoginsFilePath(),
-        configuration.getUsersFilePath()
-      ));
-      securityConfig.setAutoLogoutTimeout(configuration.getAutoLogoutTimeout());
-      securityConfig.setAuthHandler(configuration.getFederatedAuthentication().makeHandler(environment));
-    } else {
-      securityConfig = configuration.getSecurityConfiguration();
-    }
+    SecurityFactory securityConfig = configuration.getSecurityConfiguration();
 
     securityConfig.getHealthChecks().forEachRemaining(check -> {
       register(environment, check.getLeft(), check.getRight());
@@ -180,10 +186,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     }
 
     TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
-    if (tinkerPopConfig == null) {
-      tinkerPopConfig = new TinkerPopConfig();
-      tinkerPopConfig.setDatabasePath(configuration.getDatabasePath());
-    }
     final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
     final PersistenceManager persistenceManager = configuration.getPersistenceManagerFactory().build();
     UrlGenerator uriToRedirectToFromPersistentUrls = (coll, id, rev) ->
@@ -235,7 +237,54 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       pathWithoutVersionAndRevision
     );
 
-    // register REST endpoints
+
+    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(environment.jersey());
+    serializerWriterRegistry.register(new CsvWriter());
+    serializerWriterRegistry.register(new GephiWriter());
+    serializerWriterRegistry.register(new GexfWriter());
+    serializerWriterRegistry.register(new GraphVizWriter());
+    serializerWriterRegistry.register(new JsonLdWriter());
+    serializerWriterRegistry.register(new JsonWriter());
+    serializerWriterRegistry.register(new PalladioCsvWriter());
+    serializerWriterRegistry.register(new XmlWriter());
+
+    register(environment, new SupportedFormats(serializerWriterRegistry));
+
+    configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
+
+    environment.lifecycle().manage(configuration.getDatabases());
+
+    DataSetFactory dataSetFactory = configuration.getDataSet();
+
+    register(environment, new RdfUpload(
+      securityConfig.getLoggedInUsers(environment),
+      securityConfig.getAuthorizer(),
+      dataSetFactory
+    ));
+
+    register(environment, new TabularUpload(
+      securityConfig.getLoggedInUsers(environment),
+      securityConfig.getAuthorizer(),
+      dataSetFactory
+    ));
+
+    register(environment, new Rml(
+      dataSetFactory
+    ));
+
+    GraphQl graphQlEndpoint = new GraphQl(
+      new GraphQlService(
+        dataSetFactory,
+        dataSetFactory,
+        dataSetFactory,
+        new GraphQlTypeGenerator()
+      ),
+      uriHelper
+    );
+    register(environment, graphQlEndpoint);
+    register(environment, new GetDataSets(dataSetFactory, graphQlEndpoint));
+    register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(environment), dataSetFactory));
+
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new JsEnv(configuration));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
@@ -296,15 +345,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
-      transactionEnforcer,
-      graphManager,
-      rfdExecutorService,
-      new VreAuthIniter(
-        securityConfig.getLoggedInUsers(environment),
-        transactionEnforcer,
-        securityConfig.getVreAuthorizationCreator()
-      ),
-      vres
+      dataSetFactory
     ));
 
     // Admin resources

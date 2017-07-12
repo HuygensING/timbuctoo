@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.TermType;
 import org.apache.jena.datatypes.BaseDatatype;
 import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.datatypes.xsd.impl.RDFLangString;
 
 import java.util.Optional;
 import java.util.Set;
@@ -44,6 +43,33 @@ public class TermMapBuilder {
     instance = new RrConstant(value);
     return this;
   }
+
+  public void withConstantTerm(RdfResource constant, Set<RdfResource> termTypes, Set<RdfResource> languages,
+                               Set<RdfResource> datatypes) {
+    Optional<TermType> termType = termTypes.stream().findAny().flatMap(TermType::forNode);
+    Optional<String> language = languages.stream().findAny().flatMap(RdfResource::asLiteral).map(RdfLiteral::getValue);
+    Optional<String> datatype = datatypes.stream().findAny().flatMap(RdfResource::asIri);
+
+    String value = null;
+    if (constant.asIri().isPresent()) {
+      value = constant.asIri().get();
+    } else if (constant.asLiteral().isPresent()) {
+      value = constant.asLiteral().get().getValue();
+    }
+
+    if (value == null) {
+      throw new RuntimeException("Constant is empty");
+    }
+    withConstantTerm(value, termType, language, datatype);
+  }
+
+  public void withConstantTerm(String value, Optional<TermType> termTypeOpt, Optional<String> language,
+                               Optional<String> datatypeOpt) {
+    TermType termType = termTypeOrDefault(termTypeOpt, language, datatypeOpt);
+    RDFDatatype dataType = dataTypeOrDefault(datatypeOpt);
+    instance = new RrConstant(value, termType, dataType);
+  }
+
 
   public TermMapBuilder withColumnTerm(String referenceString) {
     withColumnTerm(referenceString, Optional.empty(), Optional.empty(), Optional.empty());

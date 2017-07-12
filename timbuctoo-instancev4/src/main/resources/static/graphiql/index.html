@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      html {
+        height: 100%;
+      }
+      body {
+        height: 100%;
+        margin: 0;
+        width: 100%;
+        overflow: hidden;
+      }
+      #graphiql {
+        height: 100vh;
+      }
+    </style>
+    <link rel="stylesheet" href="./graphiql/graphiql.css" />
+
+    <script src="./graphiql/es6-promise.auto.min.js"></script>
+    <script src="./graphiql/fetch.min.js"></script>
+    <script src="./graphiql/react.js"></script>
+    <script src="./graphiql/react-dom.js"></script>
+    <script src="./graphiql/graphiql.js"></script>
+
+  </head>
+  <body>
+    <div id="graphiql">Loading...</div>
+    <script>
+      var userId = location.hash.substr(1).split("/")[0] || "DUMMY";
+      var dataSetId = location.hash.substr(1).split("/")[1] || "defaultDataSet";
+      location.hash = userId + "/" + dataSetId;
+      var dataSets = {};
+      var dataSetList = [];
+      var acceptMediaType = "application/json";
+      var mediaTypeMenuItems = [];
+      var googleQuery="";
+
+
+      function setDataSet(userId, name) {
+        location.hash = userId + "/" + name;
+        location.reload();
+      }
+
+      function setAcceptMediaType(mediaType) {
+          acceptMediaType = mediaType;
+      }
+      
+      function graphQLFetcher(graphQLParams) {
+        if (dataSets[dataSetId]) {
+          return fetch(dataSets[dataSetId], {
+            method: 'post',
+            headers: { 'Accept': acceptMediaType },
+            body: graphQLParams.query
+          }).then(function (response) {
+            var s;
+            var contentType = response.headers.get('Content-Type');
+            if(contentType === 'application/json' || contentType.endsWith("+json")) {
+              s = response.json();
+            } else {
+              s = response.text();
+            }
+            return s
+          }).then(function (parsed) {
+            var data = parsed;
+            return data;
+          });
+        } else {
+          return Promise.resolve('"no dataSet selected"')
+        }
+      }
+
+      
+      fetch("/v5/dataSets/" + userId, {
+        method: 'get',
+        headers: { 'Accept': 'application/json' }
+      }).then(function (response) {
+        return response.json();
+      }).then(function (response) {
+        dataSets = response;
+        dataSetList = Object.keys(dataSets).map(function (dataSet)  {
+         return React.createElement(GraphiQL.MenuItem, {
+              key: dataSet,
+              onSelect: function () {setDataSet(userId, dataSet)},
+              label: dataSet
+            })
+          });
+      }).then(function (list) {
+          fetch("/v5/supported_formats/export", {
+              method: 'get',
+              headers: {'Accept': 'application/json'}
+          }).then(function (mediaTypes) {
+              return mediaTypeMenuItems = mediaTypes.json();
+          }).then(function (mediaTypes) {
+              return mediaTypes.map(function (type) {
+                  return React.createElement(GraphiQL.MenuItem, {
+                      key: type,
+                      onSelect: function () {
+                          setAcceptMediaType(type);
+                      },
+                      label: type
+                  })
+              })
+          }).then(function (newMenuItems) {
+              mediaTypeMenuItems = newMenuItems;
+              reRender();
+          });
+      });
+      function reRender() {
+          ReactDOM.render(React.createElement(GraphiQL,
+              {
+                  fetcher: graphQLFetcher,
+                  onEditQuery: function(query) {
+                      var encodedQuery = encodeURIComponent(query);
+                      googleQuery = "=IMPORTDATA(\"" + location.origin + "/v5/" + userId + "/" + dataSetId + "/graphql/csv?query=" + encodedQuery + "\")";
+                      reRender();
+                  }
+              },
+              React.createElement(
+                  GraphiQL.Toolbar,
+                  null,
+                  React.createElement(
+                      GraphiQL.Menu,
+                      {label: "select dataset"},
+                      dataSetList
+                  ),
+                  React.createElement(
+                      GraphiQL.Menu,
+                      {label: "select accept media type"},
+                      mediaTypeMenuItems
+                  ),
+                  React.createElement(
+                      'input', {value: googleQuery}
+                  )
+              )
+          ), document.getElementById("graphiql"))
+      }
+    </script>
+  </body>
+</html>

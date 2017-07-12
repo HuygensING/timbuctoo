@@ -1,76 +1,52 @@
 package nl.knaw.huygens.timbuctoo.rml;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
+import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.stream;
 
 class TestDataSource implements DataSource {
-  private final Iterable<Map<String, Object>> data;
+  private final Iterable<Map<String, String>> data;
   private final ErrorHandler errorHandler;
   private final JoinHandler joinHandler = new HashMapBasedJoinHandler();
 
-  TestDataSource(Iterable<Map<String, Object>> data) {
+  TestDataSource(Iterable<Map<String, String>> data) {
     this(data, null);
   }
 
-  TestDataSource(Iterable<Map<String, Object>> data, ErrorHandler errorHandler) {
+  TestDataSource(Iterable<Map<String, String>> data, ErrorHandler errorHandler) {
     this.data = data;
     this.errorHandler = errorHandler;
   }
 
   @Override
-  public Iterator<Row> getRows(ErrorHandler defaultErrorHandler) {
+  public Stream<Row> getRows(ErrorHandler defaultErrorHandler) {
     return stream(data)
       .map(values -> {
-        Map<String, Object> mutableValues = Maps.newHashMap(values);
-        joinHandler.resolveReferences(mutableValues);
-        Set<String> unMappedKeys = mutableValues
-          .keySet().stream().filter(key -> mutableValues.get(key) == null).collect(Collectors.toSet());
+        Map<String, String> mutableValues = Maps.newHashMap(values);
+        Map<String, List<String>> joinValues = joinHandler.resolveReferences(mutableValues);
+
+        Set<String> unMappedKeys = mutableValues.keySet().stream()
+          .filter(key -> mutableValues.get(key) == null || mutableValues.get(key).isEmpty())
+          .collect(Collectors.toSet());
 
         for (String key : unMappedKeys) {
           mutableValues.remove(key);
         }
-
-        ImmutableMap.Builder<String, Object> resultBuilder = ImmutableMap.<String, Object>builder()
-          .putAll(mutableValues);
-
-        final ImmutableMap<String, Object> result = resultBuilder.build();
-        return (Row) new TestRow(result, errorHandler == null ? defaultErrorHandler : errorHandler);
-      })
-      .iterator();
+        return (Row) new TestRow(mutableValues, joinValues, errorHandler == null ? defaultErrorHandler : errorHandler);
+      });
   }
 
   @Override
-  public void willBeJoinedOn(String fieldName, Object referenceJoinValue, String uri, String outputFieldName) {
+  public void willBeJoinedOn(String fieldName, String referenceJoinValue, String uri, String outputFieldName) {
     joinHandler.willBeJoinedOn(fieldName, referenceJoinValue, uri, outputFieldName);
   }
 
-  private class TestRow implements Row {
-
-    private final Map<String, Object> data;
-    private final ErrorHandler errorHandler;
-
-    public TestRow(Map<String, Object> data, ErrorHandler errorHandler) {
-      this.data = data;
-      this.errorHandler = errorHandler;
-    }
-
-    @Override
-    public Object get(String key) {
-      return data.get(key);
-    }
-
-    @Override
-    public void handleLinkError(String childField, String parentCollection, String parentField) {
-      errorHandler.linkError(data, childField, parentCollection, parentField);
-    }
-  }
 }
