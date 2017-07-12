@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 
 public class BdbCollectionIndexTest {
 
@@ -135,6 +137,21 @@ public class BdbCollectionIndexTest {
       CursorSubject.create(EX + "subject1", EX + "subject1")
     ));
     last.close();
+  }
+
+  @Test
+  public void itRemovesTheSubjectOnANonAssertionRdfTypeQuad() throws Exception {
+    dataProvider.start();
+    dataProvider.onQuad(true, "", EX + "subject1", RDF_TYPE, EX + "type1", null, null, "http://some graph");
+    dataProvider.onQuad(EX + "subject2", RDF_TYPE, EX + "type1", null, null, "http://some graph");
+    dataProvider.onQuad(false, "", EX + "subject1", RDF_TYPE, EX + "type1", null, null, "http://some graph");
+    dataProvider.finish();
+
+    Stream<CursorSubject> subjects = collectionIndex.getSubjects(EX + "type1", "");
+    assertThat(subjects.collect(Collectors.toList()), Matchers.contains(
+      CursorSubject.create(EX + "subject2", EX + "subject2")
+    ));
+    subjects.close();
   }
 
 }

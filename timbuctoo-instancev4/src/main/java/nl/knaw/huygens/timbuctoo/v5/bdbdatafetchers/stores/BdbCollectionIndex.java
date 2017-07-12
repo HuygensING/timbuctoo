@@ -18,6 +18,7 @@ import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
+// Rdf processor that only handles the rdf:type (relation) triples
 public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, AutoCloseable, CollectionIndex {
   public BdbCollectionIndex(DataProvider dataProvider, BdbDatabaseCreator factory, String userId, String dataSetId)
     throws DataStoreCreationException {
@@ -52,25 +53,39 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   @Override
   public void delRelation(String cursor, String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
-    //FIXME: implement
+    if (predicate.equals(RDF_TYPE)) {
+      try {
+        delete(object, subject);
+      } catch (DatabaseException e) {
+        throw new RdfProcessingFailedException(e);
+      }
+    }
   }
 
 
   @Override
   public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
-      throws RdfProcessingFailedException {}
+      throws RdfProcessingFailedException {
+    // no implementation needed
+  }
 
   @Override
   public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
-                                      String graph) throws RdfProcessingFailedException {}
+                                      String graph) throws RdfProcessingFailedException {
+    // no implementation needed
+  }
 
   @Override
   public void delValue(String cursor, String subject, String predicate, String value, String valueType, String graph)
-      throws RdfProcessingFailedException {}
+      throws RdfProcessingFailedException {
+    // no implementation needed
+  }
 
   @Override
   public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
-                                      String graph) throws RdfProcessingFailedException {}
+                                      String graph) throws RdfProcessingFailedException {
+    // no implementation needed
+  }
 
   @Override
   public Stream<CursorSubject> getSubjects(String collectionName, String cursor) {

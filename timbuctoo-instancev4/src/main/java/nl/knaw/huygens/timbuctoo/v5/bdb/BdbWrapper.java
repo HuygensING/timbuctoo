@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.bdb;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.Cursor;
+import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
@@ -11,6 +12,7 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
 import com.sleepycat.je.OperationStatus;
 import com.sleepycat.je.Transaction;
+import com.sleepycat.je.WriteOptions;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 
@@ -89,6 +91,15 @@ public class BdbWrapper {
 
   public void put(Transaction transaction, DatabaseEntry keyEntry, DatabaseEntry valueEntry) {
     database.put(transaction, keyEntry, valueEntry);
+  }
+
+  public void delete(Transaction transaction, DatabaseEntry keyEntry, DatabaseEntry valueEntry) {
+    Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT);
+    OperationStatus searchBoth = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
+    if (searchBoth.equals(OperationStatus.SUCCESS)) {
+      cursor.delete();
+    }
+    cursor.close();
   }
 
   public List<String> dump(String prefix, int start, int count, LockMode lockMode) {
