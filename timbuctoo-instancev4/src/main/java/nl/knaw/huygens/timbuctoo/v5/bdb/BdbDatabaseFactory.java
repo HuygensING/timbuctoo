@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.dropwizard;
+package nl.knaw.huygens.timbuctoo.v5.bdb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -7,18 +7,17 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
-import io.dropwizard.lifecycle.Managed;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataSetPathHelper;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
-public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
+public class BdbDatabaseFactory implements BdbDatabaseCreator {
   private final String databaseLocation;
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
@@ -39,7 +38,7 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
   public BdbWrapper getDatabase(String userId, String dataSetId, String databaseName,
                                 DatabaseConfig config)
     throws DataStoreCreationException {
-    String environmentKey = userId + "_" + dataSetId;
+    String environmentKey = environmentKey(userId, dataSetId);
     String databaseKey = environmentKey + "_" + databaseName;
     if (!databases.containsKey(databaseKey)) {
       if (!environmentMap.containsKey(environmentKey)) {
@@ -60,7 +59,31 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
     return new BdbWrapper(environmentMap.get(environmentKey), databases.get(databaseKey), config);
   }
 
-  public void start() throws Exception {
+  private String environmentKey(String userId, String dataSetId) {
+    return userId + "_" + dataSetId;
+  }
+
+  @Override
+  public void removeDatabasesFor(String userId, String dataSetId) {
+    String environmentKey = environmentKey(userId, dataSetId);
+
+    List<String> dbsToRemove = databases.keySet().stream()
+                                        .filter(dbName -> dbName.startsWith(environmentKey))
+                                        .collect(Collectors.toList());
+
+    for (String dbToRemove : dbsToRemove) {
+      databases.get(dbToRemove).close();
+      databases.remove(dbToRemove);
+    }
+
+    if (environmentMap.containsKey(environmentKey)) {
+      environmentMap.get(environmentKey).close();
+      environmentMap.remove(environmentKey);
+    }
+  }
+
+  @Override
+  public void start() {
     File dbHome = new File(databaseLocation);
     dbHome.mkdirs();
     if (!dbHome.isDirectory()) {
@@ -69,7 +92,8 @@ public class BdbDatabaseFactory implements Managed, BdbDatabaseCreator {
     dataSetPathHelper = new DataSetPathHelper(dbHome);
   }
 
-  public void stop() throws Exception {
+  @Override
+  public void stop() {
     for (Database database : databases.values()) {
       database.close();
     }

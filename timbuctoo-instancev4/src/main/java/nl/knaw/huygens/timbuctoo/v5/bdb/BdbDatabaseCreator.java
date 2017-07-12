@@ -7,4 +7,10 @@ public interface BdbDatabaseCreator {
   BdbWrapper getDatabase(String userId, String dataSetId, String databaseName,
                                            DatabaseConfig config)
     throws DataStoreCreationException;
+
+  void removeDatabasesFor(String userId, String dataSetId);
+
+  void start();
+
+  void stop();
 }

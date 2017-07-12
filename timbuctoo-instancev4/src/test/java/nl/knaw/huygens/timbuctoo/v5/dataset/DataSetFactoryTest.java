@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
@@ -38,7 +39,7 @@ public class DataSetFactoryTest {
                                    .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
                                    .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
                                    .build(),
-      new NonPersistentBdbDatabaseCreator()
+      new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator())
     );
   }
 
@@ -49,24 +50,24 @@ public class DataSetFactoryTest {
 
   @Test
   public void getOrCreateReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createDataSet("user", "dataset");
+    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createImportManager("user", "dataset");
 
     assertThat(importManager1, is(sameInstance(importManager2)));
   }
 
   @Test
   public void getOrCreateReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createDataSet("user", "other");
+    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createImportManager("user", "other");
 
     assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
 
   @Test
   public void getOrCreateReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createDataSet("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createDataSet("other", "dataset");
+    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
+    ImportManager importManager2 = dataSetFactory.createImportManager("other", "dataset");
 
     assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
@@ -80,7 +81,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws DataStoreCreationException {
-    dataSetFactory.createDataSet("ownerId", "otherDataSetId");
+    dataSetFactory.createImportManager("ownerId", "otherDataSetId");
 
     boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
 
@@ -89,11 +90,31 @@ public class DataSetFactoryTest {
 
   @Test
   public void dataSetExistsReturnsTrueIfTheUserOwnsADataSetWithTheDataSetId() throws DataStoreCreationException {
-    dataSetFactory.createDataSet("ownerId", "dataSetId");
+    dataSetFactory.createImportManager("ownerId", "dataSetId");
 
     boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
 
     assertThat(dataSetExists, is(true));
+  }
+
+  @Test
+  public void deleteDataSetRemovesTheDataSetFromDisk() throws Exception {
+    dataSetFactory.createImportManager("user", "dataSet");
+    File dataSetPath = new File(new File(tempFile, "user"), "dataSet");
+    assertThat(dataSetPath.exists(), is(true));
+
+    dataSetFactory.removeDataSet("user", "dataSet");
+
+    assertThat(dataSetPath.exists(), is(false));
+  }
+
+  @Test
+  public void deleteDataSetRemovesTheDataSetFromTheIndex() throws Exception {
+    dataSetFactory.createImportManager("user", "dataSet");
+
+    dataSetFactory.removeDataSet("user", "dataSet");
+
+    assertThat(dataSetFactory.dataSetExists("user", "dataSet"), is(false));
   }
 
 }

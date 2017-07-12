@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RelationPredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ValuePredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
@@ -33,7 +34,7 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
+public class BdbTripleStore extends BerkeleyStore implements EntityProvider, QuadStore {
 
   private static final Logger LOG = getLogger(BdbTripleStore.class);
 
@@ -51,6 +52,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider {
     return rdfConfig;
   }
 
+  @Override
   public Stream<CursorQuad> getQuads(String subject, String predicate, String cursor) {
     DatabaseEntry key = new DatabaseEntry();
     DatabaseEntry value = new DatabaseEntry();

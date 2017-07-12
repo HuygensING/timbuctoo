@@ -7,8 +7,6 @@ import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
-import org.assertj.core.util.Lists;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -33,6 +31,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -46,10 +45,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.JsonContractMatcher.matchesContract;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
+import static org.assertj.core.util.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 
 public class IntegrationTest {
@@ -120,7 +122,7 @@ public class IntegrationTest {
       "@displayName", jsn("H.L.F. Helmholtz"),
       "@relations", jsnO(
         "hasBirthPlace", jsnA(
-            jsnO(
+          jsnO(
             "displayName", jsn("Potsdam")
           )
         )
@@ -180,7 +182,7 @@ public class IntegrationTest {
 
     JsonNode personsNode = call("/v2.1/domain/" + personsCollection).get(JsonNode.class);
 
-    List<JsonNode> persons = Lists.newArrayList(personsNode.iterator());
+    List<JsonNode> persons = newArrayList(personsNode.iterator());
     assertThat(persons, hasSize(2));
     int personWithTwoNamesIndex;
     int personWithOneNameIndex;
@@ -320,6 +322,46 @@ public class IntegrationTest {
 
     assertThat(response.getStatus(), Matchers.is(204));
     // assertThat(response.getHeaderString(HttpHeaders.LOCATION), Matchers.is(notNullValue()));
+  }
+
+  @Test
+  public void deleteDataSet() throws Exception {
+    // Create a dataset
+    Client client = ClientBuilder.newBuilder().build();
+    WebTarget createTarget =
+      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/dataset/create/", APP.getLocalPort()));
+
+    Response createResponse = createTarget.request()
+                                    .header(HttpHeaders.AUTHORIZATION, "fake")
+                                    .post(Entity.json(jsnO()));
+    assertThat(createResponse.getStatus(), is(201));
+    // check if the dataset is created
+    List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy(client);
+    System.out.println("datasets: " + dataSetNamesOfDummy);
+    assertThat(dataSetNamesOfDummy, hasItem("dataset"));
+
+    // delete dataset
+    WebTarget deleteTarget =
+      client.target(String.format("http://localhost:%d/v5/DUMMY/dataset/", APP.getLocalPort()));
+
+    Response deleteResponse = deleteTarget.request()
+                                          .header(HttpHeaders.AUTHORIZATION, "fake")
+                                          .delete();
+
+    assertThat(deleteResponse.getStatus(), is(204));
+
+    // check if the dataset still exists
+    assertThat(getDataSetNamesOfDummy(client), not(hasItem("dataset")));
+  }
+
+  private List<String> getDataSetNamesOfDummy(Client client) {
+    WebTarget allDataSetsTarget =
+      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/", APP.getLocalPort()));
+
+    Response allDataSetsResponse = allDataSetsTarget.request().get();
+
+    assertThat(allDataSetsResponse.getStatus(), is(200));
+    return newArrayList(allDataSetsResponse.readEntity(ObjectNode.class).fieldNames());
   }
 
 

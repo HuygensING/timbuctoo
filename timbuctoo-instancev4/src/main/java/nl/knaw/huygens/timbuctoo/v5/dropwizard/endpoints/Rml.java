@@ -49,7 +49,7 @@ public class Rml {
                          @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId)
     throws DataStoreCreationException, LogStorageFailedException, ExecutionException, InterruptedException {
-    ImportManager importManager = dataSetFactory.createDataSet(ownerId, dataSetId);
+    ImportManager importManager = dataSetFactory.createImportManager(ownerId, dataSetId);
     RdfDataSourceFactory dataSourceFactory = dataSetFactory.createDataSource(ownerId, dataSetId);
 
     final Model model = ModelFactory.createDefaultModel();

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores;
 
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
+import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import org.junit.After;
@@ -21,7 +22,7 @@ public class BdbTripleStoreTest {
 
   public static final String EX = "http://example.org/";
   protected NonPersistentBdbDatabaseCreator databaseCreator;
-  protected BdbTripleStore tripleStore;
+  protected QuadStore tripleStore;
   protected DummyDataProvider dataProvider;
 
   @Before

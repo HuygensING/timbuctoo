@@ -75,6 +75,11 @@ public class UserPermissionCheckerTest {
       public boolean isAllowedToWrite() {
         return isAllowedToWrite;
       }
+
+      @Override
+      public boolean hasAdminAccess() {
+        throw new UnsupportedOperationException("Not implemented");
+      }
     };
   }
 

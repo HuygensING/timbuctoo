@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.security.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import nl.knaw.huygens.timbuctoo.crud.Authorization;
@@ -33,5 +34,11 @@ public abstract class VreAuthorization implements Authorization {
   @Override
   public boolean isAllowedToWrite() {
     return UserRoles.getVerified().stream().anyMatch(getRoles()::contains);
+  }
+
+  @JsonIgnore
+  @Override
+  public boolean hasAdminAccess() {
+    return getRoles().contains(UserRoles.ADMIN_ROLE);
   }
 }

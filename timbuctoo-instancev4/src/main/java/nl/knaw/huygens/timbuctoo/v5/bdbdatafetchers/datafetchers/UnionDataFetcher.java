@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -11,9 +11,9 @@ import static java.util.stream.Collectors.toSet;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class UnionDataFetcher extends WalkTriplesDataFetcher {
-  private final BdbTripleStore tripleStore;
+  private final QuadStore tripleStore;
 
-  public UnionDataFetcher(String predicate, BdbTripleStore tripleStore) {
+  public UnionDataFetcher(String predicate, QuadStore tripleStore) {
     super(predicate, tripleStore);
     this.tripleStore = tripleStore;
   }

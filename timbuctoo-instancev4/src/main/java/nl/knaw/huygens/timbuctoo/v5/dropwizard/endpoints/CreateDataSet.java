@@ -37,7 +37,7 @@ public class CreateDataSet {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
 
-    dataSetFactory.createDataSet(persistentId, dataSetId);
+    dataSetFactory.createImportManager(persistentId, dataSetId);
 
 
     return Response.created(DataSet.makeUrl(persistentId, dataSetId)).build();

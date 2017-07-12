@@ -6,11 +6,8 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.RelationDataFet
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.TypedLiteralDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.UnionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.UriDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbCollectionIndex;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
-import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
+import nl.knaw.huygens.timbuctoo.v5.dataset.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.EntityFetcher;
@@ -18,14 +15,12 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcher;
 
 public class DataStoreDataFetcherFactory implements DataFetcherFactory {
-  private final BdbTripleStore tripleStore;
-  private final BdbCollectionIndex collectionIndex;
+  private final QuadStore tripleStore;
+  private final CollectionIndex collectionIndex;
 
-  public DataStoreDataFetcherFactory(String userId, String dataSetId, DataProvider dataProvider,
-                                     BdbDatabaseCreator dbFactory)
-    throws DataStoreCreationException {
-    this.tripleStore = new BdbTripleStore(dataProvider, dbFactory, userId, dataSetId);
-    this.collectionIndex = new BdbCollectionIndex(dataProvider, dbFactory, userId, dataSetId);
+  public DataStoreDataFetcherFactory(QuadStore tripleStore, CollectionIndex collectionIndex) {
+    this.tripleStore = tripleStore;
+    this.collectionIndex = collectionIndex;
   }
 
   @Override

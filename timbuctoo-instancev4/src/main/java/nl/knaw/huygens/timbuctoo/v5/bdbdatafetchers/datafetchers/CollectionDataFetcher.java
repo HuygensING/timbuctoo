@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorSubject;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbCollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.dataset.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
@@ -12,9 +12,9 @@ import static nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.Paginati
 
 public class CollectionDataFetcher implements CollectionFetcher {
   private final String collectionName;
-  private final BdbCollectionIndex collectionIndex;
+  private final CollectionIndex collectionIndex;
 
-  public CollectionDataFetcher(String collectionName, BdbCollectionIndex collectionIndex) {
+  public CollectionDataFetcher(String collectionName, CollectionIndex collectionIndex) {
     this.collectionName = collectionName;
     this.collectionIndex = collectionIndex;
   }

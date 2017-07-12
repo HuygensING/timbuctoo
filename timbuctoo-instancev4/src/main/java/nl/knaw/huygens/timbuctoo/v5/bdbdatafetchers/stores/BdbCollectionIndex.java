@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.bdb.DatabaseFunction;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorSubject;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
@@ -17,7 +18,7 @@ import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
-public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, AutoCloseable {
+public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, AutoCloseable, CollectionIndex {
   public BdbCollectionIndex(DataProvider dataProvider, BdbDatabaseCreator factory, String userId, String dataSetId)
     throws DataStoreCreationException {
     super(factory, "collectionIndex", userId, dataSetId);
@@ -71,6 +72,7 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {}
 
+  @Override
   public Stream<CursorSubject> getSubjects(String collectionName, String cursor) {
     DatabaseEntry key = new DatabaseEntry();
     DatabaseEntry value = new DatabaseEntry();

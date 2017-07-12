@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
+import nl.knaw.huygens.timbuctoo.crud.Authorization;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
@@ -30,7 +31,7 @@ public class AuthCheck {
     if (dataSetExists.apply(dataSetOwnerId, dataSetId)) {
 
       try {
-        if (!authorizer.authorizationFor(dataSetOwnerId + "_" + dataSetId, currentUserId).isAllowedToWrite()) {
+        if (!getAuthorization(authorizer, dataSetOwnerId, dataSetId, currentUserId).isAllowedToWrite()) {
           return Response.status(Response.Status.FORBIDDEN).build();
         }
       } catch (AuthorizationUnavailableException e) {
@@ -44,5 +45,36 @@ public class AuthCheck {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
     return null;
+  }
+
+  private static Authorization getAuthorization(Authorizer authorizer, String dataSetOwnerId, String dataSetId,
+                                                String currentUserId) throws AuthorizationUnavailableException {
+    return authorizer.authorizationFor(dataSetOwnerId + "_" + dataSetId, currentUserId);
+  }
+
+  public static Response checkAdminAccess(BiFunction<String, String, Boolean> dataSetExists,
+                                          Authorizer authorizer, LoggedInUsers loggedInUsers, String authHeader,
+                                          String dataSetOwnerId, String dataSetId) {
+
+    if (!dataSetExists.apply(dataSetOwnerId, dataSetId)) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    Optional<User> user = loggedInUsers.userFor(authHeader);
+    if (!user.isPresent()) {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+    String currentUserId = user.get().getPersistentId();
+
+    try {
+      if (!getAuthorization(authorizer, dataSetOwnerId, dataSetId, currentUserId).hasAdminAccess()) {
+        return Response.status(Response.Status.FORBIDDEN).build();
+      }
+    } catch (AuthorizationUnavailableException e) {
+      return Response.status(Response.Status.FORBIDDEN).build();
+    }
+
+    return null;
+
   }
 }
