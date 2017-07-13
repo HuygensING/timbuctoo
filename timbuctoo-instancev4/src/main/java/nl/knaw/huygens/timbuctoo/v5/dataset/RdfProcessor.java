@@ -38,7 +38,7 @@ public interface RdfProcessor {
         }
       }
     } else {
-      if (dataType == null) {
+      if (dataType == null || dataType.isEmpty()) {
         this.delRelation(cursor, subject, predicate, object, graph);
       } else {
         if (language != null && !language.isEmpty() && dataType.equals(RdfConstants.LANGSTRING)) {
