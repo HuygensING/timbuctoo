@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.rml.DataSourceStore;
+import nl.knaw.huygens.timbuctoo.v5.rml.RmlDataSourceStore;
 
 public class BdbDataStoreFactory implements DataStoreFactory {
 
@@ -30,9 +30,9 @@ public class BdbDataStoreFactory implements DataStoreFactory {
   }
 
   @Override
-  public DataSourceStore createDataSourceStore(DataProvider dataProvider, String userId, String dataSetId)
+  public RmlDataSourceStore createDataSourceStore(DataProvider dataProvider, String userId, String dataSetId)
     throws DataStoreCreationException {
-    return new DataSourceStore(userId, dataSetId, dbFactory, dataProvider);
+    return new RmlDataSourceStore(userId, dataSetId, dbFactory, dataProvider);
   }
 
   @Override

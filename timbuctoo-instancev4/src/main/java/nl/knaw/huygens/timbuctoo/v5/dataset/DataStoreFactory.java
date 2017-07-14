@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.rml.DataSourceStore;
+import nl.knaw.huygens.timbuctoo.v5.rml.RmlDataSourceStore;
 
 public interface DataStoreFactory {
   QuadStore createQuadStore(DataProvider importManager, String userId,
@@ -10,7 +10,7 @@ public interface DataStoreFactory {
   CollectionIndex createCollectionIndex(DataProvider dataProvider, String userId,
                                         String dataSetId) throws DataStoreCreationException;
 
-  DataSourceStore createDataSourceStore(DataProvider dataProvider, String userId, String dataSetId)
+  RmlDataSourceStore createDataSourceStore(DataProvider dataProvider, String userId, String dataSetId)
     throws DataStoreCreationException;
 
   void removeDataStoresFor(String userId, String dataSetId);

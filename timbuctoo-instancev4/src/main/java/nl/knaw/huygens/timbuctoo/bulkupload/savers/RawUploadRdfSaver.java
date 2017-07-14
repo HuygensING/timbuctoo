@@ -23,9 +23,9 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper.propertyDescription;
 
-public class RdfSaver implements Saver<String> {
+public class RawUploadRdfSaver implements Saver<String> {
 
-  private static final Logger LOG = LoggerFactory.getLogger(RdfSaver.class);
+  private static final Logger LOG = LoggerFactory.getLogger(RawUploadRdfSaver.class);
   private final String dataSetId;
   private final String dataSetUri;
   private final String fileName;
@@ -33,7 +33,7 @@ public class RdfSaver implements Saver<String> {
   private int curEntity;
   private int curCollection;
 
-  public RdfSaver(String dataSetId, String fileName, RdfSerializer saver) {
+  public RawUploadRdfSaver(String dataSetId, String fileName, RdfSerializer saver) {
     this.dataSetId = dataSetId;
     this.dataSetUri = TimbuctooRdfIdHelper.dataSet(dataSetId);
     this.fileName = fileName;

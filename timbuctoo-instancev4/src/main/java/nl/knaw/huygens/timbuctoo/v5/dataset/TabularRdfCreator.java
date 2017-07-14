@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
-import nl.knaw.huygens.timbuctoo.bulkupload.savers.RdfSaver;
+import nl.knaw.huygens.timbuctoo.bulkupload.savers.RawUploadRdfSaver;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
@@ -36,7 +36,7 @@ public class TabularRdfCreator implements RdfCreator {
     try (CachedFile file = importManager.getFile(fileToken)) {
       loader.loadData(Lists.newArrayList(tuple(file.getName(), file.getFile())),
         new Importer(
-          new StateMachine<>(new RdfSaver(dataSetId, file.getName(), saver)),
+          new StateMachine<>(new RawUploadRdfSaver(dataSetId, file.getName(), saver)),
           new ResultReporter(importStatusConsumer)
         )
       );

@@ -21,14 +21,14 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
 
-public class DataSourceStore {
+public class RmlDataSourceStore {
   protected final BdbWrapper bdbWrapper;
   protected final EntryBinding<String> binder = TupleBinding.getPrimitiveBinding(String.class);
   protected Transaction transaction;
   private final DatabaseEntry key = new DatabaseEntry();
   private final DatabaseEntry value = new DatabaseEntry();
 
-  public DataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
+  public RmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
     throws DataStoreCreationException {
     bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig());
     dataSet.subscribeToRdf(new RdfHandler(this), null);
@@ -61,11 +61,11 @@ public class DataSourceStore {
   }
 
   private static class RdfHandler implements RdfProcessor {
-    private final DataSourceStore dataSourceStore;
+    private final RmlDataSourceStore rmlDataSourceStore;
     private Map<String, String> predicates;
 
-    public RdfHandler(DataSourceStore dataSourceStore) {
-      this.dataSourceStore = dataSourceStore;
+    public RdfHandler(RmlDataSourceStore rmlDataSourceStore) {
+      this.rmlDataSourceStore = rmlDataSourceStore;
       this.predicates = new HashMap<>(); //FIXME: assumption on order of RDF
     }
 
@@ -78,7 +78,7 @@ public class DataSourceStore {
     public void addRelation(String cursor, String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
       if (TIM_HAS_ROW.equals(predicate)) {
-        dataSourceStore.put(object, subject);
+        rmlDataSourceStore.put(object, subject);
       }
     }
 
@@ -86,7 +86,7 @@ public class DataSourceStore {
     public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
       if (predicates.containsKey(predicate)) {
-        dataSourceStore.put(subject, StringEscapeUtils.escapeJava(predicates.get(predicate)) + "\n" + value);
+        rmlDataSourceStore.put(subject, StringEscapeUtils.escapeJava(predicates.get(predicate)) + "\n" + value);
       } else if (TIM_PROP_NAME.equals(predicate)) {
         predicates.put(subject, value);
       }
@@ -96,7 +96,7 @@ public class DataSourceStore {
     public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                         String graph) throws RdfProcessingFailedException {
       if (predicates.containsKey(predicate)) {
-        dataSourceStore.put(subject, StringEscapeUtils.escapeJava(predicates.get(predicate)) + "\n" + value);
+        rmlDataSourceStore.put(subject, StringEscapeUtils.escapeJava(predicates.get(predicate)) + "\n" + value);
       } else if (TIM_PROP_NAME.equals(predicate)) {
         predicates.put(subject, value);
       }
