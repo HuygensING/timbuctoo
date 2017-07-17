@@ -102,6 +102,8 @@ public class RmlDataSourceStore {
       }
     }
 
+    // delete is basically not used, so these methods will not be implemented for now.
+
     @Override
     public void delRelation(String cursor, String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException { }
