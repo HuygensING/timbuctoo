@@ -187,11 +187,26 @@ public class BdbTripleStoreTest {
   }
 
   @Test
-  public void valueQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
+  public void langStringQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
     dataProvider.start();
     dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
     dataProvider.onQuad(true,"", EX + "subject1", "http://pred", "Gauthier", LANGSTRING, "FR-fr", "http://some graph");
     dataProvider.onQuad(false, "", EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
+    dataProvider.finish();
+
+    Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", "");
+    assertThat(quads.collect(toList()), not(hasItem(
+      CursorQuad.create(EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph")
+    )));
+    quads.close();
+  }
+
+  @Test
+  public void valueQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
+    dataProvider.start();
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "14", "http://number", null, "http://some graph");
+    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
     dataProvider.finish();
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", "");
