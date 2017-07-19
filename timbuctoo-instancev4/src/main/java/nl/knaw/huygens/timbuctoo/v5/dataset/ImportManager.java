@@ -45,7 +45,6 @@ public class ImportManager implements DataProvider {
   private final LogStorage logStorage;
   private final RdfIoFactory serializerFactory;
   private final ExecutorService executorService;
-  private final RdfParser rdfParser;
   private static final Logger LOG = getLogger(ImportManager.class);
   private final JsonFileBackedData<LogList> logListStore;
   private final List<Tuple<String, RdfProcessor>> subscribedProcessors;
@@ -60,7 +59,6 @@ public class ImportManager implements DataProvider {
     this.logStorage = logStorage;
     this.serializerFactory = rdfIoFactory;
     this.executorService = executorService;
-    this.rdfParser = rdfIoFactory.makeRdfParser();
     try {
       logListStore = JsonFileBackedData.getOrCreate(
         logListLocation,
@@ -193,6 +191,7 @@ public class ImportManager implements DataProvider {
 
   private void processLogIfNeeded(int index, CachedLog log, String currentCursor, RdfProcessor processor)
       throws RdfProcessingFailedException {
+    RdfParser rdfParser = serializerFactory.makeRdfParser(log);
     if (currentCursor == null) {
       currentCursor = "";
     }
