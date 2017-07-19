@@ -301,6 +301,68 @@ public class IntegrationTest {
   }
 
   @Test
+  public void succeedingRdfPatchUploadWithGraphql() throws Exception {
+    String vreName = "clusius-" + UUID.randomUUID();
+    Response uploadResponse = multipartPost(
+      "/v5/DUMMY/" + vreName + "/upload/rdf",
+      new File(getResource(IntegrationTest.class, "bia_clusius.rdfp").toURI()),
+      "application/rdf-patch",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.rdfp"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
+    uploadResponse.readEntity(String.class);
+
+    Response graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity("{\n" +
+        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
+        "    items {\n" +
+        "      uri\n" +
+        "    }\n" +
+        "  }\n" +
+        "}", MediaType.valueOf("application/graphql")));
+    ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
+    assertThat(objectNode
+        .get("data")
+        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
+        .get("items").size(),
+      is(20)
+    );
+
+    graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity("{\n" +
+        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
+        "    items {\n" +
+        "      http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
+        "        http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
+        "          value\n" +
+        "        }\n" +
+        "      }\n" +
+        "    }\n" +
+        "  }\n" +
+        "}", MediaType.valueOf("application/graphql")));
+    objectNode = graphqlCall.readEntity(ObjectNode.class);
+    assertThat(
+      stream(objectNode
+        .get("data")
+        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
+        .get("items").iterator())
+        .map(item -> item
+          .get("http___timbuctoo_huygens_knaw_nl_properties_hasLocation")
+          .get("http___timbuctoo_huygens_knaw_nl_properties_name")
+          .get("value"))
+        .filter(Objects::nonNull)
+        .count(),
+      is(20L)
+    );
+  }
+
+  @Test
   public void tabularUpload() {
     Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
     WebTarget target =
