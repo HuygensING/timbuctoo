@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
+import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -57,5 +59,10 @@ public class Type {
 
   public void setName(String name) {
     this.name = name;
+  }
+
+  @Override
+  public String toString() {
+    return ToStringBuilder.reflectionToString(this);
   }
 }

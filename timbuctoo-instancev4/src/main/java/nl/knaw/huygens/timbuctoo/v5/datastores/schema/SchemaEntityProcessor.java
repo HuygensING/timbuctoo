@@ -30,6 +30,7 @@ public class SchemaEntityProcessor implements EntityProcessor {
 
   @Override
   public void start() {
+    types.clear(); // clear the types, otherwise the schema will not be properly updated
     LOG.info("Processing entities");
   }
 
