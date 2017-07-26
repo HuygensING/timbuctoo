@@ -12,7 +12,7 @@ public class RdfConstants {
   // Vocabulary
   public static final String TIM_COLLECTION = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#collection";
   public static final String TIMBUCTOO_ORDER = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#order";
-  public static final String UNKNOWN = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary##unknown";
+  public static final String UNKNOWN = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#unknown";
   public static final String TIM_PROP_NAME = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#timpropname";
   public static final String TIM_HAS_ROW = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#timhasrow";
   public static final String OF_COLLECTION = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#ofCollection";
