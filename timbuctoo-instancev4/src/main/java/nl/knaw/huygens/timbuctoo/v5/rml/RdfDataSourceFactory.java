@@ -12,10 +12,10 @@ import java.util.Set;
 
 public class RdfDataSourceFactory {
   private static final String NS_RML = "http://semweb.mmlab.be/ns/rml#";
-  private final DataSourceStore dataSourceStore;
+  private final RmlDataSourceStore rmlDataSourceStore;
 
-  public RdfDataSourceFactory(DataSourceStore dataSourceStore) {
-    this.dataSourceStore = dataSourceStore;
+  public RdfDataSourceFactory(RmlDataSourceStore rmlDataSourceStore) {
+    this.rmlDataSourceStore = rmlDataSourceStore;
   }
 
   public Optional<DataSource> apply(RdfResource rdfResource, String vreName) {
@@ -37,7 +37,7 @@ public class RdfDataSourceFactory {
 
       if (rawCollection.size() == 1) {
         return rawCollection.iterator().next().asIri().map(collectionIri -> new RdfDataSource(
-          dataSourceStore,
+          rmlDataSourceStore,
           collectionIri,
           new JexlRowFactory(expressions, new HashMapBasedJoinHandler())
         ));

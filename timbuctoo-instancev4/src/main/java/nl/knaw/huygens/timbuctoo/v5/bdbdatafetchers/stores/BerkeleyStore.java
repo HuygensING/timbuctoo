@@ -83,5 +83,13 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
     }
   }
 
+  protected void delete(String key, String value) throws DatabaseException {
+    synchronized (keyEntry) {
+      binder.objectToEntry(key, keyEntry);
+      binder.objectToEntry(value, valueEntry);
+      bdbWrapper.delete(transaction, keyEntry, valueEntry);
+    }
+  }
+
 
 }

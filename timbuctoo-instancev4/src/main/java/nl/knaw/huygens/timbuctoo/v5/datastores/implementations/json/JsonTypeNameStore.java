@@ -95,31 +95,43 @@ public class JsonTypeNameStore implements TypeNameStore {
 
     @Override
     public void addRelation(String cursor, String subject, String predicate, String object, String graph)
-      throws RdfProcessingFailedException {}
+      throws RdfProcessingFailedException {
+      // no implementation needed
+    }
 
     @Override
     public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
-      throws RdfProcessingFailedException {}
+      throws RdfProcessingFailedException {
+      // no implementation needed
+    }
 
     @Override
     public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
-                                        String graph) throws RdfProcessingFailedException {}
+                                        String graph) throws RdfProcessingFailedException {
+      // no implementation needed
+    }
 
     @Override
     public void delRelation(String cursor, String subject, String predicate, String object, String graph)
-      throws RdfProcessingFailedException {}
+      throws RdfProcessingFailedException {
+      // no implementation needed
+    }
 
     @Override
     public void delValue(String cursor, String subject, String predicate, String value, String valueType, String graph)
-      throws RdfProcessingFailedException {}
+      throws RdfProcessingFailedException {
+      // no implementation needed
+    }
 
     @Override
     public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
-                                        String graph) throws RdfProcessingFailedException {}
+                                        String graph) throws RdfProcessingFailedException {
+      // no implementation needed
+    }
 
     @Override
     public void start() throws RdfProcessingFailedException {
-
+      // no implementation needed
     }
 
     @Override

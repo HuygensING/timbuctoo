@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
+import org.hamcrest.Matchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,13 +17,15 @@ import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.not;
 
 public class BdbTripleStoreTest {
 
 
   public static final String EX = "http://example.org/";
   protected NonPersistentBdbDatabaseCreator databaseCreator;
-  protected QuadStore tripleStore;
+  protected BdbTripleStore tripleStore;
   protected DummyDataProvider dataProvider;
 
   @Before
@@ -149,6 +152,68 @@ public class BdbTripleStoreTest {
         CursorQuad.create(EX + "subject1", "http://pred", EX + "subject1", null, null, "")
       ));
     }
+  }
+
+  @Test
+  public void relationQuadRetractionRemovesTheQuadFromTheStore() throws Exception {
+    dataProvider.start();
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
+    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
+    dataProvider.finish();
+
+    Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", "");
+    assertThat(quads.collect(toList()), not(hasItem(
+      CursorQuad.create(EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph")
+    )));
+    quads.close();
+  }
+
+
+
+  @Test
+  public void relationQuadRetractionRemovesTheReverseRelationQuadFromTheStore() throws Exception {
+    dataProvider.start();
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
+    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
+    dataProvider.finish();
+
+    Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject2", "http://pred_inverse", "");
+    assertThat(quads.collect(toList()), not(hasItem(
+      CursorQuad.create(EX + "subject2", "http://pred_inverse", EX + "subject1", null, null, "http://some graph")
+    )));
+    quads.close();
+  }
+
+  @Test
+  public void langStringQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
+    dataProvider.start();
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
+    dataProvider.onQuad(true,"", EX + "subject1", "http://pred", "Gauthier", LANGSTRING, "FR-fr", "http://some graph");
+    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
+    dataProvider.finish();
+
+    Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", "");
+    assertThat(quads.collect(toList()), not(hasItem(
+      CursorQuad.create(EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph")
+    )));
+    quads.close();
+  }
+
+  @Test
+  public void valueQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
+    dataProvider.start();
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
+    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "14", "http://number", null, "http://some graph");
+    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
+    dataProvider.finish();
+
+    Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", "");
+    assertThat(quads.collect(toList()), not(hasItem(
+      CursorQuad.create(EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph")
+    )));
+    quads.close();
   }
 
 }

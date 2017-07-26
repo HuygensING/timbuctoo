@@ -127,24 +127,13 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
   @Override
   public void addRelation(String cursor, String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
-    try {
-      put(subject + "\n" +
-        predicate,
-        /*dataType*/ "\n" +
-        /*language*/ "\n" +
-        object
-      );
-      if (!predicate.equals(RDF_TYPE)) {
-        put(object + "\n" +
-            predicate + "_inverse",//FIXME!
-            /*dataType*/ "\n" +
-            /*language*/ "\n" +
-            subject
-        );
+    new RelationDatabaseAction() {
+
+      @Override
+      public void executeAction(String key, String value) throws DatabaseException {
+        put(key, value);
       }
-    } catch (DatabaseException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+    }.execute(subject, predicate, object);
   }
 
   @Override
@@ -179,15 +168,45 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
 
   @Override
   public void delRelation(String cursor, String subject, String predicate, String object, String graph)
-      throws RdfProcessingFailedException {}
+      throws RdfProcessingFailedException {
+
+    new RelationDatabaseAction(){
+      @Override
+      public void executeAction(String key, String value) {
+        delete(key, value);
+      }
+    }.execute(subject, predicate, object);
+  }
 
   @Override
-  public void delValue(String cursor, String subject, String predicate, String value, String valueType, String graph)
-      throws RdfProcessingFailedException {}
+  public void delValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
+      throws RdfProcessingFailedException {
+    try {
+      delete(subject + "\n" +
+          predicate,
+        dataType + "\n" +
+      /*language*/ "\n" +
+          value
+      );
+    } catch (DatabaseException e) {
+      throw new RdfProcessingFailedException(e);
+    }
+  }
 
   @Override
   public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
-                                      String graph) throws RdfProcessingFailedException {}
+                                      String graph) throws RdfProcessingFailedException {
+    try {
+      delete(subject + "\n" +
+          predicate,
+        RdfConstants.LANGSTRING + "\n" +
+          language + "\n" +
+          value
+      );
+    } catch (DatabaseException e) {
+      throw new RdfProcessingFailedException(e);
+    }
+  }
 
   @Override
   public void processEntities(String cursor, EntityProcessor processor) throws RdfProcessingFailedException {
@@ -254,5 +273,30 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
       ((tripleCount - prevTripleCount) / (elapsed == 0 ? 1 : elapsed)) + " triples/s)" );
 
     processor.finish();
+  }
+
+  private abstract class RelationDatabaseAction {
+    public void execute(String subject, String predicate, String object) throws RdfProcessingFailedException {
+      try {
+        executeAction(subject + "\n" +
+            predicate,
+        /*dataType*/ "\n" +
+        /*language*/ "\n" +
+            object
+        );
+        if (!predicate.equals(RDF_TYPE)) {
+          executeAction(object + "\n" +
+              predicate + "_inverse",//FIXME!
+            /*dataType*/ "\n" +
+            /*language*/ "\n" +
+              subject
+          );
+        }
+      } catch (DatabaseException e) {
+        throw new RdfProcessingFailedException(e);
+      }
+    }
+
+    public abstract void executeAction(String key, String value) throws DatabaseException;
   }
 }

@@ -34,12 +34,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
-public class RdfSaverTest {
+public class RawUploadRdfSaverTest {
 
   private static final String COLLECTION = "coll";
   private static final String DATA_SET_ID = "dataSet";
   private static final String DATA_SET_URI = "http://timbuctoo.huygens.knaw.nl/v5/datasets/dataSet";
-  private RdfSaver instance;
+  private RawUploadRdfSaver instance;
   private RdfSerializer rdfSerializer;
 
   @Before
@@ -48,8 +48,8 @@ public class RdfSaverTest {
     instance = instanceWithRdfSerializer(rdfSerializer);
   }
 
-  private RdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer) {
-    return new RdfSaver(DATA_SET_ID, "fileName", rdfSerializer);
+  private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer) {
+    return new RawUploadRdfSaver(DATA_SET_ID, "fileName", rdfSerializer);
   }
 
   @Test
@@ -189,7 +189,7 @@ public class RdfSaverTest {
   @Test
   public void usageTest() {
     RdfToStringFaker rdfSerializer = new RdfToStringFaker();
-    RdfSaver instance = instanceWithRdfSerializer(rdfSerializer);
+    RawUploadRdfSaver instance = instanceWithRdfSerializer(rdfSerializer);
 
     final String collection1 = instance.addCollection("collection1");
     ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
