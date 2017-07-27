@@ -218,7 +218,13 @@ public final class LoggingFilter implements ContainerRequestFilter, ContainerRes
 
     LOG.info(log + size + durationLog);
     clearMdc();
-    MDC.setContextMap(curMdc);
+    /*
+     * The api of MDC.getCopyOfContextMap() says it may be null, so curMdc can be. In slf4j-api 1.7.24 it sometimes it
+     * will be null. In slf4j-api 1.7.12 it never appeared.
+     */
+    if (curMdc != null) {
+      MDC.setContextMap(curMdc);
+    }
   }
 
   private void clearMdc() {
