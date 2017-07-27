@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess.azure;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.util.EmptyIterator;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
@@ -15,6 +14,7 @@ import org.slf4j.Logger;
 
 import java.net.URISyntaxException;
 import java.security.InvalidKeyException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -62,6 +62,6 @@ public class AzureAccessFactory implements AccessFactory {
 
   @Override
   public Iterator<Tuple<String, HealthCheck>> getHealthChecks() {
-    return new EmptyIterator<>();
+    return Collections.emptyIterator();
   }
 }
