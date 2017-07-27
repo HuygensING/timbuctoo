@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard;
 
+import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
@@ -10,12 +11,10 @@ import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import org.apache.commons.io.FileUtils;
-import org.assertj.core.util.Maps;
 import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
