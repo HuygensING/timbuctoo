@@ -10,7 +10,6 @@ import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.forms.MultiPartBundle;
-import io.dropwizard.java8.Java8Bundle;
 import io.dropwizard.lifecycle.ServerLifecycleListener;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -137,7 +136,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     //bundles
     activeMqBundle = new ActiveMQBundle();
     bootstrap.addBundle(activeMqBundle);
-    bootstrap.addBundle(new Java8Bundle());
     bootstrap.addBundle(new MultiPartBundle());
     bootstrap.addBundle(new AssetsBundle("/static", "/static", "index.html"));
     /*

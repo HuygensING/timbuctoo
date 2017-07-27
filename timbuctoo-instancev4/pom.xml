@@ -9,7 +9,8 @@
   <version>4.4.0-SNAPSHOT</version><!--marker for release.sh-->
 
   <name>Timbuctoo-instance</name>
-  <description>Back-end software that provides different front-ends to share data and variations on that data.</description>
+  <description>Back-end software that provides different front-ends to share data and variations on that data.
+  </description>
   <url>http://repository.huygens.knaw.nl/static/search.html</url>
   <organization>
     <name>Huygens ING</name>
@@ -110,14 +111,14 @@
     <!-- code dependencies -->
     <activemq.version>5.13.0</activemq.version>
     <concoridion.version>1.5.1</concoridion.version>
-    <dropwizard.version>0.9.1</dropwizard.version>
+    <dropwizard.version>1.1.2</dropwizard.version>
     <dropwizard-activemq.version>0.3.13</dropwizard-activemq.version>
     <jsonassert.version>1.2.3</jsonassert.version>
     <tinkerpop3.version>3.1.0-incubating</tinkerpop3.version>
     <hamcrest-library.version>1.3</hamcrest-library.version>
     <javaslang.version>2.0.0-RC4</javaslang.version>
-    <metrics.version>3.1.2</metrics.version>
-    <guava.version>19.0</guava.version>
+    <metrics.version>3.2.2</metrics.version>
+    <guava.version>22.0</guava.version>
     <huygens.persistence.version>2.2.0</huygens.persistence.version>
     <junit.version>4.12</junit.version>
     <timbuctoo-test-services.version>1.0.0-SNAPSHOT</timbuctoo-test-services.version>
@@ -130,7 +131,6 @@
     <javaslang.version>2.0.0-RC4</javaslang.version>
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <maven-failsafe-plugin.version>2.18.1</maven-failsafe-plugin.version>
-    <metrics.version>3.1.2</metrics.version>
     <rpm-maven-plugin.version>2.1.5</rpm-maven-plugin.version>
     <HttpCommand.version>1.0.0-SNAPSHOT</HttpCommand.version>
     <contract-diff.version>1.0.0-SNAPSHOT</contract-diff.version>
@@ -141,6 +141,18 @@
     <rdf4j.version>2.2</rdf4j.version>
   </properties>
 
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>io.dropwizard</groupId>
+        <artifactId>dropwizard-bom</artifactId>
+        <version>${dropwizard.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
     <!-- ## Main dependencies ## -->
     <!-- Dropwizard -->
@@ -148,12 +160,6 @@
       <groupId>io.dropwizard</groupId>
       <artifactId>dropwizard-core</artifactId>
       <version>${dropwizard.version}</version>
-    </dependency>
-    <!--Including java8 support -->
-    <dependency>
-      <groupId>io.dropwizard.modules</groupId>
-      <artifactId>dropwizard-java8</artifactId>
-      <version>0.9.0-1</version>
     </dependency>
     <!--file uploads-->
     <dependency>
@@ -287,9 +293,9 @@
     </dependency>
     <!-- MS Access -->
     <dependency>
-        <groupId>com.healthmarketscience.jackcess</groupId>
-        <artifactId>jackcess</artifactId>
-        <version>2.1.6</version>
+      <groupId>com.healthmarketscience.jackcess</groupId>
+      <artifactId>jackcess</artifactId>
+      <version>2.1.6</version>
     </dependency>
 
     <!-- ### HTML Parser ## -->
@@ -405,17 +411,17 @@
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-guava</artifactId>
-      <version>2.6.3</version>
+      <version>2.8.9</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.datatype</groupId>
       <artifactId>jackson-datatype-jdk8</artifactId>
-      <version>2.6.3</version>
+      <version>2.8.9</version>
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.dataformat</groupId>
       <artifactId>jackson-dataformat-xml</artifactId>
-      <version>2.6.3</version>
+      <version>2.8.9</version>
     </dependency>
     <!-- ### Std lib additions ## -->
     <!-- Guava -->
