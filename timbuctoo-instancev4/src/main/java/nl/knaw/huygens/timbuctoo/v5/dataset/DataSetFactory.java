@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * - stores all configuration parameters so it can inject them in the dataset constructor
@@ -43,9 +45,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   private final DataSetConfiguration configuration;
   private final DataStoreFactory dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
-  private final JsonFileBackedData<Map<String, Set<String>>> storedDataSets;
+  private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final HashMap<UUID, StringBuffer> statusMap;
   private final DataSetPathHelper dataSetPathHelper;
+
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
                         DataSetConfiguration configuration, DataStoreFactory dataStoreFactory) throws IOException {
@@ -58,7 +61,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     storedDataSets = JsonFileBackedData.getOrCreate(
       new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
       HashMap::new,
-      new TypeReference<Map<String, Set<String>>>() {}
+      new TypeReference<Map<String, Set<PromotedDataSet>>>() {}
     );
     statusMap = new HashMap<>();
   }
@@ -92,12 +95,22 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     String authorizationKey = userId + "_" + dataSetId;
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
+
+      PromotedDataSet promotedDataSet = new PromotedDataSet(dataSetId, true);
+
       if (!userDataSets.containsKey(dataSetId)) {
         DataSet dataSet = createNewDataSet(userId, dataSetId, authorizationKey);
         userDataSets.put(dataSetId, dataSet);
+
+        /*
+        System.out.println("Hash here: ");
+        for (Map.Entry entry : dataSetHash.entrySet()) {
+          System.out.println(entry.getKey() + ", " + entry.getValue());
+        }
+        */
         try {
           storedDataSets.updateData(dataSets -> {
-            dataSets.computeIfAbsent(userId, key -> new HashSet<>()).add(dataSetId);
+            dataSets.computeIfAbsent(userId, key -> new HashSet<PromotedDataSet>()).add(promotedDataSet);
             return dataSets;
           });
         } catch (IOException e) {
@@ -148,7 +161,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     return dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSet);
   }
 
-  public Map<String, Set<String>> getDataSets() {
+  public Map<String, Set<PromotedDataSet>> getDataSets() {
     return storedDataSets.getData();
   }
 
@@ -173,7 +186,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     dataStoreFactory.removeDataStoresFor(ownerId, dataSetName);
     // remove from datasets.json
     storedDataSets.updateData(dataSets -> {
-      dataSets.get(ownerId).remove(dataSetName);
+      Set<PromotedDataSet>
+        dataSetsToKeep = dataSets.get(ownerId).stream().filter(dataSet -> !dataSet.getName().equals(dataSetName))
+                                 .collect(Collectors.toSet());
+      dataSets.put(ownerId, dataSetsToKeep);
       return dataSets;
     });
     dataSetMap.get(ownerId).remove(dataSetName);
