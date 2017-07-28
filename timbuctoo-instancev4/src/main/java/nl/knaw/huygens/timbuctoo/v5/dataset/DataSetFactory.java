@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -61,7 +60,8 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     storedDataSets = JsonFileBackedData.getOrCreate(
       new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
       HashMap::new,
-      new TypeReference<Map<String, Set<PromotedDataSet>>>() {}
+      new TypeReference<Map<String, Set<PromotedDataSet>>>() {
+      }
     );
     statusMap = new HashMap<>();
   }
@@ -102,12 +102,6 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
         DataSet dataSet = createNewDataSet(userId, dataSetId, authorizationKey);
         userDataSets.put(dataSetId, dataSet);
 
-        /*
-        System.out.println("Hash here: ");
-        for (Map.Entry entry : dataSetHash.entrySet()) {
-          System.out.println(entry.getKey() + ", " + entry.getValue());
-        }
-        */
         try {
           storedDataSets.updateData(dataSets -> {
             dataSets.computeIfAbsent(userId, key -> new HashSet<PromotedDataSet>()).add(promotedDataSet);
@@ -152,7 +146,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
         dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
       );
       return dataSet;
-    } catch (AuthorizationCreationException | IOException e) {
+    } catch (AuthorizationCreationException | IOException e)   {
       throw new DataStoreCreationException(e);
     }
   }

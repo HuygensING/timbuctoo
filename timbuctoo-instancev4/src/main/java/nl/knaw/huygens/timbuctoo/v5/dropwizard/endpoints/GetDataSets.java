@@ -36,10 +36,10 @@ public class GetDataSets {
     for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
       Map<String, URI> mappedUserSets = userDataSets.getValue()
                                                     .stream()
-                                                    .map(dataSetId -> Tuple.tuple(
-                                                      dataSetId.getName(),
+                                                    .map(dataSetEntry -> Tuple.tuple(
+                                                      dataSetEntry.getName(),
                                                       graphQlEndpoint.makeUrl(userDataSets.getKey(),
-                                                      dataSetId.getName())
+                                                      dataSetEntry.getName())
                                                     ))
                                                     .collect(toMap(Tuple::getLeft, Tuple::getRight));
       dataSetUris.put(userDataSets.getKey(), mappedUserSets);
@@ -60,10 +60,10 @@ public class GetDataSets {
       Map<String, URI> mappedUserSets = userDataSets.getValue()
                                                     .stream()
                                                     .filter(dataSet -> dataSet.getPromoted().equals(true))
-                                                    .map(dataSetId -> Tuple.tuple(
-                                                      dataSetId.getName(),
+                                                    .map(dataSetEntry -> Tuple.tuple(
+                                                      dataSetEntry.getName(),
                                                       graphQlEndpoint.makeUrl(userDataSets.getKey(),
-                                                        dataSetId.getName())
+                                                        dataSetEntry.getName())
                                                     ))
                                                     .collect(toMap(Tuple::getLeft, Tuple::getRight));
       dataSetUris.put(userDataSets.getKey(), mappedUserSets);
@@ -80,7 +80,7 @@ public class GetDataSets {
       .getDataSets()
       .getOrDefault(userId, new HashSet<PromotedDataSet>())
       .stream()
-      .map(dataSetId -> Tuple.tuple(dataSetId.getName(), graphQlEndpoint.makeUrl(userId, dataSetId.getName())))
+      .map(dataSetEntry -> Tuple.tuple(dataSetEntry.getName(), graphQlEndpoint.makeUrl(userId, dataSetEntry.getName())))
       .collect(toMap(Tuple::getLeft, Tuple::getRight));
   }
 }
