@@ -2,12 +2,12 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ValuePredicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaEntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
-import org.assertj.core.util.Maps;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 

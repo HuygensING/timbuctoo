@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.security;
 import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.util.EmptyIterator;
 import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
@@ -19,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import javax.validation.constraints.NotNull;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.Iterator;
 
 public class SecurityFactory {
@@ -184,6 +184,6 @@ public class SecurityFactory {
     if (azure != null) {
       return azure.getHealthChecks();
     }
-    return new EmptyIterator<>();
+    return Collections.emptyIterator();
   }
 }

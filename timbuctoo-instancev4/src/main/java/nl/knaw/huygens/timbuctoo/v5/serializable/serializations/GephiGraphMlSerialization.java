@@ -65,7 +65,7 @@ public class GephiGraphMlSerialization extends EntityFirstSerialization {
                                                  .asJaxbElement(), xsw);
       }
       xsw.writeStartElement(Gml.NAMESPACE, Graph.LOCAL_NAME);
-      xsw.writeAttribute(Gml.NAMESPACE, "edgedefault", "directed");
+      xsw.writeAttribute("edgedefault", "directed");
     } catch (JAXBException | XMLStreamException e) {
       throw new IOException(e);
     }

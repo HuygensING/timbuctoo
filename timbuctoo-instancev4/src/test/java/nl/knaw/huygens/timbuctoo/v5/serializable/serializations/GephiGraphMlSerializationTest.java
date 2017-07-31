@@ -28,15 +28,15 @@ public class GephiGraphMlSerializationTest extends SerializationTest {
     saveAs(out, "gephi_02.graphml");
     validate("http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd", result);
 
-    String expected = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+    String expected = "<?xml version=\'1.0\' encoding=\'UTF-8\'?>\n" +
       "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\">\n" +
-      "  <key id=\"edgelabel\" attr.name=\"EdgeLabel\" attr.type=\"string\" for=\"edge\"></key>\n" +
-      "  <key id=\"label\" attr.name=\"Label\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"foo\" attr.name=\"foo\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"hasChild\" attr.name=\"hasChild\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"name\" attr.name=\"name\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"uri\" attr.name=\"uri\" attr.type=\"string\" for=\"node\"></key>\n" +
-      "  <key id=\"wroteBook\" attr.name=\"wroteBook\" attr.type=\"string\" for=\"node\"></key>\n" +
+      "  <key id=\"edgelabel\" attr.name=\"EdgeLabel\" attr.type=\"string\" for=\"edge\"/>\n" +
+      "  <key id=\"label\" attr.name=\"Label\" attr.type=\"string\" for=\"node\"/>\n" +
+      "  <key id=\"foo\" attr.name=\"foo\" attr.type=\"string\" for=\"node\"/>\n" +
+      "  <key id=\"hasChild\" attr.name=\"hasChild\" attr.type=\"string\" for=\"node\"/>\n" +
+      "  <key id=\"name\" attr.name=\"name\" attr.type=\"string\" for=\"node\"/>\n" +
+      "  <key id=\"uri\" attr.name=\"uri\" attr.type=\"string\" for=\"node\"/>\n" +
+      "  <key id=\"wroteBook\" attr.name=\"wroteBook\" attr.type=\"string\" for=\"node\"/>\n" +
       "  <graph edgedefault=\"directed\">\n" +
       "    <node id=\"uri4\">\n" +
       "      <data key=\"foo\">foo4</data>\n" +
