@@ -59,6 +59,11 @@ public class SourceData {
       }
 
       @Override
+      public String makeGraphQlValuename(String uri) {
+        return uri;
+      }
+
+      @Override
       public String makeUri(String graphQlName) {
         return graphQlName;
       }

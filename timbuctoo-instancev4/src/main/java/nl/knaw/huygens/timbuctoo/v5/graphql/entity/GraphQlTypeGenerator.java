@@ -7,7 +7,6 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLScalarType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
 import graphql.schema.TypeResolver;
@@ -83,7 +82,7 @@ public class GraphQlTypeGenerator {
     GraphQLInterfaceType valueInterface = newInterface()
       .name(VALUE_INTERFACE_NAME)
       .field(newFieldDefinition()
-        .name("type")
+        .name("value")
         .type(nonNull(Scalars.GraphQLString))
       )
       .typeResolver(valueTypeResolver)
@@ -228,12 +227,8 @@ public class GraphQlTypeGenerator {
     GraphQLUnionType.Builder unionType = newUnionType()
       .name("Union_" + UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", ""))
       .typeResolver(valueTypeResolver);
-    for (Object type : types) {
-      if (type instanceof GraphQLTypeReference) {
-        unionType.possibleType((GraphQLTypeReference) type);
-      } else {
-        unionType.possibleType((GraphQLObjectType) type);
-      }
+    for (GraphQLObjectType type : types) {
+      unionType.possibleType(type);
     }
     for (GraphQLTypeReference type : refs) {
       unionType.possibleType(type);
@@ -264,9 +259,8 @@ public class GraphQlTypeGenerator {
                                              Map<String, String> typeMappings, TypeNameStore typeNameStore,
                                              GraphQLInterfaceType valueInterface) {
     if (!wrappedValueTypes.containsKey(typeUri)) {
-      String typeName = "value_" + typeNameStore.makeGraphQlname(typeUri);
+      String typeName = typeNameStore.makeGraphQlValuename(typeUri);
       typeMappings.put(typeName, typeUri);
-      GraphQLScalarType matchedValueType = matchedValueType(typeUri);
       wrappedValueTypes.put(
         typeUri,
         newObject()
@@ -274,42 +268,12 @@ public class GraphQlTypeGenerator {
           .withInterface(valueInterface)
           .field(newFieldDefinition()
             .name("value")
-            .type(nonNull(matchedValueType == null ? Scalars.GraphQLString : matchedValueType))
-          )
-          .field(newFieldDefinition()
-            .name("type")
             .type(nonNull(Scalars.GraphQLString))
-            .staticValue(typeUri)
           )
           .build()
       );
     }
     return wrappedValueTypes.get(typeUri);
-  }
-
-  private static GraphQLScalarType matchedValueType(String valueType) {
-    switch (valueType) {
-      case "http://www.w3.org/TR/xmlschema11-2/#boolean":
-        return Scalars.GraphQLBoolean;
-      case "http://www.w3.org/TR/xmlschema11-2/#decimal":
-        return Scalars.GraphQLBigDecimal;
-      case "http://www.w3.org/TR/xmlschema11-2/#integer":
-        return Scalars.GraphQLBigInteger;
-      case "http://www.w3.org/TR/xmlschema11-2/#float":
-        return Scalars.GraphQLFloat;
-      case "http://www.w3.org/TR/xmlschema11-2/#byte":
-        return Scalars.GraphQLByte;
-      case "http://www.w3.org/TR/xmlschema11-2/#short":
-        return Scalars.GraphQLShort;
-      case "http://www.w3.org/TR/xmlschema11-2/#int":
-        return Scalars.GraphQLInt;
-      case "http://www.w3.org/TR/xmlschema11-2/#long":
-        return Scalars.GraphQLLong;
-      case "http://www.w3.org/2001/XMLSchema#string":
-        return Scalars.GraphQLString;
-      default:
-        return null;
-    }
   }
 
 }

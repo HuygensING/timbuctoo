@@ -67,7 +67,7 @@ public class GraphQlService {
             )
             .build(Sets.newHashSet(graphQlTypes.values()))
         )
-        .queryExecutionStrategy(new SerializerExecutionStrategy())
+        .queryExecutionStrategy(new SerializerExecutionStrategy(typeNameStore))
         .build();
     } catch (DataStoreCreationException e) {
       throw new GraphQlProcessingException(e);

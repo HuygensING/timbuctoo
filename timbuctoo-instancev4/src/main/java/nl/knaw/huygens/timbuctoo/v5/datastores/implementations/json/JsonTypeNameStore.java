@@ -40,13 +40,17 @@ public class JsonTypeNameStore implements TypeNameStore {
   //and prevent collisions.
   @Override
   public String makeGraphQlname(String uri) {
+    return makeName(uri, "");
+  }
+
+  public String makeName(String uri, String prefix) {
     //The relay spec requires that our own names are never 'PageInfo' or end with 'Connection'
 
     Map<String, String> shorteneds = data.shorteneds;
     if (shorteneds.containsKey(uri)) {
       return shorteneds.get(uri);
     } else {
-      String shortened = shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
+      String shortened = prefix + shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
       while (shortened.equals("PageInfo") ||
         shortened.endsWith("Connection") ||
         shortened.endsWith("Edge") ||
@@ -59,6 +63,11 @@ public class JsonTypeNameStore implements TypeNameStore {
       data.inverse.put(dataToSave, uri);
       return shortened;
     }
+  }
+
+  @Override
+  public String makeGraphQlValuename(String uri) {
+    return makeName(uri, "value_");
   }
 
   @Override
