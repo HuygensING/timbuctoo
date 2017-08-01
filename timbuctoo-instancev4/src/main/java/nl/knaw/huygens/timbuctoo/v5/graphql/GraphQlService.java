@@ -67,7 +67,7 @@ public class GraphQlService {
             )
             .build(Sets.newHashSet(graphQlTypes.values()))
         )
-        .queryExecutionStrategy(new SerializerExecutionStrategy(typeNameStore))
+        .queryExecutionStrategy(new SerializerExecutionStrategy())
         .build();
     } catch (DataStoreCreationException e) {
       throw new GraphQlProcessingException(e);
@@ -80,7 +80,8 @@ public class GraphQlService {
       GraphQL graphQl = loadSchema(userId, dataSet);
       ExecutionResult result = graphQl.execute(query);
       if (result.getErrors().isEmpty()) {
-        return result.getData();
+        TypeNameStore typeNameStore = typeNameStoreFactory.createTypeNameStore(userId, dataSet);
+        return new Serializable(result.getData(), typeNameStore);
       } else {
         throw new GraphQlFailedException(result.getErrors());
       }

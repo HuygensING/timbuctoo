@@ -1,131 +1,65 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.serializable;
 
 import graphql.ExecutionResult;
-import graphql.ExecutionResultImpl;
 import graphql.execution.ExecutionContext;
 import graphql.execution.ExecutionParameters;
 import graphql.execution.NonNullableFieldWasNullException;
 import graphql.execution.SimpleExecutionStrategy;
 import graphql.language.Field;
 import graphql.schema.GraphQLObjectType;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
-import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableList;
-import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableObject;
-import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableUntypedValue;
-import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableValue;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
-
-  private final TypeNameStore typeNameStore;
-
-  public SerializerExecutionStrategy(TypeNameStore typeNameStore) {
-    this.typeNameStore = typeNameStore;
-  }
 
   @Override
   public ExecutionResult execute(ExecutionContext executionContext, ExecutionParameters parameters)
       throws NonNullableFieldWasNullException {
     Map<String, List<Field>> fields = parameters.fields();
     GraphQLObjectType parentType = parameters.typeInfo().castType(GraphQLObjectType.class);
-    //Een "object" in graphql van be:
+    //Een "object" in graphql can be:
     // - an rdf subject
     // - a wrapped value type (a tuple of a value and a string signifying the type)
     //for subject we make sure that we also query for it's uri
     //afterwards we wrap objects in a SerializableObject
 
-    final Serializable wrappedData;
-    final ExecutionResult result;
-    if (implementsInterface(parentType, "Entity")) {
-      boolean manuallyAddedUri = addUriField(fields);
-      result = super.execute(executionContext, parameters);
-
-      String uri = getUri(result);
-
-      if (manuallyAddedUri) {
-        ((Map) result.getData()).remove("uri");
-      }
-      wrappedData = new SerializableObject(makeScalarsSerializable(result.getData()), uri, typeNameStore);
-    } else if (implementsInterface(parentType, "Value")) {
-      result = super.execute(executionContext, parameters);
-      Map<String, Object> resultData = result.getData();
-      wrappedData = new SerializableValue(resultData.get("value"), (String) resultData.get("type"));
-    } else {
-      result = super.execute(executionContext, parameters);
-      wrappedData = new SerializableObject(makeScalarsSerializable(result.getData()), null, typeNameStore);
+    boolean uriWasExplicitlyRequested = false;
+    boolean typeWasExplicitlyRequested = false;
+    if (isEntity(parentType)) {
+      uriWasExplicitlyRequested = addField(fields, "uri");
+      typeWasExplicitlyRequested = addField(fields, "__typename");
     }
-
-    return new ExecutionResultImpl(
-      wrappedData,
-      result.getErrors(),
-      result.getExtensions()
-    );
-  }
-
-  private boolean implementsInterface(GraphQLObjectType graphQlObjectType, String entity) {
-    return graphQlObjectType.getInterfaces().stream().anyMatch(i -> i.getName().equals(entity));
-  }
-
-  @Override
-  protected ExecutionResult completeValueForList(ExecutionContext executionContext, ExecutionParameters parameters,
-                                                 List<Field> fields, Iterable<Object> input) {
-    ExecutionResult result = super.completeValueForList(executionContext, parameters, fields, input);
-
-    List<Object> data = result.getData();
-    for (int i = 0; i < data.size(); i++) {
-      final Object entry = data.get(i);
-      if (!(entry instanceof Serializable)) {
-        data.set(i, new SerializableUntypedValue(entry));
-      }
+    ExecutionResult result = super.execute(executionContext, parameters);
+    Map<String, Object> data  = result.getData();
+    if (data.containsKey("uri")) {
+      data.put("@id", data.get("uri"));
     }
-    result = new ExecutionResultImpl(
-      new SerializableList(result.getData()),
-      result.getErrors(),
-      result.getExtensions()
-    );
-
-    return result;
-  }
-
-
-  private LinkedHashMap<String, Serializable> makeScalarsSerializable(LinkedHashMap<String, Object> data) {
-    LinkedHashMap<String, Serializable> result = new LinkedHashMap<>();
-    for (Map.Entry<String, Object> entry : data.entrySet()) {
-      Object value = entry.getValue();
-      Serializable serialized;
-      if (value instanceof Serializable) {
-        serialized = (Serializable) value;
-      } else {
-        serialized = new SerializableUntypedValue(value);
-      }
-      result.put(typeNameStore.makeUri(entry.getKey()), serialized);
+    if (data.containsKey("__typename")) {
+      data.put("@type", data.get("__typename"));
+    }
+    if (!uriWasExplicitlyRequested) {
+      data.remove("uri");
+    }
+    if (!typeWasExplicitlyRequested) {
+      data.remove("__typename");
     }
     return result;
   }
 
-  private String getUri(ExecutionResult result) {
-    final String uri;
-    if (result.getErrors().isEmpty()) {
-      uri = (String) ((Map) result.getData()).get("uri");
-    } else {
-      uri = null;
-    }
-    return uri;
+  private boolean isEntity(GraphQLObjectType graphQlObjectType) {
+    return graphQlObjectType.getInterfaces().stream().anyMatch(i -> i.getName().equals("Entity"));
   }
 
-  private boolean addUriField(Map<String, List<Field>> fields) {
-    boolean manuallyAddedUri = false;
-    List<Field> uriField = fields.computeIfAbsent("uri", k -> new ArrayList<>());
+  private boolean addField(Map<String, List<Field>> fields, String key) {
+    List<Field> uriField = fields.computeIfAbsent(key, k -> new ArrayList<>());
     if (uriField.isEmpty()) {
-      manuallyAddedUri = true;
-      uriField.add(new Field("uri"));
+      uriField.add(new Field(key));
+      return false;
+    } else {
+      return true;
     }
-    return manuallyAddedUri;
   }
 
 }

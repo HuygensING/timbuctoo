@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes;
 
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
-import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableObject;
-import nl.knaw.huygens.timbuctoo.v5.serializable.SerializationFactory;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
@@ -13,7 +11,7 @@ import java.io.OutputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 
-public abstract class SerializerWriter implements MessageBodyWriter<SerializableObject> {
+public abstract class SerializerWriter implements MessageBodyWriter<Serializable> {
   private final SerializationFactory serializationFactory;
 
   protected SerializerWriter(SerializationFactory serializationFactory) {
@@ -26,16 +24,16 @@ public abstract class SerializerWriter implements MessageBodyWriter<Serializable
   }
 
   @Override
-  public long getSize(SerializableObject serializable, Class<?> type, Type genericType, Annotation[] annotations,
+  public long getSize(Serializable serializable, Class<?> type, Type genericType, Annotation[] annotations,
                       MediaType mediaType) {
     return 0;
   }
 
   @Override
-  public void writeTo(SerializableObject serializable, Class<?> type, Type genericType, Annotation[] annotations,
+  public void writeTo(Serializable serializable, Class<?> type, Type genericType, Annotation[] annotations,
                       MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream)
       throws IOException, WebApplicationException {
-    serializable.performSerialization(serializationFactory.create(entityStream));
+    serializationFactory.create(entityStream).serialize(serializable);
   }
 
   public abstract String getMimeType() ;
