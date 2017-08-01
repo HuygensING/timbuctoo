@@ -53,13 +53,12 @@ public class GetDataSets {
   @Path("promoted")
   @Produces(MediaType.APPLICATION_JSON)
   public Map<String, Map<String, URI>> getPromotedDataSets() {
-    Map<String, Set<PromotedDataSet>> dataSets = dataSetFactory.getDataSets();
+    Map<String, Set<PromotedDataSet>> dataSets = dataSetFactory.getPromotedDataSets();
     Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
 
     for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
       Map<String, URI> mappedUserSets = userDataSets.getValue()
                                                     .stream()
-                                                    .filter(dataSet -> dataSet.getPromoted().equals(true))
                                                     .map(dataSetEntry -> Tuple.tuple(
                                                       dataSetEntry.getName(),
                                                       graphQlEndpoint.makeUrl(userDataSets.getKey(),
@@ -68,6 +67,7 @@ public class GetDataSets {
                                                     .collect(toMap(Tuple::getLeft, Tuple::getRight));
       dataSetUris.put(userDataSets.getKey(), mappedUserSets);
     }
+
 
     return dataSetUris;
   }
@@ -78,7 +78,7 @@ public class GetDataSets {
   public Map<String, URI> getUserDataSets(@PathParam("userId") String userId) {
     return dataSetFactory
       .getDataSets()
-      .getOrDefault(userId, new HashSet<PromotedDataSet>())
+      .getOrDefault(userId, new HashSet<>())
       .stream()
       .map(dataSetEntry -> Tuple.tuple(dataSetEntry.getName(), graphQlEndpoint.makeUrl(userId, dataSetEntry.getName())))
       .collect(toMap(Tuple::getLeft, Tuple::getRight));

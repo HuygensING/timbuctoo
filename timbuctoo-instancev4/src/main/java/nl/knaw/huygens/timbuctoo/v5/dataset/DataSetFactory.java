@@ -96,15 +96,14 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
 
-      PromotedDataSet promotedDataSet = new PromotedDataSet(dataSetId, true);
-
       if (!userDataSets.containsKey(dataSetId)) {
         DataSet dataSet = createNewDataSet(userId, dataSetId, authorizationKey);
         userDataSets.put(dataSetId, dataSet);
 
         try {
+          PromotedDataSet promotedDataSet = PromotedDataSet.create(dataSetId, false);
           storedDataSets.updateData(dataSets -> {
-            dataSets.computeIfAbsent(userId, key -> new HashSet<PromotedDataSet>()).add(promotedDataSet);
+            dataSets.computeIfAbsent(userId, key -> new HashSet<>()).add(promotedDataSet);
             return dataSets;
           });
         } catch (IOException e) {
@@ -146,7 +145,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
         dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
       );
       return dataSet;
-    } catch (AuthorizationCreationException | IOException e)   {
+    } catch (AuthorizationCreationException | IOException e) {
       throw new DataStoreCreationException(e);
     }
   }
@@ -158,6 +157,21 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   public Map<String, Set<PromotedDataSet>> getDataSets() {
     return storedDataSets.getData();
   }
+
+  public Map<String, Set<PromotedDataSet>> getPromotedDataSets() {
+    Map<String, Set<PromotedDataSet>> dataSets = storedDataSets.getData();
+    Map<String, Set<PromotedDataSet>> promotedDataSets = new HashMap<>();
+
+    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
+      Set<PromotedDataSet> mappedUserSets = userDataSets.getValue()
+                                                        .stream()
+                                                        .filter(dataSet -> dataSet.isPromoted())
+                                                        .collect(Collectors.toSet());
+      promotedDataSets.put(userDataSets.getKey(), mappedUserSets);
+    }
+    return promotedDataSets;
+  }
+
 
   public Optional<String> getStatus(UUID uuid) {
     return statusMap.containsKey(uuid) ? Optional.of(statusMap.get(uuid).toString()) : Optional.empty();

@@ -1,31 +1,23 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
-public class PromotedDataSet {
-  private String name;
-  private Boolean promoted;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 
-  public PromotedDataSet() {
+@Value.Immutable
+@JsonSerialize(as = ImmutablePromotedDataSet.class)
+@JsonDeserialize(as = ImmutablePromotedDataSet.class)
+public interface PromotedDataSet {
 
-  }
+  String getName();
 
-  public PromotedDataSet(String name, Boolean promoted) {
-    this.name = name;
-    this.promoted = promoted;
-  }
+  @Value.Auxiliary
+  boolean isPromoted();
 
-  public String getName() {
-    return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
-  }
-
-  public Boolean getPromoted() {
-    return promoted;
-  }
-
-  public void setPromoted(Boolean promoted) {
-    this.promoted = promoted;
+  static PromotedDataSet create(String name, boolean promoted) {
+    return ImmutablePromotedDataSet.builder()
+      .name(name)
+      .isPromoted(promoted)
+      .build();
   }
 }
