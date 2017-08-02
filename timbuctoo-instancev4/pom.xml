@@ -137,6 +137,7 @@
     <!-- The number after the dash is the Neo4j version -->
     <neo4j-tinkerpop-api-impl.version>0.4-3.0.3</neo4j-tinkerpop-api-impl.version>
     <rdf4j.version>2.2</rdf4j.version>
+    <xmlunit.version>2.4.0</xmlunit.version>
   </properties>
 
   <dependencyManagement>
@@ -545,6 +546,20 @@
           <artifactId>xercesImpl</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <!-- A library to help validating xml documents -->
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-core</artifactId>
+      <version>${xmlunit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.xmlunit</groupId>
+      <artifactId>xmlunit-matchers</artifactId>
+      <version>${xmlunit.version}</version>
+      <scope>test</scope>
     </dependency>
 
     <!-- ## End of test dependencies ## -->
