@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="./graphiql/graphiql.css" />
+
     <style>
       html {
         height: 100%;
@@ -14,9 +16,11 @@
       #graphiql {
         height: 100vh;
       }
-    </style>
-    <link rel="stylesheet" href="./graphiql/graphiql.css" />
+      .CodeMirror-hint {
+        max-width: none;
+      }
 
+    </style>
     <script src="./graphiql/es6-promise.auto.min.js"></script>
     <script src="./graphiql/fetch.min.js"></script>
     <script src="./graphiql/react.js"></script>

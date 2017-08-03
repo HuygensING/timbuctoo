@@ -4,12 +4,12 @@ import com.google.common.collect.ImmutableMap;
 import com.sleepycat.je.DatabaseException;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -41,16 +41,34 @@ public class GraphQl {
   }
 
   @POST
-  public Response post(String query, @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
+  public Response post(String query, @HeaderParam("accept") String acceptHeader, @PathParam("userId") String userId,
+                       @PathParam("dataSet") String dataSet) {
+    if (hasSpecifiedAcceptHeader(acceptHeader)) {
+      return Response
+        .status(400)
+        .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
+        .build();
+    }
     return executeGraphQlQuery(query, userId, dataSet);
+  }
+
+  public boolean hasSpecifiedAcceptHeader(@HeaderParam("accept") String acceptHeader) {
+    return acceptHeader == null || acceptHeader.isEmpty() || "*/*".equals(acceptHeader);
   }
 
 
   @GET
-  public Response get(@QueryParam("query") String query,
+  public Response get(@HeaderParam("accept") String acceptHeader,
+                      @QueryParam("query") String query,
                       @PathParam("userId") String userId,
                       @PathParam("dataSet") String dataSet
   ) {
+    if (hasSpecifiedAcceptHeader(acceptHeader)) {
+      return Response
+        .status(400)
+        .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
+        .build();
+    }
     return executeGraphQlQuery(query, userId, dataSet);
   }
 

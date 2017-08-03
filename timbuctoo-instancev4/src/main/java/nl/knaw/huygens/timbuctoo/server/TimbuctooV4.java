@@ -84,14 +84,7 @@ import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetFactoryManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GephiWriter;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GexfWriter;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.PalladioCsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.XmlWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
@@ -240,13 +233,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(environment.jersey());
     serializerWriterRegistry.register(new CsvWriter());
-    serializerWriterRegistry.register(new GephiWriter());
-    serializerWriterRegistry.register(new GexfWriter());
-    serializerWriterRegistry.register(new GraphVizWriter());
-    serializerWriterRegistry.register(new JsonLdWriter());
-    serializerWriterRegistry.register(new JsonWriter());
-    serializerWriterRegistry.register(new PalladioCsvWriter());
-    serializerWriterRegistry.register(new XmlWriter());
 
     register(environment, new SupportedFormats(serializerWriterRegistry));
 
