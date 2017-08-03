@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.PromotedDataSet;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -29,16 +30,41 @@ public class GetDataSets {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Map<String, Map<String, URI>> getDataSets() {
-    Map<String, Set<String>> dataSets = dataSetFactory.getDataSets();
+    Map<String, Set<PromotedDataSet>> dataSets = dataSetFactory.getDataSets();
     Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
 
-    for (Map.Entry<String, Set<String>> userDataSets : dataSets.entrySet()) {
-      Map<String, URI> mappedUserSets = userDataSets.getValue().stream()
-                                             .map(dataSetId -> Tuple.tuple(
-                                               dataSetId,
-                                               graphQlEndpoint.makeUrl(userDataSets.getKey(), dataSetId)
-                                             ))
-                                             .collect(toMap(Tuple::getLeft, Tuple::getRight));
+    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
+      Map<String, URI> mappedUserSets = userDataSets.getValue()
+                                                    .stream()
+                                                    .map(dataSetEntry -> Tuple.tuple(
+                                                      dataSetEntry.getName(),
+                                                      graphQlEndpoint.makeUrl(userDataSets.getKey(),
+                                                      dataSetEntry.getName())
+                                                    ))
+                                                    .collect(toMap(Tuple::getLeft, Tuple::getRight));
+      dataSetUris.put(userDataSets.getKey(), mappedUserSets);
+    }
+
+
+    return dataSetUris;
+  }
+
+  @GET
+  @Path("promoted")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Map<String, Map<String, URI>> getPromotedDataSets() {
+    Map<String, Set<PromotedDataSet>> dataSets = dataSetFactory.getPromotedDataSets();
+    Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
+
+    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
+      Map<String, URI> mappedUserSets = userDataSets.getValue()
+                                                    .stream()
+                                                    .map(dataSetEntry -> Tuple.tuple(
+                                                      dataSetEntry.getName(),
+                                                      graphQlEndpoint.makeUrl(userDataSets.getKey(),
+                                                        dataSetEntry.getName())
+                                                    ))
+                                                    .collect(toMap(Tuple::getLeft, Tuple::getRight));
       dataSetUris.put(userDataSets.getKey(), mappedUserSets);
     }
 
@@ -54,7 +80,7 @@ public class GetDataSets {
       .getDataSets()
       .getOrDefault(userId, new HashSet<>())
       .stream()
-      .map(dataSetId -> Tuple.tuple(dataSetId, graphQlEndpoint.makeUrl(userId, dataSetId)))
+      .map(dataSetEntry -> Tuple.tuple(dataSetEntry.getName(), graphQlEndpoint.makeUrl(userId, dataSetEntry.getName())))
       .collect(toMap(Tuple::getLeft, Tuple::getRight));
   }
 }
