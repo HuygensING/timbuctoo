@@ -5,11 +5,11 @@ import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
+import org.hamcrest.Matchers;
 
-import java.util.Map;
+import java.util.Collection;
 
-import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.hasItem;
 
 public class TypeMatcher extends CompositeMatcher<Type> {
 
@@ -22,13 +22,13 @@ public class TypeMatcher extends CompositeMatcher<Type> {
   }
 
   public TypeMatcher withListPredicateWithName(String predicateName) {
-    this.addMatcher(new PropertyMatcher<Type, Map<? extends String, ? extends Predicate>>(
+    this.addMatcher(new PropertyMatcher<Type, Iterable<? super Predicate>>(
       "predicates",
-      hasEntry(is(predicateName), predicate().isList(true))
+      Matchers.hasItem(predicate().hasName(predicateName).isList(true))
     ) {
 
       @Override
-      protected Map<String, Predicate> getItemValue(Type item) {
+      protected Collection<Predicate> getItemValue(Type item) {
         return item.getPredicates();
       }
     });
@@ -37,13 +37,13 @@ public class TypeMatcher extends CompositeMatcher<Type> {
   }
 
   public TypeMatcher withSinglePredicateWithName(String predicateName) {
-    this.addMatcher(new PropertyMatcher<Type, Map<? extends String, ? extends Predicate>>(
+    this.addMatcher(new PropertyMatcher<Type, Iterable<? super Predicate>>(
       "predicates",
-      hasEntry(is(predicateName), predicate().isList(false))
+      hasItem(predicate().hasName(predicateName).isList(false))
     ) {
 
       @Override
-      protected Map<String, Predicate> getItemValue(Type item) {
+      protected Collection<Predicate> getItemValue(Type item) {
         return item.getPredicates();
       }
     });
@@ -61,6 +61,17 @@ public class TypeMatcher extends CompositeMatcher<Type> {
         @Override
         protected Boolean getItemValue(Predicate item) {
           return item.isList();
+        }
+      });
+      return this;
+    }
+
+
+    public PredicateMatcher hasName(final String name) {
+      this.addMatcher(new PropertyEqualityMatcher<Predicate, String>("name", name) {
+        @Override
+        protected String getItemValue(Predicate item) {
+          return item.getName();
         }
       });
       return this;

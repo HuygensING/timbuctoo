@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.RelationDataFet
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.TypedLiteralDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.UnionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.UriDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
@@ -34,8 +35,8 @@ public class DataStoreDataFetcherFactory implements DataFetcherFactory {
   }
 
   @Override
-  public RelatedDataFetcher relationFetcher(String predicate) {
-    return new RelationDataFetcher(predicate, tripleStore);
+  public RelatedDataFetcher relationFetcher(String predicate, Direction direction) {
+    return new RelationDataFetcher(predicate, direction, tripleStore);
   }
 
   @Override
@@ -44,8 +45,8 @@ public class DataStoreDataFetcherFactory implements DataFetcherFactory {
   }
 
   @Override
-  public RelatedDataFetcher unionFetcher(String predicate) {
-    return new UnionDataFetcher(predicate, tripleStore);
+  public RelatedDataFetcher unionFetcher(String predicate, Direction direction) {
+    return new UnionDataFetcher(predicate, direction, tripleStore);
   }
 
   @Override

@@ -23,16 +23,7 @@ public class JsonSchemaStore implements SchemaStore {
     schemaFile = JsonFileBackedData.getOrCreate(
       schemaLocation,
       () -> null,
-      new TypeReference<Map<String, Type>>() {},
-      types -> {
-        for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
-          Type type = typeEntry.getValue();
-          String typeName = typeEntry.getKey();
-
-          type.setName(typeName);
-        }
-        return types;
-      }
+      new TypeReference<Map<String, Type>>() {}
     );
 
     SchemaUpdater schemaUpdater = newSchema -> {

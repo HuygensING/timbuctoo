@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -16,11 +17,13 @@ public interface CursorQuad extends CursorContainer {
 
   Optional<String> getLanguage();
 
+  Direction getDirection();
+
   @Value.Auxiliary
   String getCursor();
 
-  static CursorQuad create(String subject, String predicate, String object, String valueType, String language,
-                           String cursor) {
+  static CursorQuad create(String subject, String predicate, Direction direction,String object, String valueType,
+                           String language, String cursor) {
     return ImmutableCursorQuad.builder()
       .subject(subject)
       .predicate(predicate)
@@ -28,6 +31,7 @@ public interface CursorQuad extends CursorContainer {
       .valuetype(Optional.ofNullable(valueType))
       .language(Optional.ofNullable(language))
       .cursor(cursor)
+      .direction(direction)
       .build();
   }
 

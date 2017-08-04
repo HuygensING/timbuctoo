@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
@@ -13,8 +14,8 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 public class UnionDataFetcher extends WalkTriplesDataFetcher {
   private final QuadStore tripleStore;
 
-  public UnionDataFetcher(String predicate, QuadStore tripleStore) {
-    super(predicate, tripleStore);
+  public UnionDataFetcher(String predicate, Direction direction, QuadStore tripleStore) {
+    super(predicate, direction, tripleStore);
     this.tripleStore = tripleStore;
   }
 
@@ -23,7 +24,7 @@ public class UnionDataFetcher extends WalkTriplesDataFetcher {
     if (quad.getValuetype().isPresent()) {
       return TypedValue.create(quad.getObject(), quad.getValuetype().get());
     } else {
-      try (Stream<CursorQuad> quads = tripleStore.getQuads(quad.getObject(), RDF_TYPE, "")) {
+      try (Stream<CursorQuad> quads = tripleStore.getQuads(quad.getObject(), RDF_TYPE, Direction.OUT, "")) {
         final Set<String> types = quads
           .map(CursorQuad::getObject)
           .collect(toSet());

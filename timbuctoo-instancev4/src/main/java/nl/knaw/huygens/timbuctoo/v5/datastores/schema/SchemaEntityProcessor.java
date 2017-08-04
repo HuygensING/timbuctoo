@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schema;
 
 import com.google.common.collect.ListMultimap;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateHandler;
@@ -36,10 +37,14 @@ public class SchemaEntityProcessor implements EntityProcessor {
 
   @Override
   public void processEntity(String cursor, String subjectUri, ListMultimap<String, PredicateData> addedPredicates,
-                            Map<String, Boolean> inverseLists) {
+                            Map<String, Boolean> inversePredicates) {
+    if (addedPredicates.size() > 100) {
+      LOG.info("There's " + addedPredicates.size() + " predicates!"); //indicates that this might be a weird rdf file
+    }
+
+    //Step 1: create all the types that this subject belongs to
     Map<String, Type> curTypes = new HashMap<>();
     List<PredicateData> subjectTypes = addedPredicates.get(RDF_TYPE);
-    //create all the types that this subject belongs to
     if (subjectTypes.isEmpty()) {
       curTypes.put(UNKNOWN, types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
     } else {
@@ -60,18 +65,24 @@ public class SchemaEntityProcessor implements EntityProcessor {
         });
       }
     }
-    if (addedPredicates.size() > 100) {
-      LOG.info("There's " + addedPredicates.size() + " predicates!");
-    }
+
+    //Step 2: Add the predicates to each type
     for (Type type : curTypes.values()) {
-      for (Map.Entry<String, Boolean> inversePredicate : inverseLists.entrySet()) {
-        Predicate predicate = type.getOrCreatePredicate(inversePredicate.getKey() + "_inverse");
-        predicate.setList(inversePredicate.getValue());
+      //add all the inverse predicates (we ignore type information here, we just note that an inverse predicate
+      //exists and whether it was a list. Retrieving all type information is wasteful because we are already
+      //condensing it using the outward predicates. So we can look up all type information at the end using
+      //the schema (during finish()
+      for (Map.Entry<String, Boolean> inversePredicate : inversePredicates.entrySet()) {
+        Predicate predicate = type.getOrCreatePredicate(inversePredicate.getKey(), Direction.IN);
+        if (inversePredicate.getValue()) {
+          predicate.setList(true);
+        }
         predicate.incUsage();
       }
 
+      //add all the outward predicates
       for (String predicateUri : addedPredicates.keys()) {
-        final Predicate predicate = type.getOrCreatePredicate(predicateUri);
+        final Predicate predicate = type.getOrCreatePredicate(predicateUri, Direction.OUT);
         List<PredicateData> predicateValues = addedPredicates.get(predicateUri);
         if (predicateValues.size() > 1) {
           predicate.setList(true);
@@ -108,29 +119,27 @@ public class SchemaEntityProcessor implements EntityProcessor {
   @Override
   public void finish() {
     LOG.info("Finished processing entities");
+    //Step 3: Add type information to inverse predicates
     for (Map.Entry<String, Type> typeEntry : types.entrySet()) {
       Type type = typeEntry.getValue();
       String typeName = typeEntry.getKey();
 
-      for (Predicate predicate : type.getPredicates().values()) {
-        if (predicate.getName().endsWith("_inverse") || RdfConstants.RDF_TYPE.equals(predicate.getName())) {
+      for (Predicate predicate : type.getPredicates()) {
+        if (predicate.getDirection() == Direction.IN || RdfConstants.RDF_TYPE.equals(predicate.getName())) {
           continue;
         }
         for (String referenceType : predicate.getReferenceTypes()) {
           try {
             types.get(referenceType)
-              .getPredicates().get(predicate.getName() + "_inverse")
+              .getPredicate(predicate.getName(), Direction.IN) //There must be an inverse for each outward predicate
               .addReferenceType(typeName);
           } catch (Exception e) {
             String cause = "Referenced type not found";
             try {
               if (types.containsKey(referenceType)) {
-                cause = "type has no predicates";
-                if (types.get(referenceType).getPredicates() != null) {
-                  cause = "type does not have the predicate " + predicate.getName() + "_inverse";
-                  if (types.get(referenceType).getPredicates().containsKey(predicate.getName() + "_inverse")) {
-                    cause = "Something failed during addreferencetype(" + typeName + ")";
-                  }
+                cause = "type does not have the inverse predicate " + predicate.getName();
+                if (types.get(referenceType).getPredicate(predicate.getName(), Direction.IN) != null) {
+                  cause = "Something failed during addreferencetype(" + typeName + ")";
                 }
               }
               LOG.error("Error during inverse generation (ignored): " + cause , e);

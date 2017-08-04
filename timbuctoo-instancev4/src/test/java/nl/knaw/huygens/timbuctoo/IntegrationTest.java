@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.ParseException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -47,7 +46,6 @@ import static nl.knaw.huygens.timbuctoo.util.JsonContractMatcher.matchesContract
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -277,15 +275,18 @@ public class IntegrationTest {
         "  clusius_ResidenceList {\n" +
         "    items {\n" +
         "      tim_hasLocation {\n" +
-        "        tim_name {\n" +
-        "          value\n" +
+        "        tim_name {value}\n" +
+        "        _inverse_tim_hasBirthPlace {\n" +
+        "          items {\n" +
+        "            tim_gender {value}\n" +
+        "          }\n" +
         "        }\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
         "}", MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
-    assertThat(
+    assertThat( //every result has a value for name
       stream(objectNode
         .get("data")
         .get("clusius_ResidenceList")
@@ -298,6 +299,26 @@ public class IntegrationTest {
         .count(),
       is(20L)
     );
+    //the results link to people with genders (we can traverse inverse relations correctly)
+    assertThat(
+      stream(objectNode
+        .get("data")
+        .get("clusius_ResidenceList")
+        .get("items").iterator())
+        .flatMap(item ->
+          stream(item
+            .get("tim_hasLocation")
+            .get("_inverse_tim_hasBirthPlace")
+            .get("items").iterator())
+            .map(person -> person
+              .get("tim_gender")
+              .get("value"))
+        )
+        .filter(Objects::nonNull)
+        .count(),
+      is(37L)
+    );
+
   }
 
   @Test

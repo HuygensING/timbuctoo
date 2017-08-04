@@ -10,6 +10,7 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
 import graphql.schema.TypeResolver;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
@@ -123,7 +124,7 @@ public class GraphQlTypeGenerator {
         .type(Scalars.GraphQLID)
         .dataFetcher(new UriFetcherWrapper(dataFetcherFactory.entityUriDataFetcher()))
       );
-    for (Predicate predicate : type.getPredicates().values()) {
+    for (Predicate predicate : type.getPredicates()) {
       GraphQLFieldDefinition fieldDefinition = makeField(predicate, typeMappings, wrappedValueTypes,
         typeResolver, valueTypeResolver, typeNameStore, dataFetcherFactory, valueInterface,
         argumentsHelper
@@ -143,6 +144,9 @@ public class GraphQlTypeGenerator {
                                                   GraphQLInterfaceType valueInterface,
                                                   PaginationArgumentsHelper argumentsHelper) {
     String fieldName = typeNameStore.makeGraphQlname(pred.getName());
+    if (pred.getDirection() == Direction.IN) {
+      fieldName = "_inverse_" + fieldName;
+    }
     GraphQLFieldDefinition.Builder result = newFieldDefinition()
       .name(fieldName);
     if (pred.getReferenceTypes().size() == 0) {
@@ -196,7 +200,7 @@ public class GraphQlTypeGenerator {
     GraphQLTypeReference type = new GraphQLTypeReference(typeNameStore.makeGraphQlname(
       pred.getReferenceTypes().iterator().next()
     ));
-    RelatedDataFetcher dataFetcher = dataFetcherFactory.relationFetcher(pred.getName());
+    RelatedDataFetcher dataFetcher = dataFetcherFactory.relationFetcher(pred.getName(), pred.getDirection());
     return finishField(result, pred, argumentsHelper, type, dataFetcher);
   }
 
@@ -224,8 +228,16 @@ public class GraphQlTypeGenerator {
                                                    DataFetcherFactory dataFetcherFactory,
                                                    List<GraphQLTypeReference> refs, List<GraphQLObjectType> types,
                                                    PaginationArgumentsHelper argumentsHelper) {
+    String unionName = "Union_";
+    for (GraphQLObjectType type : types) {
+      unionName += type.getName() + "_";
+    }
+    for (GraphQLTypeReference type : refs) {
+      unionName += type.getName() + "_";
+    }
+    unionName += UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", "");
     GraphQLUnionType.Builder unionType = newUnionType()
-      .name("Union_" + UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", ""))
+      .name(unionName)
       .typeResolver(valueTypeResolver);
     for (GraphQLObjectType type : types) {
       unionType.possibleType(type);
@@ -233,7 +245,7 @@ public class GraphQlTypeGenerator {
     for (GraphQLTypeReference type : refs) {
       unionType.possibleType(type);
     }
-    RelatedDataFetcher dataFetcher = dataFetcherFactory.unionFetcher(pred.getName());
+    RelatedDataFetcher dataFetcher = dataFetcherFactory.unionFetcher(pred.getName(), pred.getDirection());
     GraphQLUnionType type = unionType.build();
     return finishField(result, pred, argumentsHelper, type, dataFetcher);
   }
