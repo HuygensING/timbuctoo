@@ -28,7 +28,7 @@ public class CollectionIndexSchemaFactory {
     for (Map.Entry<String, GraphQLObjectType> typeMapping : typesMap.entrySet()) {
       String typeUri = typeMapping.getKey();
       GraphQLObjectType objectType = typeMapping.getValue();
-      if (objectType.getInterfaces().stream().anyMatch(x -> x.getName().equals(ENTITY_INTERFACE_NAME))) {
+      if (!objectType.getName().equals("tim_unknown") && isEntity(objectType)) {
         String typeName = objectType.getName();
 
         GraphQLFieldDefinition.Builder collectionField = newFieldDefinition()
@@ -53,6 +53,10 @@ public class CollectionIndexSchemaFactory {
     }
 
     return result.build();
+  }
+
+  public boolean isEntity(GraphQLObjectType objectType) {
+    return objectType.getInterfaces().stream().anyMatch(x -> x.getName().equals(ENTITY_INTERFACE_NAME));
   }
 
 }
