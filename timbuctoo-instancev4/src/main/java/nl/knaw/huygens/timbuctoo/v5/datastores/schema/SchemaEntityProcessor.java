@@ -93,6 +93,7 @@ public class SchemaEntityProcessor implements EntityProcessor {
             @Override
             public void onRelation(String uri, List<String> types1) {
               if (types1.isEmpty()) {
+                types.computeIfAbsent(UNKNOWN, TYPE_MAKER);
                 predicate.addReferenceType(UNKNOWN);
               } else {
                 for (String type1 : types1) {
