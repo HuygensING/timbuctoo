@@ -49,7 +49,7 @@ public class DataSetFactoryTest {
   }
 
   @Test
-  public void getOrCreateReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
+  public void createImportManagerReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
     ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
     ImportManager importManager2 = dataSetFactory.createImportManager("user", "dataset");
 
@@ -57,7 +57,7 @@ public class DataSetFactoryTest {
   }
 
   @Test
-  public void getOrCreateReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
+  public void createImportManagerReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
     ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
     ImportManager importManager2 = dataSetFactory.createImportManager("user", "other");
 
@@ -65,7 +65,7 @@ public class DataSetFactoryTest {
   }
 
   @Test
-  public void getOrCreateReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
+  public void createImportManagerReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
     ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
     ImportManager importManager2 = dataSetFactory.createImportManager("other", "dataset");
 
@@ -81,7 +81,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws DataStoreCreationException {
-    dataSetFactory.createImportManager("ownerId", "otherDataSetId");
+    dataSetFactory.createImportManager("otherOwner", "dataSetId");
 
     boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
 
