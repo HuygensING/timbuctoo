@@ -256,7 +256,9 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
         CursorQuad quad = quads.next();
         if (!curSubject.equals(quad.getSubject())) {
           subjectCount++;
-          processor.processEntity("", curSubject, predicates, inversePredicates);
+          if (curSubject.length() > 0) {
+            processor.processEntity("", curSubject, predicates, inversePredicates);
+          }
           curSubject = quad.getSubject();
           predicates.clear();
           inversePredicates.clear();
@@ -284,6 +286,9 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
           }
         }
       }
+    }
+    if (curSubject.length() > 0) {
+      processor.processEntity("", curSubject, predicates, inversePredicates);
     }
     long elapsed = stopwatch.elapsed(TimeUnit.SECONDS);
     LOG.info("Done. Processed " + tripleCount + " triples and " + subjectCount + " subjects (" +
