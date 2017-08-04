@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
+package nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base;
 
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serialization;
@@ -9,11 +9,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class DistinctEntitiesSerialization implements Serialization {
+public abstract class CollectionsOfEntitiesSerialization implements Serialization {
 
   protected Map<String, Map<String, Map<String, Object>>> allEntities;
 
-  public DistinctEntitiesSerialization() {
+  public CollectionsOfEntitiesSerialization() {
     allEntities = new HashMap<>();
   }
 

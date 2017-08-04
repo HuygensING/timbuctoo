@@ -1,5 +1,6 @@
-package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
+package nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base;
 
+import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.SourceData;
 import org.junit.Test;
 
 import java.util.List;
@@ -9,11 +10,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsSame.sameInstance;
 
-public class DistinctEntitiesSerializationTest {
+public class CollectionsOfEntitiesSerializationTest {
 
   @Test
   public void performSerialization() throws Exception {
-    DistinctEntitiesSerialization sut = new TestDistinctEntitiesSerialization();
+    CollectionsOfEntitiesSerialization sut = new TestCollectionsOfEntitiesSerialization();
 
     sut.serialize(SourceData.simpleResult());
 
@@ -30,6 +31,6 @@ public class DistinctEntitiesSerializationTest {
   }
 
 
-  class TestDistinctEntitiesSerialization extends DistinctEntitiesSerialization {
+  class TestCollectionsOfEntitiesSerialization extends CollectionsOfEntitiesSerialization {
   }
 }
