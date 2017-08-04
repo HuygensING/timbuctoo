@@ -1,12 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base;
 
-import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList;
+import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serialization;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public abstract class CollectionsOfEntitiesSerialization implements Serialization {
@@ -18,8 +18,8 @@ public abstract class CollectionsOfEntitiesSerialization implements Serializatio
   }
 
   @Override
-  public void serialize(Serializable serializable) throws IOException {
-    convert(allEntities, serializable.getData());
+  public void serialize(SerializableResult serializableResult) throws IOException {
+    convert(allEntities, serializableResult.getData());
   }
 
   private Object convert(Map<String, Map<String, Map<String, Object>>> result, Object value) {
@@ -40,9 +40,10 @@ public abstract class CollectionsOfEntitiesSerialization implements Serializatio
         }
         return data;
       }
-    } else if (value instanceof List) {
-      ArrayList list = new ArrayList(((List) value).size());
-      for (Object item : (List) value) {
+    } else if (value instanceof SerializableList) {
+      java.util.List items = ((SerializableList) value).getItems();
+      ArrayList list = new ArrayList(items.size());
+      for (Object item : items) {
         list.add(convert(result, item));
       }
       return list;

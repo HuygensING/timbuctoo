@@ -22,4 +22,5 @@ public class RdfConstants {
   public static final String LANGSTRING = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString";
   public static final String STRING = "http://www.w3.org/2001/XMLSchema#string";
   public static final String INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
+  public static final String GRAPHQL_SCHEMA = "http://facebook.github.io/graphql/#";
 }

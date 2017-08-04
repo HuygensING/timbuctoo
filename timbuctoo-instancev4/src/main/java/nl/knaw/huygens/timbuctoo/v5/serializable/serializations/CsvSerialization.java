@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.FlatTableSerialization;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -28,8 +28,8 @@ public class CsvSerialization extends FlatTableSerialization {
   }
 
   @Override
-  protected void writeRow(List<TypedValue> values) throws IOException {
-    for (TypedValue value : values) {
+  protected void writeRow(List<Value> values) throws IOException {
+    for (Value value : values) {
       if (value == null) {
         csvPrinter.print(null);
       } else {

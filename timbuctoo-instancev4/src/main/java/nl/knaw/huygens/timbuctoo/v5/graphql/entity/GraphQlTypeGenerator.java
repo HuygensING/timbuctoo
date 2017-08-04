@@ -10,7 +10,6 @@ import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLTypeReference;
 import graphql.schema.GraphQLUnionType;
 import graphql.schema.TypeResolver;
-import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
@@ -143,10 +142,7 @@ public class GraphQlTypeGenerator {
                                                   TypeNameStore typeNameStore, DataFetcherFactory dataFetcherFactory,
                                                   GraphQLInterfaceType valueInterface,
                                                   PaginationArgumentsHelper argumentsHelper) {
-    String fieldName = typeNameStore.makeGraphQlname(pred.getName());
-    if (pred.getDirection() == Direction.IN) {
-      fieldName = "_inverse_" + fieldName;
-    }
+    String fieldName = typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection());
     GraphQLFieldDefinition.Builder result = newFieldDefinition()
       .name(fieldName);
     if (pred.getReferenceTypes().size() == 0) {

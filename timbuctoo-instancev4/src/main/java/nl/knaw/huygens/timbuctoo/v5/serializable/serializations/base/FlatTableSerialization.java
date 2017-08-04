@@ -1,9 +1,19 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base;
 
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
-import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serialization;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.QueryContainer;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.RdfData;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Serializable;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.CsvSerialization;
+import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.Dispatcher;
 import org.slf4j.Logger;
 
 import java.io.IOException;
@@ -12,6 +22,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public abstract class FlatTableSerialization implements Serialization {
@@ -19,14 +31,28 @@ public abstract class FlatTableSerialization implements Serialization {
   private static final Logger LOG = getLogger(CsvSerialization.class);
 
   @Override
-  public void serialize(Serializable data) throws IOException {
-    List<Map<String, Object>> list = findListToUseForRows(data);
+  public void serialize(SerializableResult data) throws IOException {
+    List<Serializable> list = findListRecurser(data.getData().getContents());
 
-    TocItem toc = generateToc(list);
+    if (list != null) {
+      // we found one list. We can now make the csv a bit nicer by starting from there and ignoring
+      // all enclosing objects
+      TocItem toc;
+      toc = generateToc(list);
+      initialize(getHeader(toc, ""));
+      writeBody(list, toc);
+      finish();
+    } else {
+      // we could not zoom in onto one list. Let's serialize everything as a really wide list of one record long.
+      //
+      // it's something ¯\_(ツ)_/¯
+      TocItem toc;
+      toc = generateToc(data.getData());
+      initialize(getHeader(toc, ""));
+      writeBody(data.getData(), toc);
+      finish();
+    }
 
-    initialize(getHeader(toc, ""));
-    writeBody(list, toc);
-    finish();
   }
 
   /**
@@ -37,39 +63,26 @@ public abstract class FlatTableSerialization implements Serialization {
   /**
    * is called once for each row. NOTE! the list may have gaps (null values)
    */
-  protected abstract void writeRow(List<TypedValue> values) throws IOException;
+  protected abstract void writeRow(List<Value> values) throws IOException;
 
   /**
    * is called once at the end of the serialization
    */
   protected abstract void finish() throws IOException;
 
-  /**
-   * Walk the object and pass through each map with only one key until we find a list. That list will become the rows
-   * all nested lists will become columns
-   *
-   * @return the first encountered list, or the top level object wrapped in a list if no, or multiple lists where found
-   */
-  private List<Map<String, Object>> findListToUseForRows(Serializable data) {
-    List<Map<String, Object>> list = findListRecurser(data.getData());
-    //If no list can be found, we convert the top level object into a list
-    if (list == null) {
-      list = new ArrayList<>();
-      list.add(data.getData());
-    }
-    return list;
-  }
-
-  private List<Map<String, Object>> findListRecurser(Map<String, Object> data) {
+  private List<Serializable> findListRecurser(Map<?, Serializable> data) {
     if (data.keySet().isEmpty()) {
       LOG.error("I though maps could not be empty because graphql requires you to ask for at least 1 key");
     }
-    if (data.keySet().size() == 1) {
-      Object entry = data.values().iterator().next();
-      if (entry instanceof Map) {
-        return findListRecurser((Map) entry);
-      } else if (entry instanceof List) {
-        return (List) entry;
+    List<Serializable> dataItems = data.values().stream()
+      .filter(v -> v instanceof RdfData)
+      .collect(toList());
+    if (dataItems.size() == 1) {
+      Serializable entry = dataItems.get(0);
+      if (entry instanceof Entity) {
+        return findListRecurser(((Entity) entry).getContents());
+      } else if (entry instanceof SerializableList) {
+        return ((SerializableList) entry).getItems();
       } else {
         return null;
       }
@@ -78,32 +91,23 @@ public abstract class FlatTableSerialization implements Serialization {
     }
   }
 
-  private TocItem generateToc(List<Map<String, Object>> list) throws IOException {
+  private TocItem generateToc(QueryContainer list) throws IOException {
     TocItem toc = new TocItem();
-    for (int i = 0; i < list.size(); i++) {
-      final Object item = list.get(i);
-      generateTocRecurser(item, toc);
+    GenerateTocDispatcher dispatcher = new GenerateTocDispatcher();
+    for (Map.Entry<String, Serializable> item : list.getContents().entrySet()) {
+      TocItem subItem = toc.add(item.getKey());
+      dispatcher.dispatch(item.getValue(), subItem);
     }
     return toc;
   }
 
-  private void generateTocRecurser(Object data, TocItem tocItem) throws IOException {
-    if (data instanceof Map) {
-      Map<String, Object> value = (Map<String, Object>) data;
-      for (Map.Entry<String, Object> entry : value.entrySet()) {
-        if (!"@id".equals(entry.getKey()) && !"@type".equals(entry.getKey())) {
-          TocItem subItem = tocItem.add(entry.getKey());
-          generateTocRecurser(entry.getValue(), subItem);
-        }
-      }
-    } else if (data instanceof List) {
-      List list = (List) data;
-      for (int i = 0; i < list.size(); i++) {
-        final Object item = list.get(i);
-        TocItem subItem = tocItem.add(i);
-        generateTocRecurser(item, subItem);
-      }
+  private TocItem generateToc(List<Serializable> list) throws IOException {
+    TocItem toc = new TocItem();
+    GenerateTocDispatcher dispatcher = new GenerateTocDispatcher();
+    for (Serializable item : list) {
+      dispatcher.dispatch(item, toc);
     }
+    return toc;
   }
 
   private List<String> getHeader(TocItem toc, String prefix) throws IOException {
@@ -118,43 +122,121 @@ public abstract class FlatTableSerialization implements Serialization {
     return header;
   }
 
-  private void writeBody(List<Map<String, Object>> list, TocItem toc) throws IOException {
-    for (Map<String, Object> item : list) {
-      writeRow(writeBodyRecurser(item, toc));
+  private void writeBody(List<Serializable> list, TocItem toc) throws IOException {
+    WriteBodyDispatcher dispatcher = new WriteBodyDispatcher();
+    for (Serializable item : list) {
+      List<Value> result = new ArrayList<>();
+      dispatcher.dispatch(item, tuple(toc, result));
+      writeRow(result);
     }
   }
 
-  private List<TypedValue> writeBodyRecurser(Object data, TocItem toc) throws IOException {
-    List<TypedValue> result = new ArrayList<>();
-    if (toc.contents.isEmpty()) {
-      if (data instanceof TypedValue) {
-        result.add((TypedValue) data);
-      } else {
-        result.add(TypedValue.createFromNative(data));
+  private void writeBody(QueryContainer container, TocItem toc) throws IOException {
+    List<Value> result = new ArrayList<>();
+    WriteBodyDispatcher dispatcher = new WriteBodyDispatcher();
+    for (Map.Entry<String, TocItem> tocEntry : toc.contents.entrySet()) {
+      dispatcher.dispatch(container.getContents().get(tocEntry.getKey()), tuple(tocEntry.getValue(), result));
+    }
+    writeRow(result);
+  }
+
+
+  private class GenerateTocDispatcher extends Dispatcher<TocItem> {
+
+    @Override
+    public void handleEntity(Entity entity, TocItem tocItem) throws IOException {
+      for (Map.Entry<PredicateInfo, Serializable> entry : entity.getContents().entrySet()) {
+        TocItem subItem = tocItem.add(entry.getKey().getSafeName());
+        dispatch(entry.getValue(), subItem);
       }
-    } else {
-      if (data  == null) {
-        for (Map.Entry<String, TocItem> tocEntry : toc.contents.entrySet()) {
-          result.addAll(writeBodyRecurser(null, tocEntry.getValue()));
-        }
-      } else if (data instanceof List) {
-        List list = (List) data;
-        for (int i = 0; i <= toc.maxCount; i++) {
-          if (i < list.size()) {
-            final Object o = list.get(i);
-            result.addAll(writeBodyRecurser(o, toc.contents.get(i + "")));
-          } else {
-            result.addAll(writeBodyRecurser(null, toc.contents.get(i + "")));
-          }
-        }
-      } else if (data instanceof Map) {
-        Map map = (Map) data;
-        for (Map.Entry<String, TocItem> tocEntry : toc.contents.entrySet()) {
-          result.addAll(writeBodyRecurser(map.get(tocEntry.getKey()), tocEntry.getValue()));
+    }
+
+    @Override
+    public void handleNull(TocItem tocItem) throws IOException {
+
+    }
+
+    @Override
+    public void handleList(SerializableList list, TocItem tocItem) throws IOException {
+      for (int i = 0; i < list.getItems().size(); i++) {
+        final Serializable item = list.getItems().get(i);
+        TocItem subItem = tocItem.add(i);
+        dispatch(item, subItem);
+      }
+    }
+
+    @Override
+    public void handleGraphqlObject(GraphqlIntrospectionObject object, TocItem tocItem) throws IOException {
+
+    }
+
+    @Override
+    public void handleGraphqlList(GraphqlIntrospectionList list, TocItem tocItem) throws IOException {
+
+    }
+
+    @Override
+    public void handleValue(Value object, TocItem tocItem) throws IOException {
+
+    }
+  }
+
+  private class WriteBodyDispatcher extends Dispatcher<Tuple<TocItem, List<Value>>> {
+
+    @Override
+    public void handleEntity(Entity entity, Tuple<TocItem, List<Value>> context) throws IOException {
+      for (Map.Entry<String, TocItem> tocEntry : context.getLeft().contents.entrySet()) {
+        dispatch(
+          entity.getContentsUnderSafeName().get(tocEntry.getKey()),
+          tuple(tocEntry.getValue(), context.getRight())
+        );
+      }
+    }
+
+    @Override
+    public void handleNull(Tuple<TocItem, List<Value>> context) throws IOException {
+      if (context.getLeft().contents.isEmpty()) {
+        context.getRight().add(null);
+      } else {
+        for (Map.Entry<String, TocItem> tocEntry : context.getLeft().contents.entrySet()) {
+          dispatch(
+            null,
+            tuple(tocEntry.getValue(), context.getRight())
+          );
         }
       }
     }
-    return result;
+
+    @Override
+    public void handleList(SerializableList serializableList, Tuple<TocItem, List<Value>> context) throws IOException {
+      List<Serializable> list = serializableList.getItems();
+      for (int i = 0; i <= context.getLeft().maxCount; i++) {
+        if (i < list.size()) {
+          final Serializable o = list.get(i);
+          dispatch(o, tuple(context.getLeft().contents.get(i + ""), context.getRight()));
+        } else {
+          dispatch(null, tuple(context.getLeft().contents.get(i + ""), context.getRight()));
+        }
+      }
+
+    }
+
+    @Override
+    public void handleGraphqlObject(GraphqlIntrospectionObject object, Tuple<TocItem, List<Value>> context)
+      throws IOException {
+
+    }
+
+    @Override
+    public void handleGraphqlList(GraphqlIntrospectionList list, Tuple<TocItem, List<Value>> context)
+      throws IOException {
+
+    }
+
+    @Override
+    public void handleValue(Value object, Tuple<TocItem, List<Value>> context) throws IOException {
+      context.getRight().add(object);
+    }
   }
 
   class TocItem {
