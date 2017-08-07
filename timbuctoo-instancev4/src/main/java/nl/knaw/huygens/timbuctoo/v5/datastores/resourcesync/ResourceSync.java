@@ -33,9 +33,17 @@ public class ResourceSync {
   }
 
   public void addDataSet(String user, String dataSet) throws ResourceSyncException {
-    new CapabilityList(
-      fileHelper.fileInDataSet(user, dataSet, "capabilityList.xml"),
-      new File("sourceDescription.xml")
-    ).addResourceList(getResourceListFile(user, dataSet));
+    File sourceDescriptionFile = fileHelper.fileInRoot("sourceDescription.xml");
+    File capabilityListFile = fileHelper.fileInDataSet(user, dataSet, "capabilityList.xml");
+    CapabilityList capabilityList = new CapabilityList(
+      capabilityListFile,
+      sourceDescriptionFile
+    );
+    capabilityList.addResourceList(getResourceListFile(user, dataSet));
+
+    SourceDescription sourceDescription = new SourceDescription(sourceDescriptionFile);
+    sourceDescription.addCapabilityList(capabilityListFile);
+
+
   }
 }
