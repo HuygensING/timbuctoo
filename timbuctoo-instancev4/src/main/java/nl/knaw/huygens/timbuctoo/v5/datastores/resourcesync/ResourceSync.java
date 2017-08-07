@@ -21,11 +21,7 @@ public class ResourceSync {
   }
 
   public ResourceList resourceList(String user, String dataSet) {
-    // TODO add capability list to source description
-    return new FileSystemResourceList(
-      new File(dataSetPathHelper.dataSetPath(user, dataSet), "resourceList.xml"),
-      () -> Instant.now().toString()
-    );
+    return new FileSystemResourceList(getResourceListFile(user, dataSet), () -> Instant.now().toString());
   }
 
   private File getResourceListFile(String user, String dataSet) {

@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
@@ -236,7 +237,11 @@ public class ImportManager implements DataProvider {
     @Override
     public String saveFile(InputStream stream, String fileName, Optional<MediaType> mediaType) throws IOException {
       String token = fileStorage.saveFile(stream, fileName, mediaType);
-      resourceList.addFile(getFile(token));
+      try {
+        resourceList.addFile(getFile(token));
+      } catch (ResourceSyncException e) {
+        throw new IOException(e);
+      }
       return token;
     }
 
@@ -260,7 +265,11 @@ public class ImportManager implements DataProvider {
     public String saveLog(InputStream stream, String fileName, Optional<MediaType> mediaType, Optional<Charset> charset)
       throws IOException {
       String token = logStorage.saveLog(stream, fileName, mediaType, charset);
-      resourceList.addFile(getLog(token));
+      try {
+        resourceList.addFile(getLog(token));
+      } catch (ResourceSyncException e) {
+        throw new IOException(e);
+      }
       return token;
     }
 

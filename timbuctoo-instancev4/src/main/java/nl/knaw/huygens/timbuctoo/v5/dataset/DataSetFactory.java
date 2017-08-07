@@ -152,6 +152,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
         dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
       );
 
+      this.configuration.getResourceSync().addDataSet(userId, dataSetId);
       return dataSet;
     } catch (AuthorizationCreationException | IOException e) {
       throw new DataStoreCreationException(e);
