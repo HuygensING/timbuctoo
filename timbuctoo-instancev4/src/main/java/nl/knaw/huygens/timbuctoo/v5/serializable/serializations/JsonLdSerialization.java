@@ -17,7 +17,7 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,7 +33,7 @@ public class JsonLdSerialization implements Serialization {
 
   @Override
   public void serialize(SerializableResult serializableResult) throws IOException {
-    final Set<PredicateInfo> context = new HashSet<>();
+    final Set<PredicateInfo> context = new LinkedHashSet<>();
     generator.writeStartObject();
     generator.writeFieldName("data");
     generator.writeStartObject();
