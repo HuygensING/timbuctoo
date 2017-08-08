@@ -59,6 +59,14 @@ public abstract class CollectionsOfEntitiesSerialization implements Serializatio
               getEntity((Entity) value).relations
                 .computeIfAbsent(predicateUri, k -> new HashSet<>())
                   .add(entity.getUri());
+            } else if (value instanceof SerializableList) {
+              for (Serializable item : ((SerializableList) value).getItems()) {
+                if (item instanceof Entity) {
+                  getEntity((Entity) item).relations
+                    .computeIfAbsent(predicateUri, k -> new HashSet<>())
+                      .add(entity.getUri());
+                }
+              }
             }
             dispatch(value, null); //don't add the subEntity to this entry
           } else {
