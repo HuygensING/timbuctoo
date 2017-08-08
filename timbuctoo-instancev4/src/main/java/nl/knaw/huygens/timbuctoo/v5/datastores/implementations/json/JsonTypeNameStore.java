@@ -54,18 +54,18 @@ public class JsonTypeNameStore implements TypeNameStore {
   public String makeName(String uri, String prefix) {
     //The relay spec requires that our own names are never 'PageInfo' or end with 'Connection'
 
-    if (data.shorteneds.containsKey(uri)) {
-      return data.shorteneds.get(uri);
+    if (data.shorteneds.containsKey(prefix + "\n" + uri)) {
+      return data.shorteneds.get(prefix + "\n" + uri);
     } else {
       String shortened = prefix + shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
       while (shortened.equals("PageInfo") ||
         shortened.endsWith("Connection") ||
         shortened.endsWith("Edge") ||
-        data.shorteneds.containsKey(shortened)) {
+        data.inverse.containsKey(shortened)) {
 
         shortened += "_";
       }
-      data.shorteneds.put(uri, shortened);
+      data.shorteneds.put(prefix + "\n" + uri, shortened);
       data.inverse.put(shortened, uri);
       return shortened;
     }
