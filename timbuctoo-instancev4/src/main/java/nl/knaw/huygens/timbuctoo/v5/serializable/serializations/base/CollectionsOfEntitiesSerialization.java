@@ -1,17 +1,26 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base;
 
-import nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serialization;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Serializable;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
+import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.Dispatcher;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class CollectionsOfEntitiesSerialization implements Serialization {
 
-  protected Map<String, Map<String, Map<String, Object>>> allEntities;
+  protected Map<String, Map<String, AggregatedEntity>> allEntities;
 
   public CollectionsOfEntitiesSerialization() {
     allEntities = new HashMap<>();
@@ -19,37 +28,89 @@ public abstract class CollectionsOfEntitiesSerialization implements Serializatio
 
   @Override
   public void serialize(SerializableResult serializableResult) throws IOException {
-    convert(allEntities, serializableResult.getData());
-  }
-
-  private Object convert(Map<String, Map<String, Map<String, Object>>> result, Object value) {
-    if (value instanceof Map) {
-      Map<String, Object> data = (Map) value;
-      if (data.containsKey("@id") && data.containsKey("@type")) {
-        Map<String, Object> target = result
-          .computeIfAbsent(data.get("@type") + "", key -> new HashMap<>())
-          .computeIfAbsent(data.get("@id") + "", key -> new HashMap<>());
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-          Object converted = convert(result, entry.getValue());
-          target.put(entry.getKey(), converted);
-        }
-        return target;
-      } else {
-        for (Map.Entry<String, Object> entry : data.entrySet()) {
-          convert(result, entry.getValue());
-        }
-        return data;
-      }
-    } else if (value instanceof SerializableList) {
-      java.util.List items = ((SerializableList) value).getItems();
-      ArrayList list = new ArrayList(items.size());
-      for (Object item : items) {
-        list.add(convert(result, item));
-      }
-      return list;
-    } else {
-      return value;
+    CollectDistinctEntities collector = new CollectDistinctEntities();
+    for (Serializable serializable : serializableResult.getData().getContents().values()) {
+      collector.dispatch(serializable, null);
     }
   }
 
+  public AggregatedEntity getEntity(Entity entity) {
+    return allEntities
+      .computeIfAbsent(entity.getTypeUri(), key -> new HashMap<>())
+      .computeIfAbsent(entity.getUri(), key -> new AggregatedEntity());
+  }
+
+  private class CollectDistinctEntities extends Dispatcher<Setter> {
+
+    @Override
+    public void handleEntity(Entity entity, Setter context)
+      throws IOException {
+      if (context != null) {
+        context.addRelation(entity.getUri());
+      }
+
+      AggregatedEntity target = getEntity(entity);
+      for (Map.Entry<PredicateInfo, Serializable> entry : entity.getContents().entrySet()) {
+        if (entry.getKey().getUri().isPresent()) { //only use actual rdf data, don't serialize graphql properties
+          String predicateUri = entry.getKey().getUri().get();
+          Serializable value = entry.getValue();
+          if (entry.getKey().getDirection() == Direction.IN) {
+            if (value instanceof Entity) {
+              getEntity((Entity) value).relations
+                .computeIfAbsent(predicateUri, k -> new HashSet<>())
+                  .add(entity.getUri());
+            }
+            dispatch(value, null); //don't add the subEntity to this entry
+          } else {
+            dispatch(value, new Setter(target, predicateUri));
+          }
+        }
+      }
+    }
+
+    @Override
+    public void handleList(SerializableList list, Setter context) throws IOException {
+      for (Serializable item : list.getItems()) {
+        dispatch(item, context);
+      }
+    }
+
+    @Override
+    public void handleValue(Value object, Setter setter) throws IOException {
+      setter.addAttribute(object);
+    }
+
+    @Override
+    public void handleGraphqlObject(GraphqlIntrospectionObject object, Setter context) throws IOException { }
+
+    @Override
+    public void handleGraphqlList(GraphqlIntrospectionList list, Setter context) throws IOException { }
+
+    @Override
+    public void handleNull(Setter context) throws IOException { }
+
+  }
+
+  public class AggregatedEntity {
+    public final Map<String, Set<Value>> attributes = new HashMap<>();
+    public final Map<String, Set<String>> relations = new HashMap<>();
+  }
+
+  private class Setter {
+    private final AggregatedEntity entity;
+    private final String predicateUri;
+
+    public Setter(AggregatedEntity entity, String predicateUri) {
+      this.entity = entity;
+      this.predicateUri = predicateUri;
+    }
+
+    public void addAttribute(Value value) {
+      entity.attributes.computeIfAbsent(predicateUri, k -> new HashSet<>()).add(value);
+    }
+
+    public void addRelation(String uri) {
+      entity.relations.computeIfAbsent(predicateUri, k -> new HashSet<>()).add(uri);
+    }
+  }
 }
