@@ -36,8 +36,8 @@ public class PaginationHelper {
 
     if (subjects.isEmpty()) {
       return PaginatedList.create(
-        "NONE",
-        "",
+        null,
+        null,
         subjects
       );
     } else {
