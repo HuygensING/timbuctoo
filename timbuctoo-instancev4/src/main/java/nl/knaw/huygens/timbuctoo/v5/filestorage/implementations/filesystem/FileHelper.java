@@ -52,4 +52,8 @@ public class FileHelper {
     path.mkdir();
     return path;
   }
+
+  public String getRelativePath(File file) {
+    return rootDir.toURI().relativize(file.toURI()).getPath();
+  }
 }

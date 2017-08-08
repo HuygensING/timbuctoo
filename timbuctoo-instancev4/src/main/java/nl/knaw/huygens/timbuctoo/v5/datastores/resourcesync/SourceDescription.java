@@ -8,9 +8,12 @@ import java.io.File;
 
 class SourceDescription {
   private final ResourceSyncXmlHelper xmlHelper;
+  private final ResourceSyncUriHelper uriHelper;
 
-  SourceDescription(File sourceDescriptionFile) throws ResourceSyncException {
+  SourceDescription(File sourceDescriptionFile,
+                    ResourceSyncUriHelper uriHelper) throws ResourceSyncException {
     xmlHelper = new ResourceSyncXmlHelper(sourceDescriptionFile, this::updateMetaData);
+    this.uriHelper = uriHelper;
   }
 
   private void updateMetaData(Node root, Document doc) {
@@ -22,7 +25,7 @@ class SourceDescription {
   }
 
   void addCapabilityList(File capabilityListFile) throws ResourceSyncException {
-    xmlHelper.addUrlElementWithCapability(capabilityListFile, "capabilitylist");
+    xmlHelper.addUrlElementWithCapability(uriHelper.uriForFile(capabilityListFile), "capabilitylist");
     xmlHelper.save();
   }
 

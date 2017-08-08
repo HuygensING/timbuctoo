@@ -11,6 +11,8 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
 public class CapabilityListTest {
@@ -18,12 +20,15 @@ public class CapabilityListTest {
   private File capabilityListFile;
   private File sourceDescription;
   private CapabilityList instance;
+  private ResourceSyncUriHelper uriHelper;
 
   @Before
   public void setUp() throws Exception {
     capabilityListFile = File.createTempFile("capabilityList", "xml");
     sourceDescription = File.createTempFile("sourceDescription", "xml");
-    instance = new CapabilityList(capabilityListFile, sourceDescription);
+    uriHelper = mock(ResourceSyncUriHelper.class);
+    given(uriHelper.uriForFile(sourceDescription)).willReturn("http://example.org/sourcedesc");
+    instance = new CapabilityList(capabilityListFile, sourceDescription, uriHelper);
   }
 
   @After
@@ -37,7 +42,7 @@ public class CapabilityListTest {
       "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
       "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
       "  <rs:ln rel=\"up\"\n" +
-      "         href=\"" + sourceDescription.getPath() + "\"/>\n" +
+      "         href=\"http://example.org/sourcedesc\"/>\n" +
       "  <rs:md capability=\"capabilitylist\"/>\n" +
       "</urlset>").getBytes(StandardCharsets.UTF_8)).build();
 
@@ -50,6 +55,7 @@ public class CapabilityListTest {
   @Test
   public void addResourceListAddsALinkToAResourceList() throws Exception {
     File resourceList = new File("resourceList.xml");
+    given(uriHelper.uriForFile(resourceList)).willReturn("http://example.org/resourcelist");
 
     instance.addResourceList(resourceList);
 
@@ -57,10 +63,10 @@ public class CapabilityListTest {
       "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
       "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
       "  <rs:ln rel=\"up\"\n" +
-      "         href=\"" + sourceDescription.getPath() + "\"/>\n" +
+      "         href=\"http://example.org/sourcedesc\"/>\n" +
       "  <rs:md capability=\"capabilitylist\"/>\n" +
       "  <url>\n" +
-      "      <loc>" + resourceList.getPath() + "</loc>\n" +
+      "      <loc>http://example.org/resourcelist</loc>\n" +
       "      <rs:md capability=\"resourcelist\"/>\n" +
       "  </url>" +
       "</urlset>").getBytes(StandardCharsets.UTF_8)).build();

@@ -11,17 +11,17 @@ import java.time.Instant;
  */
 public class ResourceSync {
 
-  private final String resourceSyncUri;
+  private final ResourceSyncUriHelper uriHelper;
   private final FileHelper fileHelper;
 
-  public ResourceSync(String resourceSyncUri,
+  public ResourceSync(ResourceSyncUriHelper uriHelper,
                       FileHelper fileHelper) {
-    this.resourceSyncUri = resourceSyncUri;
+    this.uriHelper = uriHelper;
     this.fileHelper = fileHelper;
   }
 
   public ResourceList resourceList(String user, String dataSet) {
-    return new FileSystemResourceList(getResourceListFile(user, dataSet), () -> Instant.now().toString());
+    return new FileSystemResourceList(getResourceListFile(user, dataSet), () -> Instant.now().toString(), uriHelper);
   }
 
   private File getResourceListFile(String user, String dataSet) {
@@ -31,15 +31,11 @@ public class ResourceSync {
   public void addDataSet(String user, String dataSet) throws ResourceSyncException {
     File sourceDescriptionFile = fileHelper.fileInRoot("sourceDescription.xml");
     File capabilityListFile = fileHelper.fileInDataSet(user, dataSet, "capabilityList.xml");
-    CapabilityList capabilityList = new CapabilityList(
-      capabilityListFile,
-      sourceDescriptionFile
-    );
+
+    CapabilityList capabilityList = new CapabilityList(capabilityListFile, sourceDescriptionFile, uriHelper);
     capabilityList.addResourceList(getResourceListFile(user, dataSet));
 
-    SourceDescription sourceDescription = new SourceDescription(sourceDescriptionFile);
+    SourceDescription sourceDescription = new SourceDescription(sourceDescriptionFile, uriHelper);
     sourceDescription.addCapabilityList(capabilityListFile);
-
-
   }
 }

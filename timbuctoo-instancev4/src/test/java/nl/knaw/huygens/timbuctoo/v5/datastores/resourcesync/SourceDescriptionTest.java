@@ -11,16 +11,20 @@ import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.mock;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
 public class SourceDescriptionTest {
   private File sourceDescription;
   private SourceDescription instance;
+  private ResourceSyncUriHelper uriHelper;
 
   @Before
   public void setUp() throws Exception {
+    uriHelper = mock(ResourceSyncUriHelper.class);
     sourceDescription = File.createTempFile("sourceDescription", "xml");
-    instance = new SourceDescription(sourceDescription);
+    instance = new SourceDescription(sourceDescription, uriHelper);
   }
 
   @After
@@ -45,6 +49,7 @@ public class SourceDescriptionTest {
   @Test
   public void addCapabilityListAddsALinkToACapabilityList() throws Exception {
     File capabilityList = new File("capabilityList.xml");
+    given(uriHelper.uriForFile(capabilityList)).willReturn("http://example.org/capabilitylist");
 
     instance.addCapabilityList(capabilityList);
 
@@ -53,7 +58,7 @@ public class SourceDescriptionTest {
       "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
       "  <rs:md capability=\"description\"/>\n" +
       "  <url>\n" +
-      "      <loc>" + capabilityList.getPath() + "</loc>\n" +
+      "      <loc>http://example.org/capabilitylist</loc>\n" +
       "      <rs:md capability=\"capabilitylist\"/>\n" +
       "  </url>" +
       "</urlset>").getBytes(StandardCharsets.UTF_8)).build();

@@ -56,11 +56,11 @@ public class ResourceSyncXmlHelper {
     return urlSet;
   }
 
-  void addUrlElementWithCapability(File file, String capability) {
+  void addUrlElementWithCapability(String uri, String capability) {
     Element url = doc.createElement("url");
 
     Element loc = doc.createElement("loc");
-    loc.appendChild(doc.createTextNode(file.getPath()));
+    loc.appendChild(doc.createTextNode(uri));
     url.appendChild(loc);
 
     Element metaData = doc.createElement("rs:md");
@@ -70,11 +70,11 @@ public class ResourceSyncXmlHelper {
     root.appendChild(url);
   }
 
-  void addUrlElement(File file) {
+  void addUrlElement(String uri) {
     Element url = doc.createElement("url");
 
     Element loc = doc.createElement("loc");
-    loc.appendChild(doc.createTextNode(file.getPath()));
+    loc.appendChild(doc.createTextNode(uri));
     url.appendChild(loc);
 
     root.appendChild(url);
@@ -95,11 +95,11 @@ public class ResourceSyncXmlHelper {
 
   }
 
-  static void setUplink(Node root, Document doc, File sourceDescription) {
+  static void setUplink(Node root, Document doc, String sourceDescriptionUri) {
     if (root.getChildNodes().getLength() == 0) {
       Element upLink = doc.createElement("rs:ln");
       upLink.setAttribute("rel", "up");
-      upLink.setAttribute("href", sourceDescription.getPath());
+      upLink.setAttribute("href", sourceDescriptionUri);
       root.appendChild(upLink);
     }
   }

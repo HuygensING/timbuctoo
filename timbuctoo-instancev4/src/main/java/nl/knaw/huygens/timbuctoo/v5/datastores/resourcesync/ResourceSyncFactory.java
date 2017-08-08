@@ -13,6 +13,6 @@ public class ResourceSyncFactory {
   }
 
   public ResourceSync createResourceSync(FileHelper fileHelper) {
-    return new ResourceSync(resourceSyncUri, fileHelper);
+    return new ResourceSync(new ResourceSyncUriHelper(resourceSyncUri, fileHelper), fileHelper);
   }
 }

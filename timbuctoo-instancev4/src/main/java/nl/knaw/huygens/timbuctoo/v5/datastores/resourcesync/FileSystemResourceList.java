@@ -10,16 +10,19 @@ import java.io.File;
 class FileSystemResourceList implements ResourceList {
   private final File resourceList;
   private final ResourceSyncDateFormatter resourceSyncDateFormatter;
+  private final ResourceSyncUriHelper uriHelper;
 
-  public FileSystemResourceList(File resourceList, ResourceSyncDateFormatter resourceSyncDateFormatter) {
+  public FileSystemResourceList(File resourceList, ResourceSyncDateFormatter resourceSyncDateFormatter,
+                                ResourceSyncUriHelper uriHelper) {
     this.resourceList = resourceList;
     this.resourceSyncDateFormatter = resourceSyncDateFormatter;
+    this.uriHelper = uriHelper;
   }
 
   @Override
   public void addFile(CachedFile fileToAdd) throws ResourceSyncException {
     ResourceSyncXmlHelper xmlHelper = new ResourceSyncXmlHelper(resourceList, this::updateMetaData);
-    xmlHelper.addUrlElement(fileToAdd.getFile());
+    xmlHelper.addUrlElement(uriHelper.uriForFile(fileToAdd.getFile()));
     xmlHelper.save();
   }
 
