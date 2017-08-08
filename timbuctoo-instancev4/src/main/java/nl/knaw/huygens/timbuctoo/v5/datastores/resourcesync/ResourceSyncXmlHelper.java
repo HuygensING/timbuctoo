@@ -70,6 +70,20 @@ public class ResourceSyncXmlHelper {
     root.appendChild(url);
   }
 
+  void addUrlElementWithType(String uri, String mimeType) {
+    Element url = doc.createElement("url");
+
+    Element loc = doc.createElement("loc");
+    loc.appendChild(doc.createTextNode(uri));
+    url.appendChild(loc);
+
+    Element metaData = doc.createElement("rs:md");
+    metaData.setAttribute("type", mimeType);
+    url.appendChild(metaData);
+
+    root.appendChild(url);
+  }
+
   void addUrlElement(String uri) {
     Element url = doc.createElement("url");
 
@@ -103,6 +117,7 @@ public class ResourceSyncXmlHelper {
       root.appendChild(upLink);
     }
   }
+
 
 
 }

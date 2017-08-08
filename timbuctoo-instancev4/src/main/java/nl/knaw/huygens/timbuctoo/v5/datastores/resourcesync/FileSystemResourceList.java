@@ -5,7 +5,9 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import javax.ws.rs.core.MediaType;
 import java.io.File;
+import java.util.Optional;
 
 class FileSystemResourceList implements ResourceList {
   private final File resourceList;
@@ -22,7 +24,13 @@ class FileSystemResourceList implements ResourceList {
   @Override
   public void addFile(CachedFile fileToAdd) throws ResourceSyncException {
     ResourceSyncXmlHelper xmlHelper = new ResourceSyncXmlHelper(resourceList, this::updateMetaData);
-    xmlHelper.addUrlElement(uriHelper.uriForFile(fileToAdd.getFile()));
+
+    Optional<MediaType> mimeType = fileToAdd.getMimeType();
+    if (mimeType.isPresent()) {
+      xmlHelper.addUrlElementWithType(uriHelper.uriForFile(fileToAdd.getFile()), mimeType.get().toString());
+    } else {
+      xmlHelper.addUrlElement(uriHelper.uriForFile(fileToAdd.getFile()));
+    }
     xmlHelper.save();
   }
 

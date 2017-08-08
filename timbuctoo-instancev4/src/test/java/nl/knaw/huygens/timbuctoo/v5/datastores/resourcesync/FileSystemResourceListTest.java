@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
@@ -48,8 +47,8 @@ public class FileSystemResourceListTest {
     File file2 = new File("fileName2");
     given(uriHelper.uriForFile(file2)).willReturn("http://example.org/2");
 
-    instance.addFile(cachedFile(file));
-    instance.addFile(cachedFile(file2));
+    instance.addFile(cachedFile(file, Optional.empty()));
+    instance.addFile(cachedFile(file2, Optional.empty()));
 
     Source expected = Input.fromByteArray(
       ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -80,10 +79,9 @@ public class FileSystemResourceListTest {
     File file2 = new File("fileName2");
     given(uriHelper.uriForFile(file2)).willReturn("http://example.org/2");
 
-    instance.addFile(cachedFile(file));
-
+    instance.addFile(cachedFile(file, Optional.empty()));
     FileSystemResourceList otherInstance = new FileSystemResourceList(resourcelist, dateFormatter, uriHelper);
-    otherInstance.addFile(cachedFile(file2));
+    otherInstance.addFile(cachedFile(file2, Optional.empty()));
 
     Source expected = Input.fromByteArray(
       ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -106,7 +104,40 @@ public class FileSystemResourceListTest {
     );
   }
 
-  private CachedFile cachedFile(final File file) {
+  @Test
+  public void addFileAddsAMimeTypeIfTheCachedFileContainsOne() throws Exception {
+    given(dateFormatter.now()).willReturn("2013-01-03T09:00:00Z", "2014-02-03T09:00:00Z");
+    File file = new File("fileName");
+    given(uriHelper.uriForFile(file)).willReturn("http://example.org/1");
+    File file2 = new File("fileName2");
+    given(uriHelper.uriForFile(file2)).willReturn("http://example.org/2");
+
+    instance.addFile(cachedFile(file, Optional.of(MediaType.APPLICATION_XML_TYPE)));
+    instance.addFile(cachedFile(file2, Optional.empty()));
+
+    Source expected = Input.fromByteArray(
+      ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+        "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"" +
+        "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">" +
+        "  <rs:md capability=\"resourcelist\"" +
+        "         at=\"2014-02-03T09:00:00Z\"/>" +
+        "  <url>" +
+        "      <loc>http://example.org/1</loc>" +
+        "      <rs:md type=\"application/xml\"/>" +
+        "  </url>" +
+        "  <url>" +
+        "      <loc>http://example.org/2</loc>" +
+        "  </url>" +
+        "</urlset>"
+      ).getBytes(StandardCharsets.UTF_8)
+    ).build();
+    Source actual = Input.fromFile(resourcelist).build();
+    assertThat(actual,
+      isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
+    );
+  }
+
+  private CachedFile cachedFile(final File file, final Optional<MediaType> typeOptional) {
     return new CachedFile() {
       @Override
       public String getName() {
@@ -120,7 +151,7 @@ public class FileSystemResourceListTest {
 
       @Override
       public Optional<MediaType> getMimeType() {
-        return Optional.of(MediaType.APPLICATION_XML_TYPE);
+        return typeOptional;
       }
 
       @Override
