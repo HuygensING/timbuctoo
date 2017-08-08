@@ -21,7 +21,7 @@ public class PaginationHelper {
     if (count < 0 || count > MAX_COUNT) {
       count = MAX_COUNT;
     }
-    count += 1; //to determine if we reached the end of the list
+    count += 1; //to determine if we reached the end of the list we keep track of one extra
     List<TypedValue> subjects = subjectStream
       .limit(count)
       .peek(cs -> {
@@ -44,7 +44,7 @@ public class PaginationHelper {
       return PaginatedList.create(
         startedFromCursor ? cursors[0] : null,
         subjects.size() == count ? cursors[1] : null,
-        subjects
+        subjects.size() == count ? subjects.subList(0, count - 1) : subjects //remove the one extra
       );
     }
   }
