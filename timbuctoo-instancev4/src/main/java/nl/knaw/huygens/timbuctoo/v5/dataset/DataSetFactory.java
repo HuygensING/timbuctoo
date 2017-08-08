@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.apache.commons.io.FileUtils;
 
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -270,6 +271,10 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
 
   public void start() {
     dataStoreFactory.start();
+  }
+
+  public boolean isRdfTypeSupported(MediaType mediaType) {
+    return configuration.getRdfIo().isRdfTypeSupported(mediaType);
   }
 
   private class DataSet {

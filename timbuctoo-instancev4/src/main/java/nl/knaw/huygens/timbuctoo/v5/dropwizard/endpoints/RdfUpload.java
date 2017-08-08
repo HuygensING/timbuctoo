@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -57,13 +57,20 @@ public class RdfUpload {
       return response;
     }
 
+    Optional<MediaType> mediaTypeOpt = getMediaType(body);
+    MediaType mediaType = mediaTypeOpt.orElse(null);
+    if (!dataSetManager.isRdfTypeSupported(mediaType)) {
+      return Response.status(Response.Status.BAD_REQUEST).entity("Unsupported mime type: " + mediaType).build();
+    }
+
+
     ImportManager importManager = dataSetManager.createImportManager(userId, dataSetId);
 
     Future<?> promise = importManager.addLog(
       uri,
       rdfInputStream,
       Optional.of(Charset.forName(encoding)),
-      getMediaType(body)
+      mediaTypeOpt
     );
 
     promise.get();

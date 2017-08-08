@@ -11,4 +11,6 @@ public interface RdfIoFactory {
   RdfParser makeRdfParser(CachedLog log);
 
   RdfSerializer makeRdfSerializer(OutputStream output);
+
+  boolean isRdfTypeSupported(MediaType mediaType);
 }
