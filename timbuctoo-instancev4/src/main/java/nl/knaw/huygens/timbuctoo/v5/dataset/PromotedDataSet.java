@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 @Value.Immutable
 @JsonSerialize(as = ImmutablePromotedDataSet.class)
 @JsonDeserialize(as = ImmutablePromotedDataSet.class)
@@ -13,8 +15,10 @@ public interface PromotedDataSet {
 
   @Value.Auxiliary
   boolean isPromoted();
+  
+  Optional<String> role = null;
 
-  static PromotedDataSet create(String name, boolean promoted) {
+  static PromotedDataSet create(String name, boolean promoted,Optional<String> role) {
     return ImmutablePromotedDataSet.builder()
       .name(name)
       .isPromoted(promoted)

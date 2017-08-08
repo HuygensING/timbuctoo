@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
@@ -50,11 +51,13 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
 
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
-                        DataSetConfiguration configuration, DataStoreFactory dataStoreFactory) throws IOException {
+                        DataSetConfiguration configuration,
+                        DataStoreFactory dataStoreFactory) throws IOException {
     this.executorService = executorService;
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
     this.dataStoreFactory = dataStoreFactory;
+
     dataSetMap = new HashMap<>();
     dataSetPathHelper = new DataSetPathHelper(configuration.getDataSetMetadataLocation());
     storedDataSets = JsonFileBackedData.getOrCreate(
@@ -172,6 +175,32 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     return promotedDataSets;
   }
 
+  public Map<String, Set<PromotedDataSet>> getDataSetsWithWriteAccess(String userId) {
+    Map<String, Set<PromotedDataSet>> dataSets = storedDataSets.getData();
+    Map<String, Set<PromotedDataSet>> promotedDataSets = new HashMap<>();
+
+    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
+      Set<PromotedDataSet> mappedUserSets = userDataSets.getValue()
+                                                        .stream()
+                                                        .filter(dataSet ->
+                                                        {
+                                                          try {
+                                                            return
+                                                              vreAuthorizationCrud
+                                                                .getAuthorization(
+                                                                  userDataSets.getKey() + "_" + dataSet.getName(),
+                                                                  userId)
+                                                                .isPresent();
+                                                          } catch (AuthorizationUnavailableException e) {
+                                                            return false;
+                                                          }
+                                                        })
+                                                        .collect(Collectors.toSet());
+
+      promotedDataSets.put(userDataSets.getKey(), mappedUserSets);
+    }
+    return promotedDataSets;
+  }
 
   public Optional<String> getStatus(UUID uuid) {
     return statusMap.containsKey(uuid) ? Optional.of(statusMap.get(uuid).toString()) : Optional.empty();

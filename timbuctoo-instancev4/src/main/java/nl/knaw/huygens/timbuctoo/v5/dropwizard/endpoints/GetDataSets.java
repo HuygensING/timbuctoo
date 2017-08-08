@@ -39,7 +39,7 @@ public class GetDataSets {
                                                     .map(dataSetEntry -> Tuple.tuple(
                                                       dataSetEntry.getName(),
                                                       graphQlEndpoint.makeUrl(userDataSets.getKey(),
-                                                      dataSetEntry.getName())
+                                                        dataSetEntry.getName())
                                                     ))
                                                     .collect(toMap(Tuple::getLeft, Tuple::getRight));
       dataSetUris.put(userDataSets.getKey(), mappedUserSets);
@@ -82,5 +82,30 @@ public class GetDataSets {
       .stream()
       .map(dataSetEntry -> Tuple.tuple(dataSetEntry.getName(), graphQlEndpoint.makeUrl(userId, dataSetEntry.getName())))
       .collect(toMap(Tuple::getLeft, Tuple::getRight));
+  }
+
+  @GET
+  @Path("{userId}/writeAccess")
+  @Produces(MediaType.APPLICATION_JSON)
+  public Map<String, Map<String, URI>> getDataSetsWithWriteAccess(@PathParam("userId") String userId) {
+    Map<String, Set<PromotedDataSet>> dataSets = dataSetFactory.getDataSetsWithWriteAccess(userId);
+
+    Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
+
+    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
+      Map<String, URI> mappedUserSets = userDataSets.getValue()
+                                                    .stream()
+                                                    .map(dataSetEntry -> Tuple.tuple(
+                                                      dataSetEntry.getName(),
+                                                      graphQlEndpoint.makeUrl(userDataSets.getKey(),
+                                                        dataSetEntry.getName())
+                                                    ))
+                                                    .collect(toMap(Tuple::getLeft, Tuple::getRight));
+      dataSetUris.put(userDataSets.getKey(), mappedUserSets);
+    }
+
+
+    return dataSetUris;
+
   }
 }
