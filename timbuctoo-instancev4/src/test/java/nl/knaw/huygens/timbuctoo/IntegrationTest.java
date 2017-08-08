@@ -372,8 +372,9 @@ public class IntegrationTest {
   @Test
   public void tabularUpload() {
     Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
+    String dataSetId = "dataset" + UUID.randomUUID();
     WebTarget target =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/dataset/upload/table", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/DUMMY/" + dataSetId + "/upload/table", APP.getLocalPort()));
 
     FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -397,21 +398,22 @@ public class IntegrationTest {
   public void deleteDataSet() throws Exception {
     // Create a dataset
     Client client = ClientBuilder.newBuilder().build();
+    String dataSetId = "dataset" + UUID.randomUUID();
     WebTarget createTarget =
-      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/dataset/create/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/" + dataSetId + "/create/", APP.getLocalPort()));
 
     Response createResponse = createTarget.request()
-                                    .header(HttpHeaders.AUTHORIZATION, "fake")
-                                    .post(Entity.json(jsnO()));
+                                          .header(HttpHeaders.AUTHORIZATION, "fake")
+                                          .post(Entity.json(jsnO()));
     assertThat(createResponse.getStatus(), is(201));
     // check if the dataset is created
     List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy(client);
     System.out.println("datasets: " + dataSetNamesOfDummy);
-    assertThat(dataSetNamesOfDummy, hasItem("dataset"));
+    assertThat(dataSetNamesOfDummy, hasItem(dataSetId));
 
     // delete dataset
     WebTarget deleteTarget =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/dataset/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/DUMMY/" + dataSetId, APP.getLocalPort()));
 
     Response deleteResponse = deleteTarget.request()
                                           .header(HttpHeaders.AUTHORIZATION, "fake")
@@ -420,7 +422,7 @@ public class IntegrationTest {
     assertThat(deleteResponse.getStatus(), is(204));
 
     // check if the dataset still exists
-    assertThat(getDataSetNamesOfDummy(client), not(hasItem("dataset")));
+    assertThat(getDataSetNamesOfDummy(client), not(hasItem(dataSetId)));
   }
 
   private List<String> getDataSetNamesOfDummy(Client client) {
