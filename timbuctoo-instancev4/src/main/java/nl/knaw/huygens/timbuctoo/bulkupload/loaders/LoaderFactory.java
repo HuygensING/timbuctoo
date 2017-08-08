@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.csv.CsvLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 
+import javax.ws.rs.core.MediaType;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
@@ -26,16 +27,18 @@ public class LoaderFactory {
   }
 
   public enum LoaderConfigType {
-    CSV("csv"),
-    XLSX("xlsx"),
-    DATAPERFECT("dataperfect"),
-    MDB("mdb");
+    CSV("csv", new MediaType("text", "csv")),
+    XLSX("xlsx", new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")),
+    DATAPERFECT("dataperfect", MediaType.APPLICATION_OCTET_STREAM_TYPE),
+    MDB("mdb", new MediaType("application", "octet-stream"));
 
     private final String typeName;
+    private final MediaType mediaType;
 
-    LoaderConfigType(String typeName) {
+    LoaderConfigType(String typeName, MediaType mediaType) {
 
       this.typeName = typeName;
+      this.mediaType = mediaType;
     }
 
     public static Optional<LoaderConfigType> fromString(String typeName) {
@@ -46,6 +49,10 @@ public class LoaderFactory {
 
     public String getTypeString() {
       return this.typeName;
+    }
+
+    public MediaType getMediaType() {
+      return mediaType;
     }
   }
 

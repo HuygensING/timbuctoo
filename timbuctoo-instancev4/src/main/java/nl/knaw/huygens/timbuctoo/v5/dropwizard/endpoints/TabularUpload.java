@@ -4,6 +4,7 @@ import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory.LoaderConfig;
+import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory.LoaderConfigType;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -68,8 +69,9 @@ public class TabularUpload {
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
 
-    if (fileType == null || !LoaderFactory.LoaderConfigType.fromString(fileType).isPresent()) {
-      List<String> typeNames = Arrays.stream(LoaderFactory.LoaderConfigType.values())
+    Optional<LoaderConfigType> configType = LoaderConfigType.fromString(fileType);
+    if (fileType == null || !configType.isPresent()) {
+      List<String> typeNames = Arrays.stream(LoaderConfigType.values())
                                    .map(type -> type.getTypeString())
                                    .collect(Collectors.toList());
       return Response.status(Response.Status.BAD_REQUEST)
@@ -89,7 +91,7 @@ public class TabularUpload {
     String fileToken = importManager.addFile(
       rdfInputStream,
       fileInfo.getName(),
-      Optional.of(body.getMediaType())
+      configType.map(LoaderConfigType::getMediaType)
     );
 
     Loader loader = LoaderFactory.createFor(configFromFormData(formData));
