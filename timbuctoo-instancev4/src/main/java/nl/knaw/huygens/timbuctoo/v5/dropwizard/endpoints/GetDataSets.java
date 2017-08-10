@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetWithRoles;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PromotedDataSet;
 
 import javax.ws.rs.GET;
@@ -87,12 +88,26 @@ public class GetDataSets {
   @GET
   @Path("{userId}/writeAccess")
   @Produces(MediaType.APPLICATION_JSON)
-  public Map<String, Map<String, URI>> getDataSetsWithWriteAccess(@PathParam("userId") String userId) {
-    Map<String, Set<PromotedDataSet>> dataSets = dataSetFactory.getDataSetsWithWriteAccess(userId);
+  public Map<String, Set<DataSetWithRoles>> getDataSetsWithWriteAccess(@PathParam("userId") String userId) {
+    Map<String, Set<DataSetWithRoles>> dataSets = dataSetFactory.getDataSetsWithWriteAccess(userId);
 
-    Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
+    Map<String, Set<DataSetWithRoles>> dataSetsDisplay = new HashMap<>();
 
-    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
+    //Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
+
+    for (Map.Entry<String, Set<DataSetWithRoles>> userDataSets : dataSets.entrySet()) {
+      Set<DataSetWithRoles> dataSetInfo = new HashSet<>();
+      userDataSets.getValue().forEach(dataSet -> {
+
+        dataSet.setUri(graphQlEndpoint.makeUrl(userDataSets.getKey(),
+          dataSet.getName()));
+        dataSetInfo.add(dataSet);
+
+      });
+      dataSetsDisplay.put(userDataSets.getKey(), dataSetInfo);
+    }
+
+    /*for (Map.Entry<String, Set<DataSetWithRoles>> userDataSets : dataSets.entrySet()) {
       Map<String, URI> mappedUserSets = userDataSets.getValue()
                                                     .stream()
                                                     .map(dataSetEntry -> Tuple.tuple(
@@ -105,7 +120,8 @@ public class GetDataSets {
     }
 
 
-    return dataSetUris;
+    return dataSetUris;*/
+    return dataSetsDisplay;
 
   }
 }
