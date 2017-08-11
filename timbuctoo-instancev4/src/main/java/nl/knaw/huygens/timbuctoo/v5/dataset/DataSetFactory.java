@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
+import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -184,6 +185,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
 
     for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
       Set<DataSetWithRoles> dataSetWithRoles = new HashSet<>();
+
       Set<PromotedDataSet> mappedUserSets = userDataSets.getValue()
                                                         .stream()
                                                         .filter(dataSet ->
@@ -204,11 +206,18 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
 
       userDataSets.getValue().forEach((dataSet) -> {
         List<String> roles;
+        Optional<VreAuthorization> vre;
         try {
-          roles = vreAuthorizationCrud
+          vre = vreAuthorizationCrud
             .getAuthorization(
               userDataSets.getKey() + "_" + dataSet.getName(),
-              userId).get().getRoles();
+              userId);
+          if (vre.isPresent()) {
+            roles = vre
+              .get().getRoles();
+          } else {
+            roles = Collections.emptyList();
+          }
         } catch (AuthorizationUnavailableException e) {
           roles = Collections.emptyList();
         }
@@ -217,11 +226,11 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
           dataSet.isPromoted(),
           roles, null
         );
+
         dataSetWithRoles.add(dataSetWithWriteAccess);
       });
 
       dataSetsWithWriteAccess.put(userDataSets.getKey(), dataSetWithRoles);
-      promotedDataSets.put(userDataSets.getKey(), mappedUserSets);
     }
     return dataSetsWithWriteAccess;
   }

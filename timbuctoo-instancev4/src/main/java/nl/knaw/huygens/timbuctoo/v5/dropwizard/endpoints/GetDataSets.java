@@ -93,8 +93,6 @@ public class GetDataSets {
 
     Map<String, Set<DataSetWithRoles>> dataSetsDisplay = new HashMap<>();
 
-    //Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
-
     for (Map.Entry<String, Set<DataSetWithRoles>> userDataSets : dataSets.entrySet()) {
       Set<DataSetWithRoles> dataSetInfo = new HashSet<>();
       userDataSets.getValue().forEach(dataSet -> {
@@ -107,20 +105,6 @@ public class GetDataSets {
       dataSetsDisplay.put(userDataSets.getKey(), dataSetInfo);
     }
 
-    /*for (Map.Entry<String, Set<DataSetWithRoles>> userDataSets : dataSets.entrySet()) {
-      Map<String, URI> mappedUserSets = userDataSets.getValue()
-                                                    .stream()
-                                                    .map(dataSetEntry -> Tuple.tuple(
-                                                      dataSetEntry.getName(),
-                                                      graphQlEndpoint.makeUrl(userDataSets.getKey(),
-                                                        dataSetEntry.getName())
-                                                    ))
-                                                    .collect(toMap(Tuple::getLeft, Tuple::getRight));
-      dataSetUris.put(userDataSets.getKey(), mappedUserSets);
-    }
-
-
-    return dataSetUris;*/
     return dataSetsDisplay;
 
   }
