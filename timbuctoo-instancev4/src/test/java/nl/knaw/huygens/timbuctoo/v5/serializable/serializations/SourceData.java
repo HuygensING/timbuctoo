@@ -21,10 +21,10 @@ public class SourceData {
         newArrayList(
           entity("http://example.com/1", "http://example.com/Person", of(
             predicateInfo("a", "http://example.org/b"), fromRawJavaType(1), //Note: predicate and mapped name differ!
-            predicateInfo("b", "http://example.org/b"), serializableList("next", null,
+            predicateInfo("b", "http://example.org/b", Direction.IN), serializableList("next", null,
               entity("http://example.com/11", "http://example.com/SubItem", of(
                 predicateInfo("c", "http://example.org/c"), fromRawJavaType("2"),
-                predicateInfo("d", "http://example.org/d", Direction.IN),
+                predicateInfo("d", "http://example.org/d"),
                   serializableList(null, null, fromRawJavaType("3"), fromRawJavaType("4"), null) //note: Null!
               )),
               entity("http://example.com/12", "http://example.com/SubItem", of(

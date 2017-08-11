@@ -73,13 +73,13 @@ public class JsonLdSerializationTest {
       "      \"@container\" : \"@index\"\n" +
       "    },\n" +
       "    \"a\" : \"http://example.org/b\",\n" +
-      "    \"b\" : \"http://example.org/b\",\n" +
-      "    \"c\" : \"http://example.org/c\",\n" +
-      "    \"d\" : {\n" +
-      "      \"@reverse\" : \"http://example.org/d\"\n" +
+      "    \"b\" : {\n" +
+      "      \"@reverse\" : \"http://example.org/b\"\n" +
       "    },\n" +
+      "    \"c\" : \"http://example.org/c\",\n" +
       "    \"d\" : \"http://example.org/d\",\n" +
       "    \"a\" : \"http://example.org/a\",\n" +
+      "    \"b\" : \"http://example.org/b\",\n" +
       "    \"e\" : \"http://example.org/e\",\n" +
       "    \"f\" : \"http://example.org/f\"\n" +
       "  }\n" +
