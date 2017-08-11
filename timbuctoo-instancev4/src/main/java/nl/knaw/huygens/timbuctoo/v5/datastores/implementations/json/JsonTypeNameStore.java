@@ -1,7 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
@@ -12,11 +14,12 @@ import org.apache.jena.shared.impl.PrefixMappingImpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
 
 public class JsonTypeNameStore implements TypeNameStore {
-  private final PrefixMapping prefixMapping;
-  private final JsonFileBackedData<TypeNames> store;
-  private final TypeNames data;
+  protected final PrefixMapping prefixMapping;
+  protected final JsonFileBackedData<TypeNames> store;
+  protected final TypeNames data;
 
   public JsonTypeNameStore(File dataLocation, DataProvider dataProvider) throws IOException {
     prefixMapping = new PrefixMappingImpl();
@@ -43,24 +46,27 @@ public class JsonTypeNameStore implements TypeNameStore {
     return makeName(uri, "");
   }
 
+  @Override
+  public String makeGraphQlnameForPredicate(String uri, Direction direction) {
+    return makeName(uri, direction == Direction.IN ? "_inverse_" : "");
+  }
+
   public String makeName(String uri, String prefix) {
     //The relay spec requires that our own names are never 'PageInfo' or end with 'Connection'
 
-    Map<String, String> shorteneds = data.shorteneds;
-    if (shorteneds.containsKey(uri)) {
-      return shorteneds.get(uri);
+    if (data.shorteneds.containsKey(prefix + "\n" + uri)) {
+      return data.shorteneds.get(prefix + "\n" + uri);
     } else {
       String shortened = prefix + shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
       while (shortened.equals("PageInfo") ||
         shortened.endsWith("Connection") ||
         shortened.endsWith("Edge") ||
-        shorteneds.containsKey(shortened)) {
+        data.inverse.containsKey(shortened)) {
 
         shortened += "_";
       }
-      shorteneds.put(uri, shortened);
-      String dataToSave = shortened;
-      data.inverse.put(dataToSave, uri);
+      data.shorteneds.put(prefix + "\n" + uri, shortened);
+      data.inverse.put(shortened, uri);
       return shortened;
     }
   }
@@ -72,7 +78,21 @@ public class JsonTypeNameStore implements TypeNameStore {
 
   @Override
   public String makeUri(String graphQlName) {
-    return store.getData().inverse.getOrDefault(graphQlName, graphQlName);
+    return store.getData().inverse.get(graphQlName);
+  }
+
+  @Override
+  public Optional<Tuple<String, Direction>> makeUriForPredicate(String graphQlName) {
+    String uri = makeUri(graphQlName);
+    if (uri == null) {
+      return Optional.empty();
+    } else {
+      if (graphQlName.startsWith("_inverse_")) {
+        return Optional.of(Tuple.tuple(uri, Direction.IN));
+      } else {
+        return Optional.of(Tuple.tuple(uri, Direction.OUT));
+      }
+    }
   }
 
   @Override

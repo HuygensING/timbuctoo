@@ -14,31 +14,37 @@ public class PaginationHelper {
   public static final int MAX_COUNT = 10_000;
 
   static <T extends CursorContainer> PaginatedList getPaginatedList(Stream<T> subjectStream,
-                                                                    Function<T, TypedValue> makeItem, int count) {
-    String[] cursors = new String[2];
+                                                                    Function<T, TypedValue> makeItem, int count,
+                                                                    boolean startedFromCursor) {
+    String[] cursors = new String[3];
 
+    if (count < 0 || count > MAX_COUNT) {
+      count = MAX_COUNT;
+    }
+    count += 1; //to determine if we reached the end of the list we keep track of one extra
     List<TypedValue> subjects = subjectStream
-      .limit((count < 0 || count > MAX_COUNT) ? MAX_COUNT : count)
+      .limit(count)
       .peek(cs -> {
         if (cursors[0] == null) {
           cursors[0] = "D\n" + cs.getCursor();
         }
-        cursors[1] = "A\n" + cs.getCursor();
+        cursors[1] = cursors[2]; //keep track of both the cursor of the last item and the before-last item
+        cursors[2] = "A\n" + cs.getCursor();
       })
       .map(makeItem)
       .collect(Collectors.toList());
 
     if (subjects.isEmpty()) {
       return PaginatedList.create(
-        "NONE",
-        "",
+        null,
+        null,
         subjects
       );
     } else {
       return PaginatedList.create(
-        cursors[0],
-        cursors[1],
-        subjects
+        startedFromCursor ? cursors[0] : null,
+        subjects.size() == count ? cursors[1] : null,
+        subjects.size() == count ? subjects.subList(0, count - 1) : subjects //remove the one extra
       );
     }
   }

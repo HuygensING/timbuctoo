@@ -17,7 +17,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
-import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
+import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 
 import java.util.Map;
 
@@ -74,14 +74,13 @@ public class GraphQlService {
     }
   }
 
-  public Serializable executeQuery(String userId, String dataSet, String query)
+  public SerializableResult executeQuery(String userId, String dataSet, String query)
       throws GraphQlProcessingException, GraphQlFailedException {
     try {
       GraphQL graphQl = loadSchema(userId, dataSet);
       ExecutionResult result = graphQl.execute(query);
       if (result.getErrors().isEmpty()) {
-        TypeNameStore typeNameStore = typeNameStoreFactory.createTypeNameStore(userId, dataSet);
-        return new Serializable(result.getData(), typeNameStore);
+        return new SerializableResult(result.getData());
       } else {
         throw new GraphQlFailedException(result.getErrors());
       }

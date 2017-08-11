@@ -1,9 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.Objects;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
 import java.util.HashSet;
@@ -12,6 +13,7 @@ import java.util.Set;
 @JsonIgnoreProperties(value = { "optional" }, allowGetters = true)
 public class Predicate {
   private String name;
+  private final Direction direction;
   private Type owner;
   private Set<String> valueTypes = new HashSet<>(10);
   private Set<String> referenceTypes = new HashSet<>(10);
@@ -19,8 +21,9 @@ public class Predicate {
   private boolean list;
 
   @JsonCreator
-  public Predicate(@JsonProperty("name") String name) {
+  public Predicate(@JsonProperty("name") String name, @JsonProperty("direction") Direction direction) {
     this.name = name;
+    this.direction = direction;
   }
 
   public Set<String> getReferenceTypes() {
@@ -57,7 +60,6 @@ public class Predicate {
     return occurrences;
   }
 
-  @JsonIgnore
   public String getName() {
     return name;
   }
@@ -74,10 +76,6 @@ public class Predicate {
     this.owner = owner;
   }
 
-  public void setName(String name) {
-    this.name = name;
-  }
-
   public boolean isList() {
     return list;
   }
@@ -89,5 +87,25 @@ public class Predicate {
   @Override
   public String toString() {
     return ToStringBuilder.reflectionToString(this);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    }
+    if (getClass() != obj.getClass()) {
+      return false;
+    }
+    final Predicate other = (Predicate) obj;
+
+    return Objects.equal(this.name, other.name) &&
+      Objects.equal(this.direction, other.direction) &&
+      Objects.equal(this.valueTypes, other.valueTypes) &&
+      Objects.equal(this.referenceTypes, other.referenceTypes);
+  }
+
+  public Direction getDirection() {
+    return direction;
   }
 }

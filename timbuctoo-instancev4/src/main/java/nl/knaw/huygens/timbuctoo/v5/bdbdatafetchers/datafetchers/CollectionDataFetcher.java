@@ -21,8 +21,9 @@ public class CollectionDataFetcher implements CollectionFetcher {
 
   @Override
   public PaginatedList getList(PaginationArguments arguments) {
-    try (Stream<CursorSubject> subjectStream = collectionIndex.getSubjects(collectionName, arguments.getCursor())) {
-      return getPaginatedList(subjectStream, CursorSubject::getSubject, arguments.getCount());
+    String cursor = arguments.getCursor();
+    try (Stream<CursorSubject> subjectStream = collectionIndex.getSubjects(collectionName, cursor)) {
+      return getPaginatedList(subjectStream, CursorSubject::getSubject, arguments.getCount(), !cursor.isEmpty());
     }
   }
 

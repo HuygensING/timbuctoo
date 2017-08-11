@@ -1,89 +1,69 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.serializable.Serializable;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
 
-import java.util.Collections;
-import java.util.Map;
+import java.io.IOException;
 
 import static com.google.common.collect.ImmutableMap.of;
 import static com.google.common.collect.Lists.newArrayList;
-import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue.create;
+import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity.entity;
+import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo.predicateInfo;
+import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.QueryContainer.queryContainer;
+import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList.serializableList;
+import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value.fromRawJavaType;
 
 public class SourceData {
-  public static Serializable simpleResult() {
-    return new Serializable(of(
-      "Persons", of(
-        "items", newArrayList(
-          of(
-            "@id", "http://example.com/1",
-            "@type", "http://example.com/Person",
-            "a", create("1"),
-            "b", newArrayList(
-              of("@id", "http://example.com/11", "@type", "http://example.com/SubItem",
-                "c", create("2"), "d", newArrayList( create("3"), create("4"), create("4a"))),
-              of("@id", "http://example.com/12", "@type", "http://example.com/SubItem",
-                "c", create("5"), "d", newArrayList( create("6"), create("7")))
+  public static SerializableResult simpleResult() throws IOException {
+    return new SerializableResult(queryContainer(of(
+      "Persons", serializableList(null, null,
+        newArrayList(
+          entity("http://example.com/1", "http://example.com/Person", of(
+            predicateInfo("a", "http://example.org/b"), fromRawJavaType(1), //Note: predicate and mapped name differ!
+            predicateInfo("b", "http://example.org/b", Direction.IN), serializableList("next", null,
+              entity("http://example.com/11", "http://example.com/SubItem", of(
+                predicateInfo("c", "http://example.org/c"), fromRawJavaType("2"),
+                predicateInfo("d", "http://example.org/d"),
+                  serializableList(null, null, fromRawJavaType("3"), fromRawJavaType("4"), null) //note: Null!
+              )),
+              entity("http://example.com/12", "http://example.com/SubItem", of(
+                predicateInfo("c", "http://example.org/c"), fromRawJavaType("5"),
+                predicateInfo("d", "http://example.org/d"),
+                  serializableList(null, null, fromRawJavaType("6"), fromRawJavaType("7"))
+              ))
             )
-          ),
-          of(
-            "@id", "http://example.com/2",
-            "@type", "http://example.com/Person",
-            "a", create("8"),
-            "b", newArrayList(
-              of("@id", "http://example.com/11", "@type", "http://example.com/SubItem",
-                "c", create("9"), "d", newArrayList( 10, "11")), //these are not a TypedValue
-              of("@id", "http://example.com/12", "@type", "http://example.com/SubItem",
-                "c", create("12"), "d", newArrayList( 13, "14")), //these are not a TypedValue
-              of("@id", "http://example.com/13", "@type", "http://example.com/SubItem",
-                "c", create("15"), "d", newArrayList( create("16"), create("17"), create("18")))
+          )),
+          entity("http://example.com/2", "http://example.com/Person", of(
+            predicateInfo("a", "http://example.org/a"), fromRawJavaType("8"),
+            predicateInfo("b", "http://example.org/b"), serializableList(null, null,
+              entity("http://example.com/11", "http://example.com/SubItem", of(
+                predicateInfo("c", "http://example.org/c"), Value.fromRawJavaType("9"),
+                predicateInfo("d", "http://example.org/d"),
+                  serializableList(null, null, fromRawJavaType(10), fromRawJavaType("11"))
+              )),
+              entity("http://example.com/12", "http://example.com/SubItem", of(
+                predicateInfo("c", "http://example.org/c"), fromRawJavaType("12"),
+                predicateInfo("d", "http://example.org/d"),
+                  serializableList(null, null, fromRawJavaType(13.0), fromRawJavaType("14")) //note: double!
+              )),
+              entity("http://example.com/13", "http://example.com/SubItem", of(
+                predicateInfo("c", "http://example.org/c"), Value.fromRawJavaType("15"),
+                predicateInfo("d", "http://example.org/d"),
+                  serializableList(null, null, fromRawJavaType("16"), fromRawJavaType("17"), fromRawJavaType("18"))
+              ))
             )
-          ),
-          of(
-            "@id", "http://example.com/3",
-            "@type", "http://example.com/Person",
-            "a", create("19"),
-            "b", of("@id", "http://example.com/21", "@type", "http://example.com/OtherSubItem",
-              "e", create("20"), "f", create("21"))
-          )
+          )),
+          entity("http://example.com/3", "http://example.com/Person", of(
+            predicateInfo("a", "http://example.org/a"), fromRawJavaType("19"),
+            predicateInfo("b", "http://example.org/b"), entity("http://example.com/21", "http://example.com/OtherSubItem", of(
+              predicateInfo("e", "http://example.org/e"), fromRawJavaType("20"),
+              predicateInfo("f", "http://example.org/f"), fromRawJavaType("21")
+            ))
+          ))
         )
       )
-    ), createTypeNameStore());
-  }
-
-  private static TypeNameStore createTypeNameStore() {
-    return new TypeNameStore() {
-      @Override
-      public String makeGraphQlname(String uri) {
-        return uri;
-      }
-
-      @Override
-      public String makeGraphQlValuename(String uri) {
-        return uri;
-      }
-
-      @Override
-      public String makeUri(String graphQlName) {
-        return graphQlName;
-      }
-
-      @Override
-      public String shorten(String uri) {
-        return uri;
-      }
-
-      @Override
-      public Map<String, String> getMappings() {
-        return Collections.emptyMap();
-      }
-
-      @Override
-      public void close() throws Exception {
-
-      }
-
-    };
+    )));
   }
 
 }

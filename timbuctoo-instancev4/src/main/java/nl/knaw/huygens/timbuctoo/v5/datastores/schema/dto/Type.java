@@ -1,35 +1,36 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.base.MoreObjects;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import org.apache.commons.lang.builder.ToStringBuilder;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Function;
+import java.util.function.BiFunction;
+
+import static com.google.common.base.Objects.equal;
 
 public class Type {
   private String name;
-  private Map<String, Predicate> predicates;
+  private Map<String, Predicate> predicates = new HashMap<>();
   private long occurrences = 0;
-  private final Function<String, Predicate> predicateMaker = (name) -> {
-    Predicate predicate = new Predicate(name);
+  private final BiFunction<String, Direction, Predicate> predicateMaker = (name, direction) -> {
+    Predicate predicate = new Predicate(name, direction);
     predicate.setOwner(this);
     return predicate;
   };
 
-  public Map<String, Predicate> getPredicates() {
-    return predicates;
+  public Collection<Predicate> getPredicates() {
+    return predicates.values();
   }
 
-  public void setPredicates(Map<String, Predicate> predicates) {
-    this.predicates = predicates;
-    predicates.forEach((name, predicate) -> {
-      predicate.setName(name);
+  public void setPredicates(Collection<Predicate> predicates) {
+    for (Predicate predicate : predicates) {
       predicate.setOwner(this);
-    });
+      this.predicates.put(predicate.getDirection() + "\n" + predicate.getName(), predicate);
+    }
   }
 
   @JsonCreator
@@ -38,8 +39,8 @@ public class Type {
     predicates = new HashMap<>(64);
   }
 
-  public Predicate getOrCreatePredicate(String name) {
-    return predicates.computeIfAbsent(name, predicateMaker);
+  public Predicate getOrCreatePredicate(String name, Direction direction) {
+    return predicates.computeIfAbsent(direction.name() + "\n" + name, key -> predicateMaker.apply(name, direction));
   }
 
   public void setOccurrences(long occurrences) {
@@ -52,17 +53,42 @@ public class Type {
     return occurrences;
   }
 
-  @JsonIgnore
   public String getName() {
     return name;
-  }
-
-  public void setName(String name) {
-    this.name = name;
   }
 
   @Override
   public String toString() {
     return ToStringBuilder.reflectionToString(this);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (obj == null) {
+      return false;
+    } else if (getClass() != obj.getClass()) {
+      return false;
+    } else {
+      final Type other = (Type) obj;
+
+      boolean propsEqual = equal(this.name, other.name) &&
+        equal(this.occurrences, other.occurrences);
+
+      if (propsEqual && predicates.size() == other.predicates.size()) {
+        for (Map.Entry<String, Predicate> predicateEntry : predicates.entrySet()) {
+          if (!predicateEntry.getValue().equals(other.predicates.get(predicateEntry.getKey()))) {
+            return false;
+          }
+        }
+        return true;
+      } else {
+        return false;
+      }
+    }
+  }
+
+
+  public Predicate getPredicate(String name, Direction direction) {
+    return predicates.get(direction.name() + "\n" + name);
   }
 }

@@ -6,20 +6,12 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import static graphql.schema.GraphQLArgument.newArgument;
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLList.list;
 import static graphql.schema.GraphQLNonNull.nonNull;
-import static graphql.schema.GraphQLObjectType.newObject;
 
 public class PaginationArgumentsHelper {
-
-
   public static final int DEFAULT_COUNT = 20;
-  Map<String, GraphQLOutputType> paginatableTypes = new HashMap<>();
 
   static PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
     String cursor = "";
@@ -36,25 +28,8 @@ public class PaginationArgumentsHelper {
   }
 
   public void makePaginatedList(GraphQLFieldDefinition.Builder result, GraphQLOutputType outputType) {
-    GraphQLOutputType type = paginatableTypes.computeIfAbsent(
-      outputType.getName(),
-      name -> newObject()
-        .name(outputType.getName() + "s")
-        .field(newFieldDefinition()
-          .name("prevCursor")
-          .type(Scalars.GraphQLString)
-        )
-        .field(newFieldDefinition()
-          .name("nextCursor")
-          .type(Scalars.GraphQLString)
-        )
-        .field(newFieldDefinition()
-          .name("items")
-          .type(list(nonNull(outputType)))
-        ).build()
-    );
     result
-      .type(type)
+      .type(list(nonNull(outputType)))
       .argument(newArgument()
         .name("cursor")
         .type(Scalars.GraphQLString)

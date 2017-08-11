@@ -177,7 +177,7 @@ public class JsonBuilder {
   }
 
   public static Tuple<String, JsonNode> prp(String key, JsonNode value) {
-    return new Tuple<>(key, value);
+    return Tuple.tuple(key, value);
   }
 
 }
