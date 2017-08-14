@@ -16,7 +16,7 @@ public class TypedLiteralDataFetcher extends WalkTriplesDataFetcher<TypedValue> 
     if (triple.getValuetype().isPresent()) {
       return TypedValue.create(triple.getObject(), triple.getValuetype().get());
     } else {
-      throw new IllegalStateException("Source is not a TypedValue");
+      throw new IllegalStateException("Source is not a triple referencing a value");
     }
   }
 }

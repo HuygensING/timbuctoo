@@ -5,7 +5,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookupFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookupFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
@@ -42,7 +42,7 @@ public class CollectionIndexSchemaFactory {
         GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
           .name(typeName)
           .type(objectType)
-          .dataFetcher(new LookupFetcher(uriArgument))
+          .dataFetcher(new LookupFetcherWrapper(uriArgument, fetcherFactory.lookupFetcher()))
           .argument(
             newArgument()
               .name(uriArgument)
@@ -70,7 +70,7 @@ public class CollectionIndexSchemaFactory {
       GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
         .name(typeName)
         .type(staticType.getValue())
-        .dataFetcher(new LookupFetcher(uriArgument))
+        .dataFetcher(new LookupFetcherWrapper(uriArgument, fetcherFactory.lookupFetcher()))
         .argument(
           newArgument()
             .name(uriArgument)

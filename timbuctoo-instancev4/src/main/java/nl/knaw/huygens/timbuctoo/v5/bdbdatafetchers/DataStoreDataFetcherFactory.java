@@ -9,7 +9,11 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookupFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 
 public class DataStoreDataFetcherFactory implements DataFetcherFactory {
   private final QuadStore tripleStore;
@@ -22,21 +26,26 @@ public class DataStoreDataFetcherFactory implements DataFetcherFactory {
 
   @Override
   public CollectionFetcher collectionFetcher(String typeUri) {
-    return new CollectionDataFetcher(typeUri, collectionIndex);
+    return new CollectionDataFetcher(typeUri, collectionIndex, tripleStore);
   }
 
   @Override
-  public RelatedDataFetcher relationFetcher(String predicate, Direction direction) {
+  public LookupFetcher lookupFetcher() {
+    return new nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.LookupFetcher(tripleStore);
+  }
+
+  @Override
+  public RelatedDataFetcher<SubjectReference> relationFetcher(String predicate, Direction direction) {
     return new RelationDataFetcher(predicate, direction, tripleStore);
   }
 
   @Override
-  public RelatedDataFetcher typedLiteralFetcher(String predicate) {
+  public RelatedDataFetcher<TypedValue> typedLiteralFetcher(String predicate) {
     return new TypedLiteralDataFetcher(predicate, tripleStore);
   }
 
   @Override
-  public RelatedDataFetcher unionFetcher(String predicate, Direction direction) {
+  public RelatedDataFetcher<DatabaseResult> unionFetcher(String predicate, Direction direction) {
     return new UnionDataFetcher(predicate, direction, tripleStore);
   }
 

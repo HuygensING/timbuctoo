@@ -9,7 +9,7 @@ public class UriFetcher implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment environment) {
     if (environment.getSource() instanceof SubjectReference) {
-      return ((SubjectReference) environment.getSource()).getValue();
+      return ((SubjectReference) environment.getSource()).getSubjectUri();
     } else {
       throw new IllegalStateException("Source is not a SubjectReference");
     }
