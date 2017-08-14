@@ -56,10 +56,13 @@ public class GraphQlTypesContainer {
   final TypeResolver valueTypeResolver;
   private final TypeNameStore typeNameStore;
   private final DataFetcherFactory dataFetcherFactory;
+  private final PaginationArgumentsHelper argumentsHelper;
 
-  public GraphQlTypesContainer(TypeNameStore typeNameStore, DataFetcherFactory dataFetcherFactory) {
+  public GraphQlTypesContainer(TypeNameStore typeNameStore, DataFetcherFactory dataFetcherFactory,
+                               PaginationArgumentsHelper argumentsHelper) {
     this.typeNameStore = typeNameStore;
     this.dataFetcherFactory = dataFetcherFactory;
+    this.argumentsHelper = argumentsHelper;
     allTypes = new HashSet<>();
     typeForUri = new HashMap<>();
     objectResolver = new ObjectTypeResolver(this.typeForUri, this.typeNameStore);
@@ -83,18 +86,17 @@ public class GraphQlTypesContainer {
       .build();
   }
 
-  public GraphQLFieldDefinition objectField(String fieldName, PaginationArgumentsHelper argumentsHelper,
-                                            String predicateUri, Direction predicateDirection, String typeName,
-                                            boolean isList, boolean isOptional) {
+  public GraphQLFieldDefinition objectField(String fieldName, String predicateUri, Direction predicateDirection,
+                                            String typeName, boolean isList, boolean isOptional) {
     GraphQLTypeReference type = new GraphQLTypeReference(typeName);
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.relationFetcher(predicateUri, predicateDirection);
-    return makeField(fieldName, argumentsHelper, type, dataFetcher, isList, isOptional);
+    return makeField(fieldName, type, dataFetcher, isList, isOptional);
   }
 
   public GraphQLFieldDefinition unionField(String name,
                                            List<GraphQLTypeReference> refs, List<GraphQLObjectType> types,
-                                           PaginationArgumentsHelper argumentsHelper, String predicateUri,
-                                           Direction direction, boolean isOptional, boolean isList) {
+                                           String predicateUri, Direction direction, boolean isOptional,
+                                           boolean isList) {
     String unionName = "Union_";
     for (GraphQLObjectType type : types) {
       unionName += type.getName() + "_";
@@ -114,27 +116,22 @@ public class GraphQlTypesContainer {
     }
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.unionFetcher(predicateUri, direction);
     GraphQLUnionType type = unionType.build();
-    return makeField(name, argumentsHelper, type, dataFetcher, isList, isOptional);
+    return makeField(name, type, dataFetcher, isList, isOptional);
   }
 
-  public GraphQLFieldDefinition valueField(String name,
-                                           PaginationArgumentsHelper argumentsHelper, String typeUri,
-                                           boolean isList, boolean isOptional, String predicateUri) {
+  public GraphQLFieldDefinition valueField(String name, String typeUri, boolean isList, boolean isOptional,
+                                           String predicateUri) {
     GraphQLObjectType type = valueType(typeUri);
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.typedLiteralFetcher(predicateUri);
-    return makeField(name, argumentsHelper, type, dataFetcher, isList, isOptional);
+    return makeField(name, type, dataFetcher, isList, isOptional);
   }
 
-  public GraphQLFieldDefinition valueField(String name,
-                                           PaginationArgumentsHelper argumentsHelper,
-                                           boolean isList, boolean isOptional, String predicateUri) {
+  public GraphQLFieldDefinition valueField(String name, boolean isList, boolean isOptional, String predicateUri) {
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.typedLiteralFetcher(predicateUri);
-    return makeField(name, argumentsHelper, valueInterface, dataFetcher, isList, isOptional);
+    return makeField(name, valueInterface, dataFetcher, isList, isOptional);
   }
 
-  private GraphQLFieldDefinition makeField(String name,
-                                           PaginationArgumentsHelper argumentsHelper,
-                                           GraphQLOutputType type, RelatedDataFetcher dataFetcher,
+  private GraphQLFieldDefinition makeField(String name, GraphQLOutputType type, RelatedDataFetcher dataFetcher,
                                            boolean list, boolean optional) {
     GraphQLFieldDefinition.Builder result = newFieldDefinition()
       .name(name)

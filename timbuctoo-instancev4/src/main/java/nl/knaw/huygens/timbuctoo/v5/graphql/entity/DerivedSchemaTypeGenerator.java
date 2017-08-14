@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlTypesContainer;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,15 +20,13 @@ import static java.util.stream.Collectors.toList;
 public class DerivedSchemaTypeGenerator {
 
   public void makeGraphQlTypes(Map<String, Type> types, TypeNameStore typeNameStore,
-                               GraphQlTypesContainer typesContainer,
-                               PaginationArgumentsHelper paginationArgumentsHelper) {
+                               GraphQlTypesContainer typesContainer) {
     for (Type type : types.values()) {
       List<GraphQLFieldDefinition> fieldDefinitions = type.getPredicates().stream()
         .map(predicate -> fieldForDerivedType(
           predicate,
           typesContainer,
-          typeNameStore,
-          paginationArgumentsHelper
+          typeNameStore
         ))
         .filter(Objects::nonNull)
         .collect(toList());
@@ -40,8 +37,7 @@ public class DerivedSchemaTypeGenerator {
   }
 
   private static GraphQLFieldDefinition fieldForDerivedType(Predicate pred, GraphQlTypesContainer typesContainer,
-                                                            TypeNameStore typeNameStore,
-                                                            PaginationArgumentsHelper argumentsHelper) {
+                                                            TypeNameStore typeNameStore) {
     String fieldName = typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection());
     if (pred.getReferenceTypes().size() == 0) {
       if (pred.getValueTypes().size() == 0) {
@@ -49,8 +45,7 @@ public class DerivedSchemaTypeGenerator {
         return null;
       } else if (pred.getValueTypes().size() == 1) {
         return typesContainer.valueField(
-          fieldName,
-          argumentsHelper, pred.getValueTypes().iterator().next(), pred.isList(), pred.isOptional(), pred.getName()
+          fieldName, pred.getValueTypes().iterator().next(), pred.isList(), pred.isOptional(), pred.getName()
         );
       } else {
         List<GraphQLObjectType> types = new ArrayList<>();
@@ -59,15 +54,13 @@ public class DerivedSchemaTypeGenerator {
         }
         ArrayList<GraphQLTypeReference> refs = newArrayList();
         return typesContainer.unionField(
-          fieldName, refs, types,
-          argumentsHelper, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList()
+          fieldName, refs, types, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList()
         );
       }
     } else {
       if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
         return typesContainer.objectField(
           fieldName,
-          argumentsHelper,
           pred.getName(),
           pred.getDirection(),
           typeNameStore.makeGraphQlname(pred.getReferenceTypes().iterator().next()),
@@ -85,9 +78,7 @@ public class DerivedSchemaTypeGenerator {
         }
 
         return typesContainer
-          .unionField(fieldName, refs, values,
-          argumentsHelper, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList()
-        );
+          .unionField(fieldName, refs, values, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList());
       }
     }
   }

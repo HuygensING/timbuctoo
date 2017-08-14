@@ -43,9 +43,13 @@ public class GraphQlService {
       TypeNameStore typeNameStore = typeNameStoreFactory.createTypeNameStore(userId, dataSetName);
       DataFetcherFactory dataFetcherFactory = dataFetcherFactoryFactory.createDataFetcherFactory(userId, dataSetName);
       SchemaStore schemaStore = schemaStoreFactory.createSchemaStore(userId, dataSetName);
-      GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(typeNameStore, dataFetcherFactory);
+      GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(
+        typeNameStore,
+        dataFetcherFactory,
+        paginationArgumentsHelper
+      );
 
-      typeGenerator.makeGraphQlTypes(schemaStore.getTypes(), typeNameStore, typesContainer, paginationArgumentsHelper);
+      typeGenerator.makeGraphQlTypes(schemaStore.getTypes(), typeNameStore, typesContainer);
 
       return GraphQL
         .newGraphQL(
