@@ -1,11 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 
-public interface RelatedDataFetcher {
-  PaginatedList getList(TypedValue source, PaginationArguments arguments);
+public interface RelatedDataFetcher<T extends DatabaseResult> {
+  PaginatedList<T> getList(SubjectReference source, PaginationArguments arguments);
 
-  TypedValue getItem(TypedValue source);
+  T getItem(SubjectReference source);
 }

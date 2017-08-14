@@ -11,6 +11,7 @@ import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;
@@ -62,7 +63,7 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
     Map<String, Object> data  = result.getData();
     if (isValue(parentType)) {
       String value = ((TypedValue) parameters.source()).getValue();
-      String typename = ((TypedValue) parameters.source()).getType().iterator().next();
+      String typename = ((TypedValue) parameters.source()).getType();
       return new ExecutionResultImpl(
         value == null ? null : Value.create(value, typename),
         result.getErrors(),
@@ -140,7 +141,7 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
                                                  List<Field> fields, Iterable<Object> result) {
     ExecutionResult completedResult = super.completeValueForList(executionContext, parameters, fields, result);
     if (parameters.source() instanceof PaginatedList) {
-      PaginatedList source = (PaginatedList) parameters.source();
+      PaginatedList<? extends DatabaseResult> source = (PaginatedList) parameters.source();
       return new ExecutionResultImpl(
         serializableList(
           source.getPrevCursor().orElse(null),

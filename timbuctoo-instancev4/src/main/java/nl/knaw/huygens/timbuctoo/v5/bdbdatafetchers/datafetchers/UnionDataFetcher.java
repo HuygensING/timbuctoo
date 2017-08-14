@@ -1,9 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 
 import java.util.Set;
 import java.util.stream.Stream;
@@ -11,7 +13,7 @@ import java.util.stream.Stream;
 import static java.util.stream.Collectors.toSet;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
-public class UnionDataFetcher extends WalkTriplesDataFetcher {
+public class UnionDataFetcher extends WalkTriplesDataFetcher<DatabaseResult> {
   private final QuadStore tripleStore;
 
   public UnionDataFetcher(String predicate, Direction direction, QuadStore tripleStore) {
@@ -20,7 +22,7 @@ public class UnionDataFetcher extends WalkTriplesDataFetcher {
   }
 
   @Override
-  protected TypedValue makeItem(CursorQuad quad) {
+  protected DatabaseResult makeItem(CursorQuad quad) {
     if (quad.getValuetype().isPresent()) {
       return TypedValue.create(quad.getObject(), quad.getValuetype().get());
     } else {
@@ -28,7 +30,7 @@ public class UnionDataFetcher extends WalkTriplesDataFetcher {
         final Set<String> types = quads
           .map(CursorQuad::getObject)
           .collect(toSet());
-        return TypedValue.create(quad.getObject(), types);
+        return SubjectReference.create(quad.getObject(), types);
       }
     }
   }

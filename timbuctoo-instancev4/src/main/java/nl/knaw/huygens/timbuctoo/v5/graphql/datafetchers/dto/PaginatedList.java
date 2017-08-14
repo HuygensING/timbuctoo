@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
-public interface PaginatedList extends Iterable<TypedValue> {
+public interface PaginatedList<T extends DatabaseResult> extends Iterable<T> {
 
   Base64.Encoder ENCODER = Base64.getEncoder();
 
@@ -17,14 +17,14 @@ public interface PaginatedList extends Iterable<TypedValue> {
 
   Optional<String> getNextCursor();
 
-  List<TypedValue> getItems();
+  List<T> getItems();
 
-  default Iterator<TypedValue> iterator() {
+  default Iterator<T> iterator() {
     return getItems().iterator();
   }
 
-  static PaginatedList create(String prevCursor, String nextCursor, List<TypedValue> items) {
-    return ImmutablePaginatedList.builder()
+  static <U extends DatabaseResult> PaginatedList<U> create(String prevCursor, String nextCursor, List<U> items) {
+    return ImmutablePaginatedList.<U>builder()
       .prevCursor(Optional.ofNullable(encode(prevCursor)))
       .nextCursor(Optional.ofNullable(encode(nextCursor)))
       .items(items)

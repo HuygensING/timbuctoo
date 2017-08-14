@@ -18,7 +18,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcherWrapper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
@@ -172,7 +173,7 @@ public class GraphQlTypesContainer {
       .field(newFieldDefinition()
         .name("uri")
         .type(Scalars.GraphQLID)
-        .dataFetcher(new UriFetcherWrapper(dataFetcherFactory.entityUriDataFetcher()))
+        .dataFetcher(new UriFetcher())
       )
       .fields(fieldDefinitions)
       .build();
@@ -207,7 +208,7 @@ public class GraphQlTypesContainer {
       //In rdf things can have more then one type though (types are like java interfaces)
       //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types that
       //the user actually requested
-      Set<String> typeUris = ((TypedValue) environment.getObject()).getType();
+      Set<String> typeUris = ((SubjectReference) environment.getObject()).getTypes();
       for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
         if (selection instanceof InlineFragment) {
           InlineFragment fragment = (InlineFragment) selection;
@@ -233,7 +234,7 @@ public class GraphQlTypesContainer {
 
     @Override
     public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
-      return wrappedValueTypes.get(((TypedValue) environment.getObject()).getType().iterator().next());
+      return wrappedValueTypes.get(((TypedValue) environment.getObject()).getType());
     }
   }
 }

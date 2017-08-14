@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers;
 
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorContainer;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 
 import java.util.List;
@@ -13,16 +13,16 @@ public class PaginationHelper {
 
   public static final int MAX_COUNT = 10_000;
 
-  static <T extends CursorContainer> PaginatedList getPaginatedList(Stream<T> subjectStream,
-                                                                    Function<T, TypedValue> makeItem, int count,
-                                                                    boolean startedFromCursor) {
+  static <T extends CursorContainer, U extends DatabaseResult> PaginatedList<U>
+    getPaginatedList(Stream<T> subjectStream, Function<T, U> makeItem, int count, boolean startedFromCursor) {
+
     String[] cursors = new String[3];
 
     if (count < 0 || count > MAX_COUNT) {
       count = MAX_COUNT;
     }
     count += 1; //to determine if we reached the end of the list we keep track of one extra
-    List<TypedValue> subjects = subjectStream
+    List<U> subjects = subjectStream
       .limit(count)
       .peek(cs -> {
         if (cursors[0] == null) {

@@ -42,7 +42,7 @@ public class CollectionIndexSchemaFactory {
         GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
           .name(typeName)
           .type(objectType)
-          .dataFetcher(new LookupFetcher(fetcherFactory.entityFetcher(), uriArgument))
+          .dataFetcher(new LookupFetcher(uriArgument))
           .argument(
             newArgument()
               .name(uriArgument)
@@ -70,7 +70,7 @@ public class CollectionIndexSchemaFactory {
       GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
         .name(typeName)
         .type(staticType.getValue())
-        .dataFetcher(new LookupFetcher(fetcherFactory.entityFetcher(), uriArgument))
+        .dataFetcher(new LookupFetcher(uriArgument))
         .argument(
           newArgument()
             .name(uriArgument)
