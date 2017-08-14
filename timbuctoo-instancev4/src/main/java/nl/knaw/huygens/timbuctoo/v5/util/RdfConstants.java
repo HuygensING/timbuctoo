@@ -18,6 +18,7 @@ public class RdfConstants {
   public static final String OF_COLLECTION = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#ofCollection";
   public static final String TIM_PROP_ID = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId";
   public static final String TIM_MIMETYPE = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mimetype";
+  public static final String TIM_HASCOLOR = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#hasColor";
 
   public static final String TIM_TABULAR_FILE = "http://timbuctoo.huygens.knaw.nl/v5/types#tabularFile";
 
