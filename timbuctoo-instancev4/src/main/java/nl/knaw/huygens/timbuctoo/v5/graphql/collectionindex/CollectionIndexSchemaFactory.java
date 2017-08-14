@@ -14,18 +14,18 @@ import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
-import static nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator.ENTITY_INTERFACE_NAME;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlTypesContainer.ENTITY_INTERFACE_NAME;
 
 public class CollectionIndexSchemaFactory {
 
-  public GraphQLObjectType createQuerySchema(Map<String, GraphQLObjectType> typesMap,
+  public GraphQLObjectType createQuerySchema(Map<String, GraphQLObjectType> rdfTypeRepresentingTypes,
                                              DataFetcherFactory fetcherFactory,
                                              PaginationArgumentsHelper paginationArgumentsHelper) {
 
     GraphQLObjectType.Builder result = newObject()
       .name("Query");
 
-    for (Map.Entry<String, GraphQLObjectType> typeMapping : typesMap.entrySet()) {
+    for (Map.Entry<String, GraphQLObjectType> typeMapping : rdfTypeRepresentingTypes.entrySet()) {
       String typeUri = typeMapping.getKey();
       GraphQLObjectType objectType = typeMapping.getValue();
       if (!objectType.getName().equals("tim_unknown") && isEntity(objectType)) {

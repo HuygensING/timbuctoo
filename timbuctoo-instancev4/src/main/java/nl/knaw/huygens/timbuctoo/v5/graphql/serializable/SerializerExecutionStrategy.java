@@ -27,8 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator.ENTITY_INTERFACE_NAME;
-import static nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator.VALUE_INTERFACE_NAME;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlTypesContainer.ENTITY_INTERFACE_NAME;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlTypesContainer.VALUE_INTERFACE_NAME;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList.graphqlIntrospectionList;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject.graphqlIntrospectionObject;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList.serializableList;

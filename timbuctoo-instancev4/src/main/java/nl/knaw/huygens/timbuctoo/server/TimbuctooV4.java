@@ -97,7 +97,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
-import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.entity.DerivedSchemaTypeGenerator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -269,7 +269,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetFactory,
         dataSetFactory,
         dataSetFactory,
-        new GraphQlTypeGenerator()
+        new DerivedSchemaTypeGenerator()
       ),
       uriHelper
     );
