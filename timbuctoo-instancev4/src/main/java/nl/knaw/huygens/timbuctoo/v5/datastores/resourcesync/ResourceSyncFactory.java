@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 
 public class ResourceSyncFactory {
@@ -12,7 +13,8 @@ public class ResourceSyncFactory {
     this.resourceSyncUri = resourceSyncUri;
   }
 
-  public ResourceSync createResourceSync(FileHelper fileHelper) {
-    return new ResourceSync(new ResourceSyncUriHelper(resourceSyncUri, fileHelper), fileHelper);
+  public ResourceSync createResourceSync(FileHelper fileHelper,
+                                         FileStorageFactory fileStorageFactory) {
+    return new ResourceSync(new ResourceSyncUriHelper(resourceSyncUri, fileHelper), fileHelper, fileStorageFactory);
   }
 }

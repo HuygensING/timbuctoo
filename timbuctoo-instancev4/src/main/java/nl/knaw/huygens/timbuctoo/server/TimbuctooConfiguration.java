@@ -173,4 +173,11 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public MetricsFactory getMetricsFactory() {
     return new MetricsFactory();
   }
+  
+  public ResourceSync getResourceSync() {
+    return getDataSetConfiguration().getResourceSync();
+  }
+  
+  
+
 }

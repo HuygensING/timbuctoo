@@ -29,7 +29,7 @@ public interface DataSetConfiguration {
       .dataSetMetadataLocation(dataSetMetadataLocation)
       .fileStorage(fileStorageFactory)
       .rdfIo(rdfIoFactory)
-      .resourceSync(resourceSyncFactory.createResourceSync(new FileHelper(dataSetMetadataLocation)))
+      .resourceSync(resourceSyncFactory.createResourceSync(new FileHelper(dataSetMetadataLocation), fileStorageFactory))
       .build();
   }
 }

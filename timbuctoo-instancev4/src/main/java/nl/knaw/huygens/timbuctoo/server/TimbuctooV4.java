@@ -92,6 +92,8 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
@@ -344,6 +346,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new ResourceSyncFileLoader(httpClient),
       dataSetFactory
     ));
+
+    register(environment, new WellKnown());
+    register(environment, new ResourceSyncEndpoint(configuration.getResourceSync()));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(
