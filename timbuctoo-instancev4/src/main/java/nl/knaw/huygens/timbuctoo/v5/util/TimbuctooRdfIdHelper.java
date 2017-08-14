@@ -13,6 +13,10 @@ public class TimbuctooRdfIdHelper {
     return RAW_ROW + "" + encode(dataSet) + "/" + encode(fileName) + "/" + entityId;
   }
 
+  public static String rawFile(String dataSet, String fileName) {
+    return RAW_ROW + "" + encode(dataSet) + "/" + encode(fileName) + "/";
+  }
+
   private static String encode(String input) {
     try {
       return URLEncoder.encode(input, "UTF-8");

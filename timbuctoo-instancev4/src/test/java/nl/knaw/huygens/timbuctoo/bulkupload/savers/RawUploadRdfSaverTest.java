@@ -11,9 +11,11 @@ import org.junit.Test;
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
 import java.util.Map;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.OF_COLLECTION;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.PROV_DERIVED_FROM;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
@@ -23,6 +25,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_TABULAR_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -48,8 +51,8 @@ public class RawUploadRdfSaverTest {
     instance = instanceWithRdfSerializer(rdfSerializer);
   }
 
-  private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer) {
-    return new RawUploadRdfSaver(DATA_SET_ID, "fileName", rdfSerializer);
+  private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer) throws LogStorageFailedException {
+    return new RawUploadRdfSaver(DATA_SET_ID, "fileName", Optional.empty(), rdfSerializer);
   }
 
   @Test
@@ -187,7 +190,7 @@ public class RawUploadRdfSaverTest {
   }
 
   @Test
-  public void usageTest() {
+  public void usageTest() throws LogStorageFailedException {
     RdfToStringFaker rdfSerializer = new RdfToStringFaker();
     RawUploadRdfSaver instance = instanceWithRdfSerializer(rdfSerializer);
 
@@ -214,7 +217,9 @@ public class RawUploadRdfSaverTest {
     String graphName = "http://timbuctoo.huygens.knaw.nl/v5/datasets/dataSet";
     String propdescType = "http://timbuctoo.huygens.knaw.nl/v5/propertyDescription/";
     assertEquals(
-        collection + "1 "   + RDF_TYPE           + " " + TIM_COLLECTION + " "                    + graphName + "\n" +
+      rawData + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
+        graphName + " "     + PROV_DERIVED_FROM  + " " + rawData + " "                           + graphName + "\n" +
+        collection + "1 "   + RDF_TYPE           + " " + TIM_COLLECTION +   " "                  + graphName + "\n" +
         collection + "1 "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "1 "   + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "propName1 " + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
