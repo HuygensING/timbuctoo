@@ -24,6 +24,7 @@ public class ArchetypesGenerator {
           if (predicateDefinition.getReference().isPresent()) {
             return typesContainer.objectField(
               predicateDefinition.getName(),
+              predicateDefinition.getDescription(),
               predicateDefinition.getPredicateUri(),
               predicateDefinition.getReference().get().getDirection(),
               predicateDefinition.getReference().get().getTargetArchetype(),
@@ -33,6 +34,7 @@ public class ArchetypesGenerator {
           } else {
             return typesContainer.valueField(
               predicateDefinition.getName(),
+              predicateDefinition.getDescription(),
               predicateDefinition.isList(),
               true,
               predicateDefinition.getPredicateUri()
@@ -42,7 +44,7 @@ public class ArchetypesGenerator {
         .collect(toList());
       result.put(
         archetype.getRequiredTypeUri(),
-        typesContainer.objectType(archetype.getName(), empty(), fieldDefinitions)
+        typesContainer.objectType(archetype.getName(), archetype.getDescription(), empty(), fieldDefinitions)
       );
     }
     return result;

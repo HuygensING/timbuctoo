@@ -32,7 +32,12 @@ public class DerivedSchemaTypeGenerator {
         .collect(toList());
 
       String typeUri = type.getName();
-      typesContainer.objectType(typeNameStore.makeGraphQlname(typeUri), Optional.of(typeUri), fieldDefinitions);
+      typesContainer.objectType(
+        typeNameStore.makeGraphQlname(typeUri),
+        "Subjects that are a [" + typeNameStore.shorten(typeUri) + "](" + typeUri + ")",
+        Optional.of(typeUri),
+        fieldDefinitions
+      );
     }
   }
 
@@ -45,7 +50,7 @@ public class DerivedSchemaTypeGenerator {
         return null;
       } else if (pred.getValueTypes().size() == 1) {
         return typesContainer.valueField(
-          fieldName, pred.getValueTypes().iterator().next(), pred.isList(), pred.isOptional(), pred.getName()
+          fieldName, null, pred.getValueTypes().iterator().next(), pred.isList(), pred.isOptional(), pred.getName()
         );
       } else {
         List<GraphQLObjectType> types = new ArrayList<>();
@@ -54,14 +59,14 @@ public class DerivedSchemaTypeGenerator {
         }
         ArrayList<GraphQLTypeReference> refs = newArrayList();
         return typesContainer.unionField(
-          fieldName, refs, types, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList()
+          fieldName, null, refs, types, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList()
         );
       }
     } else {
       if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
         return typesContainer.objectField(
           fieldName,
-          pred.getName(),
+          null, pred.getName(),
           pred.getDirection(),
           typeNameStore.makeGraphQlname(pred.getReferenceTypes().iterator().next()),
           pred.isList(),
@@ -77,8 +82,8 @@ public class DerivedSchemaTypeGenerator {
           values.add(typesContainer.valueType(valueType));
         }
 
-        return typesContainer
-          .unionField(fieldName, refs, values, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList());
+        return typesContainer.unionField(fieldName, null, refs, values, pred.getName(), pred.getDirection(),
+          pred.isOptional(), pred.isList());
       }
     }
   }

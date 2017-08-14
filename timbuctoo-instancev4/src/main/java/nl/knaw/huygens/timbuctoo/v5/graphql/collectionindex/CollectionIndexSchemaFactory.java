@@ -42,6 +42,7 @@ public class CollectionIndexSchemaFactory {
 
         GraphQLFieldDefinition.Builder collectionField = newFieldDefinition()
           .name(typeName + "List")
+          .description(typeMapping.getValue().getDescription())
           .dataFetcher(new CollectionFetcherWrapper(fetcherFactory.collectionFetcher(typeUri)));
         paginationArgumentsHelper.makePaginatedList(collectionField, objectType);
         result.field(collectionField);
@@ -49,6 +50,7 @@ public class CollectionIndexSchemaFactory {
         GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
           .name(typeName)
           .type(objectType)
+          .description(typeMapping.getValue().getDescription())
           .dataFetcher(lookupFetcher)
           .argument(
             newArgument()
@@ -69,6 +71,7 @@ public class CollectionIndexSchemaFactory {
 
       GraphQLFieldDefinition.Builder collectionField = newFieldDefinition()
         .name(typeName + "List")
+        .description(staticType.getValue().getDescription())
         .dataFetcher(new CollectionFetcherWrapper(fetcherFactory.collectionFetcher(typeUri)));
       paginationArgumentsHelper.makePaginatedList(collectionField, staticType.getValue());
       staticSchema.field(collectionField);
@@ -76,6 +79,7 @@ public class CollectionIndexSchemaFactory {
       GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
         .name(typeName)
         .type(staticType.getValue())
+        .description(staticType.getValue().getDescription())
         .dataFetcher(lookupFetcher)
         .argument(
           newArgument()

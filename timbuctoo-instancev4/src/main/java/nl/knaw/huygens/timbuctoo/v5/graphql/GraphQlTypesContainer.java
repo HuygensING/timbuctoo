@@ -87,15 +87,16 @@ public class GraphQlTypesContainer {
       .build();
   }
 
-  public GraphQLFieldDefinition objectField(String fieldName, String predicateUri, Direction predicateDirection,
-                                            String typeName, boolean isList, boolean isOptional) {
+  public GraphQLFieldDefinition objectField(String fieldName, String description, String predicateUri,
+                                            Direction predicateDirection, String typeName, boolean isList,
+                                            boolean isOptional) {
     GraphQLTypeReference type = new GraphQLTypeReference(typeName);
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.relationFetcher(predicateUri, predicateDirection);
-    return makeField(fieldName, type, dataFetcher, isList, isOptional);
+    return makeField(fieldName, description, type, dataFetcher, isList, isOptional);
   }
 
-  public GraphQLFieldDefinition unionField(String name,
-                                           List<GraphQLTypeReference> refs, List<GraphQLObjectType> types,
+  public GraphQLFieldDefinition unionField(String name, String description, List<GraphQLTypeReference> refs,
+                                           List<GraphQLObjectType> types,
                                            String predicateUri, Direction direction, boolean isOptional,
                                            boolean isList) {
     String unionName = "Union_";
@@ -117,27 +118,33 @@ public class GraphQlTypesContainer {
     }
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.unionFetcher(predicateUri, direction);
     GraphQLUnionType type = unionType.build();
-    return makeField(name, type, dataFetcher, isList, isOptional);
+    return makeField(name, description, type, dataFetcher, isList, isOptional);
   }
 
-  public GraphQLFieldDefinition valueField(String name, String typeUri, boolean isList, boolean isOptional,
+  public GraphQLFieldDefinition valueField(String name, String description, String typeUri, boolean isList,
+                                           boolean isOptional,
                                            String predicateUri) {
     GraphQLObjectType type = valueType(typeUri);
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.typedLiteralFetcher(predicateUri);
-    return makeField(name, type, dataFetcher, isList, isOptional);
+    return makeField(name, description, type, dataFetcher, isList, isOptional);
   }
 
-  public GraphQLFieldDefinition valueField(String name, boolean isList, boolean isOptional, String predicateUri) {
+  public GraphQLFieldDefinition valueField(String name, String description, boolean isList, boolean isOptional,
+                                           String predicateUri) {
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.typedLiteralFetcher(predicateUri);
-    return makeField(name, valueInterface, dataFetcher, isList, isOptional);
+    return makeField(name, description, valueInterface, dataFetcher, isList, isOptional);
   }
 
-  private GraphQLFieldDefinition makeField(String name, GraphQLOutputType type, RelatedDataFetcher dataFetcher,
+  private GraphQLFieldDefinition makeField(String name, String description, GraphQLOutputType type,
+                                           RelatedDataFetcher dataFetcher,
                                            boolean list, boolean optional) {
     GraphQLFieldDefinition.Builder result = newFieldDefinition()
       .name(name)
       .dataFetcher(new DataFetcherWrapper(list, dataFetcher));
 
+    if (description != null) {
+      result.description(description);
+    }
     if (list) {
       argumentsHelper.makePaginatedList(result, type);
     } else if (!optional) {
@@ -165,7 +172,7 @@ public class GraphQlTypesContainer {
     });
   }
 
-  public GraphQLObjectType objectType(String objectName, Optional<String> typeUri,
+  public GraphQLObjectType objectType(String objectName, String description, Optional<String> typeUri,
                                       List<GraphQLFieldDefinition> fieldDefinitions) {
     GraphQLObjectType objectType = newObject()
       .name(objectName)
@@ -176,6 +183,7 @@ public class GraphQlTypesContainer {
         .dataFetcher(new UriFetcher())
       )
       .fields(fieldDefinitions)
+      .description(description)
       .build();
     if (typeUri.isPresent()) {
       typeForUri.put(typeUri.get(), objectType);
