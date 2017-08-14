@@ -21,10 +21,18 @@ public class CollectionIndexSchemaFactory {
   public GraphQLObjectType createQuerySchema(Map<String, GraphQLObjectType> rdfTypeRepresentingTypes,
                                              Map<String, GraphQLObjectType> staticTypes,
                                              DataFetcherFactory fetcherFactory,
-                                             PaginationArgumentsHelper paginationArgumentsHelper) {
+                                             PaginationArgumentsHelper paginationArgumentsHelper,
+                                             String baseUri) {
 
     GraphQLObjectType.Builder result = newObject()
       .name("Query");
+
+    final String uriArgument = "uri";
+    final LookupFetcherWrapper lookupFetcher = new LookupFetcherWrapper(
+      uriArgument,
+      fetcherFactory.lookupFetcher(),
+      baseUri
+    );
 
     for (Map.Entry<String, GraphQLObjectType> typeMapping : rdfTypeRepresentingTypes.entrySet()) {
       String typeUri = typeMapping.getKey();
@@ -38,11 +46,10 @@ public class CollectionIndexSchemaFactory {
         paginationArgumentsHelper.makePaginatedList(collectionField, objectType);
         result.field(collectionField);
 
-        String uriArgument = "uri";
         GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
           .name(typeName)
           .type(objectType)
-          .dataFetcher(new LookupFetcherWrapper(uriArgument, fetcherFactory.lookupFetcher()))
+          .dataFetcher(lookupFetcher)
           .argument(
             newArgument()
               .name(uriArgument)
@@ -66,11 +73,10 @@ public class CollectionIndexSchemaFactory {
       paginationArgumentsHelper.makePaginatedList(collectionField, staticType.getValue());
       staticSchema.field(collectionField);
 
-      String uriArgument = "uri";
       GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
         .name(typeName)
         .type(staticType.getValue())
-        .dataFetcher(new LookupFetcherWrapper(uriArgument, fetcherFactory.lookupFetcher()))
+        .dataFetcher(lookupFetcher)
         .argument(
           newArgument()
             .name(uriArgument)

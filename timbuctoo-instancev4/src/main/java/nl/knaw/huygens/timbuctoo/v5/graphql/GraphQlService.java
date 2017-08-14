@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 
 import static graphql.schema.GraphQLSchema.newSchema;
 
@@ -64,7 +65,8 @@ public class GraphQlService {
                 typesContainer.getRdfTypeRepresentingTypes(),
                 archetypesGenerator.makeGraphQlTypes(archetypes, typesContainer),
                 dataFetcherFactory,
-                paginationArgumentsHelper
+                paginationArgumentsHelper,
+                TimbuctooRdfIdHelper.dataSet(userId + "_" + dataSetName)
               )
             )
             .build(typesContainer.getAllObjectTypes())
