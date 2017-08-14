@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrappe
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookupFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.util.Map;
 
@@ -14,7 +15,6 @@ import static graphql.schema.GraphQLArgument.newArgument;
 import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLNonNull.nonNull;
 import static graphql.schema.GraphQLObjectType.newObject;
-import static nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlTypesContainer.ENTITY_INTERFACE_NAME;
 
 public class CollectionIndexSchemaFactory {
 
@@ -28,7 +28,7 @@ public class CollectionIndexSchemaFactory {
     for (Map.Entry<String, GraphQLObjectType> typeMapping : rdfTypeRepresentingTypes.entrySet()) {
       String typeUri = typeMapping.getKey();
       GraphQLObjectType objectType = typeMapping.getValue();
-      if (!objectType.getName().equals("tim_unknown") && isEntity(objectType)) {
+      if (!typeUri.equals(RdfConstants.UNKNOWN)) {
         String typeName = objectType.getName();
 
         GraphQLFieldDefinition.Builder collectionField = newFieldDefinition()
@@ -53,10 +53,6 @@ public class CollectionIndexSchemaFactory {
     }
 
     return result.build();
-  }
-
-  public boolean isEntity(GraphQLObjectType objectType) {
-    return objectType.getInterfaces().stream().anyMatch(x -> x.getName().equals(ENTITY_INTERFACE_NAME));
   }
 
 }
