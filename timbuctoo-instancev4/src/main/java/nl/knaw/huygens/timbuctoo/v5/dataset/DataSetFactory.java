@@ -186,24 +186,6 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
       Set<DataSetWithRoles> dataSetWithRoles = new HashSet<>();
 
-      Set<PromotedDataSet> mappedUserSets = userDataSets.getValue()
-                                                        .stream()
-                                                        .filter(dataSet ->
-                                                        {
-                                                          try {
-                                                            return
-                                                              vreAuthorizationCrud
-                                                                .getAuthorization(
-                                                                  userDataSets.getKey() + "_" + dataSet.getName(),
-                                                                  userId)
-                                                                .isPresent();
-                                                          } catch (AuthorizationUnavailableException e) {
-                                                            return false;
-                                                          }
-                                                        })
-                                                        .collect(Collectors.toSet());
-
-
       userDataSets.getValue().forEach((dataSet) -> {
         List<String> roles;
         Optional<VreAuthorization> vre;
