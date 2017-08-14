@@ -79,11 +79,36 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
 
       LinkedHashMap<PredicateInfo, Serializable> copy = new LinkedHashMap<>();
       for (Map.Entry<String, Object> entry : data.entrySet()) {
+        //Graphql allows you to specify the same field under the same name more then once.
+        //if the field is an object field the subqueries will be merged
+        //if you use a different name then the fields will not be merged and entry.getKey() is the alias
+        //
+        //examples
+        /*
+          {
+            foo { bar }
+            foo { baz }
+          }
+          =>
+          entry.getKey() == "foo"
+          fieldList == [{name:"foo" selectionSet: ["bar"]}, {name:"foo" selectionSet: ["baz"]}]
+
+          {
+            foo { bar }
+            bax: foo { baz }
+          }
+          =>
+          entry.getKey() == "foo"
+          fieldList == [{name:"foo" selectionSet: ["bar"]}]
+
+          entry.getKey() == "bax"
+          fieldList == [{name:"foo" selectionSet: ["baz"]}]
+
+         */
         List<Field> fieldList = fields.get(entry.getKey());
-        if (fieldList.size() > 1) {
-          LOG.error("More then one field in fieldList. What does that mean?");
-        }
+        //so if the fieldlist contains more then one item. They will always have the same name
         String actualName = fieldList.get(0).getName();
+
 
         Optional<Tuple<String, Direction>> uriAndDirection = typeNameStore.makeUriForPredicate(actualName);
         final PredicateInfo predicateInfo;
