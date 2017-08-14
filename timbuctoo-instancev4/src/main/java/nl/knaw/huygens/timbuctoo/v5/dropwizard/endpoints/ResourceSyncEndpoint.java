@@ -57,10 +57,17 @@ public class ResourceSyncEndpoint {
                           @PathParam("fileId") String fileId
   ) throws ResourceSyncException {
     CachedFile file = resourceSync.getFile(owner, dataSet, fileId);
+    if (file == null || file.getFile() == null || !file.getFile().exists()) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
     return Response.ok(file.getFile(), file.getMimeType().orElse(MediaType.APPLICATION_OCTET_STREAM_TYPE)).build();
   }
 
   private Response streamFile(File file, MediaType mediaType) throws FileNotFoundException {
+    if (!file.exists()) {
+      return Response.status(Response.Status.NOT_FOUND).build();
+    }
     BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
 
     StreamingOutput output = output1 -> {
