@@ -17,6 +17,36 @@ securityConfiguration:
 baseUri: http://0.0.0.0:0 #port will be replaced with the port that timbuctoo ends up listening on
 userRedirectUrl: http://example.com
 
+archetypes:
+  - name: metadata
+    requiredTypeUri: http://metadata
+    description: ""
+    predicateDefinitions:
+    - name: name
+      description: ""
+      predicateUri: http://name
+  - name: person
+    requiredTypeUri: http://purl.org/collections/nl/dss/das/Person
+    description: ""
+    predicateDefinitions:
+    - name: naam
+      description: ""
+      predicateUri: http://purl.org/collections/nl/dss/das/name
+    - name: birthPlace
+      description: ""
+      predicateUri: http://birthPlace
+      reference:
+        targetArchetype: place
+        direction: OUT
+  - name: place
+    requiredTypeUri: http://place
+    description: ""
+    predicateDefinitions:
+    - name: placeName
+      predicateUri: http://birthPlace
+      description: ""
+
+
 databases:
   databaseLocation: ${timbuctoo_dataPath}/datasets
 

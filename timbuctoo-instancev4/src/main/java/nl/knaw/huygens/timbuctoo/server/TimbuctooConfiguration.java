@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.server;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
@@ -20,6 +21,7 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
@@ -92,6 +94,10 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   @Valid
   @JsonProperty("persistenceManager")
   public abstract PersistenceManagerFactory getPersistenceManagerFactory();
+
+  @Valid
+  @JsonUnwrapped
+  public abstract Archetypes getArchetypes();
 
   public abstract Optional<URI> getUserRedirectUrl();
 
