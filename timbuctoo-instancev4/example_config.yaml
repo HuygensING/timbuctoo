@@ -15,7 +15,6 @@ securityConfiguration:
     authenticationCredentials: DUMMY
 
 baseUri: http://0.0.0.0:0 #port will be replaced with the port that timbuctoo ends up listening on
-timbuctooSearchUrl: http://timsearch
 userRedirectUrl: http://example.com
 
 databases:
@@ -39,7 +38,6 @@ dataSet:
 searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
-executeDatabaseInvariantCheckAt: -1
 
 #webhooks:
 #  vreAdded: <some url to send a post request to when a new VRE is added>

@@ -1,11 +1,14 @@
 package nl.knaw.huygens.timbuctoo.server;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
 
 public class UriHelper {
   private URI baseUri;
 
+  @JsonCreator
   public UriHelper(URI baseUri) {
     this.baseUri = baseUri;
   }
