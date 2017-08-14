@@ -268,7 +268,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetFactory,
         dataSetFactory,
         dataSetFactory,
-        new DerivedSchemaTypeGenerator()
+        new DerivedSchemaTypeGenerator(),
+        configuration.getArchetypes()
       ),
       uriHelper
     );

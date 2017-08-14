@@ -19,6 +19,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 public class CollectionIndexSchemaFactory {
 
   public GraphQLObjectType createQuerySchema(Map<String, GraphQLObjectType> rdfTypeRepresentingTypes,
+                                             Map<String, GraphQLObjectType> staticTypes,
                                              DataFetcherFactory fetcherFactory,
                                              PaginationArgumentsHelper paginationArgumentsHelper) {
 
@@ -52,7 +53,41 @@ public class CollectionIndexSchemaFactory {
       }
     }
 
-    return result.build();
+    GraphQLObjectType.Builder staticSchema = newObject()
+      .name("StaticSchema");
+
+    for (Map.Entry<String, GraphQLObjectType> staticType : staticTypes.entrySet()) {
+      String typeUri = staticType.getKey();
+      String typeName = staticType.getValue().getName();
+
+      GraphQLFieldDefinition.Builder collectionField = newFieldDefinition()
+        .name(typeName + "List")
+        .dataFetcher(new CollectionFetcherWrapper(fetcherFactory.collectionFetcher(typeUri)));
+      paginationArgumentsHelper.makePaginatedList(collectionField, staticType.getValue());
+      staticSchema.field(collectionField);
+
+      String uriArgument = "uri";
+      GraphQLFieldDefinition.Builder lookupField = newFieldDefinition()
+        .name(typeName)
+        .type(staticType.getValue())
+        .dataFetcher(new LookupFetcher(fetcherFactory.entityFetcher(), uriArgument))
+        .argument(
+          newArgument()
+            .name(uriArgument)
+            .type(nonNull(Scalars.GraphQLID))
+            .description("The uri of the item that you wish to retrieve")
+        );
+      staticSchema.field(lookupField);
+    }
+    return result
+      .field(newFieldDefinition()
+        .description("The predefined schema's. These will not change in a backwards incompatible manner. You can " +
+          "hardcode the queries to this part of the tree. There are no non-nullable fields however.")
+        .name("static")
+        .type(staticSchema)
+        .dataFetcher(environment -> "")//dummmy value so that the graphql process continues
+      )
+      .build();
   }
 
 }

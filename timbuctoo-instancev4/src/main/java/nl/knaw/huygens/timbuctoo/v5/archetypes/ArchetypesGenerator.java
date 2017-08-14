@@ -6,17 +6,17 @@ import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetype;
 import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlTypesContainer;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import static java.util.Optional.empty;
 import static java.util.stream.Collectors.toList;
 
 public class ArchetypesGenerator {
 
-  public Set<GraphQLObjectType> makeGraphQlTypes(Archetypes archetypes, GraphQlTypesContainer typesContainer) {
-    Set<GraphQLObjectType> result = new HashSet<>();
+  public Map<String, GraphQLObjectType> makeGraphQlTypes(Archetypes archetypes, GraphQlTypesContainer typesContainer) {
+    Map<String, GraphQLObjectType> result = new HashMap<>();
 
     for (Archetype archetype : archetypes.getArchetypes()) {
       List<GraphQLFieldDefinition> fieldDefinitions = archetype.getPredicateDefinitions().stream()
@@ -40,7 +40,10 @@ public class ArchetypesGenerator {
           }
         })
         .collect(toList());
-      result.add(typesContainer.objectType(archetype.getName(), empty(), fieldDefinitions));
+      result.put(
+        archetype.getRequiredTypeUri(),
+        typesContainer.objectType(archetype.getName(), empty(), fieldDefinitions)
+      );
     }
     return result;
   }

@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.graphql;
 
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import nl.knaw.huygens.timbuctoo.v5.archetypes.ArchetypesGenerator;
+import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -25,15 +27,17 @@ public class GraphQlService {
   private final TypeNameStoreFactory typeNameStoreFactory;
   private final DataFetcherFactoryFactory dataFetcherFactoryFactory;
   private final DerivedSchemaTypeGenerator typeGenerator;
+  private final Archetypes archetypes;
 
   public GraphQlService(SchemaStoreFactory schemaStoreFactory,
                         TypeNameStoreFactory typeNameStoreFactory,
                         DataFetcherFactoryFactory dataFetcherFactoryFactory,
-                        DerivedSchemaTypeGenerator typeGenerator) {
+                        DerivedSchemaTypeGenerator typeGenerator, Archetypes archetypes) {
     this.schemaStoreFactory = schemaStoreFactory;
     this.typeNameStoreFactory = typeNameStoreFactory;
     this.dataFetcherFactoryFactory = dataFetcherFactoryFactory;
     this.typeGenerator = typeGenerator;
+    this.archetypes = archetypes;
     this.schemaFactory = new CollectionIndexSchemaFactory();
   }
 
@@ -48,6 +52,7 @@ public class GraphQlService {
         dataFetcherFactory,
         paginationArgumentsHelper
       );
+      ArchetypesGenerator archetypesGenerator = new ArchetypesGenerator();
 
       typeGenerator.makeGraphQlTypes(schemaStore.getTypes(), typeNameStore, typesContainer);
 
@@ -57,6 +62,7 @@ public class GraphQlService {
             .query(schemaFactory
               .createQuerySchema(
                 typesContainer.getRdfTypeRepresentingTypes(),
+                archetypesGenerator.makeGraphQlTypes(archetypes, typesContainer),
                 dataFetcherFactory,
                 paginationArgumentsHelper
               )
