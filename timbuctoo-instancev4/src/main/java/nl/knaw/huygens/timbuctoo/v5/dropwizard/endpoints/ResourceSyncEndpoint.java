@@ -18,7 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.OutputStreamWriter;
 
-@Path("resourcesync")
+@Path("v5/resourcesync")
 public class ResourceSyncEndpoint {
   public static final String SOURCE_DESCRIPTION_PATH = "sourceDescription.xml";
   private final ResourceSync resourceSync;
