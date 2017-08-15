@@ -8,13 +8,13 @@ import java.io.File;
 
 import static nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncXmlHelper.setUplink;
 
-class CapabilityList {
+class CapabilityListFile {
 
   private final ResourceSyncXmlHelper xmlHelper;
   private final ResourceSyncUriHelper uriHelper;
 
-  CapabilityList(File file, File sourceDescription,
-                 ResourceSyncUriHelper uriHelper) throws ResourceSyncException {
+  CapabilityListFile(File file, File sourceDescription,
+                     ResourceSyncUriHelper uriHelper) throws ResourceSyncException {
     this.uriHelper = uriHelper;
     xmlHelper = new ResourceSyncXmlHelper(file, (root, doc) -> updateMetaData(root, doc, sourceDescription));
 

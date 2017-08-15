@@ -6,12 +6,12 @@ import org.w3c.dom.Node;
 
 import java.io.File;
 
-class SourceDescription {
+class SourceDescriptionFile {
   private final ResourceSyncXmlHelper xmlHelper;
   private final ResourceSyncUriHelper uriHelper;
 
-  SourceDescription(File sourceDescriptionFile,
-                    ResourceSyncUriHelper uriHelper) throws ResourceSyncException {
+  SourceDescriptionFile(File sourceDescriptionFile,
+                        ResourceSyncUriHelper uriHelper) throws ResourceSyncException {
     xmlHelper = new ResourceSyncXmlHelper(sourceDescriptionFile, this::updateMetaData);
     this.uriHelper = uriHelper;
   }

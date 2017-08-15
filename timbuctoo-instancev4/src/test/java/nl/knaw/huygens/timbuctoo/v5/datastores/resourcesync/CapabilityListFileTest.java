@@ -15,11 +15,11 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
-public class CapabilityListTest {
+public class CapabilityListFileTest {
 
   private File capabilityListFile;
   private File sourceDescription;
-  private CapabilityList instance;
+  private CapabilityListFile instance;
   private ResourceSyncUriHelper uriHelper;
 
   @Before
@@ -28,7 +28,7 @@ public class CapabilityListTest {
     sourceDescription = File.createTempFile("sourceDescription", "xml");
     uriHelper = mock(ResourceSyncUriHelper.class);
     given(uriHelper.uriForFile(sourceDescription)).willReturn("http://example.org/sourcedesc");
-    instance = new CapabilityList(capabilityListFile, sourceDescription, uriHelper);
+    instance = new CapabilityListFile(capabilityListFile, sourceDescription, uriHelper);
   }
 
   @After

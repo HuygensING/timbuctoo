@@ -15,16 +15,16 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
 
-public class SourceDescriptionTest {
+public class SourceDescriptionFileTest {
   private File sourceDescription;
-  private SourceDescription instance;
+  private SourceDescriptionFile instance;
   private ResourceSyncUriHelper uriHelper;
 
   @Before
   public void setUp() throws Exception {
     uriHelper = mock(ResourceSyncUriHelper.class);
     sourceDescription = File.createTempFile("sourceDescription", "xml");
-    instance = new SourceDescription(sourceDescription, uriHelper);
+    instance = new SourceDescriptionFile(sourceDescription, uriHelper);
   }
 
   @After

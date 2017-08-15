@@ -11,9 +11,13 @@ import javax.ws.rs.core.MediaType;
 import javax.xml.transform.Source;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.xmlunit.matchers.CompareMatcher.isSimilarTo;
@@ -22,16 +26,17 @@ public class FileSystemResourceListTest {
 
 
   private File resourcelist;
-  private FileSystemResourceList instance;
-  private ResourceSyncDateFormatter dateFormatter;
+  private ResourceListFile instance;
+  private Clock clock;
   private ResourceSyncUriHelper uriHelper;
 
   @Before
   public void setUp() throws Exception {
     resourcelist = new File("resourcelist.xml");
-    dateFormatter = mock(ResourceSyncDateFormatter.class);
+    clock = mock(Clock.class);
+    given(clock.withZone(any(ZoneId.class))).willReturn(clock);
     uriHelper = mock(ResourceSyncUriHelper.class);
-    instance = new FileSystemResourceList(resourcelist, dateFormatter, uriHelper);
+    instance = new ResourceListFile(resourcelist, clock, uriHelper);
   }
 
   @After
@@ -41,7 +46,7 @@ public class FileSystemResourceListTest {
 
   @Test
   public void addFileAddsFilesToTheResourceListFile() throws Exception {
-    given(dateFormatter.now()).willReturn("2013-01-03T09:00:00Z");
+    given(clock.instant()).willReturn(Instant.parse("2013-01-03T09:00:00Z"));
     File file = new File("fileName");
     given(uriHelper.uriForFile(file)).willReturn("http://example.org/1");
     File file2 = new File("fileName2");
@@ -73,14 +78,14 @@ public class FileSystemResourceListTest {
 
   @Test
   public void addFileUpdatesAnExistingResourceListFile() throws Exception {
-    given(dateFormatter.now()).willReturn("2013-01-03T09:00:00Z", "2014-02-03T09:00:00Z");
+    given(clock.instant()).willReturn(Instant.parse("2013-01-03T09:00:00Z"), Instant.parse("2014-02-03T09:00:00Z"));
     File file = new File("fileName");
     given(uriHelper.uriForFile(file)).willReturn("http://example.org/1");
     File file2 = new File("fileName2");
     given(uriHelper.uriForFile(file2)).willReturn("http://example.org/2");
 
     instance.addFile(cachedFile(file, Optional.empty()));
-    FileSystemResourceList otherInstance = new FileSystemResourceList(resourcelist, dateFormatter, uriHelper);
+    ResourceListFile otherInstance = new ResourceListFile(resourcelist, clock, uriHelper);
     otherInstance.addFile(cachedFile(file2, Optional.empty()));
 
     Source expected = Input.fromByteArray(
@@ -106,7 +111,7 @@ public class FileSystemResourceListTest {
 
   @Test
   public void addFileAddsAMimeTypeIfTheCachedFileContainsOne() throws Exception {
-    given(dateFormatter.now()).willReturn("2013-01-03T09:00:00Z", "2014-02-03T09:00:00Z");
+    given(clock.instant()).willReturn(Instant.parse("2013-01-03T09:00:00Z"), Instant.parse("2014-02-03T09:00:00Z"));
     File file = new File("fileName");
     given(uriHelper.uriForFile(file)).willReturn("http://example.org/1");
     File file2 = new File("fileName2");

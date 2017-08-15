@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 
 import java.io.File;
-import java.time.Instant;
 
 
 /**
@@ -14,14 +13,13 @@ public class ResourceSync {
   private final ResourceSyncUriHelper uriHelper;
   private final FileHelper fileHelper;
 
-  public ResourceSync(ResourceSyncUriHelper uriHelper,
-                      FileHelper fileHelper) {
+  public ResourceSync(ResourceSyncUriHelper uriHelper, FileHelper fileHelper) {
     this.uriHelper = uriHelper;
     this.fileHelper = fileHelper;
   }
 
   public ResourceList resourceList(String user, String dataSet) {
-    return new FileSystemResourceList(getResourceListFile(user, dataSet), () -> Instant.now().toString(), uriHelper);
+    return new ResourceListFile(getResourceListFile(user, dataSet), uriHelper);
   }
 
   private File getResourceListFile(String user, String dataSet) {
@@ -32,10 +30,10 @@ public class ResourceSync {
     File sourceDescriptionFile = fileHelper.fileInRoot("sourceDescription.xml");
     File capabilityListFile = fileHelper.fileInDataSet(user, dataSet, "capabilityList.xml");
 
-    CapabilityList capabilityList = new CapabilityList(capabilityListFile, sourceDescriptionFile, uriHelper);
+    CapabilityListFile capabilityList = new CapabilityListFile(capabilityListFile, sourceDescriptionFile, uriHelper);
     capabilityList.addResourceList(getResourceListFile(user, dataSet));
 
-    SourceDescription sourceDescription = new SourceDescription(sourceDescriptionFile, uriHelper);
+    SourceDescriptionFile sourceDescription = new SourceDescriptionFile(sourceDescriptionFile, uriHelper);
     sourceDescription.addCapabilityList(capabilityListFile);
   }
 
@@ -43,7 +41,7 @@ public class ResourceSync {
     File sourceDescriptionFile = fileHelper.fileInRoot("sourceDescription.xml");
     File capabilityListFile = fileHelper.fileInDataSet(user, dataSet, "capabilityList.xml");
 
-    SourceDescription sourceDescription = new SourceDescription(sourceDescriptionFile, uriHelper);
+    SourceDescriptionFile sourceDescription = new SourceDescriptionFile(sourceDescriptionFile, uriHelper);
     sourceDescription.removeCapabilityList(capabilityListFile);
   }
 }
