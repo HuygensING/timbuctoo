@@ -94,10 +94,9 @@ public class GetDataSets {
   }
 
   @GET
-  @Path("{userId}/writeAccess")
+  @Path("me/writeAccess")
   @Produces(MediaType.APPLICATION_JSON)
-  public Response getDataSetsWithWriteAccess(@PathParam("userId") String userId,
-                                             @HeaderParam("Authorization") String
+  public Response getDataSetsWithWriteAccess(@HeaderParam("Authorization") String
                                                authHeader) {
 
     Map<String, Set<DataSetWithRoles>> dataSetsDisplay = new HashMap<>();
@@ -105,6 +104,7 @@ public class GetDataSets {
     Optional<User> user = loggedInUsers.userFor(authHeader);
 
     if (user.isPresent()) {
+      String userId = user.get().getPersistentId();
       Map<String, Set<DataSetWithRoles>> dataSets = dataSetFactory.getDataSetsWithWriteAccess(userId);
 
       for (Map.Entry<String, Set<DataSetWithRoles>> userDataSets : dataSets.entrySet()) {
