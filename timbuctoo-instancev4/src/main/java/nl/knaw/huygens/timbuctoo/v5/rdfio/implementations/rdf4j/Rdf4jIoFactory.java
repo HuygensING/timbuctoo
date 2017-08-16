@@ -14,18 +14,21 @@ import java.util.Set;
 import static org.eclipse.rdf4j.rio.Rio.getWriterFormatForMIMEType;
 
 public class Rdf4jIoFactory implements RdfIoFactory {
-  private static final MediaType RDF_PATCH_TYPE = new MediaType("application", "rdf-patch");
-  public static final String RDFP_EXTENSION = ".rdfp";
+  private static final MediaType NQUADS_UNIFIED_DIFF_TYPE = new MediaType(
+    "application",
+    "vnd.timbuctoo-rdf.nquads_unified_diff"
+  );
+  public static final String NQUADS_UNIFIED_DIFF_EXTENSION = ".nqud";
   public static final Set<RDFFormat> RDF_FORMATS = RDFParserRegistry.getInstance().getKeys();
   private static RdfParser rdfParser = new Rdf4jRdfParser();
-  private static RdfParser rdfPatchParser = new Rdf4jRdfPatchParser();
+  private static RdfParser rdfPatchParser = new Rdf4jNQuadUdParser();
 
   private String rdfFormat = "application/n-quads";
 
   @Override
   public RdfParser makeRdfParser(CachedLog log) {
-    if (log.getMimeType().isPresent() && log.getMimeType().get().equals(RDF_PATCH_TYPE) ||
-      log.getName().toString().endsWith(RDFP_EXTENSION)) {
+    if (log.getMimeType().isPresent() && log.getMimeType().get().equals(NQUADS_UNIFIED_DIFF_TYPE) ||
+      log.getName().toString().endsWith(NQUADS_UNIFIED_DIFF_EXTENSION)) {
       return rdfPatchParser;
     } else {
       return rdfParser;
@@ -45,7 +48,7 @@ public class Rdf4jIoFactory implements RdfIoFactory {
   public boolean isRdfTypeSupported(MediaType mediaType) {
     if (mediaType == null) {
       return false;
-    } else if (RDF_PATCH_TYPE.equals(mediaType)) {
+    } else if (NQUADS_UNIFIED_DIFF_TYPE.equals(mediaType)) {
       return true;
     }
 

@@ -320,15 +320,15 @@ public class IntegrationTest {
   }
 
   @Test
-  public void succeedingRdfPatchUploadWithGraphql() throws Exception {
+  public void succeedingNQuadUdUploadWithGraphql() throws Exception {
     String vreName = "clusius-" + UUID.randomUUID();
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + vreName + "/upload/rdf",
-      new File(getResource(IntegrationTest.class, "bia_clusius.rdfp").toURI()),
-      "application/rdf-patch",
+      new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
+      "application/vnd.timbuctoo-rdf.nquads_unified_diff",
       ImmutableMap.of(
         "encoding", "UTF-8",
-        "uri", "http://example.com/clusius.rdfp"
+        "uri", "http://example.com/clusius.nqud"
       )
     );
 
@@ -376,12 +376,12 @@ public class IntegrationTest {
   }
 
   @Test
-  public void succeedingRdfPatchUploadResourceSync() throws Exception {
+  public void succeedingRdfUploadResourceSync() throws Exception {
     String dataSetName = "clusius-" + UUID.randomUUID();
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + dataSetName + "/upload/rdf",
-      new File(getResource(IntegrationTest.class, "bia_clusius.rdfp").toURI()),
-      "application/rdf-patch",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
       ImmutableMap.of(
         "encoding", "UTF-8",
         "uri", "http://example.com/clusius.rdfp"
