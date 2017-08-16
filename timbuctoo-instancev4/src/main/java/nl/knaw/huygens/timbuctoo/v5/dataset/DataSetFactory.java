@@ -273,10 +273,6 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     dataStoreFactory.start();
   }
 
-  public boolean isRdfTypeSupported(MediaType mediaType) {
-    return configuration.getRdfIo().isRdfTypeSupported(mediaType);
-  }
-
   private class DataSet {
     private SchemaStore schemaStore;
     private TypeNameStore typeNameStore;

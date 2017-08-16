@@ -57,14 +57,12 @@ public class RdfUpload {
       return response;
     }
 
+    ImportManager importManager = dataSetManager.createImportManager(userId, dataSetId);
     Optional<MediaType> mediaTypeOpt = getMediaType(body);
     MediaType mediaType = mediaTypeOpt.orElse(null);
-    if (!dataSetManager.isRdfTypeSupported(mediaType)) {
+    if (!importManager.isRdfTypeSupported(mediaType)) {
       return Response.status(Response.Status.BAD_REQUEST).entity("Unsupported mime type: " + mediaType).build();
     }
-
-
-    ImportManager importManager = dataSetManager.createImportManager(userId, dataSetId);
 
     Future<?> promise = importManager.addLog(
       uri,

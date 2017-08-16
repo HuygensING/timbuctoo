@@ -220,6 +220,10 @@ public class ImportManager implements DataProvider {
     subscribedEntityProcessors.add(Tuple.tuple(cursor, processor));
   }
 
+  public boolean isRdfTypeSupported(MediaType mediaType) {
+    return serializerFactory.isRdfTypeSupported(mediaType);
+  }
+
   List<LogEntry> getLogEntries() {
     return logListStore.getData().getEntries();
   }
