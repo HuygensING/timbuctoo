@@ -1,15 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
+import org.junit.Before;
 import org.junit.Test;
 
-import javax.ws.rs.core.MediaType;
-import java.io.File;
-import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -17,20 +12,25 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
-public class Rdf4jNQuadUdParserTest {
+public class NquadsUdParserTest {
 
-  private static final String START_FROM = "";
-  private static final String CURSOR_PREFIX = "";
+  private RdfProcessor rdfProcessor;
+  private NquadsUdParser instance;
+
+  @Before
+  public void setUp() throws Exception {
+    rdfProcessor = mock(RdfProcessor.class);
+    instance = new NquadsUdParser();
+    instance.setRDFHandler(new NquadsUdHandler(rdfProcessor, "http://example.org/file", "", 0));
+  }
 
   @Test
-  public void itDeletes() throws Exception {
-    RdfProcessor rdfProcessor = mock(RdfProcessor.class);
+  public void parseStripsTheActionAddsItToTheActionsHolder() throws Exception {
+    instance.setRDFHandler(new NquadsUdHandler(rdfProcessor, "http://example.org/file", "", 0));
     StringReader reader =
       new StringReader("-<http://example.org/subject1> <http://pred> \"12\"^^<http://number> <http://some_graph> .");
-    CachedLog cachedLog = rdfPatchLog(reader);
-    Rdf4jNQuadUdParser instance = new Rdf4jNQuadUdParser();
 
-    instance.importRdf(CURSOR_PREFIX, START_FROM, cachedLog, rdfProcessor);
+    instance.parse(reader, "http://example.org/");
 
     verify(rdfProcessor).onQuad(
       false,
@@ -46,13 +46,10 @@ public class Rdf4jNQuadUdParserTest {
 
   @Test
   public void itAdds() throws Exception {
-    RdfProcessor rdfProcessor = mock(RdfProcessor.class);
     StringReader reader =
       new StringReader("+<http://example.org/subject1> <http://pred> \"12\"^^<http://number> <http://some_graph> .");
-    CachedLog cachedLog = rdfPatchLog(reader);
-    Rdf4jNQuadUdParser instance = new Rdf4jNQuadUdParser();
 
-    instance.importRdf(CURSOR_PREFIX, START_FROM, cachedLog, rdfProcessor);
+    instance.parse(reader, "http://example.org/");
 
     verify(rdfProcessor).onQuad(
       true,
@@ -68,15 +65,12 @@ public class Rdf4jNQuadUdParserTest {
 
   @Test
   public void itIgnoresLinesThatStartWithoutAPlusOrAMinus() throws Exception {
-    RdfProcessor rdfProcessor = mock(RdfProcessor.class);
     StringReader reader = new StringReader(
       " <http://example.org/subject1> <http://pred> \"12\"^^<http://number> <http://some_graph> .\n" +
         "@@ -1,4 +1,4 @@"
     );
-    CachedLog cachedLog = rdfPatchLog(reader);
-    Rdf4jNQuadUdParser instance = new Rdf4jNQuadUdParser();
 
-    instance.importRdf(CURSOR_PREFIX, START_FROM, cachedLog, rdfProcessor);
+    instance.parse(reader, "http://example.org/");
 
     verify(rdfProcessor, never()).onQuad(
       anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
@@ -85,12 +79,9 @@ public class Rdf4jNQuadUdParserTest {
 
   @Test
   public void itIgnoresLinesThatStartWithTriplePlusSigns() throws Exception {
-    RdfProcessor rdfProcessor = mock(RdfProcessor.class);
     StringReader reader = new StringReader("+++ fruits2\t2017-08-16 11:38:05.327645535 +0200");
-    CachedLog cachedLog = rdfPatchLog(reader);
-    Rdf4jNQuadUdParser instance = new Rdf4jNQuadUdParser();
 
-    instance.importRdf(CURSOR_PREFIX, START_FROM, cachedLog, rdfProcessor);
+    instance.parse(reader, "http://example.org/");
 
     verify(rdfProcessor, never()).onQuad(
       anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
@@ -99,44 +90,13 @@ public class Rdf4jNQuadUdParserTest {
 
   @Test
   public void itIgnoresLinesThatStartWithTripleMinusSigns() throws Exception {
-    RdfProcessor rdfProcessor = mock(RdfProcessor.class);
     StringReader reader = new StringReader("--- fruits1\t2017-08-16 11:37:47.247741827 +0200");
-    CachedLog cachedLog = rdfPatchLog(reader);
-    Rdf4jNQuadUdParser instance = new Rdf4jNQuadUdParser();
 
-    instance.importRdf(CURSOR_PREFIX, START_FROM, cachedLog, rdfProcessor);
+    instance.parse(reader, "http://example.org/");
 
     verify(rdfProcessor, never()).onQuad(
       anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
     );
   }
 
-  private CachedLog rdfPatchLog(StringReader reader) {
-    return new CachedLog() {
-      @Override
-      public void close() throws Exception {
-
-      }
-
-      @Override
-      public String getName() {
-        return "http://example.com";
-      }
-
-      @Override
-      public File getFile() {
-        throw new UnsupportedOperationException("Method should not be needed");
-      }
-
-      @Override
-      public Reader getReader() throws IOException {
-        return reader;
-      }
-
-      @Override
-      public Optional<MediaType> getMimeType() {
-        return Optional.of(new MediaType("application", "rdf-patch"));
-      }
-    };
-  }
 }
