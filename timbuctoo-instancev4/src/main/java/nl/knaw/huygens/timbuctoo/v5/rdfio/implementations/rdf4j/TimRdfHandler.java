@@ -9,7 +9,7 @@ import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 
 import java.util.function.Supplier;
 
-public class NquadsUdHandler extends AbstractRDFHandler {
+public class TimRdfHandler extends AbstractRDFHandler {
   private static final int ADD = '+';
   private final RdfProcessor rdfProcessor;
   private final String fileUri;
@@ -18,7 +18,7 @@ public class NquadsUdHandler extends AbstractRDFHandler {
   private Supplier<Integer> actionSupplier;
   private int idx;
 
-  public NquadsUdHandler(RdfProcessor rdfProcessor, String fileUri, String cursorPrefix, int startFrom) {
+  public TimRdfHandler(RdfProcessor rdfProcessor, String fileUri, String cursorPrefix, int startFrom) {
     this.rdfProcessor = rdfProcessor;
     this.fileUri = fileUri;
     this.cursorPrefix = cursorPrefix;

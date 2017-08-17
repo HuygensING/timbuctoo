@@ -6,6 +6,7 @@ import org.eclipse.rdf4j.rio.RDFHandler;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.RDFParserFactory;
 import org.eclipse.rdf4j.rio.helpers.NTriplesParserSettings;
 import org.eclipse.rdf4j.rio.nquads.NQuadsParser;
 
@@ -18,6 +19,14 @@ import static org.eclipse.rdf4j.rio.RDFFormat.NO_NAMESPACES;
 import static org.eclipse.rdf4j.rio.RDFFormat.SUPPORTS_CONTEXTS;
 
 public class NquadsUdParser extends NQuadsParser {
+  private static final RDFFormat NQUAD_UD_FORMAT = new RDFFormat(
+    "NQuadsUnifiedDiff",
+    "application/vnd.timbuctoo-rdf.nquads_unified_diff",
+    UTF_8,
+    "nqud",
+    NO_NAMESPACES,
+    SUPPORTS_CONTEXTS
+  );
   private Stack<Integer> actions;
 
   public NquadsUdParser() {
@@ -130,21 +139,28 @@ public class NquadsUdParser extends NQuadsParser {
 
   @Override
   public RDFParser setRDFHandler(RDFHandler handler) {
-    if (handler instanceof NquadsUdHandler) {
-      ((NquadsUdHandler) handler).registerActionSupplier(() -> actions.pop());
+    if (handler instanceof TimRdfHandler) {
+      // It might be nicer to override statement, to make it contain the action, but it takes to much effort for now.
+      ((TimRdfHandler) handler).registerActionSupplier(() -> actions.pop());
     }
     return super.setRDFHandler(handler);
   }
 
   @Override
   public RDFFormat getRDFFormat() {
-    return new RDFFormat(
-      "NQuadsUnifiedDiff",
-      "application/vnd.timbuctoo-rdf.nquads_unified_diff",
-      UTF_8,
-      "nqud",
-      NO_NAMESPACES,
-      SUPPORTS_CONTEXTS
-    );
+    return NQUAD_UD_FORMAT;
   }
+
+  static class NquadsUdParserFactory implements RDFParserFactory {
+    @Override
+    public RDFFormat getRDFFormat() {
+      return NQUAD_UD_FORMAT;
+    }
+
+    @Override
+    public RDFParser getParser() {
+      return new NquadsUdParser();
+    }
+  }
+
 }

@@ -37,7 +37,8 @@ public class Rdf4jRdfParser implements RdfParser {
       );
       RDFParser rdfParser = Rio.createParser(unwrappedFormat);
       rdfParser.setPreserveBNodeIDs(true);
-      rdfParser.setRDFHandler(new QuadHandlerDelegator(rdfProcessor, name, cursorPrefix, startFrom));
+      int startFromInt = startFrom.isEmpty() ? 0 : Integer.parseInt(startFrom);
+      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, name, cursorPrefix, startFromInt));
       rdfParser.parse(input.getReader(), name.toString());
     } catch (IOException | RDFParseException | UnsupportedRDFormatException e) {
       throw new RdfProcessingFailedException(e);
@@ -48,79 +49,5 @@ public class Rdf4jRdfParser implements RdfParser {
         throw new RdfProcessingFailedException(e);
       }
     }
-  }
-
-  class QuadHandlerDelegator extends AbstractRDFHandler {
-
-    private final RdfProcessor rdfProcessor;
-    private final String fileUri;
-    private final String cursorPrefix;
-    private final int startFrom;
-    private long idx;
-
-    private QuadHandlerDelegator(RdfProcessor rdfProcessor, String fileUri, String cursorPrefix, String startFrom) {
-      this.rdfProcessor = rdfProcessor;
-      this.fileUri = fileUri;
-      this.cursorPrefix = cursorPrefix;
-      this.startFrom = startFrom.isEmpty() ? 0 : Integer.parseInt(startFrom);
-      this.idx = 0;
-    }
-
-    @Override
-    public void handleNamespace(String prefix, String uri) throws RDFHandlerException {
-      try {
-        if (idx >= startFrom) {
-          rdfProcessor.setPrefix(cursorPrefix + idx, prefix, uri);
-        }
-        idx++;
-      } catch (RdfProcessingFailedException e) {
-        throw new RDFHandlerException(e);
-      }
-    }
-
-    @Override
-    public void startRDF() throws RDFHandlerException {
-      try {
-        rdfProcessor.start();
-      } catch (RdfProcessingFailedException e) {
-        throw new RDFHandlerException(e);
-      }
-    }
-
-    @Override
-    public void endRDF() throws RDFHandlerException {
-      try {
-        rdfProcessor.finish();
-      } catch (RdfProcessingFailedException e) {
-        throw new RDFHandlerException(e);
-      }
-    }
-
-    @Override
-    public void handleStatement(Statement st) throws RDFHandlerException {
-      try {
-        if (Thread.currentThread().isInterrupted()) {
-          rdfProcessor.finish();
-          throw new RDFHandlerException("Interrupted");
-        }
-        if (idx >= startFrom) {
-          String graph = st.getContext() == null ? fileUri : st.getContext().stringValue();
-          rdfProcessor.onQuad(
-            true,
-            cursorPrefix + idx,
-            st.getSubject().stringValue(),
-            st.getPredicate().stringValue(),
-            st.getObject().stringValue(),
-            (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getDatatype().toString() : null,
-            (st.getObject() instanceof Literal) ? ((Literal) st.getObject()).getLanguage().orElse(null) : null,
-            graph
-          );
-        }
-        idx++;
-      } catch (RdfProcessingFailedException e) {
-        throw new RDFHandlerException(e);
-      }
-    }
-
   }
 }
