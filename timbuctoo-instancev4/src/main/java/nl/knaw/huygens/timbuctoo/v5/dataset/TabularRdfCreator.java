@@ -36,7 +36,7 @@ public class TabularRdfCreator implements RdfCreator {
     try (CachedFile file = importManager.getFile(fileToken)) {
       loader.loadData(Lists.newArrayList(tuple(file.getName(), file.getFile())),
         new Importer(
-          new StateMachine<>(new RawUploadRdfSaver(dataSetId, file.getName(), saver)),
+          new StateMachine<>(new RawUploadRdfSaver(dataSetId, file.getName(), file.getMimeType(), saver)),
           new ResultReporter(importStatusConsumer)
         )
       );

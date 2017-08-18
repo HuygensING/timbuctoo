@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 
-public class TypedLiteralDataFetcher extends WalkTriplesDataFetcher {
+public class TypedLiteralDataFetcher extends WalkTriplesDataFetcher<TypedValue> {
 
   public TypedLiteralDataFetcher(String predicate, QuadStore tripleStore) {
     super(predicate, Direction.OUT, tripleStore);
@@ -13,8 +13,10 @@ public class TypedLiteralDataFetcher extends WalkTriplesDataFetcher {
 
   @Override
   protected TypedValue makeItem(CursorQuad triple) {
-    return triple.getValuetype()
-      .map(valueType -> TypedValue.create(triple.getObject(), valueType))
-      .orElseGet(() -> TypedValue.create(triple.getObject()));
+    if (triple.getValuetype().isPresent()) {
+      return TypedValue.create(triple.getObject(), triple.getValuetype().get());
+    } else {
+      throw new IllegalStateException("Source is not a triple referencing a value");
+    }
   }
 }

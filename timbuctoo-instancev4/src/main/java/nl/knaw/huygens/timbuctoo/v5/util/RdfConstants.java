@@ -17,10 +17,15 @@ public class RdfConstants {
   public static final String TIM_HAS_ROW = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#timhasrow";
   public static final String OF_COLLECTION = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#ofCollection";
   public static final String TIM_PROP_ID = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId";
+  public static final String TIM_MIMETYPE = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mimetype";
+  public static final String TIM_HASCOLOR = "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#hasColor";
+
+  public static final String TIM_TABULAR_FILE = "http://timbuctoo.huygens.knaw.nl/v5/types#tabularFile";
+
+  public static final String PROV_DERIVED_FROM = "http://www.w3.org/ns/prov#wasDerivedFrom";
   public static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
   public static final String RDFS_LABEL = "http://www.w3.org/2000/01/rdf-schema#label";
   public static final String LANGSTRING = "http://www.w3.org/1999/02/22-rdf-syntax-ns#langString";
   public static final String STRING = "http://www.w3.org/2001/XMLSchema#string";
   public static final String INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
-  public static final String GRAPHQL_SCHEMA = "http://facebook.github.io/graphql/#";
 }

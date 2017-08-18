@@ -15,8 +15,96 @@ securityConfiguration:
     authenticationCredentials: DUMMY
 
 baseUri: http://0.0.0.0:0 #port will be replaced with the port that timbuctoo ends up listening on
-timbuctooSearchUrl: http://timsearch
 userRedirectUrl: http://example.com
+
+archetypes:
+  - name: metadata
+    requiredTypeUri: http://rdfs.org/ns/void#Dataset
+    description: >
+      Dataset metadata records that contain the title, description, licence etc.
+
+      There may be multiple records because this dataset might be built from multiple datasets. To get the record that
+      is about this dataset, use the uri of this dataset. If you use a blank string as uri, it will resolve to the
+      uri of this dataset (because uri's may be relative)
+    predicateDefinitions:
+      - name: title
+        description: "The name of the dataset"
+        predicateUri: http://purl.org/dc/terms/title
+      - name: description
+        description: "A textual description of the dataset"
+        predicateUri: http://purl.org/dc/terms/description
+      - name: creator
+        description: "An entity, such as a person, organisation, or service, that is primarily responsible for creating the dataset"
+        predicateUri: http://purl.org/dc/terms/creator
+        reference:
+          direction: OUT
+          targetArchetype: datasetContributor
+      - name: contributor
+        description: "An entity, such as a person, organisation, or service, that is responsible for making contributions to the dataset"
+        predicateUri: http://purl.org/dc/terms/contributor
+        isList: true
+        reference:
+          direction: OUT
+          targetArchetype: datasetContributor
+      - name: license
+        predicateUri: http://purl.org/dc/terms/license
+        description: |
+          The license under which a dataset has been published.
+          The URIs of some licenses designed specifically for data are:
+
+          - [Public Domain Dedication and License](http://www.opendatacommons.org/licenses/pddl/) (PDDL) — “Public Domain for data/databases”
+          - [Open Data Commons Attribution](http://www.opendatacommons.org/licenses/by/) (ODC-By) — “Attribution for data/databases”
+          - [Open Database License](http://www.opendatacommons.org/licenses/odbl/) (ODC-ODbL) — “Attribution Share-Alike for data/databases”
+          - [CC0 1.0 Universal](http://creativecommons.org/publicdomain/zero/1.0/) — “Creative Commons public domain waiver”
+      - name: subject
+        description: >
+          When someone wants to select a dataset, one of the fundamental questions is, what does the dataset actually offer?
+          There are datasets such as DBpedia that cover quite a range of topics, whereas there are others that only talk about
+          a certain domain (books, places, etc.).
+
+          For the general case, we recommend the use of a DBpedia resource URI (http://dbpedia.org/resource/XXX) to categorise
+          a dataset, where XXX stands for the thing which best describes the main topic of what the dataset is about.
+
+        predicateUri: http://purl.org/dc/terms/subject
+        isList: true
+      - name: exampleResources
+        description: "It can be helpful to name some representative example entites for a dataset. Looking up these entities allows users to quickly get an impression of the kind of data that is present in a dataset."
+        predicateUri: http://rdfs.org/ns/void#exampleResource
+        isList: true
+      - name: banner_image
+        description: "You can specify the url of an image that is representative for the dataset here."
+        predicateUri: http://xmlns.com/foaf/0.1/depiction
+      - name: color
+        description: "You can specify a color that is representative for the dataset here."
+        predicateUri: http://timbuctoo.huygens.knaw.nl/v5/vocabulary#hasColor
+      - name: files
+        description: "The tabular files (e.g. excel) that have been uploaded to this dataset"
+        predicateUri: http://www.w3.org/ns/prov#wasDerivedFrom
+        isList: true
+        reference:
+          direction: OUT
+          targetArchetype: uploadedFile
+  - name: datasetContributor
+    requiredTypeUri: http://xmlns.com/foaf/0.1/Organization
+    description: "An organisation that creates data"
+    predicateDefinitions:
+      - name: name
+        description: "The name of the organisation"
+        predicateUri: http://www.w3.org/2000/01/rdf-schema#label
+      - name: homepage
+        description: "The homepage of the organisation"
+        predicateUri: http://xmlns.com/foaf/0.1/homepage
+      - name: image
+        description: "An image (e.g. a logo) of the organisation"
+        predicateUri: http://xmlns.com/foaf/0.1/depiction
+  - name: uploadedFile
+    requiredTypeUri: http://timbuctoo.huygens.knaw.nl/v5/types#tabularFile
+    description: "A file with tabular data and a basic rdf version of it's contents"
+    predicateDefinitions:
+      - name: mimetype
+        description: "The mimetype of the original file"
+        predicateUri: http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mimetype
+
 
 databases:
   databaseLocation: ${timbuctoo_dataPath}/datasets
@@ -39,7 +127,6 @@ dataSet:
 searchResultAvailabilityTimeout:
   duration: 8
   timeUnit: HOURS
-executeDatabaseInvariantCheckAt: -1
 
 #webhooks:
 #  vreAdded: <some url to send a post request to when a new VRE is added>

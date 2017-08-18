@@ -1,9 +1,9 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql;
 
-import com.google.common.collect.Sets;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
-import graphql.schema.GraphQLObjectType;
+import nl.knaw.huygens.timbuctoo.v5.archetypes.ArchetypesGenerator;
+import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -13,13 +13,12 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexSchemaFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.entity.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
-
-import java.util.Map;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 
 import static graphql.schema.GraphQLSchema.newSchema;
 
@@ -28,16 +27,18 @@ public class GraphQlService {
   private final SchemaStoreFactory schemaStoreFactory;
   private final TypeNameStoreFactory typeNameStoreFactory;
   private final DataFetcherFactoryFactory dataFetcherFactoryFactory;
-  private final GraphQlTypeGenerator typeGenerator;
+  private final DerivedSchemaTypeGenerator typeGenerator;
+  private final Archetypes archetypes;
 
   public GraphQlService(SchemaStoreFactory schemaStoreFactory,
                         TypeNameStoreFactory typeNameStoreFactory,
                         DataFetcherFactoryFactory dataFetcherFactoryFactory,
-                        GraphQlTypeGenerator typeGenerator) {
+                        DerivedSchemaTypeGenerator typeGenerator, Archetypes archetypes) {
     this.schemaStoreFactory = schemaStoreFactory;
     this.typeNameStoreFactory = typeNameStoreFactory;
     this.dataFetcherFactoryFactory = dataFetcherFactoryFactory;
     this.typeGenerator = typeGenerator;
+    this.archetypes = archetypes;
     this.schemaFactory = new CollectionIndexSchemaFactory();
   }
 
@@ -47,25 +48,28 @@ public class GraphQlService {
       TypeNameStore typeNameStore = typeNameStoreFactory.createTypeNameStore(userId, dataSetName);
       DataFetcherFactory dataFetcherFactory = dataFetcherFactoryFactory.createDataFetcherFactory(userId, dataSetName);
       SchemaStore schemaStore = schemaStoreFactory.createSchemaStore(userId, dataSetName);
-
-      Map<String, GraphQLObjectType> graphQlTypes = typeGenerator.makeGraphQlTypes(
-        schemaStore.getTypes(),
+      GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(
         typeNameStore,
         dataFetcherFactory,
         paginationArgumentsHelper
       );
+      ArchetypesGenerator archetypesGenerator = new ArchetypesGenerator();
+
+      typeGenerator.makeGraphQlTypes(schemaStore.getTypes(), typeNameStore, typesContainer);
 
       return GraphQL
         .newGraphQL(
           newSchema()
             .query(schemaFactory
               .createQuerySchema(
-                graphQlTypes,
+                typesContainer.getRdfTypeRepresentingTypes(),
+                archetypesGenerator.makeGraphQlTypes(archetypes, typesContainer),
                 dataFetcherFactory,
-                paginationArgumentsHelper
+                paginationArgumentsHelper,
+                TimbuctooRdfIdHelper.dataSet(userId + "_" + dataSetName)
               )
             )
-            .build(Sets.newHashSet(graphQlTypes.values()))
+            .build(typesContainer.getAllObjectTypes())
         )
         .queryExecutionStrategy(new SerializerExecutionStrategy(typeNameStore))
         .build();

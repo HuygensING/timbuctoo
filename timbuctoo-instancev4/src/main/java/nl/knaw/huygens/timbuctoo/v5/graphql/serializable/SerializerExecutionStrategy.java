@@ -11,24 +11,25 @@ import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.QueryContainer;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Serializable;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
-import static nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator.ENTITY_INTERFACE_NAME;
-import static nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator.VALUE_INTERFACE_NAME;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList.graphqlIntrospectionList;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject.graphqlIntrospectionObject;
 import static nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList.serializableList;
@@ -49,41 +50,65 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
     Map<String, java.util.List<Field>> fields = parameters.fields();
     GraphQLObjectType parentType = parameters.typeInfo().castType(GraphQLObjectType.class);
 
-    boolean removeUri = false;
-    boolean removeType = false;
-    if (isEntity(parentType)) {
-      removeUri = addField(fields, "uri");
-      removeType = addField(fields, "__typename");
-    } else if (isValue(parentType)) {
-      removeType = addField(fields, "__typename");
-    }
-
     ExecutionResult result = super.execute(executionContext, parameters);
     Map<String, Object> data  = result.getData();
-    if (isValue(parentType)) {
+    if (parameters.source() instanceof TypedValue) {
       String value = ((TypedValue) parameters.source()).getValue();
-      String typename = ((TypedValue) parameters.source()).getType().iterator().next();
+      String typename = ((TypedValue) parameters.source()).getType();
       return new ExecutionResultImpl(
         value == null ? null : Value.create(value, typename),
         result.getErrors(),
         result.getExtensions()
       );
-    } else if (isEntity(parentType)) {
-      final String uri = data.get("uri") + "";
-      final String type = typeNameStore.makeUri(data.get("__typename") + "");
-      if (removeUri) {
-        data.remove("uri");
+    } else if (parameters.source() instanceof SubjectReference) {
+      final String uri = ((SubjectReference) parameters.source()).getSubjectUri();
+      final Set<String> types = ((SubjectReference) parameters.source()).getTypes();
+      final String graphqlType = typeNameStore.makeUri(parentType.getName());
+      String type;
+      if (graphqlType != null && types.contains(graphqlType)) {
+        type = graphqlType;
+      } else {
+        Optional<String> firstType = types.stream().sorted().findFirst();
+        if (firstType.isPresent()) {
+          type = firstType.get();
+        } else {
+          LOG.error("No type present on " + uri + ". Expected at least TIM_UNKNOWN");
+          type = RdfConstants.UNKNOWN;
+        }
       }
-      if (removeType) {
-        data.remove("__typename");
-      }
+
       LinkedHashMap<PredicateInfo, Serializable> copy = new LinkedHashMap<>();
       for (Map.Entry<String, Object> entry : data.entrySet()) {
+        //Graphql allows you to specify the same field under the same name more then once.
+        //if the field is an object field the subqueries will be merged
+        //if you use a different name then the fields will not be merged and entry.getKey() is the alias
+        //
+        //examples
+        /*
+          {
+            foo { bar }
+            foo { baz }
+          }
+          =>
+          entry.getKey() == "foo"
+          fieldList == [{name:"foo" selectionSet: ["bar"]}, {name:"foo" selectionSet: ["baz"]}]
+
+          {
+            foo { bar }
+            bax: foo { baz }
+          }
+          =>
+          entry.getKey() == "foo"
+          fieldList == [{name:"foo" selectionSet: ["bar"]}]
+
+          entry.getKey() == "bax"
+          fieldList == [{name:"foo" selectionSet: ["baz"]}]
+
+         */
         List<Field> fieldList = fields.get(entry.getKey());
-        if (fieldList.size() > 1) {
-          LOG.error("More then one field in fieldList. What does that mean?");
-        }
+        //so if the fieldlist contains more then one item. They will always have the same name
         String actualName = fieldList.get(0).getName();
+
 
         Optional<Tuple<String, Direction>> uriAndDirection = typeNameStore.makeUriForPredicate(actualName);
         final PredicateInfo predicateInfo;
@@ -140,7 +165,7 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
                                                  List<Field> fields, Iterable<Object> result) {
     ExecutionResult completedResult = super.completeValueForList(executionContext, parameters, fields, result);
     if (parameters.source() instanceof PaginatedList) {
-      PaginatedList source = (PaginatedList) parameters.source();
+      PaginatedList<? extends DatabaseResult> source = (PaginatedList) parameters.source();
       return new ExecutionResultImpl(
         serializableList(
           source.getPrevCursor().orElse(null),
@@ -164,24 +189,6 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
         completedResult.getErrors(),
         completedResult.getExtensions()
       );
-    }
-  }
-
-  private boolean isEntity(GraphQLObjectType graphQlObjectType) {
-    return graphQlObjectType.getInterfaces().stream().anyMatch(i -> i.getName().equals(ENTITY_INTERFACE_NAME));
-  }
-
-  private boolean isValue(GraphQLObjectType graphQlObjectType) {
-    return graphQlObjectType.getInterfaces().stream().anyMatch(i -> i.getName().equals(VALUE_INTERFACE_NAME));
-  }
-
-  private boolean addField(Map<String, java.util.List<Field>> fields, String key) {
-    java.util.List uriField = fields.computeIfAbsent(key, k -> new ArrayList<>());
-    if (uriField.isEmpty()) {
-      uriField.add(new Field(key));
-      return true;
-    } else {
-      return false;
     }
   }
 

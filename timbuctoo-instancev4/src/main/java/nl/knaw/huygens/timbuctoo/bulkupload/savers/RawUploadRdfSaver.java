@@ -7,20 +7,25 @@ import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.core.MediaType;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.OF_COLLECTION;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.PROV_DERIVED_FROM;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDFS_LABEL;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIMBUCTOO_ORDER;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_COLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_MIMETYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_TABULAR_FILE;
 import static nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper.propertyDescription;
 
 public class RawUploadRdfSaver implements Saver<String> {
@@ -33,13 +38,21 @@ public class RawUploadRdfSaver implements Saver<String> {
   private int curEntity;
   private int curCollection;
 
-  public RawUploadRdfSaver(String dataSetId, String fileName, RdfSerializer saver) {
+  public RawUploadRdfSaver(String dataSetId, String fileName, Optional<MediaType> mimeType, RdfSerializer saver)
+    throws LogStorageFailedException {
     this.dataSetId = dataSetId;
     this.dataSetUri = TimbuctooRdfIdHelper.dataSet(dataSetId);
     this.fileName = fileName;
     this.saver = saver;
     this.curEntity = 0;
     this.curCollection = 0;
+
+    String fileUri = TimbuctooRdfIdHelper.rawFile(dataSetId, fileName);
+    saver.onRelation(fileUri, RDF_TYPE, TIM_TABULAR_FILE, dataSetUri);
+    saver.onRelation(dataSetUri, PROV_DERIVED_FROM, fileUri, dataSetUri);
+    if (mimeType.isPresent()) {
+      saver.onValue(fileUri, TIM_MIMETYPE, mimeType.get().toString(), STRING, dataSetUri);
+    }
   }
 
   @Override

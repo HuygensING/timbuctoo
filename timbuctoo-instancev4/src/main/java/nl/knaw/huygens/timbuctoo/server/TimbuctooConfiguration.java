@@ -1,10 +1,19 @@
 package nl.knaw.huygens.timbuctoo.server;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
 import com.kjetland.dropwizard.activemq.ActiveMQConfigHolder;
 import io.dropwizard.Configuration;
 import io.dropwizard.client.HttpClientConfiguration;
+import io.dropwizard.logging.DefaultLoggingFactory;
+import io.dropwizard.logging.LoggingFactory;
+import io.dropwizard.metrics.MetricsFactory;
+import io.dropwizard.server.DefaultServerFactory;
+import io.dropwizard.server.ServerFactory;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
 import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
@@ -12,17 +21,18 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
+import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseFactory;
+import org.immutables.value.Value;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
+import javax.ws.rs.DefaultValue;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.regex.Matcher;
@@ -35,84 +45,91 @@ import java.util.regex.Pattern;
  *  - example authorization
  *  - example database
  */
-public class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder, SearchConfig {
-  @JsonProperty
-  @Deprecated
-  private String loginsFilePath;
-  @JsonProperty
-  @Deprecated
-  private String usersFilePath;
-  @JsonProperty
-  @Deprecated
-  private Path authorizationsPath;
-
-  @JsonProperty
-  private SecurityFactory securityConfiguration;
-
-  @JsonProperty
-  private WebhookFactory webhooks = new WebhookFactory();
-
-  @JsonProperty
-  private TinkerPopConfig databaseConfiguration;
-  @Deprecated
-  @JsonProperty
-  private TimeoutFactory autoLogoutTimeout;
-  @NotNull
-  private TimeoutFactory searchResultAvailabilityTimeout;
-
-  @NotNull
-  private UriHelper uriHelper;
-
-  private String timbuctooSearchUrl;
-
-  @JsonProperty
-  @NotNull
-  @Valid
-  private ActiveMQConfig activeMq;
-
-  private Optional<URI> userRedirectUrl = Optional.empty();
-
-  @JsonProperty
-  @NotNull
-  private PersistenceManagerFactory persistenceManager;
-
-  @JsonProperty
-  private boolean allowGremlinEndpoint = true;
-
-  @JsonProperty
-  @Deprecated
-  //left in to make the config not break on older timbuctoo instances
-  private int executeDatabaseInvariantCheckAt = 24;
-
-  @Valid
-  @NotNull
-  private HttpClientConfiguration httpClientConfiguration = new HttpClientConfiguration();
-  private DataSetConfiguration dataSetConfiguration;
-  private BdbDatabaseFactory bdbDatabaseFactory;
+@Value.Immutable
+@JsonDeserialize(as = ImmutableTimbuctooConfiguration.class)
+@JsonSerialize(as = ImmutableTimbuctooConfiguration.class)
+public abstract class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder, SearchConfig {
   private ExecutorService dataSetExecutorService;
 
-
-  public PersistenceManagerFactory getPersistenceManagerFactory() {
-    return persistenceManager;
+  @JsonIgnore
+  public void setDataSetExecutorService(ExecutorService dataSetExecutorService) {
+    this.dataSetExecutorService = dataSetExecutorService;
   }
 
-  public TinkerPopConfig getDatabaseConfiguration() {
-    return databaseConfiguration;
+  @Valid
+  public abstract SecurityFactory getSecurityConfiguration();
+
+  @Valid
+  @Value.Default
+  public WebhookFactory getWebhooks() {
+    return new WebhookFactory();
   }
 
-  // ActiveMQConfigHolder implementation
+  @Valid
+  public abstract TinkerPopConfig getDatabaseConfiguration();
+
+  @Valid
   @Override
-  public ActiveMQConfig getActiveMQ() {
-    return activeMq;
+  @JsonProperty("activeMq")
+  public abstract ActiveMQConfig getActiveMQ();
+
+  @JsonProperty("searchResultAvailabilityTimeout")
+  public abstract TimeoutFactory getSearchResultAvailabilityTimeoutFactory();
+
+  @JsonProperty("httpClient")
+  @Valid
+  @Value.Default
+  public HttpClientConfiguration getHttpClientConfiguration() {
+    return new HttpClientConfiguration();
   }
 
+  @Valid
+  @JsonProperty("baseUri")
+  public abstract UriHelper getUriHelper();
+
+  @DefaultValue("true")
+  @JsonProperty("allowGremlinEndpoint")
+  public abstract boolean isAllowGremlinEndpoint();
+
+  @Valid
+  @JsonProperty("persistenceManager")
+  public abstract PersistenceManagerFactory getPersistenceManagerFactory();
+
+  @Valid
+  @JsonUnwrapped
+  public abstract Archetypes getArchetypes();
+
+  public abstract Optional<URI> getUserRedirectUrl();
+
+  @Valid
+  public abstract BdbDatabaseFactory getDatabases();
+
+  @JsonProperty("dataSet")
+  @Valid
+  public abstract DataSetConfiguration getDataSetConfiguration();
+
+  @JsonIgnore
+  public DataSetFactory getDataSet() throws DataStoreCreationException {
+    try {
+      return new DataSetFactory(
+        dataSetExecutorService,
+        getSecurityConfiguration().getVreAuthorizationCreator(),
+        getDataSetConfiguration(),
+        new BdbDataStoreFactory(getDatabases())
+      );
+    } catch (IOException | AccessNotPossibleException e) {
+      throw new DataStoreCreationException(e);
+    }
+  }
+
+  @JsonIgnore
   public Optional<String> getLocalAmqJmxPath(String queueName) {
-    if (activeMq != null) {
-      if (activeMq.brokerUrl != null) {
+    if (getActiveMQ() != null) {
+      if (getActiveMQ().brokerUrl != null) {
         //this only generates a metrics path when the amq brokerurl is a simple vm-local url
         //A path for remote connections makes no sense because then this JVM can't get at the JMX data directly anyway.
         //A path for the advanced url format might make sense, but I don't understand that format or its use.
-        Matcher matcher = Pattern.compile("^vm://([^?]*)").matcher(activeMq.brokerUrl);
+        Matcher matcher = Pattern.compile("^vm://([^?]*)").matcher(getActiveMQ().brokerUrl);
         if (matcher.find()) {
           String brokerName = matcher.group(1);
           return Optional.of(String.format(
@@ -127,92 +144,32 @@ public class TimbuctooConfiguration extends Configuration implements ActiveMQCon
     return Optional.empty();
   }
 
-  public UriHelper getUriHelper() {
-    return uriHelper;
-  }
-
-  @JsonProperty
-  public void setBaseUri(String baseUri) {
-    if (this.uriHelper == null) {
-      this.uriHelper = new UriHelper(URI.create(baseUri));
-    } else {
-      this.uriHelper.setBaseUri(URI.create(baseUri));
-    }
-  }
-
-  // SearchConfig implementation
+  @JsonIgnore
   @Override
   public Timeout getSearchResultAvailabilityTimeout() {
-    return searchResultAvailabilityTimeout.createTimeout();
+    return getSearchResultAvailabilityTimeoutFactory().createTimeout();
   }
 
-  @Deprecated
-  public Path getAuthorizationsPath() {
-    return authorizationsPath;
+  //DROPWIZARD DEFAULT PROPERTIES:
+  //Required to make immutables generate json-deserializers for the default properties
+  @Override
+  @JsonProperty("server")
+  @Value.Default
+  public ServerFactory getServerFactory() {
+    return new DefaultServerFactory();
   }
 
-  public boolean isAllowGremlinEndpoint() {
-    return allowGremlinEndpoint;
+  @Override
+  @JsonProperty("logging")
+  @Value.Default
+  public LoggingFactory getLoggingFactory() {
+    return new DefaultLoggingFactory();
   }
 
-  public String getTimbuctooSearchUrl() {
-    return timbuctooSearchUrl;
+  @Override
+  @JsonProperty("metrics")
+  @Value.Default
+  public MetricsFactory getMetricsFactory() {
+    return new MetricsFactory();
   }
-
-  @JsonProperty("httpClient")
-  public HttpClientConfiguration getHttpClientConfiguration() {
-    return httpClientConfiguration;
-  }
-
-  @JsonProperty("httpClient")
-  public void setHttpClientConfiguration(HttpClientConfiguration httpClientConfiguration) {
-    this.httpClientConfiguration = httpClientConfiguration;
-  }
-
-  public SecurityFactory getSecurityConfiguration() {
-    return securityConfiguration;
-  }
-
-  public WebhookFactory getWebhooks() {
-    return webhooks;
-  }
-
-  public Optional<URI> getUserRedirectUrl() {
-    return userRedirectUrl;
-  }
-
-  @JsonProperty
-  private void setUserRedirectUrl(String userRedirectUrl) {
-    this.userRedirectUrl = Optional.of(URI.create(userRedirectUrl));
-  }
-
-  public BdbDatabaseFactory getDatabases() {
-    return bdbDatabaseFactory;
-  }
-
-  public void setDatabases(BdbDatabaseFactory bdbDatabaseFactory) {
-    this.bdbDatabaseFactory = bdbDatabaseFactory;
-  }
-
-  public DataSetFactory getDataSet() throws DataStoreCreationException {
-    try {
-      return new DataSetFactory(
-        dataSetExecutorService,
-        getSecurityConfiguration().getVreAuthorizationCreator(),
-        dataSetConfiguration,
-        new BdbDataStoreFactory(getDatabases())
-      );
-    } catch (IOException | AccessNotPossibleException e) {
-      throw new DataStoreCreationException(e);
-    }
-  }
-
-  public void setDataSetExecutorService(ExecutorService executorService) {
-    dataSetExecutorService = executorService;
-  }
-
-  public void setDataSet(DataSetConfiguration dataSetFactory) {
-    this.dataSetConfiguration = dataSetFactory;
-  }
-
 }

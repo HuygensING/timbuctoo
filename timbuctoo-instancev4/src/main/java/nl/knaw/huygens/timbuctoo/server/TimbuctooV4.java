@@ -50,7 +50,6 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Authenticate;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Graph;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Gremlin;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.ImportRdf;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.JsEnv;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Metadata;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.RelationTypes;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.Search;
@@ -97,7 +96,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
-import nl.knaw.huygens.timbuctoo.v5.graphql.entity.GraphQlTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.entity.DerivedSchemaTypeGenerator;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -269,7 +268,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetFactory,
         dataSetFactory,
         dataSetFactory,
-        new GraphQlTypeGenerator()
+        new DerivedSchemaTypeGenerator(),
+        configuration.getArchetypes()
       ),
       uriHelper
     );
@@ -283,7 +283,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
 
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
-    register(environment, new JsEnv(configuration));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers(environment)));
     register(environment, new Me(securityConfig.getLoggedInUsers(environment)));
     register(environment, new Search(configuration, uriHelper, graphManager));
@@ -435,7 +434,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
             final InetSocketAddress socket = (InetSocketAddress) channel
               .getLocalAddress();
 
-            timbuctooConfiguration.setBaseUri("http://localhost:" + socket.getPort());
+            timbuctooConfiguration.getUriHelper().setBaseUri(URI.create("http://localhost:" + socket.getPort()));
           }
         } catch (Exception e) {
           LOG.error("No base url provided, and unable to get generate one myself", e);

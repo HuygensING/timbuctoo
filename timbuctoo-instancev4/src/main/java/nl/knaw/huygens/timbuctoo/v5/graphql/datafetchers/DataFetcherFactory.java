@@ -2,17 +2,18 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 
 public interface DataFetcherFactory {
-  EntityFetcher entityFetcher();
+  RelatedDataFetcher<SubjectReference> relationFetcher(String predicate, Direction direction);
 
-  RelatedDataFetcher relationFetcher(String predicate, Direction direction);
+  RelatedDataFetcher<TypedValue> typedLiteralFetcher(String predicate);
 
-  RelatedDataFetcher typedLiteralFetcher(String predicate);
-
-  RelatedDataFetcher unionFetcher(String predicate, Direction direction);
-
-  UriFetcher entityUriDataFetcher();
+  RelatedDataFetcher<DatabaseResult> unionFetcher(String predicate, Direction direction);
 
   CollectionFetcher collectionFetcher(String typeUri);
+
+  LookUpSubjectByUriFetcher lookupFetcher();
 }

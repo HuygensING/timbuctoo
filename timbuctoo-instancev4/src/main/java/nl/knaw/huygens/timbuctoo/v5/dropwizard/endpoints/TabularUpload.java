@@ -95,7 +95,13 @@ public class TabularUpload {
     Loader loader = LoaderFactory.createFor(configFromFormData(formData));
 
     Tuple<UUID, RdfCreator> rdfCreator = dataSetFactory.registerRdfCreator(
-      (statusConsumer) -> new TabularRdfCreator(importManager, loader, dataSetId, statusConsumer, fileToken)
+      (statusConsumer) -> new TabularRdfCreator(
+        importManager,
+        loader,
+        ownerId + "_" + dataSetId,
+        statusConsumer,
+        fileToken
+      )
     );
 
     Future<?> promise = importManager.generateLog(

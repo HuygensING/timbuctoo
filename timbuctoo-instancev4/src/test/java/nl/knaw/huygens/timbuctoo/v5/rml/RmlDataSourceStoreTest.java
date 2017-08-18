@@ -19,6 +19,7 @@ import org.junit.Test;
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
@@ -90,10 +91,10 @@ public class RmlDataSourceStoreTest {
     public void subscribeToRdf(RdfProcessor processor, String cursor) {
       RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
 
-      rawUploadRdfSaver = new RawUploadRdfSaver("dataSetId", "fileName", rdfSerializer);
       try {
+        rawUploadRdfSaver = new RawUploadRdfSaver("dataSetId", "fileName", Optional.empty(), rdfSerializer);
         processor.start();
-      } catch (RdfProcessingFailedException e) {
+      } catch (RdfProcessingFailedException | LogStorageFailedException e) {
         throw new RuntimeException(e.getCause());
       }
     }
