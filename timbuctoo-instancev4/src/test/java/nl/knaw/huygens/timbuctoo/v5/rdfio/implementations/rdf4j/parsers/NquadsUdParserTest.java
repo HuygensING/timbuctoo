@@ -1,6 +1,8 @@
-package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j;
+package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.NquadsUdParser;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.TimRdfHandler;
 import org.junit.Before;
 import org.junit.Test;
 

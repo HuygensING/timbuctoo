@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j;
+package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;

@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j;
+package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.rio.RDFFormat;
@@ -151,7 +151,7 @@ public class NquadsUdParser extends NQuadsParser {
     return NQUAD_UD_FORMAT;
   }
 
-  static class NquadsUdParserFactory implements RDFParserFactory {
+  public static class NquadsUdParserFactory implements RDFParserFactory {
     @Override
     public RDFFormat getRDFFormat() {
       return NQUAD_UD_FORMAT;

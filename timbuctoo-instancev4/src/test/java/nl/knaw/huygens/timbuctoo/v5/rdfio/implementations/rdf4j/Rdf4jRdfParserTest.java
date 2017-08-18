@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.NquadsUdParser.NquadsUdParserFactory;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.NquadsUdParser.NquadsUdParserFactory;
 import org.eclipse.rdf4j.rio.RDFParserRegistry;
 import org.junit.Test;
 

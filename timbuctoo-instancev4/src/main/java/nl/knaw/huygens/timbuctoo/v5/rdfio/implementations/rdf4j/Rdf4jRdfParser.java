@@ -4,18 +4,15 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfParser;
-import org.eclipse.rdf4j.model.Literal;
-import org.eclipse.rdf4j.model.Statement;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.TimRdfHandler;
 import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.RDFHandlerException;
 import org.eclipse.rdf4j.rio.RDFParseException;
 import org.eclipse.rdf4j.rio.RDFParser;
 import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
-import org.eclipse.rdf4j.rio.helpers.AbstractRDFHandler;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.Optional;
 
 import static org.eclipse.rdf4j.rio.Rio.getParserFormatForFileName;
