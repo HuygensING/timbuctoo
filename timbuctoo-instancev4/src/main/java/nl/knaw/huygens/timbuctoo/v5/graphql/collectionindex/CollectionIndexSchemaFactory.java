@@ -5,7 +5,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookupFetcherWrapper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookUpSubjectByUriFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
@@ -28,7 +28,7 @@ public class CollectionIndexSchemaFactory {
       .name("Query");
 
     final String uriArgument = "uri";
-    final LookupFetcherWrapper lookupFetcher = new LookupFetcherWrapper(
+    final LookUpSubjectByUriFetcherWrapper lookupFetcher = new LookUpSubjectByUriFetcherWrapper(
       uriArgument,
       fetcherFactory.lookupFetcher(),
       baseUri

@@ -15,5 +15,5 @@ public interface DataFetcherFactory {
 
   CollectionFetcher collectionFetcher(String typeUri);
 
-  LookupFetcher lookupFetcher();
+  LookUpSubjectByUriFetcher lookupFetcher();
 }

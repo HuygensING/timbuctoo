@@ -4,10 +4,11 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.LazyTypeSubjectReference
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 
-public class LookupFetcher implements nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookupFetcher {
+public class LookUpSubjectByUriFetcher
+  implements nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookUpSubjectByUriFetcher {
   private final QuadStore quadStore;
 
-  public LookupFetcher(QuadStore quadStore) {
+  public LookUpSubjectByUriFetcher(QuadStore quadStore) {
     this.quadStore = quadStore;
   }
 

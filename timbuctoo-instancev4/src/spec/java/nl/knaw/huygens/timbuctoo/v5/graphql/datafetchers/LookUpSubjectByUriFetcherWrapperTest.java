@@ -18,12 +18,13 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
-public class LookupFetcherWrapperTest {
+public class LookUpSubjectByUriFetcherWrapperTest {
 
   @Test
   public void handlesAbsoluteUrls() {
-    Mock lookupFetcherMock = new Mock();
-    LookupFetcherWrapper sut = new LookupFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
+    LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
+    LookUpSubjectByUriFetcherWrapper
+      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
 
     sut.get(new MockEnv("http://example.com/2"));
 
@@ -33,8 +34,9 @@ public class LookupFetcherWrapperTest {
 
   @Test
   public void handlesRelativeUrls() {
-    Mock lookupFetcherMock = new Mock();
-    LookupFetcherWrapper sut = new LookupFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
+    LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
+    LookUpSubjectByUriFetcherWrapper
+      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
     sut.get(new MockEnv("/2"));
 
     assertThat(lookupFetcherMock.uri, is("http://example.org/2"));
@@ -42,8 +44,9 @@ public class LookupFetcherWrapperTest {
 
   @Test
   public void handlesEmptyUrls() {
-    Mock lookupFetcherMock = new Mock();
-    LookupFetcherWrapper sut = new LookupFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
+    LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
+    LookUpSubjectByUriFetcherWrapper
+      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
 
     sut.get(new MockEnv(""));
 
@@ -52,8 +55,9 @@ public class LookupFetcherWrapperTest {
 
   @Test
   public void doesntDoTooMuchNormalization() {
-    Mock lookupFetcherMock = new Mock();
-    LookupFetcherWrapper sut = new LookupFetcherWrapper("uri", lookupFetcherMock, "http://example.org/");
+    LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
+    LookUpSubjectByUriFetcherWrapper
+      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock, "http://example.org/");
 
     sut.get(new MockEnv("."));
 
@@ -61,7 +65,7 @@ public class LookupFetcherWrapperTest {
   }
 
 
-  private class Mock implements LookupFetcher {
+  private class LookUpSubjectByUriFetcherMock implements LookUpSubjectByUriFetcher {
     private String uri;
 
     @Override

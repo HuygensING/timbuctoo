@@ -9,7 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookupFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
@@ -30,8 +30,8 @@ public class DataStoreDataFetcherFactory implements DataFetcherFactory {
   }
 
   @Override
-  public LookupFetcher lookupFetcher() {
-    return new nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.LookupFetcher(tripleStore);
+  public LookUpSubjectByUriFetcher lookupFetcher() {
+    return new nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.datafetchers.LookUpSubjectByUriFetcher(tripleStore);
   }
 
   @Override
