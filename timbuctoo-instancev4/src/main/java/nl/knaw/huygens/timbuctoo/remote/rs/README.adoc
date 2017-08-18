@@ -6,6 +6,9 @@ Timbuctoo can discover and download datasets from remote servers that contain re
 //end::summary[]
 
 == Context
+
+=== Client side
+
 The ResourceSync Framework is used to exchange rdf-data with remote quad stores.
 Features in this package include:
 
@@ -14,6 +17,11 @@ Features in this package include:
 - nl.knaw.huygens.timbuctoo.remote.rs.view - render the result of an expedition for json.
 - nl/knaw/huygens/timbuctoo/remote/rs/ResourceSyncService.java - central service
 - nl/knaw/huygens/timbuctoo/server/endpoints/v2/remote/rs/Discover.java - web service API
+
+=== Server side
+
+- nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync - contains all the classes to build a resource sync structure
+- nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint - is the REST endpoint that servers the resourcesync files
 
 == Data model
 
@@ -98,9 +106,8 @@ The filetypes that we can currently import are:
  * application/ld+json (.jsonld)
  * text/trig (.trig)
  * application/n-quads (.nq)
- * application/trix+xml (.trix)
- * application/rdf+thrift (.trdf)
-
+ * text/n3 (.n3)
+ * application/vnd.timbuctoo-rdf.nquads_unified_diff (.nqud)
 So we expect an item resource list will look like:
 
 ```
@@ -112,15 +119,24 @@ So we expect an item resource list will look like:
 ...
 ```
 
+== Making Timbuctoo your resourcesync server
+Be default when a file is imported into Timbuctoo that file will be automatically share via the resourceync protocol.
+The following url's are important to remember:
 
-== Steps to test the API
+- http://localhost:8080/.well-known/resourcesync - this will redirect to the source description
+- http://localhost:8080/v5/resourcesync/sourceDescription.xml - the url of the source description, describes all public the data sets in Timbuctoo
+- http://localhost:8080/v5/resourcesync/{user name}/{data set name}/capabilityList.xml - describes the capabilities of a specific data set
+- http://localhost:8080/v5/resourcesync/{user name}/{data set name}/resourceList.xml - describes the resources (uploaded files) of a data set
+
+== Steps to test the client API
 Got to the folder `{timbuctoo-root}/documentation/resourcesyncexample`.
 include::../../../../../../../../../../documentation/resourcesyncexample/README.adoc[tags=startup]
 
-- http://localhost:8080/v2.1/remote/rs/discover/listgraphs/http%3A%2F%2Flocalhost  - list the graph iri's at the remote site
-- http://localhost:8080/v2.1/remote/rs/discover/listsets/http%3A%2F%2Flocalhost  - same as previous, agnostic to base64-convention
-- http://localhost:8080/v2.1/remote/rs/discover/framework/http%3A%2F%2Flocalhost  - flat representation of the ResourceSync Framework documents
-- http://localhost:8080/v2.1/remote/rs/discover/tree/http%3A%2F%2Flocalhost  - hierarchical representation of the ResourceSync Framework documents
+- http://localhost:8080/v2.1/remote/rs/discover/listgraphs/http%3A%2F%2Fyour%2Frdf%2Fserver - list the graph iri's at the remote site
+- http://localhost:8080/v2.1/remote/rs/discover/listsets/http%3A%2F%2Fyour%2Frdf%2Fserver - same as previous, agnostic to base64-convention
+- http://localhost:8080/v2.1/remote/rs/discover/framework/http%3A%2F%2Fyour%2Frdf%2Fserver - flat representation of the ResourceSync Framework documents
+- http://localhost:8080/v2.1/remote/rs/discover/tree/http%3A%2F%2Fyour%2Frdf%2Fserver - hierarchical representation of the ResourceSync Framework documents
+N.B. You can use `http%3A%2F%2Flocalhost%3A8080%2Fv5%2Fresourcesync%2FsourceDescription.xml` in stead of `http%3A%2F%2Fyour%2Frdf%2Fserver` to use the same Timbuctoo instance as client and server.
 
 == Working with the ../remote/rs/xml package
 When downloading a ResourceSync doument we do not always know whether we find a &lt;sitemapindex&gt; or a &lt;urlset&gt;. The two kinds of document are represented as java classes `Urlset` and `Sitemapindex`, both have a common superclass, `RsRoot`. The class `RsBuilder` in this package will take a variety of input types and produces an Optional of `RsRoot`. If the unmarshal operation succeeded then either one of the methods
@@ -159,3 +175,4 @@ The class `nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover` han
 - todo:feature[resourcesync discovery walks the up-chain to get to the source description document if you pass a secondary level document (capabilitylist or resourcelist, resource index list)]
 - todo:feature[resourcesync discovery returns a list with only the secondary level document if the up-chain cannot be walked]
 - todo:feature[choose a format for describing the datasets and link it using `describedby` (something like dcat or VOID ) and make the discovery use that information for presenting the data to the user.]
+- todo:task[make resourcesync client available on v5 api]
