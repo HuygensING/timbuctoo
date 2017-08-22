@@ -68,5 +68,19 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
     System.out.println("INSERT INTO " + this.tableName + "(" + columnHeaders +
             ") VALUES (" + columnValues.substring(2) + ");");
   }
+  
+  protected void replaceColumnType(String columnName, String columnType) {
+    Tuple<String,String> newTuple = new Tuple<String,String>(columnName, columnType);
+    int counter = 0;
+    for (Tuple<String,String> column: columns) {
+      if (column.getLeft().equals(columnName)) {
+        break;
+      }
+      counter++;
+    }
+    if (counter < columns.size()) {
+      columns.set(counter, newTuple);
+    }
+  }
 
 }
