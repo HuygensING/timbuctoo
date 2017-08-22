@@ -1,10 +1,13 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
-import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
 import java.util.Objects;
@@ -12,6 +15,31 @@ import java.util.Optional;
 import java.util.function.BiFunction;
 
 public class AuthCheck {
+  private static final Logger LOG = LoggerFactory.getLogger(AuthCheck.class);
+
+  public static Response checkWriteAccess(DataSet dataSet, Optional<User> user, Authorizer authorizer) {
+    if (!user.isPresent()) {
+      return Response.status(Response.Status.UNAUTHORIZED).build();
+    }
+    String currentUserId = user.get().getPersistentId();
+    try {
+      final Authorization authorization = getAuthorization(
+        authorizer,
+        dataSet.getOwnerId(),
+        dataSet.getDataSetId(),
+        currentUserId
+      );
+      if (!authorization.isAllowedToWrite()) {
+        return Response.status(Response.Status.FORBIDDEN).build();
+      }
+    } catch (AuthorizationUnavailableException e) {
+      LOG.error("Authorization unavailable", e);
+      //The dataset should already exist, so this is a weird error
+      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+    }
+    return null;
+  }
+
   public static Response checkWriteAccess(BiFunction<String, String, Boolean> dataSetExists,
                                           Authorizer authorizer, LoggedInUsers loggedInUsers, String authHeader,
                                           String dataSetOwnerId, String dataSetId) {

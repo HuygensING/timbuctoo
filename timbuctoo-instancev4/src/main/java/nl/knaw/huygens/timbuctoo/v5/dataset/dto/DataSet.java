@@ -41,6 +41,8 @@ public interface DataSet {
     QuadStore quadStore = dataStoreFactory.createQuadStore(importManager, userId, dataSetId);
     CollectionIndex collectionIndex = dataStoreFactory.createCollectionIndex(importManager, userId, dataSetId);
     return ImmutableDataSet.builder()
+      .ownerId(userId)
+      .dataSetId(dataSetId)
       .quadStore(quadStore)
       .collectionIndex(collectionIndex)
       .typeNameStore(new JsonTypeNameStore(
@@ -72,5 +74,9 @@ public interface DataSet {
   CollectionIndex getCollectionIndex();
 
   DataFetcherFactory getDataFetcherFactory();
+
+  String getOwnerId();
+
+  String getDataSetId();
 
 }

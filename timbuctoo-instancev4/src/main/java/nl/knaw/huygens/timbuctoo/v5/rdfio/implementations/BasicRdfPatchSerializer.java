@@ -23,7 +23,7 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
     this.defaultGraph = defaultGraph;
   }
 
-  BasicRdfPatchSerializer(Consumer<String> printWriter, String defaultGraph) {
+  protected BasicRdfPatchSerializer(Consumer<String> printWriter, String defaultGraph) {
     this.printer = printWriter;
     this.defaultGraph = defaultGraph;
     this.printWriter = null;
