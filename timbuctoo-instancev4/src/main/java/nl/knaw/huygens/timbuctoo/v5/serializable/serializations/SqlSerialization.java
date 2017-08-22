@@ -55,11 +55,7 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
 
   protected void writeRow(List<Value> values) throws IOException {
     if (!columnTypesSet) {
-      int counter = 0;
-      for (Value value : values) {
-        replaceColumnType(columns.get(counter).getLeft(), value.getType());
-        counter++;
-      }
+      setColumnTypes(values);
       writeCreateTable();
       columnTypesSet = true;
     }
@@ -89,4 +85,19 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
     }
   }
 
+  protected void setColumnTypes(List<Value> values) {
+    int counter = 0;
+    for (Value value : values) {
+      String type = value.getType();
+      if (type.toLowerCase().startsWith("int")) {
+        type = "integer";
+      } else if (type.toLowerCase().startsWith("boo")) {
+        type = "boolean";
+      } else {
+        type = "text";
+      }
+      replaceColumnType(columns.get(counter).getLeft(), type);
+      counter++;
+    }
+  }
 }
