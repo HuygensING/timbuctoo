@@ -37,7 +37,6 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
   
   protected void setTableName(String tableName) {
     this.tableName = tableName;
-    writeCreateTable();
   }
   
   protected void writeCreateTable() {
