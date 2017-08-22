@@ -1,12 +1,14 @@
 package nl.knaw.huygens.timbuctoo;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
+import nl.knaw.huygens.timbuctoo.v5.jsonldimport.JsonLdImport;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -492,6 +494,45 @@ public class IntegrationTest {
 
     // check if the dataset still exists
     assertThat(getDataSetNamesOfDummy(client), not(hasItem(dataSetId)));
+  }
+
+  @Test
+  public void checkJsonLdDeserialization() throws Exception {
+    String testRdfReader = "{\t\"prov:generates\": [{\n" +
+      "\t\t\"entityType\": \"Entity\",\n" +
+      "\t\t\"specializationOf\": \"http://example.com/the/actual/entity\",\n" +
+      "\t\t\"wasRevisionOf\": {\n" +
+      "\t\t\t\"@id\": \"http://previous/mutation\"\n" +
+      "\t\t},\n" +
+      "\t\t\"tim:additions\": {\n" +
+      "\t\t\t\"name\": \"extra name\",\n" +
+      "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
+      "\t\t},\n" +
+      "\t\t\"tim:deletions\": {\n" +
+      "\t\t\t\"name\": \"extra name\",\n" +
+      "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
+      "\t\t},\n" +
+      "\t\t\"tim:replacements\": {\n" +
+      "\t\t\t\"name\": \"extra name\",\n" +
+      "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
+      "\t\t}\n" +
+      "\t}]\n" +
+      "}";
+
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    Client client = ClientBuilder.newBuilder().build();
+    WebTarget createTarget =
+      client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+
+    System.out.println(Entity.json(testRdfReader));
+
+    Response createResponse = createTarget.request()
+                                          .header(HttpHeaders.AUTHORIZATION, "fake")
+                                          .put(Entity.json(testRdfReader));
+
+    assertThat(createResponse.getStatus(), is(204));
+
   }
 
   private List<String> getDataSetNamesOfDummy(Client client) {
