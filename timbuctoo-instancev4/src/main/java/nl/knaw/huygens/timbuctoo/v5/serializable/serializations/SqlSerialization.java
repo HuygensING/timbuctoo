@@ -14,8 +14,8 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
   //  private final CSVPrinter csvPrinter;
   private String tableName;
   private String columnHeaders;
-  private String createTable;
-  private List<Tuple<String, String>> columns; 
+  private List<Tuple<String, String>> columns;
+  private boolean columnTypesSet = false;
 
   public SqlSerialization(OutputStream outputStream) throws IOException {
     //    csvPrinter = new CSVPrinter(new PrintWriter(outputStream), CSVFormat.EXCEL);
@@ -23,16 +23,13 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
 
   protected void initialize(List<String> columnHeaders) throws IOException {
     this.columnHeaders = "";
-    createTable = "CREATE TABLE tableName (";
     columns = new ArrayList<Tuple<String,String>>();
     for (String columnHeader : columnHeaders) {
       Tuple<String,String> columnTuple = new Tuple<String, String>(columnHeader, "text");
       columns.add(columnTuple);
       this.columnHeaders += ", " + columnHeader;
-      createTable += columnHeader + " text, ";
     }
     this.columnHeaders = this.columnHeaders.substring(2);
-    createTable = createTable.subSequence(0, createTable.length() - 2) + ");";
   }
   
   protected void setTableName(String tableName) {
@@ -53,9 +50,19 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
     }
     createTableString += ");";
     System.out.println(createTableString);
+    columnTypesSet = true;
   }
 
   protected void writeRow(List<Value> values) throws IOException {
+    if (!columnTypesSet) {
+      int counter = 0;
+      for (Value value : values) {
+        replaceColumnType(columns.get(counter).getLeft(), value.getType());
+        counter++;
+      }
+      writeCreateTable();
+      columnTypesSet = true;
+    }
     String columnValues = "";
     for (Value value : values) {
       if (value == null) {
