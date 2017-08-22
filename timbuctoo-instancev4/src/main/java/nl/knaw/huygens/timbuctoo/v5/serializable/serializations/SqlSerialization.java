@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.CollectionsOfEntitiesSerialization;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SqlSerialization extends CollectionsOfEntitiesSerialization {
@@ -13,6 +15,7 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
   private String tableName;
   private String columnHeaders;
   private String createTable;
+  private List<Tuple<String, String>> columns; 
 
   public SqlSerialization(OutputStream outputStream) throws IOException {
     //    csvPrinter = new CSVPrinter(new PrintWriter(outputStream), CSVFormat.EXCEL);
@@ -21,7 +24,10 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
   protected void initialize(List<String> columnHeaders) throws IOException {
     this.columnHeaders = "";
     createTable = "CREATE TABLE tableName (";
+    columns = new ArrayList<Tuple<String,String>>();
     for (String columnHeader : columnHeaders) {
+      Tuple<String,String> columnTuple = new Tuple<String, String>(columnHeader, "text");
+      columns.add(columnTuple);
       this.columnHeaders += ", " + columnHeader;
       createTable += columnHeader + " text, ";
     }
@@ -31,9 +37,23 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
   
   protected void setTableName(String tableName) {
     this.tableName = tableName;
-    createTable = createTable.replace("tableName", tableName);
+    writeCreateTable();
+  }
+  
+  protected void writeCreateTable() {
+    if (tableName.isEmpty()) {
+      System.err.println("writeCreateTable: tableName is empty!");
+      tableName = "tableName";
+    }
     System.out.println("DROP TABLE " + tableName + ";");
-    System.out.println(createTable);
+    String createTableString = "CREATE TABLE " + tableName + " (\n";
+    for (Tuple<String,String> column: columns) {
+      String columnName = column.getLeft();
+      String columnType = column.getRight();
+      createTableString += columnName + " " + columnType + ",\n";
+    }
+    createTableString += ");";
+    System.out.println(createTableString);
   }
 
   protected void writeRow(List<Value> values) throws IOException {
