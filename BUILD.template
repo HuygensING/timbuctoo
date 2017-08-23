@@ -1,0 +1,28 @@
+java_plugin(
+    name = "immutables_processor",
+    deps = [
+        "//third_party:org_immutables_value",
+    ],
+    processor_class = "org.immutables.processor.ProxyProcessor",
+)
+
+java_binary(
+    name = "everything",
+    plugins = [
+        ":immutables_processor"
+    ],
+    srcs = glob([
+        "security-client-agnostic/src/main/java/**/*.java",
+        "timbuctoo-test-services/src/main/java/**/*.java",
+        "timbuctoo-instancev4/src/main/java/**/*.java",
+    ]),
+    resources = glob([
+        "security-client-agnostic/src/main/resources/**/*",
+        "timbuctoo-test-services/src/main/resources/**/*",
+        "timbuctoo-instancev4/src/main/resources/**/*",
+    ]),
+    deps = [
+%DEPENDENCIES%
+    ],
+    main_class = "nl.knaw.huygens.timbuctoo.server.TimbuctooV4"
+)
