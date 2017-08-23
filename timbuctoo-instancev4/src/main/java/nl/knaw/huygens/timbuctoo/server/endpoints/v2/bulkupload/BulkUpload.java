@@ -277,7 +277,7 @@ public class BulkUpload {
       return limit;
     }
 
-    public void write(@Nonnull byte... bytes) throws IOException {
+    public void write(@Nonnull byte[] bytes) throws IOException {
       long left = Math.min(bytes.length, limit);
       if (left <= 0) {
         return;
