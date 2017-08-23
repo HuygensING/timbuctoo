@@ -25,6 +25,7 @@ package nl.knaw.huygens.security.client.model;
 import java.security.Principal;
 import java.util.EnumSet;
 
+import com.google.common.base.MoreObjects;
 import nl.knaw.huygens.security.core.model.Affiliation;
 import nl.knaw.huygens.security.core.model.HuygensPrincipal;
 
@@ -166,7 +167,7 @@ public class HuygensSecurityInformation implements SecurityInformation {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)//
+    return MoreObjects.toStringHelper(this)//
         .add("persistentID", persistentID)//
         .add("commonName", commonName)//
         .add("displayName", displayName)//

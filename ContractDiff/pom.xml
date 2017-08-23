@@ -41,7 +41,7 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>19.0</version>
+      <version>21.0</version>
     </dependency>
 
     <!-- Hamcrest dependency should be on top see http://stackoverflow.com/a/16735373 -->
