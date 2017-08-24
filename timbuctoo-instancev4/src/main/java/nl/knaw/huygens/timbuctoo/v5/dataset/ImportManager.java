@@ -5,6 +5,7 @@ import com.google.common.base.Stopwatch;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
@@ -43,12 +44,12 @@ import static org.slf4j.LoggerFactory.getLogger;
  * - makes sure that the derived stores are kept in sync
  */
 public class ImportManager implements DataProvider {
+  private static final Logger LOG = getLogger(ImportManager.class);
   private final FileStorage fileStorage;
   private final FileStorage imageStorage;
   private final LogStorage logStorage;
   private final RdfIoFactory serializerFactory;
   private final ExecutorService executorService;
-  private static final Logger LOG = getLogger(ImportManager.class);
   private final JsonFileBackedData<LogList> logListStore;
   private final List<Tuple<String, RdfProcessor>> subscribedProcessors;
   private final List<Tuple<String, EntityProcessor>> subscribedEntityProcessors;
@@ -56,7 +57,7 @@ public class ImportManager implements DataProvider {
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
                        ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList)
-      throws DataStoreCreationException {
+    throws DataStoreCreationException {
     this.fileStorage = new PublicFileStore(fileStorage, resourceList);
     this.imageStorage = new PublicFileStore(imageStorage, resourceList);
     this.logStorage = new PublicLogStore(logStorage, resourceList);
@@ -66,7 +67,8 @@ public class ImportManager implements DataProvider {
       logListStore = JsonFileBackedData.getOrCreate(
         logListLocation,
         LogList::new,
-        new TypeReference<LogList>() {}
+        new TypeReference<LogList>() {
+        }
       );
     } catch (IOException e) {
       throw new DataStoreCreationException(e);
@@ -91,7 +93,7 @@ public class ImportManager implements DataProvider {
   }
 
   public String addFile(InputStream fileStream, String fileName, MediaType mediaType)
-      throws FileStorageFailedException {
+    throws FileStorageFailedException {
     try {
       return fileStorage.saveFile(fileStream, fileName, mediaType);
     } catch (IOException e) {
@@ -104,7 +106,7 @@ public class ImportManager implements DataProvider {
   }
 
   public String addImage(InputStream imageStream, String imageName, MediaType mediaType)
-      throws FileStorageFailedException {
+    throws FileStorageFailedException {
     try {
       return imageStorage.saveFile(imageStream, imageName, mediaType);
     } catch (IOException e) {
@@ -112,7 +114,7 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  public Future<?> generateLog(String baseUri, String defaultGraph, RdfCreator creator)
+  public Future<?> generateLog(String baseUri, String defaultGraph, PlainRdfCreator creator)
     throws LogStorageFailedException {
     try {
       //add to the log structure
@@ -171,14 +173,16 @@ public class ImportManager implements DataProvider {
         String token = "";
         MediaType mediaType;
         Optional<Charset> charset;
+
         try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(outputStream)) {
           mediaType = serializer.getMediaType();
           charset = Optional.of(serializer.getCharset());
-          creator.sendQuads(serializer);
+          ((PlainRdfCreator) creator).sendQuads(serializer);
         } catch (Exception e) {
           LOG.error("Log generation failed", e);
           break;
         }
+
         try {
           token = logStorage.saveLog(
             new ByteArrayInputStream(outputStream.toByteArray()),
@@ -197,6 +201,7 @@ public class ImportManager implements DataProvider {
           } else {
             LOG.error("Log processing failed. Log created but not added to the list!", e);
           }
+          break;
         }
       }
     }

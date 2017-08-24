@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
-import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
@@ -16,7 +16,7 @@ import java.util.function.Consumer;
 
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 
-public class TabularRdfCreator implements RdfCreator {
+public class TabularRdfCreator implements PlainRdfCreator {
   private final ImportManager importManager;
   private final Loader loader;
   private final String ownerId;

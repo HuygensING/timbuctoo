@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import org.immutables.value.Value;
 
 import java.util.Optional;
