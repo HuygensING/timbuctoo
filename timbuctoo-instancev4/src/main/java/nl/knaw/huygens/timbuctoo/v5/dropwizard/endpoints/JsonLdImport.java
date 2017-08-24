@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.Entity;
-import nl.knaw.huygens.timbuctoo.v5.jsonldimport.GenerateRdfPatchFromJsonLdEntity;
 
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -44,13 +43,8 @@ public class JsonLdImport {
 
 
     for (Entity entity : jsonLdImport.getGenerates()) {
-      //GenerateRDFPatchFromJsonLdEntity generateRDFPatchFromJsonLdEntity =
+      //importManager.generateLog(URI.create(""), new GenerateRDFPatchFromJsonLdEntity(entity, "FIXME:", quadStore));
       // new GenerateRDFPatchFromJsonLdEntity(entity);
-
-      //RdfPatchSerializer saver =
-
-      //generateRDFPatchFromJsonLdEntity.sendQuads(saver);
-      //importManager.generateLog(URI.create(""), new GenerateRDFPatchFromJsonLdEntity(entity));
     }
 
     return Response.noContent().build();

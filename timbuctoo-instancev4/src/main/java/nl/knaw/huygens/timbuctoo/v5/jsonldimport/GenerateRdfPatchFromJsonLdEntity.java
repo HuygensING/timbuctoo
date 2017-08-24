@@ -2,22 +2,42 @@ package nl.knaw.huygens.timbuctoo.v5.jsonldimport;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class GenerateRdfPatchFromJsonLdEntity {
   private Entity entity;
-  private String subjectUri;
+  private List<CursorQuad> toReplace = new ArrayList<>();
+
 
   @JsonCreator
-  public GenerateRdfPatchFromJsonLdEntity(@JsonProperty("entity") Entity entity, String subjectUri) {
+  public GenerateRdfPatchFromJsonLdEntity(@JsonProperty("entity") Entity entity) {
     this.entity = entity;
-    this.subjectUri = subjectUri;
   }
+
+  public GenerateRdfPatchFromJsonLdEntity(Entity entity, QuadStore quadStore) {
+    this.entity = entity;
+
+    entity.getReplacements().forEach((predicate, value) -> {
+      try (Stream<CursorQuad> quads = quadStore
+        .getQuads(entity.getSpecializationOf().toString(), predicate, Direction.OUT, "")) {
+        quads.forEach(q -> {
+          this.toReplace.add(q);
+        });
+      }
+    });
+
+  }
+
 
   public Entity getEntity() {
     return entity;
@@ -26,12 +46,10 @@ public class GenerateRdfPatchFromJsonLdEntity {
   public void generateAdditions(RdfPatchSerializer saver) {
     Map<String, String[]> additions = this.entity.getAdditions();
     additions.forEach((predicate, values) -> {
-      //String addition = "";
 
       for (String value : values) {
-        //addition = "+ " + predicate + " " + value;
         try {
-          saver.onQuad(subjectUri, predicate, value, RdfConstants.STRING,null,null);
+          saver.onQuad(entity.getSpecializationOf().toString(), predicate, value, RdfConstants.STRING, null, null);
         } catch (LogStorageFailedException e) {
           e.printStackTrace();
         }
@@ -40,43 +58,40 @@ public class GenerateRdfPatchFromJsonLdEntity {
     });
   }
 
-  public void generateDeletions() {
-    Map<String, Object> deletions = this.entity.getDeletions();
+  public void generateDeletions(RdfPatchSerializer saver) {
+    Map<String, String[]> deletions = this.entity.getDeletions();
 
-    deletions.forEach((predicate, values) -> {
-      String deletion = "";
-      if (values instanceof String[]) {
-        String[] valuesArray = (String[]) values;
-        for (String value : valuesArray) {
-          deletion = "- " + "<dataset here>" + predicate + " " + value;
-          System.out.println(deletion);
+    deletions.forEach((predicate, valuesArray) -> {
+
+      for (String value : valuesArray) {
+        try {
+          saver.delValue(entity.getSpecializationOf().toString(), predicate, value, RdfConstants.STRING, null);
+        } catch (LogStorageFailedException e) {
+          e.printStackTrace();
         }
-      } else {
-        deletion = "- " + "<dataset here>" + predicate + " " + values;
-        System.out.println(deletion);
       }
     });
 
   }
 
-  public void generateReplacements() {
-    Map<String, Object> replacements = this.entity.getReplacements();
+  public void generateReplacements(RdfPatchSerializer saver) {
+    Map<String, String[]> replacements = this.entity.getReplacements();
 
-    replacements.forEach((predicate, values) -> {
-      String replacement = "";
-      if (values instanceof String[]) {
-        String[] valuesArray = (String[]) values;
-        for (String value : valuesArray) {
-          replacement = "- " + "<dataset here>" + predicate + " " + value;
-          System.out.println(replacement);
-          replacement = "+ " + "<dataset here>" + predicate + " " + value;
-          System.out.println(replacement);
+    this.toReplace.forEach(quad -> {
+      try {
+        saver.delQuad(quad.getSubject(), quad.getPredicate(), quad.getObject(), null, null, null);
+      } catch (LogStorageFailedException e) {
+        e.printStackTrace();
+      }
+    });
+
+    replacements.forEach((predicate, valuesArray) -> {
+      for (String value : valuesArray) {
+        try {
+          saver.onQuad(entity.getSpecializationOf().toString(), predicate, value, RdfConstants.STRING, null, null);
+        } catch (LogStorageFailedException e) {
+          e.printStackTrace();
         }
-      } else {
-        replacement = "- " + "<dataset here>" + predicate + " " + values;
-        System.out.println(replacement);
-        replacement = "+ " + "<dataset here>" + predicate + " " + values;
-        System.out.println(replacement);
       }
     });
   }

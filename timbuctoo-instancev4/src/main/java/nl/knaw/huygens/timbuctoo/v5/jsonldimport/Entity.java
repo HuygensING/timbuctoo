@@ -28,7 +28,7 @@ public interface Entity {
 
   Map<String, String[]> getAdditions();
 
-  Map<String, Object> getDeletions();
+  Map<String, String[]> getDeletions();
 
-  Map<String, Object> getReplacements();
+  Map<String, String[]> getReplacements();
 }
