@@ -297,7 +297,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         securityConfig.getAuthorizer(), dataSetRepository
       )
     );
-    register(environment, new JsonLdImport());
+    register(environment, new JsonLdImport(dataSetRepository));
 
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers()));

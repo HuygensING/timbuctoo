@@ -508,7 +508,7 @@ public class IntegrationTest {
       "\t\t\t\"name\": \"extra name\",\n" +
       "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
       "\t\t},\n" +
-      "\t\t\"tim:deletions\": {\n" +
+      "\t\t\"tim:delet  ions\": {\n" +
       "\t\t\t\"name\": \"extra name\",\n" +
       "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
       "\t\t},\n" +
@@ -524,8 +524,6 @@ public class IntegrationTest {
     Client client = ClientBuilder.newBuilder().build();
     WebTarget createTarget =
       client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
-
-    System.out.println(Entity.json(testRdfReader));
 
     Response createResponse = createTarget.request()
                                           .header(HttpHeaders.AUTHORIZATION, "fake")

@@ -20,35 +20,15 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutableEntity.class)
 @JsonSerialize(as = ImmutableEntity.class)
 public interface Entity {
-
-  /*
-  @JsonCreator
-  static Entity create(@JsonProperty("@type") String entityType,
-                       @JsonProperty("prov:specializationOf") URI specializationOf,
-                       @JsonProperty("prov:wasRevisionOf") HashMap<String,String> revisionOf,
-                       @JsonProperty("tim:additions") HashMap<String, String> additions,
-                       @JsonProperty("tim:deletions") HashMap<String, String> deletions,
-                       @JsonProperty("tim:replacements") HashMap<String, String> replacements) {
-    return ImmutableEntity.builder()
-                          .entityType(entityType)
-                          .specializationOf(specializationOf)
-                          .wasRevisionOf(revisionOf)
-                          .additions(additions)
-                          .deletions(deletions)
-                          .replacements(replacements)
-                          .build();
-  }
-  */
-
   String getEntityType();
 
   URI getSpecializationOf();
 
-  Map<String,String> getWasRevisionOf();
+  Map<String, Object> getWasRevisionOf();
 
-  Map<String, String> getAdditions();
+  Map<String, String[]> getAdditions();
 
-  Map<String, String> getDeletions();
+  Map<String, Object> getDeletions();
 
-  Map<String, String> getReplacements();
+  Map<String, Object> getReplacements();
 }
