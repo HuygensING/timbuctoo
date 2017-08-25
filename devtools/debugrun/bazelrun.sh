@@ -57,7 +57,8 @@ while getopts ":d:pDf:c:y:hrtC" opt; do
   esac
 done
 
-bazel build //:everything
+bazel build //:everything || exit $?
+
 cd ./timbuctoo-instancev4
 
 export timbuctoo_dataPath="./temp_for_debugrun"
