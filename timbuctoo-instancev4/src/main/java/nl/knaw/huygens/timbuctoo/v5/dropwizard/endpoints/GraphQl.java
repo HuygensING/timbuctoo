@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableMap;
 import com.sleepycat.je.DatabaseException;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
@@ -9,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
@@ -45,8 +47,29 @@ public class GraphQl {
   }
 
   @POST
-  public Response post(String query, @HeaderParam("accept") String acceptHeader, @PathParam("userId") String userId,
-                       @PathParam("dataSet") String dataSet) {
+  @Consumes("application/json")
+  public Response postJson(JsonNode query, @HeaderParam("accept") String acceptHeader,
+                           @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
+    if (hasSpecifiedAcceptHeader(acceptHeader)) {
+      return Response
+        .status(400)
+        .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
+        .build();
+    }
+    if (!query.has("query")) {
+      return Response
+        .status(400)
+        .entity("Please provide the graphql query as the query property of a JSON encoded object. E.g. " +
+          "{query: \"{\\n  persons {\\n ... \"}")
+        .build();
+    }
+    return executeGraphQlQuery(query.get("query").asText(), userId, dataSet);
+  }
+
+  @POST
+  @Consumes("application/graphql")
+  public Response postGraphql(String query, @HeaderParam("accept") String acceptHeader,
+                              @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
     if (hasSpecifiedAcceptHeader(acceptHeader)) {
       return Response
         .status(400)
@@ -55,6 +78,7 @@ public class GraphQl {
     }
     return executeGraphQlQuery(query, userId, dataSet);
   }
+
 
   public boolean hasSpecifiedAcceptHeader(@HeaderParam("accept") String acceptHeader) {
     return acceptHeader == null || acceptHeader.isEmpty() || "*/*".equals(acceptHeader);
