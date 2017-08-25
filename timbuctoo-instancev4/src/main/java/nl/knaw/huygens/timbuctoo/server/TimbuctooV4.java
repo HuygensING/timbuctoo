@@ -2,9 +2,11 @@ package nl.knaw.huygens.timbuctoo.server;
 
 import com.codahale.metrics.JmxAttributeGauge;
 import com.codahale.metrics.health.HealthCheck;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.kjetland.dropwizard.activemq.ActiveMQBundle;
 import io.dropwizard.Application;
+import io.dropwizard.Configuration;
 import io.dropwizard.assets.AssetsBundle;
 import io.dropwizard.client.HttpClientBuilder;
 import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
@@ -297,8 +299,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         securityConfig.getAuthorizer(), dataSetRepository
       )
     );
-    register(environment, new JsonLdImport(dataSetRepository));
-
+    register(environment, new JsonLdImport(dataSetRepository,new ObjectMapper(), configuration.getRdfIdHelper()));
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers()));
     register(environment, new Me(securityConfig.getLoggedInUsers()));

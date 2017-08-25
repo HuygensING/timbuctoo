@@ -114,7 +114,7 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  public Future<?> generateLog(String baseUri, String defaultGraph, PlainRdfCreator creator)
+  public Future<?> generateLog(String baseUri, String defaultGraph, RdfCreator creator)
     throws LogStorageFailedException {
     try {
       //add to the log structure
