@@ -17,6 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 public class ResourceSyncXmlHelper {
@@ -68,41 +69,47 @@ public class ResourceSyncXmlHelper {
   }
 
   void addUrlElementWithCapability(String uri, String capability) {
-    Element url = doc.createElement("url");
+    if (!nodeForUrl(uri).isPresent()) {
+      Element url = doc.createElement("url");
 
-    Element loc = doc.createElement("loc");
-    loc.appendChild(doc.createTextNode(uri));
-    url.appendChild(loc);
+      Element loc = doc.createElement("loc");
+      loc.appendChild(doc.createTextNode(uri));
+      url.appendChild(loc);
 
-    Element metaData = doc.createElement("rs:md");
-    metaData.setAttribute("capability", capability);
-    url.appendChild(metaData);
+      Element metaData = doc.createElement("rs:md");
+      metaData.setAttribute("capability", capability);
+      url.appendChild(metaData);
 
-    root.appendChild(url);
+      root.appendChild(url);
+    }
   }
 
   void addUrlElementWithType(String uri, String mimeType) {
-    Element url = doc.createElement("url");
+    if (!nodeForUrl(uri).isPresent()) {
+      Element url = doc.createElement("url");
 
-    Element loc = doc.createElement("loc");
-    loc.appendChild(doc.createTextNode(uri));
-    url.appendChild(loc);
+      Element loc = doc.createElement("loc");
+      loc.appendChild(doc.createTextNode(uri));
+      url.appendChild(loc);
 
-    Element metaData = doc.createElement("rs:md");
-    metaData.setAttribute("type", mimeType);
-    url.appendChild(metaData);
+      Element metaData = doc.createElement("rs:md");
+      metaData.setAttribute("type", mimeType);
+      url.appendChild(metaData);
 
-    root.appendChild(url);
+      root.appendChild(url);
+    }
   }
 
   void addUrlElement(String uri) {
-    Element url = doc.createElement("url");
+    if (!nodeForUrl(uri).isPresent()) {
+      Element url = doc.createElement("url");
 
-    Element loc = doc.createElement("loc");
-    loc.appendChild(doc.createTextNode(uri));
-    url.appendChild(loc);
+      Element loc = doc.createElement("loc");
+      loc.appendChild(doc.createTextNode(uri));
+      url.appendChild(loc);
 
-    root.appendChild(url);
+      root.appendChild(url);
+    }
   }
 
   void removeUrlElement(String url) {
@@ -115,6 +122,19 @@ public class ResourceSyncXmlHelper {
       }
     }
   }
+
+  private Optional<Node> nodeForUrl(String url) {
+    NodeList children = root.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node child = children.item(i);
+      if (child.getNodeName().equals("url") && Objects.equals(child.getTextContent(), url)) {
+
+        return Optional.of(child);
+      }
+    }
+    return Optional.empty();
+  }
+
 
   void save() throws ResourceSyncException {
     try {
