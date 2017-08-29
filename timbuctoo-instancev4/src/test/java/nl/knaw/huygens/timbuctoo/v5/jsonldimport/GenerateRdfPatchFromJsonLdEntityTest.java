@@ -110,6 +110,7 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
         });
 
 
+
     MyTestRdfPatchSerializer myTestRdfPatchSerializer  = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateReplacements(myTestRdfPatchSerializer);
 

@@ -502,26 +502,40 @@ public class IntegrationTest {
     "in the first place.")
   @Test
   public void checkJsonLdDeserialization() throws Exception {
-    String testRdfReader = "{\t\"prov:generates\": [{\n" +
+    String testRdfReader = "{\n" +
+      "\t\"@type\": \"Activity\",\n" +
+      "\t\"@id\": \"testID\",\n" +
+      "\t\"prov:qualifiedAssociation\": [{\n" +
+      "\t\t\"agent\": \"http://pratham\",\n" +
+      "\t\t\"prov:hadRole\": \"editor\"\n" +
+      "\t}],\n" +
+      "\t\"prov:used\": [{\n" +
+      "\t\t\t\"prov:entity\": \"http://frontend-app\",\n" +
+      "\t\t\t\"prov:hadRole\": \"http://edit-interface\"\n" +
+      "\t\t},\n" +
+      "\t\t{\n" +
+      "\t\t\t\"prov:entity\": \"http://dbpedia.org/a_recherche_du_temps_perdu\",\n" +
+      "\t\t\t\"prov:hadRole\": \"http://source/material\"\n" +
+      "\t\t}\n" +
+      "\t],\n" +
+      "\t\"prov:generates\": [{\n" +
       "\t\t\"entityType\": \"Entity\",\n" +
       "\t\t\"specializationOf\": \"http://example.com/the/actual/entity\",\n" +
       "\t\t\"wasRevisionOf\": {\n" +
       "\t\t\t\"@id\": \"http://previous/mutation\"\n" +
       "\t\t},\n" +
-      "\t\t\"tim:additions\": {\n" +
-      "\t\t\t\"name\": \"extra name\",\n" +
+      "\t\t\"additions\": {\n" +
+      "\t\t\t\"name\": [\"extra name\"],\n" +
       "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
       "\t\t},\n" +
-      "\t\t\"tim:delet  ions\": {\n" +
-      "\t\t\t\"name\": \"extra name\",\n" +
-      "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
+      "\t\t\"deletions\": {\n" +
+      "\t\t\t\"name\": [\"extra name\"]\n" +
       "\t\t},\n" +
-      "\t\t\"tim:replacements\": {\n" +
-      "\t\t\t\"name\": \"extra name\",\n" +
-      "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
+      "\t\t\"replacements\": {\n" +
+      "\t\t\t\"name\": [\"extra name\"]\n" +
       "\t\t}\n" +
       "\t}]\n" +
-      "}";
+      "}\n";
 
     ObjectMapper objectMapper = new ObjectMapper();
 
