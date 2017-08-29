@@ -97,7 +97,8 @@ public class TabularUpload {
       (statusConsumer) -> new TabularRdfCreator(
         importManager,
         loader.get(),
-        ownerId + "_" + dataSetId,
+        ownerId,
+        dataSetId,
         statusConsumer,
         fileToken
       )

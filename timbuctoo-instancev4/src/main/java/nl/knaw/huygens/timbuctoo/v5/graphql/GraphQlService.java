@@ -66,7 +66,7 @@ public class GraphQlService {
                 archetypesGenerator.makeGraphQlTypes(archetypes, typesContainer),
                 dataFetcherFactory,
                 paginationArgumentsHelper,
-                TimbuctooRdfIdHelper.dataSet(userId + "_" + dataSetName)
+                TimbuctooRdfIdHelper.dataSet(userId, dataSetName)
               )
             )
             .build(typesContainer.getAllObjectTypes())

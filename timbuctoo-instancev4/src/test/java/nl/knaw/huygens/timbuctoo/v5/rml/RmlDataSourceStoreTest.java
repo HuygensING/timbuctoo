@@ -57,11 +57,11 @@ public class RmlDataSourceStoreTest {
 
 
     RdfDataSource rdfDataSource = new RdfDataSource(rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSetId/fileName/1",
+      "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSetId/fileName/1",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
     RdfDataSource rdfDataSource2 = new RdfDataSource(rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSetId/fileName/2",
+      "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSetId/fileName/2",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
 
@@ -92,7 +92,7 @@ public class RmlDataSourceStoreTest {
       RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
 
       try {
-        rawUploadRdfSaver = new RawUploadRdfSaver("dataSetId", "fileName", Optional.empty(), rdfSerializer);
+        rawUploadRdfSaver = new RawUploadRdfSaver("userId", "dataSetId", "fileName", Optional.empty(), rdfSerializer);
         processor.start();
       } catch (RdfProcessingFailedException | LogStorageFailedException e) {
         throw new RuntimeException(e.getCause());

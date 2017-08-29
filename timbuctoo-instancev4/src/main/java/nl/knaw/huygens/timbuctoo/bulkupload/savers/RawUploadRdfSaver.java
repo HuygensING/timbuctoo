@@ -35,19 +35,22 @@ public class RawUploadRdfSaver implements Saver<String> {
   private final String dataSetUri;
   private final String fileName;
   private final RdfSerializer saver;
+  private final String ownerId;
   private int curEntity;
   private int curCollection;
 
-  public RawUploadRdfSaver(String dataSetId, String fileName, Optional<MediaType> mimeType, RdfSerializer saver)
+  public RawUploadRdfSaver(String ownerId, String dataSetId, String fileName, Optional<MediaType> mimeType,
+                           RdfSerializer saver)
     throws LogStorageFailedException {
     this.dataSetId = dataSetId;
-    this.dataSetUri = TimbuctooRdfIdHelper.dataSet(dataSetId);
+    this.ownerId = ownerId;
+    this.dataSetUri = TimbuctooRdfIdHelper.dataSet(this.ownerId, dataSetId);
     this.fileName = fileName;
     this.saver = saver;
     this.curEntity = 0;
     this.curCollection = 0;
 
-    String fileUri = TimbuctooRdfIdHelper.rawFile(dataSetId, fileName);
+    String fileUri = TimbuctooRdfIdHelper.rawFile(ownerId, dataSetId, fileName);
     saver.onRelation(fileUri, RDF_TYPE, TIM_TABULAR_FILE, dataSetUri);
     saver.onRelation(dataSetUri, PROV_DERIVED_FROM, fileUri, dataSetUri);
     if (mimeType.isPresent()) {
@@ -57,7 +60,7 @@ public class RawUploadRdfSaver implements Saver<String> {
 
   @Override
   public String addEntity(String collection, Map<String, ?> currentProperties) {
-    String subject = TimbuctooRdfIdHelper.rawEntity(dataSetId, fileName, ++curEntity);
+    String subject = TimbuctooRdfIdHelper.rawEntity(ownerId, dataSetId, fileName, ++curEntity);
 
     try {
       saver.onRelation(subject, RDF_TYPE, collection, dataSetUri);
@@ -68,14 +71,14 @@ public class RawUploadRdfSaver implements Saver<String> {
 
     for (Map.Entry<String, ?> property : currentProperties.entrySet()) {
       try {
-        String propName = propertyDescription(dataSetId, fileName, property.getKey());
+        String propName = propertyDescription(ownerId, dataSetId, fileName, property.getKey());
         saver.onValue(subject, propName, "" + property.getValue(), STRING, dataSetUri);
       } catch (LogStorageFailedException e) {
         LOG.error("Could not add property '{}' with value '{}'", property.getKey(), property.getValue());
       }
     }
 
-    String timIdPropname = propertyDescription(dataSetId, fileName, "tim_id");
+    String timIdPropname = propertyDescription(ownerId, dataSetId, fileName, "tim_id");
     try {
       saver.onValue(subject, timIdPropname, UUID.randomUUID().toString(), STRING, dataSetUri);
     } catch (LogStorageFailedException e) {
@@ -88,7 +91,7 @@ public class RawUploadRdfSaver implements Saver<String> {
 
   @Override
   public String addCollection(String collectionName) {
-    String subject = TimbuctooRdfIdHelper.rawCollection(dataSetId, fileName, ++curCollection);
+    String subject = TimbuctooRdfIdHelper.rawCollection(ownerId, dataSetId, fileName, ++curCollection);
 
     try {
       saver.onRelation(subject, RDF_TYPE, TIM_COLLECTION, dataSetUri);
@@ -122,7 +125,7 @@ public class RawUploadRdfSaver implements Saver<String> {
   }
 
   public void addPropertyDescription(String collection, String propertyName, Integer id, int order) {
-    String propertyUri = propertyDescription(dataSetId, fileName, propertyName);
+    String propertyUri = propertyDescription(ownerId, dataSetId, fileName, propertyName);
     try {
       saver.onRelation(propertyUri, RDF_TYPE, TIM_PROP_DESC, dataSetUri);
       //FIXME: add collection hasProperty propdesc

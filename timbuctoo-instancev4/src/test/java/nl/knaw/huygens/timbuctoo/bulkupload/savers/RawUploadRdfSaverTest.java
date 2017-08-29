@@ -41,7 +41,8 @@ public class RawUploadRdfSaverTest {
 
   private static final String COLLECTION = "coll";
   private static final String DATA_SET_ID = "dataSet";
-  private static final String DATA_SET_URI = "http://timbuctoo.huygens.knaw.nl/v5/datasets/dataSet";
+  private static final String USER_ID = "userId";
+  private static final String DATA_SET_URI = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet";
   private RawUploadRdfSaver instance;
   private RdfSerializer rdfSerializer;
 
@@ -52,7 +53,7 @@ public class RawUploadRdfSaverTest {
   }
 
   private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer) throws LogStorageFailedException {
-    return new RawUploadRdfSaver(DATA_SET_ID, "fileName", Optional.empty(), rdfSerializer);
+    return new RawUploadRdfSaver(USER_ID, DATA_SET_ID, "fileName", Optional.empty(), rdfSerializer);
   }
 
   @Test
@@ -211,10 +212,10 @@ public class RawUploadRdfSaverTest {
 
     String generatedRdf = rdfSerializer.toString();
     // Use assertEquals because the failing Hamcrest output is hard to compare
-    String collection = "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSet/fileName/";
-    String prop = "http://timbuctoo.huygens.knaw.nl/v5/props/dataSet/fileName/";
-    String rawData = "http://timbuctoo.huygens.knaw.nl/v5/rawData/dataSet/fileName/";
-    String graphName = "http://timbuctoo.huygens.knaw.nl/v5/datasets/dataSet";
+    String collection = "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSet/fileName/";
+    String prop = "http://timbuctoo.huygens.knaw.nl/v5/props/userId/dataSet/fileName/";
+    String rawData = "http://timbuctoo.huygens.knaw.nl/v5/rawData/userId/dataSet/fileName/";
+    String graphName = DATA_SET_URI;
     String propdescType = "http://timbuctoo.huygens.knaw.nl/v5/propertyDescription/";
     assertEquals(
       rawData + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
