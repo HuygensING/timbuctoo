@@ -274,10 +274,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriHelper
     );
     register(environment, graphQlEndpoint);
-    register(environment, new GetDataSets(dataSetFactory, graphQlEndpoint));
+    register(environment,
+      new GetDataSets(dataSetFactory, graphQlEndpoint, securityConfig.getLoggedInUsers(environment)));
     register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(environment), dataSetFactory));
     register(environment, new DataSet(
-      securityConfig.getLoggedInUsers(environment),
+        securityConfig.getLoggedInUsers(environment),
         securityConfig.getAuthorizer(), dataSetFactory
       )
     );

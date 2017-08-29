@@ -2,7 +2,9 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
+import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
@@ -21,8 +23,10 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -50,11 +54,13 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
 
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
-                        DataSetConfiguration configuration, DataStoreFactory dataStoreFactory) throws IOException {
+                        DataSetConfiguration configuration,
+                        DataStoreFactory dataStoreFactory) throws IOException {
     this.executorService = executorService;
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
     this.dataStoreFactory = dataStoreFactory;
+
     dataSetMap = new HashMap<>();
     dataSetPathHelper = new DataSetPathHelper(configuration.getDataSetMetadataLocation());
     storedDataSets = JsonFileBackedData.getOrCreate(
@@ -172,6 +178,44 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     return promotedDataSets;
   }
 
+  public Map<String, Set<DataSetWithRoles>> getDataSetsWithWriteAccess(String userId) {
+    Map<String, Set<PromotedDataSet>> dataSets = storedDataSets.getData();
+    Map<String, Set<PromotedDataSet>> promotedDataSets = new HashMap<>();
+    Map<String, Set<DataSetWithRoles>> dataSetsWithWriteAccess = new HashMap<>();
+
+    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
+      Set<DataSetWithRoles> dataSetWithRoles = new HashSet<>();
+
+      userDataSets.getValue().forEach((dataSet) -> {
+        List<String> roles;
+        Optional<VreAuthorization> vre;
+        try {
+          vre = vreAuthorizationCrud
+            .getAuthorization(
+              userDataSets.getKey() + "_" + dataSet.getName(),
+              userId);
+          if (vre.isPresent()) {
+            roles = vre
+              .get().getRoles();
+          } else {
+            roles = Collections.emptyList();
+          }
+        } catch (AuthorizationUnavailableException e) {
+          roles = Collections.emptyList();
+        }
+        DataSetWithRoles dataSetWithWriteAccess = new DataSetWithRoles(
+          dataSet.getName(),
+          dataSet.isPromoted(),
+          roles, null
+        );
+
+        dataSetWithRoles.add(dataSetWithWriteAccess);
+      });
+
+      dataSetsWithWriteAccess.put(userDataSets.getKey(), dataSetWithRoles);
+    }
+    return dataSetsWithWriteAccess;
+  }
 
   public Optional<String> getStatus(UUID uuid) {
     return statusMap.containsKey(uuid) ? Optional.of(statusMap.get(uuid).toString()) : Optional.empty();

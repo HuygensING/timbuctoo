@@ -2,7 +2,10 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import org.immutables.value.Value;
+
+import java.util.Optional;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutablePromotedDataSet.class)
@@ -13,6 +16,8 @@ public interface PromotedDataSet {
 
   @Value.Auxiliary
   boolean isPromoted();
+  
+  Optional<String> role = Optional.empty();
 
   static PromotedDataSet create(String name, boolean promoted) {
     return ImmutablePromotedDataSet.builder()
