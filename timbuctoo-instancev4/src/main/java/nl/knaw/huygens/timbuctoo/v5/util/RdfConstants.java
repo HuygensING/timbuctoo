@@ -1,12 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.util;
 
 public class RdfConstants {
-  // URI's
-  public static final String RAW_ROW = "http://timbuctoo.huygens.knaw.nl/v5/rawData/";
-  public static final String HTTP_TIMBUCTOO_COLLECTIONS = "http://timbuctoo.huygens.knaw.nl/v5/collections/";
   public static final String TIM_PROP_DESC = "http://timbuctoo.huygens.knaw.nl/v5/propertyDescription/";
-  public static final String HTTP_TIMBUCTOO_PROPS = "http://timbuctoo.huygens.knaw.nl/v5/props/";
-  public static final String HTTP_TIMBUCTOO_DATA_SETS = "http://timbuctoo.huygens.knaw.nl/v5/datasets/";
 
 
   // Vocabulary

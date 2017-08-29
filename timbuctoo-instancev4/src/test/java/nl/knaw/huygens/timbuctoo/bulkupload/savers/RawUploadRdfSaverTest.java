@@ -5,6 +5,7 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +54,8 @@ public class RawUploadRdfSaverTest {
   }
 
   private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer) throws LogStorageFailedException {
-    return new RawUploadRdfSaver(USER_ID, DATA_SET_ID, "fileName", Optional.empty(), rdfSerializer);
+    return new RawUploadRdfSaver(USER_ID, DATA_SET_ID, "fileName", Optional.empty(), rdfSerializer,
+      new TimbuctooRdfIdHelper("http://timbuctoo.huygens.knaw.nl/v5/"));
   }
 
   @Test

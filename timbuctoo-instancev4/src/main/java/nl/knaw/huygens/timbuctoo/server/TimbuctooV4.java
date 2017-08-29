@@ -258,7 +258,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new TabularUpload(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
-      dataSetFactory
+      dataSetFactory, configuration.getRdfIdHelper()
     ));
 
     register(environment, new Rml(
@@ -271,7 +271,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetFactory,
         dataSetFactory,
         new DerivedSchemaTypeGenerator(),
-        configuration.getArchetypes()
+        configuration.getArchetypes(), configuration.getRdfIdHelper()
       ),
       uriHelper
     );

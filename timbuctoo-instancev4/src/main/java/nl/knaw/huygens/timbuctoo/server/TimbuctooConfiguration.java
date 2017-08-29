@@ -27,6 +27,7 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 
@@ -51,6 +52,9 @@ import java.util.regex.Pattern;
 @JsonSerialize(as = ImmutableTimbuctooConfiguration.class)
 public abstract class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder, SearchConfig {
   private ExecutorService dataSetExecutorService;
+
+  @JsonProperty("rdfUriHelper")
+  public abstract TimbuctooRdfIdHelper getRdfIdHelper();
 
   @JsonIgnore
   public void setDataSetExecutorService(ExecutorService dataSetExecutorService) {

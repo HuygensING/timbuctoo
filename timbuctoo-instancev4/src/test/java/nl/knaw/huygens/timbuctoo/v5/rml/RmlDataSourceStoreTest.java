@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
@@ -92,7 +93,8 @@ public class RmlDataSourceStoreTest {
       RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
 
       try {
-        rawUploadRdfSaver = new RawUploadRdfSaver("userId", "dataSetId", "fileName", Optional.empty(), rdfSerializer);
+        rawUploadRdfSaver = new RawUploadRdfSaver("userId", "dataSetId", "fileName", Optional.empty(), rdfSerializer,
+          new TimbuctooRdfIdHelper("http://timbuctoo.huygens.knaw.nl/v5/"));
         processor.start();
       } catch (RdfProcessingFailedException | LogStorageFailedException e) {
         throw new RuntimeException(e.getCause());

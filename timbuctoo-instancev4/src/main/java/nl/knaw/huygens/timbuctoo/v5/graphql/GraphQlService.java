@@ -29,17 +29,20 @@ public class GraphQlService {
   private final DataFetcherFactoryFactory dataFetcherFactoryFactory;
   private final DerivedSchemaTypeGenerator typeGenerator;
   private final Archetypes archetypes;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
 
   public GraphQlService(SchemaStoreFactory schemaStoreFactory,
                         TypeNameStoreFactory typeNameStoreFactory,
                         DataFetcherFactoryFactory dataFetcherFactoryFactory,
-                        DerivedSchemaTypeGenerator typeGenerator, Archetypes archetypes) {
+                        DerivedSchemaTypeGenerator typeGenerator, Archetypes archetypes,
+                        TimbuctooRdfIdHelper rdfIdHelper) {
     this.schemaStoreFactory = schemaStoreFactory;
     this.typeNameStoreFactory = typeNameStoreFactory;
     this.dataFetcherFactoryFactory = dataFetcherFactoryFactory;
     this.typeGenerator = typeGenerator;
     this.archetypes = archetypes;
     this.schemaFactory = new CollectionIndexSchemaFactory();
+    this.rdfIdHelper = rdfIdHelper;
   }
 
   public GraphQL loadSchema(String userId, String dataSetName) throws GraphQlProcessingException {
@@ -66,7 +69,7 @@ public class GraphQlService {
                 archetypesGenerator.makeGraphQlTypes(archetypes, typesContainer),
                 dataFetcherFactory,
                 paginationArgumentsHelper,
-                TimbuctooRdfIdHelper.dataSet(userId, dataSetName)
+                rdfIdHelper.dataSet(userId, dataSetName)
               )
             )
             .build(typesContainer.getAllObjectTypes())

@@ -26,7 +26,6 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_TABULAR_FILE;
-import static nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper.propertyDescription;
 
 public class RawUploadRdfSaver implements Saver<String> {
 
@@ -36,21 +35,23 @@ public class RawUploadRdfSaver implements Saver<String> {
   private final String fileName;
   private final RdfSerializer saver;
   private final String ownerId;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
   private int curEntity;
   private int curCollection;
 
   public RawUploadRdfSaver(String ownerId, String dataSetId, String fileName, Optional<MediaType> mimeType,
-                           RdfSerializer saver)
+                           RdfSerializer saver, TimbuctooRdfIdHelper rdfIdHelper)
     throws LogStorageFailedException {
     this.dataSetId = dataSetId;
     this.ownerId = ownerId;
-    this.dataSetUri = TimbuctooRdfIdHelper.dataSet(this.ownerId, dataSetId);
+    this.rdfIdHelper = rdfIdHelper;
+    this.dataSetUri = this.rdfIdHelper.dataSet(this.ownerId, dataSetId);
     this.fileName = fileName;
     this.saver = saver;
     this.curEntity = 0;
     this.curCollection = 0;
 
-    String fileUri = TimbuctooRdfIdHelper.rawFile(ownerId, dataSetId, fileName);
+    String fileUri = this.rdfIdHelper.rawFile(ownerId, dataSetId, fileName);
     saver.onRelation(fileUri, RDF_TYPE, TIM_TABULAR_FILE, dataSetUri);
     saver.onRelation(dataSetUri, PROV_DERIVED_FROM, fileUri, dataSetUri);
     if (mimeType.isPresent()) {
@@ -60,7 +61,7 @@ public class RawUploadRdfSaver implements Saver<String> {
 
   @Override
   public String addEntity(String collection, Map<String, ?> currentProperties) {
-    String subject = TimbuctooRdfIdHelper.rawEntity(ownerId, dataSetId, fileName, ++curEntity);
+    String subject = rdfIdHelper.rawEntity(ownerId, dataSetId, fileName, ++curEntity);
 
     try {
       saver.onRelation(subject, RDF_TYPE, collection, dataSetUri);
@@ -71,14 +72,14 @@ public class RawUploadRdfSaver implements Saver<String> {
 
     for (Map.Entry<String, ?> property : currentProperties.entrySet()) {
       try {
-        String propName = propertyDescription(ownerId, dataSetId, fileName, property.getKey());
+        String propName = rdfIdHelper.propertyDescription(ownerId, dataSetId, fileName, property.getKey());
         saver.onValue(subject, propName, "" + property.getValue(), STRING, dataSetUri);
       } catch (LogStorageFailedException e) {
         LOG.error("Could not add property '{}' with value '{}'", property.getKey(), property.getValue());
       }
     }
 
-    String timIdPropname = propertyDescription(ownerId, dataSetId, fileName, "tim_id");
+    String timIdPropname = rdfIdHelper.propertyDescription(ownerId, dataSetId, fileName, "tim_id");
     try {
       saver.onValue(subject, timIdPropname, UUID.randomUUID().toString(), STRING, dataSetUri);
     } catch (LogStorageFailedException e) {
@@ -91,7 +92,7 @@ public class RawUploadRdfSaver implements Saver<String> {
 
   @Override
   public String addCollection(String collectionName) {
-    String subject = TimbuctooRdfIdHelper.rawCollection(ownerId, dataSetId, fileName, ++curCollection);
+    String subject = rdfIdHelper.rawCollection(ownerId, dataSetId, fileName, ++curCollection);
 
     try {
       saver.onRelation(subject, RDF_TYPE, TIM_COLLECTION, dataSetUri);
@@ -125,7 +126,7 @@ public class RawUploadRdfSaver implements Saver<String> {
   }
 
   public void addPropertyDescription(String collection, String propertyName, Integer id, int order) {
-    String propertyUri = propertyDescription(ownerId, dataSetId, fileName, propertyName);
+    String propertyUri = rdfIdHelper.propertyDescription(ownerId, dataSetId, fileName, propertyName);
     try {
       saver.onRelation(propertyUri, RDF_TYPE, TIM_PROP_DESC, dataSetUri);
       //FIXME: add collection hasProperty propdesc

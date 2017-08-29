@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -42,11 +43,14 @@ public class TabularUpload {
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
   private final DataSetFactory dataSetFactory;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
 
-  public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetFactory) {
+  public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetFactory,
+                       TimbuctooRdfIdHelper rdfIdHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
     this.dataSetFactory = dataSetFactory;
+    this.rdfIdHelper = rdfIdHelper;
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -100,7 +104,8 @@ public class TabularUpload {
         ownerId,
         dataSetId,
         statusConsumer,
-        fileToken
+        fileToken,
+        rdfIdHelper
       )
     );
 
