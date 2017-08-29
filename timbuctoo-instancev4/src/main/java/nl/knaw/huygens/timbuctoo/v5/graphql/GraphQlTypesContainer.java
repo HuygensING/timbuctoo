@@ -52,9 +52,10 @@ public class GraphQlTypesContainer {
   final GraphQLInterfaceType entityInterface;
   final GraphQLInterfaceType valueInterface;
 
-  final TypeResolver objectResolver;
+  final ObjectTypeResolver objectResolver;
+  final ValueTypeResolver valueTypeResolver;
+  final TypeResolver unionTypeResolver;
 
-  final TypeResolver valueTypeResolver;
   private final TypeNameStore typeNameStore;
   private final DataFetcherFactory dataFetcherFactory;
   private final PaginationArgumentsHelper argumentsHelper;
@@ -69,6 +70,7 @@ public class GraphQlTypesContainer {
     objectResolver = new ObjectTypeResolver(this.typeForUri, this.typeNameStore);
     wrappedValueTypes = new HashMap<>();
     valueTypeResolver = new ValueTypeResolver(wrappedValueTypes);
+    unionTypeResolver = new UnionTypeResolver(valueTypeResolver, objectResolver);
     entityInterface = newInterface()
       .name(ENTITY_INTERFACE_NAME)
       .field(newFieldDefinition()
@@ -109,7 +111,7 @@ public class GraphQlTypesContainer {
     unionName += UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", "");
     GraphQLUnionType.Builder unionType = newUnionType()
       .name(unionName)
-      .typeResolver(this.valueTypeResolver);
+      .typeResolver(this.unionTypeResolver);
     for (GraphQLObjectType type : types) {
       unionType.possibleType(type);
     }
@@ -229,6 +231,25 @@ public class GraphQlTypesContainer {
         }
       }
       return typeUris.isEmpty() ? typeForUri.get(RdfConstants.UNKNOWN) : typeForUri.get(typeUris.iterator().next());
+    }
+  }
+
+  private class UnionTypeResolver implements TypeResolver {
+    private final ValueTypeResolver valueTypeResolver;
+    private final ObjectTypeResolver objectTypeResolver;
+
+    private UnionTypeResolver(ValueTypeResolver valueTypeResolver, ObjectTypeResolver objectTypeResolver) {
+      this.valueTypeResolver = valueTypeResolver;
+      this.objectTypeResolver = objectTypeResolver;
+    }
+
+    @Override
+    public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
+      if (environment.getObject() instanceof TypedValue) {
+        return valueTypeResolver.getType(environment);
+      } else {
+        return objectTypeResolver.getType(environment);
+      }
     }
   }
 
