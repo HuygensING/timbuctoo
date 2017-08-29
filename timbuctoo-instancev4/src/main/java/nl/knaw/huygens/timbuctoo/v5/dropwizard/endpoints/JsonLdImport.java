@@ -59,6 +59,8 @@ public class JsonLdImport {
     importManager.generateLog(rdfIdHelper.dataSet(userId, dataSetId), rdfIdHelper.dataSet(userId, dataSetId),
       generateRdfPatchFromJsonLdEntity);
 
+
     return Response.noContent().build();
   }
 }
+

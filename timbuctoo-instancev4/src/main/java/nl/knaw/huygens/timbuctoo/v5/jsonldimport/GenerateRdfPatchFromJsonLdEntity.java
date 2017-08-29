@@ -21,7 +21,7 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
 
 
   @JsonCreator
-  public GenerateRdfPatchFromJsonLdEntity(@JsonProperty("entity") Entity[] entities) {
+  public GenerateRdfPatchFromJsonLdEntity(@JsonProperty("entities") Entity[] entities) {
     this.entities = entities;
   }
 

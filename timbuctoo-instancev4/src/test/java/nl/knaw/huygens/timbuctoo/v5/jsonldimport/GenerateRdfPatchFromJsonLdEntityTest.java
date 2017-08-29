@@ -110,7 +110,7 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
         });
 
 
-    MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
+    MyTestRdfPatchSerializer myTestRdfPatchSerializer  = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateReplacements(myTestRdfPatchSerializer);
 
     assertThat(myTestRdfPatchSerializer.results, is("- http://example/datasetuserid pred oldvalue1\n" +
