@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataSetPathHelper;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 
 public class ResourceSyncFactory {
   private final String resourceSyncUri;
@@ -12,7 +12,7 @@ public class ResourceSyncFactory {
     this.resourceSyncUri = resourceSyncUri;
   }
 
-  public ResourceSync createResourceSync(DataSetPathHelper dataSetPathHelper) {
-    return new ResourceSync(resourceSyncUri, dataSetPathHelper);
+  public ResourceSync createResourceSync(FileHelper fileHelper) {
+    return new ResourceSync(resourceSyncUri, fileHelper);
   }
 }

@@ -3,20 +3,20 @@ package nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem;
 import java.io.File;
 
 
-public class DataSetPathHelper {
+public class FileHelper {
   private final File rootDir;
 
   /**
    * Creation of the class will also create the root directory.
    */
-  public DataSetPathHelper(String rootDir) {
+  public FileHelper(String rootDir) {
     this(new File(rootDir));
   }
 
   /**
    * Creation of the class will also create the root directory.
    */
-  public DataSetPathHelper(File rootDir) {
+  public FileHelper(File rootDir) {
     this.rootDir = rootDir;
     rootDir.mkdir();
   }

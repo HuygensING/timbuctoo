@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataSetPathHelper;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import org.immutables.value.Value;
 
@@ -29,7 +29,7 @@ public interface DataSetConfiguration {
       .dataSetMetadataLocation(dataSetMetadataLocation)
       .fileStorage(fileStorageFactory)
       .rdfIo(rdfIoFactory)
-      .resourceSync(resourceSyncFactory.createResourceSync(new DataSetPathHelper(dataSetMetadataLocation)))
+      .resourceSync(resourceSyncFactory.createResourceSync(new FileHelper(dataSetMetadataLocation)))
       .build();
   }
 }

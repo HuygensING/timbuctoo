@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 
-import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataSetPathHelper;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 
 import java.io.File;
 import java.time.Instant;
@@ -12,12 +12,12 @@ import java.time.Instant;
 public class ResourceSync {
 
   private final String resourceSyncUri;
-  private final DataSetPathHelper dataSetPathHelper;
+  private final FileHelper fileHelper;
 
   public ResourceSync(String resourceSyncUri,
-                      DataSetPathHelper dataSetPathHelper) {
+                      FileHelper fileHelper) {
     this.resourceSyncUri = resourceSyncUri;
-    this.dataSetPathHelper = dataSetPathHelper;
+    this.fileHelper = fileHelper;
   }
 
   public ResourceList resourceList(String user, String dataSet) {
@@ -29,12 +29,12 @@ public class ResourceSync {
   }
 
   private File getResourceListFile(String user, String dataSet) {
-    return dataSetPathHelper.fileInDataSet(user, dataSet, "resourceList.xml");
+    return fileHelper.fileInDataSet(user, dataSet, "resourceList.xml");
   }
 
   public void addDataSet(String user, String dataSet) throws ResourceSyncException {
     new CapabilityList(
-      dataSetPathHelper.fileInDataSet(user, dataSet, "capabilityList.xml"),
+      fileHelper.fileInDataSet(user, dataSet, "capabilityList.xml"),
       new File("sourceDescription.xml")
     ).addResourceList(getResourceListFile(user, dataSet));
   }
