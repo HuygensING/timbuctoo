@@ -2,19 +2,19 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 
-import javax.ws.rs.core.UriBuilder;
 import java.io.File;
 
+import static nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync.BASE_URI_PLACE_HOLDER;
+
 class ResourceSyncUriHelper {
-  private final String resourceSyncUri;
+  private static final String RESOURCE_SYNC_PATH = "resourcesync";
   private final FileHelper fileHelper;
 
-  ResourceSyncUriHelper(String resourceSyncUri, FileHelper fileHelper) {
-    this.resourceSyncUri = resourceSyncUri;
+  ResourceSyncUriHelper(FileHelper fileHelper) {
     this.fileHelper = fileHelper;
   }
 
   String uriForFile(File file) {
-    return UriBuilder.fromUri(resourceSyncUri).path(fileHelper.getRelativePath(file)).build().toString();
+    return String.format("%s/%s/%s", BASE_URI_PLACE_HOLDER, RESOURCE_SYNC_PATH, fileHelper.getRelativePath(file));
   }
 }

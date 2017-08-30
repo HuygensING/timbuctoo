@@ -120,8 +120,6 @@ dataSet:
   rdfIo:
     "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
     rdfFormat: application/n-quads
-  resourceSync:
-    resourceSyncUri: http://example.org/
 
 # Timeouts
 # the 'duration' is a number

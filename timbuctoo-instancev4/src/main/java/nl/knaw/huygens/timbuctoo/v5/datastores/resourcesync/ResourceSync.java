@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 
-import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
@@ -14,14 +13,14 @@ import java.io.IOException;
  */
 public class ResourceSync {
 
+  public static final String BASE_URI_PLACE_HOLDER = "${TIMBUCTOO_BASE_URI}";
   private final ResourceSyncUriHelper uriHelper;
   private final FileHelper fileHelper;
   private final FileStorageFactory fileStorageFactory;
 
-  public ResourceSync(ResourceSyncUriHelper uriHelper,
-                      FileHelper fileHelper,
+  public ResourceSync(FileHelper fileHelper,
                       FileStorageFactory fileStorageFactory) {
-    this.uriHelper = uriHelper;
+    this.uriHelper = new ResourceSyncUriHelper(fileHelper);
     this.fileHelper = fileHelper;
     this.fileStorageFactory = fileStorageFactory;
   }

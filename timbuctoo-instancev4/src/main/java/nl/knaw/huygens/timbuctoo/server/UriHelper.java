@@ -31,4 +31,8 @@ public class UriHelper {
   boolean hasDynamicBaseUrl() {
     return "http://0.0.0.0:0".equals(this.baseUri.toString());
   }
+
+  public URI getBaseUri() {
+    return baseUri;
+  }
 }

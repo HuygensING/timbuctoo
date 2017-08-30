@@ -348,7 +348,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ));
 
     register(environment, new WellKnown());
-    register(environment, new ResourceSyncEndpoint(configuration.getResourceSync()));
+    register(environment, new ResourceSyncEndpoint(configuration.getResourceSync(), configuration.getUriHelper()));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(
