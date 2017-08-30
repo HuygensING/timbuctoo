@@ -436,7 +436,8 @@ public class IntegrationTest {
     multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
     FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(
       "file",
-      new File(getResource(IntegrationTest.class, "2017_04_17_BIA_Clusius.xlsx").getFile())
+      new File(getResource(IntegrationTest.class, "2017_04_17_BIA_Clusius.xlsx").getFile()),
+      new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     );
     multiPart.bodyPart(fileDataBodyPart);
     multiPart.field("type", "xlsx");

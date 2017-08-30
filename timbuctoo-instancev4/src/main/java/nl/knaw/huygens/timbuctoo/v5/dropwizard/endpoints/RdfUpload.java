@@ -43,6 +43,7 @@ public class RdfUpload {
   @POST
   public Response upload(@FormDataParam("file") final InputStream rdfInputStream,
                          @FormDataParam("file") final FormDataBodyPart body,
+                         @FormDataParam("fileMimeTypeOverride") final MediaType mimeTypeOverride,
                          @FormDataParam("encoding") final String encoding,
                          @FormDataParam("uri") final URI uri,
                          @HeaderParam("authorization") final String authHeader,
@@ -57,29 +58,31 @@ public class RdfUpload {
       return response;
     }
 
+    final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
+
     ImportManager importManager = dataSetManager.createImportManager(userId, dataSetId);
-    Optional<MediaType> mediaTypeOpt = getMediaType(body);
-    MediaType mediaType = mediaTypeOpt.orElse(null);
+
     if (!importManager.isRdfTypeSupported(mediaType)) {
-      return Response.status(Response.Status.BAD_REQUEST).entity("Unsupported mime type: " + mediaType).build();
+      return Response
+        .status(Response.Status.BAD_REQUEST)
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity("{\"error\": \"We do not support the mediatype '" + mediaType + "'. Make sure to add the correct " +
+          "mediatype to the file parameter. In curl you'd use `-F \"file=@<filename>;type=<mediatype>\"`. In a " +
+          "webbrowser you probably have no way of setting the correct mimetype. So you can use a special parameter " +
+          "to override it: `formData.append(\"fileMimeTypeOverride\", \"<mimetype>\");`\"}")
+        .build();
     }
 
     Future<?> promise = importManager.addLog(
       uri,
       rdfInputStream,
       Optional.of(Charset.forName(encoding)),
-      mediaTypeOpt
+      Optional.of(mediaType)
     );
 
     promise.get();
 
     return Response.noContent().build();
-  }
-
-  private Optional<MediaType> getMediaType(FormDataBodyPart body) {
-    return body == null || body.getMediaType() == null ?
-      Optional.empty() :
-      Optional.of(body.getMediaType());
   }
 
 }
