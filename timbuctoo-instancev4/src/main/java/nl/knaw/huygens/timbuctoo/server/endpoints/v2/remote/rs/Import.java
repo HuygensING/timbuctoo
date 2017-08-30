@@ -41,7 +41,9 @@ public class Import {
   @Produces("application/json")
   public Response importData(@HeaderParam("Authorization") String authorization, ImportData importData)
     throws DataStoreCreationException {
-    ImportManager importManager = dataSetFactory.createImportManager(importData.userId, importData.dataSetId);
+    ImportManager importManager = dataSetFactory
+      .createDataSet(importData.userId, importData.dataSetId)
+      .getImportManager();
     try {
       LOG.info("Loading files");
       Iterator<RemoteFile> files =

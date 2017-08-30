@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHand
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
@@ -45,8 +46,9 @@ public class Rml {
                          @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId)
     throws DataStoreCreationException, LogStorageFailedException, ExecutionException, InterruptedException {
-    ImportManager importManager = dataSetFactory.createImportManager(ownerId, dataSetId);
-    RdfDataSourceFactory dataSourceFactory = dataSetFactory.createDataSource(ownerId, dataSetId);
+    final DataSet dataSet = dataSetFactory.createDataSet(ownerId, dataSetId);
+    ImportManager importManager = dataSet.getImportManager();
+    RdfDataSourceFactory dataSourceFactory = dataSet.getDataSource();
 
     final Model model = ModelFactory.createDefaultModel();
     model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");

@@ -270,8 +270,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     GraphQl graphQlEndpoint = new GraphQl(
       new GraphQlService(
         dataSetFactory,
-        dataSetFactory,
-        dataSetFactory,
         new DerivedSchemaTypeGenerator(),
         configuration.getArchetypes(), configuration.getRdfIdHelper()
       ),

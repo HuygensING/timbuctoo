@@ -87,7 +87,7 @@ public class TabularUpload {
         .build();
     }
 
-    ImportManager importManager = dataSetFactory.createImportManager(ownerId, dataSetId);
+    ImportManager importManager = dataSetFactory.createDataSet(ownerId, dataSetId).getImportManager();
 
     String fileToken = importManager.addFile(
       rdfInputStream,

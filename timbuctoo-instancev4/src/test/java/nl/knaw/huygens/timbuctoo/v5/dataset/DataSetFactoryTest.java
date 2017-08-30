@@ -55,33 +55,37 @@ public class DataSetFactoryTest {
   }
 
   @Test
-  public void createImportManagerReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createImportManager("user", "dataset");
+  public void getOrCreateReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
+    ImportManager importManager1 = getImportManager("user", "dataset");
+    ImportManager importManager2 = getImportManager("user", "dataset");
 
     assertThat(importManager1, is(sameInstance(importManager2)));
   }
 
+  public ImportManager getImportManager(String user, String dataset) throws DataStoreCreationException {
+    return dataSetFactory.createDataSet(user, dataset).getImportManager();
+  }
+
   @Test
-  public void createImportManagerReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createImportManager("user", "other");
+  public void getOrCreateReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
+    ImportManager importManager1 = getImportManager("user", "dataset");
+    ImportManager importManager2 = getImportManager("user", "other");
 
     assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
 
   @Test
-  public void createImportManagerReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
-    ImportManager importManager1 = dataSetFactory.createImportManager("user", "dataset");
-    ImportManager importManager2 = dataSetFactory.createImportManager("other", "dataset");
+  public void getOrCreateReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
+    ImportManager importManager1 = getImportManager("user", "dataset");
+    ImportManager importManager2 = getImportManager("other", "dataset");
 
     assertThat(importManager1, is(not(sameInstance(importManager2))));
   }
 
   @Test
   public void createImportManagerOnlyAddsANewDataSetToResourceSync() throws Exception {
-    dataSetFactory.createImportManager("user", "dataset");
-    dataSetFactory.createImportManager("user", "dataset");
+    dataSetFactory.createDataSet("user", "dataset");
+    dataSetFactory.createDataSet("user", "dataset");
 
     verify(resourceSync, times(1)).resourceList("user", "dataset");
   }
@@ -95,7 +99,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws DataStoreCreationException {
-    dataSetFactory.createImportManager("otherOwner", "dataSetId");
+    getImportManager("ownerId", "otherDataSetId");
 
     boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
 
@@ -104,7 +108,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void dataSetExistsReturnsTrueIfTheUserOwnsADataSetWithTheDataSetId() throws DataStoreCreationException {
-    dataSetFactory.createImportManager("ownerId", "dataSetId");
+    getImportManager("ownerId", "dataSetId");
 
     boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
 
@@ -112,8 +116,8 @@ public class DataSetFactoryTest {
   }
 
   @Test
-  public void removeDataSetRemovesTheDataSetFromDisk() throws Exception {
-    dataSetFactory.createImportManager("user", "dataSet");
+  public void deleteDataSetRemovesTheDataSetFromDisk() throws Exception {
+    getImportManager("user", "dataSet");
     File dataSetPath = new File(new File(tempFile, "user"), "dataSet");
     assertThat(dataSetPath.exists(), is(true));
 
@@ -123,8 +127,8 @@ public class DataSetFactoryTest {
   }
 
   @Test
-  public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
-    dataSetFactory.createImportManager("user", "dataSet");
+  public void deleteDataSetRemovesTheDataSetFromTheIndex() throws Exception {
+    getImportManager("user", "dataSet");
 
     dataSetFactory.removeDataSet("user", "dataSet");
 
@@ -133,7 +137,7 @@ public class DataSetFactoryTest {
 
   @Test
   public void removeDataSetRemovesItFromResourceSync() throws Exception {
-    dataSetFactory.createImportManager("user", "dataSet");
+    dataSetFactory.createDataSet("user", "dataSet");
 
     dataSetFactory.removeDataSet("user", "dataSet");
 

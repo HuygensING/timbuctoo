@@ -65,7 +65,7 @@ public class RdfUpload {
 
     final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
-    ImportManager importManager = dataSetManager.createImportManager(userId, dataSetId);
+    ImportManager importManager = dataSetManager.createDataSet(userId, dataSetId).getImportManager();
 
     if (mediaType == null || !importManager.isRdfTypeSupported(mediaType)) {
       return Response

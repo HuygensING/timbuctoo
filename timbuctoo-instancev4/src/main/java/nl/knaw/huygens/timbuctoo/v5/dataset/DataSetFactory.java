@@ -6,19 +6,12 @@ import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
-import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -44,7 +37,7 @@ import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
  * - makes CreateDataSet a singleton
  * - keeps track of all created dataSets across restarts (stores them in a file)
  */
-public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFactory, TypeNameStoreFactory {
+public class DataSetFactory {
 
   private final ExecutorService executorService;
   private final VreAuthorizationCrud vreAuthorizationCrud;
@@ -77,35 +70,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     resourceSync = configuration.getResourceSync();
   }
 
-  @Override
-  public DataFetcherFactory createDataFetcherFactory(String userId, String dataSetId)
-    throws DataStoreCreationException {
-    return make(userId, dataSetId).getDataFetcherFactory();
-  }
-
-  @Override
-  public SchemaStore createSchemaStore(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).getSchemaStore();
-  }
-
-  @Override
-  public TypeNameStore createTypeNameStore(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).getTypeNameStore();
-  }
-
-  public ImportManager createImportManager(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).getImportManager();
-  }
-
-  public RdfDataSourceFactory createDataSource(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).getDataSource();
-  }
-
   public DataSet createDataSet(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId);
-  }
-
-  private DataSet make(String userId, String dataSetId) throws DataStoreCreationException {
     String authorizationKey = userId + "_" + dataSetId;
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
@@ -123,7 +88,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
               .add(promotedDataSet(dataSetId, false));
             return dataSets;
           });
-        } catch (AuthorizationCreationException | IOException e1) {
+        } catch (AuthorizationCreationException | IOException | ResourceSyncException e1) {
           throw new DataStoreCreationException(e1);
         }
       }
