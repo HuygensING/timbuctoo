@@ -112,7 +112,7 @@ public class DataSetFactoryTest {
   }
 
   @Test
-  public void deleteDataSetRemovesTheDataSetFromDisk() throws Exception {
+  public void removeDataSetRemovesTheDataSetFromDisk() throws Exception {
     dataSetFactory.createImportManager("user", "dataSet");
     File dataSetPath = new File(new File(tempFile, "user"), "dataSet");
     assertThat(dataSetPath.exists(), is(true));
@@ -123,12 +123,21 @@ public class DataSetFactoryTest {
   }
 
   @Test
-  public void deleteDataSetRemovesTheDataSetFromTheIndex() throws Exception {
+  public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
     dataSetFactory.createImportManager("user", "dataSet");
 
     dataSetFactory.removeDataSet("user", "dataSet");
 
     assertThat(dataSetFactory.dataSetExists("user", "dataSet"), is(false));
+  }
+
+  @Test
+  public void removeDataSetRemovesItFromResourceSync() throws Exception {
+    dataSetFactory.createImportManager("user", "dataSet");
+
+    dataSetFactory.removeDataSet("user", "dataSet");
+
+    verify(resourceSync).removeDataSet("user", "dataSet");
   }
 
 }

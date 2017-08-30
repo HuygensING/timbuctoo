@@ -67,4 +67,38 @@ public class SourceDescriptionTest {
       isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
     );
   }
+
+  @Test
+  public void removeCapabilityListRemovesTheTheLink() throws Exception {
+    File capabilityList = new File("capabilityList.xml");
+    given(uriHelper.uriForFile(capabilityList)).willReturn("http://example.org/capabilitylist");
+
+    instance.addCapabilityList(capabilityList);
+
+    Source expected = Input.fromByteArray(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+      "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
+      "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
+      "  <rs:md capability=\"description\"/>\n" +
+      "  <url>\n" +
+      "      <loc>http://example.org/capabilitylist</loc>\n" +
+      "      <rs:md capability=\"capabilitylist\"/>\n" +
+      "  </url>" +
+      "</urlset>").getBytes(StandardCharsets.UTF_8)).build();
+    Source actual = Input.fromFile(sourceDescription).build();
+    assertThat(actual,
+      isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
+    );
+
+    instance.removeCapabilityList(capabilityList);
+
+    expected = Input.fromByteArray(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+      "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
+      "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
+      "  <rs:md capability=\"description\"/>\n" +
+      "</urlset>").getBytes(StandardCharsets.UTF_8)).build();
+    actual = Input.fromFile(sourceDescription).build();
+    assertThat(actual,
+      isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
+    );
+  }
 }

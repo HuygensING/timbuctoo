@@ -29,4 +29,8 @@ class SourceDescription {
     xmlHelper.save();
   }
 
+  void removeCapabilityList(File capabilityListFile) throws ResourceSyncException {
+    xmlHelper.removeUrlElement(uriHelper.uriForFile(capabilityListFile));
+    xmlHelper.save();
+  }
 }

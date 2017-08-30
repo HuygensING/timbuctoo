@@ -14,6 +14,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeName
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
@@ -51,6 +53,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
+  private final ResourceSync resourceSync;
 
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
@@ -70,6 +73,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       }
     );
     statusMap = new HashMap<>();
+    resourceSync = configuration.getResourceSync();
   }
 
   @Override
@@ -131,7 +135,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
         configuration.getFileStorage().makeLogStorage(userId, dataSetId),
         executorService,
         configuration.getRdfIo(),
-        configuration.getResourceSync().resourceList(userId, dataSetId)
+        resourceSync.resourceList(userId, dataSetId)
       );
 
       DataSet dataSet = new DataSet();
@@ -152,9 +156,9 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
         dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
       );
 
-      this.configuration.getResourceSync().addDataSet(userId, dataSetId);
+      configuration.getResourceSync().addDataSet(userId, dataSetId);
       return dataSet;
-    } catch (AuthorizationCreationException | IOException e) {
+    } catch (AuthorizationCreationException | IOException | ResourceSyncException e) {
       throw new DataStoreCreationException(e);
     }
   }
@@ -248,6 +252,12 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       return dataSets;
     });
     dataSetMap.get(ownerId).remove(dataSetName);
+
+    try {
+      resourceSync.removeDataSet(ownerId, dataSetName);
+    } catch (ResourceSyncException e) {
+      throw new IOException(e);
+    }
 
     // remove folder
     FileUtils.deleteDirectory(fileHelper.dataSetPath(ownerId, dataSetName));

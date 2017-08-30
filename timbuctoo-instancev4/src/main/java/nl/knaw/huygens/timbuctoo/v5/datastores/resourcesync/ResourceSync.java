@@ -38,4 +38,12 @@ public class ResourceSync {
     SourceDescription sourceDescription = new SourceDescription(sourceDescriptionFile, uriHelper);
     sourceDescription.addCapabilityList(capabilityListFile);
   }
+
+  public void removeDataSet(String user, String dataSet) throws ResourceSyncException {
+    File sourceDescriptionFile = fileHelper.fileInRoot("sourceDescription.xml");
+    File capabilityListFile = fileHelper.fileInDataSet(user, dataSet, "capabilityList.xml");
+
+    SourceDescription sourceDescription = new SourceDescription(sourceDescriptionFile, uriHelper);
+    sourceDescription.removeCapabilityList(capabilityListFile);
+  }
 }

@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -15,6 +16,7 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 
 public class ResourceSyncXmlHelper {
@@ -46,6 +48,15 @@ public class ResourceSyncXmlHelper {
       transformer.transform(source, result);
     } catch (ParserConfigurationException | SAXException | IOException | TransformerException e) {
       throw new ResourceSyncException(e);
+    }
+  }
+
+  static void setUplink(Node root, Document doc, String sourceDescriptionUri) {
+    if (root.getChildNodes().getLength() == 0) {
+      Element upLink = doc.createElement("rs:ln");
+      upLink.setAttribute("rel", "up");
+      upLink.setAttribute("href", sourceDescriptionUri);
+      root.appendChild(upLink);
     }
   }
 
@@ -94,6 +105,17 @@ public class ResourceSyncXmlHelper {
     root.appendChild(url);
   }
 
+  void removeUrlElement(String url) {
+    NodeList children = root.getChildNodes();
+    for (int i = 0; i < children.getLength(); i++) {
+      Node child = children.item(i);
+      if (child.getNodeName().equals("url") && Objects.equals(child.getTextContent(), url)) {
+        root.removeChild(child);
+        break;
+      }
+    }
+  }
+
   void save() throws ResourceSyncException {
     try {
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
@@ -108,16 +130,5 @@ public class ResourceSyncXmlHelper {
     }
 
   }
-
-  static void setUplink(Node root, Document doc, String sourceDescriptionUri) {
-    if (root.getChildNodes().getLength() == 0) {
-      Element upLink = doc.createElement("rs:ln");
-      upLink.setAttribute("rel", "up");
-      upLink.setAttribute("href", sourceDescriptionUri);
-      root.appendChild(upLink);
-    }
-  }
-
-
 
 }
