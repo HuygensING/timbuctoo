@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
 import nl.knaw.huygens.timbuctoo.server.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversal;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.__;
 import org.apache.tinkerpop.gremlin.structure.Direction;
@@ -43,11 +44,14 @@ public class RawCollection {
   private final GraphWrapper graphWrapper;
   private final UriHelper uriHelper;
   private final UserPermissionChecker userPermissionChecker;
+  private final ErrorResponseHelper errorResponseHelper;
 
-  public RawCollection(GraphWrapper graphWrapper, UriHelper uriHelper, UserPermissionChecker userPermissionChecker) {
+  public RawCollection(GraphWrapper graphWrapper, UriHelper uriHelper, UserPermissionChecker userPermissionChecker,
+                       ErrorResponseHelper errorResponseHelper) {
     this.graphWrapper = graphWrapper;
     this.uriHelper = uriHelper;
     this.userPermissionChecker = userPermissionChecker;
+    this.errorResponseHelper = errorResponseHelper;
   }
 
   public URI makeUri(String vreName, String collectionName, boolean onlyErrors) {
@@ -101,8 +105,7 @@ public class RawCollection {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
     if (numberOfItems > 100 || numberOfItems < 1) {
-      return Response.status(Response.Status.BAD_REQUEST).entity(jsnO("error", jsn("number of items must be between 1" +
-        " and 100"))).build();
+      return errorResponseHelper.error(400, "number of items must be between 1 and 100");
     }
 
     final String edgeLabel;

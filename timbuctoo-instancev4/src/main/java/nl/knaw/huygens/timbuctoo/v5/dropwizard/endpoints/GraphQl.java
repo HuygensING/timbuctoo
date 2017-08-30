@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
+import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -18,6 +19,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.Optional;
 
 import static javax.ws.rs.core.Response.ok;
 
@@ -25,11 +27,13 @@ import static javax.ws.rs.core.Response.ok;
 public class GraphQl {
   private final GraphQlService graphQlService;
   private final UriHelper uriHelper;
+  private final ErrorResponseHelper errorResponseHelper;
 
-  public GraphQl(GraphQlService service, UriHelper uriHelper)
+  public GraphQl(GraphQlService service, UriHelper uriHelper, ErrorResponseHelper errorResponseHelper)
     throws DatabaseException, RdfProcessingFailedException {
     graphQlService = service;
     this.uriHelper = uriHelper;
+    this.errorResponseHelper = errorResponseHelper;
   }
 
   public URI makeUrl(String userId, String dataSetId) {
@@ -85,7 +89,12 @@ public class GraphQl {
   private Response executeGraphQlQuery(@QueryParam("query") String query, @PathParam("userId") String userId,
                                        @PathParam("dataSet") String dataSet) {
     try {
-      return ok(graphQlService.executeQuery(userId, dataSet, query)).build();
+      final Optional<SerializableResult> result = graphQlService.executeQuery(userId, dataSet, query);
+      if (result.isPresent()) {
+        return ok(result.get()).build();
+      } else {
+        return errorResponseHelper.dataSetNotFound(userId, dataSet);
+      }
     } catch (GraphQlProcessingException | GraphQlFailedException e) {
       e.printStackTrace();
       return Response.status(500).entity(e.getMessage()).build();

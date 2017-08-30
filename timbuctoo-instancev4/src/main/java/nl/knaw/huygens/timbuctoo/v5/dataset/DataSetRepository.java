@@ -70,21 +70,31 @@ public class DataSetRepository {
     resourceSync = configuration.getResourceSync();
   }
 
-  public DataSet createDataSet(String userId, String dataSetId) throws DataStoreCreationException {
-    String authorizationKey = userId + "_" + dataSetId;
+  public Optional<DataSet> getDataSet(String ownerId, String dataSetId) {
     synchronized (dataSetMap) {
-      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
+      if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
+        return Optional.ofNullable(dataSetMap.get(ownerId).get(dataSetId));
+      } else {
+        return Optional.empty();
+      }
+    }
+  }
+
+  public DataSet createDataSet(String ownerId, String dataSetId) throws DataStoreCreationException {
+    String authorizationKey = ownerId + "_" + dataSetId;
+    synchronized (dataSetMap) {
+      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerId, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
+          vreAuthorizationCrud.createAuthorization(authorizationKey, ownerId, "ADMIN");
           userDataSets.put(
             dataSetId,
-            dataSet(userId, dataSetId, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+            dataSet(ownerId, dataSetId, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
           );
           storedDataSets.updateData(dataSets -> {
             dataSets
-              .computeIfAbsent(userId, key -> new HashSet<>())
+              .computeIfAbsent(ownerId, key -> new HashSet<>())
               .add(promotedDataSet(dataSetId, false));
             return dataSets;
           });
@@ -97,7 +107,7 @@ public class DataSetRepository {
   }
 
   public boolean dataSetExists(String ownerId, String dataSet) {
-    return dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSet);
+    return getDataSet(ownerId, dataSet).isPresent();
   }
 
   public Map<String, Set<PromotedDataSet>> getDataSets() {

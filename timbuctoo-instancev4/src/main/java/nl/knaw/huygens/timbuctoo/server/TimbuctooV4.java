@@ -89,6 +89,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
@@ -249,10 +250,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
 
+    ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
       dataSetRepository,
+      errorResponseHelper,
       configuration.getRdfIdHelper()
     ));
 
@@ -260,17 +263,20 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
       dataSetRepository,
-      configuration.getRdfIdHelper()
+      configuration.getRdfIdHelper(),
+      errorResponseHelper
     ));
 
     register(environment, new Rml(
       dataSetRepository,
-      configuration.getRdfIdHelper()
+      configuration.getRdfIdHelper(),
+      errorResponseHelper
     ));
 
     register(environment, new Rml(
       dataSetRepository,
-      configuration.getRdfIdHelper()
+      configuration.getRdfIdHelper(),
+      errorResponseHelper
     ));
 
     GraphQl graphQlEndpoint = new GraphQl(
@@ -279,7 +285,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         new DerivedSchemaTypeGenerator(),
         configuration.getArchetypes(), configuration.getRdfIdHelper()
       ),
-      uriHelper
+      uriHelper,
+      errorResponseHelper
     );
     register(environment, graphQlEndpoint);
     register(environment,
@@ -315,7 +322,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer()
     );
-    RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker);
+    RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker, errorResponseHelper);
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
       new DataSourceFactory(graphManager), transactionEnforcer,
@@ -351,6 +358,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
       dataSetRepository,
+      errorResponseHelper,
       configuration.getRdfIdHelper()
     ));
 

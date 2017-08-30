@@ -2,8 +2,9 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
@@ -15,6 +16,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
@@ -31,14 +33,17 @@ public class RdfUpload {
 
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
-  private final DataSetRepository dataSetManager;
   private final TimbuctooRdfIdHelper rdfIdHelper;
+  private final DataSetRepository dataSetRepository;
+  private final ErrorResponseHelper errorResponseHelper;
 
-  public RdfUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetManager,
-                   TimbuctooRdfIdHelper rdfIdHelper) {
+
+  public RdfUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
+                   ErrorResponseHelper errorResponseHelper, TimbuctooRdfIdHelper rdfIdHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
-    this.dataSetManager = dataSetManager;
+    this.dataSetRepository = dataSetRepository;
+    this.errorResponseHelper = errorResponseHelper;
     this.rdfIdHelper = rdfIdHelper;
   }
 
@@ -52,11 +57,12 @@ public class RdfUpload {
                          @FormDataParam("defaultGraph") final URI defaultGraph,
                          @HeaderParam("authorization") final String authHeader,
                          @PathParam("userId") final String userId,
-                         @PathParam("dataSet") final String dataSetId)
+                         @PathParam("dataSet") final String dataSetId,
+                         @QueryParam("forceCreation") boolean forceCreation)
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
     final Response response = checkWriteAccess(
-      dataSetManager::dataSetExists, authorizer, loggedInUsers, authHeader, userId, dataSetId
+      dataSetRepository::dataSetExists, authorizer, loggedInUsers, authHeader, userId, dataSetId
     );
     if (response != null) {
       return response;
@@ -64,7 +70,17 @@ public class RdfUpload {
 
     final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
-    ImportManager importManager = dataSetManager.createDataSet(userId, dataSetId).getImportManager();
+    final Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(userId, dataSetId);
+    final DataSet dataSet;
+    if (dataSetOpt.isPresent()) {
+      dataSet = dataSetOpt.get();
+    } else if (forceCreation) {
+      dataSet = dataSetRepository.createDataSet(userId, dataSetId);
+    } else {
+      return errorResponseHelper.dataSetNotFound(userId, dataSetId);
+    }
+
+    ImportManager importManager = dataSet.getImportManager();
 
     if (mediaType == null || !importManager.isRdfTypeSupported(mediaType)) {
       return Response

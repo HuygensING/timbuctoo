@@ -6,8 +6,10 @@ import nl.knaw.huygens.timbuctoo.remote.rs.download.RemoteFile;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +17,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.net.URI;
@@ -29,21 +32,32 @@ public class Import {
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final DataSetRepository dataSetRepository;
   private final TimbuctooRdfIdHelper rdfIdHelper;
+  private final ErrorResponseHelper errorResponseHelper;
 
   public Import(ResourceSyncFileLoader resourceSyncFileLoader, DataSetRepository dataSetRepository,
-                TimbuctooRdfIdHelper rdfIdHelper) {
+                ErrorResponseHelper errorResponseHelper, TimbuctooRdfIdHelper rdfIdHelper) {
     this.resourceSyncFileLoader = resourceSyncFileLoader;
     this.dataSetRepository = dataSetRepository;
+    this.errorResponseHelper = errorResponseHelper;
     this.rdfIdHelper = rdfIdHelper;
   }
 
   @POST
   @Produces("application/json")
-  public Response importData(@HeaderParam("Authorization") String authorization, ImportData importData)
+  public Response importData(@HeaderParam("Authorization") String authorization,
+                             @QueryParam("forceCreation") boolean forceCreation,
+                             ImportData importData)
     throws DataStoreCreationException {
-    ImportManager importManager = dataSetRepository
-      .createDataSet(importData.userId, importData.dataSetId)
-      .getImportManager();
+    final Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(importData.userId, importData.dataSetId);
+    final DataSet dataSet;
+    if (dataSetOpt.isPresent()) {
+      dataSet = dataSetOpt.get();
+    } else if (forceCreation) {
+      dataSet = dataSetRepository.createDataSet(importData.userId, importData.dataSetId);
+    } else {
+      return errorResponseHelper.dataSetNotFound(importData.userId, importData.dataSetId);
+    }
+    ImportManager importManager = dataSet.getImportManager();
     try {
       LOG.info("Loading files");
       Iterator<RemoteFile> files =

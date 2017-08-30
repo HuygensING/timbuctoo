@@ -55,7 +55,7 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void getOrCreateReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
+  public void createDataSetReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
     ImportManager importManager1 = getImportManager("user", "dataset");
     ImportManager importManager2 = getImportManager("user", "dataset");
 
@@ -67,7 +67,7 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void getOrCreateReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
+  public void createDataSetReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
     ImportManager importManager1 = getImportManager("user", "dataset");
     ImportManager importManager2 = getImportManager("user", "other");
 
@@ -75,7 +75,7 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void getOrCreateReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
+  public void createDataSetReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
     ImportManager importManager1 = getImportManager("user", "dataset");
     ImportManager importManager2 = getImportManager("other", "dataset");
 

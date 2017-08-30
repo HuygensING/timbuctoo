@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.v5.archetypes.ArchetypesGenerator;
 import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionindex.CollectionIndexSchemaFactory;
@@ -18,6 +17,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingExceptio
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
+
+import java.util.Optional;
 
 import static graphql.schema.GraphQLSchema.newSchema;
 
@@ -37,13 +38,13 @@ public class GraphQlService {
     this.rdfIdHelper = rdfIdHelper;
   }
 
-  public GraphQL loadSchema(String userId, String dataSetName) throws GraphQlProcessingException {
-    try {
-      PaginationArgumentsHelper paginationArgumentsHelper = new PaginationArgumentsHelper();
-      final DataSet dataSet = dataSetRepository.createDataSet(userId, dataSetName);
-      TypeNameStore typeNameStore = dataSet.getTypeNameStore();
-      DataFetcherFactory dataFetcherFactory = dataSet.getDataFetcherFactory();
-      SchemaStore schemaStore = dataSet.getSchemaStore();
+  public Optional<GraphQL> loadSchema(String userId, String dataSetName) throws GraphQlProcessingException {
+    PaginationArgumentsHelper paginationArgumentsHelper = new PaginationArgumentsHelper();
+    final Optional<DataSet> dataSet = dataSetRepository.getDataSet(userId, dataSetName);
+    if (dataSet.isPresent()) {
+      TypeNameStore typeNameStore = dataSet.get().getTypeNameStore();
+      DataFetcherFactory dataFetcherFactory = dataSet.get().getDataFetcherFactory();
+      SchemaStore schemaStore = dataSet.get().getSchemaStore();
       GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(
         typeNameStore,
         dataFetcherFactory,
@@ -53,7 +54,7 @@ public class GraphQlService {
 
       typeGenerator.makeGraphQlTypes(schemaStore.getTypes(), typeNameStore, typesContainer);
 
-      return GraphQL
+      return Optional.of(GraphQL
         .newGraphQL(
           newSchema()
             .query(schemaFactory
@@ -68,21 +69,25 @@ public class GraphQlService {
             .build(typesContainer.getAllObjectTypes())
         )
         .queryExecutionStrategy(new SerializerExecutionStrategy(typeNameStore))
-        .build();
-    } catch (DataStoreCreationException e) {
-      throw new GraphQlProcessingException(e);
+        .build());
+    } else {
+      return Optional.empty();
     }
   }
 
-  public SerializableResult executeQuery(String userId, String dataSet, String query)
+  public Optional<SerializableResult> executeQuery(String userId, String dataSet, String query)
       throws GraphQlProcessingException, GraphQlFailedException {
     try {
-      GraphQL graphQl = loadSchema(userId, dataSet);
-      ExecutionResult result = graphQl.execute(query);
-      if (result.getErrors().isEmpty()) {
-        return new SerializableResult(result.getData());
+      Optional<GraphQL> graphQl = loadSchema(userId, dataSet);
+      if (graphQl.isPresent()) {
+        ExecutionResult result = graphQl.get().execute(query);
+        if (result.getErrors().isEmpty()) {
+          return Optional.of(new SerializableResult(result.getData()));
+        } else {
+          throw new GraphQlFailedException(result.getErrors());
+        }
       } else {
-        throw new GraphQlFailedException(result.getErrors());
+        return Optional.empty();
       }
     } catch (GraphQlFailedException e) {
       throw e;

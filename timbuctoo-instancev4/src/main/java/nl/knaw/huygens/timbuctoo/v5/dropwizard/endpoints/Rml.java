@@ -4,8 +4,8 @@ import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -34,12 +34,14 @@ import java.util.stream.Stream;
 public class Rml {
   private final DataSetRepository dataSetRepository;
   private final TimbuctooRdfIdHelper rdfIdHelper;
+  private final ErrorResponseHelper errorResponseHelper;
   private final JenaBasedReader rmlBuilder = new JenaBasedReader();
 
-
-  public Rml(DataSetRepository dataSetRepository, TimbuctooRdfIdHelper rdfIdHelper) {
+  public Rml(DataSetRepository dataSetRepository, TimbuctooRdfIdHelper rdfIdHelper,
+             ErrorResponseHelper errorResponseHelper) {
     this.dataSetRepository = dataSetRepository;
     this.rdfIdHelper = rdfIdHelper;
+    this.errorResponseHelper = errorResponseHelper;
   }
 
   @POST
@@ -47,48 +49,52 @@ public class Rml {
                          @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId)
     throws DataStoreCreationException, LogStorageFailedException, ExecutionException, InterruptedException {
-    final DataSet dataSet = dataSetRepository.createDataSet(ownerId, dataSetId);
-    ImportManager importManager = dataSet.getImportManager();
-    RdfDataSourceFactory dataSourceFactory = dataSet.getDataSource();
+    final Optional<DataSet> dataSet = dataSetRepository.getDataSet(ownerId, dataSetId);
+    if (dataSet.isPresent()) {
+      ImportManager importManager = dataSet.get().getImportManager();
+      RdfDataSourceFactory dataSourceFactory = dataSet.get().getDataSource();
 
-    final Model model = ModelFactory.createDefaultModel();
-    model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");
-    final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(
-      model,
-      rdfResource -> dataSourceFactory.apply(rdfResource, dataSetId + "_" + ownerId)//fixme remove vreName from here
-    );
-    if (rmlMappingDocument.getErrors().size() > 0) {
-      return Response.status(Response.Status.BAD_REQUEST)
-        .entity("failure: " + String.join("\nfailure: ", rmlMappingDocument.getErrors()) + "\n")
-        .build();
-    }
-    //FIXME: trigger onprefix for all rml prefixes
-    //FIXME: store rml and retrieve it from tripleStore when mapping
-    Future<?> future = importManager.generateLog(
-      rdfIdHelper.dataSet(ownerId, dataSetId),
-      rdfIdHelper.dataSet(ownerId, dataSetId),
-      new RdfCreator() {
-        @Override
-        public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
-          Stream<Triple> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
-          Iterator<Triple> iterator = triples.iterator();
-          while (iterator.hasNext()) {
-            Triple triple = iterator.next();
-            boolean isLiteral = triple.getObject().isLiteral();
-            saver.onQuad(
-              triple.getSubject().toString(),
-              triple.getPredicate().toString(),
-              isLiteral ? triple.getObject().getLiteral().getLexicalForm() : triple.getObject().toString(),
-              isLiteral ? triple.getObject().getLiteralDatatypeURI() : null,
-              isLiteral ? triple.getObject().getLiteralLanguage() : null,
-              rdfIdHelper.dataSet(ownerId, dataSetId)
-            );
+      final Model model = ModelFactory.createDefaultModel();
+      model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");
+      final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(
+        model,
+        rdfResource -> dataSourceFactory.apply(rdfResource, dataSetId + "_" + ownerId)//fixme remove vreName from here
+      );
+      if (rmlMappingDocument.getErrors().size() > 0) {
+        return Response.status(Response.Status.BAD_REQUEST)
+          .entity("failure: " + String.join("\nfailure: ", rmlMappingDocument.getErrors()) + "\n")
+          .build();
+      }
+      //FIXME: trigger onprefix for all rml prefixes
+      //FIXME: store rml and retrieve it from tripleStore when mapping
+      Future<?> future = importManager.generateLog(
+        rdfIdHelper.dataSet(ownerId, dataSetId),
+        rdfIdHelper.dataSet(ownerId, dataSetId),
+        new RdfCreator() {
+          @Override
+          public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
+            Stream<Triple> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
+            Iterator<Triple> iterator = triples.iterator();
+            while (iterator.hasNext()) {
+              Triple triple = iterator.next();
+              boolean isLiteral = triple.getObject().isLiteral();
+              saver.onQuad(
+                triple.getSubject().toString(),
+                triple.getPredicate().toString(),
+                isLiteral ? triple.getObject().getLiteral().getLexicalForm() : triple.getObject().toString(),
+                isLiteral ? triple.getObject().getLiteralDatatypeURI() : null,
+                isLiteral ? triple.getObject().getLiteralLanguage() : null,
+                rdfIdHelper.dataSet(ownerId, dataSetId)
+              );
+            }
           }
         }
-      }
-    );
-    future.get();
-    return Response.noContent().build();
+      );
+      future.get();
+      return Response.noContent().build();
+    } else {
+      return errorResponseHelper.dataSetNotFound(ownerId, dataSetId);
+    }
   }
 
   @GET

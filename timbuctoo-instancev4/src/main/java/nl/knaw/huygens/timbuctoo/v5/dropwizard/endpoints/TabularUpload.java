@@ -6,10 +6,11 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.TabularRdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -26,6 +27,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
@@ -43,13 +45,15 @@ public class TabularUpload {
   private final Authorizer authorizer;
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final DataSetRepository dataSetRepository;
+  private final ErrorResponseHelper errorResponseHelper;
 
   public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
-                       TimbuctooRdfIdHelper rdfIdHelper) {
+                       TimbuctooRdfIdHelper rdfIdHelper, ErrorResponseHelper errorResponseHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
     this.dataSetRepository = dataSetRepository;
     this.rdfIdHelper = rdfIdHelper;
+    this.errorResponseHelper = errorResponseHelper;
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -62,7 +66,8 @@ public class TabularUpload {
                          FormDataMultiPart formData,
                          @HeaderParam("authorization") final String authHeader,
                          @PathParam("userId") final String ownerId,
-                         @PathParam("dataSetId") final String dataSetId)
+                         @PathParam("dataSetId") final String dataSetId,
+                         @QueryParam("forceCreation") boolean forceCreation)
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
 
@@ -87,7 +92,17 @@ public class TabularUpload {
         .build();
     }
 
-    ImportManager importManager = dataSetRepository.createDataSet(ownerId, dataSetId).getImportManager();
+    final Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(ownerId, dataSetId);
+    final DataSet dataSet;
+    if (dataSetOpt.isPresent()) {
+      dataSet = dataSetOpt.get();
+    } else if (forceCreation) {
+      dataSet = dataSetRepository.createDataSet(ownerId, dataSetId);
+    } else {
+      return errorResponseHelper.dataSetNotFound(ownerId, dataSetId);
+    }
+
+    ImportManager importManager = dataSet.getImportManager();
 
     String fileToken = importManager.addFile(
       rdfInputStream,
