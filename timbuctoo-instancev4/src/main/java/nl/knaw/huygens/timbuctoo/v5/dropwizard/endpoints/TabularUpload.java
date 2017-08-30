@@ -28,7 +28,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import java.io.InputStream;
 import java.util.Optional;
 import java.util.UUID;
@@ -110,7 +109,8 @@ public class TabularUpload {
     );
 
     Future<?> promise = importManager.generateLog(
-      UriBuilder.fromUri("http://timbuctoo.huygens.knaw.nl").path(ownerId).path(dataSetId).path(fileToken).build(),
+      rdfIdHelper.dataSet(ownerId, dataSetId),
+      rdfIdHelper.dataSet(ownerId, dataSetId),
       rdfCreator.getRight()
     );
 

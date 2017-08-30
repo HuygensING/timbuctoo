@@ -27,7 +27,7 @@ public class Rdf4jRdfParserTest {
       new StringReader("-<http://example.org/subject1> <http://pred> \"12\"^^<http://number> <http://some_graph> .");
     Rdf4jRdfParser instance = new Rdf4jRdfParser();
 
-    instance.importRdf("", "", rdfPatchLog(reader), rdfProcessor);
+    instance.importRdf("", "", rdfPatchLog(reader), "", "", rdfProcessor);
 
     verify(rdfProcessor).onQuad(
       DELETE,

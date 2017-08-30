@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,10 +28,13 @@ public class Import {
   public static final Logger LOG = LoggerFactory.getLogger(Import.class);
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final DataSetFactory dataSetFactory;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
 
-  public Import(ResourceSyncFileLoader resourceSyncFileLoader, DataSetFactory dataSetFactory) {
+  public Import(ResourceSyncFileLoader resourceSyncFileLoader, DataSetFactory dataSetFactory,
+                TimbuctooRdfIdHelper rdfIdHelper) {
     this.resourceSyncFileLoader = resourceSyncFileLoader;
     this.dataSetFactory = dataSetFactory;
+    this.rdfIdHelper = rdfIdHelper;
   }
 
   @POST
@@ -56,7 +60,9 @@ public class Import {
         if (importManager.isRdfTypeSupported(parsedMediatype)) {
           resourceSyncResport.importedFiles.add(file.getUrl());
           importManager.addLog(
-            URI.create(file.getUrl()),
+            rdfIdHelper.dataSet(importData.userId, importData.dataSetId),
+            rdfIdHelper.dataSet(importData.userId, importData.dataSetId),
+            file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1),
             file.getData(),
             Optional.of(Charsets.UTF_8),
             parsedMediatype

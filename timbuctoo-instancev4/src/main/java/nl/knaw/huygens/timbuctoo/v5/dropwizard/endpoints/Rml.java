@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationExcep
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
@@ -21,11 +22,9 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
@@ -33,10 +32,12 @@ import java.util.stream.Stream;
 @Path("/v5/{userId}/{dataSetId}/rml")
 public class Rml {
   private final DataSetFactory dataSetFactory;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final JenaBasedReader rmlBuilder = new JenaBasedReader();
 
-  public Rml(DataSetFactory dataSetFactory) {
+  public Rml(DataSetFactory dataSetFactory, TimbuctooRdfIdHelper rdfIdHelper) {
     this.dataSetFactory = dataSetFactory;
+    this.rdfIdHelper = rdfIdHelper;
   }
 
   @POST
@@ -60,9 +61,9 @@ public class Rml {
     }
     //FIXME: trigger onprefix for all rml prefixes
     //FIXME: store rml and retrieve it from tripleStore when mapping
-    String graph = "http://aasad" + UUID.randomUUID();  //FIXME:
     Future<?> future = importManager.generateLog(
-      URI.create(graph),
+      rdfIdHelper.dataSet(ownerId, dataSetId),
+      rdfIdHelper.dataSet(ownerId, dataSetId),
       new RdfCreator() {
         @Override
         public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
@@ -77,7 +78,7 @@ public class Rml {
               isLiteral ? triple.getObject().getLiteral().getLexicalForm() : triple.getObject().toString(),
               isLiteral ? triple.getObject().getLiteralDatatypeURI() : null,
               isLiteral ? triple.getObject().getLiteralLanguage() : null,
-              graph
+              rdfIdHelper.dataSet(ownerId, dataSetId)
             );
           }
         }

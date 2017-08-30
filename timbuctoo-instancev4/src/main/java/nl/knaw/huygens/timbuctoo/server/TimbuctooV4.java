@@ -252,7 +252,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
-      dataSetFactory
+      dataSetFactory,
+      configuration.getRdfIdHelper()
     ));
 
     register(environment, new TabularUpload(
@@ -262,7 +263,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ));
 
     register(environment, new Rml(
-      dataSetFactory
+      dataSetFactory,
+      configuration.getRdfIdHelper()
     ));
 
     GraphQl graphQlEndpoint = new GraphQl(
@@ -344,7 +346,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
-      dataSetFactory
+      dataSetFactory,
+      configuration.getRdfIdHelper()
     ));
 
     register(environment, new WellKnown());

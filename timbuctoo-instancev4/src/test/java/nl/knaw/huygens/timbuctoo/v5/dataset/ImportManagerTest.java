@@ -20,7 +20,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -67,8 +66,12 @@ public class ImportManagerTest {
   @Test
   public void addLogSavesTheLogToDisk() throws Exception {
     File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
-    URI name = URI.create("http://example.com/clusius.ttl");
+    String name = "http://example.com/clusius.ttl";
+    String defaultGraph = "http://example.com/defaultGraph";
+    String baseUri = "http://example.com/baseUri";
     importManager.addLog(
+      baseUri,
+      defaultGraph,
       name,
       new FileInputStream(file),
       Optional.of(Charsets.UTF_8),
@@ -76,17 +79,22 @@ public class ImportManagerTest {
     );
 
     LogEntry logEntry = importManager.getLogEntries().get(0);
-    assertThat(logEntry.getName(), is(name));
+    assertThat(logEntry.getBaseUri(), is(baseUri));
+    assertThat(logEntry.getDefaultGraph(), is(defaultGraph));
     //The first character is an @. if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(64));
   }
 
   @Test
   public void addLogsCallsTheResourceSyncResourceList() throws Exception {
-    URI name = URI.create("http://example.com/clusius.ttl");
+    String name = "http://example.com/clusius.ttl";
+    String defaultGraph = "http://example.com/defaultGraph";
+    String baseUri = "http://example.com/baseUri";
     File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
 
     Future<?> promise = importManager.addLog(
+      baseUri,
+      defaultGraph,
       name,
       new FileInputStream(file),
       Optional.of(Charsets.UTF_8),
@@ -103,12 +111,16 @@ public class ImportManagerTest {
   @Test
   public void callsStoresWhenANewLogIsAdded() throws Exception {
     File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
-    URI name = URI.create("http://example.com/clusius.ttl");
+    String name = "http://example.com/clusius.ttl";
+    String defaultGraph = "http://example.com/defaultGraph";
+    String baseUri = "http://example.com/baseUri";
     CountingProcessor processor = new CountingProcessor();
     importManager.subscribeToRdf(processor, null);
 
 
     Future<?> promise = importManager.addLog(
+      baseUri,
+      defaultGraph,
       name,
       new FileInputStream(file),
       Optional.of(Charsets.UTF_8),
@@ -120,26 +132,29 @@ public class ImportManagerTest {
 
   @Test
   public void generateLogSavesTheLogAndCallsTheStores() throws Exception {
-    URI name = URI.create("http://example.com/clusius.ttl");
+    String defaultGraph = "http://example.com/defaultGraph";
+    String baseUri = "http://example.com/baseUri";
     CountingProcessor processor = new CountingProcessor();
     importManager.subscribeToRdf(processor, null);
 
     Future<?> promise = importManager.generateLog(
-      name,
+      baseUri,
+      defaultGraph,
       new DummyRdfCreator()
     );
 
     promise.get();
     assertThat(processor.getCounter(), is(3));
     LogEntry logEntry = importManager.getLogEntries().get(0);
-    assertThat(logEntry.getName(), is(name));
+    assertThat(logEntry.getBaseUri(), is(baseUri));
+    assertThat(logEntry.getDefaultGraph(), is(defaultGraph));
     //The first character is an < (start of a uri in nquads) if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(60));
   }
 
   @Test
   public void addFileCallsTheResourceSyncResourceList() throws Exception {
-    URI name = URI.create("http://example.com/clusius.ttl");
+    String name = "http://example.com/clusius.ttl";
     File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
 
     String fileToken = importManager.addFile(

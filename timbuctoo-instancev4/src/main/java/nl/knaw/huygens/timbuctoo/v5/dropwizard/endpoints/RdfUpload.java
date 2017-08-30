@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -31,12 +32,15 @@ public class RdfUpload {
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
   private final DataSetFactory dataSetManager;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
 
 
-  public RdfUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetManager) {
+  public RdfUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetManager,
+                   TimbuctooRdfIdHelper rdfIdHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
     this.dataSetManager = dataSetManager;
+    this.rdfIdHelper = rdfIdHelper;
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -45,7 +49,8 @@ public class RdfUpload {
                          @FormDataParam("file") final FormDataBodyPart body,
                          @FormDataParam("fileMimeTypeOverride") final MediaType mimeTypeOverride,
                          @FormDataParam("encoding") final String encoding,
-                         @FormDataParam("uri") final URI uri,
+                         @FormDataParam("baseUri") final URI baseUri,
+                         @FormDataParam("defaultGraph") final URI defaultGraph,
                          @HeaderParam("authorization") final String authHeader,
                          @PathParam("userId") final String userId,
                          @PathParam("dataSet") final String dataSetId)
@@ -74,7 +79,9 @@ public class RdfUpload {
     }
 
     Future<?> promise = importManager.addLog(
-      uri,
+      baseUri == null ? rdfIdHelper.dataSet(userId, dataSetId) : baseUri.toString(),
+      defaultGraph == null ? rdfIdHelper.dataSet(userId, dataSetId) : defaultGraph.toString(),
+      body.getContentDisposition().getFileName(),
       rdfInputStream,
       Optional.of(Charset.forName(encoding)),
       mediaType

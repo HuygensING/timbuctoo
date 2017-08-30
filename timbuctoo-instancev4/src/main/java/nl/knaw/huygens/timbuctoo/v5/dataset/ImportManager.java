@@ -26,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -54,8 +53,7 @@ public class ImportManager implements DataProvider {
   private EntityProvider entityProvider;
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
-                       ExecutorService executorService, RdfIoFactory rdfIoFactory,
-                       ResourceList resourceList)
+                       ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList)
       throws DataStoreCreationException {
     this.fileStorage = new PublicFileStore(fileStorage, resourceList);
     this.imageStorage = new PublicFileStore(imageStorage, resourceList);
@@ -75,13 +73,13 @@ public class ImportManager implements DataProvider {
     subscribedEntityProcessors = new ArrayList<>();
   }
 
-  public Future<?> addLog(URI name, InputStream rdfInputStream, Optional<Charset> charset,
-                          MediaType mediaType) throws LogStorageFailedException {
+  public Future<?> addLog(String baseUri, String defaultGraph, String fileName, InputStream rdfInputStream,
+                          Optional<Charset> charset, MediaType mediaType) throws LogStorageFailedException {
     try {
-      String token = logStorage.saveLog(rdfInputStream, name.toString(), mediaType, charset);
+      String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
       int[] index = new int[1];
       logListStore.updateData(logList -> {
-        index[0] = logList.addEntry(LogEntry.create(name, token));
+        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
         return logList;
       });
       return executorService.submit(() -> processLogsUntil(index[0]));
@@ -112,12 +110,13 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  public Future<?> generateLog(URI name, RdfCreator creator) throws LogStorageFailedException {
+  public Future<?> generateLog(String baseUri, String defaultGraph, RdfCreator creator)
+    throws LogStorageFailedException {
     try {
       //add to the log structure
       int[] index = new int[1];
       logListStore.updateData(logList -> {
-        index[0] = logList.addEntry(LogEntry.create(name, creator));
+        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, creator));
         return logList;
       });
       //schedule processing
@@ -140,7 +139,14 @@ public class ImportManager implements DataProvider {
         try {
           CachedLog log = logStorage.getLog(entry.getLogToken().get());
           for (Tuple<String, RdfProcessor> subscribedProcessor : subscribedProcessors) {
-            processLogIfNeeded(index, log, subscribedProcessor.getLeft(), subscribedProcessor.getRight());
+            processLogIfNeeded(
+              index,
+              log,
+              entry.getBaseUri(),
+              entry.getDefaultGraph(),
+              subscribedProcessor.getLeft(),
+              subscribedProcessor.getRight()
+            );
           }
           for (Tuple<String, EntityProcessor> processor : subscribedEntityProcessors) {
             entityProvider.processEntities(processor.getLeft(), processor.getRight());
@@ -172,7 +178,7 @@ public class ImportManager implements DataProvider {
         try {
           token = logStorage.saveLog(
             new ByteArrayInputStream(outputStream.toByteArray()),
-            entry.getName().toString(),
+            "log_generated_by_" + creator.getClass().getSimpleName(),
             mediaType,
             charset
           );
@@ -192,8 +198,8 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  private void processLogIfNeeded(int index, CachedLog log, String currentCursor, RdfProcessor processor)
-      throws RdfProcessingFailedException {
+  private void processLogIfNeeded(int index, CachedLog log, String baseUri, String defaultGraph, String currentCursor,
+                                  RdfProcessor processor) throws RdfProcessingFailedException {
     RdfParser rdfParser = serializerFactory.makeRdfParser(log);
     if (currentCursor == null) {
       currentCursor = "";
@@ -201,9 +207,10 @@ public class ImportManager implements DataProvider {
     String[] cursorParts = currentCursor.split("\n", 2);
     int major = cursorParts[0].isEmpty() ? 0 : Integer.parseInt(cursorParts[0]);
     if (major < index) {
-      rdfParser.importRdf(index + "\n", "", log, processor);
+      rdfParser.importRdf(index + "\n", "", log, baseUri, defaultGraph, processor);
     } else if (major == index) {
-      rdfParser.importRdf(index + "\n", cursorParts.length > 1 ? cursorParts[1] : "", log, processor);
+      final String startFrom = cursorParts.length > 1 ? cursorParts[1] : "";
+      rdfParser.importRdf(index + "\n", startFrom, log, baseUri, defaultGraph, processor);
     }
   }
 
