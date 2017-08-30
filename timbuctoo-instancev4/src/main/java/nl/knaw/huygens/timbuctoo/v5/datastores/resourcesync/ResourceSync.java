@@ -25,19 +25,17 @@ public class ResourceSync {
     this.fileStorageFactory = fileStorageFactory;
   }
 
-  public ResourceList resourceList(String user, String dataSet) {
-    return new ResourceListFile(getResourceListFile(user, dataSet), uriHelper);
-  }
-
-  public void addDataSet(String user, String dataSet) throws ResourceSyncException {
+  public ResourceList resourceList(String user, String dataSet) throws ResourceSyncException {
     File sourceDescriptionFile = getSourceDescriptionFile();
     File capabilityListFile = getCapabilityListFile(user, dataSet);
 
     CapabilityListFile capabilityList = new CapabilityListFile(capabilityListFile, sourceDescriptionFile, uriHelper);
-    capabilityList.addResourceList(getResourceListFile(user, dataSet));
+    File resourceListFile = getResourceListFile(user, dataSet);
+    capabilityList.addResourceList(resourceListFile);
 
     SourceDescriptionFile sourceDescription = new SourceDescriptionFile(sourceDescriptionFile, uriHelper);
     sourceDescription.addCapabilityList(capabilityListFile);
+    return new ResourceListFile(resourceListFile, uriHelper);
   }
 
   public void removeDataSet(String user, String dataSet) throws ResourceSyncException {

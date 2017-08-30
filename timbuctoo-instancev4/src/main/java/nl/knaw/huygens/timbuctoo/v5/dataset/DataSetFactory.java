@@ -156,8 +156,6 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       dataSet.dataSource = new RdfDataSourceFactory(
         dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
       );
-
-      resourceSync.addDataSet(userId, dataSetId);
       return dataSet;
     } catch (AuthorizationCreationException | IOException | ResourceSyncException e) {
       throw new DataStoreCreationException(e);

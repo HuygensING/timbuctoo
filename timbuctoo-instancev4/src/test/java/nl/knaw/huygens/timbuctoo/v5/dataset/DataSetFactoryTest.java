@@ -83,7 +83,7 @@ public class DataSetFactoryTest {
     dataSetFactory.createImportManager("user", "dataset");
     dataSetFactory.createImportManager("user", "dataset");
 
-    verify(resourceSync, times(1)).addDataSet("user", "dataset");
+    verify(resourceSync, times(1)).resourceList("user", "dataset");
   }
 
   @Test
