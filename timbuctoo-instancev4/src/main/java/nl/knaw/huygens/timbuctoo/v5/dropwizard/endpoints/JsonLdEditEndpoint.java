@@ -24,19 +24,19 @@ import java.util.HashMap;
 import java.util.Optional;
 
 @Path("/v5/{user}/{dataset}/upload/jsonld")
-public class JsonLdImport {
+public class JsonLdEditEndpoint {
 
   private DataSetRepository dataSetRepository;
   private ObjectMapper objectMapper;
   private TimbuctooRdfIdHelper rdfIdHelper;
 
-  public JsonLdImport(DataSetRepository dataSetRepository, ObjectMapper objectMapper,
-                      TimbuctooRdfIdHelper rdfIdHelper) {
-    this.dataSetRepository = dataSetRepository;
 
+  public JsonLdEditEndpoint(DataSetRepository dataSetRepository, ObjectMapper objectMapper,
+                            TimbuctooRdfIdHelper rdfIdHelper) {
+    this.dataSetRepository = dataSetRepository;
     this.objectMapper = objectMapper;
 
-    this.rdfIdHelper = rdfIdHelper;
+    this.rdfIdHelper = this.rdfIdHelper;
   }
 
   @PUT

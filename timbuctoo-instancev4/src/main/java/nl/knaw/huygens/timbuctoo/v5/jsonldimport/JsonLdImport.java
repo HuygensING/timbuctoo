@@ -12,16 +12,6 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Value.Immutable
 public interface JsonLdImport {
-  /*
-  Map<String, Object> getType();
-
-  Array<Map<String, String>> getQualifiedAssociation();
-
-  Array<Map<String, String>> getUsed();
-
-  Array<Object> getInvalidates();
-
-  */
 
   Entity[] getGenerates();
 

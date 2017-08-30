@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -103,6 +104,16 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
   }
 
   public void sendQuads(RdfPatchSerializer saver) throws LogStorageFailedException {
+    for (Entity entity: entities) {
+      URI specialization = entity.getSpecializationOf();
+      URI revision = entity.getWasRevisionOf().get("@id");
+      /*
+      if (specialization.equals(revision.getSpecialization())){
+
+      }
+      */
+    }
+
     generateAdditions(saver);
     generateDeletions(saver);
     generateReplacements(saver);
