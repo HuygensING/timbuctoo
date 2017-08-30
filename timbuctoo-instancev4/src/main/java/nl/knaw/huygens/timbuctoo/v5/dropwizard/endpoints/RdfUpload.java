@@ -58,7 +58,8 @@ public class RdfUpload {
                          @HeaderParam("authorization") final String authHeader,
                          @PathParam("userId") final String userId,
                          @PathParam("dataSet") final String dataSetId,
-                         @QueryParam("forceCreation") boolean forceCreation)
+                         @QueryParam("forceCreation") boolean forceCreation,
+                         @QueryParam("async") final boolean async)
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
     final Response response = checkWriteAccess(
@@ -101,8 +102,9 @@ public class RdfUpload {
       Optional.of(Charset.forName(encoding)),
       mediaType
     );
-
-    promise.get();
+    if (!async) {
+      promise.get();
+    }
 
     return Response.noContent().build();
   }
