@@ -33,20 +33,6 @@ public class SourceDescriptionFileTest {
   }
 
   @Test
-  public void theConstructorCreatesTheFile() throws Exception {
-    Source expected = Input.fromByteArray(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-      "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
-      "        xmlns:rs=\"http://www.openarchives.org/rs/terms/\">\n" +
-      "  <rs:md capability=\"description\"/>\n" +
-      "</urlset>").getBytes(StandardCharsets.UTF_8)).build();
-
-    Source actual = Input.fromFile(sourceDescription).build();
-    assertThat(actual,
-      isSimilarTo(expected).ignoreWhitespace().withComparisonFormatter(new DefaultComparisonFormatter())
-    );
-  }
-
-  @Test
   public void addCapabilityListAddsALinkToACapabilityList() throws Exception {
     File capabilityList = new File("capabilityList.xml");
     given(uriHelper.uriForFile(capabilityList)).willReturn("http://example.org/capabilitylist");

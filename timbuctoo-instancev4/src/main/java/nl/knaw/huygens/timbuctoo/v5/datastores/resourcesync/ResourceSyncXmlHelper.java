@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiConsumer;
 
 public class ResourceSyncXmlHelper {
 
@@ -26,7 +25,7 @@ public class ResourceSyncXmlHelper {
   private final Node root;
   private final File file;
 
-  ResourceSyncXmlHelper(File file, BiConsumer<Node, Document> metaDataUpdater) throws ResourceSyncException {
+  ResourceSyncXmlHelper(File file) throws ResourceSyncException {
     this.file = file;
 
     try {
@@ -40,7 +39,7 @@ public class ResourceSyncXmlHelper {
         root = createRootNode(doc);
         doc.appendChild(root);
       }
-      metaDataUpdater.accept(root, doc);
+
       TransformerFactory transformerFactory = TransformerFactory.newInstance();
       Transformer transformer = transformerFactory.newTransformer();
       DOMSource source = new DOMSource(doc);
@@ -52,13 +51,13 @@ public class ResourceSyncXmlHelper {
     }
   }
 
-  static void setUplink(Node root, Document doc, String sourceDescriptionUri) {
-    if (root.getChildNodes().getLength() == 0) {
-      Element upLink = doc.createElement("rs:ln");
-      upLink.setAttribute("rel", "up");
-      upLink.setAttribute("href", sourceDescriptionUri);
-      root.appendChild(upLink);
-    }
+  void createOrUpdateUplink(String sourceDescriptionUri) {
+    Element upLink = getOrCreateElement("rs:ln");
+    upLink.setAttribute("rel", "up");
+    upLink.setAttribute("href", sourceDescriptionUri);
+
+    Element metaData = getOrCreateMetadataNode();
+    root.insertBefore(upLink, metaData);
   }
 
   private Element createRootNode(Document doc) {
@@ -135,6 +134,32 @@ public class ResourceSyncXmlHelper {
     return Optional.empty();
   }
 
+  Element getOrCreateMetadataNode() {
+    return getOrCreateElement("rs:md");
+  }
+
+  private Element getOrCreateElement(String nodeName) {
+    Element metadataNode = null;
+    NodeList childNodes = root.getChildNodes();
+    for (int i = 0; i < childNodes.getLength(); i++) {
+      final Node node = childNodes.item(i);
+      if (node instanceof Element && node.getNodeName().equals(nodeName)) {
+        metadataNode = (Element) node;
+        break;
+      }
+    }
+    if (metadataNode != null) {
+      return metadataNode;
+    } else {
+      Element metaData = doc.createElement(nodeName);
+      if (root.getChildNodes().getLength() == 0) {
+        root.appendChild(metaData);
+      } else {
+        root.insertBefore(metaData, root.getChildNodes().item(0));
+      }
+      return metaData;
+    }
+  }
 
   void save() throws ResourceSyncException {
     try {

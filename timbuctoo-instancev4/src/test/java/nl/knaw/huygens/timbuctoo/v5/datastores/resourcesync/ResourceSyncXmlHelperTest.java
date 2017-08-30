@@ -21,8 +21,7 @@ public class ResourceSyncXmlHelperTest {
   @Before
   public void setUp() throws Exception {
     file = File.createTempFile("file", "xml");
-    instance = new ResourceSyncXmlHelper(file, (node, document) -> {
-    });
+    instance = new ResourceSyncXmlHelper(file);
   }
 
   @After
