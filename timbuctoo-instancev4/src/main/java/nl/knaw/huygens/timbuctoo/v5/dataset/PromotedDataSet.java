@@ -19,7 +19,7 @@ public interface PromotedDataSet {
   
   Optional<String> role = Optional.empty();
 
-  static PromotedDataSet create(String name, boolean promoted) {
+  static PromotedDataSet promotedDataSet(String name, boolean promoted) {
     return ImmutablePromotedDataSet.builder()
       .name(name)
       .isPromoted(promoted)

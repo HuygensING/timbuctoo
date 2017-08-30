@@ -7,10 +7,8 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationExcept
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataFetcherFactoryFactory;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStoreFactory;
@@ -23,7 +21,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.apache.commons.io.FileUtils;
 
-import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -38,6 +35,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import static nl.knaw.huygens.timbuctoo.v5.dataset.PromotedDataSet.promotedDataSet;
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
 
 /**
  * - stores all configuration parameters so it can inject them in the dataset constructor
@@ -80,26 +80,29 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   @Override
   public DataFetcherFactory createDataFetcherFactory(String userId, String dataSetId)
     throws DataStoreCreationException {
-    return make(userId, dataSetId).createDataFetcherFactory();
+    return make(userId, dataSetId).getDataFetcherFactory();
   }
 
   @Override
   public SchemaStore createSchemaStore(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).schemaStore;
+    return make(userId, dataSetId).getSchemaStore();
   }
 
   @Override
   public TypeNameStore createTypeNameStore(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).typeNameStore;
+    return make(userId, dataSetId).getTypeNameStore();
   }
 
   public ImportManager createImportManager(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).importManager;
-
+    return make(userId, dataSetId).getImportManager();
   }
 
   public RdfDataSourceFactory createDataSource(String userId, String dataSetId) throws DataStoreCreationException {
-    return make(userId, dataSetId).dataSource;
+    return make(userId, dataSetId).getDataSource();
+  }
+
+  public DataSet createDataSet(String userId, String dataSetId) throws DataStoreCreationException {
+    return make(userId, dataSetId);
   }
 
   private DataSet make(String userId, String dataSetId) throws DataStoreCreationException {
@@ -108,57 +111,23 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(userId, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
-        DataSet dataSet = createNewDataSet(userId, dataSetId, authorizationKey);
-        userDataSets.put(dataSetId, dataSet);
-
         try {
-          PromotedDataSet promotedDataSet = PromotedDataSet.create(dataSetId, false);
+          vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
+          userDataSets.put(
+            dataSetId,
+            dataSet(userId, dataSetId, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+          );
           storedDataSets.updateData(dataSets -> {
-            dataSets.computeIfAbsent(userId, key -> new HashSet<>()).add(promotedDataSet);
+            dataSets
+              .computeIfAbsent(userId, key -> new HashSet<>())
+              .add(promotedDataSet(dataSetId, false));
             return dataSets;
           });
-        } catch (IOException e) {
-          throw new DataStoreCreationException(e);
+        } catch (AuthorizationCreationException | IOException e1) {
+          throw new DataStoreCreationException(e1);
         }
       }
       return userDataSets.get(dataSetId);
-    }
-  }
-
-  private DataSet createNewDataSet(String userId, String dataSetId, String authorizationKey)
-    throws DataStoreCreationException {
-    try {
-      vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
-      ImportManager importManager = new ImportManager(
-        fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
-        configuration.getFileStorage().makeFileStorage(userId, dataSetId),
-        configuration.getFileStorage().makeFileStorage(userId, dataSetId),
-        configuration.getFileStorage().makeLogStorage(userId, dataSetId),
-        executorService,
-        configuration.getRdfIo(),
-        resourceSync.resourceList(userId, dataSetId)
-      );
-
-      DataSet dataSet = new DataSet();
-      QuadStore quadStore = dataStoreFactory.createQuadStore(importManager, userId, dataSetId);
-      CollectionIndex collectionIndex = dataStoreFactory.createCollectionIndex(importManager, userId, dataSetId);
-      dataSet.quadStore = quadStore;
-      dataSet.collectionIndex = collectionIndex;
-      dataSet.typeNameStore = new JsonTypeNameStore(
-        fileHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
-        importManager
-      );
-      dataSet.schemaStore = new JsonSchemaStore(
-        importManager,
-        fileHelper.fileInDataSet(userId, dataSetId, "schema.json")
-      );
-      dataSet.importManager = importManager;
-      dataSet.dataSource = new RdfDataSourceFactory(
-        dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
-      );
-      return dataSet;
-    } catch (AuthorizationCreationException | IOException | ResourceSyncException e) {
-      throw new DataStoreCreationException(e);
     }
   }
 
@@ -271,16 +240,4 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     dataStoreFactory.start();
   }
 
-  private class DataSet {
-    private SchemaStore schemaStore;
-    private TypeNameStore typeNameStore;
-    private ImportManager importManager;
-    private RdfDataSourceFactory dataSource;
-    private QuadStore quadStore;
-    private CollectionIndex collectionIndex;
-
-    public DataFetcherFactory createDataFetcherFactory() {
-      return new DataStoreDataFetcherFactory(quadStore, collectionIndex);
-    }
-  }
 }
