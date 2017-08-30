@@ -20,10 +20,10 @@ import org.junit.Test;
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
@@ -93,8 +93,8 @@ public class RmlDataSourceStoreTest {
       RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
 
       try {
-        rawUploadRdfSaver = new RawUploadRdfSaver("userId", "dataSetId", "fileName", Optional.empty(), rdfSerializer,
-          new TimbuctooRdfIdHelper("http://timbuctoo.huygens.knaw.nl/v5/"));
+        rawUploadRdfSaver = new RawUploadRdfSaver("userId", "dataSetId", "fileName", APPLICATION_OCTET_STREAM_TYPE,
+          rdfSerializer, new TimbuctooRdfIdHelper("http://timbuctoo.huygens.knaw.nl/v5/"));
         processor.start();
       } catch (RdfProcessingFailedException | LogStorageFailedException e) {
         throw new RuntimeException(e.getCause());

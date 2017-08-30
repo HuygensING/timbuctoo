@@ -10,19 +10,18 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.Optional;
 
 public class FileSystemCachedLog implements CachedLog {
 
-  private final Optional<MediaType> mimeType;
+  private final MediaType mimeType;
   private final Optional<Charset> charset;
   private final String name;
   private final File file;
 
-  public FileSystemCachedLog(Optional<MediaType> mimeType, Optional<Charset> charset, String name, File file) {
+  public FileSystemCachedLog(MediaType mimeType, Optional<Charset> charset, String name, File file) {
     this.mimeType = mimeType;
     this.charset = charset;
     this.name = name;
@@ -71,7 +70,7 @@ public class FileSystemCachedLog implements CachedLog {
   }
 
   @Override
-  public Optional<MediaType> getMimeType() {
+  public MediaType getMimeType() {
     return mimeType;
   }
 

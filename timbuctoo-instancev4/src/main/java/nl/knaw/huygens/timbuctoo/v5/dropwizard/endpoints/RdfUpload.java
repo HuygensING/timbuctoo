@@ -62,7 +62,7 @@ public class RdfUpload {
 
     ImportManager importManager = dataSetManager.createImportManager(userId, dataSetId);
 
-    if (!importManager.isRdfTypeSupported(mediaType)) {
+    if (mediaType == null || !importManager.isRdfTypeSupported(mediaType)) {
       return Response
         .status(Response.Status.BAD_REQUEST)
         .type(MediaType.APPLICATION_JSON_TYPE)
@@ -77,7 +77,7 @@ public class RdfUpload {
       uri,
       rdfInputStream,
       Optional.of(Charset.forName(encoding)),
-      Optional.of(mediaType)
+      mediaType
     );
 
     promise.get();

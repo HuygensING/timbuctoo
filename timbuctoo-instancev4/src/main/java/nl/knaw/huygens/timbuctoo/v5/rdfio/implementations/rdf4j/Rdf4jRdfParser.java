@@ -13,26 +13,19 @@ import org.eclipse.rdf4j.rio.Rio;
 import org.eclipse.rdf4j.rio.UnsupportedRDFormatException;
 
 import java.io.IOException;
-import java.util.Optional;
-
-import static org.eclipse.rdf4j.rio.Rio.getParserFormatForFileName;
 
 public class Rdf4jRdfParser implements RdfParser {
   @Override
   public void importRdf(String cursorPrefix, String startFrom, CachedLog input, RdfProcessor rdfProcessor)
     throws RdfProcessingFailedException {
 
-    Optional<RDFFormat> format = input.getMimeType()
-      .flatMap(mimeType -> Rio.getParserFormatForMIMEType(mimeType.toString()));
     String name = input.getName();
-    if (!format.isPresent()) {
-      format = getParserFormatForFileName(name.toString());
-    }
     try {
-      RDFFormat unwrappedFormat = format.orElseThrow(
-        () -> new UnsupportedRDFormatException(name.toString() + " does not look like a known rdf type.")
-      );
-      RDFParser rdfParser = Rio.createParser(unwrappedFormat);
+      RDFFormat format = Rio.getParserFormatForMIMEType(input.getMimeType().toString())
+        .orElseThrow(
+          () -> new UnsupportedRDFormatException(input.getMimeType() + " is not a supported rdf type.")
+        );
+      RDFParser rdfParser = Rio.createParser(format);
       rdfParser.setPreserveBNodeIDs(true);
       int startFromInt = startFrom.isEmpty() ? 0 : Integer.parseInt(startFrom);
       rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, name, cursorPrefix, startFromInt));

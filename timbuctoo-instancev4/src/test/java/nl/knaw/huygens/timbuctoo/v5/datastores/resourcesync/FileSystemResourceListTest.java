@@ -14,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -52,8 +51,8 @@ public class FileSystemResourceListTest {
     File file2 = new File("fileName2");
     given(uriHelper.uriForFile(file2)).willReturn("http://example.org/2");
 
-    instance.addFile(cachedFile(file, Optional.empty()));
-    instance.addFile(cachedFile(file2, Optional.empty()));
+    instance.addFile(cachedFile(file));
+    instance.addFile(cachedFile(file2));
 
     Source expected = Input.fromByteArray(
       ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -63,9 +62,11 @@ public class FileSystemResourceListTest {
         "         at=\"2013-01-03T09:00:00Z\"/>" +
         "  <url>" +
         "      <loc>http://example.org/1</loc>" +
+        "      <rs:md type=\"application/octet-stream\"/>" +
         "  </url>" +
         "  <url>" +
         "      <loc>http://example.org/2</loc>" +
+        "      <rs:md type=\"application/octet-stream\"/>" +
         "  </url>" +
         "</urlset>"
       ).getBytes(StandardCharsets.UTF_8)
@@ -84,9 +85,9 @@ public class FileSystemResourceListTest {
     File file2 = new File("fileName2");
     given(uriHelper.uriForFile(file2)).willReturn("http://example.org/2");
 
-    instance.addFile(cachedFile(file, Optional.empty()));
+    instance.addFile(cachedFile(file));
     ResourceListFile otherInstance = new ResourceListFile(resourcelist, clock, uriHelper);
-    otherInstance.addFile(cachedFile(file2, Optional.empty()));
+    otherInstance.addFile(cachedFile(file2));
 
     Source expected = Input.fromByteArray(
       ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -96,9 +97,11 @@ public class FileSystemResourceListTest {
         "         at=\"2014-02-03T09:00:00Z\"/>" +
         "  <url>" +
         "      <loc>http://example.org/1</loc>" +
+        "      <rs:md type=\"application/octet-stream\"/>" +
         "  </url>" +
         "  <url>" +
         "      <loc>http://example.org/2</loc>" +
+        "      <rs:md type=\"application/octet-stream\"/>" +
         "  </url>" +
         "</urlset>"
       ).getBytes(StandardCharsets.UTF_8)
@@ -117,8 +120,8 @@ public class FileSystemResourceListTest {
     File file2 = new File("fileName2");
     given(uriHelper.uriForFile(file2)).willReturn("http://example.org/2");
 
-    instance.addFile(cachedFile(file, Optional.of(MediaType.APPLICATION_XML_TYPE)));
-    instance.addFile(cachedFile(file2, Optional.empty()));
+    instance.addFile(cachedFile(file, MediaType.APPLICATION_XML_TYPE));
+    instance.addFile(cachedFile(file2));
 
     Source expected = Input.fromByteArray(
       ("<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -132,6 +135,7 @@ public class FileSystemResourceListTest {
         "  </url>" +
         "  <url>" +
         "      <loc>http://example.org/2</loc>" +
+        "      <rs:md type=\"application/octet-stream\"/>" +
         "  </url>" +
         "</urlset>"
       ).getBytes(StandardCharsets.UTF_8)
@@ -142,7 +146,7 @@ public class FileSystemResourceListTest {
     );
   }
 
-  private CachedFile cachedFile(final File file, final Optional<MediaType> typeOptional) {
+  private CachedFile cachedFile(final File file, final MediaType type) {
     return new CachedFile() {
       @Override
       public String getName() {
@@ -155,13 +159,17 @@ public class FileSystemResourceListTest {
       }
 
       @Override
-      public Optional<MediaType> getMimeType() {
-        return typeOptional;
+      public MediaType getMimeType() {
+        return type;
       }
 
       @Override
       public void close() throws Exception {
       }
     };
+  }
+
+  private CachedFile cachedFile(final File file) {
+    return cachedFile(file, MediaType.APPLICATION_OCTET_STREAM_TYPE);
   }
 }

@@ -72,7 +72,7 @@ public class ImportManagerTest {
       name,
       new FileInputStream(file),
       Optional.of(Charsets.UTF_8),
-      Optional.of(MediaType.valueOf("text/turtle"))
+      MediaType.valueOf("text/turtle")
     );
 
     LogEntry logEntry = importManager.getLogEntries().get(0);
@@ -90,7 +90,7 @@ public class ImportManagerTest {
       name,
       new FileInputStream(file),
       Optional.of(Charsets.UTF_8),
-      Optional.of(MediaType.valueOf("text/turtle"))
+      MediaType.valueOf("text/turtle")
     );
 
     promise.get();
@@ -112,7 +112,7 @@ public class ImportManagerTest {
       name,
       new FileInputStream(file),
       Optional.of(Charsets.UTF_8),
-      Optional.of(MediaType.valueOf("text/turtle"))
+      MediaType.valueOf("text/turtle")
     );
     promise.get();
     assertThat(processor.getCounter(), is(28));
@@ -145,7 +145,7 @@ public class ImportManagerTest {
     String fileToken = importManager.addFile(
       new FileInputStream(file),
       name.toString(),
-      Optional.of(MediaType.valueOf("text/turtle"))
+      MediaType.valueOf("text/turtle")
     );
 
     verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(fileStorage.getFile(fileToken))));
@@ -187,10 +187,10 @@ public class ImportManagerTest {
       return this;
     }
 
-    public CachedFileMatcher withMimeType(Optional<MediaType> mimeType) {
-      this.addMatcher(new PropertyEqualityMatcher<CachedFile, Optional<MediaType>>("mimeType", mimeType) {
+    public CachedFileMatcher withMimeType(MediaType mimeType) {
+      this.addMatcher(new PropertyEqualityMatcher<CachedFile, MediaType>("mimeType", mimeType) {
         @Override
-        protected Optional<MediaType> getItemValue(CachedFile item) {
+        protected MediaType getItemValue(CachedFile item) {
           return item.getMimeType();
         }
       });

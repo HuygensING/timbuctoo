@@ -78,7 +78,7 @@ public class TabularUpload {
 
     Optional<Loader> loader = LoaderFactory.createFor(mediaType, formData);
 
-    if (!loader.isPresent()) {
+    if (mediaType == null || !loader.isPresent()) {
       return Response.status(400)
         .type(MediaType.APPLICATION_JSON_TYPE)
         .entity("{\"error\": \"We do not support the mediatype '" + mediaType + "'. Make sure to add the correct " +
@@ -93,7 +93,7 @@ public class TabularUpload {
     String fileToken = importManager.addFile(
       rdfInputStream,
       fileInfo.getName(),
-      Optional.of(mediaType)
+      mediaType
     );
 
 

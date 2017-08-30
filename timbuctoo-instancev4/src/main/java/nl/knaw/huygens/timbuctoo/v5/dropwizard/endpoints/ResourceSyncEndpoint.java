@@ -61,7 +61,7 @@ public class ResourceSyncEndpoint {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
 
-    return Response.ok(file.getFile(), file.getMimeType().orElse(MediaType.APPLICATION_OCTET_STREAM_TYPE)).build();
+    return Response.ok(file.getFile(), file.getMimeType()).build();
   }
 
   private Response streamFile(File file, MediaType mediaType) throws FileNotFoundException {

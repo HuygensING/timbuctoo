@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
@@ -16,7 +15,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Optional;
@@ -37,11 +35,11 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
   }
 
   @Override
-  public String saveFile(InputStream stream, String fileName, Optional<MediaType> mediaType) throws IOException {
+  public String saveFile(InputStream stream, String fileName, MediaType mediaType) throws IOException {
     return storeFile(stream, fileName, mediaType, Optional.empty());
   }
 
-  private String storeFile(InputStream stream, String fileName, Optional<MediaType> mediaType,
+  private String storeFile(InputStream stream, String fileName, MediaType mediaType,
                            Optional<Charset> charset) throws IOException {
     String random = UUID.randomUUID().toString();
     String mnemonic = fileName.replaceAll("[^a-zA-Z0-9]", "_");
@@ -59,7 +57,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
   }
 
   @Override
-  public String saveLog(InputStream stream, String fileName, Optional<MediaType> mediaType, Optional<Charset> charset)
+  public String saveLog(InputStream stream, String fileName, MediaType mediaType, Optional<Charset> charset)
     throws IOException {
     return storeFile(stream, fileName, mediaType, charset);
   }

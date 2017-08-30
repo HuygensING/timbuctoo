@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.RemoteFile;
@@ -48,7 +47,7 @@ public class Import {
 
       while (files.hasNext()) {
         RemoteFile file = files.next();
-        MediaType parsedMediatype = null;
+        MediaType parsedMediatype = MediaType.APPLICATION_OCTET_STREAM_TYPE;
         try {
           parsedMediatype = MediaType.valueOf(file.getMimeType());
         } catch (IllegalArgumentException e) {
@@ -60,14 +59,14 @@ public class Import {
             URI.create(file.getUrl()),
             file.getData(),
             Optional.of(Charsets.UTF_8),
-            Optional.ofNullable(parsedMediatype)
+            parsedMediatype
           );
         } else {
           resourceSyncResport.ignoredFiles.add(file.getUrl());
           importManager.addFile(
             file.getData(),
             file.getUrl(),
-            Optional.ofNullable(parsedMediatype)
+            parsedMediatype
           );
         }
       }

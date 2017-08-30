@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.util.Optional;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -65,8 +64,8 @@ public class Rdf4jRdfParserTest {
       }
 
       @Override
-      public Optional<MediaType> getMimeType() {
-        return Optional.of(new MediaType("application", "vnd.timbuctoo-rdf.nquads_unified_diff"));
+      public MediaType getMimeType() {
+        return new MediaType("application", "vnd.timbuctoo-rdf.nquads_unified_diff");
       }
     };
   }

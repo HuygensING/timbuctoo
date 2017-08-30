@@ -76,7 +76,7 @@ public class ImportManager implements DataProvider {
   }
 
   public Future<?> addLog(URI name, InputStream rdfInputStream, Optional<Charset> charset,
-                          Optional<MediaType> mediaType) throws LogStorageFailedException {
+                          MediaType mediaType) throws LogStorageFailedException {
     try {
       String token = logStorage.saveLog(rdfInputStream, name.toString(), mediaType, charset);
       int[] index = new int[1];
@@ -90,7 +90,7 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  public String addFile(InputStream fileStream, String fileName, Optional<MediaType> mediaType)
+  public String addFile(InputStream fileStream, String fileName, MediaType mediaType)
       throws FileStorageFailedException {
     try {
       return fileStorage.saveFile(fileStream, fileName, mediaType);
@@ -103,7 +103,7 @@ public class ImportManager implements DataProvider {
     return fileStorage.getFile(fileToken);
   }
 
-  public String addImage(InputStream imageStream, String imageName, Optional<MediaType> mediaType)
+  public String addImage(InputStream imageStream, String imageName, MediaType mediaType)
       throws FileStorageFailedException {
     try {
       return imageStorage.saveFile(imageStream, imageName, mediaType);
@@ -159,10 +159,10 @@ public class ImportManager implements DataProvider {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();//FIXME: write to tempFile
 
         String token = "";
-        Optional<MediaType> mediaType;
+        MediaType mediaType;
         Optional<Charset> charset;
         try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(outputStream)) {
-          mediaType = Optional.of(serializer.getMediaType());
+          mediaType = serializer.getMediaType();
           charset = Optional.of(serializer.getCharset());
           creator.sendQuads(serializer);
         } catch (Exception e) {
@@ -239,7 +239,7 @@ public class ImportManager implements DataProvider {
     }
 
     @Override
-    public String saveFile(InputStream stream, String fileName, Optional<MediaType> mediaType) throws IOException {
+    public String saveFile(InputStream stream, String fileName, MediaType mediaType) throws IOException {
       String token = fileStorage.saveFile(stream, fileName, mediaType);
       try {
         resourceList.addFile(getFile(token));
@@ -266,7 +266,7 @@ public class ImportManager implements DataProvider {
     }
 
     @Override
-    public String saveLog(InputStream stream, String fileName, Optional<MediaType> mediaType, Optional<Charset> charset)
+    public String saveLog(InputStream stream, String fileName, MediaType mediaType, Optional<Charset> charset)
       throws IOException {
       String token = logStorage.saveLog(stream, fileName, mediaType, charset);
       try {

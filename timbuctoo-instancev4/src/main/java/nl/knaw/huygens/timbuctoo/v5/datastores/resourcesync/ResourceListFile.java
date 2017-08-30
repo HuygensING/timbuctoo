@@ -8,7 +8,6 @@ import org.w3c.dom.Node;
 import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.time.Clock;
-import java.util.Optional;
 
 class ResourceListFile implements ResourceList {
   private final File resourceList;
@@ -29,12 +28,8 @@ class ResourceListFile implements ResourceList {
   public void addFile(CachedFile fileToAdd) throws ResourceSyncException {
     ResourceSyncXmlHelper xmlHelper = new ResourceSyncXmlHelper(resourceList, this::updateMetaData);
 
-    Optional<MediaType> mimeType = fileToAdd.getMimeType();
-    if (mimeType.isPresent()) {
-      xmlHelper.addUrlElementWithType(uriHelper.uriForFile(fileToAdd.getFile()), mimeType.get().toString());
-    } else {
-      xmlHelper.addUrlElement(uriHelper.uriForFile(fileToAdd.getFile()));
-    }
+    MediaType mimeType = fileToAdd.getMimeType();
+    xmlHelper.addUrlElementWithType(uriHelper.uriForFile(fileToAdd.getFile()), mimeType.toString());
     xmlHelper.save();
   }
 

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.MediaType;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
@@ -39,7 +38,7 @@ public class RawUploadRdfSaver implements Saver<String> {
   private int curEntity;
   private int curCollection;
 
-  public RawUploadRdfSaver(String ownerId, String dataSetId, String fileName, Optional<MediaType> mimeType,
+  public RawUploadRdfSaver(String ownerId, String dataSetId, String fileName, MediaType mimeType,
                            RdfSerializer saver, TimbuctooRdfIdHelper rdfIdHelper)
     throws LogStorageFailedException {
     this.dataSetId = dataSetId;
@@ -54,9 +53,7 @@ public class RawUploadRdfSaver implements Saver<String> {
     String fileUri = this.rdfIdHelper.rawFile(ownerId, dataSetId, fileName);
     saver.onRelation(fileUri, RDF_TYPE, TIM_TABULAR_FILE, dataSetUri);
     saver.onRelation(dataSetUri, PROV_DERIVED_FROM, fileUri, dataSetUri);
-    if (mimeType.isPresent()) {
-      saver.onValue(fileUri, TIM_MIMETYPE, mimeType.get().toString(), STRING, dataSetUri);
-    }
+    saver.onValue(fileUri, TIM_MIMETYPE, mimeType.toString(), STRING, dataSetUri);
   }
 
   @Override
