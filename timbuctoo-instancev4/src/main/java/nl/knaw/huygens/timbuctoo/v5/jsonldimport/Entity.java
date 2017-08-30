@@ -24,8 +24,6 @@ public interface Entity {
 
   URI getSpecializationOf();
 
-  //Boolean isLatestRevision();
-
   Map<String, URI> getWasRevisionOf();
 
   Map<String, String[]> getAdditions();

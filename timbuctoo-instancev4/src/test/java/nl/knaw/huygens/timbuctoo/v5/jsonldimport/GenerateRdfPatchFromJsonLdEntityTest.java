@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.jsonldimport;
 
+import javaslang.collection.Map;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -9,6 +10,7 @@ import org.junit.Test;
 import javax.ws.rs.core.MediaType;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
@@ -122,6 +124,35 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
       "+ http://example/datasetuserid pred value2\n" +
       "+ http://example/datasetuserid pred2 value3\n" +
       "+ http://example/datasetuserid pred2 value4\n"));
+  }
+
+  @Test
+  public void testGenerateRevisionInfo() throws Exception {
+    HashMap<String, URI> revisionOf = new HashMap<>();
+
+    revisionOf.put("@id", URI.create("htttp://previous/mutation"));
+
+    Entity testEntity = ImmutableEntity.builder()
+                                       .entityType("test")
+                                       .specializationOf(URI.create("http://example/entity"))
+                                       .wasRevisionOf(revisionOf)
+                                       .putAdditions("pred1", new String[]{"value1", "value2"}).build();
+
+    Entity[] testEntities = new Entity[1];
+
+    testEntities[0] = testEntity;
+
+    GenerateRdfPatchFromJsonLdEntity generateRdfPatchFromJsonLdEntity =
+      new GenerateRdfPatchFromJsonLdEntity(testEntities);
+
+
+    MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
+    generateRdfPatchFromJsonLdEntity.generateRevisionInfo(myTestRdfPatchSerializer);
+
+    assertThat(myTestRdfPatchSerializer.results, is("+ http://example/entity http://timbuctoo.huygens.knaw" +
+      ".nl/v5/vocabulary#latestrevision htttp://previous/mutation\n" +
+      "- htttp://previous/mutation http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestrevision " +
+      "htttp://previous/mutation\n" ));
   }
 
 

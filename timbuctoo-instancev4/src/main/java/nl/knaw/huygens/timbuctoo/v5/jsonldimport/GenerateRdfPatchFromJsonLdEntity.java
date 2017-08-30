@@ -41,7 +41,6 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
     }
   }
 
-
   public Entity[] getEntities() {
     return entities;
   }
@@ -53,7 +52,8 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
 
         for (String value : values) {
           try {
-            saver.onQuad(entity.getSpecializationOf().toString(), predicate, value, RdfConstants.STRING, null, null);
+            saver.onQuad(entity.getSpecializationOf().toString(), predicate, value,
+              RdfConstants.STRING, null, null);
           } catch (LogStorageFailedException e) {
             e.printStackTrace();
           }
@@ -94,7 +94,8 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
       replacements.forEach((predicate, valuesArray) -> {
         for (String value : valuesArray) {
           try {
-            saver.onQuad(entity.getSpecializationOf().toString(), predicate, value, RdfConstants.STRING, null, null);
+            saver.onQuad(entity.getSpecializationOf().toString(), predicate, value,
+              RdfConstants.STRING, null, null);
           } catch (LogStorageFailedException e) {
             e.printStackTrace();
           }
@@ -103,20 +104,31 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
     }
   }
 
-  public void sendQuads(RdfPatchSerializer saver) throws LogStorageFailedException {
-    for (Entity entity: entities) {
+  public void generateRevisionInfo(RdfPatchSerializer saver) {
+    for (Entity entity : entities) {
+      Map<String, String[]> additions = entity.getAdditions();
+
       URI specialization = entity.getSpecializationOf();
       URI revision = entity.getWasRevisionOf().get("@id");
-      /*
-      if (specialization.equals(revision.getSpecialization())){
 
+      try {
+        saver.onQuad(specialization.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
+          RdfConstants.STRING, null, null);
+        saver.delQuad(revision.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
+          RdfConstants.STRING, null, null);
+      } catch (LogStorageFailedException e) {
+        e.printStackTrace();
       }
-      */
-    }
 
+    }
+  }
+
+  public void sendQuads(RdfPatchSerializer saver) throws LogStorageFailedException {
     generateAdditions(saver);
     generateDeletions(saver);
     generateReplacements(saver);
+    generateRevisionInfo(saver);
   }
+
 }
 
