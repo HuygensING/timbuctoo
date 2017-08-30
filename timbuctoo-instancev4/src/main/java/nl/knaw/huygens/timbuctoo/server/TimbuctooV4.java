@@ -80,7 +80,7 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetFactoryManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
@@ -245,31 +245,37 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
 
-    DataSetFactory dataSetFactory = configuration.getDataSet();
+    DataSetRepository dataSetRepository = configuration.getDataSet();
 
-    environment.lifecycle().manage(new DataSetFactoryManager(dataSetFactory));
+    environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
 
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
-      dataSetFactory,
+      dataSetRepository,
       configuration.getRdfIdHelper()
     ));
 
     register(environment, new TabularUpload(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
-      dataSetFactory, configuration.getRdfIdHelper()
+      dataSetRepository,
+      configuration.getRdfIdHelper()
     ));
 
     register(environment, new Rml(
-      dataSetFactory,
+      dataSetRepository,
+      configuration.getRdfIdHelper()
+    ));
+
+    register(environment, new Rml(
+      dataSetRepository,
       configuration.getRdfIdHelper()
     ));
 
     GraphQl graphQlEndpoint = new GraphQl(
       new GraphQlService(
-        dataSetFactory,
+        dataSetRepository,
         new DerivedSchemaTypeGenerator(),
         configuration.getArchetypes(), configuration.getRdfIdHelper()
       ),
@@ -277,11 +283,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     register(environment, graphQlEndpoint);
     register(environment,
-      new GetDataSets(dataSetFactory, graphQlEndpoint, securityConfig.getLoggedInUsers(environment)));
-    register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(environment), dataSetFactory));
+      new GetDataSets(dataSetRepository, graphQlEndpoint, securityConfig.getLoggedInUsers(environment)));
+    register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(environment), dataSetRepository));
     register(environment, new DataSet(
         securityConfig.getLoggedInUsers(environment),
-        securityConfig.getAuthorizer(), dataSetFactory
+        securityConfig.getAuthorizer(), dataSetRepository
       )
     );
 
@@ -344,7 +350,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
-      dataSetFactory,
+      dataSetRepository,
       configuration.getRdfIdHelper()
     ));
 

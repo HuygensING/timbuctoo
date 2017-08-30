@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DELETE;
@@ -21,12 +21,12 @@ import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.c
 public class DataSet {
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
-  private final DataSetFactory dataSetFactory;
+  private final DataSetRepository dataSetRepository;
 
-  public DataSet(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetFactory) {
+  public DataSet(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
-    this.dataSetFactory = dataSetFactory;
+    this.dataSetRepository = dataSetRepository;
   }
 
   public static URI makeUrl(String userId, String dataSetId) {
@@ -43,7 +43,7 @@ public class DataSet {
                          @HeaderParam("authorization") String authorization) {
 
     Response response = checkAdminAccess(
-      dataSetFactory::dataSetExists,
+      dataSetRepository::dataSetExists,
       authorizer,
       loggedInUsers,
       authorization,
@@ -56,7 +56,7 @@ public class DataSet {
     }
 
     try {
-      dataSetFactory.removeDataSet(ownerId, dataSetName);
+      dataSetRepository.removeDataSet(ownerId, dataSetName);
     } catch (IOException e) {
       LoggerFactory.getLogger(DataSet.class).error("Failed to delete data set", e);
       return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();

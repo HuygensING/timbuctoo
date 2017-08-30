@@ -4,7 +4,7 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import nl.knaw.huygens.timbuctoo.v5.archetypes.ArchetypesGenerator;
 import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -26,11 +26,11 @@ public class GraphQlService {
   private final DerivedSchemaTypeGenerator typeGenerator;
   private final Archetypes archetypes;
   private final TimbuctooRdfIdHelper rdfIdHelper;
-  private final DataSetFactory dataSetFactory;
+  private final DataSetRepository dataSetRepository;
 
-  public GraphQlService(DataSetFactory dataSetFactory, DerivedSchemaTypeGenerator typeGenerator,
+  public GraphQlService(DataSetRepository dataSetRepository, DerivedSchemaTypeGenerator typeGenerator,
                         Archetypes archetypes, TimbuctooRdfIdHelper rdfIdHelper) {
-    this.dataSetFactory = dataSetFactory;
+    this.dataSetRepository = dataSetRepository;
     this.typeGenerator = typeGenerator;
     this.archetypes = archetypes;
     this.schemaFactory = new CollectionIndexSchemaFactory();
@@ -40,7 +40,7 @@ public class GraphQlService {
   public GraphQL loadSchema(String userId, String dataSetName) throws GraphQlProcessingException {
     try {
       PaginationArgumentsHelper paginationArgumentsHelper = new PaginationArgumentsHelper();
-      final DataSet dataSet = dataSetFactory.createDataSet(userId, dataSetName);
+      final DataSet dataSet = dataSetRepository.createDataSet(userId, dataSetName);
       TypeNameStore typeNameStore = dataSet.getTypeNameStore();
       DataFetcherFactory dataFetcherFactory = dataSet.getDataFetcherFactory();
       SchemaStore schemaStore = dataSet.getSchemaStore();

@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
@@ -31,11 +31,10 @@ public class RdfUpload {
 
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
-  private final DataSetFactory dataSetManager;
+  private final DataSetRepository dataSetManager;
   private final TimbuctooRdfIdHelper rdfIdHelper;
 
-
-  public RdfUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetManager,
+  public RdfUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetManager,
                    TimbuctooRdfIdHelper rdfIdHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;

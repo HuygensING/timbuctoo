@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 
 import javax.ws.rs.HeaderParam;
@@ -16,11 +16,11 @@ import java.util.Optional;
 @Path("/v5/dataSets/{userId}/{dataSetId}/create")
 public class CreateDataSet {
   private final LoggedInUsers loggedInUsers;
-  private final DataSetFactory dataSetFactory;
+  private final DataSetRepository dataSetRepository;
 
-  public CreateDataSet(LoggedInUsers loggedInUsers, DataSetFactory dataSetFactory) {
+  public CreateDataSet(LoggedInUsers loggedInUsers, DataSetRepository dataSetRepository) {
     this.loggedInUsers = loggedInUsers;
-    this.dataSetFactory = dataSetFactory;
+    this.dataSetRepository = dataSetRepository;
   }
 
   @POST
@@ -37,7 +37,7 @@ public class CreateDataSet {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
 
-    dataSetFactory.createDataSet(persistentId, dataSetId);
+    dataSetRepository.createDataSet(persistentId, dataSetId);
 
 
     return Response.created(DataSet.makeUrl(persistentId, dataSetId)).build();

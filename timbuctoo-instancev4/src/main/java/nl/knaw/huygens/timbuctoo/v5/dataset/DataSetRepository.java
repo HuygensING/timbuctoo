@@ -37,7 +37,7 @@ import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
  * - makes CreateDataSet a singleton
  * - keeps track of all created dataSets across restarts (stores them in a file)
  */
-public class DataSetFactory {
+public class DataSetRepository {
 
   private final ExecutorService executorService;
   private final VreAuthorizationCrud vreAuthorizationCrud;
@@ -50,9 +50,9 @@ public class DataSetFactory {
   private final ResourceSync resourceSync;
 
 
-  public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
-                        DataSetConfiguration configuration,
-                        DataStoreFactory dataStoreFactory) throws IOException {
+  public DataSetRepository(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
+                           DataSetConfiguration configuration,
+                           DataStoreFactory dataStoreFactory) throws IOException {
     this.executorService = executorService;
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;

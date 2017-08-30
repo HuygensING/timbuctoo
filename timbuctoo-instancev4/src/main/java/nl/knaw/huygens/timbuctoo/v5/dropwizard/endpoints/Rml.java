@@ -4,8 +4,8 @@ import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -32,12 +32,13 @@ import java.util.stream.Stream;
 
 @Path("/v5/{userId}/{dataSetId}/rml")
 public class Rml {
-  private final DataSetFactory dataSetFactory;
+  private final DataSetRepository dataSetRepository;
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final JenaBasedReader rmlBuilder = new JenaBasedReader();
 
-  public Rml(DataSetFactory dataSetFactory, TimbuctooRdfIdHelper rdfIdHelper) {
-    this.dataSetFactory = dataSetFactory;
+
+  public Rml(DataSetRepository dataSetRepository, TimbuctooRdfIdHelper rdfIdHelper) {
+    this.dataSetRepository = dataSetRepository;
     this.rdfIdHelper = rdfIdHelper;
   }
 
@@ -46,7 +47,7 @@ public class Rml {
                          @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId)
     throws DataStoreCreationException, LogStorageFailedException, ExecutionException, InterruptedException {
-    final DataSet dataSet = dataSetFactory.createDataSet(ownerId, dataSetId);
+    final DataSet dataSet = dataSetRepository.createDataSet(ownerId, dataSetId);
     ImportManager importManager = dataSet.getImportManager();
     RdfDataSourceFactory dataSourceFactory = dataSet.getDataSource();
 
@@ -93,7 +94,7 @@ public class Rml {
   @GET
   @Path("{importId}")
   public Response getStatus(@PathParam("importId") final UUIDParam importId) {
-    Optional<String> status = dataSetFactory.getStatus(importId.get());
+    Optional<String> status = dataSetRepository.getStatus(importId.get());
 
     if (status.isPresent()) {
       return Response.ok(status).build();

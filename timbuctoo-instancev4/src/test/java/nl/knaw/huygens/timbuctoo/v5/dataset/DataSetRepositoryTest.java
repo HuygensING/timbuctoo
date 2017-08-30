@@ -26,9 +26,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class DataSetFactoryTest {
+public class DataSetRepositoryTest {
 
-  private DataSetFactory dataSetFactory;
+  private DataSetRepository dataSetRepository;
   protected File tempFile;
   private ResourceSync resourceSync;
 
@@ -36,7 +36,7 @@ public class DataSetFactoryTest {
   public void init() throws IOException, InterruptedException {
     tempFile = Files.createTempDir();
     resourceSync = mock(ResourceSync.class);
-    dataSetFactory = new DataSetFactory(
+    dataSetRepository = new DataSetRepository(
       Executors.newSingleThreadExecutor(),
       new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())),
       ImmutableDataSetConfiguration.builder()
@@ -63,7 +63,7 @@ public class DataSetFactoryTest {
   }
 
   public ImportManager getImportManager(String user, String dataset) throws DataStoreCreationException {
-    return dataSetFactory.createDataSet(user, dataset).getImportManager();
+    return dataSetRepository.createDataSet(user, dataset).getImportManager();
   }
 
   @Test
@@ -84,15 +84,15 @@ public class DataSetFactoryTest {
 
   @Test
   public void createImportManagerOnlyAddsANewDataSetToResourceSync() throws Exception {
-    dataSetFactory.createDataSet("user", "dataset");
-    dataSetFactory.createDataSet("user", "dataset");
+    dataSetRepository.createDataSet("user", "dataset");
+    dataSetRepository.createDataSet("user", "dataset");
 
     verify(resourceSync, times(1)).resourceList("user", "dataset");
   }
 
   @Test
   public void dataSetExistsReturnsFalseIfTheUserIsNotKnown() {
-    boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
+    boolean dataSetExists = dataSetRepository.dataSetExists("ownerId", "dataSetId");
 
     assertThat(dataSetExists, is(false));
   }
@@ -101,7 +101,7 @@ public class DataSetFactoryTest {
   public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws DataStoreCreationException {
     getImportManager("ownerId", "otherDataSetId");
 
-    boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
+    boolean dataSetExists = dataSetRepository.dataSetExists("ownerId", "dataSetId");
 
     assertThat(dataSetExists, is(false));
   }
@@ -110,7 +110,7 @@ public class DataSetFactoryTest {
   public void dataSetExistsReturnsTrueIfTheUserOwnsADataSetWithTheDataSetId() throws DataStoreCreationException {
     getImportManager("ownerId", "dataSetId");
 
-    boolean dataSetExists = dataSetFactory.dataSetExists("ownerId", "dataSetId");
+    boolean dataSetExists = dataSetRepository.dataSetExists("ownerId", "dataSetId");
 
     assertThat(dataSetExists, is(true));
   }
@@ -121,7 +121,7 @@ public class DataSetFactoryTest {
     File dataSetPath = new File(new File(tempFile, "user"), "dataSet");
     assertThat(dataSetPath.exists(), is(true));
 
-    dataSetFactory.removeDataSet("user", "dataSet");
+    dataSetRepository.removeDataSet("user", "dataSet");
 
     assertThat(dataSetPath.exists(), is(false));
   }
@@ -130,16 +130,16 @@ public class DataSetFactoryTest {
   public void deleteDataSetRemovesTheDataSetFromTheIndex() throws Exception {
     getImportManager("user", "dataSet");
 
-    dataSetFactory.removeDataSet("user", "dataSet");
+    dataSetRepository.removeDataSet("user", "dataSet");
 
-    assertThat(dataSetFactory.dataSetExists("user", "dataSet"), is(false));
+    assertThat(dataSetRepository.dataSetExists("user", "dataSet"), is(false));
   }
 
   @Test
   public void removeDataSetRemovesItFromResourceSync() throws Exception {
-    dataSetFactory.createDataSet("user", "dataSet");
+    dataSetRepository.createDataSet("user", "dataSet");
 
-    dataSetFactory.removeDataSet("user", "dataSet");
+    dataSetRepository.removeDataSet("user", "dataSet");
 
     verify(resourceSync).removeDataSet("user", "dataSet");
   }

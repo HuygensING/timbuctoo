@@ -4,8 +4,8 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.RemoteFile;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.slf4j.Logger;
@@ -27,13 +27,13 @@ public class Import {
 
   public static final Logger LOG = LoggerFactory.getLogger(Import.class);
   private final ResourceSyncFileLoader resourceSyncFileLoader;
-  private final DataSetFactory dataSetFactory;
+  private final DataSetRepository dataSetRepository;
   private final TimbuctooRdfIdHelper rdfIdHelper;
 
-  public Import(ResourceSyncFileLoader resourceSyncFileLoader, DataSetFactory dataSetFactory,
+  public Import(ResourceSyncFileLoader resourceSyncFileLoader, DataSetRepository dataSetRepository,
                 TimbuctooRdfIdHelper rdfIdHelper) {
     this.resourceSyncFileLoader = resourceSyncFileLoader;
-    this.dataSetFactory = dataSetFactory;
+    this.dataSetRepository = dataSetRepository;
     this.rdfIdHelper = rdfIdHelper;
   }
 
@@ -41,7 +41,7 @@ public class Import {
   @Produces("application/json")
   public Response importData(@HeaderParam("Authorization") String authorization, ImportData importData)
     throws DataStoreCreationException {
-    ImportManager importManager = dataSetFactory
+    ImportManager importManager = dataSetRepository
       .createDataSet(importData.userId, importData.dataSetId)
       .getImportManager();
     try {

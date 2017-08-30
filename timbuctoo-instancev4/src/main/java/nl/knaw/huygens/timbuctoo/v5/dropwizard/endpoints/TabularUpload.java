@@ -6,8 +6,8 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
@@ -41,14 +41,14 @@ public class TabularUpload {
 
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
-  private final DataSetFactory dataSetFactory;
   private final TimbuctooRdfIdHelper rdfIdHelper;
+  private final DataSetRepository dataSetRepository;
 
-  public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetFactory,
+  public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
                        TimbuctooRdfIdHelper rdfIdHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
-    this.dataSetFactory = dataSetFactory;
+    this.dataSetRepository = dataSetRepository;
     this.rdfIdHelper = rdfIdHelper;
   }
 
@@ -67,7 +67,7 @@ public class TabularUpload {
     LogStorageFailedException {
 
     final Response response = checkWriteAccess(
-      dataSetFactory::dataSetExists, authorizer, loggedInUsers, authHeader, ownerId, dataSetId
+      dataSetRepository::dataSetExists, authorizer, loggedInUsers, authHeader, ownerId, dataSetId
     );
     if (response != null) {
       return response;
@@ -87,7 +87,7 @@ public class TabularUpload {
         .build();
     }
 
-    ImportManager importManager = dataSetFactory.createDataSet(ownerId, dataSetId).getImportManager();
+    ImportManager importManager = dataSetRepository.createDataSet(ownerId, dataSetId).getImportManager();
 
     String fileToken = importManager.addFile(
       rdfInputStream,
@@ -96,7 +96,7 @@ public class TabularUpload {
     );
 
 
-    Tuple<UUID, RdfCreator> rdfCreator = dataSetFactory.registerRdfCreator(
+    Tuple<UUID, RdfCreator> rdfCreator = dataSetRepository.registerRdfCreator(
       (statusConsumer) -> new TabularRdfCreator(
         importManager,
         loader.get(),
@@ -127,7 +127,7 @@ public class TabularUpload {
   @GET
   @Path("{importId}")
   public Response getStatus(@PathParam("importId") final UUIDParam importId) {
-    Optional<String> status = dataSetFactory.getStatus(importId.get());
+    Optional<String> status = dataSetRepository.getStatus(importId.get());
 
     if (status.isPresent()) {
       return Response.ok(status).build();

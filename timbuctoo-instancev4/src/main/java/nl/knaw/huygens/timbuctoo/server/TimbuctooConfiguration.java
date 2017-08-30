@@ -25,7 +25,7 @@ import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
@@ -114,9 +114,9 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract DataSetConfiguration getDataSetConfiguration();
 
   @JsonIgnore
-  public DataSetFactory getDataSet() throws DataStoreCreationException {
+  public DataSetRepository getDataSet() throws DataStoreCreationException {
     try {
-      return new DataSetFactory(
+      return new DataSetRepository(
         dataSetExecutorService,
         getSecurityConfiguration().getVreAuthorizationCreator(),
         getDataSetConfiguration(),
