@@ -130,7 +130,8 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
         configuration.getFileStorage().makeFileStorage(userId, dataSetId),
         configuration.getFileStorage().makeLogStorage(userId, dataSetId),
         executorService,
-        configuration.getRdfIo()
+        configuration.getRdfIo(),
+        configuration.getResourceSync().resourceList(userId, dataSetId)
       );
 
       DataSet dataSet = new DataSet();
@@ -150,6 +151,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       dataSet.dataSource = new RdfDataSourceFactory(
         dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
       );
+
       return dataSet;
     } catch (AuthorizationCreationException | IOException e) {
       throw new DataStoreCreationException(e);

@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
@@ -66,8 +67,18 @@ public class Rdf4jRdfPatchParserTest {
   private CachedLog rdfPatchLog(StringReader reader) {
     return new CachedLog() {
       @Override
-      public URI getName() {
-        return URI.create("http://example.com");
+      public void close() throws Exception {
+
+      }
+
+      @Override
+      public String getName() {
+        return "http://example.com";
+      }
+
+      @Override
+      public File getFile() {
+        throw new UnsupportedOperationException("Method should not be needed");
       }
 
       @Override

@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
@@ -52,11 +53,12 @@ public class ImportManager implements DataProvider {
   private EntityProvider entityProvider;
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
-                       ExecutorService executorService, RdfIoFactory rdfIoFactory)
+                       ExecutorService executorService, RdfIoFactory rdfIoFactory,
+                       ResourceList resourceList)
       throws DataStoreCreationException {
-    this.fileStorage = fileStorage;
-    this.imageStorage = imageStorage;
-    this.logStorage = logStorage;
+    this.fileStorage = new PublicFileStore(fileStorage, resourceList);
+    this.imageStorage = new PublicFileStore(imageStorage, resourceList);
+    this.logStorage = new PublicLogStore(logStorage, resourceList);
     this.serializerFactory = rdfIoFactory;
     this.executorService = executorService;
     try {
@@ -219,5 +221,52 @@ public class ImportManager implements DataProvider {
 
   List<LogEntry> getLogEntries() {
     return logListStore.getData().getEntries();
+  }
+
+  // wrapper class that makes sure all files are exposed by resource sync
+  private static class PublicFileStore implements FileStorage {
+    private final FileStorage fileStorage;
+    private final ResourceList resourceList;
+
+    public PublicFileStore(FileStorage fileStorage, ResourceList resourceList) {
+      this.fileStorage = fileStorage;
+      this.resourceList = resourceList;
+    }
+
+    @Override
+    public String saveFile(InputStream stream, String fileName, Optional<MediaType> mediaType) throws IOException {
+      String token = fileStorage.saveFile(stream, fileName, mediaType);
+      resourceList.addFile(getFile(token));
+      return token;
+    }
+
+    @Override
+    public CachedFile getFile(String token) throws IOException {
+      return fileStorage.getFile(token);
+    }
+  }
+
+  // wrapper class that makes sure all logs are exposed by resource sync
+  private static class PublicLogStore implements LogStorage {
+    private final LogStorage logStorage;
+    private final ResourceList resourceList;
+
+    public PublicLogStore(LogStorage logStorage, ResourceList resourceList) {
+      this.logStorage = logStorage;
+      this.resourceList = resourceList;
+    }
+
+    @Override
+    public String saveLog(InputStream stream, String fileName, Optional<MediaType> mediaType, Optional<Charset> charset)
+      throws IOException {
+      String token = logStorage.saveLog(stream, fileName, mediaType, charset);
+      resourceList.addFile(getLog(token));
+      return token;
+    }
+
+    @Override
+    public CachedLog getLog(String token) throws IOException {
+      return logStorage.getLog(token);
+    }
   }
 }

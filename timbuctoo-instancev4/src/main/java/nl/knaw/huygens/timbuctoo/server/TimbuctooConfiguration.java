@@ -28,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import org.immutables.value.Value;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 
 import javax.validation.Valid;
 import javax.ws.rs.DefaultValue;

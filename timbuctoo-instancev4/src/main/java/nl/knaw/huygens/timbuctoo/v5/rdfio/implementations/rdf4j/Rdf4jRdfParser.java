@@ -27,7 +27,7 @@ public class Rdf4jRdfParser implements RdfParser {
 
     Optional<RDFFormat> format = input.getMimeType()
       .flatMap(mimeType -> Rio.getParserFormatForMIMEType(mimeType.toString()));
-    URI name = input.getName();
+    String name = input.getName();
     if (!format.isPresent()) {
       format = getParserFormatForFileName(name.toString());
     }
@@ -53,12 +53,12 @@ public class Rdf4jRdfParser implements RdfParser {
   class QuadHandlerDelegator extends AbstractRDFHandler {
 
     private final RdfProcessor rdfProcessor;
-    private final URI fileUri;
+    private final String fileUri;
     private final String cursorPrefix;
     private final int startFrom;
     private long idx;
 
-    private QuadHandlerDelegator(RdfProcessor rdfProcessor, URI fileUri, String cursorPrefix, String startFrom) {
+    private QuadHandlerDelegator(RdfProcessor rdfProcessor, String fileUri, String cursorPrefix, String startFrom) {
       this.rdfProcessor = rdfProcessor;
       this.fileUri = fileUri;
       this.cursorPrefix = cursorPrefix;
@@ -104,7 +104,7 @@ public class Rdf4jRdfParser implements RdfParser {
           throw new RDFHandlerException("Interrupted");
         }
         if (idx >= startFrom) {
-          String graph = st.getContext() == null ? fileUri.toString() : st.getContext().stringValue();
+          String graph = st.getContext() == null ? fileUri : st.getContext().stringValue();
           rdfProcessor.onQuad(
             true,
             cursorPrefix + idx,

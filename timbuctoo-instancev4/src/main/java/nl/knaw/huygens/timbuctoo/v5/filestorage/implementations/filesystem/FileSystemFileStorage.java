@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
@@ -47,6 +48,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     String token = random + "-" + mnemonic;
     Files.copy(stream, new File(dir, token).toPath());
     fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, mediaType, charset)));
+
     return token;
   }
 
@@ -68,7 +70,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     return new FileSystemCachedLog(
       fileInfo.getMediaType(),
       fileInfo.getCharset(),
-      URI.create(fileInfo.getName()),
+      fileInfo.getName(),
       new File(dir, token)
     );
   }

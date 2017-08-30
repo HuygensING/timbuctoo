@@ -2,9 +2,13 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
+import nl.knaw.huygens.hamcrest.CompositeMatcher;
+import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory;
 import org.apache.commons.io.FileUtils;
@@ -25,6 +29,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.google.common.io.Resources.getResource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 
 public class ImportManagerTest {
 
@@ -32,12 +39,14 @@ public class ImportManagerTest {
   protected ImportManager importManager;
   protected File filesDir;
   protected FileSystemFileStorage fileStorage;
+  private ResourceList resourceList;
 
   @Before
   public void makeSimpleDataSet() throws IOException, DataStoreCreationException {
     logListLocation = File.createTempFile("logList", ".json");
     logListLocation.delete();
     filesDir = Files.createTempDir();
+    resourceList = mock(ResourceList.class);
     fileStorage = new FileSystemFileStorage(filesDir);
     this.importManager = new ImportManager(
       logListLocation,
@@ -45,8 +54,8 @@ public class ImportManagerTest {
       fileStorage,
       fileStorage,
       Executors.newSingleThreadExecutor(),
-      new Rdf4jIoFactory()
-    );
+      new Rdf4jIoFactory(),
+      resourceList);
   }
 
   @After
@@ -70,6 +79,25 @@ public class ImportManagerTest {
     assertThat(logEntry.getName(), is(name));
     //The first character is an @. if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(64));
+  }
+
+  @Test
+  public void addLogsCallsTheResourceSyncResourceList() throws Exception {
+    URI name = URI.create("http://example.com/clusius.ttl");
+    File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
+
+    Future<?> promise = importManager.addLog(
+      name,
+      new FileInputStream(file),
+      Optional.of(Charsets.UTF_8),
+      Optional.of(MediaType.valueOf("text/turtle"))
+    );
+
+    promise.get();
+
+    LogEntry logEntry = importManager.getLogEntries().get(0);
+    CachedFile cachedFile = fileStorage.getFile(logEntry.getLogToken().get());
+    verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(cachedFile)));
   }
 
   @Test
@@ -107,6 +135,69 @@ public class ImportManagerTest {
     assertThat(logEntry.getName(), is(name));
     //The first character is an < (start of a uri in nquads) if we can read that we apparently can access the file
     assertThat(fileStorage.getLog(logEntry.getLogToken().get()).getReader().read(), is(60));
+  }
+
+  @Test
+  public void addFileCallsTheResourceSyncResourceList() throws Exception {
+    URI name = URI.create("http://example.com/clusius.ttl");
+    File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
+
+    String fileToken = importManager.addFile(
+      new FileInputStream(file),
+      name.toString(),
+      Optional.of(MediaType.valueOf("text/turtle"))
+    );
+
+    verify(resourceList).addFile(argThat(CachedFileMatcher.cachedFile(fileStorage.getFile(fileToken))));
+  }
+
+  private static class CachedFileMatcher extends CompositeMatcher<CachedFile> {
+    private CachedFileMatcher() {
+
+    }
+
+    public static CachedFileMatcher cachedFile() {
+      return new CachedFileMatcher();
+    }
+
+    private static CachedFileMatcher cachedFile(CachedFile cachedFile) {
+      return cachedFile()
+        .withFile(cachedFile.getFile())
+        .withMimeType(cachedFile.getMimeType())
+        .withName(cachedFile.getName());
+    }
+
+    public CachedFileMatcher withFile(File file) {
+      this.addMatcher(new PropertyEqualityMatcher<CachedFile, File>("file", file) {
+        @Override
+        protected File getItemValue(CachedFile item) {
+          return item.getFile();
+        }
+      });
+      return this;
+    }
+
+    public CachedFileMatcher withName(String name) {
+      this.addMatcher(new PropertyEqualityMatcher<CachedFile, String>("name", name) {
+        @Override
+        protected String getItemValue(CachedFile item) {
+          return item.getName();
+        }
+      });
+      return this;
+    }
+
+    public CachedFileMatcher withMimeType(Optional<MediaType> mimeType) {
+      this.addMatcher(new PropertyEqualityMatcher<CachedFile, Optional<MediaType>>("mimeType", mimeType) {
+        @Override
+        protected Optional<MediaType> getItemValue(CachedFile item) {
+          return item.getMimeType();
+        }
+      });
+      return this;
+    }
+
+
   }
 
 

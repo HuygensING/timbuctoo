@@ -53,13 +53,13 @@ public class Rdf4jRdfPatchParser implements RdfParser {
   class QuadHandlerDelegator extends AbstractRDFHandler {
 
     private final RdfProcessor rdfProcessor;
-    private final URI fileUri;
+    private final String fileUri;
     private final String cursorPrefix;
     private final int startFrom;
     private final List<String> actions;
     private int idx;
 
-    private QuadHandlerDelegator(RdfProcessor rdfProcessor, URI fileUri, String cursorPrefix, String startFrom,
+    private QuadHandlerDelegator(RdfProcessor rdfProcessor, String fileUri, String cursorPrefix, String startFrom,
                                  List<String> actions) {
       this.rdfProcessor = rdfProcessor;
       this.fileUri = fileUri;
@@ -107,7 +107,7 @@ public class Rdf4jRdfPatchParser implements RdfParser {
           throw new RDFHandlerException("Interrupted");
         }
         if (idx >= startFrom) {
-          String graph = st.getContext() == null ? fileUri.toString() : st.getContext().stringValue();
+          String graph = st.getContext() == null ? fileUri : st.getContext().stringValue();
           rdfProcessor.onQuad(
             "A".equals(actions.get(idx)),
             cursorPrefix + idx,

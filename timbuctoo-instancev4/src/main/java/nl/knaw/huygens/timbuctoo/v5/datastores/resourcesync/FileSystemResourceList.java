@@ -17,7 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
 
-public class FileSystemResourceList implements ResourceList {
+class FileSystemResourceList implements ResourceList {
   private final File resourceList;
   private final ResourceSyncDateFormatter resourceSyncDateFormatter;
 
