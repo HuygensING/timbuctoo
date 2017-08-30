@@ -21,7 +21,6 @@ public class ResourceSync {
   }
 
   public ResourceList resourceList(String user, String dataSet) {
-    // TODO add to capability list
     // TODO add capability list to source description
     return new FileSystemResourceList(
       new File(dataSetPathHelper.dataSetPath(user, dataSet), "resourceList.xml"),
@@ -29,5 +28,14 @@ public class ResourceSync {
     );
   }
 
+  private File getResourceListFile(String user, String dataSet) {
+    return dataSetPathHelper.fileInDataSet(user, dataSet, "resourceList.xml");
+  }
 
+  public void addDataSet(String user, String dataSet) throws ResourceSyncException {
+    new CapabilityList(
+      dataSetPathHelper.fileInDataSet(user, dataSet, "capabilityList.xml"),
+      new File("sourceDescription.xml")
+    ).addResourceList(getResourceListFile(user, dataSet));
+  }
 }
