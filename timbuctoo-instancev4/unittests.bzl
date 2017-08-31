@@ -40,5 +40,6 @@ EOF
       "//third_party:junit_junit",
       "//third_party:org_hamcrest_hamcrest_all",
       "//third_party:org_mockito_mockito_core",
+      "//timbuctoo-test-services",
     ],
   )

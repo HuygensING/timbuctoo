@@ -14,7 +14,7 @@ import org.junit.rules.ExpectedException;
 import java.util.Optional;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
+import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.security.UserStoreMockBuilder.userStore;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;

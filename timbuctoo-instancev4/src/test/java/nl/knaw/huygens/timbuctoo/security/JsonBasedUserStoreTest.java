@@ -16,7 +16,7 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.security.JsonBasedUserStoreStubs.forFile;
-import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
+import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
