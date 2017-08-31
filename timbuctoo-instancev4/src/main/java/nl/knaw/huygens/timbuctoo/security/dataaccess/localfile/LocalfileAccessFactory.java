@@ -1,14 +1,13 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess.localfile;
 
-import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.security.healthchecks.DirectoryHealthCheck;
+import nl.knaw.huygens.timbuctoo.security.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.LoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.DirectoryHealthCheck;
-import nl.knaw.huygens.timbuctoo.server.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.slf4j.Logger;
 
@@ -17,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -43,8 +44,8 @@ public class LocalfileAccessFactory implements AccessFactory {
   private String usersFilePath;
 
   @Override
-  public Iterator<Tuple<String, HealthCheck>> getHealthChecks() {
-    List<Tuple<String, HealthCheck>> list = new ArrayList<>();
+  public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
+    List<Tuple<String, Supplier<Optional<String>>>> list = new ArrayList<>();
     list.add(tuple("login file available", new FileHealthCheck(Paths.get(loginsFilePath))));
     list.add(tuple("authorizations directory available", new DirectoryHealthCheck(Paths.get(authorizationsPath))));
     list.add(tuple("users file available", new FileHealthCheck(Paths.get(usersFilePath))));

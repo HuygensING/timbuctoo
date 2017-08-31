@@ -1,17 +1,12 @@
-package nl.knaw.huygens.timbuctoo.server;
+package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.dropwizard.client.HttpClientBuilder;
-import io.dropwizard.client.HttpClientConfiguration;
-import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
+import nl.knaw.huygens.security.client.HttpCaller;
 import nl.knaw.huygens.security.client.HuygensAuthenticationHandler;
 import nl.knaw.huygens.security.client.UnauthorizedException;
 import nl.knaw.huygens.security.client.model.HuygensSecurityInformation;
-import nl.knaw.huygens.timbuctoo.server.federatedauth.HttpCaller;
-import org.apache.http.client.HttpClient;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 public class FederatedAuthConfiguration {
@@ -26,13 +21,7 @@ public class FederatedAuthConfiguration {
   @NotNull
   private Boolean enabled;
 
-  @Valid
-  @NotNull
-  @JsonProperty("httpClient")
-  private HttpClientConfiguration httpClientConfig = new HttpClientConfiguration();
-
-
-  public AuthenticationHandler makeHandler(Environment environment) {
+  public AuthenticationHandler makeHandler(HttpCaller httpCaller) {
     if (enabled) {
       if (authenticationServerUrl.equals("DUMMY")) {
         return sessionId -> {
@@ -42,12 +31,8 @@ public class FederatedAuthConfiguration {
           return information;
         };
       } else {
-        final HttpClient httpClient = new HttpClientBuilder(environment)
-          .using(httpClientConfig)
-          .build("federated-auth-client");
-
         return new HuygensAuthenticationHandler(
-          new HttpCaller(httpClient),
+          httpCaller,
           authenticationServerUrl,
           authenticationCredentials
         );

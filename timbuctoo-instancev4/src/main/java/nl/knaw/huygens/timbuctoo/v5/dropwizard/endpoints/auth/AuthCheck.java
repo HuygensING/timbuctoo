@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
-import nl.knaw.huygens.timbuctoo.crud.Authorization;
+import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;

@@ -18,9 +18,10 @@ java_binary(
         "src/main/resources/**/*",
     ]),
     deps = [
-        "//security-client-agnostic:security-client-agnostic",
         "//timbuctoo-test-services:timbuctoo-test-services",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util:utils",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security:security",
+        "//security-client-agnostic",
         "//third_party:com_fasterxml_jackson_core_jackson_annotations",
         "//third_party:com_fasterxml_jackson_core_jackson_core",
         "//third_party:com_fasterxml_jackson_core_jackson_databind",
