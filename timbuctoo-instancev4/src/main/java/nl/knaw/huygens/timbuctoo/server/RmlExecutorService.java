@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.rdf.TripleImporter;
 import nl.knaw.huygens.timbuctoo.rml.dto.QuadPart;
 import nl.knaw.huygens.timbuctoo.rml.dto.RdfBlankNode;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
+import nl.knaw.huygens.timbuctoo.rml.LoggingErrorHandler;
 import org.apache.jena.datatypes.BaseDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.NodeFactory;

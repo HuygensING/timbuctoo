@@ -1,6 +1,5 @@
-package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
+package nl.knaw.huygens.timbuctoo.rml;
 
-import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

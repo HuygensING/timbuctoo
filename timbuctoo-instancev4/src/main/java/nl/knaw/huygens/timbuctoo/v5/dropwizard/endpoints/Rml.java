@@ -4,7 +4,7 @@ import io.dropwizard.jersey.params.UUIDParam;
 import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
+import nl.knaw.huygens.timbuctoo.rml.LoggingErrorHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
