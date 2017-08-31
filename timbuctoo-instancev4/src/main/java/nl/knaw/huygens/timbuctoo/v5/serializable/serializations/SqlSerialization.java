@@ -1,21 +1,19 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
-import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
-import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.CollectionsOfEntitiesSerialization;
-
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
+import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.CollectionsOfEntitiesSerialization;
 
 public class SqlSerialization extends CollectionsOfEntitiesSerialization {
 
   //  private final CSVPrinter csvPrinter;
   private String tableName;
   private String columnHeaders;
-  private List<Tuple<String, String>> columns;
-  private boolean columnTypesSet = false;
+  private List<String> columns;
 
   public SqlSerialization(OutputStream outputStream) throws IOException {
     //    csvPrinter = new CSVPrinter(new PrintWriter(outputStream), CSVFormat.EXCEL);
@@ -23,11 +21,11 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
 
   protected void initialize(List<String> columnHeaders) throws IOException {
     this.columnHeaders = "";
-    columns = new ArrayList<Tuple<String,String>>();
+    columns = new ArrayList<String>();
     for (String columnHeader : columnHeaders) {
-      Tuple<String,String> columnTuple = new Tuple<String, String>(columnHeader, "text");
-      columns.add(columnTuple);
+      columns.add(columnHeader);
       this.columnHeaders += ", " + columnHeader;
+      this.columnHeaders += ", " + columnHeader + "_type";
     }
     this.columnHeaders = this.columnHeaders.substring(2);
   }
@@ -43,61 +41,27 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
     }
     System.out.println("DROP TABLE " + tableName + ";");
     String createTableString = "CREATE TABLE " + tableName + " (\n";
-    for (Tuple<String,String> column: columns) {
-      String columnName = column.getLeft();
-      String columnType = column.getRight();
-      createTableString += columnName + " " + columnType + ",\n";
+    for (String column: columns) {
+      createTableString += column + " 'text',\n";
+      createTableString += column + "_type 'text',\n";
     }
     createTableString += ");";
     System.out.println(createTableString);
-    columnTypesSet = true;
   }
 
   protected void writeRow(List<Value> values) throws IOException {
-    if (!columnTypesSet) {
-      setColumnTypes(values);
-      writeCreateTable();
-      columnTypesSet = true;
-    }
     String columnValues = "";
     for (Value value : values) {
       if (value == null) {
         columnValues += ", DEFAULT";
+        columnValues += ", 'text'";
       } else {
         columnValues += ", '" + value.getValue().toString() + "'";
+        columnValues += ", '" + value.getType() + "'";
       }
     }
     System.out.println("INSERT INTO " + this.tableName + "(" + columnHeaders +
             ") VALUES (" + columnValues.substring(2) + ");");
   }
-  
-  protected void replaceColumnType(String columnName, String columnType) {
-    Tuple<String,String> newTuple = new Tuple<String,String>(columnName, columnType);
-    int counter = 0;
-    for (Tuple<String,String> column: columns) {
-      if (column.getLeft().equals(columnName)) {
-        break;
-      }
-      counter++;
-    }
-    if (counter < columns.size()) {
-      columns.set(counter, newTuple);
-    }
-  }
 
-  protected void setColumnTypes(List<Value> values) {
-    int counter = 0;
-    for (Value value : values) {
-      String type = value.getType();
-      if (type.toLowerCase().startsWith("int")) {
-        type = "integer";
-      } else if (type.toLowerCase().startsWith("boo")) {
-        type = "boolean";
-      } else {
-        type = "text";
-      }
-      replaceColumnType(columns.get(counter).getLeft(), type);
-      counter++;
-    }
-  }
 }
