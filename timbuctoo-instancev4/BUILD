@@ -19,10 +19,10 @@ java_binary(
     ]),
     deps = [
         "//timbuctoo-test-services:timbuctoo-test-services",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util:utils",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security:security",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security",
         "//security-client-agnostic",
-        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena:jena_rml",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml",
         "//third_party:com_fasterxml_jackson_core_jackson_annotations",
         "//third_party:com_fasterxml_jackson_core_jackson_core",

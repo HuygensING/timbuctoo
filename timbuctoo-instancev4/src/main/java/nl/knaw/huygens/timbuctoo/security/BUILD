@@ -17,7 +17,7 @@ java_library(
     ]),
     deps = [
       "//security-client-agnostic:security-client-agnostic",
-      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util:utils",
+      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
       "//third_party:org_immutables_value",
       "//third_party:com_google_guava_guava",
       "//third_party:com_google_code_findbugs_jsr305",

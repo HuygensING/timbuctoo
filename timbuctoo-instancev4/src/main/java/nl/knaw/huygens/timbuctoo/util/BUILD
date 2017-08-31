@@ -1,5 +1,5 @@
 java_library(
-    name = "utils",
+    name = "util",
     srcs = glob([
         "**/*.java",
     ]),
