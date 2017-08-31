@@ -10,7 +10,6 @@ import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfLiteral;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.TriplesMapBuilder;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -470,7 +469,7 @@ public class RmlMapperTest {
       "geschrevenDoor", "Bill"
     );
 
-    rmlMappingDocument()
+    final List<Quad> collect = rmlMappingDocument()
       .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
       .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
       .build(logicalSource -> {

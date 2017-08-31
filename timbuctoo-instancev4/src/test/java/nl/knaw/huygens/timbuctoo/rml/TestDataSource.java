@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.apache.tinkerpop.gremlin.util.iterator.IteratorUtils.stream;
+import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 
 class TestDataSource implements DataSource {
   private final Iterable<Map<String, String>> data;
@@ -28,7 +28,7 @@ class TestDataSource implements DataSource {
 
   @Override
   public Stream<Row> getRows(ErrorHandler defaultErrorHandler) {
-    return stream(data)
+    return stream(data.iterator())
       .map(values -> {
         Map<String, String> mutableValues = Maps.newHashMap(values);
         Map<String, List<String>> joinValues = joinHandler.resolveReferences(mutableValues);
