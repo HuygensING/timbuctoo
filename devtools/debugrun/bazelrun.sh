@@ -57,7 +57,7 @@ while getopts ":d:pDf:c:y:hrtC" opt; do
   esac
 done
 
-bazel build //:everything || exit $?
+bazel build //timbuctoo-instancev4:everything || exit $?
 
 cd ./timbuctoo-instancev4
 
@@ -87,7 +87,7 @@ if [ -n "$FLIGHT_CONTROL" ]; then
 fi
 
 export JAVA_OPTS
-CMD="../bazel-bin/everything $COMMAND_OPTS $COMMAND $YAML"
+CMD="../bazel-bin/timbuctoo-instancev4/everything $COMMAND_OPTS $COMMAND $YAML"
 
 echo "Changed directory to: $PWD"
 echo "JAVA_OPTS=\"$JAVA_OPTS\""

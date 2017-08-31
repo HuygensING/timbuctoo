@@ -12,16 +12,15 @@ java_binary(
         ":immutables_processor"
     ],
     srcs = glob([
-        "security-client-agnostic/src/main/java/**/*.java",
-        "timbuctoo-test-services/src/main/java/**/*.java",
-        "timbuctoo-instancev4/src/main/java/**/*.java",
+        "src/main/java/**/*.java",
     ]),
     resources = glob([
-        "security-client-agnostic/src/main/resources/**/*",
-        "timbuctoo-test-services/src/main/resources/**/*",
-        "timbuctoo-instancev4/src/main/resources/**/*",
+        "src/main/resources/**/*",
     ]),
     deps = [
+        "//security-client-agnostic:security-client-agnostic",
+        "//timbuctoo-test-services:timbuctoo-test-services",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util:utils",
         "//third_party:com_fasterxml_jackson_core_jackson_annotations",
         "//third_party:com_fasterxml_jackson_core_jackson_core",
         "//third_party:com_fasterxml_jackson_core_jackson_databind",
@@ -64,7 +63,6 @@ java_binary(
         "//third_party:javax_validation_validation_api",
         "//third_party:javax_ws_rs_javax_ws_rs_api",
         "//third_party:nl_knaw_huygens_huygens_persistence",
-        "//third_party:nl_knaw_huygens_security_core",
         "//third_party:org_apache_activemq_activemq_broker",
         "//third_party:org_apache_activemq_activemq_kahadb_store",
         "//third_party:org_apache_commons_commons_csv",
