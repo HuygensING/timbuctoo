@@ -28,9 +28,7 @@ import static org.hamcrest.core.Is.is;
 public class JsonBasedAuthenticatorTest {
 
   public static final String KNOWN_USER = "knownUser";
-  public static final Path LOGINS_FILE = Paths.get(
-    "src", "test", "resources", "nl", "knaw", "huygens", "timbuctoo", "security", "logins.json"
-  );
+  public static Path LOGINS_FILE;
   public static final String CORRECT_PASSWORD = "correctPassword";
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -38,6 +36,7 @@ public class JsonBasedAuthenticatorTest {
 
   @Before
   public void setUp() throws Exception {
+    LOGINS_FILE = FileHelpers.getFileFromResource(JsonBasedAuthenticatorTest.class, "logins.json");
     instance = backedByFile(LOGINS_FILE);
   }
 
@@ -80,7 +79,7 @@ public class JsonBasedAuthenticatorTest {
   @Test
   public void createLoginAddsALoginToTheLoginsFile() throws Exception {
     Login[] logins = new Login[0];
-    Path emptyLoginsFile = Paths.get("src", "test", "resources", "logins1.json");
+    Path emptyLoginsFile = FileHelpers.makeTempFilePath(true);
     new ObjectMapper().writeValue(emptyLoginsFile.toFile(), logins);
     JsonBasedAuthenticator instance = backedByFile(emptyLoginsFile);
 
@@ -95,7 +94,7 @@ public class JsonBasedAuthenticatorTest {
   @Test
   public void createLoginIgnoresTheAdditionOfLoginOfAKnownUserPid() throws Exception {
     Login[] logins = new Login[0];
-    Path emptyLoginsFile = Paths.get("src", "test", "resources", "logins1.json");
+    Path emptyLoginsFile = FileHelpers.makeTempFilePath(true);
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.writeValue(emptyLoginsFile.toFile(), logins);
     JsonBasedAuthenticator instance = backedByFile(emptyLoginsFile);
@@ -115,7 +114,7 @@ public class JsonBasedAuthenticatorTest {
   @Test
   public void createLoginIgnoresTheAdditionOfLoginOfAKnownUserName() throws Exception {
     Login[] logins = new Login[0];
-    Path emptyLoginsFile = Paths.get("src", "test", "resources", "logins1.json");
+    Path emptyLoginsFile = FileHelpers.makeTempFilePath(true);
     ObjectMapper objectMapper = new ObjectMapper();
     objectMapper.writeValue(emptyLoginsFile.toFile(), logins);
     JsonBasedAuthenticator instance = backedByFile(emptyLoginsFile);
@@ -134,7 +133,7 @@ public class JsonBasedAuthenticatorTest {
 
   @Test(expected = LoginCreationException.class)
   public void createLoginThrowsLoginCreationExceptionWhenTheLoginsFileCannotBeRead() throws Exception {
-    Path pathToNonExistingFile = Paths.get("src", "test", "resources", "logins1.json");
+    Path pathToNonExistingFile = FileHelpers.makeTempFilePath(false);
     JsonBasedAuthenticator instance = backedByFile(pathToNonExistingFile);
 
     instance.createLogin("userPid", "userName", "password", "givenName", "surname", "email", "org");

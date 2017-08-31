@@ -1,8 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
+import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.dto.UserStubs;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
@@ -38,12 +37,6 @@ public class JsonBasedAuthorizerTest {
   public void setUp() throws Exception {
     authorizationAccess = mock(VreAuthorizationAccess.class);
     instance = new JsonBasedAuthorizer(authorizationAccess);
-  }
-
-  private Collection collectionOfVreWithId(String vreId) {
-    Collection collection = mock(Collection.class);
-    when(collection.getVreName()).thenReturn(vreId);
-    return collection;
   }
 
   @Test
