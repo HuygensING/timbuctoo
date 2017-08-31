@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.rml.RmlExecutorService;
+import nl.knaw.huygens.timbuctoo.server.RmlExecutorService;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;

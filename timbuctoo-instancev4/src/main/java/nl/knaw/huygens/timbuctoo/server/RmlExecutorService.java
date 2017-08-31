@@ -1,12 +1,16 @@
-package nl.knaw.huygens.timbuctoo.rml;
+package nl.knaw.huygens.timbuctoo.server;
 
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.rdf.TripleImporter;
+import nl.knaw.huygens.timbuctoo.rml.dto.QuadPart;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfBlankNode;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
-import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
+import org.apache.jena.datatypes.BaseDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
@@ -20,6 +24,7 @@ import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.COLLECTION_LABEL_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection.ENTITY_TYPE_NAME_PROPERTY_NAME;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.HAS_COLLECTION_RELATION_NAME;
+import static org.apache.jena.graph.NodeFactory.createLiteral;
 
 public class RmlExecutorService {
   public static final Logger LOG = LoggerFactory.getLogger(RmlExecutorService.class);
@@ -71,9 +76,26 @@ public class RmlExecutorService {
 
         //generate and import rdf
         rmlMappingDocument.execute(new LoggingErrorHandler()).forEach(
-          (triple) -> {
+          (quad) -> {
             reportTripleCount(tripleCount, curtime, statusUpdate);
-            importer.importTriple(true, triple);
+            Node object;
+            final QuadPart sourceObject = quad.getObject();
+            if (sourceObject.getLiteralLanguage().isPresent()) {
+              object = createLiteral(sourceObject.getContent(), sourceObject.getLiteralLanguage().get());
+            } else if (sourceObject.getLiteralType().isPresent()) {
+              object = createLiteral(sourceObject.getContent(), new BaseDatatype(sourceObject.getLiteralType().get()));
+            } else if (sourceObject instanceof RdfBlankNode) {
+              object = NodeFactory.createBlankNode(sourceObject.getContent());
+            } else {
+              object = NodeFactory.createURI(sourceObject.getContent());
+            }
+            importer.importTriple(true, new Triple(
+              quad.getSubject() instanceof RdfBlankNode ?
+                NodeFactory.createBlankNode(quad.getSubject().getContent()) :
+                NodeFactory.createURI(quad.getSubject().getContent()),
+              NodeFactory.createURI(quad.getPredicate().getContent()),
+              object
+            ));
           });
 
         reportTripleCount(tripleCount, curtime, statusUpdate);

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import io.dropwizard.jersey.params.UUIDParam;
+import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
@@ -13,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
-import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
@@ -73,17 +73,16 @@ public class Rml {
         new RdfCreator() {
           @Override
           public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
-            Stream<Triple> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
-            Iterator<Triple> iterator = triples.iterator();
+            Stream<Quad> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
+            Iterator<Quad> iterator = triples.iterator();
             while (iterator.hasNext()) {
-              Triple triple = iterator.next();
-              boolean isLiteral = triple.getObject().isLiteral();
+              Quad triple = iterator.next();
               saver.onQuad(
                 triple.getSubject().toString(),
                 triple.getPredicate().toString(),
-                isLiteral ? triple.getObject().getLiteral().getLexicalForm() : triple.getObject().toString(),
-                isLiteral ? triple.getObject().getLiteralDatatypeURI() : null,
-                isLiteral ? triple.getObject().getLiteralLanguage() : null,
+                triple.getObject().getContent(),
+                triple.getObject().getLiteralType().orElse(null),
+                triple.getObject().getLiteralLanguage().orElse(null),
                 rdfIdHelper.dataSet(ownerId, dataSetId)
               );
             }

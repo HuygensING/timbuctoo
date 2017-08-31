@@ -22,6 +22,8 @@ java_binary(
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util:utils",
         "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security:security",
         "//security-client-agnostic",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena:jena_rml",
+        "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml",
         "//third_party:com_fasterxml_jackson_core_jackson_annotations",
         "//third_party:com_fasterxml_jackson_core_jackson_core",
         "//third_party:com_fasterxml_jackson_core_jackson_databind",

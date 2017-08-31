@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
 import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
+import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.MappingDocumentBuilder;
-import org.apache.jena.graph.Triple;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -19,7 +19,7 @@ public class RmlMappingDocument {
     this.errors = errors;
   }
 
-  public Stream<Triple> execute(ErrorHandler defaultErrorHandler) {
+  public Stream<Quad> execute(ErrorHandler defaultErrorHandler) {
     if (errors.size() > 0) {
       throw new RuntimeException("Mapping contains errors");
     }

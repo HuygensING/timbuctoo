@@ -1,29 +1,29 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.Row;
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
+import nl.knaw.huygens.timbuctoo.rml.dto.QuadPart;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfValue;
 
 import java.util.Optional;
 
 public class RrConstant implements RrTermMap {
-  private final Node value;
+  private final QuadPart value;
 
   public RrConstant(String value) {
-    this.value = NodeFactory.createURI(value);
+    this.value = new RdfUri(value);
   }
 
-  public RrConstant(String value, TermType termType, RDFDatatype dataType) {
+  public RrConstant(String value, TermType termType, String dataType) {
     if (termType == TermType.Literal) {
-      this.value = NodeFactory.createLiteral(value, dataType);
+      this.value = new RdfValue(value, dataType);
     } else {
-      this.value = NodeFactory.createURI(value);
+      this.value = new RdfUri(value);
     }
   }
 
   @Override
-  public Optional<Node> generateValue(Row input) {
+  public Optional<QuadPart> generateValue(Row input) {
     return Optional.of(value);
   }
 

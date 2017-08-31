@@ -1,10 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.Row;
-import org.apache.commons.lang.StringUtils;
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
+import nl.knaw.huygens.timbuctoo.rml.dto.QuadPart;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfBlankNode;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfValue;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 
 import java.io.UnsupportedEncodingException;
@@ -18,11 +19,11 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class RrTemplate implements RrTermMap {
   private final String template;
   private final TermType termType;
-  private final RDFDatatype dataType;
+  private final String dataType;
   private final Pattern pattern;
   private static final Logger LOG = getLogger(RrTemplate.class);
 
-  public RrTemplate(String template, TermType termType, RDFDatatype dataType) {
+  public RrTemplate(String template, TermType termType, String dataType) {
     this.template = template;
     this.termType = termType;
     this.dataType = dataType;
@@ -59,7 +60,7 @@ public class RrTemplate implements RrTermMap {
   }
 
   @Override
-  public Optional<Node> generateValue(Row input) {
+  public Optional<QuadPart> generateValue(Row input) {
     Matcher regexMatcher = pattern.matcher(template);
     StringBuffer resultString = new StringBuffer();
     while (regexMatcher.find()) {
@@ -87,11 +88,11 @@ public class RrTemplate implements RrTermMap {
 
     switch (termType) {
       case IRI:
-        return Optional.of(NodeFactory.createURI(resultString.toString()));
+        return Optional.of(new RdfUri(resultString.toString()));
       case BlankNode:
-        return Optional.of(NodeFactory.createBlankNode(resultString.toString()));
+        return Optional.of(new RdfBlankNode(resultString.toString()));
       case Literal:
-        return Optional.of(NodeFactory.createLiteral(resultString.toString(), dataType));
+        return Optional.of(new RdfValue(resultString.toString(), dataType));
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }

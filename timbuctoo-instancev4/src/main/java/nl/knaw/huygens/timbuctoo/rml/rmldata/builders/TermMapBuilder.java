@@ -7,9 +7,6 @@ import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrConstant;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTemplate;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.TermType;
-import org.apache.jena.datatypes.BaseDatatype;
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
 
 import java.util.Optional;
 import java.util.Set;
@@ -66,7 +63,7 @@ public class TermMapBuilder {
   public void withConstantTerm(String value, Optional<TermType> termTypeOpt, Optional<String> language,
                                Optional<String> datatypeOpt) {
     TermType termType = termTypeOrDefault(termTypeOpt, language, datatypeOpt);
-    RDFDatatype dataType = dataTypeOrDefault(datatypeOpt);
+    String dataType = dataTypeOrDefault(datatypeOpt);
     instance = new RrConstant(value, termType, dataType);
   }
 
@@ -94,7 +91,7 @@ public class TermMapBuilder {
   public void withColumnTerm(String value, Optional<TermType> termTypeOpt, Optional<String> language,
                              Optional<String> datatypeOpt) {
     TermType termType = termTypeOrDefault(termTypeOpt, language, datatypeOpt);
-    RDFDatatype dataType = dataTypeOrDefault(datatypeOpt);
+    String dataType = dataTypeOrDefault(datatypeOpt);
 
     instance = new RrColumn(value, termType, dataType);
   }
@@ -122,7 +119,7 @@ public class TermMapBuilder {
   public void withTemplateTerm(String value, Optional<TermType> termTypeOpt, Optional<String> language,
                              Optional<String> datatypeOpt) {
     TermType termType = termTypeOrDefault(termTypeOpt, language, datatypeOpt);
-    RDFDatatype dataType = dataTypeOrDefault(datatypeOpt);
+    String dataType = dataTypeOrDefault(datatypeOpt);
     instance = new RrTemplate(value, termType, dataType);
   }
 
@@ -137,11 +134,8 @@ public class TermMapBuilder {
     });
   }
 
-  private RDFDatatype dataTypeOrDefault(Optional<String> datatypeOpt) {
-    if (datatypeOpt.isPresent()) {
-      return new BaseDatatype(datatypeOpt.get());
-    }
-    return XSDDatatype.XSDstring;
+  private String dataTypeOrDefault(Optional<String> datatypeOpt) {
+    return datatypeOpt.orElse("http://www.w3.org/2001/XMLSchema#string");
   }
 
 }

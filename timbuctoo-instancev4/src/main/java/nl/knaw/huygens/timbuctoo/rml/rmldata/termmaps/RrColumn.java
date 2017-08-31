@@ -1,25 +1,26 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.Row;
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
+import nl.knaw.huygens.timbuctoo.rml.dto.QuadPart;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfBlankNode;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfValue;
 
 import java.util.Optional;
 
 public class RrColumn implements RrTermMap {
   private final String referenceString;
   private TermType termType;
-  private final RDFDatatype dataType;
+  private final String dataType;
 
-  public RrColumn(String referenceString, TermType termType, RDFDatatype dataType) {
+  public RrColumn(String referenceString, TermType termType, String dataType) {
     this.referenceString = referenceString;
     this.termType = termType;
     this.dataType = dataType;
   }
 
   @Override
-  public Optional<Node> generateValue(Row input) {
+  public Optional<QuadPart> generateValue(Row input) {
     String value = input.getRawValue(referenceString);
     if (value == null) {
       return Optional.empty();
@@ -27,11 +28,11 @@ public class RrColumn implements RrTermMap {
 
     switch (termType) {
       case IRI:
-        return Optional.of(NodeFactory.createURI(value));
+        return Optional.of(new RdfUri(value));
       case BlankNode:
-        return Optional.of(NodeFactory.createBlankNode(value));
+        return Optional.of(new RdfBlankNode(value));
       case Literal:
-        return Optional.of(NodeFactory.createLiteral(value, dataType));
+        return Optional.of(new RdfValue(value, dataType));
       default:
         throw new UnsupportedOperationException("Not all items in the Enumerable where handled");
     }
