@@ -7,6 +7,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.LogStorage;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
@@ -24,7 +26,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,11 +53,11 @@ public class ImportManager implements DataProvider {
   private EntityProvider entityProvider;
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
-                       ExecutorService executorService, RdfIoFactory rdfIoFactory)
+                       ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList)
       throws DataStoreCreationException {
-    this.fileStorage = fileStorage;
-    this.imageStorage = imageStorage;
-    this.logStorage = logStorage;
+    this.fileStorage = new PublicFileStore(fileStorage, resourceList);
+    this.imageStorage = new PublicFileStore(imageStorage, resourceList);
+    this.logStorage = new PublicLogStore(logStorage, resourceList);
     this.serializerFactory = rdfIoFactory;
     this.executorService = executorService;
     try {
@@ -72,13 +73,13 @@ public class ImportManager implements DataProvider {
     subscribedEntityProcessors = new ArrayList<>();
   }
 
-  public Future<?> addLog(URI name, InputStream rdfInputStream, Optional<Charset> charset,
-                          Optional<MediaType> mediaType) throws LogStorageFailedException {
+  public Future<?> addLog(String baseUri, String defaultGraph, String fileName, InputStream rdfInputStream,
+                          Optional<Charset> charset, MediaType mediaType) throws LogStorageFailedException {
     try {
-      String token = logStorage.saveLog(rdfInputStream, name.toString(), mediaType, charset);
+      String token = logStorage.saveLog(rdfInputStream, fileName, mediaType, charset);
       int[] index = new int[1];
       logListStore.updateData(logList -> {
-        index[0] = logList.addEntry(LogEntry.create(name, token));
+        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, token));
         return logList;
       });
       return executorService.submit(() -> processLogsUntil(index[0]));
@@ -87,7 +88,7 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  public String addFile(InputStream fileStream, String fileName, Optional<MediaType> mediaType)
+  public String addFile(InputStream fileStream, String fileName, MediaType mediaType)
       throws FileStorageFailedException {
     try {
       return fileStorage.saveFile(fileStream, fileName, mediaType);
@@ -100,7 +101,7 @@ public class ImportManager implements DataProvider {
     return fileStorage.getFile(fileToken);
   }
 
-  public String addImage(InputStream imageStream, String imageName, Optional<MediaType> mediaType)
+  public String addImage(InputStream imageStream, String imageName, MediaType mediaType)
       throws FileStorageFailedException {
     try {
       return imageStorage.saveFile(imageStream, imageName, mediaType);
@@ -109,12 +110,13 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  public Future<?> generateLog(URI name, RdfCreator creator) throws LogStorageFailedException {
+  public Future<?> generateLog(String baseUri, String defaultGraph, RdfCreator creator)
+    throws LogStorageFailedException {
     try {
       //add to the log structure
       int[] index = new int[1];
       logListStore.updateData(logList -> {
-        index[0] = logList.addEntry(LogEntry.create(name, creator));
+        index[0] = logList.addEntry(LogEntry.create(baseUri, defaultGraph, creator));
         return logList;
       });
       //schedule processing
@@ -137,7 +139,14 @@ public class ImportManager implements DataProvider {
         try {
           CachedLog log = logStorage.getLog(entry.getLogToken().get());
           for (Tuple<String, RdfProcessor> subscribedProcessor : subscribedProcessors) {
-            processLogIfNeeded(index, log, subscribedProcessor.getLeft(), subscribedProcessor.getRight());
+            processLogIfNeeded(
+              index,
+              log,
+              entry.getBaseUri(),
+              entry.getDefaultGraph(),
+              subscribedProcessor.getLeft(),
+              subscribedProcessor.getRight()
+            );
           }
           for (Tuple<String, EntityProcessor> processor : subscribedEntityProcessors) {
             entityProvider.processEntities(processor.getLeft(), processor.getRight());
@@ -156,10 +165,10 @@ public class ImportManager implements DataProvider {
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();//FIXME: write to tempFile
 
         String token = "";
-        Optional<MediaType> mediaType;
+        MediaType mediaType;
         Optional<Charset> charset;
         try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(outputStream)) {
-          mediaType = Optional.of(serializer.getMediaType());
+          mediaType = serializer.getMediaType();
           charset = Optional.of(serializer.getCharset());
           creator.sendQuads(serializer);
         } catch (Exception e) {
@@ -169,7 +178,7 @@ public class ImportManager implements DataProvider {
         try {
           token = logStorage.saveLog(
             new ByteArrayInputStream(outputStream.toByteArray()),
-            entry.getName().toString(),
+            "log_generated_by_" + creator.getClass().getSimpleName(),
             mediaType,
             charset
           );
@@ -189,8 +198,8 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  private void processLogIfNeeded(int index, CachedLog log, String currentCursor, RdfProcessor processor)
-      throws RdfProcessingFailedException {
+  private void processLogIfNeeded(int index, CachedLog log, String baseUri, String defaultGraph, String currentCursor,
+                                  RdfProcessor processor) throws RdfProcessingFailedException {
     RdfParser rdfParser = serializerFactory.makeRdfParser(log);
     if (currentCursor == null) {
       currentCursor = "";
@@ -198,9 +207,10 @@ public class ImportManager implements DataProvider {
     String[] cursorParts = currentCursor.split("\n", 2);
     int major = cursorParts[0].isEmpty() ? 0 : Integer.parseInt(cursorParts[0]);
     if (major < index) {
-      rdfParser.importRdf(index + "\n", "", log, processor);
+      rdfParser.importRdf(index + "\n", "", log, baseUri, defaultGraph, processor);
     } else if (major == index) {
-      rdfParser.importRdf(index + "\n", cursorParts.length > 1 ? cursorParts[1] : "", log, processor);
+      final String startFrom = cursorParts.length > 1 ? cursorParts[1] : "";
+      rdfParser.importRdf(index + "\n", startFrom, log, baseUri, defaultGraph, processor);
     }
   }
 
@@ -217,7 +227,66 @@ public class ImportManager implements DataProvider {
     subscribedEntityProcessors.add(Tuple.tuple(cursor, processor));
   }
 
+  public boolean isRdfTypeSupported(MediaType mediaType) {
+    return serializerFactory.isRdfTypeSupported(mediaType);
+  }
+
   List<LogEntry> getLogEntries() {
     return logListStore.getData().getEntries();
+  }
+
+  // wrapper class that makes sure all files are exposed by resource sync
+  private static class PublicFileStore implements FileStorage {
+    private final FileStorage fileStorage;
+    private final ResourceList resourceList;
+
+    public PublicFileStore(FileStorage fileStorage, ResourceList resourceList) {
+      this.fileStorage = fileStorage;
+      this.resourceList = resourceList;
+    }
+
+    @Override
+    public String saveFile(InputStream stream, String fileName, MediaType mediaType) throws IOException {
+      String token = fileStorage.saveFile(stream, fileName, mediaType);
+      try {
+        resourceList.addFile(getFile(token));
+      } catch (ResourceSyncException e) {
+        throw new IOException(e);
+      }
+      return token;
+    }
+
+    @Override
+    public CachedFile getFile(String token) throws IOException {
+      return fileStorage.getFile(token);
+    }
+  }
+
+  // wrapper class that makes sure all logs are exposed by resource sync
+  private static class PublicLogStore implements LogStorage {
+    private final LogStorage logStorage;
+    private final ResourceList resourceList;
+
+    public PublicLogStore(LogStorage logStorage, ResourceList resourceList) {
+      this.logStorage = logStorage;
+      this.resourceList = resourceList;
+    }
+
+    @Override
+    public String saveLog(InputStream stream, String fileName, MediaType mediaType, Optional<Charset> charset)
+      throws IOException {
+      String token = logStorage.saveLog(stream, fileName, mediaType, charset);
+      try {
+        resourceList.addFile(getLog(token));
+      } catch (ResourceSyncException e) {
+        throw new IOException(e);
+      }
+      return token;
+    }
+
+    @Override
+    public CachedLog getLog(String token) throws IOException {
+      return logStorage.getLog(token);
+    }
   }
 }

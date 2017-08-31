@@ -92,6 +92,8 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
@@ -250,17 +252,19 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
-      dataSetFactory
+      dataSetFactory,
+      configuration.getRdfIdHelper()
     ));
 
     register(environment, new TabularUpload(
       securityConfig.getLoggedInUsers(environment),
       securityConfig.getAuthorizer(),
-      dataSetFactory
+      dataSetFactory, configuration.getRdfIdHelper()
     ));
 
     register(environment, new Rml(
-      dataSetFactory
+      dataSetFactory,
+      configuration.getRdfIdHelper()
     ));
 
     GraphQl graphQlEndpoint = new GraphQl(
@@ -269,7 +273,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         dataSetFactory,
         dataSetFactory,
         new DerivedSchemaTypeGenerator(),
-        configuration.getArchetypes()
+        configuration.getArchetypes(), configuration.getRdfIdHelper()
       ),
       uriHelper
     );
@@ -342,8 +346,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
-      dataSetFactory
+      dataSetFactory,
+      configuration.getRdfIdHelper()
     ));
+
+    register(environment, new WellKnown());
+    register(environment, new ResourceSyncEndpoint(configuration.getResourceSync(), configuration.getUriHelper()));
 
     // Admin resources
     environment.admin().addTask(new UserCreationTask(new LocalUserCreator(

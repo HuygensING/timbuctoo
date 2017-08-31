@@ -15,7 +15,6 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Optional;
@@ -36,17 +35,18 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
   }
 
   @Override
-  public String saveFile(InputStream stream, String fileName, Optional<MediaType> mediaType) throws IOException {
+  public String saveFile(InputStream stream, String fileName, MediaType mediaType) throws IOException {
     return storeFile(stream, fileName, mediaType, Optional.empty());
   }
 
-  private String storeFile(InputStream stream, String fileName, Optional<MediaType> mediaType,
+  private String storeFile(InputStream stream, String fileName, MediaType mediaType,
                            Optional<Charset> charset) throws IOException {
     String random = UUID.randomUUID().toString();
     String mnemonic = fileName.replaceAll("[^a-zA-Z0-9]", "_");
     String token = random + "-" + mnemonic;
     Files.copy(stream, new File(dir, token).toPath());
     fileInfo.updateData(data -> data.addItem(token, FileInfo.create(fileName, mediaType, charset)));
+
     return token;
   }
 
@@ -57,7 +57,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
   }
 
   @Override
-  public String saveLog(InputStream stream, String fileName, Optional<MediaType> mediaType, Optional<Charset> charset)
+  public String saveLog(InputStream stream, String fileName, MediaType mediaType, Optional<Charset> charset)
     throws IOException {
     return storeFile(stream, fileName, mediaType, charset);
   }
@@ -68,7 +68,7 @@ public class FileSystemFileStorage implements FileStorage, LogStorage {
     return new FileSystemCachedLog(
       fileInfo.getMediaType(),
       fileInfo.getCharset(),
-      URI.create(fileInfo.getName()),
+      fileInfo.getName(),
       new File(dir, token)
     );
   }

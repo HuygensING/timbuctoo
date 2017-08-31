@@ -14,15 +14,16 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
@@ -57,11 +58,11 @@ public class RmlDataSourceStoreTest {
 
 
     RdfDataSource rdfDataSource = new RdfDataSource(rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSetId/fileName/1",
+      "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSetId/fileName/1",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
     RdfDataSource rdfDataSource2 = new RdfDataSource(rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSetId/fileName/2",
+      "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSetId/fileName/2",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
 
@@ -92,7 +93,8 @@ public class RmlDataSourceStoreTest {
       RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
 
       try {
-        rawUploadRdfSaver = new RawUploadRdfSaver("dataSetId", "fileName", Optional.empty(), rdfSerializer);
+        rawUploadRdfSaver = new RawUploadRdfSaver("userId", "dataSetId", "fileName", APPLICATION_OCTET_STREAM_TYPE,
+          rdfSerializer, new TimbuctooRdfIdHelper("http://timbuctoo.huygens.knaw.nl/v5/"));
         processor.start();
       } catch (RdfProcessingFailedException | LogStorageFailedException e) {
         throw new RuntimeException(e.getCause());

@@ -10,21 +10,25 @@ import java.io.File;
 import java.io.IOException;
 
 public class FileSystemFileStorageFactory implements FileStorageFactory {
-  private final DataSetPathHelper dataSetPathHelper;
+  private final FileHelper fileHelper;
 
   @JsonCreator
   public FileSystemFileStorageFactory(@JsonProperty("rootDir") String rootDir) {
-    this.dataSetPathHelper = new DataSetPathHelper(new File(rootDir));
+    this.fileHelper = new FileHelper(new File(rootDir));
   }
 
   @Override
-  public FileStorage makeFileStorage(String userId, String dataSetId) throws IOException {
-    return new FileSystemFileStorage(dataSetPathHelper.pathInDataSet(userId, dataSetId, "files"));
+  public FileStorage makeFileStorage(String userId, String dataSetId)
+    throws IOException {
+    File filePath = fileHelper.pathInDataSet(userId, dataSetId, "files");
+    return new FileSystemFileStorage(filePath);
   }
 
   @Override
-  public LogStorage makeLogStorage(String userId, String dataSetId) throws IOException {
-    return new FileSystemFileStorage(dataSetPathHelper.pathInDataSet(userId, dataSetId, "files"));
+  public LogStorage makeLogStorage(String userId, String dataSetId)
+    throws IOException {
+    File filePath = fileHelper.pathInDataSet(userId, dataSetId, "files");
+    return new FileSystemFileStorage(filePath);
   }
 
 }

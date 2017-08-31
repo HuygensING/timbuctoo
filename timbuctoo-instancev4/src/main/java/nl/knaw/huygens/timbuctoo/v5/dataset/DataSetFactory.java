@@ -14,13 +14,16 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeName
 import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStoreFactory;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataSetPathHelper;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.apache.commons.io.FileUtils;
 
+import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -50,7 +53,8 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final HashMap<UUID, StringBuffer> statusMap;
-  private final DataSetPathHelper dataSetPathHelper;
+  private final FileHelper fileHelper;
+  private final ResourceSync resourceSync;
 
 
   public DataSetFactory(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
@@ -62,7 +66,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     this.dataStoreFactory = dataStoreFactory;
 
     dataSetMap = new HashMap<>();
-    dataSetPathHelper = new DataSetPathHelper(configuration.getDataSetMetadataLocation());
+    fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
     storedDataSets = JsonFileBackedData.getOrCreate(
       new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
       HashMap::new,
@@ -70,6 +74,7 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       }
     );
     statusMap = new HashMap<>();
+    resourceSync = configuration.getResourceSync();
   }
 
   @Override
@@ -125,12 +130,13 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     try {
       vreAuthorizationCrud.createAuthorization(authorizationKey, userId, "ADMIN");
       ImportManager importManager = new ImportManager(
-        dataSetPathHelper.fileInDataSet(userId, dataSetId, "log.json"),
+        fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
         configuration.getFileStorage().makeFileStorage(userId, dataSetId),
         configuration.getFileStorage().makeFileStorage(userId, dataSetId),
         configuration.getFileStorage().makeLogStorage(userId, dataSetId),
         executorService,
-        configuration.getRdfIo()
+        configuration.getRdfIo(),
+        resourceSync.resourceList(userId, dataSetId)
       );
 
       DataSet dataSet = new DataSet();
@@ -139,19 +145,19 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
       dataSet.quadStore = quadStore;
       dataSet.collectionIndex = collectionIndex;
       dataSet.typeNameStore = new JsonTypeNameStore(
-        dataSetPathHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
+        fileHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
         importManager
       );
       dataSet.schemaStore = new JsonSchemaStore(
         importManager,
-        dataSetPathHelper.fileInDataSet(userId, dataSetId, "schema.json")
+        fileHelper.fileInDataSet(userId, dataSetId, "schema.json")
       );
       dataSet.importManager = importManager;
       dataSet.dataSource = new RdfDataSourceFactory(
         dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
       );
       return dataSet;
-    } catch (AuthorizationCreationException | IOException e) {
+    } catch (AuthorizationCreationException | IOException | ResourceSyncException e) {
       throw new DataStoreCreationException(e);
     }
   }
@@ -246,8 +252,14 @@ public class DataSetFactory implements DataFetcherFactoryFactory, SchemaStoreFac
     });
     dataSetMap.get(ownerId).remove(dataSetName);
 
+    try {
+      resourceSync.removeDataSet(ownerId, dataSetName);
+    } catch (ResourceSyncException e) {
+      throw new IOException(e);
+    }
+
     // remove folder
-    FileUtils.deleteDirectory(dataSetPathHelper.dataSetPath(ownerId, dataSetName));
+    FileUtils.deleteDirectory(fileHelper.dataSetPath(ownerId, dataSetName));
   }
 
   public void stop() {

@@ -8,7 +8,7 @@ import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.DataSetPathHelper;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 
 import java.io.File;
 import java.util.HashMap;
@@ -22,7 +22,7 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
   protected final EnvironmentConfig configuration;
-  private DataSetPathHelper dataSetPathHelper;
+  private FileHelper fileHelper;
 
   @JsonCreator
   public BdbDatabaseFactory(@JsonProperty("databaseLocation") String databaseLocation) {
@@ -43,7 +43,7 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
     if (!databases.containsKey(databaseKey)) {
       if (!environmentMap.containsKey(environmentKey)) {
         try {
-          File dbDir = dataSetPathHelper.pathInDataSet(userId, dataSetId, "databases");
+          File dbDir = fileHelper.pathInDataSet(userId, dataSetId, "databases");
           Environment dataSetEnvironment = new Environment(dbDir, configuration);
           environmentMap.put(environmentKey, dataSetEnvironment);
         } catch (DatabaseException e) {
@@ -89,7 +89,7 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
     if (!dbHome.isDirectory()) {
       throw new IllegalStateException("Database home at '" + dbHome.getAbsolutePath() + "' is not a directory");
     }
-    dataSetPathHelper = new DataSetPathHelper(dbHome);
+    fileHelper = new FileHelper(dbHome);
   }
 
   @Override

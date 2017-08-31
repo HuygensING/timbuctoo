@@ -1,22 +1,20 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import io.dropwizard.jersey.params.UUIDParam;
-import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory.LoaderConfig;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -24,24 +22,22 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
-import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Path("/v5/{userId}/{dataSetId}/rml")
 public class Rml {
   private final DataSetFactory dataSetFactory;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final JenaBasedReader rmlBuilder = new JenaBasedReader();
 
-  public Rml(DataSetFactory dataSetFactory) {
+  public Rml(DataSetFactory dataSetFactory, TimbuctooRdfIdHelper rdfIdHelper) {
     this.dataSetFactory = dataSetFactory;
+    this.rdfIdHelper = rdfIdHelper;
   }
 
   @POST
@@ -65,9 +61,9 @@ public class Rml {
     }
     //FIXME: trigger onprefix for all rml prefixes
     //FIXME: store rml and retrieve it from tripleStore when mapping
-    String graph = "http://aasad" + UUID.randomUUID();  //FIXME:
     Future<?> future = importManager.generateLog(
-      URI.create(graph),
+      rdfIdHelper.dataSet(ownerId, dataSetId),
+      rdfIdHelper.dataSet(ownerId, dataSetId),
       new RdfCreator() {
         @Override
         public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
@@ -82,7 +78,7 @@ public class Rml {
               isLiteral ? triple.getObject().getLiteral().getLexicalForm() : triple.getObject().toString(),
               isLiteral ? triple.getObject().getLiteralDatatypeURI() : null,
               isLiteral ? triple.getObject().getLiteralLanguage() : null,
-              graph
+              rdfIdHelper.dataSet(ownerId, dataSetId)
             );
           }
         }
@@ -102,27 +98,6 @@ public class Rml {
     }
 
     return Response.status(Response.Status.NOT_FOUND).build();
-  }
-
-  private LoaderConfig configFromFormData(FormDataMultiPart formData) {
-    FormDataBodyPart typeField = formData.getField("type");
-    String typeString = typeField != null ? typeField.getValue() : "xlsx";
-
-    if (typeString.equals("csv")) {
-      Map<String, String> extraConfig = formData.getFields().entrySet().stream()
-                                                .filter(entry -> !entry.getKey().equals("file"))
-                                                .filter(entry -> !entry.getKey().equals("vreId"))
-                                                .filter(entry -> !entry.getKey().equals("uploadType"))
-                                                .filter(entry -> entry.getValue().size() > 0 &&
-                                                  entry.getValue().get(0) != null)
-                                                .collect(Collectors.toMap(Map.Entry::getKey,
-                                                  entry -> entry.getValue().get(0).getValue()));
-      return LoaderConfig.csvConfig(extraConfig);
-    }
-
-    return LoaderConfig.configFor(typeString);
-
-
   }
 
 }

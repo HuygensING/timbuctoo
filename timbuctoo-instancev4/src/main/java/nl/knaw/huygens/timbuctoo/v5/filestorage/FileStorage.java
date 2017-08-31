@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import javax.ws.rs.core.MediaType;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 
 public interface FileStorage {
   /**
@@ -15,7 +14,7 @@ public interface FileStorage {
    * @param mediaType The mediatype, if available
    * @return a token that can be used to retrieve the file using getFile
    */
-  String saveFile(InputStream stream, String fileName, Optional<MediaType> mediaType) throws IOException;
+  String saveFile(InputStream stream, String fileName, MediaType mediaType) throws IOException;
 
   /**
    * Returns a previously stored file

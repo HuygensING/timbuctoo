@@ -10,11 +10,13 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 
+import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
@@ -29,17 +31,6 @@ import static org.slf4j.LoggerFactory.getLogger;
  */
 public class ResourceSyncFileLoader {
 
-  private static final Set<String> SUPPORTED_MIME_TYPES = Sets.newHashSet(
-    "text/turtle",
-    "application/rdf+xml",
-    "application/n-tripples",
-    "application/ld+json",
-    "application/owl+xml",
-    "text/trig",
-    "application/n-quads",
-    "application/trix+xml",
-    "application/rdf+thrift"
-  );
   private static final Map<String, String> MIME_TYPE_FOR_EXTENSION = ImmutableMap.<String, String>builder()
     .put("ttl", "text/turtle")
     .put("rdf", "application/rdf+xml")
@@ -101,7 +92,6 @@ public class ResourceSyncFileLoader {
           return tuple(item.getLeft(), MIME_TYPE_FOR_EXTENSION.get(extension));
         }
       })
-      .filter(item -> SUPPORTED_MIME_TYPES.contains(item.getRight()))
       .map(resource -> {
         try {
           return RemoteFile.create(resource.getLeft(), getFile(resource.getLeft()), resource.getRight());

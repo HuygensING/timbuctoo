@@ -5,14 +5,15 @@ import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.Before;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.Optional;
 
+import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.INTEGER;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.OF_COLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.PROV_DERIVED_FROM;
@@ -22,6 +23,7 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIMBUCTOO_ORDER;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_COLLECTION;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_MIMETYPE;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_DESC;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_ID;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
@@ -41,7 +43,8 @@ public class RawUploadRdfSaverTest {
 
   private static final String COLLECTION = "coll";
   private static final String DATA_SET_ID = "dataSet";
-  private static final String DATA_SET_URI = "http://timbuctoo.huygens.knaw.nl/v5/datasets/dataSet";
+  private static final String USER_ID = "userId";
+  private static final String DATA_SET_URI = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet";
   private RawUploadRdfSaver instance;
   private RdfSerializer rdfSerializer;
 
@@ -52,7 +55,8 @@ public class RawUploadRdfSaverTest {
   }
 
   private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer) throws LogStorageFailedException {
-    return new RawUploadRdfSaver(DATA_SET_ID, "fileName", Optional.empty(), rdfSerializer);
+    return new RawUploadRdfSaver(USER_ID, DATA_SET_ID, "fileName", APPLICATION_OCTET_STREAM_TYPE, rdfSerializer,
+      new TimbuctooRdfIdHelper("http://timbuctoo.huygens.knaw.nl/v5/"));
   }
 
   @Test
@@ -211,14 +215,15 @@ public class RawUploadRdfSaverTest {
 
     String generatedRdf = rdfSerializer.toString();
     // Use assertEquals because the failing Hamcrest output is hard to compare
-    String collection = "http://timbuctoo.huygens.knaw.nl/v5/collections/dataSet/fileName/";
-    String prop = "http://timbuctoo.huygens.knaw.nl/v5/props/dataSet/fileName/";
-    String rawData = "http://timbuctoo.huygens.knaw.nl/v5/rawData/dataSet/fileName/";
-    String graphName = "http://timbuctoo.huygens.knaw.nl/v5/datasets/dataSet";
+    String collection = "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSet/fileName/";
+    String prop = "http://timbuctoo.huygens.knaw.nl/v5/props/userId/dataSet/fileName/";
+    String rawData = "http://timbuctoo.huygens.knaw.nl/v5/rawData/userId/dataSet/fileName/";
+    String graphName = DATA_SET_URI;
     String propdescType = "http://timbuctoo.huygens.knaw.nl/v5/propertyDescription/";
     assertEquals(
       rawData + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
         graphName + " "     + PROV_DERIVED_FROM  + " " + rawData + " "                           + graphName + "\n" +
+        rawData + " "    + TIM_MIMETYPE + " " + "application/octet-stream" + "^^" + STRING + " " + graphName + "\n" +
         collection + "1 "   + RDF_TYPE           + " " + TIM_COLLECTION +   " "                  + graphName + "\n" +
         collection + "1 "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "1 "   + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +

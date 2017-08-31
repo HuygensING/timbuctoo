@@ -1,20 +1,17 @@
 package nl.knaw.huygens.timbuctoo.v5.util;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HTTP_TIMBUCTOO_COLLECTIONS;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HTTP_TIMBUCTOO_PROPS;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RAW_ROW;
-
 public class TimbuctooRdfIdHelper {
+  private final String baseUri;
 
-  public static String rawEntity(String dataSet, String fileName, int entityId) {
-    return RAW_ROW + "" + encode(dataSet) + "/" + encode(fileName) + "/" + entityId;
-  }
-
-  public static String rawFile(String dataSet, String fileName) {
-    return RAW_ROW + "" + encode(dataSet) + "/" + encode(fileName) + "/";
+  @JsonCreator
+  public TimbuctooRdfIdHelper(@JsonProperty("rdfBaseUri") String baseUri) {
+    this.baseUri = baseUri.replaceAll("/$", ""); // remove possible last slash
   }
 
   private static String encode(String input) {
@@ -26,15 +23,25 @@ public class TimbuctooRdfIdHelper {
     }
   }
 
-  public static String rawCollection(String dataSetId, String fileName, int collectionId) {
-    return HTTP_TIMBUCTOO_COLLECTIONS + encode(dataSetId) + "/" + encode(fileName) + "/" + collectionId;
+  public String rawEntity(String ownerId, String dataSet, String fileName, int entityId) {
+    return baseUri + "/rawData/" + encode(ownerId) + "/" + encode(dataSet) + "/" + encode(fileName) + "/" + entityId;
   }
 
-  public static String propertyDescription(String dataSetId, String fileName, String propertyName) {
-    return HTTP_TIMBUCTOO_PROPS + encode(dataSetId) + "/" + encode(fileName) + "/" + encode(propertyName);
+  public String rawFile(String ownerId, String dataSet, String fileName) {
+    return baseUri + "/rawData/" + encode(ownerId) + "/" + encode(dataSet) + "/" + encode(fileName) + "/";
   }
 
-  public static String dataSet(String dataSetId) {
-    return RdfConstants.HTTP_TIMBUCTOO_DATA_SETS + encode(dataSetId);
+  public String rawCollection(String ownerId, String dataSetId, String fileName, int collectionId) {
+    return baseUri + "/collections/" + encode(ownerId) + "/" + encode(dataSetId) + "/" + encode(fileName) + "/" +
+      collectionId;
+  }
+
+  public String propertyDescription(String ownerId, String dataSetId, String fileName, String propertyName) {
+    return baseUri + "/props/" + encode(ownerId) + "/" + encode(dataSetId) + "/" + encode(fileName) + "/" +
+      encode(propertyName);
+  }
+
+  public String dataSet(String ownerId, String dataSetId) {
+    return baseUri + "/datasets/" + encode(ownerId) + "/" + encode(dataSetId);
   }
 }

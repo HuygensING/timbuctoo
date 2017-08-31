@@ -8,6 +8,8 @@ import nl.knaw.huygens.timbuctoo.remote.rs.view.Interpreter;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.Interpreters;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.SetListBase;
 import nl.knaw.huygens.timbuctoo.remote.rs.view.TreeBase;
+import org.apache.commons.lang.StringUtils;
+import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,9 +35,9 @@ public class Discover {
   }
 
   @GET
-  @Path("/listsets/{url}")
+  @Path("/listsets/")
   @Timed
-  public Response listSets(@PathParam("url") String url,
+  public Response listSets(@QueryParam("url") @NotEmpty String url,
                            @QueryParam("debug") @DefaultValue("false") boolean debug) {
     try {
       SetListBase setListBase = resourceSyncService.listSets(url,
@@ -53,9 +55,9 @@ public class Discover {
   }
 
   @GET
-  @Path("/listgraphs/{url}")
+  @Path("/listgraphs/")
   @Timed
-  public Response listGraphs(@PathParam("url") String url,
+  public Response listGraphs(@QueryParam("url") @NotEmpty String url,
                              @QueryParam("debug") @DefaultValue("false") boolean debug) {
     try {
       SetListBase graphList = resourceSyncService.listSets(url,
@@ -74,9 +76,9 @@ public class Discover {
   }
 
   @GET
-  @Path("/framework/{url}")
+  @Path("/framework/")
   @Timed
-  public Response getFramework(@PathParam("url") String url,
+  public Response getFramework(@QueryParam("url") @NotEmpty String url,
                                @QueryParam("debug") @DefaultValue("false") boolean debug) {
     try {
       FrameworkBase frameworkBase = resourceSyncService.getFramework(url,
@@ -94,9 +96,9 @@ public class Discover {
   }
 
   @GET
-  @Path("/tree/{url}")
+  @Path("/tree/")
   @Timed
-  public Response getTree(@PathParam("url") String url,
+  public Response getTree(@QueryParam("url") @NotEmpty String url,
                           @QueryParam("debug") @DefaultValue("false") boolean debug) {
     try {
       TreeBase treeBase = resourceSyncService.getTree(url,

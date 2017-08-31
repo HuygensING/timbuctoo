@@ -121,6 +121,10 @@ dataSet:
     "@class": nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory
     rdfFormat: application/n-quads
 
+# The base uri will be the base uri for all the generated RDF by Timbuctoo.
+rdfUriHelper:
+  rdfBaseUri: http://example.org/
+
 # Timeouts
 # the 'duration' is a number
 # the timeUnit is a 'java.util.concurrent.TimeUnit'

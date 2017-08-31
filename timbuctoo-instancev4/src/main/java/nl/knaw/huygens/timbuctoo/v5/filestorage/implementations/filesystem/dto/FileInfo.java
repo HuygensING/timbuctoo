@@ -15,12 +15,12 @@ public interface FileInfo {
   static FileInfo create(String name, String mediatype, String charset) {
     return ImmutableFileInfo.builder()
       .name(name)
-      .mediaType(Optional.ofNullable(mediatype).map(MediaType::valueOf))
+      .mediaType(MediaType.valueOf(mediatype))
       .charset(Optional.ofNullable(charset).map(Charset::forName))
       .build();
   }
 
-  static FileInfo create(String name, Optional<MediaType> mediatype, Optional<Charset> charset) {
+  static FileInfo create(String name, MediaType mediatype, Optional<Charset> charset) {
     return ImmutableFileInfo.builder()
       .name(name)
       .mediaType(mediatype)
@@ -30,7 +30,7 @@ public interface FileInfo {
 
   String getName();
 
-  Optional<MediaType> getMediaType();
+  MediaType getMediaType();
 
   Optional<Charset> getCharset();
 }

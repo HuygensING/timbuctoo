@@ -18,6 +18,9 @@ import org.hamcrest.Matchers;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.xml.sax.SAXException;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -27,8 +30,12 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.text.ParseException;
 import java.util.List;
@@ -49,10 +56,20 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.fail;
 
 public class IntegrationTest {
+
+  @ClassRule
+  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
+    TimbuctooV4.class,
+    "example_config.yaml"
+  );
+  private static final String AUTH = "FAKE_AUTH_TOKEN";
+  private static Client client;
 
   static {
     EvilEnvironmentVariableHacker.setEnv(ImmutableMap.of(
@@ -61,16 +78,6 @@ public class IntegrationTest {
       "timbuctoo_adminPort", "0"
     ));
   }
-
-  @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
-    TimbuctooV4.class,
-    "example_config.yaml"
-  );
-
-
-  private static final String AUTH = "FAKE_AUTH_TOKEN";
-  private static Client client;
 
   @BeforeClass
   public static void beforeClass() throws IOException {
@@ -261,8 +268,8 @@ public class IntegrationTest {
         "}", MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(objectNode
-      .get("data")
-      .get("clusius_ResidenceList").size(),
+        .get("data")
+        .get("clusius_ResidenceList").size(),
       is(21)
     );
 
@@ -313,20 +320,19 @@ public class IntegrationTest {
   }
 
   @Test
-  public void succeedingRdfPatchUploadWithGraphql() throws Exception {
+  public void succeedingNQuadUdUploadWithGraphql() throws Exception {
     String vreName = "clusius-" + UUID.randomUUID();
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + vreName + "/upload/rdf",
-      new File(getResource(IntegrationTest.class, "bia_clusius.rdfp").toURI()),
-      "application/rdf-patch",
+      new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
+      "application/vnd.timbuctoo-rdf.nquads_unified_diff",
       ImmutableMap.of(
         "encoding", "UTF-8",
-        "uri", "http://example.com/clusius.rdfp"
+        "uri", "http://example.com/clusius.nqud"
       )
     );
 
     assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
-    uploadResponse.readEntity(String.class);
 
     Response graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
       .accept(MediaType.APPLICATION_JSON)
@@ -370,16 +376,68 @@ public class IntegrationTest {
   }
 
   @Test
+  public void succeedingRdfUploadResourceSync() throws Exception {
+    String dataSetName = "clusius-" + UUID.randomUUID();
+    Response uploadResponse = multipartPost(
+      "/v5/DUMMY/" + dataSetName + "/upload/rdf",
+      new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius.rdfp"
+      )
+    );
+
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
+
+    Response sourceDescResponse = call("/v5/resourcesync/sourceDescription.xml").get();
+    assertThat(sourceDescResponse.getStatus(), is(200));
+    Node sourceDesc = streamToXml(sourceDescResponse.readEntity(InputStream.class));
+    // TODO should be ends-with, but that is not supported in xpath v1
+    assertThat(
+      sourceDesc,
+      hasXPath("//urlset/url/loc/text()[contains(. , 'DUMMY/" + dataSetName + "/capabilityList.xml')]")
+    );
+
+    Response capabilityListResp = call("/v5/resourcesync/DUMMY/" + dataSetName + "/capabilityList.xml").get();
+    assertThat(capabilityListResp.getStatus(), is(200));
+    Node capabilityList = streamToXml(capabilityListResp.readEntity(InputStream.class));
+    // TODO should be ends-with, but that is not supported in xpath v1
+    assertThat(
+      capabilityList,
+      hasXPath("//urlset/url/loc/text()[contains(. , 'DUMMY/" + dataSetName + "/resourceList.xml')]")
+    );
+
+    Response resourceListResp = call("/v5/resourcesync/DUMMY/" + dataSetName + "/resourceList.xml").get();
+    assertThat(resourceListResp.getStatus(), is(200));
+    Node resourceList = streamToXml(resourceListResp.readEntity(InputStream.class));
+    // TODO should be ends-with, but that is not supported in xpath v1
+    assertThat(
+      resourceList,
+      hasXPath("//urlset/url/loc/text()[contains(. , 'DUMMY/" + dataSetName + "/files/')]")
+    );
+
+  }
+
+  private Document streamToXml(InputStream is) throws ParserConfigurationException, IOException, SAXException {
+    DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+
+    return documentBuilder.parse(is);
+  }
+
+  @Test
   public void tabularUpload() {
     Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
+    String dataSetId = "dataset" + UUID.randomUUID();
     WebTarget target =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/dataset/upload/table", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/DUMMY/" + dataSetId + "/upload/table", APP.getLocalPort()));
 
     FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
     FileDataBodyPart fileDataBodyPart = new FileDataBodyPart(
       "file",
-      new File(getResource(IntegrationTest.class, "2017_04_17_BIA_Clusius.xlsx").getFile())
+      new File(getResource(IntegrationTest.class, "2017_04_17_BIA_Clusius.xlsx").getFile()),
+      new MediaType("application", "vnd.openxmlformats-officedocument.spreadsheetml.sheet")
     );
     multiPart.bodyPart(fileDataBodyPart);
     multiPart.field("type", "xlsx");
@@ -397,21 +455,23 @@ public class IntegrationTest {
   public void deleteDataSet() throws Exception {
     // Create a dataset
     Client client = ClientBuilder.newBuilder().build();
+    String dataSetId = "dataset" + UUID.randomUUID();
     WebTarget createTarget =
-      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/dataset/create/", APP.getLocalPort()));
+      client
+        .target(String.format("http://localhost:%d/v5/dataSets/DUMMY/" + dataSetId + "/create/", APP.getLocalPort()));
 
     Response createResponse = createTarget.request()
-                                    .header(HttpHeaders.AUTHORIZATION, "fake")
-                                    .post(Entity.json(jsnO()));
+                                          .header(HttpHeaders.AUTHORIZATION, "fake")
+                                          .post(Entity.json(jsnO()));
     assertThat(createResponse.getStatus(), is(201));
     // check if the dataset is created
     List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy(client);
     System.out.println("datasets: " + dataSetNamesOfDummy);
-    assertThat(dataSetNamesOfDummy, hasItem("dataset"));
+    assertThat(dataSetNamesOfDummy, hasItem(dataSetId));
 
     // delete dataset
     WebTarget deleteTarget =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/dataset/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/DUMMY/" + dataSetId, APP.getLocalPort()));
 
     Response deleteResponse = deleteTarget.request()
                                           .header(HttpHeaders.AUTHORIZATION, "fake")
@@ -420,7 +480,7 @@ public class IntegrationTest {
     assertThat(deleteResponse.getStatus(), is(204));
 
     // check if the dataset still exists
-    assertThat(getDataSetNamesOfDummy(client), not(hasItem("dataset")));
+    assertThat(getDataSetNamesOfDummy(client), not(hasItem(dataSetId)));
   }
 
   private List<String> getDataSetNamesOfDummy(Client client) {
