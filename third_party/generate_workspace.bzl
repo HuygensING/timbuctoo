@@ -41,7 +41,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "org_apache_httpcomponents_httpcore",
-    artifact = "org.apache.httpcomponents:httpcore:jar:4.4.4",
+    artifact = "org.apache.httpcomponents:httpcore:jar:4.4.6",
   )
   native.maven_jar(
     name = "org_glassfish_jersey_core_jersey_client",
