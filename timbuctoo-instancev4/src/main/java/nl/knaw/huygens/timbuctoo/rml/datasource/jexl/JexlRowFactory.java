@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
+package nl.knaw.huygens.timbuctoo.rml.datasource.jexl;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -37,7 +37,7 @@ public class JexlRowFactory implements RowFactory {
     this.joinHandler = joinHandler;
     this.expressions = new HashMap<>();
     Map<String, Object> ns = Maps.newHashMap();
-    ns.put("Json", BulkUploadedDataSource.JsonEncoder.class); // make method Json:stringify available in expressions
+    ns.put("Json", JsonEncoder.class); // make method Json:stringify available in expressions
     ns.put("Math", Math.class); // make all methods of Math available
     ns.put("Integer", Integer.class); // make method Integer
     JexlEngine jexl = new JexlBuilder().namespaces(ns).create();
@@ -93,7 +93,7 @@ public class JexlRowFactory implements RowFactory {
             return null;
           }
         } catch (Throwable throwable) {
-          BulkUploadedDataSource.LOG.info("Error during mapping", throwable);
+          LOG.info("Error during mapping", throwable);
           errorHandler.valueGenerateFailed(
             key,
             String.format("Could not execute expression '%s' for row with values: '%s.", expressions.get(key), data)

@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
@@ -159,14 +157,6 @@ public class BulkUploadedDataSource implements DataSource {
   @Override
   public String toString() {
     return stringRepresentation + rowFactory.toString();
-  }
-
-  public static class JsonEncoder {
-    private static ObjectMapper objectMapper = new ObjectMapper();
-
-    public static String stringify(Object obj) throws JsonProcessingException {
-      return objectMapper.writeValueAsString(obj);
-    }
   }
 
 }

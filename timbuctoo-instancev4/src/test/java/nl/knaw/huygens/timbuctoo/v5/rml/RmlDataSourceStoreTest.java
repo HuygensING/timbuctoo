@@ -6,7 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
 import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.JexlRowFactory;
+import nl.knaw.huygens.timbuctoo.rml.datasource.jexl.JexlRowFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
