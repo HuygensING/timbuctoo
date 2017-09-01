@@ -1,7 +1,7 @@
 0a0967047213281f0f08d22bbc1dbc74c5f704b3  ./ContractDiff/pom.xml
-55709014193bd1fb810e80cde001a1bcfc0f0093  ./HttpCommand/pom.xml
+d34d24c8013df6412c755088853f531b1ffb5f20  ./HttpCommand/pom.xml
 8180c8a378dbbbecf09271a55bdf72fbe63c55c2  ./pom.xml
 6b1c1bbf94ffbf4124a58dede18d3916bad4b9ad  ./security-client-agnostic/pom.xml
-3d949386a299aab3a79641bd0cf16b812d585ae8  ./timbuctoo-instancev4/pom.xml
+e4b878450055605d02ceddfc7090e36dea75d169  ./timbuctoo-instancev4/pom.xml
 d9c324fb24b3c7a11fc57cc2bb324fb4449a1e7f  ./timbuctoo-test-services/pom.xml
-2a4bc9bec361924dbd002516293730675b4d0559  ./devtools/update_dependencies/dependencyparser.js
+79025eb9f19c740cf3b53c26b40f8ec5e833fbb1  ./devtools/update_dependencies/dependencyparser.js

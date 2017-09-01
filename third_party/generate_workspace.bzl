@@ -9,7 +9,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "com_fasterxml_jackson_core_jackson_annotations",
-    artifact = "com.fasterxml.jackson.core:jackson-annotations:jar:2.8.0",
+    artifact = "com.fasterxml.jackson.core:jackson-annotations:jar:2.8.9",
   )
   native.maven_jar(
     name = "com_google_guava_guava",
@@ -1145,19 +1145,15 @@ def generated_maven_jars():
     name = "org_mock_server_mockserver_logging",
     artifact = "org.mock-server:mockserver-logging:jar:3.10.4",
   )
-def generated_java_libraries():
-  native.java_library(
-    name = "nl_knaw_huygens_contract_diff",
-    visibility = ["//visibility:public"],
-    exports = ["@nl_knaw_huygens_contract_diff//jar"],
-    runtime_deps = [
-      ":com_fasterxml_jackson_core_jackson_core",
-      ":com_fasterxml_jackson_core_jackson_databind",
-      ":com_google_guava_guava",
-      ":org_hamcrest_hamcrest_all",
-      ":junit_junit",
-    ],
+  native.maven_jar(
+    name = "org_xmlunit_xmlunit_core",
+    artifact = "org.xmlunit:xmlunit-core:jar:2.4.0",
   )
+  native.maven_jar(
+    name = "org_xmlunit_xmlunit_matchers",
+    artifact = "org.xmlunit:xmlunit-matchers:jar:2.4.0",
+  )
+def generated_java_libraries():
   native.java_library(
     name = "com_fasterxml_jackson_core_jackson_core",
     visibility = ["//visibility:public"],
@@ -1208,25 +1204,6 @@ def generated_java_libraries():
     visibility = ["//visibility:public"],
     exports = ["@org_hamcrest_hamcrest_core//jar"],
     runtime_deps = [
-    ],
-  )
-  native.java_library(
-    name = "nl_knaw_huygens_timbuctoo_pom",
-    visibility = ["//visibility:public"],
-    exports = ["@nl_knaw_huygens_timbuctoo_pom//jar"],
-    runtime_deps = [
-    ],
-  )
-  native.java_library(
-    name = "nl_knaw_huygens_concordion_HttpCommand",
-    visibility = ["//visibility:public"],
-    exports = ["@nl_knaw_huygens_concordion_HttpCommand//jar"],
-    runtime_deps = [
-      ":org_concordion_concordion",
-      ":org_apache_httpcomponents_httpcore",
-      ":org_glassfish_jersey_core_jersey_client",
-      ":com_google_guava_guava",
-      ":org_apache_commons_commons_lang3",
     ],
   )
   native.java_library(
@@ -1371,76 +1348,11 @@ def generated_java_libraries():
     ],
   )
   native.java_library(
-    name = "nl_knaw_huygens_security_client_agnostic",
-    visibility = ["//visibility:public"],
-    exports = ["@nl_knaw_huygens_security_client_agnostic//jar"],
-    runtime_deps = [
-      ":nl_knaw_huygens_security_core",
-      ":com_google_guava_guava",
-    ],
-  )
-  native.java_library(
     name = "nl_knaw_huygens_security_core",
     visibility = ["//visibility:public"],
     exports = ["@nl_knaw_huygens_security_core//jar"],
     runtime_deps = [
       ":com_google_guava_guava",
-    ],
-  )
-  native.java_library(
-    name = "nl_knaw_huygens_timbuctoo_instancev4",
-    visibility = ["//visibility:public"],
-    exports = ["@nl_knaw_huygens_timbuctoo_instancev4//jar"],
-    runtime_deps = [
-      ":io_dropwizard_dropwizard_core",
-      ":io_dropwizard_dropwizard_forms",
-      ":io_dropwizard_dropwizard_client",
-      ":io_dropwizard_dropwizard_assets",
-      ":org_apache_tinkerpop_gremlin_core",
-      ":org_apache_tinkerpop_neo4j_gremlin",
-      ":org_neo4j_neo4j_tinkerpop_api_impl",
-      ":com_graphql_java_graphql_java",
-      ":com_sleepycat_je",
-      ":com_kjetland_dropwizard_dropwizard_activemq",
-      ":org_apache_activemq_activemq_broker",
-      ":org_apache_activemq_activemq_kahadb_store",
-      ":nl_knaw_huygens_huygens_persistence",
-      ":org_apache_commons_commons_jexl3",
-      ":org_apache_commons_commons_csv",
-      ":org_apache_poi_poi_ooxml",
-      ":com_github_DANS_KNAW_dans_dp_lib",
-      ":com_healthmarketscience_jackcess_jackcess",
-      ":org_jsoup_jsoup",
-      ":org_glassfish_jaxb_txw2",
-      ":net_gini_dropwizard_dropwizard_gelf",
-      ":com_microsoft_azure_azure_storage",
-      ":org_apache_jena_jena_tdb",
-      ":org_eclipse_rdf4j_rdf4j_rio_rdfxml",
-      ":org_eclipse_rdf4j_rdf4j_rio_turtle",
-      ":org_eclipse_rdf4j_rdf4j_rio_ntriples",
-      ":org_eclipse_rdf4j_rdf4j_rio_trig",
-      ":org_eclipse_rdf4j_rdf4j_rio_n3",
-      ":org_eclipse_rdf4j_rdf4j_rio_nquads",
-      ":org_eclipse_rdf4j_rdf4j_rio_jsonld",
-      ":com_googlecode_juniversalchardet_juniversalchardet",
-      ":org_immutables_value",
-      ":com_fasterxml_jackson_datatype_jackson_datatype_guava",
-      ":com_fasterxml_jackson_datatype_jackson_datatype_jdk8",
-      ":com_fasterxml_jackson_dataformat_jackson_dataformat_xml",
-      ":org_apache_commons_commons_lang3",
-      ":com_google_guava_guava",
-      ":com_javaslang_javaslang",
-      ":org_hamcrest_hamcrest_all",
-      ":org_concordion_concordion",
-      ":io_dropwizard_dropwizard_testing",
-      ":junit_junit",
-      ":org_neo4j_neo4j_kernel_test_jar",
-      ":org_neo4j_neo4j_io_test_jar",
-      ":org_neo4j_neo4j_ha",
-      ":org_neo4j_neo4j_slf4j",
-      ":uk_co_datumedge_hamcrest_json",
-      ":org_mockito_mockito_core",
-      ":org_mock_server_mockserver_netty",
     ],
   )
   native.java_library(
@@ -3363,15 +3275,6 @@ def generated_java_libraries():
     ],
   )
   native.java_library(
-    name = "nl_knaw_huygens_timbuctoo_test_services",
-    visibility = ["//visibility:public"],
-    exports = ["@nl_knaw_huygens_timbuctoo_test_services//jar"],
-    runtime_deps = [
-      ":com_google_guava_guava",
-      ":org_hamcrest_hamcrest_all",
-    ],
-  )
-  native.java_library(
     name = "uk_co_datumedge_hamcrest_json",
     visibility = ["//visibility:public"],
     exports = ["@uk_co_datumedge_hamcrest_json//jar"],
@@ -3886,5 +3789,21 @@ def generated_java_libraries():
     runtime_deps = [
       ":org_slf4j_slf4j_api",
       ":ch_qos_logback_logback_classic",
+    ],
+  )
+  native.java_library(
+    name = "org_xmlunit_xmlunit_core",
+    visibility = ["//visibility:public"],
+    exports = ["@org_xmlunit_xmlunit_core//jar"],
+    runtime_deps = [
+    ],
+  )
+  native.java_library(
+    name = "org_xmlunit_xmlunit_matchers",
+    visibility = ["//visibility:public"],
+    exports = ["@org_xmlunit_xmlunit_matchers//jar"],
+    runtime_deps = [
+      ":org_xmlunit_xmlunit_core",
+      ":org_hamcrest_hamcrest_core",
     ],
   )
