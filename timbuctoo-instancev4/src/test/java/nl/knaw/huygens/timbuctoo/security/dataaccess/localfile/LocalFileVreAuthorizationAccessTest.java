@@ -14,7 +14,7 @@ import java.nio.file.Path;
 import java.util.Optional;
 
 import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
-import static nl.knaw.huygens.timbuctoo.security.FileHelpers.makeTempDir;
+import static nl.knaw.huygens.timbuctoo.util.FileHelpers.makeTempDir;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.ADMIN_ROLE;
 import static nl.knaw.huygens.timbuctoo.security.dto.UserRoles.UNVERIFIED_USER_ROLE;
 import static org.hamcrest.CoreMatchers.equalTo;

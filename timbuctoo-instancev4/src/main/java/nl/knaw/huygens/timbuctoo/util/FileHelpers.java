@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security;
+package nl.knaw.huygens.timbuctoo.util;
 
 import java.io.IOException;
 import java.nio.file.Files;

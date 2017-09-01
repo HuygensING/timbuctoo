@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.dto.Login;
 import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.LoginCreationException;
+import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
