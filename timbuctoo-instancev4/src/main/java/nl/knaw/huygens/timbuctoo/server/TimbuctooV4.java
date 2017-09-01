@@ -80,6 +80,7 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetFactoryManager;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.CsvWriter;
@@ -180,9 +181,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("fix-pids-migration", new MakePidsAbsoluteUrls());
 
     UriHelper uriHelper = configuration.getUriHelper();
-    if (configuration.getUriHelper().hasDynamicBaseUrl()) {
-      environment.lifecycle().addServerLifecycleListener(new BaseUriDeriver(configuration));
-    }
+    environment.lifecycle().addServerLifecycleListener(new BaseUriDeriver(configuration));
 
     TinkerPopConfig tinkerPopConfig = configuration.getDatabaseConfiguration();
     final TinkerPopGraphManager graphManager = new TinkerPopGraphManager(tinkerPopConfig, migrations);
@@ -456,7 +455,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
             final InetSocketAddress socket = (InetSocketAddress) channel
               .getLocalAddress();
 
-            timbuctooConfiguration.getUriHelper().setBaseUri(URI.create("http://localhost:" + socket.getPort()));
+            timbuctooConfiguration.getUriHelper().notifyOfPort(socket.getPort());
           }
         } catch (Exception e) {
           LOG.error("No base url provided, and unable to get generate one myself", e);

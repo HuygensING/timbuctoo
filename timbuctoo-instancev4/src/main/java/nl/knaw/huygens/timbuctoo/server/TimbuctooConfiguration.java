@@ -20,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
@@ -180,7 +181,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public ResourceSync getResourceSync() {
     return getDataSetConfiguration().getResourceSync();
   }
-  
-  
+
+
 
 }

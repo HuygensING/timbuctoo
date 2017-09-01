@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server;
+package nl.knaw.huygens.timbuctoo.util;
 
 import org.junit.Test;
 

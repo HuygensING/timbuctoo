@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server;
+package nl.knaw.huygens.timbuctoo.util;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -24,15 +24,16 @@ public class UriHelper {
                      .build();
   }
 
-  void setBaseUri(URI baseUri) {
-    this.baseUri = baseUri;
-  }
-
-  boolean hasDynamicBaseUrl() {
-    return "http://0.0.0.0:0".equals(this.baseUri.toString());
-  }
-
   public URI getBaseUri() {
     return baseUri;
+  }
+
+  public void notifyOfPort(int port) {
+    if (baseUri.getPort() == 0) {
+      baseUri = UriBuilder
+        .fromUri(baseUri)
+        .port(port)
+        .build();
+    }
   }
 }
