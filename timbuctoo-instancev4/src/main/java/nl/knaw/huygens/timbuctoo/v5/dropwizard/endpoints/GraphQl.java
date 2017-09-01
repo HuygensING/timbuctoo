@@ -50,7 +50,7 @@ public class GraphQl {
   @Consumes("application/json")
   public Response postJson(JsonNode query, @HeaderParam("accept") String acceptHeader,
                            @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
-    if (hasSpecifiedAcceptHeader(acceptHeader)) {
+    if (unSpecifiedAcceptHeader(acceptHeader)) {
       return Response
         .status(400)
         .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
@@ -70,7 +70,7 @@ public class GraphQl {
   @Consumes("application/graphql")
   public Response postGraphql(String query, @HeaderParam("accept") String acceptHeader,
                               @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
-    if (hasSpecifiedAcceptHeader(acceptHeader)) {
+    if (unSpecifiedAcceptHeader(acceptHeader)) {
       return Response
         .status(400)
         .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
@@ -80,7 +80,7 @@ public class GraphQl {
   }
 
 
-  public boolean hasSpecifiedAcceptHeader(@HeaderParam("accept") String acceptHeader) {
+  public boolean unSpecifiedAcceptHeader(@HeaderParam("accept") String acceptHeader) {
     return acceptHeader == null || acceptHeader.isEmpty() || "*/*".equals(acceptHeader);
   }
 
@@ -91,7 +91,7 @@ public class GraphQl {
                       @PathParam("userId") String userId,
                       @PathParam("dataSet") String dataSet
   ) {
-    if (hasSpecifiedAcceptHeader(acceptHeader)) {
+    if (unSpecifiedAcceptHeader(acceptHeader)) {
       return Response
         .status(400)
         .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
