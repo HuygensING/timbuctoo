@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.bulkupload.savers.Saver;
-import org.apache.tinkerpop.gremlin.structure.Vertex;
 
 import java.util.HashMap;
 import java.util.HashSet;

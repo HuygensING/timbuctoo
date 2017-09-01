@@ -6,10 +6,10 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.bulkupload.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
-import nl.knaw.huygens.timbuctoo.v5.bulkupload.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
@@ -19,6 +19,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.glassfish.jersey.message.internal.MediaTypes;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -31,10 +32,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
 
@@ -80,7 +83,11 @@ public class TabularUpload {
 
     final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
-    Optional<Loader> loader = LoaderFactory.createFor(mediaType, formData);
+    Optional<Loader> loader = LoaderFactory.createFor(mediaType.toString(), formData.getFields().entrySet().stream()
+      .filter(entry -> entry.getValue().size() > 0)
+      .filter(entry -> entry.getValue().get(0) != null)
+      .filter(entry -> MediaTypes.typeEqual(MediaType.TEXT_PLAIN_TYPE, entry.getValue().get(0).getMediaType()))
+      .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(0).getValue())));
 
     if (mediaType == null || !loader.isPresent()) {
       return Response.status(400)
