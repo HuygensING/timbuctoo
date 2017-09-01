@@ -1,13 +1,13 @@
-package nl.knaw.huygens.timbuctoo.bulkupload;
+package nl.knaw.huygens.timbuctoo.server;
 
+import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ResultReporter;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.StateMachine;
-import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

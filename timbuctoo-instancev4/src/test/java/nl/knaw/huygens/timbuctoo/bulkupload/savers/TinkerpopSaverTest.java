@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.bulkupload.savers;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;
@@ -15,7 +16,7 @@ import org.junit.Test;
 import java.util.Iterator;
 import java.util.List;
 
-import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.NEXT_RAW_ITEM_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.MatcherAssert.assertThat;

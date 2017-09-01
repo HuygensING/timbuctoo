@@ -1,8 +1,8 @@
-package nl.knaw.huygens.timbuctoo.bulkupload.savers;
+package nl.knaw.huygens.timbuctoo.database.tinkerpop;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescription;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
-import nl.knaw.huygens.timbuctoo.database.tinkerpop.VreIniter;
+import nl.knaw.huygens.timbuctoo.bulkupload.savers.Saver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.rml;
 
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
-import nl.knaw.huygens.timbuctoo.bulkupload.savers.RawUploadRdfSaver;
+import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
 import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;

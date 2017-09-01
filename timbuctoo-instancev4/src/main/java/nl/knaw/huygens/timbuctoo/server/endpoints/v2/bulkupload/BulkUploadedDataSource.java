@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver;
+import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
@@ -24,8 +24,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.ERROR_PREFIX;
-import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.VALUE_PREFIX;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.ERROR_PREFIX;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.VALUE_PREFIX;
 
 public class BulkUploadedDataSource implements DataSource {
   public static final Logger LOG = LoggerFactory.getLogger(BulkUploadedDataSource.class);

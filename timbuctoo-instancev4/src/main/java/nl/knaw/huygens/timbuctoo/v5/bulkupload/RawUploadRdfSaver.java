@@ -1,6 +1,7 @@
-package nl.knaw.huygens.timbuctoo.bulkupload.savers;
+package nl.knaw.huygens.timbuctoo.v5.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
+import nl.knaw.huygens.timbuctoo.bulkupload.savers.Saver;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
