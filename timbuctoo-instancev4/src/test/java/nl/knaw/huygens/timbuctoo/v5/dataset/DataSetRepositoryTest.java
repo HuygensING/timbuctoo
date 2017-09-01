@@ -4,6 +4,7 @@ import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
@@ -56,10 +57,10 @@ public class DataSetRepositoryTest {
 
   @Test
   public void createDataSetReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
-    ImportManager importManager1 = getImportManager("user", "dataset");
-    ImportManager importManager2 = getImportManager("user", "dataset");
+    DataSet dataSet1 = dataSetRepository.createDataSet("user", "dataset");
+    DataSet dataSet2 = dataSetRepository.createDataSet("user", "dataset");
 
-    assertThat(importManager1, is(sameInstance(importManager2)));
+    assertThat(dataSet1, is(sameInstance(dataSet2)));
   }
 
   public ImportManager getImportManager(String user, String dataset) throws DataStoreCreationException {
@@ -99,7 +100,7 @@ public class DataSetRepositoryTest {
 
   @Test
   public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws DataStoreCreationException {
-    getImportManager("ownerId", "otherDataSetId");
+    dataSetRepository.createDataSet("ownerId", "otherDataSetId");
 
     boolean dataSetExists = dataSetRepository.dataSetExists("ownerId", "dataSetId");
 
@@ -116,8 +117,8 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void deleteDataSetRemovesTheDataSetFromDisk() throws Exception {
-    getImportManager("user", "dataSet");
+  public void removeDataSetRemovesTheDataSetFromDisk() throws Exception {
+    dataSetRepository.createDataSet("user", "dataSet");
     File dataSetPath = new File(new File(tempFile, "user"), "dataSet");
     assertThat(dataSetPath.exists(), is(true));
 
@@ -127,8 +128,8 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void deleteDataSetRemovesTheDataSetFromTheIndex() throws Exception {
-    getImportManager("user", "dataSet");
+  public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
+    dataSetRepository.createDataSet("user", "dataSet");
 
     dataSetRepository.removeDataSet("user", "dataSet");
 
