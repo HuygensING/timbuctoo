@@ -1,15 +1,24 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import com.google.common.io.Files;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImmutableDataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
+import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.Entity;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ImmutableEntity;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
@@ -18,13 +27,17 @@ import org.junit.Before;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
+import java.io.File;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.concurrent.Executors;
 
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.mock;
 
 public class JsonLdEditEndpointTest {
 
@@ -78,7 +91,19 @@ public class JsonLdEditEndpointTest {
         .create("http://example/olddatasetuserid", RdfConstants.TIM_LATEST_REVISION_OF, Direction.OUT, "oldvalue1",
           STRING, null, "");
 
+    File tempFile = Files.createTempDir();
 
+    DataSetRepository dataSetFactory = new DataSetRepository(
+      Executors.newSingleThreadExecutor(),
+      new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())),
+      ImmutableDataSetConfiguration.builder()
+                                   .dataSetMetadataLocation(tempFile.getAbsolutePath())
+                                   .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
+                                   .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
+                                   .build(),
+      new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator()));
+
+    QuadStore quadStore = dataSetFactory.createDataSet("userid", "dataset").getQuadStore();
     MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
 
     JsonLdEditEndpoint jsonLdEditEndpoint =
