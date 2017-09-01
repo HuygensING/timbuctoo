@@ -2,17 +2,21 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jsonldjava.core.JsonLdError;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import com.github.jsonldjava.core.JsonLdOptions;
 import com.github.jsonldjava.core.JsonLdProcessor;
+import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.jsonldimport.Entity;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.GenerateRdfPatchFromJsonLdEntity;
-import org.json.JSONException;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.ws.rs.PUT;
@@ -20,6 +24,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -36,7 +41,7 @@ public class JsonLdEditEndpoint {
     this.dataSetRepository = dataSetRepository;
     this.objectMapper = objectMapper;
 
-    this.rdfIdHelper = this.rdfIdHelper;
+    this.rdfIdHelper = rdfIdHelper;
   }
 
   @PUT
@@ -66,12 +71,17 @@ public class JsonLdEditEndpoint {
     GenerateRdfPatchFromJsonLdEntity generateRdfPatchFromJsonLdEntity =
       new GenerateRdfPatchFromJsonLdEntity(parsed.getGenerates(), quadStore);
 
-    importManager.generateLog(rdfIdHelper.dataSet(userId, dataSetId), rdfIdHelper.dataSet(userId, dataSetId),
-      generateRdfPatchFromJsonLdEntity);
-
+    if (lastRevisionCheck(parsed.getGenerates(), quadStore)) {
+      importManager.generateLog(rdfIdHelper.dataSet(userId, dataSetId), rdfIdHelper.dataSet(userId, dataSetId),
+        generateRdfPatchFromJsonLdEntity);
+    } else {
+      return Response.status(400).entity("JSON-LD failed integrity check").build();
+    }
 
     return Response.noContent().build();
+
   }
+
 
   private Boolean integrityCheck(String jsonLdString) throws JSONException, JsonLdError {
     JSONObject jsonld = new JSONObject(jsonLdString);
@@ -84,12 +94,27 @@ public class JsonLdEditEndpoint {
       return false;
     }
 
-
     HashMap context = new HashMap();
 
     JsonLdOptions options = new JsonLdOptions();
 
     Object compact = JsonLdProcessor.compact(jsonld, context, options);
+
+    return true;
+  }
+
+  Boolean lastRevisionCheck(Entity[] entities, QuadStore quadStore) {
+    for (Entity entity : entities) {
+      URI revision = entity.getWasRevisionOf().get("@id");
+
+      Optional<CursorQuad> previous =
+        quadStore.getQuads(revision.toString(), RdfConstants.TIM_LATEST_REVISION_OF,
+          Direction.OUT, "").findFirst();
+
+      if (!previous.isPresent()) {
+        return false;
+      }
+    }
 
     return true;
   }

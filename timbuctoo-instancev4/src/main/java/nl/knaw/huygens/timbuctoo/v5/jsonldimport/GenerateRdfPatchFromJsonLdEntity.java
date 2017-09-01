@@ -106,8 +106,6 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
 
   public void generateRevisionInfo(RdfPatchSerializer saver) {
     for (Entity entity : entities) {
-      Map<String, String[]> additions = entity.getAdditions();
-
       URI specialization = entity.getSpecializationOf();
       URI revision = entity.getWasRevisionOf().get("@id");
 

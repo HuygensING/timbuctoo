@@ -112,7 +112,6 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
         });
 
 
-
     MyTestRdfPatchSerializer myTestRdfPatchSerializer  = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateReplacements(myTestRdfPatchSerializer);
 
@@ -137,6 +136,8 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
                                        .specializationOf(URI.create("http://example/entity"))
                                        .wasRevisionOf(revisionOf)
                                        .putAdditions("pred1", new String[]{"value1", "value2"}).build();
+
+
 
     Entity[] testEntities = new Entity[1];
 
