@@ -45,7 +45,7 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
       createTableString += column + " text,\n";
       createTableString += column + "_type text,\n";
     }
-    createTableString = createTableString.substring(0, createTableString.length()-2);
+    createTableString = createTableString.substring(0, createTableString.length() - 2);
     createTableString += ");";
     System.out.println(createTableString);
   }
