@@ -502,7 +502,7 @@ public class IntegrationTest {
     "in the first place.")
   @Test
   public void checkJsonLdDeserialization() throws Exception {
-    String testRdfReader = "{\n" +
+    final String testRdfReader = "{\n" +
       "\t\"@type\": \"Activity\",\n" +
       "\t\"@id\": \"testID\",\n" +
       "\t\"prov:qualifiedAssociation\": [{\n" +
@@ -540,8 +540,9 @@ public class IntegrationTest {
     ObjectMapper objectMapper = new ObjectMapper();
 
     Client client = ClientBuilder.newBuilder().build();
-    WebTarget createTarget =
+    final WebTarget createTarget =
       client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+
 
     Response createResponse = createTarget.request()
                                           .header(HttpHeaders.AUTHORIZATION, "fake")

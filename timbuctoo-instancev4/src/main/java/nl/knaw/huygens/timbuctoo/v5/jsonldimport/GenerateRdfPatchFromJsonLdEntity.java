@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
-  private Entity[] entities;
+  private final Entity[] entities;
   private List<CursorQuad> toReplace = new ArrayList<>();
 
 
@@ -45,78 +45,60 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
     return entities;
   }
 
-  public void generateAdditions(RdfPatchSerializer saver) {
+  public void generateAdditions(RdfPatchSerializer saver) throws LogStorageFailedException {
     for (Entity entity : entities) {
       Map<String, String[]> additions = entity.getAdditions();
-      additions.forEach((predicate, values) -> {
 
-        for (String value : values) {
-          try {
-            saver.onQuad(entity.getSpecializationOf().toString(), predicate, value,
-              RdfConstants.STRING, null, null);
-          } catch (LogStorageFailedException e) {
-            e.printStackTrace();
-          }
+      for (Map.Entry<String, String[]> entry : additions.entrySet()) {
+        for (String value : entry.getValue()) {
+          saver.onQuad(entity.getSpecializationOf().toString(), entry.getKey(), value,
+            RdfConstants.STRING, null, null);
         }
+      }
 
-      });
     }
   }
 
-  public void generateDeletions(RdfPatchSerializer saver) {
+  public void generateDeletions(RdfPatchSerializer saver) throws LogStorageFailedException {
     for (Entity entity : entities) {
       Map<String, String[]> deletions = entity.getDeletions();
 
-      deletions.forEach((predicate, valuesArray) -> {
-
-        for (String value : valuesArray) {
-          try {
-            saver.delValue(entity.getSpecializationOf().toString(), predicate, value, RdfConstants.STRING, null);
-          } catch (LogStorageFailedException e) {
-            e.printStackTrace();
-          }
+      for (Map.Entry<String, String[]> entry : deletions.entrySet()) {
+        for (String value : entry.getValue()) {
+          saver.delValue(entity.getSpecializationOf().toString(), entry.getKey(), value, RdfConstants.STRING, null);
         }
-      });
+      }
     }
   }
 
-  public void generateReplacements(RdfPatchSerializer saver) {
-    this.toReplace.forEach(quad -> {
-      try {
-        saver.delQuad(quad.getSubject(), quad.getPredicate(), quad.getObject(), null, null, null);
-      } catch (LogStorageFailedException e) {
-        e.printStackTrace();
-      }
-    });
+  public void generateReplacements(RdfPatchSerializer saver) throws LogStorageFailedException {
+    for (CursorQuad quad : toReplace) {
+      saver.delQuad(quad.getSubject(), quad.getPredicate(), quad.getObject(), null, null, null);
+    }
 
     for (Entity entity : entities) {
       Map<String, String[]> replacements = entity.getReplacements();
-      replacements.forEach((predicate, valuesArray) -> {
-        for (String value : valuesArray) {
-          try {
-            saver.onQuad(entity.getSpecializationOf().toString(), predicate, value,
-              RdfConstants.STRING, null, null);
-          } catch (LogStorageFailedException e) {
-            e.printStackTrace();
-          }
+
+      for (Map.Entry<String, String[]> entry : replacements.entrySet()) {
+        for (String value : entry.getValue()) {
+          saver.onQuad(entity.getSpecializationOf().toString(), entry.getKey(), value,
+            RdfConstants.STRING, null, null);
         }
-      });
+      }
+
     }
+
   }
 
-  public void generateRevisionInfo(RdfPatchSerializer saver) {
+  public void generateRevisionInfo(RdfPatchSerializer saver) throws LogStorageFailedException {
     for (Entity entity : entities) {
       URI specialization = entity.getSpecializationOf();
       URI revision = entity.getWasRevisionOf().get("@id");
 
-      try {
-        saver.onQuad(specialization.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
-          RdfConstants.STRING, null, null);
-        saver.delQuad(revision.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
-          RdfConstants.STRING, null, null);
-      } catch (LogStorageFailedException e) {
-        e.printStackTrace();
-      }
+      saver.onQuad(specialization.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
+        RdfConstants.STRING, null, null);
+      saver.delQuad(revision.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
+        RdfConstants.STRING, null, null);
 
     }
   }

@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.util;
 public class RdfConstants {
   public static final String TIM_PROP_DESC = "http://timbuctoo.huygens.knaw.nl/v5/propertyDescription/";
 
-  public static final String TIM_PROVENENCE_ENTITIES = "http://timbuctoo.huygens.knaw.nl/v5/provenanceEntities/";
+  public static final String TIM_PROVENANCE_ENTITIES = "http://timbuctoo.huygens.knaw.nl/v5/provenanceEntities/";
 
 
   // Vocabulary

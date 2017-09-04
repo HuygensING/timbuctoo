@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationExcep
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.Entity;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.GenerateRdfPatchFromJsonLdEntity;
+import nl.knaw.huygens.timbuctoo.v5.jsonldimport.JsonLdImport;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.json.JSONException;
@@ -22,6 +23,7 @@ import org.json.JSONObject;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.net.URI;
@@ -51,7 +53,7 @@ public class JsonLdEditEndpoint {
     throws DataStoreCreationException, LogStorageFailedException, IOException, JSONException, JsonLdError {
 
     if (!integrityCheck(jsonLdImport)) {
-      throw new JSONException("JSON-LD failed integrity check");
+      return Response.status(400).entity("JSON-LD failed integrity check").build();
     }
 
     nl.knaw.huygens.timbuctoo.v5.jsonldimport.JsonLdImport parsed =
@@ -64,7 +66,6 @@ public class JsonLdEditEndpoint {
     }
 
     DataSet dataSet = dataSetOpt.get();
-
     QuadStore quadStore = dataSet.getQuadStore();
     ImportManager importManager = dataSet.getImportManager();
 
@@ -75,7 +76,7 @@ public class JsonLdEditEndpoint {
       importManager.generateLog(rdfIdHelper.dataSet(userId, dataSetId), rdfIdHelper.dataSet(userId, dataSetId),
         generateRdfPatchFromJsonLdEntity);
     } else {
-      return Response.status(400).entity("JSON-LD failed integrity check").build();
+      return Response.status(400).entity("Last revision check failed").build();
     }
 
     return Response.noContent().build();
@@ -98,7 +99,7 @@ public class JsonLdEditEndpoint {
 
     JsonLdOptions options = new JsonLdOptions();
 
-    Object compact = JsonLdProcessor.compact(jsonld, context, options);
+    JsonLdProcessor.compact(jsonld, context, options);
 
     return true;
   }

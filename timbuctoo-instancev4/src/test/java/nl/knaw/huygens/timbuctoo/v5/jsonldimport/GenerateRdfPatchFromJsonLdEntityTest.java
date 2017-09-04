@@ -1,15 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.jsonldimport;
 
-import javaslang.collection.Map;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.MyTestRdfPatchSerializer;
 import org.junit.Test;
 
-import javax.ws.rs.core.MediaType;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
@@ -21,15 +17,11 @@ import static org.hamcrest.core.Is.is;
 public class GenerateRdfPatchFromJsonLdEntityTest {
   @Test
   public void testGenerateAdditions() throws Exception {
-    Entity testEntity = ImmutableEntity.builder()
-                                       .entityType("test")
-                                       .specializationOf(URI.create("http://example/entity"))
-                                       .putAdditions("pred1", new String[]{"value1", "value2"}).build();
+    Entity testEntity =
+      createAdditionEntity("test", "http://example/entity", "pred1", new String[]{"value1", "value2"});
 
-    Entity testEntity2 = ImmutableEntity.builder()
-                                        .entityType("test")
-                                        .specializationOf(URI.create("http://example/entity"))
-                                        .putAdditions("pred2", new String[]{"value3", "value4"}).build();
+    Entity testEntity2 =
+      createAdditionEntity("test", "http://example/entity", "pred2", new String[]{"value3", "value4"});
 
     Entity[] testEntities = new Entity[2];
 
@@ -43,23 +35,42 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateAdditions(myTestRdfPatchSerializer);
 
-    assertThat(myTestRdfPatchSerializer.results, is("+ http://example/entity pred1 value1\n" +
+    assertThat(myTestRdfPatchSerializer.getResults(), is("+ http://example/entity pred1 value1\n" +
       "+ http://example/entity pred1 value2\n" +
       "+ http://example/entity pred2 value3\n" +
       "+ http://example/entity pred2 value4\n"));
   }
 
+  private ImmutableEntity createAdditionEntity(String entityType, String uri, String predicate, String[] values) {
+    return ImmutableEntity.builder()
+                          .entityType(entityType)
+                          .specializationOf(URI.create(uri))
+                          .putAdditions(predicate, values).build();
+  }
+
+  private ImmutableEntity createDeletionEntity(String entityType, String uri, String predicate, String[] values) {
+    return ImmutableEntity.builder()
+                          .entityType(entityType)
+                          .specializationOf(URI.create(uri))
+                          .putDeletions(predicate, values).build();
+  }
+
+  private ImmutableEntity createReplacementEntity(String entityType, String uri, String predicate, String[] values) {
+    return ImmutableEntity.builder()
+                          .entityType(entityType)
+                          .specializationOf(URI.create(uri))
+                          .putReplacements(predicate, values).build();
+  }
+
+
   @Test
   public void testGenerateDeletions() throws Exception {
-    Entity testEntity = ImmutableEntity.builder()
-                                       .entityType("test")
-                                       .specializationOf(URI.create("http://example/entity"))
-                                       .putDeletions("pred1", new String[]{"value1", "value2"}).build();
+    Entity testEntity =
+      createDeletionEntity("test", "http://example/entity", "pred1", new String[]{"value1", "value2"});
 
-    Entity testEntity2 = ImmutableEntity.builder()
-                                        .entityType("test")
-                                        .specializationOf(URI.create("http://example/entity"))
-                                        .putDeletions("pred2", new String[]{"value3", "value4"}).build();
+    Entity testEntity2 =
+      createDeletionEntity("test", "http://example/entity", "pred2", new String[]{"value3", "value4"});
+
 
     Entity[] testEntities = new Entity[2];
 
@@ -73,7 +84,7 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateDeletions(myTestRdfPatchSerializer);
 
-    assertThat(myTestRdfPatchSerializer.results, is("- http://example/entity pred1 value1\n" +
+    assertThat(myTestRdfPatchSerializer.getResults(), is("- http://example/entity pred1 value1\n" +
       "- http://example/entity pred1 value2\n" +
       "- http://example/entity pred2 value3\n" +
       "- http://example/entity pred2 value4\n"));
@@ -81,15 +92,11 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
 
   @Test
   public void testGenerateReplacements() throws Exception {
-    Entity testEntity = ImmutableEntity.builder()
-                                       .entityType("test")
-                                       .specializationOf(URI.create("http://example/datasetuserid"))
-                                       .putReplacements("pred", new String[]{"value1", "value2"}).build();
+    Entity testEntity =
+      createReplacementEntity("test", "http://example/datasetuserid", "pred", new String[]{"value1", "value2"});
 
-    Entity testEntity2 = ImmutableEntity.builder()
-                                        .entityType("test")
-                                        .specializationOf(URI.create("http://example/datasetuserid"))
-                                        .putReplacements("pred2", new String[]{"value3", "value4"}).build();
+    Entity testEntity2 =
+      createReplacementEntity("test", "http://example/datasetuserid", "pred2", new String[]{"value3", "value4"});
 
     Entity[] testEntities = new Entity[2];
 
@@ -112,10 +119,10 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
         });
 
 
-    MyTestRdfPatchSerializer myTestRdfPatchSerializer  = new MyTestRdfPatchSerializer();
+    MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateReplacements(myTestRdfPatchSerializer);
 
-    assertThat(myTestRdfPatchSerializer.results, is("- http://example/datasetuserid pred oldvalue1\n" +
+    assertThat(myTestRdfPatchSerializer.getResults(), is("- http://example/datasetuserid pred oldvalue1\n" +
       "- http://example/datasetuserid pred oldvalue2\n" +
       "- http://example/datasetuserid pred2 oldvalue1\n" +
       "- http://example/datasetuserid pred2 oldvalue2\n" +
@@ -138,7 +145,6 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
                                        .putAdditions("pred1", new String[]{"value1", "value2"}).build();
 
 
-
     Entity[] testEntities = new Entity[1];
 
     testEntities[0] = testEntity;
@@ -150,70 +156,11 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateRevisionInfo(myTestRdfPatchSerializer);
 
-    assertThat(myTestRdfPatchSerializer.results, is("+ http://example/entity http://timbuctoo.huygens.knaw" +
+    assertThat(myTestRdfPatchSerializer.getResults(), is("+ http://example/entity http://timbuctoo.huygens.knaw" +
       ".nl/v5/vocabulary#latestrevision htttp://previous/mutation\n" +
       "- htttp://previous/mutation http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestrevision " +
-      "htttp://previous/mutation\n" ));
+      "htttp://previous/mutation\n"));
   }
 
 
-  private class MyTestRdfPatchSerializer implements RdfPatchSerializer {
-    String results = "";
-
-    @Override
-    public void delRelation(String subject, String predicate, String object, String graph)
-      throws LogStorageFailedException {
-      results += "- " + subject + " " + predicate + " " + object + "\n";
-    }
-
-    @Override
-    public void delValue(String subject, String predicate, String value, String valueType, String graph)
-      throws LogStorageFailedException {
-      results += "- " + subject + " " + predicate + " " + value + "\n";
-    }
-
-    @Override
-    public void delLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
-      throws LogStorageFailedException {
-
-    }
-
-    @Override
-    public MediaType getMediaType() {
-      return null;
-    }
-
-    @Override
-    public Charset getCharset() {
-      return null;
-    }
-
-    @Override
-    public void onPrefix(String prefix, String iri) throws LogStorageFailedException {
-
-    }
-
-    @Override
-    public void onRelation(String subject, String predicate, String object, String graph)
-      throws LogStorageFailedException {
-      results += "+ " + subject + " " + predicate + " " + object + "\n";
-    }
-
-    @Override
-    public void onValue(String subject, String predicate, String value, String valueType, String graph)
-      throws LogStorageFailedException {
-      results += "+ " + subject + " " + predicate + " " + value + "\n";
-    }
-
-    @Override
-    public void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
-      throws LogStorageFailedException {
-
-    }
-
-    @Override
-    public void close() throws LogStorageFailedException {
-
-    }
-  }
 }

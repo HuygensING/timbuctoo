@@ -7,7 +7,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROVENENCE_ENTITIES;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROVENANCE_ENTITIES;
 public class TimbuctooRdfIdHelper {
   private final String baseUri;
 
@@ -31,7 +31,7 @@ public class TimbuctooRdfIdHelper {
 
 
   public static String provenanceEntity(String dataSetId, String userId) {
-    return TIM_PROVENENCE_ENTITIES + encode(dataSetId) + "/" + encode(userId) + "/" + UUID.randomUUID();
+    return TIM_PROVENANCE_ENTITIES + encode(dataSetId) + "/" + encode(userId) + "/" + UUID.randomUUID();
   }
 
   public String rawFile(String ownerId, String dataSet, String fileName) {

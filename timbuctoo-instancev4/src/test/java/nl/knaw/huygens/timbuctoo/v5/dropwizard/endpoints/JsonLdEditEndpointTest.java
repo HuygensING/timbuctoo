@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
@@ -12,28 +11,23 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImmutableDataSetConfiguration;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.Entity;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ImmutableEntity;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.MyTestRdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 
-import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.net.URI;
-import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.concurrent.Executors;
 
@@ -108,16 +102,6 @@ public class JsonLdEditEndpointTest {
                                    .build(),
       new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator()));
 
-    NonPersistentBdbDatabaseCreator databaseCreator = new NonPersistentBdbDatabaseCreator();
-    DummyDataProvider dataProvider = new DummyDataProvider();
-
-    final QuadStore quadStore = new BdbTripleStore(
-      dataProvider,
-      databaseCreator,
-      "userId",
-      "dataSetId"
-    );
-
     dataProvider.start();
     dataProvider.onQuad("http://example/olddatasetuserid", RdfConstants.TIM_LATEST_REVISION_OF,
       "oldvalue1", null, null, "http://somegraph");
@@ -130,63 +114,4 @@ public class JsonLdEditEndpointTest {
     assertThat(jsonLdEditEndpoint.lastRevisionCheck(testEntities, quadStore), is(true));
   }
 
-  private class MyTestRdfPatchSerializer implements RdfPatchSerializer {
-    String results = "";
-
-    @Override
-    public void delRelation(String subject, String predicate, String object, String graph)
-      throws LogStorageFailedException {
-      results += "- " + subject + " " + predicate + " " + object + "\n";
-    }
-
-    @Override
-    public void delValue(String subject, String predicate, String value, String valueType, String graph)
-      throws LogStorageFailedException {
-      results += "- " + subject + " " + predicate + " " + value + "\n";
-    }
-
-    @Override
-    public void delLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
-      throws LogStorageFailedException {
-
-    }
-
-    @Override
-    public MediaType getMediaType() {
-      return null;
-    }
-
-    @Override
-    public Charset getCharset() {
-      return null;
-    }
-
-    @Override
-    public void onPrefix(String prefix, String iri) throws LogStorageFailedException {
-
-    }
-
-    @Override
-    public void onRelation(String subject, String predicate, String object, String graph)
-      throws LogStorageFailedException {
-      results += "+ " + subject + " " + predicate + " " + object + "\n";
-    }
-
-    @Override
-    public void onValue(String subject, String predicate, String value, String valueType, String graph)
-      throws LogStorageFailedException {
-      results += "+ " + subject + " " + predicate + " " + value + "\n";
-    }
-
-    @Override
-    public void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
-      throws LogStorageFailedException {
-
-    }
-
-    @Override
-    public void close() throws LogStorageFailedException {
-
-    }
-  }
 }
