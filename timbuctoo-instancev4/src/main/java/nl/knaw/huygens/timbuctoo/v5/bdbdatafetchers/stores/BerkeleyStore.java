@@ -47,12 +47,11 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   public void start() throws RdfProcessingFailedException {
     transaction = bdbWrapper.beginTransaction();
     stopwatch = Stopwatch.createStarted();
-    LOG.info("Started importing...");
   }
 
   @Override
   public void finish() throws RdfProcessingFailedException {
-    LOG.info("Finished importing. It took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds (pre-sync)");
+    LOG.info("processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds (pre-sync)");
     stopwatch.reset();
     stopwatch.start();
     bdbWrapper.commit(transaction);

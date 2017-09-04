@@ -26,7 +26,7 @@ import java.util.Optional;
 import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createSingleTriple;
 import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createSingleTripleWithLiteralObject;
 import static nl.knaw.huygens.timbuctoo.rdf.TripleCreator.createTripleIterator;
-import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
+import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.equalTo;

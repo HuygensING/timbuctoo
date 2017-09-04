@@ -16,20 +16,20 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
-import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 
 import javax.validation.Valid;
 import javax.ws.rs.DefaultValue;
@@ -62,7 +62,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   }
 
   @Valid
-  public abstract SecurityFactory getSecurityConfiguration();
+  public abstract HttpClientSecurityFactory getSecurityConfiguration();
 
   @Valid
   @Value.Default
@@ -114,9 +114,9 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract DataSetConfiguration getDataSetConfiguration();
 
   @JsonIgnore
-  public DataSetFactory getDataSet() throws DataStoreCreationException {
+  public DataSetRepository getDataSet() throws DataStoreCreationException {
     try {
-      return new DataSetFactory(
+      return new DataSetRepository(
         dataSetExecutorService,
         getSecurityConfiguration().getVreAuthorizationCreator(),
         getDataSetConfiguration(),
@@ -181,7 +181,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public ResourceSync getResourceSync() {
     return getDataSetConfiguration().getResourceSync();
   }
-  
-  
+
+
 
 }

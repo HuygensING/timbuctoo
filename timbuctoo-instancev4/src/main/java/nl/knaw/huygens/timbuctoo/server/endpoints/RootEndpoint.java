@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints;
 
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;

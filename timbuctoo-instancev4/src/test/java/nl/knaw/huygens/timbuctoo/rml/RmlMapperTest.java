@@ -3,16 +3,13 @@ package nl.knaw.huygens.timbuctoo.rml;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfValue;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfLiteral;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.builders.TriplesMapBuilder;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.LoggingErrorHandler;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
-import org.apache.jena.graph.Node_URI;
-import org.apache.jena.graph.Triple;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -27,6 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
+import static nl.knaw.huygens.timbuctoo.rml.TripleMatcher.ANY;
 import static nl.knaw.huygens.timbuctoo.rml.TripleMatcher.likeTriple;
 import static nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument.rmlMappingDocument;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -40,19 +38,19 @@ public class RmlMapperTest {
 
   public static final String EXAMPLE_CLASS = "http://example.org/someClass";
 
-  private static Node_URI uri(String uri) {
-    return (Node_URI) NodeFactory.createURI(uri);
+  private static RdfUri uri(String uri) {
+    return new RdfUri(uri);
   }
 
-  private static Node literal(String value) {
-    return NodeFactory.createLiteral(value, XSDDatatype.XSDstring);
+  private static RdfValue literal(String value) {
+    return new RdfValue(value, "http://www.w3.org/2001/XMLSchema#string");
   }
 
   @Test
   public void generatesRdfTypeTriplesForSubjectMapsWithRrClass() {
     DataSource input = new TestDataSource(Lists.newArrayList(Maps.newHashMap()));
 
-    List<Triple> result = rmlMappingDocument()
+    List<Quad> result = rmlMappingDocument()
       .withTripleMap("http://example.org/mapping1", trip -> trip
         .withSubjectMap(sm -> sm
           .withClass(rdf(EXAMPLE_CLASS))
@@ -66,7 +64,7 @@ public class RmlMapperTest {
       .collect(toList());
 
     assertThat(result, contains(likeTriple(
-      Node.ANY,
+      ANY,
       uri("http://www.w3.org/1999/02/22-rdf-syntax-ns#type"),
       uri(EXAMPLE_CLASS)
     )));
@@ -80,7 +78,7 @@ public class RmlMapperTest {
       ImmutableMap.of("rdfUri", "http://www.example.org/example/2")
     ));
 
-    List<Triple> result = rmlMappingDocument()
+    List<Quad> result = rmlMappingDocument()
       .withTripleMap("http://example.org/mapping1", trip -> trip
         .withSubjectMap(sm -> sm
           .withTermMap(tm -> tm
@@ -94,8 +92,8 @@ public class RmlMapperTest {
       .collect(toList());
 
     assertThat(result, contains(
-      likeTriple(uri("http://www.example.org/example/1"), Node.ANY, Node.ANY),
-      likeTriple(uri("http://www.example.org/example/2"), Node.ANY, Node.ANY)
+      likeTriple(uri("http://www.example.org/example/1"), ANY, ANY),
+      likeTriple(uri("http://www.example.org/example/2"), ANY, ANY)
     ));
   }
 
@@ -108,7 +106,7 @@ public class RmlMapperTest {
       "naam", "Bill"
     )));
 
-    List<Triple> result = rmlMappingDocument()
+    List<Quad> result = rmlMappingDocument()
       .withTripleMap("http://example.org/mapping1", trip -> trip
         .withSubjectMap(sm -> sm
           .withTermMap(tm -> tm.withColumnTerm("rdfUri"))
@@ -123,7 +121,7 @@ public class RmlMapperTest {
       .collect(toList());
 
     assertThat(result, contains(
-      likeTriple(Node.ANY, uri(theNamePredicate), literal("Bill")))
+      likeTriple(ANY, uri(theNamePredicate), literal("Bill")))
     );
   }
 
@@ -133,7 +131,7 @@ public class RmlMapperTest {
       "naam", "Bill"
     )));
 
-    List<Triple> result = rmlMappingDocument()
+    List<Quad> result = rmlMappingDocument()
       .withTripleMap("http://example.org/mapping1", trip -> trip
         .withSubjectMap(sm -> sm
           .withClass(rdf(EXAMPLE_CLASS))
@@ -145,7 +143,7 @@ public class RmlMapperTest {
       .collect(toList());
 
     assertThat(result, contains(
-      likeTriple(uri("http://example.org/items/Bill?blah"), Node.ANY, Node.ANY)
+      likeTriple(uri("http://example.org/items/Bill?blah"), ANY, ANY)
     ));
   }
 
@@ -158,7 +156,7 @@ public class RmlMapperTest {
             .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
             .build(makePersonDocumentSourceFactory());
 
-    List<Triple> result = rmlMappingDocument
+    List<Quad> result = rmlMappingDocument
       .execute(new ThrowingErrorHandler())
       .collect(toList());
 
@@ -185,7 +183,7 @@ public class RmlMapperTest {
             .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
             .build(makePersonDocumentSourceFactory());
 
-    List<Triple> result = rmlMappingDocument
+    List<Quad> result = rmlMappingDocument
       .execute(new ThrowingErrorHandler())
       .collect(toList());
 
@@ -226,7 +224,7 @@ public class RmlMapperTest {
                     makePersonMap(theNamePredicate, theIsParentOfPredicate, theIsRelatedToPredicate))
             .build(x -> Optional.of(input));
 
-    List<Triple> result = rmlMappingDocument
+    List<Quad> result = rmlMappingDocument
             .execute(new LoggingErrorHandler())
             .collect(toList());
 
@@ -264,7 +262,7 @@ public class RmlMapperTest {
             .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate, theCoAuthorOfPredicate))
             .build(makePersonDocumentSourceFactory());
 
-    List<Triple> result = rmlMappingDocument
+    List<Quad> result = rmlMappingDocument
             .execute(new ThrowingErrorHandler())
             .collect(toList());
 
@@ -418,7 +416,7 @@ public class RmlMapperTest {
         return null;
       });
 
-    final List<Triple> result = rmlMappingDocument.execute(errorHandler).collect(Collectors.toList());
+    final List<Quad> result = rmlMappingDocument.execute(errorHandler).collect(Collectors.toList());
 
     // Verify that no unnecessary splitOffs have been generated by counting the amount of passes through each
     // datasource.
@@ -471,7 +469,7 @@ public class RmlMapperTest {
       "geschrevenDoor", "Bill"
     );
 
-    rmlMappingDocument()
+    final List<Quad> collect = rmlMappingDocument()
       .withTripleMap("http://example.org/personsMap", makePersonMap(theNamePredicate))
       .withTripleMap("http://example.org/documentsMap", makeDocumentMap(theWrittenByPredicate))
       .build(logicalSource -> {

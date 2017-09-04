@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search;
 
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 
 import javax.ws.rs.core.UriBuilder;
 import java.util.UUID;

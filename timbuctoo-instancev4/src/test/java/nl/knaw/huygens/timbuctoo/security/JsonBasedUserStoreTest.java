@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
+import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
@@ -16,14 +17,14 @@ import java.nio.file.Paths;
 import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.security.JsonBasedUserStoreStubs.forFile;
-import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
+import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 
 public class JsonBasedUserStoreTest {
 
-  public static final Path USERS_FILE = Paths.get("src", "test", "resources", "users.json");
+  public Path usersFile;
   public static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -31,17 +32,18 @@ public class JsonBasedUserStoreTest {
 
   @Before
   public void setUp() throws Exception {
+    usersFile = FileHelpers.makeTempFilePath(false);
     User user = User.create("", "pidOfKnownUser");
     User userWithoutPid = User.create(null, null);
     User[] users = {user, userWithoutPid};
-    OBJECT_MAPPER.writeValue(USERS_FILE.toFile(), users);
+    OBJECT_MAPPER.writeValue(usersFile.toFile(), users);
 
-    instance = forFile(USERS_FILE);
+    instance = forFile(usersFile);
   }
 
   @After
   public void tearDown() throws Exception {
-    Files.delete(USERS_FILE);
+    Files.delete(usersFile);
   }
 
   @Test

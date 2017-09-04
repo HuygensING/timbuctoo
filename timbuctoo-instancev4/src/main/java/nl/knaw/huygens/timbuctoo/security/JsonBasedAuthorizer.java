@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.crud.Authorization;
+import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
@@ -20,11 +19,6 @@ public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCrud {
 
   public JsonBasedAuthorizer(VreAuthorizationAccess authorizationAccess) {
     this.authorizationAccess = authorizationAccess;
-  }
-
-  @Override
-  public Authorization authorizationFor(Collection collection, String userId) throws AuthorizationUnavailableException {
-    return authorizationFor(collection.getVreName(), userId);
   }
 
   @Override

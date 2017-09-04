@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
-import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.util.Collection;
 import java.util.HashMap;

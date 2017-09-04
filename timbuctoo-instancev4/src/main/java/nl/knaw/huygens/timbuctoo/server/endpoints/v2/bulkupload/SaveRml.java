@@ -2,8 +2,7 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult;
-import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 
 import javax.ws.rs.Consumes;

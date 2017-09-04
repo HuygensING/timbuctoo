@@ -54,8 +54,8 @@
         if (dataSets[dataSetId]) {
           return fetch(dataSets[dataSetId], {
             method: 'post',
-            headers: { 'Accept': acceptMediaType },
-            body: graphQLParams.query
+            headers: { 'Accept': acceptMediaType, 'Content-Type': "application/json" },
+            body: JSON.stringify({ query: graphQLParams.query})
           }).then(function (response) {
             var s;
             var contentType = response.headers.get('Content-Type');

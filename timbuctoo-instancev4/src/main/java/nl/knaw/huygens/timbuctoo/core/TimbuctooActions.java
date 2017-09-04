@@ -146,7 +146,7 @@ public class TimbuctooActions implements AutoCloseable {
 
   private void checkIfAllowedToWrite(String userId, Collection collection) throws
     AuthorizationException, AuthorizationUnavailableException {
-    if (!authorizer.authorizationFor(collection, userId).isAllowedToWrite()) {
+    if (!authorizer.authorizationFor(collection.getVreName(), userId).isAllowedToWrite()) {
       throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
     }
   }

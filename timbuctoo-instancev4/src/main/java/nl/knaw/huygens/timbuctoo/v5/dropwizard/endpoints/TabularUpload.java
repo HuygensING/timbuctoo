@@ -6,10 +6,11 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.bulkupload.TabularRdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfCreator;
-import nl.knaw.huygens.timbuctoo.v5.dataset.TabularRdfCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -18,6 +19,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.glassfish.jersey.message.internal.MediaTypes;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -26,13 +28,16 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
 
@@ -41,15 +46,17 @@ public class TabularUpload {
 
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
-  private final DataSetFactory dataSetFactory;
   private final TimbuctooRdfIdHelper rdfIdHelper;
+  private final DataSetRepository dataSetRepository;
+  private final ErrorResponseHelper errorResponseHelper;
 
-  public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetFactory dataSetFactory,
-                       TimbuctooRdfIdHelper rdfIdHelper) {
+  public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
+                       TimbuctooRdfIdHelper rdfIdHelper, ErrorResponseHelper errorResponseHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
-    this.dataSetFactory = dataSetFactory;
+    this.dataSetRepository = dataSetRepository;
     this.rdfIdHelper = rdfIdHelper;
+    this.errorResponseHelper = errorResponseHelper;
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -62,12 +69,13 @@ public class TabularUpload {
                          FormDataMultiPart formData,
                          @HeaderParam("authorization") final String authHeader,
                          @PathParam("userId") final String ownerId,
-                         @PathParam("dataSetId") final String dataSetId)
+                         @PathParam("dataSetId") final String dataSetId,
+                         @QueryParam("forceCreation") boolean forceCreation)
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
 
     final Response response = checkWriteAccess(
-      dataSetFactory::dataSetExists, authorizer, loggedInUsers, authHeader, ownerId, dataSetId
+      dataSetRepository::dataSetExists, authorizer, loggedInUsers, authHeader, ownerId, dataSetId
     );
     if (response != null) {
       return response;
@@ -75,7 +83,11 @@ public class TabularUpload {
 
     final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
-    Optional<Loader> loader = LoaderFactory.createFor(mediaType, formData);
+    Optional<Loader> loader = LoaderFactory.createFor(mediaType.toString(), formData.getFields().entrySet().stream()
+      .filter(entry -> entry.getValue().size() > 0)
+      .filter(entry -> entry.getValue().get(0) != null)
+      .filter(entry -> MediaTypes.typeEqual(MediaType.TEXT_PLAIN_TYPE, entry.getValue().get(0).getMediaType()))
+      .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(0).getValue())));
 
     if (mediaType == null || !loader.isPresent()) {
       return Response.status(400)
@@ -87,7 +99,17 @@ public class TabularUpload {
         .build();
     }
 
-    ImportManager importManager = dataSetFactory.createImportManager(ownerId, dataSetId);
+    final Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(ownerId, dataSetId);
+    final DataSet dataSet;
+    if (dataSetOpt.isPresent()) {
+      dataSet = dataSetOpt.get();
+    } else if (forceCreation) {
+      dataSet = dataSetRepository.createDataSet(ownerId, dataSetId);
+    } else {
+      return errorResponseHelper.dataSetNotFound(ownerId, dataSetId);
+    }
+
+    ImportManager importManager = dataSet.getImportManager();
 
     String fileToken = importManager.addFile(
       rdfInputStream,
@@ -96,7 +118,7 @@ public class TabularUpload {
     );
 
 
-    Tuple<UUID, RdfCreator> rdfCreator = dataSetFactory.registerRdfCreator(
+    Tuple<UUID, RdfCreator> rdfCreator = dataSetRepository.registerRdfCreator(
       (statusConsumer) -> new TabularRdfCreator(
         importManager,
         loader.get(),
@@ -127,7 +149,7 @@ public class TabularUpload {
   @GET
   @Path("{importId}")
   public Response getStatus(@PathParam("importId") final UUIDParam importId) {
-    Optional<String> status = dataSetFactory.getStatus(importId.get());
+    Optional<String> status = dataSetRepository.getStatus(importId.get());
 
     if (status.isPresent()) {
       return Response.ok(status).build();

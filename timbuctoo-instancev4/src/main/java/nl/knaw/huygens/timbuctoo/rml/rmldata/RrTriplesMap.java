@@ -2,10 +2,10 @@ package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
+import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,13 +39,13 @@ public class RrTriplesMap {
     subscriptions.add(Tuple.tuple(subscriber, fieldName));
   }
 
-  Stream<Triple> getItems(ErrorHandler defaultErrorHandler) {
+  Stream<Quad> getItems(ErrorHandler defaultErrorHandler) {
     return dataSource.getRows(defaultErrorHandler)
       .flatMap(row -> {
-        Optional<Node> subjectOpt = subjectMap.generateValue(row);
+        Optional<RdfUri> subjectOpt = subjectMap.generateValue(row);
 
         if (subjectOpt.isPresent()) {
-          Node subject = subjectOpt.get();
+          RdfUri subject = subjectOpt.get();
           for (Tuple<RrRefObjectMap, String> subscription : subscriptions) {
             subscription.getLeft().onNewSubject(row.getRawValue(subscription.getRight()), subject);
           }

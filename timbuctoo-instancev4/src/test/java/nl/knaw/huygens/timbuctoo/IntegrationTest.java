@@ -46,6 +46,7 @@ import java.util.UUID;
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
 import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
+import static java.lang.String.format;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
@@ -59,7 +60,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.fail;
 
 public class IntegrationTest {
 
@@ -247,7 +247,7 @@ public class IntegrationTest {
   public void succeedingRdfUploadWithGraphql() throws Exception {
     String vreName = "clusius-" + UUID.randomUUID();
     Response uploadResponse = multipartPost(
-      "/v5/DUMMY/" + vreName + "/upload/rdf",
+      "/v5/DUMMY/" + vreName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
@@ -323,7 +323,7 @@ public class IntegrationTest {
   public void succeedingNQuadUdUploadWithGraphql() throws Exception {
     String vreName = "clusius-" + UUID.randomUUID();
     Response uploadResponse = multipartPost(
-      "/v5/DUMMY/" + vreName + "/upload/rdf",
+      "/v5/DUMMY/" + vreName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
       "application/vnd.timbuctoo-rdf.nquads_unified_diff",
       ImmutableMap.of(
@@ -379,7 +379,7 @@ public class IntegrationTest {
   public void succeedingRdfUploadResourceSync() throws Exception {
     String dataSetName = "clusius-" + UUID.randomUUID();
     Response uploadResponse = multipartPost(
-      "/v5/DUMMY/" + dataSetName + "/upload/rdf",
+      "/v5/DUMMY/" + dataSetName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
       "text/turtle",
       ImmutableMap.of(
@@ -429,8 +429,9 @@ public class IntegrationTest {
   public void tabularUpload() {
     Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
     String dataSetId = "dataset" + UUID.randomUUID();
-    WebTarget target =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/" + dataSetId + "/upload/table", APP.getLocalPort()));
+    WebTarget target = client.target(
+      format("http://localhost:%d/v5/DUMMY/" + dataSetId + "/upload/table?forceCreation=true", APP.getLocalPort())
+    );
 
     FormDataMultiPart multiPart = new FormDataMultiPart();
     multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
@@ -458,7 +459,7 @@ public class IntegrationTest {
     String dataSetId = "dataset" + UUID.randomUUID();
     WebTarget createTarget =
       client
-        .target(String.format("http://localhost:%d/v5/dataSets/DUMMY/" + dataSetId + "/create/", APP.getLocalPort()));
+        .target(format("http://localhost:%d/v5/dataSets/DUMMY/" + dataSetId + "/create/", APP.getLocalPort()));
 
     Response createResponse = createTarget.request()
                                           .header(HttpHeaders.AUTHORIZATION, "fake")
@@ -471,7 +472,7 @@ public class IntegrationTest {
 
     // delete dataset
     WebTarget deleteTarget =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/" + dataSetId, APP.getLocalPort()));
+      client.target(format("http://localhost:%d/v5/DUMMY/" + dataSetId, APP.getLocalPort()));
 
     Response deleteResponse = deleteTarget.request()
                                           .header(HttpHeaders.AUTHORIZATION, "fake")
@@ -485,7 +486,7 @@ public class IntegrationTest {
 
   private List<String> getDataSetNamesOfDummy(Client client) {
     WebTarget allDataSetsTarget =
-      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/", APP.getLocalPort()));
+      client.target(format("http://localhost:%d/v5/dataSets/DUMMY/", APP.getLocalPort()));
 
     Response allDataSetsResponse = allDataSetsTarget.request().get();
 
@@ -539,7 +540,7 @@ public class IntegrationTest {
     } else {
       int localPort = APP.getLocalPort();
       // int localPort = 8080;
-      server = String.format("http://localhost:%d" + path, localPort);
+      server = format("http://localhost:%d" + path, localPort);
     }
     return client
       .target(server)

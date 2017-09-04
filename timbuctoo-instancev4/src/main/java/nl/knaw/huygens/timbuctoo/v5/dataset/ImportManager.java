@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.google.common.base.Stopwatch;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
@@ -33,6 +34,7 @@ import java.util.ListIterator;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -138,6 +140,7 @@ public class ImportManager implements DataProvider {
       if (entry.getLogToken().isPresent()) {
         try {
           CachedLog log = logStorage.getLog(entry.getLogToken().get());
+          final Stopwatch stopwatch = Stopwatch.createStarted();
           for (Tuple<String, RdfProcessor> subscribedProcessor : subscribedProcessors) {
             processLogIfNeeded(
               index,
@@ -152,6 +155,7 @@ public class ImportManager implements DataProvider {
             entityProvider.processEntities(processor.getLeft(), processor.getRight());
           }
 
+          LOG.info("Finished importing. Total import took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds.");
           logListStore.updateData(logList -> {
             logList.markAsProcessed(index);
             return logList;
@@ -207,9 +211,16 @@ public class ImportManager implements DataProvider {
     String[] cursorParts = currentCursor.split("\n", 2);
     int major = cursorParts[0].isEmpty() ? 0 : Integer.parseInt(cursorParts[0]);
     if (major < index) {
+      LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing full log...");
       rdfParser.importRdf(index + "\n", "", log, baseUri, defaultGraph, processor);
     } else if (major == index) {
       final String startFrom = cursorParts.length > 1 ? cursorParts[1] : "";
+      if (startFrom.isEmpty()) {
+        LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing full log...");
+      } else {
+        LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing log from " + startFrom +
+          " onwards...");
+      }
       rdfParser.importRdf(index + "\n", startFrom, log, baseUri, defaultGraph, processor);
     }
   }

@@ -251,8 +251,8 @@ function execute() {
     data += fs.readFileSync(file, "utf-8");
   }
   let parsed = parseFile(data)
-  fs.writeFileSync("generate_workspace.bzl", writeBazelScript(parsed), "utf-8");
-  fs.writeFileSync("BUILD", fs.readFileSync('BUILD.template', "utf-8").replace("%DEPENDENCIES%", writeAllDependencies(parsed)), "utf-8");
+  fs.writeFileSync("./third_party/generate_workspace.bzl", writeBazelScript(parsed), "utf-8");
+//  fs.writeFileSync("BUILD", fs.readFileSync('BUILD.template', "utf-8").replace("%DEPENDENCIES%", writeAllDependencies(parsed)), "utf-8");
 }
 
 execute();

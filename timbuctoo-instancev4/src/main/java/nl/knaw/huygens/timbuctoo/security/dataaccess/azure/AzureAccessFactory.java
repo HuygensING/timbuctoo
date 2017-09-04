@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess.azure;
 
-import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.microsoft.azure.storage.CloudStorageAccount;
@@ -18,6 +17,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -61,7 +62,7 @@ public class AzureAccessFactory implements AccessFactory {
   }
 
   @Override
-  public Iterator<Tuple<String, HealthCheck>> getHealthChecks() {
+  public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
     return Collections.emptyIterator();
   }
 }

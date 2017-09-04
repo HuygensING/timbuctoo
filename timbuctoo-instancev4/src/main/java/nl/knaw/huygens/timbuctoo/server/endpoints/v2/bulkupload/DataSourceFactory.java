@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
+import nl.knaw.huygens.timbuctoo.rml.datasource.jexl.JexlRowFactory;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.rdfshim.RdfResource;
 import nl.knaw.huygens.timbuctoo.server.GraphWrapper;

@@ -3,11 +3,11 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
-import nl.knaw.huygens.timbuctoo.rml.RmlExecutorService;
+import nl.knaw.huygens.timbuctoo.server.RmlExecutorService;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import org.apache.jena.rdf.model.Model;
@@ -36,7 +36,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 
-import static nl.knaw.huygens.timbuctoo.bulkupload.savers.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
+import static nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerpopSaver.RAW_COLLECTION_EDGE_NAME;
 import static nl.knaw.huygens.timbuctoo.core.TransactionState.commit;
 
 @Path("/v2.1/bulk-upload/{vre}/rml/execute")

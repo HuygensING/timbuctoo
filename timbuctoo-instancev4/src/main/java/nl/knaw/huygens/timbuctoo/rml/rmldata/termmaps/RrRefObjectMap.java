@@ -2,9 +2,9 @@ package nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.Row;
+import nl.knaw.huygens.timbuctoo.rml.dto.QuadPart;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RrTriplesMap;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.NodeFactory;
 
 import java.util.List;
 import java.util.UUID;
@@ -25,7 +25,7 @@ public class RrRefObjectMap {
     otherMap.subscribeToSubjectsWith(this, rrJoinCondition.getParentField());
   }
 
-  public Stream<Node> generateValue(Row input) {
+  public Stream<QuadPart> generateValue(Row input) {
     final List<String> result = input.getJoinValue(outputField);
 
     if (result == null || result.isEmpty()) {
@@ -37,7 +37,7 @@ public class RrRefObjectMap {
       return Stream.empty();
     }
 
-    return result.stream().map(NodeFactory::createURI);
+    return result.stream().map(RdfUri::new);
   }
 
   /**
@@ -46,8 +46,8 @@ public class RrRefObjectMap {
    * @param value the row from the source record
    * @param subject the subject under which the source record is now known
    */
-  public void onNewSubject(String value, Node subject) {
-    dataSource.willBeJoinedOn(rrJoinCondition.getChildField(), value, subject.getURI(), outputField);
+  public void onNewSubject(String value, QuadPart subject) {
+    dataSource.willBeJoinedOn(rrJoinCondition.getChildField(), value, subject.getContent(), outputField);
   }
 
 

@@ -1,14 +1,15 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
 import com.google.common.collect.ImmutableMap;
-import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.Importer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
+import nl.knaw.huygens.timbuctoo.rml.datasource.jexl.JexlRowFactory;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
+import nl.knaw.huygens.timbuctoo.server.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.junit.Test;

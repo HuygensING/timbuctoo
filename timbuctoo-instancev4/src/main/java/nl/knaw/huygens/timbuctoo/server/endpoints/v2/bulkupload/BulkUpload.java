@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.bulkupload.BulkUploadService;
+import nl.knaw.huygens.timbuctoo.server.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.access.MdbLoader;
@@ -46,7 +46,7 @@ import static javax.ws.rs.core.Response.status;
 import static nl.knaw.huygens.timbuctoo.core.TransactionStateAndResult.commitAndReturn;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.MAPPING_EXECUTION;
 import static nl.knaw.huygens.timbuctoo.model.vre.Vre.PublishState.UPLOADING;
-import static org.apache.poi.util.IOUtils.copy;
+import static org.apache.commons.io.IOUtils.copy;
 
 @Path("/v2.1/bulk-upload")
 public class BulkUpload {

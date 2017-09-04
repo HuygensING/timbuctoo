@@ -8,7 +8,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
+import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;

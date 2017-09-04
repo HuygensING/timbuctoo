@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory;
+import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -25,7 +26,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.google.common.io.Resources.getResource;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
 import static org.mockito.Mockito.mock;
@@ -65,7 +65,7 @@ public class ImportManagerTest {
 
   @Test
   public void addLogSavesTheLogToDisk() throws Exception {
-    File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
+    File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
     String name = "http://example.com/clusius.ttl";
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
@@ -90,7 +90,7 @@ public class ImportManagerTest {
     String name = "http://example.com/clusius.ttl";
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
-    File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
+    File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
 
     Future<?> promise = importManager.addLog(
       baseUri,
@@ -110,7 +110,7 @@ public class ImportManagerTest {
 
   @Test
   public void callsStoresWhenANewLogIsAdded() throws Exception {
-    File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
+    File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
     String name = "http://example.com/clusius.ttl";
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
@@ -155,7 +155,7 @@ public class ImportManagerTest {
   @Test
   public void addFileCallsTheResourceSyncResourceList() throws Exception {
     String name = "http://example.com/clusius.ttl";
-    File file = new File(getResource(ImportManagerTest.class, "clusius.ttl").toURI());
+    File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
 
     String fileToken = importManager.addFile(
       new FileInputStream(file),

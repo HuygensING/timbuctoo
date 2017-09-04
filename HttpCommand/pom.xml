@@ -16,7 +16,7 @@
     <concordion.version>1.5.1</concordion.version>
     <guava.version>21.0</guava.version>
     <commons-lang3.version>3.4</commons-lang3.version>
-    <httpcore.version>4.4.4</httpcore.version>
+    <httpcore.version>4.4.6</httpcore.version>
   </properties>
 
   <dependencies>

@@ -1,9 +1,10 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
 import nl.knaw.huygens.timbuctoo.rml.Row;
+import nl.knaw.huygens.timbuctoo.rml.dto.QuadPart;
+import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -20,11 +21,11 @@ public class RrPredicateObjectMapOfTermMap implements RrPredicateObjectMap {
   }
 
   @Override
-  public Stream<Triple> generateValue(Node subject, Row row) {
-    Optional<Node> predicate = predicateMap.generateValue(row);
-    Optional<Node> object = objectMap.generateValue(row);
+  public Stream<Quad> generateValue(RdfUri subject, Row row) {
+    Optional<QuadPart> predicate = predicateMap.generateValue(row);
+    Optional<QuadPart> object = objectMap.generateValue(row);
     if (predicate.isPresent() && object.isPresent()) {
-      return Stream.of(new Triple(subject, predicate.get(), object.get()));
+      return Stream.of(Quad.create(subject, (RdfUri) predicate.get(), object.get()));
     } else {
       return Stream.empty();
     }

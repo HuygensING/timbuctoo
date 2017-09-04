@@ -27,7 +27,6 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
 import static com.google.common.io.Files.createTempDir;
-import static nl.knaw.huygens.timbuctoo.logging.Logmarkers.ImportFileInvariant;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class DataPerfectLoader implements Loader {
@@ -90,7 +89,7 @@ public class DataPerfectLoader implements Loader {
             String value = cur.getValueAsString(field.getNumber());
             importer.setValue(field.getNumber(), value);
           } catch (NoSuchRecordFieldException e) {
-            LOG.error(ImportFileInvariant, "Not all records contain all fields apparently", e);
+            LOG.error("Not all records contain all fields apparently", e);
           }
         }
         importer.finishEntity();

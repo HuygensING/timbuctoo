@@ -2,7 +2,8 @@
 #it also explains the options that you need to configure a production-worthy version
 
 securityConfiguration:
-  localfile:
+  localAuthentication:
+    "@class": nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory
     authorizationsPath: ${timbuctoo_dataPath}/authorizations
     loginsFilePath: ${timbuctoo_dataPath}/logins.json
     usersFilePath: ${timbuctoo_dataPath}/users.json
@@ -14,7 +15,7 @@ securityConfiguration:
     authenticationServerUrl: DUMMY
     authenticationCredentials: DUMMY
 
-baseUri: http://0.0.0.0:0 #port will be replaced with the port that timbuctoo ends up listening on
+baseUri: http://127.0.0.1:0 #port will be replaced with the port that timbuctoo ends up listening on
 userRedirectUrl: http://example.com
 
 archetypes:

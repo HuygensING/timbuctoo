@@ -1,8 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.legacy;
 
 import io.dropwizard.jersey.params.UUIDParam;
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
-import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.Index;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain.SingleEntity;
 
 import javax.ws.rs.GET;

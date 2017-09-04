@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static nl.knaw.huygens.timbuctoo.util.EdgeMatcher.likeEdge;
-import static nl.knaw.huygens.timbuctoo.util.OptionalPresentMatcher.present;
+import static nl.knaw.huygens.hamcrest.OptionalPresentMatcher.present;
 import static nl.knaw.huygens.timbuctoo.util.TestGraphBuilder.newGraph;
 import static nl.knaw.huygens.timbuctoo.util.VertexMatcher.likeVertex;
 import static org.hamcrest.Matchers.containsInAnyOrder;

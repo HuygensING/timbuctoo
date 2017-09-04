@@ -1,10 +1,11 @@
 package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
 import nl.knaw.huygens.timbuctoo.rml.Row;
+import nl.knaw.huygens.timbuctoo.rml.dto.QuadPart;
+import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
+import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrTermMap;
-import org.apache.jena.graph.Node;
-import org.apache.jena.graph.Triple;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -23,18 +24,18 @@ public class RrPredicateObjectMapOfReferencingObjectMap implements RrPredicateOb
   }
 
   @Override
-  public Stream<Triple> generateValue(Node subject, Row row) {
-    Optional<Node> predicateOpt = predicateMap.generateValue(row);
+  public Stream<Quad> generateValue(RdfUri subject, Row row) {
+    Optional<QuadPart> predicateOpt = predicateMap.generateValue(row);
     if (predicateOpt.isPresent()) {
-      Node predicate = predicateOpt.get();
+      RdfUri predicate = (RdfUri) predicateOpt.get();
       if (isInverted) {
         return objectMap
           .generateValue(row)
-          .map(value -> new Triple(value, predicate, subject));
+          .map(value -> Quad.create((RdfUri) value, predicate, subject));
       } else {
         return objectMap
           .generateValue(row)
-          .map(value -> new Triple(subject, predicate, value));
+          .map(value -> Quad.create(subject, predicate, value));
       }
     } else {
       return Stream.empty();

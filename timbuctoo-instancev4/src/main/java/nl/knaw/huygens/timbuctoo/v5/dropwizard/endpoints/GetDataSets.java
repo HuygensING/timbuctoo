@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetWithRoles;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PromotedDataSet;
 
@@ -25,12 +25,12 @@ import static java.util.stream.Collectors.toMap;
 
 @Path("/v5/dataSets/")
 public class GetDataSets {
-  private final DataSetFactory dataSetFactory;
+  private final DataSetRepository dataSetRepository;
   private final GraphQl graphQlEndpoint;
   private final LoggedInUsers loggedInUsers;
 
-  public GetDataSets(DataSetFactory dataSetFactory, GraphQl graphQlEndpoint, LoggedInUsers loggedInUsers) {
-    this.dataSetFactory = dataSetFactory;
+  public GetDataSets(DataSetRepository dataSetRepository, GraphQl graphQlEndpoint, LoggedInUsers loggedInUsers) {
+    this.dataSetRepository = dataSetRepository;
     this.graphQlEndpoint = graphQlEndpoint;
     this.loggedInUsers = loggedInUsers;
   }
@@ -39,7 +39,7 @@ public class GetDataSets {
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   public Map<String, Map<String, URI>> getDataSets() {
-    Map<String, Set<PromotedDataSet>> dataSets = dataSetFactory.getDataSets();
+    Map<String, Set<PromotedDataSet>> dataSets = dataSetRepository.getDataSets();
     Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
 
     for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
@@ -62,7 +62,7 @@ public class GetDataSets {
   @Path("promoted")
   @Produces(MediaType.APPLICATION_JSON)
   public Map<String, Map<String, URI>> getPromotedDataSets() {
-    Map<String, Set<PromotedDataSet>> dataSets = dataSetFactory.getPromotedDataSets();
+    Map<String, Set<PromotedDataSet>> dataSets = dataSetRepository.getPromotedDataSets();
     Map<String, Map<String, URI>> dataSetUris = new HashMap<>();
 
     for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
@@ -85,7 +85,7 @@ public class GetDataSets {
   @Path("{userId}")
   @Produces(MediaType.APPLICATION_JSON)
   public Map<String, URI> getUserDataSets(@PathParam("userId") String userId) {
-    return dataSetFactory
+    return dataSetRepository
       .getDataSets()
       .getOrDefault(userId, new HashSet<>())
       .stream()
@@ -105,7 +105,7 @@ public class GetDataSets {
 
     if (user.isPresent()) {
       String userId = user.get().getPersistentId();
-      Map<String, Set<DataSetWithRoles>> dataSets = dataSetFactory.getDataSetsWithWriteAccess(userId);
+      Map<String, Set<DataSetWithRoles>> dataSets = dataSetRepository.getDataSetsWithWriteAccess(userId);
 
       for (Map.Entry<String, Set<DataSetWithRoles>> userDataSets : dataSets.entrySet()) {
         Set<DataSetWithRoles> dataSetInfo = new HashSet<>();

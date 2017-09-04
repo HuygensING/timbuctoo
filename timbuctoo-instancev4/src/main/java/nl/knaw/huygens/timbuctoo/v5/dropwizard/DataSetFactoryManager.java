@@ -1,22 +1,22 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard;
 
 import io.dropwizard.lifecycle.Managed;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetFactory;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 
 public class DataSetFactoryManager implements Managed {
-  private final DataSetFactory dataSetFactory;
+  private final DataSetRepository dataSetRepository;
 
-  public DataSetFactoryManager(DataSetFactory dataSetFactory) {
-    this.dataSetFactory = dataSetFactory;
+  public DataSetFactoryManager(DataSetRepository dataSetRepository) {
+    this.dataSetRepository = dataSetRepository;
   }
 
   @Override
   public void start() throws Exception {
-    dataSetFactory.start();
+    dataSetRepository.start();
   }
 
   @Override
   public void stop() throws Exception {
-    dataSetFactory.stop();
+    dataSetRepository.stop();
   }
 }

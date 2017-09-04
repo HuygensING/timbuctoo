@@ -13,7 +13,7 @@ import nl.knaw.huygens.timbuctoo.rdf.LinkTriple;
 import nl.knaw.huygens.timbuctoo.rdf.LiteralTriple;
 import nl.knaw.huygens.timbuctoo.rdf.Triple;
 import nl.knaw.huygens.timbuctoo.rdf.conversion.TriplePropertyConverter;
-import nl.knaw.huygens.timbuctoo.server.UriHelper;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

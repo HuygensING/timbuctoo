@@ -1,31 +1,27 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import com.codahale.metrics.health.HealthCheck;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import io.dropwizard.setup.Environment;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
+import nl.knaw.huygens.security.client.HttpCaller;
+import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.LoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.azure.AzureAccessFactory;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory;
-import nl.knaw.huygens.timbuctoo.server.FederatedAuthConfiguration;
-import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 
 import javax.validation.constraints.NotNull;
 import java.security.NoSuchAlgorithmException;
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
+import java.util.function.Supplier;
 
-public class SecurityFactory {
+public abstract class SecurityFactory {
   @JsonProperty
-  private AzureAccessFactory azure;
-  @JsonProperty
-  private LocalfileAccessFactory localfile;
+  @NotNull
+  private AccessFactory localAuthentication;
   @JsonProperty
   private String algorithm = "SHA-256";
   @JsonProperty
@@ -54,6 +50,8 @@ public class SecurityFactory {
   @JsonIgnore
   AuthenticationHandler authHandler;
 
+  protected abstract HttpCaller getHttpCaller();
+
   private JsonBasedAuthenticator getJsonBasedAuthenticator() throws AccessNotPossibleException,
     NoSuchAlgorithmException {
     if (jsonBasedAuthenticator == null) {
@@ -78,43 +76,28 @@ public class SecurityFactory {
 
   private LoginAccess getLoginAccess() throws AccessNotPossibleException {
     if (loginAccess == null) {
-      if (azure != null) {
-        loginAccess = azure.getLoginAccess();
-      }
-      if (localfile != null) {
-        loginAccess = localfile.getLoginAccess();
-      }
+      loginAccess = localAuthentication.getLoginAccess();
     }
     return loginAccess;
   }
 
   private UserAccess getUserAccess() throws AccessNotPossibleException {
     if (userAccess == null) {
-      if (azure != null) {
-        userAccess = azure.getUserAccess();
-      }
-      if (localfile != null) {
-        userAccess = localfile.getUserAccess();
-      }
+      userAccess = localAuthentication.getUserAccess();
     }
     return userAccess;
   }
 
   private VreAuthorizationAccess getVreAuthorizationAccess() throws AccessNotPossibleException {
     if (vreAuthorizationAccess == null) {
-      if (azure != null) {
-        vreAuthorizationAccess = azure.getVreAuthorizationAccess();
-      }
-      if (localfile != null) {
-        vreAuthorizationAccess = localfile.getVreAuthorizationAccess();
-      }
+      vreAuthorizationAccess = localAuthentication.getVreAuthorizationAccess();
     }
     return vreAuthorizationAccess;
   }
 
-  private AuthenticationHandler getAuthHandler(Environment environment) {
+  private AuthenticationHandler getAuthHandler(HttpCaller httpCaller) {
     if (authHandler == null) {
-      authHandler = federatedAuthentication.makeHandler(environment);
+      authHandler = federatedAuthentication.makeHandler(httpCaller);
     }
     return authHandler;
   }
@@ -143,47 +126,20 @@ public class SecurityFactory {
     return getJsonBasedAuthenticator();
   }
 
-  public LoggedInUsers getLoggedInUsers(Environment environment)
+  public LoggedInUsers getLoggedInUsers()
     throws AccessNotPossibleException, NoSuchAlgorithmException {
     if (loggedInUsers == null) {
       loggedInUsers = new LoggedInUsers(
         getAuthenticator(),
         getUserStore(),
         autoLogoutTimeout.createTimeout(),
-        getAuthHandler(environment)
+        getAuthHandler(getHttpCaller())
       );
     }
     return loggedInUsers;
   }
 
-  @Deprecated
-  @JsonIgnore
-  public void setLocalfileAccessFactory(LocalfileAccessFactory localfile) {
-    this.localfile = localfile;
-  }
-
-  @Deprecated
-  @JsonIgnore
-  public void setAutoLogoutTimeout(Timeout autoLogoutTimeout) {
-    TimeoutFactory timeoutFactory = new TimeoutFactory();
-    timeoutFactory.setDuration(autoLogoutTimeout.duration);
-    timeoutFactory.setTimeUnit(autoLogoutTimeout.timeUnit);
-    this.autoLogoutTimeout = timeoutFactory;
-  }
-
-  @Deprecated
-  @JsonIgnore
-  public void setAuthHandler(AuthenticationHandler authHandler) {
-    this.authHandler = authHandler;
-  }
-
-  public Iterator<Tuple<String, HealthCheck>> getHealthChecks() {
-    if (localfile != null) {
-      return localfile.getHealthChecks();
-    }
-    if (azure != null) {
-      return azure.getHealthChecks();
-    }
-    return Collections.emptyIterator();
+  public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
+    return localAuthentication.getHealthChecks();
   }
 }
