@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
@@ -9,10 +10,12 @@ import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImmutableDataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -25,6 +28,7 @@ import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.neo4j.graphdb.factory.GraphDatabaseBuilder;
 
 import javax.ws.rs.core.MediaType;
 import java.io.File;
@@ -100,10 +104,24 @@ public class JsonLdEditEndpointTest {
                                    .dataSetMetadataLocation(tempFile.getAbsolutePath())
                                    .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
                                    .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
+                                   .resourceSync(mock(ResourceSync.class))
                                    .build(),
       new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator()));
 
-    QuadStore quadStore = dataSetFactory.createDataSet("userid", "dataset").getQuadStore();
+    NonPersistentBdbDatabaseCreator databaseCreator = new NonPersistentBdbDatabaseCreator();
+    DummyDataProvider dataProvider = new DummyDataProvider();
+
+    final QuadStore quadStore = new BdbTripleStore(
+      dataProvider,
+      databaseCreator,
+      "userId",
+      "dataSetId"
+    );
+
+    dataProvider.start();
+    dataProvider.onQuad("http://example/olddatasetuserid", RdfConstants.TIM_LATEST_REVISION_OF,
+      "oldvalue1", null, null, "http://somegraph");
+    dataProvider.finish();
     MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
 
     JsonLdEditEndpoint jsonLdEditEndpoint =
