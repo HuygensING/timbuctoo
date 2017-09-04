@@ -42,9 +42,10 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
     System.out.println("DROP TABLE " + tableName + ";");
     String createTableString = "CREATE TABLE " + tableName + " (\n";
     for (String column: columns) {
-      createTableString += column + " 'text',\n";
-      createTableString += column + "_type 'text',\n";
+      createTableString += column + " text,\n";
+      createTableString += column + "_type text,\n";
     }
+    createTableString = createTableString.substring(0, createTableString.length()-2);
     createTableString += ");";
     System.out.println(createTableString);
   }
