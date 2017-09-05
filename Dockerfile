@@ -17,3 +17,5 @@ RUN mvn clean package
 COPY ./timbuctoo-instancev4/docker_config.yaml ./timbuctoo-instancev4/docker_config.yaml
 
 CMD ["./timbuctoo-instancev4/target/appassembler/bin/timbuctoo", "server", "./timbuctoo-instancev4/docker_config.yaml"]
+
+RUN mkdir -p /root/data/dataSets

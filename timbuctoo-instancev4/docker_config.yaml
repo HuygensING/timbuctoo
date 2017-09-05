@@ -5,10 +5,10 @@ securityConfiguration:
   localAuthentication:
     "@class": nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory
     # This directory Timbuctoo reads and writes the authorizations a file for each vre.
-    authorizationsPath: "/data/auth/authorizations"
+    authorizationsPath: "/root/data/auth/authorizations"
     #These files contain 1 user with username="user" and password="password"
-    loginsFilePath: "/data/auth/logins.json"
-    usersFilePath: "/data/auth/users.json"
+    loginsFilePath: "/root/data/auth/logins.json"
+    usersFilePath: "/root/data/auth/users.json"
   autoLogoutTimeout:
     duration: 8
     timeUnit: HOURS
@@ -113,7 +113,7 @@ databases:
   databaseLocation: /root/data/datasets
 
 databaseConfiguration:
-  databasePath: "/root/timbuctoo-prod-db"
+  databasePath: "/root/data/neo4j"
 
 dataSet:
   dataSetMetadataLocation: /root/data/datasets
