@@ -43,6 +43,7 @@ java_library(
       "//third_party:org_eclipse_rdf4j_rdf4j_rio_ntriples",
       "//third_party:org_eclipse_rdf4j_rdf4j_rio_turtle",
       "//third_party:org_eclipse_rdf4j_rdf4j_util",
+      "//third_party:org_glassfish_jersey_core_jersey_common",
       "//third_party:org_glassfish_jersey_media_jersey_media_multipart",
       "//third_party:com_graphql_java_graphql_java",
       "//third_party:commons_io_commons_io",
