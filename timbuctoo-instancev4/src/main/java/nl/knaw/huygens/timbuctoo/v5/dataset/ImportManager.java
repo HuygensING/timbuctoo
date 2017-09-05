@@ -52,8 +52,8 @@ public class ImportManager implements DataProvider {
   private final RdfIoFactory serializerFactory;
   private final ExecutorService executorService;
   private final JsonFileBackedData<LogList> logListStore;
-  private final List<Tuple<String, RdfProcessor>> subscribedProcessors;
-  private final List<Tuple<String, EntityProcessor>> subscribedEntityProcessors;
+  private final List<Tuple<Integer, RdfProcessor>> subscribedProcessors;
+  private final List<Tuple<Integer, EntityProcessor>> subscribedEntityProcessors;
   private final Runnable webhooks;
   private EntityProvider entityProvider;
 
@@ -148,17 +148,17 @@ public class ImportManager implements DataProvider {
         try {
           CachedLog log = logStorage.getLog(entry.getLogToken().get());
           final Stopwatch stopwatch = Stopwatch.createStarted();
-          for (Tuple<String, RdfProcessor> subscribedProcessor : subscribedProcessors) {
-            processLogIfNeeded(
-              index,
-              log,
-              entry.getBaseUri(),
-              entry.getDefaultGraph(),
-              subscribedProcessor.getLeft(),
-              subscribedProcessor.getRight()
-            );
+          for (Tuple<Integer, RdfProcessor> subscribedProcessor : subscribedProcessors) {
+            if (subscribedProcessor.getLeft() <= index) {
+              RdfProcessor processor = subscribedProcessor.getRight();
+              RdfParser rdfParser = serializerFactory.makeRdfParser(log);
+              LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing full log...");
+              processor.start();
+              rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
+              processor.finish();
+            }
           }
-          for (Tuple<String, EntityProcessor> processor : subscribedEntityProcessors) {
+          for (Tuple<Integer, EntityProcessor> processor : subscribedEntityProcessors) {
             entityProvider.processEntities(processor.getLeft(), processor.getRight());
           }
 
@@ -227,31 +227,8 @@ public class ImportManager implements DataProvider {
     }
   }
 
-  private void processLogIfNeeded(int index, CachedLog log, String baseUri, String defaultGraph, String currentCursor,
-                                  RdfProcessor processor) throws RdfProcessingFailedException {
-    RdfParser rdfParser = serializerFactory.makeRdfParser(log);
-    if (currentCursor == null) {
-      currentCursor = "";
-    }
-    String[] cursorParts = currentCursor.split("\n", 2);
-    int major = cursorParts[0].isEmpty() ? 0 : Integer.parseInt(cursorParts[0]);
-    if (major < index) {
-      LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing full log...");
-      rdfParser.importRdf(index + "\n", "", log, baseUri, defaultGraph, processor);
-    } else if (major == index) {
-      final String startFrom = cursorParts.length > 1 ? cursorParts[1] : "";
-      if (startFrom.isEmpty()) {
-        LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing full log...");
-      } else {
-        LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing log from " + startFrom +
-          " onwards...");
-      }
-      rdfParser.importRdf(index + "\n", startFrom, log, baseUri, defaultGraph, processor);
-    }
-  }
-
   @Override
-  public void subscribeToRdf(RdfProcessor processor, String cursor) {
+  public void subscribeToRdf(RdfProcessor processor, int cursor) {
     subscribedProcessors.add(Tuple.tuple(cursor, processor));
     if (processor instanceof EntityProvider) {
       entityProvider = (EntityProvider) processor;
@@ -259,7 +236,7 @@ public class ImportManager implements DataProvider {
   }
 
   @Override
-  public void subscribeToEntities(EntityProcessor processor, String cursor) {
+  public void subscribeToEntities(EntityProcessor processor, int cursor) {
     subscribedEntityProcessors.add(Tuple.tuple(cursor, processor));
   }
 

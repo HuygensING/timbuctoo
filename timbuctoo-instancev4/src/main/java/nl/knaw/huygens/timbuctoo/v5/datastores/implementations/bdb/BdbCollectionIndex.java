@@ -20,7 +20,7 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   public BdbCollectionIndex(DataProvider dataProvider, BdbDatabaseCreator factory, String userId, String dataSetId)
     throws DataStoreCreationException {
     super(factory, "collectionIndex", userId, dataSetId);
-    dataProvider.subscribeToRdf(this, null);
+    dataProvider.subscribeToRdf(this, 0);
   }
 
   @Override
@@ -33,10 +33,10 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   }
 
   @Override
-  public void setPrefix(String cursor, String prefix, String iri) {}
+  public void setPrefix(String prefix, String iri) {}
 
   @Override
-  public void addRelation(String cursor, String subject, String predicate, String object, String graph)
+  public void addRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
     if (predicate.equals(RDF_TYPE)) {
       try {
@@ -48,7 +48,7 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   }
 
   @Override
-  public void delRelation(String cursor, String subject, String predicate, String object, String graph)
+  public void delRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
     if (predicate.equals(RDF_TYPE)) {
       try {
@@ -61,25 +61,25 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
 
 
   @Override
-  public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
+  public void addValue(String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
     // no implementation needed
   }
 
   @Override
-  public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
+  public void addLanguageTaggedString(String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
     // no implementation needed
   }
 
   @Override
-  public void delValue(String cursor, String subject, String predicate, String value, String valueType, String graph)
+  public void delValue(String subject, String predicate, String value, String valueType, String graph)
       throws RdfProcessingFailedException {
     // no implementation needed
   }
 
   @Override
-  public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
+  public void delLanguageTaggedString(String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
     // no implementation needed
   }

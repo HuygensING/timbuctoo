@@ -39,7 +39,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
   public BdbTripleStore(DataProvider dataProvider, BdbDatabaseCreator dbFactory, String userId, String datasetId)
     throws DataStoreCreationException {
     super(dbFactory, "rdfData", userId, datasetId);
-    dataProvider.subscribeToRdf(this, null);
+    dataProvider.subscribeToRdf(this, 0);
   }
 
   protected DatabaseConfig getDatabaseConfig() {
@@ -90,7 +90,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
   }
 
   @Override
-  public void setPrefix(String cursor, String prefix, String iri) throws RdfProcessingFailedException {}
+  public void setPrefix(String prefix, String iri) throws RdfProcessingFailedException {}
 
   private void putQuad(String subject, String predicate, Direction direction, String dataType, String language,
                        String object) throws RdfProcessingFailedException {
@@ -113,45 +113,45 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
   }
 
   @Override
-  public void addRelation(String cursor, String subject, String predicate, String object, String graph)
+  public void addRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
     putQuad(subject, predicate, Direction.OUT, null, null, object);
     putQuad(object, predicate, Direction.IN, null, null, subject);
   }
 
   @Override
-  public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
+  public void addValue(String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
     putQuad(subject, predicate, Direction.OUT, dataType, null, value);
   }
 
   @Override
-  public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
+  public void addLanguageTaggedString(String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
     putQuad(subject, predicate, Direction.OUT, LANGSTRING, language, value);
   }
 
   @Override
-  public void delRelation(String cursor, String subject, String predicate, String object, String graph)
+  public void delRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
     deleteQuad(subject, predicate, Direction.OUT, null, null, object);
     deleteQuad(object, predicate, Direction.IN, null, null, subject);
   }
 
   @Override
-  public void delValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
+  public void delValue(String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
     deleteQuad(subject, predicate, Direction.OUT, dataType, null, value);
   }
 
   @Override
-  public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
+  public void delLanguageTaggedString(String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
     deleteQuad(subject, predicate, Direction.OUT, LANGSTRING, language, value);
   }
 
   @Override
-  public void processEntities(String cursor, EntityProcessor processor) throws RdfProcessingFailedException {
+  public void processEntities(int cursor, EntityProcessor processor) throws RdfProcessingFailedException {
     ListMultimap<String, PredicateData> predicates = MultimapBuilder.hashKeys().arrayListValues().build();
     Map<String, Boolean> inversePredicates = new HashMap<>();
     String curSubject = "";

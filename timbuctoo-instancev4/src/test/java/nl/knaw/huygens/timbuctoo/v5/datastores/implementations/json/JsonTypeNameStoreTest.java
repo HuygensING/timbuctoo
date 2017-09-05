@@ -19,17 +19,17 @@ public class JsonTypeNameStoreTest {
       tempFile,
       new DataProvider() {
         @Override
-        public void subscribeToRdf(RdfProcessor processor, String cursor) {
+        public void subscribeToRdf(RdfProcessor processor, int cursor) {
           try {
-            processor.setPrefix("1", "_", "http://example.com/underscore#");
-            processor.setPrefix("2", "foo", "http://example.com/foo#");
+            processor.setPrefix("_", "http://example.com/underscore#");
+            processor.setPrefix("foo", "http://example.com/foo#");
           } catch (RdfProcessingFailedException e) {
             throw new RuntimeException(e);
           }
         }
 
         @Override
-        public void subscribeToEntities(EntityProcessor processor, String cursor) {
+        public void subscribeToEntities(EntityProcessor processor, int cursor) {
 
         }
       }

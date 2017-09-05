@@ -35,7 +35,7 @@ public class JsonTypeNameStore implements TypeNameStore {
     data = store.getData();
     prefixMapping.setNsPrefixes(data.prefixes);
 
-    dataProvider.subscribeToRdf(new Subscription(), null);
+    dataProvider.subscribeToRdf(new Subscription(), 0);
   }
 
   //I think that a fully reversable shortened version looks ugly. And usually this is not needed
@@ -118,42 +118,42 @@ public class JsonTypeNameStore implements TypeNameStore {
   private class Subscription implements RdfProcessor {
 
     @Override
-    public void setPrefix(String cursor, String prefix, String iri) throws RdfProcessingFailedException {
+    public void setPrefix(String prefix, String iri) throws RdfProcessingFailedException {
       addPrefix(data, prefix, iri);
     }
 
     @Override
-    public void addRelation(String cursor, String subject, String predicate, String object, String graph)
+    public void addRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
       // no implementation needed
     }
 
     @Override
-    public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
+    public void addValue(String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
       // no implementation needed
     }
 
     @Override
-    public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
+    public void addLanguageTaggedString(String subject, String predicate, String value, String language,
                                         String graph) throws RdfProcessingFailedException {
       // no implementation needed
     }
 
     @Override
-    public void delRelation(String cursor, String subject, String predicate, String object, String graph)
+    public void delRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
       // no implementation needed
     }
 
     @Override
-    public void delValue(String cursor, String subject, String predicate, String value, String valueType, String graph)
+    public void delValue(String subject, String predicate, String value, String valueType, String graph)
       throws RdfProcessingFailedException {
       // no implementation needed
     }
 
     @Override
-    public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
+    public void delLanguageTaggedString(String subject, String predicate, String value, String language,
                                         String graph) throws RdfProcessingFailedException {
       // no implementation needed
     }

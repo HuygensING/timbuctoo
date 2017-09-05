@@ -100,7 +100,7 @@ public class RmlDataSourceStoreTest {
     }
 
     @Override
-    public void subscribeToRdf(RdfProcessor processor, String cursor) {
+    public void subscribeToRdf(RdfProcessor processor, int cursor) {
       RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
 
       try {
@@ -117,7 +117,7 @@ public class RmlDataSourceStoreTest {
     }
 
     @Override
-    public void subscribeToEntities(EntityProcessor processor, String cursor) {
+    public void subscribeToEntities(EntityProcessor processor, int cursor) {
 
     }
 
@@ -152,7 +152,7 @@ public class RmlDataSourceStoreTest {
     public void onRelation(String subject, String predicate, String object, String graph)
       throws LogStorageFailedException {
       try {
-        processor.addRelation("", subject, predicate, object, graph);
+        processor.addRelation(subject, predicate, object, graph);
       } catch (RdfProcessingFailedException e) {
         throw new LogStorageFailedException(e.getCause());
       }
@@ -162,7 +162,7 @@ public class RmlDataSourceStoreTest {
     public void onValue(String subject, String predicate, String value, String valueType, String graph)
       throws LogStorageFailedException {
       try {
-        processor.addValue("", subject, predicate, value, valueType, graph);
+        processor.addValue(subject, predicate, value, valueType, graph);
       } catch (RdfProcessingFailedException e) {
         throw new LogStorageFailedException(e.getCause());
       }
@@ -173,7 +173,7 @@ public class RmlDataSourceStoreTest {
                                        String graph)
       throws LogStorageFailedException {
       try {
-        processor.addValue("", subject, predicate, value, language, graph);
+        processor.addValue(subject, predicate, value, language, graph);
       } catch (RdfProcessingFailedException e) {
         throw new LogStorageFailedException(e.getCause());
       }

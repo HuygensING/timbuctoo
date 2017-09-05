@@ -34,7 +34,7 @@ public class JsonSchemaStore implements SchemaStore {
         throw new SchemaUpdateException(e);
       }
     };
-    dataProvider.subscribeToEntities(new SchemaEntityProcessor(schemaUpdater), null);
+    dataProvider.subscribeToEntities(new SchemaEntityProcessor(schemaUpdater), 0);
   }
 
   @Override

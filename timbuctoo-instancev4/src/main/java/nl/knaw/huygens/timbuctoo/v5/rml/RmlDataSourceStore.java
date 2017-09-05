@@ -28,7 +28,7 @@ public class RmlDataSourceStore {
   public RmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
     throws DataStoreCreationException {
     bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig(), binder);
-    dataSet.subscribeToRdf(new RdfHandler(this), null);
+    dataSet.subscribeToRdf(new RdfHandler(this), 0);
   }
 
   private DatabaseConfig getConfig() {
@@ -63,12 +63,12 @@ public class RmlDataSourceStore {
     }
 
     @Override
-    public void setPrefix(String cursor, String prefix, String iri) throws RdfProcessingFailedException {
+    public void setPrefix(String prefix, String iri) throws RdfProcessingFailedException {
 
     }
 
     @Override
-    public void addRelation(String cursor, String subject, String predicate, String object, String graph)
+    public void addRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
       if (TIM_HAS_ROW.equals(predicate)) {
         rmlDataSourceStore.put(object, subject);
@@ -76,7 +76,7 @@ public class RmlDataSourceStore {
     }
 
     @Override
-    public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
+    public void addValue(String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
       if (predicates.containsKey(predicate)) {
         rmlDataSourceStore.put(subject, StringEscapeUtils.escapeJava(predicates.get(predicate)) + "\n" + value);
@@ -86,7 +86,7 @@ public class RmlDataSourceStore {
     }
 
     @Override
-    public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
+    public void addLanguageTaggedString(String subject, String predicate, String value, String language,
                                         String graph) throws RdfProcessingFailedException {
       if (predicates.containsKey(predicate)) {
         rmlDataSourceStore.put(subject, StringEscapeUtils.escapeJava(predicates.get(predicate)) + "\n" + value);
@@ -98,15 +98,15 @@ public class RmlDataSourceStore {
     // delete is basically not used, so these methods will not be implemented for now.
 
     @Override
-    public void delRelation(String cursor, String subject, String predicate, String object, String graph)
+    public void delRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException { }
 
     @Override
-    public void delValue(String cursor, String subject, String predicate, String value, String valueType, String graph)
+    public void delValue(String subject, String predicate, String value, String valueType, String graph)
       throws RdfProcessingFailedException { }
 
     @Override
-    public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
+    public void delLanguageTaggedString(String subject, String predicate, String value, String language,
                                         String graph) throws RdfProcessingFailedException { }
 
     @Override

@@ -16,8 +16,9 @@ import java.io.IOException;
 
 public class Rdf4jRdfParser implements RdfParser {
   @Override
-  public void importRdf(String cursorPrefix, String startFrom, CachedLog input, String baseUri, String defaultGraph,
-                        RdfProcessor rdfProcessor) throws RdfProcessingFailedException {
+  public void importRdf(CachedLog input, String baseUri, String defaultGraph, RdfProcessor rdfProcessor)
+    throws RdfProcessingFailedException {
+
     try {
       RDFFormat format = Rio.getParserFormatForMIMEType(input.getMimeType().toString())
         .orElseThrow(
@@ -25,8 +26,7 @@ public class Rdf4jRdfParser implements RdfParser {
         );
       RDFParser rdfParser = Rio.createParser(format);
       rdfParser.setPreserveBNodeIDs(true);
-      int startFromInt = startFrom.isEmpty() ? 0 : Integer.parseInt(startFrom);
-      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, defaultGraph, cursorPrefix, startFromInt));
+      rdfParser.setRDFHandler(new TimRdfHandler(rdfProcessor, defaultGraph));
       rdfParser.parse(input.getReader(), baseUri);
     } catch (IOException | RDFParseException | UnsupportedRDFormatException e) {
       throw new RdfProcessingFailedException(e);
