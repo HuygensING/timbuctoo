@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
@@ -35,9 +36,8 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
   }
 
   @Override
-  public BdbWrapper getDatabase(String userId, String dataSetId, String databaseName,
-                                DatabaseConfig config)
-    throws DataStoreCreationException {
+  public <T> BdbWrapper<T> getDatabase(String userId, String dataSetId, String databaseName,
+                                DatabaseConfig config, EntryBinding<T> binder) throws DataStoreCreationException {
     String environmentKey = environmentKey(userId, dataSetId);
     String databaseKey = environmentKey + "_" + databaseName;
     if (!databases.containsKey(databaseKey)) {
@@ -56,7 +56,7 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
         throw new DataStoreCreationException(e);
       }
     }
-    return new BdbWrapper(environmentMap.get(environmentKey), databases.get(databaseKey), config);
+    return new BdbWrapper<>(environmentMap.get(environmentKey), databases.get(databaseKey), config, binder);
   }
 
   private String environmentKey(String userId, String dataSetId) {

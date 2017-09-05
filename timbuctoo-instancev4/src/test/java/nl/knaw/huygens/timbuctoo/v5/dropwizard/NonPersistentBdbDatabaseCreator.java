@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard;
 
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
+import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
@@ -41,8 +42,9 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
   }
 
   @Override
-  public BdbWrapper getDatabase(String userId, String dataSetId, String databaseName,
-                                DatabaseConfig config) throws DataStoreCreationException {
+  public <T> BdbWrapper<T> getDatabase(String userId, String dataSetId, String databaseName,
+                                       DatabaseConfig config, EntryBinding<T> binder)
+    throws DataStoreCreationException {
     try {
       String environmentKey = environmentKey(userId, dataSetId);
       File envHome = new File(dbHome, environmentKey);
@@ -51,7 +53,7 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
       Database database = dataSetEnvironment.openDatabase(null, databaseName, config);
       databases.put(environmentKey + "_" + databaseName, database);
       environmentMap.put(environmentKey, dataSetEnvironment);
-      return new BdbWrapper(dataSetEnvironment, database, config);
+      return new BdbWrapper<>(dataSetEnvironment, database, config, binder);
     } catch (DatabaseException e) {
       throw new DataStoreCreationException(e);
     }

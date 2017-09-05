@@ -4,24 +4,20 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
 import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.LockMode;
-import com.sleepycat.je.OperationStatus;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseFunction;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PredicateData;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RelationPredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ValuePredicate;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -32,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -55,62 +52,31 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
 
   @Override
   public Stream<CursorQuad> getQuads(String subject, String predicate, Direction direction, String cursor) {
-    DatabaseEntry key = new DatabaseEntry();
-    DatabaseEntry value = new DatabaseEntry();
-
-    DatabaseFunction iterateForwards = dbCursor -> dbCursor.getNextDup(key, value, LockMode.DEFAULT);
-    DatabaseFunction iterateBackwards = dbCursor -> dbCursor.getPrevDup(key, value, LockMode.DEFAULT);
-
-    DatabaseFunction initializer;
-    DatabaseFunction iterator;
+    final DatabaseGetter<String> getter;
     if (cursor.isEmpty()) {
-      binder.objectToEntry((subject + "\n" + predicate + "\n" + direction.name()), key);
-      initializer = dbCursor -> dbCursor.getSearchKey(key, value, LockMode.DEFAULT);
-      iterator = iterateForwards;
+      getter = bdbWrapper.databaseGetter()
+        .startAtKey((subject + "\n" + predicate + "\n" + direction.name()))
+        .getAllWithSameKey(true);
     } else {
       if (cursor.equals("LAST")) {
-        binder.objectToEntry((subject + "\n" + predicate + "\n" + direction.name()), key);
-        initializer = dbCursor -> {
-          OperationStatus status = dbCursor.getSearchKey(key, value, LockMode.DEFAULT);
-          if (status == OperationStatus.SUCCESS) {
-            status = dbCursor.getNextNoDup(key, value, LockMode.DEFAULT);
-            if (status == OperationStatus.SUCCESS) {
-              return dbCursor.getPrev(key, value, LockMode.DEFAULT);
-            } else {
-              return dbCursor.getLast(key, value, LockMode.DEFAULT);
-            }
-          } else {
-            return status;
-          }
-        };
-        iterator = iterateBackwards;
+        getter = bdbWrapper.databaseGetter()
+          .startAtEndOfKeyDuplicates((subject + "\n" + predicate + "\n" + direction.name()))
+          .getAllWithSameKey(false);
       } else {
         String[] fields = cursor.substring(2).split("\n");
-        binder.objectToEntry(fields[0] + "\n" + fields[1] + "\n" + fields[2], key);
-        binder.objectToEntry(fields[3] + "\n" + fields[4] + "\n" + fields[5], value);
-        if (cursor.startsWith("D\n")) {
-          iterator = iterateBackwards;
-        } else {
-          iterator = iterateForwards;
-        }
-        initializer = dbCursor -> {
-          OperationStatus status = dbCursor.getSearchBoth(key, value, LockMode.DEFAULT);
-          if (status == OperationStatus.SUCCESS) {
-            return iterator.apply(dbCursor);
-          }
-          return status;
-        };
+        getter = bdbWrapper.databaseGetter()
+          .startAfterValue(
+            fields[0] + "\n" + fields[1] + "\n" + fields[2],
+            fields[3] + "\n" + fields[4] + "\n" + fields[5]
+          )
+          .getAllWithSameKey(cursor.startsWith("A\n"));
       }
     }
-    return getItems(
-      initializer,
-      iterator,
-      () -> formatResult(key, value)
-    );
+    return getter.getKeysAndValues(this::formatResult);
   }
 
-  private CursorQuad formatResult(DatabaseEntry key, DatabaseEntry value) {
-    String cursor = binder.entryToObject(key) + "\n" + binder.entryToObject(value);
+  private CursorQuad formatResult(String key, String value) {
+    String cursor = key + "\n" + value;
     String[] keyFields = cursor.split("\n", 6);
     return CursorQuad.create(
       keyFields[0],
@@ -126,104 +92,62 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
   @Override
   public void setPrefix(String cursor, String prefix, String iri) throws RdfProcessingFailedException {}
 
+  private void putQuad(String subject, String predicate, Direction direction, String dataType, String language,
+                       String object) throws RdfProcessingFailedException {
+    try {
+      String value = (dataType == null ? "" : dataType) + "\n" + (language == null ? "" : language) + "\n" + object;
+      bdbWrapper.put(transaction, subject + "\n" + predicate + "\n" + direction.name(), value);
+    } catch (DatabaseWriteException e) {
+      throw new RdfProcessingFailedException(e.getCause());
+    }
+  }
+
+  private void deleteQuad(String subject, String predicate, Direction direction, String dataType, String language,
+                          String object) throws RdfProcessingFailedException {
+    try {
+      String value = (dataType == null ? "" : dataType) + "\n" + (language == null ? "" : language) + "\n" + object;
+      bdbWrapper.delete(transaction, subject + "\n" + predicate + "\n" + direction.name(), value);
+    } catch (DatabaseWriteException e) {
+      throw new RdfProcessingFailedException(e.getCause());
+    }
+  }
+
   @Override
   public void addRelation(String cursor, String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
-
-    put(subject + "\n" +
-        predicate + "\n" + Direction.OUT.name(),
-        /*dataType*/ "\n" +
-        /*language*/ "\n" +
-        object
-    );
-    if (!predicate.equals(RDF_TYPE)) {
-      put(object + "\n" +
-          predicate + "\n" + Direction.IN.name(),
-            /*dataType*/ "\n" +
-            /*language*/ "\n" +
-          subject
-      );
-    }
+    putQuad(subject, predicate, Direction.OUT, null, null, object);
+    putQuad(object, predicate, Direction.IN, null, null, subject);
   }
 
   @Override
   public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
-    try {
-      put(subject + "\n" +
-        predicate + "\n" + Direction.OUT.name(),
-        dataType + "\n" +
-        /*language*/ "\n" +
-        value
-      );
-    } catch (DatabaseException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+    putQuad(subject, predicate, Direction.OUT, dataType, null, value);
   }
 
   @Override
   public void addLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
-    try {
-      put(subject + "\n" +
-          predicate + "\n" + Direction.OUT.name(),
-          RdfConstants.LANGSTRING + "\n" +
-          language + "\n" +
-          value
-      );
-    } catch (DatabaseException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+    putQuad(subject, predicate, Direction.OUT, LANGSTRING, language, value);
   }
 
   @Override
   public void delRelation(String cursor, String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
-
-    delete(subject + "\n" +
-        predicate + "\n" + Direction.OUT.name(),
-        /*dataType*/ "\n" +
-        /*language*/ "\n" +
-        object
-    );
-    if (!predicate.equals(RDF_TYPE)) {
-      delete(object + "\n" +
-          predicate + "\n" + Direction.IN.name(),
-            /*dataType*/ "\n" +
-            /*language*/ "\n" +
-          subject
-      );
-    }
+    deleteQuad(subject, predicate, Direction.OUT, null, null, object);
+    deleteQuad(object, predicate, Direction.IN, null, null, subject);
   }
 
   @Override
   public void delValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
-    try {
-      delete(subject + "\n" +
-          predicate + "\n" + Direction.OUT.name(),
-        dataType + "\n" +
-      /*language*/ "\n" +
-          value
-      );
-    } catch (DatabaseException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+    deleteQuad(subject, predicate, Direction.OUT, dataType, null, value);
   }
 
   @Override
   public void delLanguageTaggedString(String cursor, String subject, String predicate, String value, String language,
                                       String graph) throws RdfProcessingFailedException {
-    try {
-      delete(subject + "\n" +
-          predicate + "\n" + Direction.OUT.name(),
-        RdfConstants.LANGSTRING + "\n" +
-          language + "\n" +
-          value
-      );
-    } catch (DatabaseException e) {
-      throw new RdfProcessingFailedException(e);
-    }
+    deleteQuad(subject, predicate, Direction.OUT, LANGSTRING, language, value);
   }
 
   @Override
@@ -233,15 +157,12 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
     String curSubject = "";
     processor.start();
 
-    DatabaseEntry key = new DatabaseEntry();
-    DatabaseEntry value = new DatabaseEntry();
-    DatabaseFunction getNext = dbCursor -> dbCursor.getNext(key, value, LockMode.DEFAULT);
-
     Stopwatch stopwatch = Stopwatch.createStarted();
     int prevTripleCount = 0;
     int tripleCount = 0;
     int subjectCount = 0;
-    try (Stream<CursorQuad> quadStream = getItems(getNext, getNext, () -> formatResult(key, value))) {
+
+    try (Stream<CursorQuad> quadStream = bdbWrapper.databaseGetter().getAll().getKeysAndValues(this::formatResult)) {
       Iterator<CursorQuad> quads = quadStream.iterator();
       while (quads.hasNext()) {
         tripleCount++;

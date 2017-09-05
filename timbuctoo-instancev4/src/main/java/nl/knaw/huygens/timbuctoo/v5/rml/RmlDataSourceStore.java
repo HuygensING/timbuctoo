@@ -3,15 +3,14 @@ package nl.knaw.huygens.timbuctoo.v5.rml;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.LockMode;
 import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.HashMap;
@@ -22,15 +21,13 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
 
 public class RmlDataSourceStore {
-  protected final BdbWrapper bdbWrapper;
+  protected final BdbWrapper<String> bdbWrapper;
   protected final EntryBinding<String> binder = TupleBinding.getPrimitiveBinding(String.class);
   protected Transaction transaction;
-  private final DatabaseEntry key = new DatabaseEntry();
-  private final DatabaseEntry value = new DatabaseEntry();
 
   public RmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
     throws DataStoreCreationException {
-    bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig());
+    bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig(), binder);
     dataSet.subscribeToRdf(new RdfHandler(this), null);
   }
 
@@ -42,21 +39,17 @@ public class RmlDataSourceStore {
   }
 
   public Stream<String> get(String collectionUri) {
-    DatabaseEntry key = new DatabaseEntry();
-    DatabaseEntry value = new DatabaseEntry();
-    binder.objectToEntry(collectionUri, key);
-    return bdbWrapper.getItems(
-      cursor -> cursor.getSearchKey(key, value, LockMode.DEFAULT),
-      cursor -> cursor.getNextDup(key, value, LockMode.DEFAULT),
-      () -> binder.entryToObject(value)
-    );
+    return bdbWrapper.databaseGetter()
+      .startAtKey(collectionUri)
+      .getAllWithSameKey(true)
+      .getValues();
   }
 
-  public void put(String key, String value) {
-    synchronized (this.key) {
-      binder.objectToEntry(key, this.key);
-      binder.objectToEntry(value, this.value);
-      bdbWrapper.put(transaction, this.key, this.value);
+  public void put(String key, String value) throws RdfProcessingFailedException {
+    try {
+      bdbWrapper.put(transaction, key, value);
+    } catch (DatabaseWriteException e) {
+      throw new RdfProcessingFailedException(e.getCause());
     }
   }
 

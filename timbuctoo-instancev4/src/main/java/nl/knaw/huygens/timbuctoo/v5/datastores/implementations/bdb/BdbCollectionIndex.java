@@ -1,18 +1,15 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.LockMode;
-import com.sleepycat.je.OperationStatus;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseFunction;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CursorSubject;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CursorSubject;
 
 import java.util.stream.Stream;
 
@@ -43,9 +40,9 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
       throws RdfProcessingFailedException {
     if (predicate.equals(RDF_TYPE)) {
       try {
-        put(object, subject);
-      } catch (DatabaseException e) {
-        throw new RdfProcessingFailedException(e);
+        bdbWrapper.put(transaction, object, subject);
+      } catch (DatabaseWriteException e) {
+        throw new RdfProcessingFailedException(e.getCause());
       }
     }
   }
@@ -55,9 +52,9 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
       throws RdfProcessingFailedException {
     if (predicate.equals(RDF_TYPE)) {
       try {
-        delete(object, subject);
-      } catch (DatabaseException e) {
-        throw new RdfProcessingFailedException(e);
+        bdbWrapper.delete(transaction, object, subject);
+      } catch (DatabaseWriteException e) {
+        throw new RdfProcessingFailedException(e.getCause());
       }
     }
   }
@@ -89,69 +86,25 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
 
   @Override
   public Stream<CursorSubject> getSubjects(String collectionName, String cursor) {
-    DatabaseEntry key = new DatabaseEntry();
-    DatabaseEntry value = new DatabaseEntry();
-
-    DatabaseFunction initializer;
-    DatabaseFunction iterator;
-
-    DatabaseFunction forwardMovingIterator = dbCursor -> dbCursor.getNextDup(key, value, LockMode.DEFAULT);
-    DatabaseFunction backwardMovingIterator = dbCursor -> dbCursor.getPrevDup(key, value, LockMode.DEFAULT);
-
+    final DatabaseGetter<String> getter;
     if (cursor.isEmpty()) {
-      //initializer starts at the collection
-      binder.objectToEntry(collectionName, key);
-      initializer = dbCursor -> dbCursor.getSearchKey(key, value, LockMode.DEFAULT);
-
-      iterator = forwardMovingIterator;
+      getter = bdbWrapper.databaseGetter()
+        .startAtKey(collectionName)
+        .getAllWithSameKey(true);
     } else {
       if ("LAST".equals(cursor)) {
-        //initializer starts at the next collection and moves one step back
-        binder.objectToEntry(collectionName, key);
-        initializer = dbCursor -> {
-          OperationStatus status = dbCursor.getSearchKey(key, value, LockMode.DEFAULT);
-          if (status == OperationStatus.SUCCESS) {
-            status = dbCursor.getNextNoDup(key, value, LockMode.DEFAULT);
-            if (status == OperationStatus.SUCCESS) {
-              status = dbCursor.getPrev(key, value, LockMode.DEFAULT);
-            } else {
-              //go to end
-              status = dbCursor.getLast(key, value, LockMode.DEFAULT);
-            }
-          }
-          return status;
-        };
-
-        iterator = backwardMovingIterator;
+        getter = bdbWrapper.databaseGetter()
+          .startAtEndOfKeyDuplicates(collectionName)
+          .getAllWithSameKey(false);
       } else {
         //initializer starts at the cursor.substring(2)
-        binder.objectToEntry(collectionName, key);
-        binder.objectToEntry(cursor.substring(2), value);
-        if (cursor.startsWith("D\n")) {
-          iterator = backwardMovingIterator;
-        } else {
-          iterator = forwardMovingIterator;
-        }
-        initializer = dbCursor -> {
-          OperationStatus status = dbCursor.getSearchBoth(key, value, LockMode.DEFAULT);
-          if (status == OperationStatus.SUCCESS) {
-            return iterator.apply(dbCursor);
-          } else {
-            return status;
-          }
-        };
+        getter = bdbWrapper.databaseGetter()
+          .startAfterValue(collectionName, cursor.substring(2))
+          .getAllWithSameKey(cursor.startsWith("A\n"));
       }
     }
 
-    return getItems(
-      initializer,
-      iterator,
-      () -> {
-        String subject = binder.entryToObject(value);
-        return CursorSubject.create(subject, subject);
-      }
-    );
+    return getter.getValues().map(s -> CursorSubject.create(s, s));
   }
-
 
 }
