@@ -182,7 +182,7 @@ public class RmlDataSourceStoreTest {
     @Override
     public void close() throws LogStorageFailedException {
       try {
-        processor.finish();
+        processor.commit();
       } catch (RdfProcessingFailedException e) {
         throw new LogStorageFailedException(e.getCause());
       }

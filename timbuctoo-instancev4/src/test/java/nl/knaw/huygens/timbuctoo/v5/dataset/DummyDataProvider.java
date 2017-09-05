@@ -29,6 +29,6 @@ public class DummyDataProvider implements DataProvider {
   }
 
   public void finish() throws RdfProcessingFailedException {
-    processor.finish();
+    processor.commit();
   }
 }

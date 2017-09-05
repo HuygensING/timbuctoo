@@ -45,7 +45,7 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   }
 
   @Override
-  public void finish() throws RdfProcessingFailedException {
+  public void commit() throws RdfProcessingFailedException {
     LOG.info("processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds (pre-sync)");
     stopwatch.reset();
     stopwatch.start();

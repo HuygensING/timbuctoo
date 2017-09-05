@@ -164,7 +164,7 @@ public class JsonTypeNameStore implements TypeNameStore {
     }
 
     @Override
-    public void finish() throws RdfProcessingFailedException {
+    public void commit() throws RdfProcessingFailedException {
       try {
         store.updateData(old -> data);
       } catch (IOException e) {

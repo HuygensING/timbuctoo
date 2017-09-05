@@ -43,7 +43,7 @@ public class TimRdfHandler extends AbstractRDFHandler {
   public void handleStatement(Statement st) throws RDFHandlerException {
     try {
       if (Thread.currentThread().isInterrupted()) {
-        rdfProcessor.finish();
+        rdfProcessor.commit();
         throw new RDFHandlerException("Interrupted");
       }
       String graph = st.getContext() == null ? fileUri : st.getContext().stringValue();

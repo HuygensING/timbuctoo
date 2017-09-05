@@ -52,5 +52,5 @@ public interface RdfProcessor {
 
   void start(int index) throws RdfProcessingFailedException;
 
-  void finish() throws RdfProcessingFailedException;
+  void commit() throws RdfProcessingFailedException;
 }

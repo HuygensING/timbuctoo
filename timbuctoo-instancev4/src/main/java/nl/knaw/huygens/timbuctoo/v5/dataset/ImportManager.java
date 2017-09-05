@@ -155,7 +155,7 @@ public class ImportManager implements DataProvider {
               LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing full log...");
               processor.start(index);
               rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
-              processor.finish();
+              processor.commit();
             }
           }
           for (Tuple<Integer, EntityProcessor> processor : subscribedEntityProcessors) {

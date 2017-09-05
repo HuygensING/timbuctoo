@@ -280,7 +280,7 @@ public class ImportManagerTest {
     }
 
     @Override
-    public void finish() throws RdfProcessingFailedException {
+    public void commit() throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
   }
