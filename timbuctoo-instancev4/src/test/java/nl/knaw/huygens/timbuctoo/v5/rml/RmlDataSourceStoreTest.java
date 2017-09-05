@@ -100,7 +100,7 @@ public class RmlDataSourceStoreTest {
     }
 
     @Override
-    public void subscribeToRdf(RdfProcessor processor, int cursor) {
+    public void subscribeToRdf(RdfProcessor processor) {
       RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
 
       try {
@@ -117,7 +117,7 @@ public class RmlDataSourceStoreTest {
     }
 
     @Override
-    public void subscribeToEntities(EntityProcessor processor, int cursor) {
+    public void subscribeToEntities(EntityProcessor processor) {
 
     }
 

@@ -7,10 +7,12 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import java.util.Map;
 
 public interface EntityProcessor {
-  void start();
+  void start(int index);
 
   void processEntity(String cursor, String subject, ListMultimap<String, PredicateData> addedPredicates,
                      Map<String, Boolean> inverseLists) throws RdfProcessingFailedException;
+
+  int getCurrentVersion();
 
   void finish();
 }

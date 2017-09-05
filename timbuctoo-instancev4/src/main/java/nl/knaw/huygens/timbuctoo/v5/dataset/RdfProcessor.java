@@ -52,5 +52,7 @@ public interface RdfProcessor {
 
   void start(int index) throws RdfProcessingFailedException;
 
+  int getCurrentVersion();
+
   void commit() throws RdfProcessingFailedException;
 }

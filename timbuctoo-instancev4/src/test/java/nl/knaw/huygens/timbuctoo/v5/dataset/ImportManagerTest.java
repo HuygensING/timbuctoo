@@ -117,7 +117,7 @@ public class ImportManagerTest {
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
     CountingProcessor processor = new CountingProcessor();
-    importManager.subscribeToRdf(processor, 0);
+    importManager.subscribeToRdf(processor);
 
 
     Future<?> promise = importManager.addLog(
@@ -137,7 +137,7 @@ public class ImportManagerTest {
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
     CountingProcessor processor = new CountingProcessor();
-    importManager.subscribeToRdf(processor, 0);
+    importManager.subscribeToRdf(processor);
 
     Future<?> promise = importManager.generateLog(
       baseUri,
@@ -220,6 +220,7 @@ public class ImportManagerTest {
 
   private static class CountingProcessor implements RdfProcessor {
     private final AtomicInteger counter;
+    private int currentVersion = -1;
 
     public CountingProcessor() {
       counter = new AtomicInteger();
@@ -276,7 +277,13 @@ public class ImportManagerTest {
 
     @Override
     public void start(int index) throws RdfProcessingFailedException {
+      currentVersion = index;
       counter.incrementAndGet();
+    }
+
+    @Override
+    public int getCurrentVersion() {
+      return currentVersion;
     }
 
     @Override

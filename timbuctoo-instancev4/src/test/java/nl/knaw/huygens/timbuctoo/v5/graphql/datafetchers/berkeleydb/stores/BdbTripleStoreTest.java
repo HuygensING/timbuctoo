@@ -160,9 +160,9 @@ public class BdbTripleStoreTest {
   @Test
   public void relationQuadRetractionRemovesTheQuadFromTheStore() throws Exception {
     dataProvider.start();
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
+    dataProvider.onQuad(true, EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
+    dataProvider.onQuad(true, EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
+    dataProvider.onQuad(false, EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
     dataProvider.finish();
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "");
@@ -177,9 +177,9 @@ public class BdbTripleStoreTest {
   @Test
   public void relationQuadRetractionRemovesTheReverseRelationQuadFromTheStore() throws Exception {
     dataProvider.start();
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
+    dataProvider.onQuad(true, EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
+    dataProvider.onQuad(true, EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
+    dataProvider.onQuad(false, EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
     dataProvider.finish();
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject2", "http://pred_inverse", Direction.OUT, "");
@@ -192,9 +192,9 @@ public class BdbTripleStoreTest {
   @Test
   public void langStringQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
     dataProvider.start();
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
-    dataProvider.onQuad(true,"", EX + "subject1", "http://pred", "Gauthier", LANGSTRING, "FR-fr", "http://some graph");
-    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
+    dataProvider.onQuad(true, EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
+    dataProvider.onQuad(true, EX + "subject1", "http://pred", "Gauthier", LANGSTRING, "FR-fr", "http://some graph");
+    dataProvider.onQuad(false, EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
     dataProvider.finish();
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "");
@@ -207,9 +207,9 @@ public class BdbTripleStoreTest {
   @Test
   public void valueQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
     dataProvider.start();
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "14", "http://number", null, "http://some graph");
-    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
+    dataProvider.onQuad(true, EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
+    dataProvider.onQuad(true, EX + "subject1", "http://pred", "14", "http://number", null, "http://some graph");
+    dataProvider.onQuad(false, EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
     dataProvider.finish();
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "");

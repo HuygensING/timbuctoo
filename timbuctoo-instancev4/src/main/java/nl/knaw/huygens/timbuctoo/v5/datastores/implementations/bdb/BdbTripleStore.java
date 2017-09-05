@@ -39,7 +39,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
   public BdbTripleStore(DataProvider dataProvider, BdbDatabaseCreator dbFactory, String userId, String datasetId)
     throws DataStoreCreationException {
     super(dbFactory, "rdfData", userId, datasetId);
-    dataProvider.subscribeToRdf(this, 0);
+    dataProvider.subscribeToRdf(this);
   }
 
   protected DatabaseConfig getDatabaseConfig() {
@@ -151,11 +151,11 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
   }
 
   @Override
-  public void processEntities(int cursor, EntityProcessor processor) throws RdfProcessingFailedException {
+  public void processEntities(EntityProcessor processor, int index) throws RdfProcessingFailedException {
     ListMultimap<String, PredicateData> predicates = MultimapBuilder.hashKeys().arrayListValues().build();
     Map<String, Boolean> inversePredicates = new HashMap<>();
     String curSubject = "";
-    processor.start();
+    processor.start(index);
 
     Stopwatch stopwatch = Stopwatch.createStarted();
     int prevTripleCount = 0;

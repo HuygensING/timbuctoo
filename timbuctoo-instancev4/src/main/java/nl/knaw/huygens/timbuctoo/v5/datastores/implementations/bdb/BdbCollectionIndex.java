@@ -20,7 +20,7 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
   public BdbCollectionIndex(DataProvider dataProvider, BdbDatabaseCreator factory, String userId, String dataSetId)
     throws DataStoreCreationException {
     super(factory, "collectionIndex", userId, dataSetId);
-    dataProvider.subscribeToRdf(this, 0);
+    dataProvider.subscribeToRdf(this);
   }
 
   @Override

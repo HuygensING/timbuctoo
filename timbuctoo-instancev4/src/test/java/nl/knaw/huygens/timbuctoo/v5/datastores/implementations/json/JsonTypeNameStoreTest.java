@@ -19,7 +19,7 @@ public class JsonTypeNameStoreTest {
       tempFile,
       new DataProvider() {
         @Override
-        public void subscribeToRdf(RdfProcessor processor, int cursor) {
+        public void subscribeToRdf(RdfProcessor processor) {
           try {
             processor.setPrefix("_", "http://example.com/underscore#");
             processor.setPrefix("foo", "http://example.com/foo#");
@@ -29,7 +29,7 @@ public class JsonTypeNameStoreTest {
         }
 
         @Override
-        public void subscribeToEntities(EntityProcessor processor, int cursor) {
+        public void subscribeToEntities(EntityProcessor processor) {
 
         }
       }

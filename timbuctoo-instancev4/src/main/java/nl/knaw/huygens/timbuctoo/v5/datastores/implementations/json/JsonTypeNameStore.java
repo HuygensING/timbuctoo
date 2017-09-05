@@ -35,7 +35,7 @@ public class JsonTypeNameStore implements TypeNameStore {
     data = store.getData();
     prefixMapping.setNsPrefixes(data.prefixes);
 
-    dataProvider.subscribeToRdf(new Subscription(), 0);
+    dataProvider.subscribeToRdf(new Subscription());
   }
 
   //I think that a fully reversable shortened version looks ugly. And usually this is not needed
@@ -117,6 +117,8 @@ public class JsonTypeNameStore implements TypeNameStore {
 
   private class Subscription implements RdfProcessor {
 
+    private int currentVersion = -1;
+
     @Override
     public void setPrefix(String prefix, String iri) throws RdfProcessingFailedException {
       addPrefix(data, prefix, iri);
@@ -161,6 +163,12 @@ public class JsonTypeNameStore implements TypeNameStore {
     @Override
     public void start(int index) throws RdfProcessingFailedException {
       // no implementation needed
+      currentVersion = index;
+    }
+
+    @Override
+    public int getCurrentVersion() {
+      return currentVersion;
     }
 
     @Override

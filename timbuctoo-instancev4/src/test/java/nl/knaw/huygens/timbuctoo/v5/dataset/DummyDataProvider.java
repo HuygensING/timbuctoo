@@ -7,19 +7,19 @@ public class DummyDataProvider implements DataProvider {
   private RdfProcessor processor;
 
   @Override
-  public void subscribeToRdf(RdfProcessor processor, int cursor) {
+  public void subscribeToRdf(RdfProcessor processor) {
     this.processor = processor;
   }
 
   @Override
-  public void subscribeToEntities(EntityProcessor processor, int cursor) { }
+  public void subscribeToEntities(EntityProcessor processor) { }
 
   public void onQuad(String subject, String predicate, String object,
                      String dataType, String language, String graph) throws RdfProcessingFailedException {
-    onQuad(true, "", subject, predicate, object, dataType, language, graph);
+    onQuad(true, subject, predicate, object, dataType, language, graph);
   }
 
-  public void onQuad(boolean isAssertion, String cursor, String subject, String predicate, String object,
+  public void onQuad(boolean isAssertion, String subject, String predicate, String object,
                      String dataType, String language, String graph) throws RdfProcessingFailedException {
     processor.onQuad(isAssertion, subject, predicate, object, dataType, language, graph);
   }

@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.base.Stopwatch;
-import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
@@ -52,8 +51,8 @@ public class ImportManager implements DataProvider {
   private final RdfIoFactory serializerFactory;
   private final ExecutorService executorService;
   private final JsonFileBackedData<LogList> logListStore;
-  private final List<Tuple<Integer, RdfProcessor>> subscribedProcessors;
-  private final List<Tuple<Integer, EntityProcessor>> subscribedEntityProcessors;
+  private final List<RdfProcessor> subscribedProcessors;
+  private final List<EntityProcessor> subscribedEntityProcessors;
   private final Runnable webhooks;
   private EntityProvider entityProvider;
 
@@ -148,9 +147,8 @@ public class ImportManager implements DataProvider {
         try {
           CachedLog log = logStorage.getLog(entry.getLogToken().get());
           final Stopwatch stopwatch = Stopwatch.createStarted();
-          for (Tuple<Integer, RdfProcessor> subscribedProcessor : subscribedProcessors) {
-            if (subscribedProcessor.getLeft() <= index) {
-              RdfProcessor processor = subscribedProcessor.getRight();
+          for (RdfProcessor processor : subscribedProcessors) {
+            if (processor.getCurrentVersion() <= index) {
               RdfParser rdfParser = serializerFactory.makeRdfParser(log);
               LOG.info("******* " + processor.getClass().getSimpleName() + " Started importing full log...");
               processor.start(index);
@@ -158,8 +156,10 @@ public class ImportManager implements DataProvider {
               processor.commit();
             }
           }
-          for (Tuple<Integer, EntityProcessor> processor : subscribedEntityProcessors) {
-            entityProvider.processEntities(processor.getLeft(), processor.getRight());
+          for (EntityProcessor processor : subscribedEntityProcessors) {
+            if (processor.getCurrentVersion() < index) {
+              entityProvider.processEntities(processor, index);
+            }
           }
 
           LOG.info("Finished importing. Total import took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds.");
@@ -228,16 +228,16 @@ public class ImportManager implements DataProvider {
   }
 
   @Override
-  public void subscribeToRdf(RdfProcessor processor, int cursor) {
-    subscribedProcessors.add(Tuple.tuple(cursor, processor));
+  public void subscribeToRdf(RdfProcessor processor) {
+    subscribedProcessors.add(processor);
     if (processor instanceof EntityProvider) {
       entityProvider = (EntityProvider) processor;
     }
   }
 
   @Override
-  public void subscribeToEntities(EntityProcessor processor, int cursor) {
-    subscribedEntityProcessors.add(Tuple.tuple(cursor, processor));
+  public void subscribeToEntities(EntityProcessor processor) {
+    subscribedEntityProcessors.add(processor);
   }
 
   public boolean isRdfTypeSupported(MediaType mediaType) {

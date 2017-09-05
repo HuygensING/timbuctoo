@@ -28,7 +28,7 @@ public class RmlDataSourceStore {
   public RmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
     throws DataStoreCreationException {
     bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig(), binder);
-    dataSet.subscribeToRdf(new RdfHandler(this), 0);
+    dataSet.subscribeToRdf(new RdfHandler(this));
   }
 
   private DatabaseConfig getConfig() {
@@ -56,6 +56,7 @@ public class RmlDataSourceStore {
   private static class RdfHandler implements RdfProcessor {
     private final RmlDataSourceStore rmlDataSourceStore;
     private Map<String, String> predicates;
+    private int currentVersion = -1;
 
     public RdfHandler(RmlDataSourceStore rmlDataSourceStore) {
       this.rmlDataSourceStore = rmlDataSourceStore;
@@ -110,7 +111,15 @@ public class RmlDataSourceStore {
                                         String graph) throws RdfProcessingFailedException { }
 
     @Override
-    public void start(int index) throws RdfProcessingFailedException { }
+    public void start(int index) throws RdfProcessingFailedException {
+
+      currentVersion = index;
+    }
+
+    @Override
+    public int getCurrentVersion() {
+      return currentVersion;
+    }
 
     @Override
     public void commit() throws RdfProcessingFailedException { }

@@ -18,7 +18,6 @@ public class JsonSchemaStore implements SchemaStore {
 
   private final JsonFileBackedData<Map<String, Type>> schemaFile;
 
-
   public JsonSchemaStore(DataProvider dataProvider, File schemaLocation)
     throws IOException {
     schemaFile = JsonFileBackedData.getOrCreate(
@@ -34,7 +33,7 @@ public class JsonSchemaStore implements SchemaStore {
         throw new SchemaUpdateException(e);
       }
     };
-    dataProvider.subscribeToEntities(new SchemaEntityProcessor(schemaUpdater), 0);
+    dataProvider.subscribeToEntities(new SchemaEntityProcessor(schemaUpdater, -1));
   }
 
   @Override

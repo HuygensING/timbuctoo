@@ -25,13 +25,16 @@ public class SchemaEntityProcessor implements EntityProcessor {
   private static final Function<String, Type> TYPE_MAKER = Type::new;
   private final SchemaUpdater schemaUpdater;
   private Map<String, Type> types = new HashMap<>();
+  private int currentVersion;
 
-  public SchemaEntityProcessor(SchemaUpdater schemaUpdater) {
+  public SchemaEntityProcessor(SchemaUpdater schemaUpdater, int currentVersion) {
     this.schemaUpdater = schemaUpdater;
+    this.currentVersion = currentVersion;
   }
 
   @Override
-  public void start() {
+  public void start(int currentVersion) {
+    this.currentVersion = currentVersion;
     types.clear(); // clear the types, otherwise the schema will not be properly updated
     LOG.info("Processing entities");
   }
@@ -116,6 +119,11 @@ public class SchemaEntityProcessor implements EntityProcessor {
         }
       }
     }
+  }
+
+  @Override
+  public int getCurrentVersion() {
+    return currentVersion;
   }
 
   @Override

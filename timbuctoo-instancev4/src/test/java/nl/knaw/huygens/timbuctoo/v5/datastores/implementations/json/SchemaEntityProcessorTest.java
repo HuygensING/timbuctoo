@@ -36,9 +36,9 @@ public class SchemaEntityProcessorTest {
     predicates.put("http://example.org/hasNumber", hasNumberPred1);
     predicates.put("http://example.org/hasNumber", hasNumberPred2);
     SchemaUpdater schemaUpdater = mock(SchemaUpdater.class);
-    SchemaEntityProcessor instance = new SchemaEntityProcessor(schemaUpdater);
+    SchemaEntityProcessor instance = new SchemaEntityProcessor(schemaUpdater, -1);
 
-    instance.start();
+    instance.start(0);
     instance.processEntity("", SUBJECT, predicates, Maps.newHashMap());
     instance.finish();
 
@@ -53,7 +53,7 @@ public class SchemaEntityProcessorTest {
     ValuePredicate hasIntPred = new ValuePredicate("http://example.org/hasInt", "14", "http://example.org/int");
     predicatesAfterFirstCreate.put("http://example.org/hasInt", hasIntPred);
 
-    instance.start();
+    instance.start(1);
     instance.processEntity("", SUBJECT, predicatesAfterFirstCreate, Maps.newHashMap());
     instance.finish();
 
