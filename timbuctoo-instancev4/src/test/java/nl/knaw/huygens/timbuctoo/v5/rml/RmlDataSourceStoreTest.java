@@ -110,7 +110,7 @@ public class RmlDataSourceStoreTest {
           APPLICATION_OCTET_STREAM_TYPE,
           rdfSerializer
         );
-        processor.start();
+        processor.start(0);
       } catch (RdfProcessingFailedException | LogStorageFailedException e) {
         throw new RuntimeException(e.getCause());
       }

@@ -275,7 +275,7 @@ public class ImportManagerTest {
     }
 
     @Override
-    public void start() throws RdfProcessingFailedException {
+    public void start(int index) throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 

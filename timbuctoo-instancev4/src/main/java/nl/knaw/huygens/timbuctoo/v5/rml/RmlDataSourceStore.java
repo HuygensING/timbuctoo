@@ -110,7 +110,7 @@ public class RmlDataSourceStore {
                                         String graph) throws RdfProcessingFailedException { }
 
     @Override
-    public void start() throws RdfProcessingFailedException { }
+    public void start(int index) throws RdfProcessingFailedException { }
 
     @Override
     public void finish() throws RdfProcessingFailedException { }

@@ -39,7 +39,7 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   protected abstract DatabaseConfig getDatabaseConfig();
 
   @Override
-  public void start() throws RdfProcessingFailedException {
+  public void start(int index) throws RdfProcessingFailedException {
     transaction = bdbWrapper.beginTransaction();
     stopwatch = Stopwatch.createStarted();
   }

@@ -159,7 +159,7 @@ public class JsonTypeNameStore implements TypeNameStore {
     }
 
     @Override
-    public void start() throws RdfProcessingFailedException {
+    public void start(int index) throws RdfProcessingFailedException {
       // no implementation needed
     }
 

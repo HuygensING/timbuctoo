@@ -50,7 +50,7 @@ public interface RdfProcessor {
     }
   }
 
-  void start() throws RdfProcessingFailedException;
+  void start(int index) throws RdfProcessingFailedException;
 
   void finish() throws RdfProcessingFailedException;
 }
