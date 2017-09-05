@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbCollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
@@ -14,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncExceptio
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
+import nl.knaw.huygens.timbuctoo.v5.rml.RmlDataSourceStore;
 import org.immutables.value.Value;
 
 import java.io.IOException;
@@ -24,7 +27,7 @@ public interface DataSet {
 
   static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
                          FileHelper fileHelper, ExecutorService executorService,
-                         DataStoreFactory dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
+                         BdbDatabaseCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
 
     String userId = metadata.getOwnerId();
@@ -39,8 +42,8 @@ public interface DataSet {
       resourceSync.resourceList(userId, dataSetId),
       onUpdated
     );
-    QuadStore quadStore = dataStoreFactory.createQuadStore(importManager, userId, dataSetId);
-    CollectionIndex collectionIndex = dataStoreFactory.createCollectionIndex(importManager, userId, dataSetId);
+    QuadStore quadStore = new BdbTripleStore(importManager, dataStoreFactory, userId, dataSetId);
+    CollectionIndex collectionIndex = new BdbCollectionIndex(importManager, dataStoreFactory, userId, dataSetId);
     return ImmutableDataSet.builder()
       .metadata(metadata)
       .quadStore(quadStore)
@@ -54,7 +57,7 @@ public interface DataSet {
         fileHelper.fileInDataSet(userId, dataSetId, "schema.json")
       ))
       .dataSource(new RdfDataSourceFactory(
-        dataStoreFactory.createDataSourceStore(importManager, userId, dataSetId)
+        new RmlDataSourceStore(userId, dataSetId, dataStoreFactory, importManager)
       ))
       .importManager(importManager)
       .build();

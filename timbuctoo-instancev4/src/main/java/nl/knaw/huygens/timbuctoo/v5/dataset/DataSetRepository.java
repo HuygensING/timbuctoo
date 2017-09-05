@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -50,7 +51,7 @@ public class DataSetRepository {
   private final ExecutorService executorService;
   private final VreAuthorizationCrud vreAuthorizationCrud;
   private final DataSetConfiguration configuration;
-  private final DataStoreFactory dataStoreFactory;
+  private final BdbDatabaseCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final TimbuctooRdfIdHelper rdfIdHelper;
@@ -61,7 +62,7 @@ public class DataSetRepository {
 
 
   public DataSetRepository(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
-                           DataSetConfiguration configuration, DataStoreFactory dataStoreFactory,
+                           DataSetConfiguration configuration, BdbDatabaseCreator dataStoreFactory,
                            TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated)
     throws IOException {
     this.executorService = executorService;
@@ -224,7 +225,7 @@ public class DataSetRepository {
   }
 
   public void removeDataSet(String ownerId, String dataSetName) throws IOException {
-    dataStoreFactory.removeDataStoresFor(ownerId, dataSetName);
+    dataStoreFactory.removeDatabasesFor(ownerId, dataSetName);
     // remove from datasets.json
     storedDataSets.updateData(dataSets -> {
       Set<PromotedDataSet>

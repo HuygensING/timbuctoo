@@ -24,7 +24,6 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
@@ -32,6 +31,7 @@ import org.immutables.value.Value;
 
 import javax.validation.Valid;
 import javax.ws.rs.DefaultValue;
+import javax.ws.rs.HEAD;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
@@ -121,7 +121,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
         dataSetExecutorService,
         getSecurityConfiguration().getVreAuthorizationCreator(),
         getDataSetConfiguration(),
-        new BdbDataStoreFactory(getDatabases()),
+        getDatabases(),
         getRdfIdHelper(),
         onUpdated
       );

@@ -6,7 +6,6 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAutho
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
@@ -52,7 +51,7 @@ public class DataSetRepositoryTest {
                                    .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
                                    .resourceSync(resourceSync)
                                    .build(),
-      new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator()),
+      new NonPersistentBdbDatabaseCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
       combinedId -> { }
     );
