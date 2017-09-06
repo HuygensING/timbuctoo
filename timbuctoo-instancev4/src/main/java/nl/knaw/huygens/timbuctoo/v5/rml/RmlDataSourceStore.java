@@ -20,12 +20,12 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
 
 public class RmlDataSourceStore {
-  protected final BdbWrapper<String> bdbWrapper;
+  protected final BdbWrapper<String, String> bdbWrapper;
   protected final EntryBinding<String> binder = TupleBinding.getPrimitiveBinding(String.class);
 
   public RmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
     throws DataStoreCreationException {
-    bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig(), binder);
+    bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig(), binder, binder);
     dataSet.subscribeToRdf(new RdfHandler(this));
   }
 

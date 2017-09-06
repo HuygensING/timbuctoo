@@ -36,8 +36,10 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
   }
 
   @Override
-  public <T> BdbWrapper<T> getDatabase(String userId, String dataSetId, String databaseName,
-                                DatabaseConfig config, EntryBinding<T> binder) throws DataStoreCreationException {
+  public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
+                                                             DatabaseConfig config, EntryBinding<KeyT> keyBinder,
+                                                             EntryBinding<ValueT> valueBinder)
+    throws DataStoreCreationException {
     String environmentKey = environmentKey(userId, dataSetId);
     String databaseKey = environmentKey + "_" + databaseName;
     if (!databases.containsKey(databaseKey)) {
@@ -56,7 +58,13 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
         throw new DataStoreCreationException(e);
       }
     }
-    return new BdbWrapper<>(environmentMap.get(environmentKey), databases.get(databaseKey), config, binder);
+    return new BdbWrapper<>(
+      environmentMap.get(environmentKey),
+      databases.get(databaseKey),
+      config,
+      keyBinder,
+      valueBinder
+    );
   }
 
   private String environmentKey(String userId, String dataSetId) {

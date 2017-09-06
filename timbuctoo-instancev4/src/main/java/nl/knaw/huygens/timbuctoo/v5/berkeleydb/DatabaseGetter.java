@@ -20,10 +20,11 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class DatabaseGetter<T> {
+public class DatabaseGetter<KeyT, ValueT> {
   private final DatabaseEntry key;
   private final DatabaseEntry value;
-  private final EntryBinding<T> binder;
+  private final EntryBinding<KeyT> keyBinder;
+  private final EntryBinding<ValueT> valueBinder;
   private final DatabaseFunction initializer;
   private final DatabaseFunction iterator;
   private final Database database;
@@ -31,9 +32,11 @@ public class DatabaseGetter<T> {
 
   private static final Logger LOG = getLogger(DatabaseGetter.class);
 
-  DatabaseGetter(EntryBinding<T> binder, DatabaseFunction initializer, DatabaseFunction iterator, Database database,
-                 Map<Cursor, String> cursors, DatabaseEntry key, DatabaseEntry value) {
-    this.binder = binder;
+  DatabaseGetter(EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder, DatabaseFunction initializer,
+                 DatabaseFunction iterator, Database database, Map<Cursor, String> cursors, DatabaseEntry key,
+                 DatabaseEntry value) {
+    this.keyBinder = keyBinder;
+    this.valueBinder = valueBinder;
     this.initializer = initializer;
     this.iterator = iterator;
     this.database = database;
@@ -43,17 +46,17 @@ public class DatabaseGetter<T> {
   }
 
 
-  public Stream<T> getKeys() {
-    return getItems(() -> binder.entryToObject(key));
+  public Stream<KeyT> getKeys() {
+    return getItems(() -> keyBinder.entryToObject(key));
   }
 
-  public Stream<T> getValues() {
-    return getItems(() -> binder.entryToObject(value));
+  public Stream<ValueT> getValues() {
+    return getItems(() -> valueBinder.entryToObject(value));
 
   }
 
-  public <U> Stream<U> getKeysAndValues(BiFunction<T, T, U> valueMaker) {
-    return getItems(() -> valueMaker.apply(binder.entryToObject(key), binder.entryToObject(value)));
+  public <U> Stream<U> getKeysAndValues(BiFunction<KeyT, ValueT, U> valueMaker) {
+    return getItems(() -> valueMaker.apply(keyBinder.entryToObject(key), valueBinder.entryToObject(value)));
   }
 
   private <U> Stream<U> getItems(Supplier<U> valueMaker) {
@@ -76,53 +79,59 @@ public class DatabaseGetter<T> {
     });
   }
 
-  public static <T> DatabaseGetterBuilder<T> databaseGetter(EntryBinding<T> binder, Database database,
-                                                            Map<Cursor, String> cursors) {
-    return new DatabaseGetterBuilderImpl<>(binder, database, cursors);
+  public static <KeyT, ValueT> DatabaseGetterBuilder<KeyT, ValueT> databaseGetter(EntryBinding<KeyT> keyBinder,
+                                                                                  EntryBinding<ValueT> valueBinder,
+                                                                                  Database database,
+                                                                                  Map<Cursor, String> cursors) {
+    return new DatabaseGetterBuilderImpl<>(keyBinder, valueBinder, database, cursors);
   }
 
-  private interface DatabaseFunctionMaker<T> {
+  private interface DatabaseFunctionMaker<KeyT, ValueT> {
     DatabaseFunction make(DatabaseEntry keyEntry, DatabaseEntry valueEntry, DatabaseFunction iterator,
-                          EntryBinding<T> binder);
+                          EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder);
   }
 
-  public interface DatabaseGetterBuilder<T> {
-    DatabaseGetter<T> getAll();
+  public interface DatabaseGetterBuilder<KeyT, ValueT> {
+    DatabaseGetter<KeyT, ValueT> getAll();
 
-    DatabaseGetterBuilderWithInitializer<T> startAtKey(T key);
+    DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAtKey(KeyT key);
 
-    DatabaseGetterBuilderWithInitializer<T> startAtEndOfKeyDuplicates(T key);
+    DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAtEndOfKeyDuplicates(KeyT key);
 
-    DatabaseGetterBuilderWithInitializer<T> startAfterValue(T key, T value);
+    DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAfterValue(KeyT key, ValueT value);
   }
 
-  public interface DatabaseGetterBuilderWithInitializer<T> {
-    DatabaseGetter<T> getAllWithSameKey(boolean forwards);
+  public interface DatabaseGetterBuilderWithInitializer<KeyT, ValueT> {
+    DatabaseGetter<KeyT, ValueT> getAllWithSameKey(boolean forwards);
   }
 
-  public static class DatabaseGetterBuilderImpl<T> implements DatabaseGetterBuilder<T>,
-    DatabaseGetterBuilderWithInitializer<T> {
+  public static class DatabaseGetterBuilderImpl<KeyT, ValueT> implements DatabaseGetterBuilder<KeyT, ValueT>,
+    DatabaseGetterBuilderWithInitializer<KeyT, ValueT> {
 
-    private final EntryBinding<T> binder;
+    private final EntryBinding<KeyT> keyBinder;
+    private final EntryBinding<ValueT> valueBinder;
     private final Database database;
     private final Map<Cursor, String> cursors;
-    private DatabaseFunctionMaker<T> initializerMaker;
+    private DatabaseFunctionMaker<KeyT, ValueT> initializerMaker;
 
-    public DatabaseGetterBuilderImpl(EntryBinding<T> binder, Database database, Map<Cursor, String> cursors) {
-      this.binder = binder;
+    public DatabaseGetterBuilderImpl(EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder, Database database,
+                                     Map<Cursor, String> cursors) {
+      this.keyBinder = keyBinder;
+      this.valueBinder = valueBinder;
       this.database = database;
       this.cursors = cursors;
     }
 
     @Override
-    public DatabaseGetter<T> getAll() {
+    public DatabaseGetter<KeyT, ValueT> getAll() {
       DatabaseEntry key = new DatabaseEntry();
       DatabaseEntry value = new DatabaseEntry();
 
       DatabaseFunction iterator = dbCursor -> dbCursor.getNext(key, value, LockMode.DEFAULT);
 
       return new DatabaseGetter<>(
-        binder,
+        keyBinder,
+        valueBinder,
         iterator,
         iterator,
         database,
@@ -131,18 +140,18 @@ public class DatabaseGetter<T> {
     }
 
     @Override
-    public DatabaseGetterBuilderWithInitializer<T> startAtKey(T key) {
-      initializerMaker = (keyEntry, valueEntry, iterator, binder) -> {
-        binder.objectToEntry(key, keyEntry);
+    public DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAtKey(KeyT key) {
+      initializerMaker = (keyEntry, valueEntry, iterator, keyBinder, valueBinder) -> {
+        keyBinder.objectToEntry(key, keyEntry);
         return dbCursor -> dbCursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
       };
       return this;
     }
 
     @Override
-    public DatabaseGetterBuilderWithInitializer<T> startAtEndOfKeyDuplicates(T key) {
-      initializerMaker = (keyEntry, valueEntry, iterator, binder) -> {
-        binder.objectToEntry(key, keyEntry);
+    public DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAtEndOfKeyDuplicates(KeyT key) {
+      initializerMaker = (keyEntry, valueEntry, iterator, keyBinder, valueBinder) -> {
+        keyBinder.objectToEntry(key, keyEntry);
         //go to next entry and move one step back
         return dbCursor -> {
           OperationStatus status = dbCursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
@@ -162,10 +171,10 @@ public class DatabaseGetter<T> {
     }
 
     @Override
-    public DatabaseGetterBuilderWithInitializer<T> startAfterValue(T key, T value) {
-      initializerMaker = (keyEntry, valueEntry, iterator, binder) -> {
-        binder.objectToEntry(key, keyEntry);
-        binder.objectToEntry(value, valueEntry);
+    public DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAfterValue(KeyT key, ValueT value) {
+      initializerMaker = (keyEntry, valueEntry, iterator, keyBinder, valueBinder) -> {
+        keyBinder.objectToEntry(key, keyEntry);
+        valueBinder.objectToEntry(value, valueEntry);
         return dbCursor -> {
           OperationStatus status = dbCursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
           if (status == OperationStatus.SUCCESS) {
@@ -179,7 +188,7 @@ public class DatabaseGetter<T> {
     }
 
     @Override
-    public DatabaseGetter<T> getAllWithSameKey(boolean forwards) {
+    public DatabaseGetter<KeyT, ValueT> getAllWithSameKey(boolean forwards) {
       DatabaseEntry key = new DatabaseEntry();
       DatabaseEntry value = new DatabaseEntry();
       DatabaseFunction iterator;
@@ -189,8 +198,9 @@ public class DatabaseGetter<T> {
         iterator = dbCursor -> dbCursor.getPrevDup(key, value, LockMode.DEFAULT);
       }
       return new DatabaseGetter<>(
-        binder,
-        initializerMaker.make(key, value, iterator, binder),
+        keyBinder,
+        valueBinder,
+        initializerMaker.make(key, value, iterator, keyBinder, valueBinder),
         iterator,
         database,
         cursors,

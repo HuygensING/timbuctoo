@@ -5,8 +5,10 @@ import com.sleepycat.je.DatabaseConfig;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 
 public interface BdbDatabaseCreator {
-  <T> BdbWrapper<T> getDatabase(String userId, String dataSetId, String databaseName,
-                         DatabaseConfig config, EntryBinding<T> binder) throws DataStoreCreationException;
+  <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
+                                                      DatabaseConfig config, EntryBinding<KeyT> keyBinder,
+                                                      EntryBinding<ValueT> valueBinder)
+    throws DataStoreCreationException;
 
   void removeDatabasesFor(String userId, String dataSetId);
 

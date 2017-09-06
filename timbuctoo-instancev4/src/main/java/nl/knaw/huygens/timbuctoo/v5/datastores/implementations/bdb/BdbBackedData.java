@@ -21,7 +21,7 @@ public class BdbBackedData implements DataStorage {
 
   private static final Logger LOG = getLogger(BdbBackedData.class);
 
-  private final BdbWrapper<String> bdbWrapper;
+  private final BdbWrapper<String, String> bdbWrapper;
   private String value;
 
   public BdbBackedData(BdbDatabaseCreator dbEnvironment, String userId, String datasetId, String dbname)
@@ -36,6 +36,7 @@ public class BdbBackedData implements DataStorage {
       datasetId,
       dbname,
       config,
+      TupleBinding.getPrimitiveBinding(String.class),
       TupleBinding.getPrimitiveBinding(String.class)
     );
 

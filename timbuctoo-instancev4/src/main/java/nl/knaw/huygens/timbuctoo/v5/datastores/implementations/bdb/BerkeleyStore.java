@@ -17,7 +17,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
 
-  protected final BdbWrapper<String> bdbWrapper;
+  protected final BdbWrapper<String, String> bdbWrapper;
   private Stopwatch stopwatch;
   private static final Logger LOG = getLogger(BerkeleyStore.class);
   private int currentVersion = -1;
@@ -29,6 +29,7 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
       datasetId,
       databaseName,
       getDatabaseConfig(),
+      TupleBinding.getPrimitiveBinding(String.class),
       TupleBinding.getPrimitiveBinding(String.class)
     );
   }

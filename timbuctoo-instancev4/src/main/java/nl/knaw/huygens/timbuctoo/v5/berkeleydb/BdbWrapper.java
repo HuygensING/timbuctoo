@@ -21,11 +21,12 @@ import java.util.Map;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class BdbWrapper<T> {
+public class BdbWrapper<KeyT, ValueT> {
   private final Environment dbEnvironment;
   private final Database database;
   private final DatabaseConfig databaseConfig;
-  private final EntryBinding<T> binder;
+  private final EntryBinding<KeyT> keyBinder;
+  private final EntryBinding<ValueT> valueBinder;
   private final DatabaseEntry keyEntry = new DatabaseEntry();
   private final DatabaseEntry valueEntry = new DatabaseEntry();
   private Transaction transaction;
@@ -33,11 +34,12 @@ public class BdbWrapper<T> {
   private final Map<Cursor, String> cursors = new HashMap<>();
 
   public BdbWrapper(Environment dbEnvironment, Database database, DatabaseConfig databaseConfig,
-                    EntryBinding<T> binder) {
+                    EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder) {
     this.dbEnvironment = dbEnvironment;
     this.database = database;
     this.databaseConfig = databaseConfig;
-    this.binder = binder;
+    this.keyBinder = keyBinder;
+    this.valueBinder = valueBinder;
   }
 
   public void beginTransaction() {
@@ -58,8 +60,8 @@ public class BdbWrapper<T> {
     database.close();
   }
 
-  public DatabaseGetter.DatabaseGetterBuilder<T> databaseGetter() {
-    return DatabaseGetter.databaseGetter(binder, database, cursors);
+  public DatabaseGetter.DatabaseGetterBuilder<KeyT, ValueT> databaseGetter() {
+    return DatabaseGetter.databaseGetter(keyBinder, valueBinder, database, cursors);
   }
 
   public void commit() {
@@ -69,11 +71,11 @@ public class BdbWrapper<T> {
     database.sync();
   }
 
-  public void put(T key, T value) throws DatabaseWriteException {
+  public void put(KeyT key, ValueT value) throws DatabaseWriteException {
     synchronized (keyEntry) {
       try {
-        binder.objectToEntry(key, keyEntry);
-        binder.objectToEntry(value, valueEntry);
+        keyBinder.objectToEntry(key, keyEntry);
+        valueBinder.objectToEntry(value, valueEntry);
         database.put(transaction, keyEntry, valueEntry);
       } catch (Exception e) {
         throw new DatabaseWriteException(e);
@@ -81,12 +83,12 @@ public class BdbWrapper<T> {
     }
   }
 
-  public void delete(T key, T value) throws DatabaseWriteException {
+  public void delete(KeyT key, ValueT value) throws DatabaseWriteException {
     Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT);
     synchronized (keyEntry) {
       try {
-        binder.objectToEntry(key, keyEntry);
-        binder.objectToEntry(value, valueEntry);
+        keyBinder.objectToEntry(key, keyEntry);
+        valueBinder.objectToEntry(value, valueEntry);
         OperationStatus searchBoth = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
         if (searchBoth.equals(OperationStatus.SUCCESS)) {
           cursor.delete();

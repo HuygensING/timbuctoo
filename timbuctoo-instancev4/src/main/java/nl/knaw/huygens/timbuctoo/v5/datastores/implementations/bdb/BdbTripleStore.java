@@ -52,7 +52,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
 
   @Override
   public Stream<CursorQuad> getQuads(String subject, String predicate, Direction direction, String cursor) {
-    final DatabaseGetter<String> getter;
+    final DatabaseGetter<String, String> getter;
     if (cursor.isEmpty()) {
       getter = bdbWrapper.databaseGetter()
         .startAtKey((subject + "\n" + predicate + "\n" + direction.name()))

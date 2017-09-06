@@ -42,8 +42,9 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
   }
 
   @Override
-  public <T> BdbWrapper<T> getDatabase(String userId, String dataSetId, String databaseName,
-                                       DatabaseConfig config, EntryBinding<T> binder)
+  public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
+                                                             DatabaseConfig config, EntryBinding<KeyT> keyBinder,
+                                                             EntryBinding<ValueT> valueBinder)
     throws DataStoreCreationException {
     try {
       String environmentKey = environmentKey(userId, dataSetId);
@@ -53,7 +54,7 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
       Database database = dataSetEnvironment.openDatabase(null, databaseName, config);
       databases.put(environmentKey + "_" + databaseName, database);
       environmentMap.put(environmentKey, dataSetEnvironment);
-      return new BdbWrapper<>(dataSetEnvironment, database, config, binder);
+      return new BdbWrapper<>(dataSetEnvironment, database, config, keyBinder, valueBinder);
     } catch (DatabaseException e) {
       throw new DataStoreCreationException(e);
     }
