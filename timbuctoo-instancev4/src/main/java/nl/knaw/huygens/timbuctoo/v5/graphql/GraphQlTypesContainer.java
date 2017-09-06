@@ -85,6 +85,10 @@ public class GraphQlTypesContainer {
         .name("value")
         .type(nonNull(Scalars.GraphQLString))
       )
+      .field(newFieldDefinition()
+        .name("type")
+        .type(nonNull(Scalars.GraphQLString))
+      )
       .typeResolver(valueTypeResolver)
       .build();
   }
@@ -165,6 +169,10 @@ public class GraphQlTypesContainer {
         .withInterface(this.valueInterface)
         .field(newFieldDefinition()
           .name("value")
+          .type(nonNull(Scalars.GraphQLString))
+        )
+        .field(newFieldDefinition()
+          .name("type")
           .type(nonNull(Scalars.GraphQLString))
         )
         .build();

@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.Serialization;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Serializable;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList;
@@ -93,6 +94,9 @@ public abstract class CollectionsOfEntitiesSerialization implements Serializatio
 
     @Override
     public void handleGraphqlList(GraphqlIntrospectionList list, Setter context) throws IOException { }
+
+    @Override
+    public void handleGraphqlValue(GraphqlIntrospectionValue object, Setter context) throws IOException { }
 
     @Override
     public void handleNull(Setter context) throws IOException { }

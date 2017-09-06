@@ -21,49 +21,112 @@ public class JsonLdSerializationTest {
       "    \"Persons\" : [ { }, {\n" +
       "      \"@id\" : \"http://example.com/1\",\n" +
       "      \"@type\" : \"http://example.com/Person\",\n" +
-      "      \"a\" : 1,\n" +
+      "      \"a\" : {\n" +
+      "        \"type\" : \"http://www.w3.org/2001/XMLSchema#int\",\n" +
+      "        \"value\" : \"1\"\n" +
+      "      },\n" +
       "      \"b\" : [ {\n" +
       "        \"prevCursor\" : \"next\"\n" +
       "      }, {\n" +
       "        \"@id\" : \"http://example.com/11\",\n" +
       "        \"@type\" : \"http://example.com/SubItem\",\n" +
-      "        \"c\" : \"2\",\n" +
-      "        \"d\" : [ { }, \"3\", \"4\", null ]\n" +
+      "        \"c\" : {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"2\"\n" +
+      "        },\n" +
+      "        \"d\" : [ { }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"3\"\n" +
+      "        }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"4\"\n" +
+      "        }, null ]\n" +
       "      }, {\n" +
       "        \"@id\" : \"http://example.com/12\",\n" +
       "        \"@type\" : \"http://example.com/SubItem\",\n" +
-      "        \"c\" : \"5\",\n" +
-      "        \"d\" : [ { }, \"6\", \"7\" ]\n" +
+      "        \"c\" : {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"5\"\n" +
+      "        },\n" +
+      "        \"d\" : [ { }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"6\"\n" +
+      "        }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"7\"\n" +
+      "        } ]\n" +
       "      } ]\n" +
       "    }, {\n" +
       "      \"@id\" : \"http://example.com/2\",\n" +
       "      \"@type\" : \"http://example.com/Person\",\n" +
-      "      \"a\" : \"8\",\n" +
+      "      \"a\" : {\n" +
+      "        \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "        \"value\" : \"8\"\n" +
+      "      },\n" +
       "      \"b\" : [ { }, {\n" +
       "        \"@id\" : \"http://example.com/11\",\n" +
       "        \"@type\" : \"http://example.com/SubItem\",\n" +
-      "        \"c\" : \"9\",\n" +
-      "        \"d\" : [ { }, 10, \"11\" ]\n" +
+      "        \"c\" : {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"9\"\n" +
+      "        },\n" +
+      "        \"d\" : [ { }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#int\",\n" +
+      "          \"value\" : \"10\"\n" +
+      "        }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"11\"\n" +
+      "        } ]\n" +
       "      }, {\n" +
       "        \"@id\" : \"http://example.com/12\",\n" +
       "        \"@type\" : \"http://example.com/SubItem\",\n" +
-      "        \"c\" : \"12\",\n" +
-      "        \"d\" : [ { }, 13.0, \"14\" ]\n" +
+      "        \"c\" : {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"12\"\n" +
+      "        },\n" +
+      "        \"d\" : [ { }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#double\",\n" +
+      "          \"value\" : \"13.0\"\n" +
+      "        }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"14\"\n" +
+      "        } ]\n" +
       "      }, {\n" +
       "        \"@id\" : \"http://example.com/13\",\n" +
       "        \"@type\" : \"http://example.com/SubItem\",\n" +
-      "        \"c\" : \"15\",\n" +
-      "        \"d\" : [ { }, \"16\", \"17\", \"18\" ]\n" +
+      "        \"c\" : {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"15\"\n" +
+      "        },\n" +
+      "        \"d\" : [ { }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"16\"\n" +
+      "        }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"17\"\n" +
+      "        }, {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"18\"\n" +
+      "        } ]\n" +
       "      } ]\n" +
       "    }, {\n" +
       "      \"@id\" : \"http://example.com/3\",\n" +
       "      \"@type\" : \"http://example.com/Person\",\n" +
-      "      \"a\" : \"19\",\n" +
+      "      \"a\" : {\n" +
+      "        \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "        \"value\" : \"19\"\n" +
+      "      },\n" +
       "      \"b\" : {\n" +
       "        \"@id\" : \"http://example.com/21\",\n" +
       "        \"@type\" : \"http://example.com/OtherSubItem\",\n" +
-      "        \"e\" : \"20\",\n" +
-      "        \"f\" : \"21\"\n" +
+      "        \"e\" : {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"20\"\n" +
+      "        },\n" +
+      "        \"f\" : {\n" +
+      "          \"type\" : \"http://www.w3.org/2001/XMLSchema#string\",\n" +
+      "          \"value\" : \"21\"\n" +
+      "        }\n" +
       "      }\n" +
       "    } ]\n" +
       "  },\n" +
@@ -72,6 +135,8 @@ public class JsonLdSerializationTest {
       "      \"@id\" : \"@graph\",\n" +
       "      \"@container\" : \"@index\"\n" +
       "    },\n" +
+      "    \"value\" : \"@value\",\n" +
+      "    \"type\" : \"@type\",\n" +
       "    \"a\" : \"http://example.org/b\",\n" +
       "    \"b\" : {\n" +
       "      \"@reverse\" : \"http://example.org/b\"\n" +

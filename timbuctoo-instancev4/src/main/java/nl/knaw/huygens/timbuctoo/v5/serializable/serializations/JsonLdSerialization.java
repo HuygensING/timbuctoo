@@ -10,10 +10,12 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.Serialization;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Serializable;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -57,6 +59,8 @@ public class JsonLdSerialization implements Serialization {
     generator.writeStringField("@id", "@graph");
     generator.writeStringField("@container", "@index");
     generator.writeEndObject();
+    generator.writeStringField("value", "@value");
+    generator.writeStringField("type", "@type");
     for (PredicateInfo entry : context) {
       if (entry.getUri().isPresent()) {
         if (entry.getDirection() == Direction.IN) {
@@ -135,41 +139,24 @@ public class JsonLdSerialization implements Serialization {
     }
 
     @Override
-    public void handleValue(Value value, Set<PredicateInfo> context) throws IOException {
-      if (value.getType().isEmpty()) {
-        generator.writeString(value.getValue());
+    public void handleGraphqlValue(GraphqlIntrospectionValue object, Set<PredicateInfo> context) throws IOException {
+      if (object == null) {
+        generator.writeNull();
       } else {
-        String type = value.getType();
-        if (type.equals("http://www.w3.org/2001/XMLSchema#string")) {
-          generator.writeString(value.getValue());
-        } else if (type.equals("http://www.w3.org/2001/XMLSchema#double")) {
-          try {
-            generator.writeNumber(Double.parseDouble(value.getValue()));
-          } catch (NumberFormatException e) {
-            generator.writeStartObject();
-            generator.writeStringField("@type", type);
-            generator.writeStringField("@value", value.getValue());
-            generator.writeEndObject();
-          }
-        } else if (type.equals("http://www.w3.org/2001/XMLSchema#integer") ||
-          type.equals("http://www.w3.org/2001/XMLSchema#int")) {
-          try {
-            generator.writeNumber(Long.parseLong(value.getValue()));
-          } catch (NumberFormatException e) {
-            generator.writeStartObject();
-            generator.writeStringField("@type", type);
-            generator.writeStringField("@value", value.getValue());
-            generator.writeEndObject();
-          }
-        } else if (type.equals("http://www.w3.org/2001/XMLSchema#boolean")) {
-          generator.writeBoolean("1".equals(value.getValue()) || "true".equals(value.getValue()));
-        } else {
-          generator.writeStartObject();
-          generator.writeStringField("@type", type);
-          generator.writeStringField("@value", value.getValue());
-          generator.writeEndObject();
-        }
+        generator.writeObject(object.getValue());
       }
+    }
+
+    @Override
+    public void handleValue(Value value, Set<PredicateInfo> context) throws IOException {
+      String type = RdfConstants.STRING;
+      if (!value.getType().isEmpty()) {
+        type = value.getType();
+      }
+      generator.writeStartObject();
+      generator.writeStringField("type", type);
+      generator.writeStringField("value", value.getValue());
+      generator.writeEndObject();
     }
   }
 }
