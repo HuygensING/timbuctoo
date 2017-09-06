@@ -66,6 +66,7 @@ public class BdbWrapper<T> {
     if (transaction != null) {
       transaction.commit();
     }
+    database.sync();
   }
 
   public void put(T key, T value) throws DatabaseWriteException {
@@ -118,10 +119,6 @@ public class BdbWrapper<T> {
     }
     cursor.close();
     return result;
-  }
-
-  public void sync() {
-    database.sync();
   }
 
 }

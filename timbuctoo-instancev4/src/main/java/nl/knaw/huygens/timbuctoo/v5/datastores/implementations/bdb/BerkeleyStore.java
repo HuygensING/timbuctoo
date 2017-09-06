@@ -55,7 +55,6 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
     stopwatch.reset();
     stopwatch.start();
     bdbWrapper.commit();
-    bdbWrapper.sync();
     LOG.info("Sync took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds");
   }
 
