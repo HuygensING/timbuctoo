@@ -157,7 +157,7 @@ public class DataSetRepositoryTest {
 
     // create a new instance to simulate a restart
     dataSetRepository = createDataSetRepo();
-    dataSetRepository.init();
+    dataSetRepository.start();
 
     assertThat(dataSetRepository.dataSetExists("user", "dataSet"), is(true));
   }
