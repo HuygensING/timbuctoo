@@ -58,7 +58,6 @@ public class DataSetRepository {
     this.configuration = configuration;
     this.dataStoreFactory = dataStoreFactory;
 
-    dataSetMap = new HashMap<>();
     fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
     storedDataSets = JsonFileBackedData.getOrCreate(
       new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
@@ -68,6 +67,29 @@ public class DataSetRepository {
     );
     statusMap = new HashMap<>();
     resourceSync = configuration.getResourceSync();
+
+    dataSetMap = new HashMap<>();
+  }
+
+  private void loadDataSetsFromJson() throws IOException {
+    synchronized (dataSetMap) {
+      for (Map.Entry<String, Set<PromotedDataSet>> entry : storedDataSets.getData().entrySet()) {
+        String ownerId = entry.getKey();
+        HashMap<String, DataSet> ownersSets = new HashMap<>();
+        dataSetMap.put(ownerId, ownersSets);
+        for (PromotedDataSet promotedDataSet : entry.getValue()) {
+          String dataSetName = promotedDataSet.getName();
+          try {
+            ownersSets.put(
+              dataSetName,
+              dataSet(ownerId, dataSetName, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+            );
+          } catch (IOException | DataStoreCreationException | ResourceSyncException e) {
+            throw new IOException(e);
+          }
+        }
+      }
+    }
   }
 
   public Optional<DataSet> getDataSet(String ownerId, String dataSetId) {
@@ -211,8 +233,9 @@ public class DataSetRepository {
     dataStoreFactory.stop();
   }
 
-  public void start() {
+  public void start() throws IOException {
     dataStoreFactory.start();
+    loadDataSetsFromJson();
   }
 
 }

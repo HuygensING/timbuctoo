@@ -37,7 +37,11 @@ public class DataSetRepositoryTest {
   public void init() throws IOException, InterruptedException {
     tempFile = Files.createTempDir();
     resourceSync = mock(ResourceSync.class);
-    dataSetRepository = new DataSetRepository(
+    dataSetRepository = createDataSetRepo();
+  }
+
+  private DataSetRepository createDataSetRepo() throws IOException {
+    return new DataSetRepository(
       Executors.newSingleThreadExecutor(),
       new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())),
       ImmutableDataSetConfiguration.builder()
@@ -143,6 +147,19 @@ public class DataSetRepositoryTest {
     dataSetRepository.removeDataSet("user", "dataSet");
 
     verify(resourceSync).removeDataSet("user", "dataSet");
+  }
+
+  @Test
+  public void dataSetsWillBeTheSameAfterRestart() throws Exception {
+    dataSetRepository.createDataSet("user", "dataSet");
+
+    assertThat(dataSetRepository.dataSetExists("user", "dataSet"), is(true));
+
+    // create a new instance to simulate a restart
+    dataSetRepository = createDataSetRepo();
+    dataSetRepository.init();
+
+    assertThat(dataSetRepository.dataSetExists("user", "dataSet"), is(true));
   }
 
 }
