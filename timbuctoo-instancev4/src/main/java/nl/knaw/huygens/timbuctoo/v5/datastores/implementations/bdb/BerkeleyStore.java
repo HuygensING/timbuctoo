@@ -4,7 +4,6 @@ import com.google.common.base.Stopwatch;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
-import com.sleepycat.je.LockMode;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
@@ -12,7 +11,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import org.slf4j.Logger;
 
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.slf4j.LoggerFactory.getLogger;
@@ -61,10 +59,6 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   @Override
   public void close() throws DatabaseException {
     bdbWrapper.close();
-  }
-
-  public List<String> dump(String prefix, int start, int count, LockMode lockMode) throws DatabaseException {
-    return bdbWrapper.dump(prefix, start, count, lockMode);
   }
 
 }

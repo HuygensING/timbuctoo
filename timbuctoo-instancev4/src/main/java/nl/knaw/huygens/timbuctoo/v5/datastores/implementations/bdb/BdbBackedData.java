@@ -1,0 +1,67 @@
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
+
+import com.sleepycat.bind.tuple.TupleBinding;
+import com.sleepycat.je.DatabaseConfig;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import org.slf4j.Logger;
+
+import java.util.Optional;
+import java.util.stream.Stream;
+
+import static org.slf4j.LoggerFactory.getLogger;
+
+/**
+ * A simple wrapper around serialized json so that we get the benefits of berkeley db for transactions
+ * without having to change the code too much.
+ */
+public class BdbBackedData implements DataStorage {
+
+  private static final Logger LOG = getLogger(BdbBackedData.class);
+
+  private final BdbWrapper<String> bdbWrapper;
+  private String value;
+
+  public BdbBackedData(BdbDatabaseCreator dbEnvironment, String userId, String datasetId, String dbname)
+    throws DataStoreCreationException {
+
+    DatabaseConfig config = new DatabaseConfig();
+    config.setAllowCreate(true);
+    config.setDeferredWrite(true);
+
+    this.bdbWrapper = dbEnvironment.getDatabase(
+      userId,
+      datasetId,
+      dbname,
+      config,
+      TupleBinding.getPrimitiveBinding(String.class)
+    );
+
+    try (Stream<String> stream = bdbWrapper.databaseGetter().getAll().getValues()) {
+      final Optional<String> storedSchema = stream.findAny();
+      if (storedSchema.isPresent()) {
+        value = storedSchema.get();
+      }
+    }
+
+  }
+
+  @Override
+  public String getValue() {
+    return value;
+  }
+
+  @Override
+  public void setValue(String newValue) throws DatabaseWriteException {
+    value = newValue;
+    bdbWrapper.put("value", newValue);
+  }
+
+  @Override
+  public void close() throws Exception {
+    bdbWrapper.close();
+  }
+
+}

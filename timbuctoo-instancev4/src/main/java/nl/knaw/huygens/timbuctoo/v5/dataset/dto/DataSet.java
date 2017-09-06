@@ -5,10 +5,11 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbCollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
@@ -48,13 +49,13 @@ public interface DataSet {
       .metadata(metadata)
       .quadStore(quadStore)
       .collectionIndex(collectionIndex)
-      .typeNameStore(new JsonTypeNameStore(
-        fileHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
-        importManager
-      ))
-      .schemaStore(new JsonSchemaStore(
+      .typeNameStore(new BdbTypeNameStore(
         importManager,
-        fileHelper.fileInDataSet(userId, dataSetId, "schema.json")
+        new BdbBackedData(dataStoreFactory, userId, dataSetId, "typenames")
+      ))
+      .schemaStore(new BdbSchemaStore(
+        importManager,
+        new BdbBackedData(dataStoreFactory, userId, dataSetId, "schema")
       ))
       .dataSource(new RdfDataSourceFactory(
         new RmlDataSourceStore(userId, dataSetId, dataStoreFactory, importManager)

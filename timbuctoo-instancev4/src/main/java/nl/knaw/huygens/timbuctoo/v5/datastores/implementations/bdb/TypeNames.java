@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

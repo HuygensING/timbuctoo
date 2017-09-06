@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;

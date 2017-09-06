@@ -1,19 +1,17 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
+package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ValuePredicate;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaEntityProcessor;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.Map;
 
-import static nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.TypeMatcher.type;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.TypeMatcher.type;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.instanceOf;

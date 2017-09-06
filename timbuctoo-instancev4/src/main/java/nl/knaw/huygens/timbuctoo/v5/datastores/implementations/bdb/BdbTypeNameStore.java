@@ -1,40 +1,48 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
-public class JsonTypeNameStore implements TypeNameStore {
+public class BdbTypeNameStore implements TypeNameStore {
+
+  private static ObjectMapper objectMapper = new ObjectMapper()
+    .registerModule(new Jdk8Module())
+    .registerModule(new GuavaModule())
+    .registerModule(new TimbuctooCustomSerializers())
+    .enable(SerializationFeature.INDENT_OUTPUT);
+
   protected final PrefixMapping prefixMapping;
-  protected final JsonFileBackedData<TypeNames> store;
   protected final TypeNames data;
+  private final DataStorage dataStore;
 
-  public JsonTypeNameStore(File dataLocation, DataProvider dataProvider) throws IOException {
+  public BdbTypeNameStore(DataProvider dataProvider, DataStorage dataStore) throws IOException {
     prefixMapping = new PrefixMappingImpl();
-    store = JsonFileBackedData.getOrCreate(
-      dataLocation,
-      () -> {
-        TypeNames typeNames = new TypeNames();
-        addStandardPrefixes(typeNames);
-        return typeNames;
-      },
-      new TypeReference<TypeNames>() {}
-    );
-    data = store.getData();
+    final String storedValue = dataStore.getValue();
+    if (storedValue == null) {
+      data = new TypeNames();
+      addStandardPrefixes(data);
+    } else {
+      data = objectMapper.readValue(storedValue, new TypeReference<TypeNames>() {});
+    }
     prefixMapping.setNsPrefixes(data.prefixes);
-
+    this.dataStore = dataStore;
     dataProvider.subscribeToRdf(new Subscription());
   }
 
@@ -78,7 +86,7 @@ public class JsonTypeNameStore implements TypeNameStore {
 
   @Override
   public String makeUri(String graphQlName) {
-    return store.getData().inverse.get(graphQlName);
+    return data.inverse.get(graphQlName);
   }
 
   @Override
@@ -112,7 +120,12 @@ public class JsonTypeNameStore implements TypeNameStore {
 
   @Override
   public void close() throws IOException {
-    store.updateData(old -> data);
+    try {
+      dataStore.setValue(objectMapper.writeValueAsString(data));
+      dataStore.close();
+    } catch (Exception e) {
+      throw new IOException(e);
+    }
   }
 
   private class Subscription implements RdfProcessor {
@@ -174,8 +187,8 @@ public class JsonTypeNameStore implements TypeNameStore {
     @Override
     public void commit() throws RdfProcessingFailedException {
       try {
-        store.updateData(old -> data);
-      } catch (IOException e) {
+        dataStore.setValue(objectMapper.writeValueAsString(data));
+      } catch (IOException | DatabaseWriteException e) {
         throw new RdfProcessingFailedException(e);
       }
     }

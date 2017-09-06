@@ -1,22 +1,19 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 
-public class JsonTypeNameStoreTest {
+public class BdbTypeNameStoreTest {
 
   @Test
   public void test() throws IOException {
-    File tempFile = File.createTempFile("JsonTypeNameStoreTest", "json");
-    tempFile.delete();
-    JsonTypeNameStore store = new JsonTypeNameStore(
-      tempFile,
+    BdbTypeNameStore store = new BdbTypeNameStore(
       new DataProvider() {
         @Override
         public void subscribeToRdf(RdfProcessor processor) {
@@ -31,6 +28,22 @@ public class JsonTypeNameStoreTest {
         @Override
         public void subscribeToEntities(EntityProcessor processor) {
 
+        }
+      },
+      new DataStorage() {
+        String value;
+        @Override
+        public String getValue() {
+          return value;
+        }
+
+        @Override
+        public void setValue(String newValue) throws DatabaseWriteException {
+          value = newValue;
+        }
+
+        @Override
+        public void close() throws Exception {
         }
       }
     );
