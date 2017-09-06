@@ -4,11 +4,9 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbCollectionIndex;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
@@ -44,11 +42,9 @@ public interface DataSet {
       onUpdated
     );
     QuadStore quadStore = new BdbTripleStore(importManager, dataStoreFactory, userId, dataSetId);
-    CollectionIndex collectionIndex = new BdbCollectionIndex(importManager, dataStoreFactory, userId, dataSetId);
     return ImmutableDataSet.builder()
       .metadata(metadata)
       .quadStore(quadStore)
-      .collectionIndex(collectionIndex)
       .typeNameStore(new BdbTypeNameStore(
         importManager,
         new BdbBackedData(dataStoreFactory, userId, dataSetId, "typenames")
@@ -73,8 +69,6 @@ public interface DataSet {
   RdfDataSourceFactory getDataSource();
 
   QuadStore getQuadStore();
-
-  CollectionIndex getCollectionIndex();
 
   PromotedDataSet getMetadata();
 }

@@ -5,7 +5,7 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 @Value.Immutable
-public interface CursorQuad extends CursorContainer {
+public interface CursorQuad {
   String getSubject();
 
   String getPredicate();
