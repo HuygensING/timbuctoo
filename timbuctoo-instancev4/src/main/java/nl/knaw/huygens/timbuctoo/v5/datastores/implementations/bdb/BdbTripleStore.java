@@ -3,13 +3,17 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.MultimapBuilder;
+import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.DatabaseConfig;
+import com.sleepycat.je.DatabaseException;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProvider;
+import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RelationPredicate;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ValuePredicate;
@@ -32,13 +36,23 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class BdbTripleStore extends BerkeleyStore implements EntityProvider, QuadStore {
+public class BdbTripleStore implements EntityProvider, QuadStore, RdfProcessor, AutoCloseable {
 
   private static final Logger LOG = getLogger(BdbTripleStore.class);
+  protected final BdbWrapper<String, String> bdbWrapper;
+  private Stopwatch stopwatch;
+  private int currentVersion = -1;
 
   public BdbTripleStore(DataProvider dataProvider, BdbDatabaseCreator dbFactory, String userId, String datasetId)
     throws DataStoreCreationException {
-    super(dbFactory, "rdfData", userId, datasetId);
+    this.bdbWrapper = dbFactory.getDatabase(
+      userId,
+      datasetId,
+      "rdfData",
+      getDatabaseConfig(),
+      TupleBinding.getPrimitiveBinding(String.class),
+      TupleBinding.getPrimitiveBinding(String.class)
+    );
     dataProvider.subscribeToRdf(this);
   }
 
@@ -218,4 +232,29 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
     processor.finish();
   }
 
+  @Override
+  public void start(int index) throws RdfProcessingFailedException {
+    currentVersion = index;
+    bdbWrapper.beginTransaction();
+    stopwatch = Stopwatch.createStarted();
+  }
+
+  @Override
+  public int getCurrentVersion() {
+    return currentVersion;
+  }
+
+  @Override
+  public void commit() throws RdfProcessingFailedException {
+    LOG.info("processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds (pre-sync)");
+    stopwatch.reset();
+    stopwatch.start();
+    bdbWrapper.commit();
+    LOG.info("Sync took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds");
+  }
+
+  @Override
+  public void close() throws DatabaseException {
+    bdbWrapper.close();
+  }
 }
