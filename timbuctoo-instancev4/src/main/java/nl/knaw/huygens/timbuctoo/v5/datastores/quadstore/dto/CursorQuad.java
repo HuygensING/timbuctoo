@@ -19,10 +19,18 @@ public interface CursorQuad {
   Direction getDirection();
 
   @Value.Auxiliary
+  ChangeType getChangeType();
+
+  @Value.Auxiliary
   String getCursor();
 
-  static CursorQuad create(String subject, String predicate, Direction direction,String object, String valueType,
+  static CursorQuad create(String subject, String predicate, Direction direction, String object, String valueType,
                            String language, String cursor) {
+    return create(subject, predicate, direction, ChangeType.UNCHANGED, object, valueType, language, cursor);
+  }
+
+  static CursorQuad create(String subject, String predicate, Direction direction, ChangeType changeType, String object,
+                           String valueType, String language, String cursor) {
     return ImmutableCursorQuad.builder()
       .subject(subject)
       .predicate(predicate)
@@ -31,8 +39,8 @@ public interface CursorQuad {
       .language(Optional.ofNullable(language))
       .cursor(cursor)
       .direction(direction)
+      .changeType(changeType)
       .build();
   }
-
 
 }

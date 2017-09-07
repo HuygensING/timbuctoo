@@ -7,4 +7,6 @@ import java.util.stream.Stream;
 
 public interface QuadStore {
   Stream<CursorQuad> getQuads(String subject, String predicate, Direction direction, String cursor);
+
+  Stream<CursorQuad> getQuads(String subject);
 }

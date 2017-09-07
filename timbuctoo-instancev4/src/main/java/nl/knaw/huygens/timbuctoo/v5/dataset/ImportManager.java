@@ -52,9 +52,7 @@ public class ImportManager implements DataProvider {
   private final ExecutorService executorService;
   private final JsonFileBackedData<LogList> logListStore;
   private final List<RdfProcessor> subscribedProcessors;
-  private final List<EntityProcessor> subscribedEntityProcessors;
   private final Runnable webhooks;
-  private EntityProvider entityProvider;
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
                        ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList,
@@ -77,7 +75,6 @@ public class ImportManager implements DataProvider {
       throw new DataStoreCreationException(e);
     }
     subscribedProcessors = new ArrayList<>();
-    subscribedEntityProcessors = new ArrayList<>();
   }
 
   public Future<?> addLog(String baseUri, String defaultGraph, String fileName, InputStream rdfInputStream,
@@ -156,11 +153,6 @@ public class ImportManager implements DataProvider {
               processor.commit();
             }
           }
-          for (EntityProcessor processor : subscribedEntityProcessors) {
-            if (processor.getCurrentVersion() < index) {
-              entityProvider.processEntities(processor, index);
-            }
-          }
 
           LOG.info("Finished importing. Total import took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds.");
           logListStore.updateData(logList -> {
@@ -230,14 +222,6 @@ public class ImportManager implements DataProvider {
   @Override
   public void subscribeToRdf(RdfProcessor processor) {
     subscribedProcessors.add(processor);
-    if (processor instanceof EntityProvider) {
-      entityProvider = (EntityProvider) processor;
-    }
-  }
-
-  @Override
-  public void subscribeToEntities(EntityProcessor processor) {
-    subscribedEntityProcessors.add(processor);
   }
 
   public boolean isRdfTypeSupported(MediaType mediaType) {

@@ -106,4 +106,12 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
       database.close();
     }
   }
+
+  @Override
+  public void startTransaction() {
+  }
+
+  @Override
+  public void commitTransaction() {
+  }
 }

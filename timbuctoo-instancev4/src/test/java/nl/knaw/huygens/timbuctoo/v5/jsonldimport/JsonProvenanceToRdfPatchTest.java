@@ -19,6 +19,7 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -451,6 +452,13 @@ public class JsonProvenanceToRdfPatchTest {
         .getOrDefault(predicate + "\n" + direction.name(), new ArrayList<>())
         .toArray(new CursorQuad[0])
       );
+    }
+
+    @Override
+    public Stream<CursorQuad> getQuads(String subject) {
+      return quads
+        .getOrDefault(subject, new HashMap<>())
+        .values().stream().flatMap(Collection::stream);
     }
   }
 

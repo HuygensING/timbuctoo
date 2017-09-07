@@ -1,13 +1,15 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.Objects;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 @JsonIgnoreProperties(value = { "optional" }, allowGetters = true)
@@ -15,10 +17,10 @@ public class Predicate {
   private String name;
   private final Direction direction;
   private Type owner;
-  private Set<String> valueTypes = new HashSet<>(10);
-  private Set<String> referenceTypes = new HashSet<>(10);
-  private long occurrences = 0;
-  private boolean list;
+  private Map<String, Long> valueTypes = new HashMap<>(10);
+  private Map<String, Long> referenceTypes = new HashMap<>(10);
+  private long subjectsWithThisPredicate = 0;
+  private long subjectsWithThisPredicateAsList = 0;
 
   @JsonCreator
   public Predicate(@JsonProperty("name") String name, @JsonProperty("direction") Direction direction) {
@@ -26,49 +28,45 @@ public class Predicate {
     this.direction = direction;
   }
 
-  public Set<String> getReferenceTypes() {
+  public Map<String, Long> getReferenceTypes() {
     return referenceTypes;
   }
 
-  public Set<String> getValueTypes() {
+  public Map<String, Long> getValueTypes() {
     return valueTypes;
   }
 
-  public void addValueType(String valueType) {
-    this.valueTypes.add(valueType);
+  @JsonIgnore
+  public Set<String> getUsedReferenceTypes() {
+    return referenceTypes.keySet();
   }
 
-  public void addReferenceType(String valueType) {
-    this.referenceTypes.add(valueType);
+  @JsonIgnore
+  public Set<String> getUsedValueTypes() {
+    return valueTypes.keySet();
   }
 
-  public void incUsage() {
-    occurrences++;
-    owner.setOccurrences(occurrences);
-  }
-
-  public void incUsage(long occurrences) {
-    this.occurrences += occurrences;
-    owner.setOccurrences(this.occurrences);
+  public void registerSubject(long occurrences) {
+    this.subjectsWithThisPredicate += occurrences;
   }
 
   public boolean isOptional() {
-    return occurrences < owner.getOccurrences();
+    return subjectsWithThisPredicate < owner.getSubjectsWithThisType();
   }
 
-  public long getOccurrences() {
-    return occurrences;
+  public long getSubjectsWithThisPredicate() {
+    return subjectsWithThisPredicate;
   }
 
   public String getName() {
     return name;
   }
 
-  protected void setValueTypes(Set<String> valueTypes) {
+  protected void setValueTypes(Map<String, Long> valueTypes) {
     this.valueTypes = valueTypes;
   }
 
-  public void setReferenceTypes(Set<String> referenceTypes) {
+  public void setReferenceTypes(Map<String, Long> referenceTypes) {
     this.referenceTypes = referenceTypes;
   }
 
@@ -76,12 +74,17 @@ public class Predicate {
     this.owner = owner;
   }
 
-  public boolean isList() {
-    return list;
+  public long getSubjectsWithThisPredicateAsList() {
+    return subjectsWithThisPredicateAsList;
   }
 
-  public void setList(boolean list) {
-    this.list = list;
+  public void setSubjectsWithThisPredicateAsList(long occurrences) {
+    subjectsWithThisPredicateAsList = occurrences;
+  }
+
+  @JsonIgnore
+  public boolean isList() {
+    return subjectsWithThisPredicateAsList > 0;
   }
 
   @Override
@@ -108,4 +111,17 @@ public class Predicate {
   public Direction getDirection() {
     return direction;
   }
+
+  public void incValueType(String valueType, int mut) {
+    this.valueTypes.compute(valueType, (type, cur) -> cur == null ? mut : cur + mut);
+  }
+
+  public void incReferenceType(String referenceType, int mut) {
+    this.referenceTypes.compute(referenceType, (type, cur) -> cur == null ? mut : cur + mut);
+  }
+
+  public void registerListOccurrence(int mut) {
+    this.subjectsWithThisPredicateAsList += mut;
+  }
+
 }

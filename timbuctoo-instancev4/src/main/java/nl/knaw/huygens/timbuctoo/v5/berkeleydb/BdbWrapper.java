@@ -9,7 +9,9 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
+import com.sleepycat.je.OperationResult;
 import com.sleepycat.je.OperationStatus;
+import com.sleepycat.je.Put;
 import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import org.slf4j.Logger;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -60,7 +63,7 @@ public class BdbWrapper<KeyT, ValueT> {
     database.close();
   }
 
-  public DatabaseGetter.DatabaseGetterBuilder<KeyT, ValueT> databaseGetter() {
+  public DatabaseGetter.Builder<KeyT, ValueT> databaseGetter() {
     return DatabaseGetter.databaseGetter(keyBinder, valueBinder, database, cursors);
   }
 
@@ -71,33 +74,57 @@ public class BdbWrapper<KeyT, ValueT> {
     database.sync();
   }
 
-  public void put(KeyT key, ValueT value) throws DatabaseWriteException {
+  public void replace(KeyT key, ValueT initialValue, Function<ValueT, ValueT> replacer) throws DatabaseWriteException {
     synchronized (keyEntry) {
-      try {
+      try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
         keyBinder.objectToEntry(key, keyEntry);
-        valueBinder.objectToEntry(value, valueEntry);
-        database.put(transaction, keyEntry, valueEntry);
+        OperationStatus searchResult = cursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
+        ValueT newValue = initialValue;
+        if (searchResult.equals(OperationStatus.SUCCESS)) {
+          newValue = replacer.apply(valueBinder.entryToObject(valueEntry));
+        }
+        valueBinder.objectToEntry(newValue, valueEntry);
+        cursor.putCurrent(valueEntry);
       } catch (Exception e) {
         throw new DatabaseWriteException(e);
       }
     }
   }
 
-  public void delete(KeyT key, ValueT value) throws DatabaseWriteException {
-    Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT);
+  public boolean put(KeyT key, ValueT value) throws DatabaseWriteException {
     synchronized (keyEntry) {
       try {
         keyBinder.objectToEntry(key, keyEntry);
         valueBinder.objectToEntry(value, valueEntry);
-        OperationStatus searchBoth = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
-        if (searchBoth.equals(OperationStatus.SUCCESS)) {
-          cursor.delete();
+        final Put putType;
+        if (databaseConfig.getSortedDuplicates()) {
+          putType = Put.NO_DUP_DATA;
+        } else {
+          putType = Put.NO_OVERWRITE;
+        }
+        final OperationResult result = database.put(transaction, keyEntry, valueEntry, putType, null);
+        return result != null;
+      } catch (Exception e) {
+        throw new DatabaseWriteException(e);
+      }
+    }
+  }
+
+  public boolean delete(KeyT key, ValueT value) throws DatabaseWriteException {
+    boolean wasChange = false;
+    synchronized (keyEntry) {
+      try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
+        keyBinder.objectToEntry(key, keyEntry);
+        valueBinder.objectToEntry(value, valueEntry);
+        OperationStatus searchResult = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
+        if (searchResult.equals(OperationStatus.SUCCESS)) {
+          wasChange = cursor.delete() == OperationStatus.SUCCESS;
         }
       } catch (Exception e) {
         throw new DatabaseWriteException(e);
       }
     }
-    cursor.close();
+    return wasChange;
   }
 
   public List<String> dump(String prefix, int start, int count, LockMode lockMode) {

@@ -79,10 +79,10 @@ public class DatabaseGetter<KeyT, ValueT> {
     });
   }
 
-  public static <KeyT, ValueT> DatabaseGetterBuilder<KeyT, ValueT> databaseGetter(EntryBinding<KeyT> keyBinder,
-                                                                                  EntryBinding<ValueT> valueBinder,
-                                                                                  Database database,
-                                                                                  Map<Cursor, String> cursors) {
+  public static <KeyT, ValueT> Builder<KeyT, ValueT> databaseGetter(EntryBinding<KeyT> keyBinder,
+                                                                    EntryBinding<ValueT> valueBinder,
+                                                                    Database database,
+                                                                    Map<Cursor, String> cursors) {
     return new DatabaseGetterBuilderImpl<>(keyBinder, valueBinder, database, cursors);
   }
 
@@ -91,28 +91,96 @@ public class DatabaseGetter<KeyT, ValueT> {
                           EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder);
   }
 
-  public interface DatabaseGetterBuilder<KeyT, ValueT> {
+  public interface Builder<KeyT, ValueT> {
+    /**
+     * Get all entries in the database, in sorted order
+     */
     DatabaseGetter<KeyT, ValueT> getAll();
 
-    DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAtKey(KeyT key);
+    /**
+     * The resulting getter will only return items that have this exact key
+     */
+    ScopedBuilder<KeyT, ValueT> key(KeyT key);
 
-    DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAtEndOfKeyDuplicates(KeyT key);
-
-    DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAfterValue(KeyT key, ValueT value);
+    /**
+     * The resulting getter will return items for which the isNearEnough function returns true, starting with the
+     * item whose key is greater or equal to "key"
+     */
+    ScopedBuilder<KeyT, ValueT> partialKey(KeyT key, BiFunction<KeyT, KeyT, Boolean> isNearEnough);
   }
 
-  public interface DatabaseGetterBuilderWithInitializer<KeyT, ValueT> {
-    DatabaseGetter<KeyT, ValueT> getAllWithSameKey(boolean forwards);
+  public interface ScopedBuilder<KeyT, ValueT> {
+    /**
+     * move to the start of the items with the aforementioned key (you probably want to iterate forwards)
+     */
+    PrimedBuilder<KeyT, ValueT> dontSkip();
+
+    /**
+     * start at a specific value, or don't iterate at all if the value is not available
+     */
+    PrimedBuilder<KeyT, ValueT> skipToValue(ValueT value);
+
+    /**
+     * start to the first item that is sorted after the value, or at the value itself
+     */
+    PartialValueBuilder<KeyT, ValueT> skipNearValue(ValueT value);
+
+    /**
+     * move to the end of the items with the aforementioned key (you probably want to iterate backwards)
+     */
+    PrimedBuilder<KeyT, ValueT> skipToEnd();
+
   }
 
-  public static class DatabaseGetterBuilderImpl<KeyT, ValueT> implements DatabaseGetterBuilder<KeyT, ValueT>,
-    DatabaseGetterBuilderWithInitializer<KeyT, ValueT> {
+  public interface PartialValueBuilder<KeyT, ValueT> {
+    /**
+     * return all items with the aforementioned key
+     */
+    PrimedBuilder<KeyT, ValueT> allValues();
+
+    /**
+     * return only items whose value fullfills the isNearEnough function
+     */
+    PrimedBuilder<KeyT, ValueT> onlyValuesMatching(BiFunction<ValueT, ValueT, Boolean> isNearEnough);
+  }
+
+  public interface PrimedBuilder<KeyT, ValueT> {
+
+    /**
+     * Skip the first item (can be called more then once)
+     */
+    PrimedBuilder<KeyT, ValueT> skipOne();
+
+    DatabaseGetter<KeyT, ValueT> direction(Iterate direction);
+
+    DatabaseGetter<KeyT, ValueT> forwards();
+
+    DatabaseGetter<KeyT, ValueT> backwards();
+  }
+
+  public enum Iterate {
+    FORWARDS,
+    BACKWARDS
+  }
+
+  public static class DatabaseGetterBuilderImpl<KeyT, ValueT> implements Builder<KeyT, ValueT>,
+    ScopedBuilder<KeyT, ValueT>, PrimedBuilder<KeyT, ValueT>, PartialValueBuilder<KeyT, ValueT> {
 
     private final EntryBinding<KeyT> keyBinder;
     private final EntryBinding<ValueT> valueBinder;
     private final Database database;
     private final Map<Cursor, String> cursors;
-    private DatabaseFunctionMaker<KeyT, ValueT> initializerMaker;
+
+    private KeyT key = null;
+    private BiFunction<KeyT, KeyT, Boolean> keyCheck = null;
+
+    private ValueT startValue = null;
+    private boolean partialValue = false;
+    private BiFunction<ValueT, ValueT, Boolean> valueCheck = null;
+
+    private boolean startAtEnd = false;
+
+    private int skipCount = 0;
 
     public DatabaseGetterBuilderImpl(EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder, Database database,
                                      Map<Cursor, String> cursors) {
@@ -140,72 +208,204 @@ public class DatabaseGetter<KeyT, ValueT> {
     }
 
     @Override
-    public DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAtKey(KeyT key) {
-      initializerMaker = (keyEntry, valueEntry, iterator, keyBinder, valueBinder) -> {
-        keyBinder.objectToEntry(key, keyEntry);
-        return dbCursor -> dbCursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
-      };
+    public ScopedBuilder<KeyT, ValueT> key(KeyT key) {
+      this.key = key;
       return this;
     }
 
     @Override
-    public DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAtEndOfKeyDuplicates(KeyT key) {
-      initializerMaker = (keyEntry, valueEntry, iterator, keyBinder, valueBinder) -> {
-        keyBinder.objectToEntry(key, keyEntry);
-        //go to next entry and move one step back
-        return dbCursor -> {
-          OperationStatus status = dbCursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
-          if (status == OperationStatus.SUCCESS) {
-            status = dbCursor.getNextNoDup(keyEntry, valueEntry, LockMode.DEFAULT);
-            if (status == OperationStatus.SUCCESS) {
-              status = dbCursor.getPrev(keyEntry, valueEntry, LockMode.DEFAULT);
+    public ScopedBuilder<KeyT, ValueT> partialKey(KeyT key, BiFunction<KeyT, KeyT, Boolean> isNearEnough) {
+      this.key = key;
+      this.keyCheck = isNearEnough;
+      return this;
+    }
+
+    @Override
+    public PrimedBuilder<KeyT, ValueT> skipOne() {
+      skipCount++;
+      return this;
+    }
+
+    @Override
+    public DatabaseGetter<KeyT, ValueT> forwards() {
+      return direction(Iterate.FORWARDS);
+    }
+
+    @Override
+    public DatabaseGetter<KeyT, ValueT> backwards() {
+      return direction(Iterate.BACKWARDS);
+    }
+
+    @Override
+    public PrimedBuilder<KeyT, ValueT> dontSkip() {
+      return this;
+    }
+
+    @Override
+    public PrimedBuilder<KeyT, ValueT> skipToValue(ValueT value) {
+      this.startValue = value;
+      return this;
+    }
+
+    @Override
+    public PartialValueBuilder<KeyT, ValueT> skipNearValue(ValueT value) {
+      this.startValue = value;
+      this.partialValue = true;
+      return this;
+    }
+
+    @Override
+    public PrimedBuilder<KeyT, ValueT> skipToEnd() {
+      this.startAtEnd = true;
+      return this;
+    }
+
+    @Override
+    public PrimedBuilder<KeyT, ValueT> allValues() {
+      return this;
+    }
+
+    @Override
+    public PrimedBuilder<KeyT, ValueT> onlyValuesMatching(BiFunction<ValueT, ValueT, Boolean> isNearEnough) {
+      this.valueCheck = isNearEnough;
+      return this;
+    }
+
+    @Override
+    public DatabaseGetter<KeyT, ValueT> direction(Iterate direction) {
+      final DatabaseFunction initializer;
+      final DatabaseFunction iterator;
+      final Supplier<OperationStatus> check;
+      final DatabaseFunction countSkipper;
+      final DatabaseFunction initialSkip;
+      final DatabaseEntry keyEntry = new DatabaseEntry();
+      final DatabaseEntry valueEntry = new DatabaseEntry();
+      keyBinder.objectToEntry(key, keyEntry);
+
+      if (startValue == null) {
+        if (keyCheck == null) {
+          initializer = dbCursor -> dbCursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
+          check = () -> OperationStatus.SUCCESS;
+        } else {
+          initializer = dbCursor -> dbCursor.getSearchKeyRange(keyEntry, valueEntry, LockMode.DEFAULT);
+          check = () -> {
+            if (keyCheck.apply(key, keyBinder.entryToObject(keyEntry))) {
+              return OperationStatus.SUCCESS;
             } else {
-              //go to end
-              status = dbCursor.getLast(keyEntry, valueEntry, LockMode.DEFAULT);
+              return OperationStatus.NOTFOUND;
             }
+          };
+        }
+      } else {
+        if (keyCheck != null) {
+          throw new UnsupportedOperationException("You can't skip to a partial key and then to value within the " +
+            "keys that match that partial key.That would require iterating over all keys and testing them until " +
+            "one is reached that doesn't match");
+        }
+        valueBinder.objectToEntry(startValue, valueEntry);
+
+        if (partialValue) {
+          initializer = dbCursor -> dbCursor.getSearchBothRange(keyEntry, valueEntry, LockMode.DEFAULT);
+          check = () -> {
+            if (valueCheck.apply(startValue, valueBinder.entryToObject(valueEntry))) {
+              return OperationStatus.SUCCESS;
+            } else {
+              return OperationStatus.NOTFOUND;
+            }
+          };
+        } else {
+          initializer = dbCursor -> dbCursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
+          check = () -> OperationStatus.SUCCESS;
+        }
+      }
+
+      if (keyCheck == null) {
+        if (valueCheck == null) {
+          if (direction == Iterate.FORWARDS) {
+            iterator = dbCursor -> dbCursor.getNextDup(keyEntry, valueEntry, LockMode.DEFAULT);
+          } else {
+            iterator = dbCursor -> dbCursor.getPrevDup(keyEntry, valueEntry, LockMode.DEFAULT);
+          }
+        } else {
+          if (direction == Iterate.FORWARDS) {
+            iterator = dbCursor -> {
+              final OperationStatus result = dbCursor.getNextDup(keyEntry, valueEntry, LockMode.DEFAULT);
+              return result == OperationStatus.SUCCESS ? check.get() : result;
+            };
+          } else {
+            iterator = dbCursor -> {
+              final OperationStatus result = dbCursor.getPrevDup(keyEntry, valueEntry, LockMode.DEFAULT);
+              return result == OperationStatus.SUCCESS ? check.get() : result;
+            };
+          }
+        }
+      } else {
+        //valueCheck must be null, otherwise we'd have thrown an exception earlier
+        if (direction == Iterate.FORWARDS) {
+          iterator = dbCursor -> {
+            final OperationStatus result = dbCursor.getNext(keyEntry, valueEntry, LockMode.DEFAULT);
+            return result == OperationStatus.SUCCESS ? check.get() : result;
+          };
+        } else {
+          iterator = dbCursor -> {
+            final OperationStatus result = dbCursor.getPrev(keyEntry, valueEntry, LockMode.DEFAULT);
+            return result == OperationStatus.SUCCESS ? check.get() : result;
+          };
+        }
+      }
+
+
+      if (skipCount > 0) {
+        countSkipper = c -> {
+          int cur = 0;
+          OperationStatus status = OperationStatus.SUCCESS;
+          while (cur < skipCount && status == OperationStatus.SUCCESS) {
+            cur++;
+            status = iterator.apply(c);
           }
           return status;
         };
-      };
-      return this;
-    }
+      } else {
+        countSkipper = c -> OperationStatus.SUCCESS;
+      }
 
-    @Override
-    public DatabaseGetterBuilderWithInitializer<KeyT, ValueT> startAfterValue(KeyT key, ValueT value) {
-      initializerMaker = (keyEntry, valueEntry, iterator, keyBinder, valueBinder) -> {
-        keyBinder.objectToEntry(key, keyEntry);
-        valueBinder.objectToEntry(value, valueEntry);
-        return dbCursor -> {
-          OperationStatus status = dbCursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
-          if (status == OperationStatus.SUCCESS) {
-            return iterator.apply(dbCursor);
+      if (startAtEnd) {
+        initialSkip = dbCursor -> {
+          final OperationStatus result;
+          if (dbCursor.getNextNoDup(keyEntry, valueEntry, LockMode.DEFAULT) == OperationStatus.SUCCESS) {
+            result = dbCursor.getPrev(keyEntry, valueEntry, LockMode.DEFAULT);
           } else {
-            return status;
+            //go to end
+            result = dbCursor.getLast(keyEntry, valueEntry, LockMode.DEFAULT);
+          }
+          if (result == OperationStatus.SUCCESS) {
+            return countSkipper.apply(dbCursor);
+          } else {
+            return result;
           }
         };
-      };
-      return this;
-    }
-
-    @Override
-    public DatabaseGetter<KeyT, ValueT> getAllWithSameKey(boolean forwards) {
-      DatabaseEntry key = new DatabaseEntry();
-      DatabaseEntry value = new DatabaseEntry();
-      DatabaseFunction iterator;
-      if (forwards) {
-        iterator = dbCursor -> dbCursor.getNextDup(key, value, LockMode.DEFAULT);
       } else {
-        iterator = dbCursor -> dbCursor.getPrevDup(key, value, LockMode.DEFAULT);
+        initialSkip = countSkipper;
       }
+
       return new DatabaseGetter<>(
         keyBinder,
         valueBinder,
-        initializerMaker.make(key, value, iterator, keyBinder, valueBinder),
+        c -> {
+          OperationStatus result = initializer.apply(c);
+          if (result == OperationStatus.SUCCESS) {
+            result = check.get();
+            if (result == OperationStatus.SUCCESS) {
+              result = initialSkip.apply(c);
+            }
+          }
+          return result;
+        },
         iterator,
         database,
         cursors,
-        key,
-        value
+        keyEntry,
+        valueEntry
       );
     }
 

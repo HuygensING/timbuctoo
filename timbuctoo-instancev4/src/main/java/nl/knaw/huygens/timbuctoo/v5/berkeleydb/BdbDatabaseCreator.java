@@ -15,4 +15,8 @@ public interface BdbDatabaseCreator {
   void start();
 
   void stop();
+
+  void startTransaction();
+
+  void commitTransaction();
 }

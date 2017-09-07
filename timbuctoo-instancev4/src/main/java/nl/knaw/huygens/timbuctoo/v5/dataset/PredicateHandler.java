@@ -1,9 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
-import java.util.List;
-
 public interface PredicateHandler {
-  void onRelation(String uri, List<String> types);
+  void onRelation(String uri);
 
   void onValue(String value, String dataType);
 

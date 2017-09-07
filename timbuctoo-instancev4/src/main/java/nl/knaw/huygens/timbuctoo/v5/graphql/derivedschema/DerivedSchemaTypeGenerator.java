@@ -39,11 +39,11 @@ public class DerivedSchemaTypeGenerator {
         typesContainer.valueField(
           null,
           pred,
-          pred.getValueTypes().iterator().next()
+          pred.getUsedValueTypes().iterator().next()
         );
       } else {
         Set<String> types = new HashSet<>();
-        for (String valueType : pred.getValueTypes()) {
+        for (String valueType : pred.getUsedValueTypes()) {
           types.add(typesContainer.valueType(valueType));
         }
         typesContainer.unionField(null, pred, types);
@@ -53,14 +53,14 @@ public class DerivedSchemaTypeGenerator {
         typesContainer.objectField(
           null,
           pred,
-          typesContainer.getObjectTypeName(pred.getReferenceTypes().iterator().next())
+          typesContainer.getObjectTypeName(pred.getUsedReferenceTypes().iterator().next())
         );
       } else {
         Set<String> refs = new HashSet<>();
-        for (String referenceType : pred.getReferenceTypes()) {
+        for (String referenceType : pred.getUsedReferenceTypes()) {
           refs.add(typesContainer.getObjectTypeName(referenceType));
         }
-        for (String valueType : pred.getValueTypes()) {
+        for (String valueType : pred.getUsedValueTypes()) {
           refs.add(typesContainer.valueType(valueType));
         }
 

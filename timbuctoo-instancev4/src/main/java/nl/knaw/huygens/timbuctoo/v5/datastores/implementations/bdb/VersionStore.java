@@ -30,16 +30,15 @@ public class VersionStore {
     );
   }
 
-  public int getVersion(String datastore) {
+  public int getVersion() {
     try (Stream<Integer> values = bdbWrapper.databaseGetter()
-      .startAtKey(datastore)
-      .getAllWithSameKey(true)
+      .getAll()
       .getValues()) {
       return values.findAny().orElse(-1);
     }
   }
 
-  public void setVersion(String datastore, int version) throws DatabaseWriteException {
-    bdbWrapper.put(datastore, version);
+  public void setVersion(int version) throws DatabaseWriteException {
+    bdbWrapper.put("version", version);
   }
 }

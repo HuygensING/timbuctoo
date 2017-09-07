@@ -27,7 +27,7 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   public BdbRmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
     throws DataStoreCreationException {
     bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig(), binder, binder);
-    dataSet.subscribeToRdf(new RdfHandler(this));
+    //dataSet.subscribeToRdf(new RdfHandler(this));
   }
 
   private DatabaseConfig getConfig() {
@@ -40,8 +40,9 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   @Override
   public Stream<String> get(String collectionUri) {
     return bdbWrapper.databaseGetter()
-      .startAtKey(collectionUri)
-      .getAllWithSameKey(true)
+      .key(collectionUri)
+      .dontSkip()
+      .forwards()
       .getValues();
   }
 

@@ -11,9 +11,6 @@ public class DummyDataProvider implements DataProvider {
     this.processor = processor;
   }
 
-  @Override
-  public void subscribeToEntities(EntityProcessor processor) { }
-
   public void onQuad(String subject, String predicate, String object,
                      String dataType, String language, String graph) throws RdfProcessingFailedException {
     onQuad(true, subject, predicate, object, dataType, language, graph);

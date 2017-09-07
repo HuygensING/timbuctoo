@@ -97,6 +97,14 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
     }
   }
 
+  @Override
+  public void startTransaction() {
+  }
+
+  @Override
+  public void commitTransaction() {
+  }
+
 
   public void close() throws DatabaseException, IOException {
     for (Database database : databases.values()) {
