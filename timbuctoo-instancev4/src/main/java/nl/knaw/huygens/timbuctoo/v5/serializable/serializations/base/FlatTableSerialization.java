@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.Serialization;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionList;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.QueryContainer;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.RdfData;
@@ -176,6 +177,9 @@ public abstract class FlatTableSerialization implements Serialization {
     }
 
     @Override
+    public void handleGraphqlValue(GraphqlIntrospectionValue object, TocItem context) throws IOException { }
+
+    @Override
     public void handleValue(Value object, TocItem tocItem) throws IOException {
 
     }
@@ -231,6 +235,11 @@ public abstract class FlatTableSerialization implements Serialization {
     public void handleGraphqlList(GraphqlIntrospectionList list, Tuple<TocItem, List<Value>> context)
       throws IOException {
 
+    }
+
+    @Override
+    public void handleGraphqlValue(GraphqlIntrospectionValue object, Tuple<TocItem, List<Value>> context)
+      throws IOException {
     }
 
     @Override

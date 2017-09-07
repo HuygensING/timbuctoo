@@ -16,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;
+import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.QueryContainer;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Serializable;
@@ -148,7 +149,7 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
         if (entry.getValue() == null || entry.getValue() instanceof Serializable) {
           copy.put(entry.getKey(), (Serializable) entry.getValue());
         } else {
-          copy.put(entry.getKey(), Value.fromRawJavaType(entry.getValue()));
+          copy.put(entry.getKey(), GraphqlIntrospectionValue.fromRawJavaType(entry.getValue()));
         }
       }
 
