@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
@@ -498,8 +497,7 @@ public class IntegrationTest {
     assertThat(getDataSetNamesOfDummy(client), not(hasItem(dataSetId)));
   }
 
-  @Ignore("Checkrevisionof currently fails. Need to decide how we are adding 'revisionof' info to the database" +
-    "in the first place.")
+  @Ignore
   @Test
   public void checkJsonLdDeserialization() throws Exception {
     final String testRdfReader = "{\n" +
@@ -521,9 +519,6 @@ public class IntegrationTest {
       "\t\"prov:generates\": [{\n" +
       "\t\t\"entityType\": \"Entity\",\n" +
       "\t\t\"specializationOf\": \"http://example.com/the/actual/entity\",\n" +
-      "\t\t\"wasRevisionOf\": {\n" +
-      "\t\t\t\"@id\": \"http://previous/mutation\"\n" +
-      "\t\t},\n" +
       "\t\t\"additions\": {\n" +
       "\t\t\t\"name\": [\"extra name\"],\n" +
       "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
@@ -537,9 +532,16 @@ public class IntegrationTest {
       "\t}]\n" +
       "}\n";
 
-    ObjectMapper objectMapper = new ObjectMapper();
-
     Client client = ClientBuilder.newBuilder().build();
+
+
+    WebTarget createDataSet =
+      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/testset/create/", APP.getLocalPort()));
+
+    createDataSet.request()
+                 .header(HttpHeaders.AUTHORIZATION, "fake")
+                 .post(Entity.json(null));
+
     final WebTarget createTarget =
       client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
 
@@ -550,6 +552,50 @@ public class IntegrationTest {
 
     assertThat(createResponse.getStatus(), is(204));
 
+    String testRdfReader2 = "{\n" +
+      "\t\"@type\": \"Activity\",\n" +
+      "\t\"@id\": \"testID\",\n" +
+      "\t\"prov:qualifiedAssociation\": [{\n" +
+      "\t\t\"agent\": \"http://pratham\",\n" +
+      "\t\t\"prov:hadRole\": \"editor\"\n" +
+      "\t}],\n" +
+      "\t\"prov:used\": [{\n" +
+      "\t\t\t\"prov:entity\": \"http://frontend-app\",\n" +
+      "\t\t\t\"prov:hadRole\": \"http://edit-interface\"\n" +
+      "\t\t},\n" +
+      "\t\t{\n" +
+      "\t\t\t\"prov:entity\": \"http://dbpedia.org/a_recherche_du_temps_perdu\",\n" +
+      "\t\t\t\"prov:hadRole\": \"http://source/material\"\n" +
+      "\t\t}\n" +
+      "\t],\n" +
+      "\t\"prov:generates\": [{\n" +
+      "\t\t\"entityType\": \"Entity\",\n" +
+      "\t\t\"specializationOf\": \"http://example.com/the/actual/entity\",\n" +
+      "\"wasRevisionOf\": {\n" +
+      "\t\t\t\"@id\": \"http://example.com/the/actual/entity\"\n" +
+      "\t\t}," +
+      "\t\t\"additions\": {\n" +
+      "\t\t\t\"name\": [\"extra name\"],\n" +
+      "\t\t\t\"pred2\": [\"multiple\", \"values\"]\n" +
+      "\t\t},\n" +
+      "\t\t\"deletions\": {\n" +
+      "\t\t\t\"name\": [\"extra name\"]\n" +
+      "\t\t},\n" +
+      "\t\t\"replacements\": {\n" +
+      "\t\t\t\"name\": [\"extra name\"]\n" +
+      "\t\t}\n" +
+      "\t}]\n" +
+      "}\n";
+
+    final WebTarget createTarget2 =
+      client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+
+
+    Response createResponse2 = createTarget2.request()
+                                            .header(HttpHeaders.AUTHORIZATION, "fake")
+                                            .put(Entity.json(testRdfReader2));
+
+    assertThat(createResponse2.getStatus(), is(204));
   }
 
   private List<String> getDataSetNamesOfDummy(Client client) {

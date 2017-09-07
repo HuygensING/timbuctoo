@@ -1,41 +1,23 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.Files;
-import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.stores.BdbTripleStore;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImmutableDataSetConfiguration;
-import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
-import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.Entity;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ImmutableEntity;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.MyTestRdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.net.URI;
 import java.util.HashMap;
-import java.util.concurrent.Executors;
 
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
-import static org.mockito.Mockito.mock;
 
 public class JsonLdEditEndpointTest {
 
@@ -84,32 +66,16 @@ public class JsonLdEditEndpointTest {
     testEntities[0] = testEntity;
     testEntities[1] = testEntity2;
 
-    CursorQuad quad =
-      CursorQuad
-        .create("http://example/olddatasetuserid", RdfConstants.TIM_LATEST_REVISION_OF, Direction.OUT, "oldvalue1",
-          STRING, null, "");
-
-    File tempFile = Files.createTempDir();
-
-    DataSetRepository dataSetFactory = new DataSetRepository(
-      Executors.newSingleThreadExecutor(),
-      new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())),
-      ImmutableDataSetConfiguration.builder()
-                                   .dataSetMetadataLocation(tempFile.getAbsolutePath())
-                                   .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
-                                   .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
-                                   .resourceSync(mock(ResourceSync.class))
-                                   .build(),
-      new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator()));
-
     dataProvider.start();
     dataProvider.onQuad("http://example/olddatasetuserid", RdfConstants.TIM_LATEST_REVISION_OF,
       "oldvalue1", null, null, "http://somegraph");
+    dataProvider.onQuad("http://example/olddatasetuserid", RdfConstants.TIM_SPECIALIZATION_OF,
+      "http://example/datasetuserid", null, null, "http://somegraph");
     dataProvider.finish();
-    MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
 
     JsonLdEditEndpoint jsonLdEditEndpoint =
-      new JsonLdEditEndpoint(null, new ObjectMapper(), new TimbuctooRdfIdHelper("http://example.org"));
+      new JsonLdEditEndpoint(null, null, null, new ObjectMapper(),
+        new TimbuctooRdfIdHelper("http://example/datasetuserid"));
 
     assertThat(jsonLdEditEndpoint.lastRevisionCheck(testEntities, quadStore), is(true));
   }

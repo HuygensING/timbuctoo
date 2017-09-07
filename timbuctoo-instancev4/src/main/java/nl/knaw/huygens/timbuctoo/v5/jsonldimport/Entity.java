@@ -31,4 +31,5 @@ public interface Entity {
   Map<String, String[]> getDeletions();
 
   Map<String, String[]> getReplacements();
+
 }
