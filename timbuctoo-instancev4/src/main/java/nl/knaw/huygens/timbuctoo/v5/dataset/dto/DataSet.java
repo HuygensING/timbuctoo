@@ -14,8 +14,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbRmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
-import nl.knaw.huygens.timbuctoo.v5.rml.RmlDataSourceStore;
 import org.immutables.value.Value;
 
 import java.io.IOException;
@@ -54,7 +54,7 @@ public interface DataSet {
         new BdbBackedData(dataStoreFactory, userId, dataSetId, "schema")
       ))
       .dataSource(new RdfDataSourceFactory(
-        new RmlDataSourceStore(userId, dataSetId, dataStoreFactory, importManager)
+        new BdbRmlDataSourceStore(userId, dataSetId, dataStoreFactory, importManager)
       ))
       .importManager(importManager)
       .build();

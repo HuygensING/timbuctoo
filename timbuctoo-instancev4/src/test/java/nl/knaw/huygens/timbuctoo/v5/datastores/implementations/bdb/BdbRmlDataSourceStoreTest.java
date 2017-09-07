@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.rml;
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
@@ -12,9 +12,11 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
+import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSource;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
@@ -27,7 +29,7 @@ import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
-public class RmlDataSourceStoreTest {
+public class BdbRmlDataSourceStoreTest {
 
   @Test
   public void itWorks() throws Exception {
@@ -39,7 +41,7 @@ public class RmlDataSourceStoreTest {
       false
     );
     RmlDataSourceStoreTestDataProvider dataSet = new RmlDataSourceStoreTestDataProvider(dataSetMetadata);
-    final RmlDataSourceStore rmlDataSourceStore = new RmlDataSourceStore(
+    final RmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
       dataSetMetadata.getOwnerId(),
       dataSetMetadata.getDataSetId(),
       dbCreator,

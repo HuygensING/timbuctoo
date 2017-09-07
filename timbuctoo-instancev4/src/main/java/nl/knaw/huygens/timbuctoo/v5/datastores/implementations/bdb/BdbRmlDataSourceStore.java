@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.v5.rml;
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.bind.tuple.TupleBinding;
@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import org.apache.commons.lang3.StringEscapeUtils;
 
 import java.util.HashMap;
@@ -19,11 +20,11 @@ import java.util.stream.Stream;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HAS_ROW;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
 
-public class RmlDataSourceStore {
+public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   protected final BdbWrapper<String, String> bdbWrapper;
   protected final EntryBinding<String> binder = TupleBinding.getPrimitiveBinding(String.class);
 
-  public RmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
+  public BdbRmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
     throws DataStoreCreationException {
     bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig(), binder, binder);
     dataSet.subscribeToRdf(new RdfHandler(this));
@@ -36,6 +37,7 @@ public class RmlDataSourceStore {
     return databaseConfig;
   }
 
+  @Override
   public Stream<String> get(String collectionUri) {
     return bdbWrapper.databaseGetter()
       .startAtKey(collectionUri)
@@ -52,11 +54,11 @@ public class RmlDataSourceStore {
   }
 
   private static class RdfHandler implements RdfProcessor {
-    private final RmlDataSourceStore rmlDataSourceStore;
+    private final BdbRmlDataSourceStore rmlDataSourceStore;
     private Map<String, String> predicates;
     private int currentVersion = -1;
 
-    public RdfHandler(RmlDataSourceStore rmlDataSourceStore) {
+    public RdfHandler(BdbRmlDataSourceStore rmlDataSourceStore) {
       this.rmlDataSourceStore = rmlDataSourceStore;
       this.predicates = new HashMap<>(); //FIXME: assumption on order of RDF
     }

@@ -1,10 +1,12 @@
-package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore;
+package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.ValuePredicate;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaEntityProcessor;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
