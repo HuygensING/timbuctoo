@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.InitialStoreUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
@@ -41,14 +42,15 @@ public interface DataSet {
       resourceSync.resourceList(userId, dataSetId),
       onUpdated
     );
-    QuadStore quadStore = new BdbTripleStore(importManager, dataStoreFactory, userId, dataSetId);
+    BdbTripleStore quadStore = new BdbTripleStore(importManager, dataStoreFactory, userId, dataSetId);
+    final BdbTypeNameStore typeNameStore = new BdbTypeNameStore(
+      new BdbBackedData(dataStoreFactory, userId, dataSetId, "typenames")
+    );
+    importManager.subscribeToRdf(new InitialStoreUpdater(quadStore, typeNameStore));
     return ImmutableDataSet.builder()
       .metadata(metadata)
       .quadStore(quadStore)
-      .typeNameStore(new BdbTypeNameStore(
-        importManager,
-        new BdbBackedData(dataStoreFactory, userId, dataSetId, "typenames")
-      ))
+      .typeNameStore(typeNameStore)
       .schemaStore(new BdbSchemaStore(
         importManager,
         new BdbBackedData(dataStoreFactory, userId, dataSetId, "schema")

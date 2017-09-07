@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -7,9 +8,6 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
-import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
@@ -32,18 +30,17 @@ public class BdbTypeNameStore implements TypeNameStore {
   protected final TypeNames data;
   private final DataStorage dataStore;
 
-  public BdbTypeNameStore(DataProvider dataProvider, DataStorage dataStore) throws IOException {
+  public BdbTypeNameStore(DataStorage dataStore) throws IOException {
     prefixMapping = new PrefixMappingImpl();
     final String storedValue = dataStore.getValue();
     if (storedValue == null) {
       data = new TypeNames();
-      addStandardPrefixes(data);
+      addStandardPrefixes();
     } else {
       data = objectMapper.readValue(storedValue, new TypeReference<TypeNames>() {});
     }
     prefixMapping.setNsPrefixes(data.prefixes);
     this.dataStore = dataStore;
-    dataProvider.subscribeToRdf(new Subscription());
   }
 
   //I think that a fully reversable shortened version looks ugly. And usually this is not needed
@@ -113,101 +110,39 @@ public class BdbTypeNameStore implements TypeNameStore {
     return prefixMapping.getNsPrefixMap();
   }
 
-  private void addPrefix(TypeNames typeNames, String prefix, String iri) {
-    typeNames.prefixes.put(prefix, iri);
+  public void addPrefix(String prefix, String iri) {
+    data.prefixes.put(prefix, iri);
     prefixMapping.setNsPrefix(prefix, iri); //idempotent
+  }
+
+  public void commit() throws JsonProcessingException, DatabaseWriteException {
+    dataStore.setValue(objectMapper.writeValueAsString(data));
   }
 
   @Override
   public void close() throws IOException {
     try {
-      dataStore.setValue(objectMapper.writeValueAsString(data));
+      commit();
       dataStore.close();
     } catch (Exception e) {
       throw new IOException(e);
     }
   }
 
-  private class Subscription implements RdfProcessor {
-
-    private int currentVersion = -1;
-
-    @Override
-    public void setPrefix(String prefix, String iri) throws RdfProcessingFailedException {
-      addPrefix(data, prefix, iri);
-    }
-
-    @Override
-    public void addRelation(String subject, String predicate, String object, String graph)
-      throws RdfProcessingFailedException {
-      // no implementation needed
-    }
-
-    @Override
-    public void addValue(String subject, String predicate, String value, String dataType, String graph)
-      throws RdfProcessingFailedException {
-      // no implementation needed
-    }
-
-    @Override
-    public void addLanguageTaggedString(String subject, String predicate, String value, String language,
-                                        String graph) throws RdfProcessingFailedException {
-      // no implementation needed
-    }
-
-    @Override
-    public void delRelation(String subject, String predicate, String object, String graph)
-      throws RdfProcessingFailedException {
-      // no implementation needed
-    }
-
-    @Override
-    public void delValue(String subject, String predicate, String value, String valueType, String graph)
-      throws RdfProcessingFailedException {
-      // no implementation needed
-    }
-
-    @Override
-    public void delLanguageTaggedString(String subject, String predicate, String value, String language,
-                                        String graph) throws RdfProcessingFailedException {
-      // no implementation needed
-    }
-
-    @Override
-    public void start(int index) throws RdfProcessingFailedException {
-      // no implementation needed
-      currentVersion = index;
-    }
-
-    @Override
-    public int getCurrentVersion() {
-      return currentVersion;
-    }
-
-    @Override
-    public void commit() throws RdfProcessingFailedException {
-      try {
-        dataStore.setValue(objectMapper.writeValueAsString(data));
-      } catch (IOException | DatabaseWriteException e) {
-        throw new RdfProcessingFailedException(e);
-      }
-    }
-  }
-
-  public void addStandardPrefixes(TypeNames typeNames) {
-    addPrefix(typeNames, "rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-    addPrefix(typeNames, "foaf", "http://xmlns.com/foaf/0.1/");
-    addPrefix(typeNames, "rdfs", "http://www.w3.org/2000/01/rdf-schema#");
-    addPrefix(typeNames, "owl", "http://www.w3.org/2002/07/owl#");
-    addPrefix(typeNames, "skos", "http://www.w3.org/2004/02/skos/core#");
-    addPrefix(typeNames, "dcat", "http://www.w3.org/ns/dcat#");
-    addPrefix(typeNames, "xsd", "http://www.w3.org/2001/XMLSchema#");
-    addPrefix(typeNames, "prov", "http://www.w3.org/ns/prov#");
-    addPrefix(typeNames, "dcterms", "http://purl.org/dc/terms/");
-    addPrefix(typeNames, "dbpedia", "http://dbpedia.org/resource/");
-    addPrefix(typeNames, "schema", "http://schema.org/");
-    addPrefix(typeNames, "tim", "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#");
-    addPrefix(typeNames, "timdata", "http://timbuctoo.huygens.knaw.nl/v5/data/");
+  public void addStandardPrefixes() {
+    addPrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+    addPrefix("foaf", "http://xmlns.com/foaf/0.1/");
+    addPrefix("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
+    addPrefix("owl", "http://www.w3.org/2002/07/owl#");
+    addPrefix("skos", "http://www.w3.org/2004/02/skos/core#");
+    addPrefix("dcat", "http://www.w3.org/ns/dcat#");
+    addPrefix("xsd", "http://www.w3.org/2001/XMLSchema#");
+    addPrefix("prov", "http://www.w3.org/ns/prov#");
+    addPrefix("dcterms", "http://purl.org/dc/terms/");
+    addPrefix("dbpedia", "http://dbpedia.org/resource/");
+    addPrefix("schema", "http://schema.org/");
+    addPrefix("tim", "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#");
+    addPrefix("timdata", "http://timbuctoo.huygens.knaw.nl/v5/data/");
   }
 
 }
