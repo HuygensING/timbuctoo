@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql;
 
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.archetypes.ArchetypesGenerator;
 import nl.knaw.huygens.timbuctoo.v5.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -19,6 +20,7 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 
 import java.util.Optional;
+import java.util.Set;
 
 import static graphql.schema.GraphQLSchema.newSchema;
 
@@ -54,6 +56,8 @@ public class GraphQlService {
 
       typeGenerator.makeGraphQlTypes(schemaStore.getTypes(), typeNameStore, typesContainer);
 
+      final Set<GraphQLType> allObjectTypes = typesContainer.getAllObjectTypes();
+      allObjectTypes.addAll(paginationArgumentsHelper.getListObjects());
       return Optional.of(GraphQL
         .newGraphQL(
           newSchema()
@@ -66,7 +70,7 @@ public class GraphQlService {
                 rdfIdHelper.dataSet(userId, dataSetName)
               )
             )
-            .build(typesContainer.getAllObjectTypes())
+            .build(allObjectTypes)
         )
         .queryExecutionStrategy(new SerializerExecutionStrategy(typeNameStore))
         .build());

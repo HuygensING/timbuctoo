@@ -104,7 +104,6 @@ public class JsonLdSerialization implements Serialization {
 
     @Override
     public void handleList(SerializableList list, Set<PredicateInfo> context) throws IOException {
-      generator.writeStartArray();
       generator.writeStartObject();
       if (list.getPrevCursor().isPresent()) {
         generator.writeStringField("prevCursor", list.getPrevCursor().get());
@@ -112,11 +111,13 @@ public class JsonLdSerialization implements Serialization {
       if (list.getNextCursor().isPresent()) {
         generator.writeStringField("nextCursor", list.getNextCursor().get());
       }
-      generator.writeEndObject();
+      generator.writeFieldName("items");
+      generator.writeStartArray();
       for (Serializable o : list.getItems()) {
         dispatch(o, context);
       }
       generator.writeEndArray();
+      generator.writeEndObject();
     }
 
     @Override

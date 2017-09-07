@@ -201,6 +201,23 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
       List<Object> data = completedResult.getData();
       List<Serializable> copy = data.stream().map(item -> {
         if (item == null || item instanceof Serializable) {
+          if (item instanceof Value) {
+            boolean typeRequested = false;
+            for (Field field : fields) {
+              for (Selection selection : field.getSelectionSet().getSelections()) {
+                if (selection instanceof Field) {
+                  if (((Field) selection).getName().equals("__typename")) {
+                    typeRequested = true;
+                    break;
+                  }
+                }
+              }
+            }
+            final Value value = (Value) item;
+            if (typeRequested) {
+              return value.withGraphqlType(typeNameStore.makeGraphQlValuename(value.getType()));
+            }
+          }
           return ((Serializable) item);
         } else {
           return Value.fromRawJavaType(item);

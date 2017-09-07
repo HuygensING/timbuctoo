@@ -263,34 +263,41 @@ public class IntegrationTest {
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity("{\n" +
         "  clusius_ResidenceList {\n" +
-        "    uri\n" +
+        "    items {\n" +
+        "      uri\n" +
+        "    }\n" +
         "  }\n" +
         "}", MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(objectNode
         .get("data")
-        .get("clusius_ResidenceList").size(),
-      is(21)
+        .get("clusius_ResidenceList")
+        .get("items").size(),
+      is(20)
     );
 
     graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity("{\n" +
         "  clusius_ResidenceList {\n" +
+        "    items {\n" +
         "      tim_hasLocation {\n" +
         "        tim_name {value}\n" +
         "        _inverse_tim_hasBirthPlace {\n" +
+        "          items {\n" +
         "            tim_gender {value}\n" +
         "          }\n" +
         "        }\n" +
         "      }\n" +
+        "    }\n" +
+        "  }\n" +
         "}", MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat( //every result has a value for name
       stream(objectNode
         .get("data")
-        .get("clusius_ResidenceList").iterator())
-        .skip(1) //skip the cursor node
+        .get("clusius_ResidenceList")
+        .get("items").iterator())
         .map(item -> item
           .get("tim_hasLocation")
           .get("tim_name"))
@@ -302,13 +309,13 @@ public class IntegrationTest {
     assertThat(
       stream(objectNode
         .get("data")
-        .get("clusius_ResidenceList").iterator())
-        .skip(1) //skip the cursor node
+        .get("clusius_ResidenceList")
+        .get("items").iterator())
         .flatMap(item ->
           stream(item
             .get("tim_hasLocation")
-            .get("_inverse_tim_hasBirthPlace").iterator())
-            .skip(1) //skip the cursor node
+            .get("_inverse_tim_hasBirthPlace")
+            .get("items").iterator())
             .map(person -> person
               .get("tim_gender"))
         )
@@ -338,24 +345,27 @@ public class IntegrationTest {
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity("{\n" +
         "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
-        "    uri\n" +
+        "    items { uri }\n" +
         "  }\n" +
         "}", MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(objectNode
         .get("data")
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
+        .get("items")
         .size(),
-      is(21)
+      is(20)
     );
 
     graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
       .accept(MediaType.APPLICATION_JSON)
       .post(Entity.entity("{\n" +
         "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
-        "    http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
-        "      http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
-        "        value\n" +
+        "    items {\n" +
+        "      http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
+        "        http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
+        "          value\n" +
+        "        }\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
@@ -364,8 +374,8 @@ public class IntegrationTest {
     assertThat(
       stream(objectNode
         .get("data")
-        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList").iterator())
-        .skip(1) //skip the cursor node
+        .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
+        .get("items").iterator())
         .map(item -> item
           .get("http___timbuctoo_huygens_knaw_nl_properties_hasLocation")
           .get("http___timbuctoo_huygens_knaw_nl_properties_name"))
