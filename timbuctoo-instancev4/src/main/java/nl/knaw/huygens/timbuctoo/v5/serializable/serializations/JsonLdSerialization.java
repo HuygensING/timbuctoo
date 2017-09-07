@@ -156,6 +156,9 @@ public class JsonLdSerialization implements Serialization {
       generator.writeStartObject();
       generator.writeStringField("type", type);
       generator.writeStringField("value", value.getValue());
+      if (value.getGraphqlTypeName().isPresent()) {
+        generator.writeStringField("__typename", value.getGraphqlTypeName().get());
+      }
       generator.writeEndObject();
     }
   }

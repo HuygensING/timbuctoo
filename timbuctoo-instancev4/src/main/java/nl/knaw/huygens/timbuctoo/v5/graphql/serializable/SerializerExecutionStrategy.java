@@ -7,6 +7,7 @@ import graphql.execution.ExecutionParameters;
 import graphql.execution.NonNullableFieldWasNullException;
 import graphql.execution.SimpleExecutionStrategy;
 import graphql.language.Field;
+import graphql.language.Selection;
 import graphql.schema.GraphQLObjectType;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
@@ -127,7 +128,27 @@ public class SerializerExecutionStrategy extends SimpleExecutionStrategy {
           );
         }
         if (entry.getValue() == null || entry.getValue() instanceof Serializable) {
-          copy.put(predicateInfo, (Serializable) entry.getValue());
+          if (entry.getValue() instanceof Value) {
+            boolean typeRequested = false;
+            for (Field field : fieldList) {
+              for (Selection selection : field.getSelectionSet().getSelections()) {
+                if (selection instanceof Field) {
+                  if (((Field) selection).getName().equals("__typename")) {
+                    typeRequested = true;
+                    break;
+                  }
+                }
+              }
+            }
+            final Value value = (Value) entry.getValue();
+            if (typeRequested) {
+              copy.put(predicateInfo, value.withGraphqlType(typeNameStore.makeGraphQlValuename(value.getType())));
+            } else {
+              copy.put(predicateInfo, (Serializable) entry.getValue());
+            }
+          } else {
+            copy.put(predicateInfo, (Serializable) entry.getValue());
+          }
         } else {
           copy.put(predicateInfo, Value.fromRawJavaType(entry.getValue()));
         }

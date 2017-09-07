@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.Optional;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -19,11 +20,17 @@ public interface Value extends RdfData {
 
   String getValue();
 
+  Optional<String> getGraphqlTypeName();
+
   static Value create(String value, String type) {
     return ImmutableValue.builder()
       .value(value)
       .type(type)
       .build();
+  }
+
+  default Serializable withGraphqlType(String graphqlType) {
+    return ImmutableValue.copyOf(this).withGraphqlTypeName(graphqlType);
   }
 
   static Value fromRawJavaType(Object value) {

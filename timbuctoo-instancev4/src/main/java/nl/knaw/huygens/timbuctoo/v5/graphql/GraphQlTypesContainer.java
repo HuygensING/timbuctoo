@@ -164,8 +164,9 @@ public class GraphQlTypesContainer {
 
   public GraphQLObjectType valueType(String typeUri) {
     return wrappedValueTypes.computeIfAbsent(typeUri, uri -> {
+      final String name = typeNameStore.makeGraphQlValuename(uri);
       GraphQLObjectType valueType = newObject()
-        .name(typeNameStore.makeGraphQlValuename(uri))
+        .name(name)
         .withInterface(this.valueInterface)
         .field(newFieldDefinition()
           .name("value")
