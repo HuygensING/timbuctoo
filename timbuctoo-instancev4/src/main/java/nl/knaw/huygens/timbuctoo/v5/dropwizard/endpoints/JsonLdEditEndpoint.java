@@ -106,7 +106,8 @@ public class JsonLdEditEndpoint {
 
       future.get();
 
-      importManager.addLog(rdfIdHelper.dataSet(userId, dataSetId), rdfIdHelper.dataSet(userId, dataSetId), "provenance",
+      importManager.addLog(rdfIdHelper.dataSet(userId, dataSetId), rdfIdHelper.dataSet(userId, dataSetId),
+        "provenance",
         new ByteArrayInputStream(jsonLdImport.getBytes("UTF-8")), Optional.of(Charsets.UTF_8),
         new MediaType("application", "ld+json"));
     } else {
@@ -169,7 +170,8 @@ public class JsonLdEditEndpoint {
               .findFirst();
           }
 
-          if (!prevSpecialization.get().getObject().equals(entity.getSpecializationOf().toString())) {
+          if (!prevSpecialization.isPresent() ||
+            !prevSpecialization.get().getObject().equals(entity.getSpecializationOf().toString())) {
             return false;
           }
         }

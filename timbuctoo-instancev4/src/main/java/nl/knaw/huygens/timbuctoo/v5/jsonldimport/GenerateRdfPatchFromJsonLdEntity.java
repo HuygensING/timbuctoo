@@ -51,7 +51,8 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
 
       for (Map.Entry<String, String[]> entry : additions.entrySet()) {
         for (String value : entry.getValue()) {
-          saver.onQuad(entity.getSpecializationOf().toString(), entry.getKey(), value,
+          saver.onQuad(entity.getSpecializationOf().toString(), RdfConstants.TIM_PROP_ID + "/" + entry.getKey(),
+            "\"" + value + "\"",
             RdfConstants.STRING, null, null);
         }
       }
@@ -65,7 +66,8 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
 
       for (Map.Entry<String, String[]> entry : deletions.entrySet()) {
         for (String value : entry.getValue()) {
-          saver.delValue(entity.getSpecializationOf().toString(), entry.getKey(), value, RdfConstants.STRING, null);
+          saver.delValue(entity.getSpecializationOf().toString(), RdfConstants.TIM_PROP_ID + "/" + entry.getKey(),
+            "\"" + value + "\"", RdfConstants.STRING, null);
         }
       }
     }
@@ -81,7 +83,8 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
 
       for (Map.Entry<String, String[]> entry : replacements.entrySet()) {
         for (String value : entry.getValue()) {
-          saver.onQuad(entity.getSpecializationOf().toString(), entry.getKey(), value,
+          saver.onQuad(entity.getSpecializationOf().toString(), RdfConstants.TIM_PROP_ID + "/" + entry.getKey(),
+            "\"" + value + "\"",
             RdfConstants.STRING, null, null);
         }
       }
@@ -94,11 +97,20 @@ public class GenerateRdfPatchFromJsonLdEntity implements PatchRdfCreator {
       URI specialization = entity.getSpecializationOf();
       URI revision = entity.getWasRevisionOf().get("@id");
 
-      saver.onQuad(specialization.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
-        RdfConstants.STRING, null, null);
-      saver.delQuad(revision.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
-        RdfConstants.STRING, null, null);
+      saver
+        .onQuad(specialization.toString(), RdfConstants.TIM_SPECIALIZATION_OF, "<" + specialization.toString() + ">",
+          RdfConstants.STRING, null, null);
 
+      if (revision != null) {
+        saver.onQuad(specialization.toString(), RdfConstants.TIM_LATEST_REVISION_OF, "<" + revision.toString() + ">",
+          RdfConstants.STRING, null, null);
+        saver.delQuad(revision.toString(), RdfConstants.TIM_LATEST_REVISION_OF, revision.toString(),
+          RdfConstants.STRING, null, null);
+      } else {
+        saver
+          .onQuad(specialization.toString(), RdfConstants.TIM_LATEST_REVISION_OF, "<" + specialization.toString() + ">",
+            RdfConstants.STRING, null, null);
+      }
     }
   }
 

@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedExce
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfParser;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import org.slf4j.Logger;
 
@@ -174,13 +175,24 @@ public class ImportManager implements DataProvider {
         MediaType mediaType;
         Optional<Charset> charset;
 
-        try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(outputStream)) {
-          mediaType = serializer.getMediaType();
-          charset = Optional.of(serializer.getCharset());
-          ((PlainRdfCreator) creator).sendQuads(serializer);
-        } catch (Exception e) {
-          LOG.error("Log generation failed", e);
-          break;
+        if (creator instanceof PlainRdfCreator) {
+          try (RdfSerializer serializer = serializerFactory.makeRdfSerializer(outputStream)) {
+            mediaType = serializer.getMediaType();
+            charset = Optional.of(serializer.getCharset());
+            ((PlainRdfCreator) creator).sendQuads(serializer);
+          } catch (Exception e) {
+            LOG.error("Log generation failed", e);
+            break;
+          }
+        } else {
+          try (RdfPatchSerializer serializer = serializerFactory.makeRdfPatchSerializer(outputStream)) {
+            mediaType = serializer.getMediaType();
+            charset = Optional.of(serializer.getCharset());
+            ((PatchRdfCreator) creator).sendQuads(serializer);
+          } catch (Exception e) {
+            LOG.error("Log generation failed", e);
+            break;
+          }
         }
 
         try {

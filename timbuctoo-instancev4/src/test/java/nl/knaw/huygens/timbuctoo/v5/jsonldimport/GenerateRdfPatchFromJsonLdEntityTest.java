@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.jsonldimport;
 
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.BasicRdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.MyTestRdfPatchSerializer;
 import org.junit.Test;
 
@@ -32,13 +33,14 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
       new GenerateRdfPatchFromJsonLdEntity(testEntities);
 
 
-    MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
-    generateRdfPatchFromJsonLdEntity.generateAdditions(myTestRdfPatchSerializer);
+    MyTestRdfPatchSerializer basicRdfPatchSerializer = new MyTestRdfPatchSerializer();
+    generateRdfPatchFromJsonLdEntity.generateAdditions(basicRdfPatchSerializer);
 
-    assertThat(myTestRdfPatchSerializer.getResults(), is("+ http://example/entity pred1 value1\n" +
-      "+ http://example/entity pred1 value2\n" +
-      "+ http://example/entity pred2 value3\n" +
-      "+ http://example/entity pred2 value4\n"));
+    assertThat(basicRdfPatchSerializer.getResults(), is("+ http://example/entity http://timbuctoo.huygens.knaw" +
+      ".nl/v5/vocabulary#propertyId/pred1 \"value1\"\n" +
+      "+ http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred1 \"value2\"\n" +
+      "+ http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value3\"\n" +
+      "+ http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value4\"\n"));
   }
 
   private ImmutableEntity createAdditionEntity(String entityType, String uri, String predicate, String[] values) {
@@ -81,13 +83,14 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
       new GenerateRdfPatchFromJsonLdEntity(testEntities);
 
 
-    MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
-    generateRdfPatchFromJsonLdEntity.generateDeletions(myTestRdfPatchSerializer);
+    MyTestRdfPatchSerializer basicRdfPatchSerializer = new MyTestRdfPatchSerializer();
+    generateRdfPatchFromJsonLdEntity.generateDeletions(basicRdfPatchSerializer);
 
-    assertThat(myTestRdfPatchSerializer.getResults(), is("- http://example/entity pred1 value1\n" +
-      "- http://example/entity pred1 value2\n" +
-      "- http://example/entity pred2 value3\n" +
-      "- http://example/entity pred2 value4\n"));
+    assertThat(basicRdfPatchSerializer.getResults(), is("- http://example/entity http://timbuctoo.huygens.knaw" +
+      ".nl/v5/vocabulary#propertyId/pred1 \"value1\"\n" +
+      "- http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred1 \"value2\"\n" +
+      "- http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value3\"\n" +
+      "- http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value4\"\n"));
   }
 
   @Test
@@ -119,17 +122,17 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
         });
 
 
-    MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
-    generateRdfPatchFromJsonLdEntity.generateReplacements(myTestRdfPatchSerializer);
+    MyTestRdfPatchSerializer basicRdfPatchSerializer = new MyTestRdfPatchSerializer();
+    generateRdfPatchFromJsonLdEntity.generateReplacements(basicRdfPatchSerializer);
 
-    assertThat(myTestRdfPatchSerializer.getResults(), is("- http://example/datasetuserid pred oldvalue1\n" +
+    assertThat(basicRdfPatchSerializer.getResults(), is("- http://example/datasetuserid pred oldvalue1\n" +
       "- http://example/datasetuserid pred oldvalue2\n" +
       "- http://example/datasetuserid pred2 oldvalue1\n" +
       "- http://example/datasetuserid pred2 oldvalue2\n" +
-      "+ http://example/datasetuserid pred value1\n" +
-      "+ http://example/datasetuserid pred value2\n" +
-      "+ http://example/datasetuserid pred2 value3\n" +
-      "+ http://example/datasetuserid pred2 value4\n"));
+      "+ http://example/datasetuserid http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred \"value1\"\n" +
+      "+ http://example/datasetuserid http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred \"value2\"\n" +
+      "+ http://example/datasetuserid http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value3\"\n" +
+      "+ http://example/datasetuserid http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value4\"\n"));
   }
 
   @Test
@@ -153,11 +156,13 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
       new GenerateRdfPatchFromJsonLdEntity(testEntities);
 
 
-    MyTestRdfPatchSerializer myTestRdfPatchSerializer = new MyTestRdfPatchSerializer();
-    generateRdfPatchFromJsonLdEntity.generateRevisionInfo(myTestRdfPatchSerializer);
+    MyTestRdfPatchSerializer basicRdfPatchSerializer = new MyTestRdfPatchSerializer();
+    generateRdfPatchFromJsonLdEntity.generateRevisionInfo(basicRdfPatchSerializer);
 
-    assertThat(myTestRdfPatchSerializer.getResults(), is("+ http://example/entity http://timbuctoo.huygens.knaw" +
-      ".nl/v5/vocabulary#latestrevision htttp://previous/mutation\n" +
+    assertThat(basicRdfPatchSerializer.getResults(), is("+ http://example/entity http://timbuctoo.huygens.knaw" +
+      ".nl/v5/vocabulary#specialization <http://example/entity>\n" +
+      "+ http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestrevision " +
+      "<htttp://previous/mutation>\n" +
       "- htttp://previous/mutation http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestrevision " +
       "htttp://previous/mutation\n"));
   }
