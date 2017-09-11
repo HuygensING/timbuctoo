@@ -496,8 +496,7 @@ public class IntegrationTest {
     // check if the dataset still exists
     assertThat(getDataSetNamesOfDummy(client), not(hasItem(dataSetId)));
   }
-
-  @Ignore
+  
   @Test
   public void checkJsonLdDeserialization() throws Exception {
     final String testRdfReader = "{\n" +

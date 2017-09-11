@@ -38,13 +38,12 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
   @Override
   public void delLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
     throws LogStorageFailedException {
-    printWriter.write("-" + "<" + subject + "> <" + predicate + "> " + value + " .\n");
+    printWriter.write("-" + "<" + subject + "> <" + predicate + "> " + value + "@" + language + " .\n");
   }
 
   @Override
   public MediaType getMediaType() {
     return new MediaType("application", "vnd.timbuctoo-rdf.nquads_unified_diff");
-
   }
 
   @Override
@@ -53,8 +52,8 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
   }
 
   @Override
-  public void onPrefix(String prefix, String iri) throws LogStorageFailedException {
-
+  public void onPrefix(String prefix, String iri) throws UnsupportedOperationException {
+    throw new UnsupportedOperationException("Unimplemented");
   }
 
   @Override
@@ -72,7 +71,7 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
   @Override
   public void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
     throws LogStorageFailedException {
-
+    printWriter.write("+" + "<" + subject + "> <" + predicate + "> " + value + "@" + language + " .\n");
   }
 
   @Override
