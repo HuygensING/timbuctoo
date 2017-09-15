@@ -78,8 +78,8 @@ public class Rml {
             while (iterator.hasNext()) {
               Quad triple = iterator.next();
               saver.onQuad(
-                triple.getSubject().toString(),
-                triple.getPredicate().toString(),
+                triple.getSubject().getUri().get(),
+                triple.getPredicate().getUri().get(),
                 triple.getObject().getContent(),
                 triple.getObject().getLiteralType().orElse(null),
                 triple.getObject().getLiteralLanguage().orElse(null),

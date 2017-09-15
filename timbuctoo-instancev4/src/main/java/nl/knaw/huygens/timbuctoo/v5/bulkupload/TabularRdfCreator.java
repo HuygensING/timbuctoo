@@ -43,7 +43,7 @@ public class TabularRdfCreator implements RdfCreator {
       loader.loadData(Lists.newArrayList(tuple(file.getName(), file.getFile())),
         new Importer(
           new StateMachine<>(
-            new RawUploadRdfSaver(ownerId, dataSetId, file.getName(), file.getMimeType(), saver, rdfIdHelper)
+            new RawUploadRdfSaver(ownerId, dataSetId, file.getFile().getName(), file.getMimeType(), saver, rdfIdHelper)
           ),
           new ResultReporter(importStatusConsumer)
         )
