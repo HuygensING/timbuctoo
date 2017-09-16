@@ -25,6 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
@@ -207,6 +208,12 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         prevDir[0]
       );
     }
+  }
+
+  @Override
+  public void notifyUpdate() {
+    LOG.info("types-size is: " + types.values().stream().flatMap(t -> t.getPredicates().stream()).mapToLong(
+      p -> p.getValueTypes().values().size() + p.getReferenceTypes().values().size()).sum() + "");
   }
 
   public void updatePredicateOccurrence(List<Type> addedTypes, List<Type> removedTypes, List<Type> unchangedTypes,

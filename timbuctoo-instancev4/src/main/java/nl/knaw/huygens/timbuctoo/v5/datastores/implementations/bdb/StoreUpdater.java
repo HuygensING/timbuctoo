@@ -64,12 +64,16 @@ public class StoreUpdater implements RdfProcessor {
     prevCount = 0;
     prevTime = stopwatch.elapsed(TimeUnit.SECONDS);
     try (Stream<String> subjects = updatedPerPatchStore.ofVersion(currentversion)) {
-      notifyUpdate();
       final ChangeFetcher getQuads = new ChangeFetcherImpl(truePatchStore, tripleStore, currentversion);
       final Iterator<String> iterator = subjects.iterator();
       while (iterator.hasNext()) {
+        final boolean needUpdate = notifyUpdate();
+
         final String subject = iterator.next();
         for (OptimizedPatchListener listener : listeners) {
+          if (needUpdate) {
+            listener.notifyUpdate();
+          }
           listener.onChangedSubject(subject, getQuads);
         }
       }
@@ -89,7 +93,7 @@ public class StoreUpdater implements RdfProcessor {
                        String language) throws RdfProcessingFailedException {
     try {
       final boolean wasChanged = tripleStore.putQuad(subject, predicate, direction, object, valueType, language);
-      if (wasChanged) {
+      if (wasChanged && currentversion >= 0) {
         truePatchStore.put(subject, currentversion, predicate, direction, true, object, valueType, language);
         updatedPerPatchStore.put(currentversion, subject);
       }
@@ -102,7 +106,7 @@ public class StoreUpdater implements RdfProcessor {
                           String language) throws RdfProcessingFailedException {
     try {
       final boolean wasChanged = tripleStore.deleteQuad(subject, predicate, direction, object, valueType, language);
-      if (wasChanged) {
+      if (wasChanged && currentversion >= 0) {
         truePatchStore.put(subject, currentversion, predicate, direction, false, object, valueType, language);
         updatedPerPatchStore.put(currentversion, subject);
       }
@@ -164,7 +168,7 @@ public class StoreUpdater implements RdfProcessor {
     logString = "Processed {} triples ({} triples/s)";
   }
 
-  private void notifyUpdate() {
+  private boolean notifyUpdate() {
     count++;
     final long curTime = stopwatch.elapsed(TimeUnit.SECONDS);
     if (curTime - prevTime > 5) {
@@ -172,7 +176,9 @@ public class StoreUpdater implements RdfProcessor {
       LOG.info(logString, count, itemsPerSecond);
       prevCount = count;
       prevTime = curTime;
+      return true;
     }
+    return false;
   }
 
   @Override

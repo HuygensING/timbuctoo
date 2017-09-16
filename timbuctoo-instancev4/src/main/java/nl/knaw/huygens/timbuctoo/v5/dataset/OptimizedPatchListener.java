@@ -6,5 +6,7 @@ public interface OptimizedPatchListener {
 
   void onChangedSubject(String subject, ChangeFetcher changeFetcher);
 
+  void notifyUpdate();
+
   void finish();
 }
