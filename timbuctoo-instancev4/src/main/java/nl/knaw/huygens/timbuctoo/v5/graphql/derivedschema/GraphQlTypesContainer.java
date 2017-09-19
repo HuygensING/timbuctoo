@@ -76,8 +76,14 @@ public class GraphQlTypesContainer {
       .append(isObject)
       .append(", isList: ")
       .append(predicate.isList())
-      .append(")")
-      .append("\n");
+      .append(")");
+
+    if (predicate.getSubjectsWithThisPredicate() <= 0) {
+      currentType.append(" @deprecated(reason: \"There used to be entities with this property, but that is no " +
+        "longer the case.\")");
+    }
+
+    currentType.append("\n");
   }
 
   private String listType(String fieldName, String typeName) {

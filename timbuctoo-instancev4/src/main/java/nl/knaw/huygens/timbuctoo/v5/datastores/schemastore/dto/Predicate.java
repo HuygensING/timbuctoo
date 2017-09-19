@@ -22,6 +22,8 @@ public class Predicate {
   private long subjectsWithThisPredicate = 0;
   private long subjectsWithThisPredicateAsList = 0;
 
+  private boolean hasBeenList = false;
+
   @JsonCreator
   public Predicate(@JsonProperty("name") String name, @JsonProperty("direction") Direction direction) {
     this.name = name;
@@ -82,6 +84,16 @@ public class Predicate {
     subjectsWithThisPredicateAsList = occurrences;
   }
 
+  @JsonProperty("hasBeenList")
+  public boolean hasBeenList() {
+    return hasBeenList;
+  }
+
+  @JsonProperty("hasBeenList")
+  public void setHasBeenList(boolean hasBeenList) {
+    this.hasBeenList = hasBeenList;
+  }
+
   @JsonIgnore
   public boolean isList() {
     return subjectsWithThisPredicateAsList > 0;
@@ -122,6 +134,7 @@ public class Predicate {
 
   public void registerListOccurrence(int mut) {
     this.subjectsWithThisPredicateAsList += mut;
+    this.hasBeenList = this.hasBeenList || subjectsWithThisPredicateAsList > 0;
   }
 
 }

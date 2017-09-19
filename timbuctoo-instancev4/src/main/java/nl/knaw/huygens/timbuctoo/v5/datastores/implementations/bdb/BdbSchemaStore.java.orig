@@ -72,28 +72,15 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     List<Type> unchangedTypes = new ArrayList<>();
     try (Stream<CursorQuad> subjTypes = changeFetcher.getPredicates(subject, RDF_TYPE, OUT, true, true, true)) {
       subjTypes.forEach(type -> {
-        boolean hadTypesBefore = false;
         final Type typeObj = types.computeIfAbsent(type.getObject(), TYPE_MAKER);
         if (type.getChangeType() == ChangeType.ASSERTED) {
           typeObj.registerSubject(1);
           addedTypes.add(typeObj);
         } else if (type.getChangeType() == ChangeType.RETRACTED) {
-          hadTypesBefore = true;
           typeObj.registerSubject(-1);
           removedTypes.add(typeObj);
         } else if (type.getChangeType() == ChangeType.UNCHANGED) {
-          hadTypesBefore = true;
           unchangedTypes.add(typeObj);
-        }
-        if (!hadTypesBefore) {
-          try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
-            boolean subjectIsNew = !predicates.findAny().isPresent();
-            if (!subjectIsNew) {
-              final Type unknown = types.computeIfAbsent(UNKNOWN, TYPE_MAKER);
-              removedTypes.add(unknown);
-              unknown.registerSubject(-1);
-            }
-          }
         }
       });
     }
@@ -105,18 +92,14 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
         try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, false)) {
           boolean subjectIsNew = !predicates.findAny().isPresent();
           if (subjectIsNew) {
-            final Type unknown = types.computeIfAbsent(UNKNOWN, TYPE_MAKER);
-            addedTypes.add(unknown);
-            unknown.registerSubject(1);
+            addedTypes.add(types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
           } else {
             unchangedTypes.add(types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
           }
         }
       } else {
         //subject has become unknown
-        final Type unknown = types.computeIfAbsent(UNKNOWN, TYPE_MAKER);
-        addedTypes.add(unknown);
-        unknown.registerSubject(1);
+        addedTypes.add(types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
       }
     }
 
@@ -130,103 +113,87 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     //if it was unchanged -> remove it from the removed types and add it to the added types
     //it it was asserted -> add it to the unchanged types and to the added types
     try (Stream<CursorQuad> predicates = changeFetcher.getPredicates(subject, true, true, true)) {
-      String prevPred = "";
+      String[] prevPred = new String[] { "" };
       Direction[] prevDir = new Direction[] { null };
-      int retractedCount = 0;
-      int assertedCount = 0;
-      int unchangedCount = 0;
-
-      //Predicates are a sorted list. So as soon as the predicate is different from the prevPredicate we have seen all
-      //quads of that predicate.
-
-      //so updatePredicateOccurrence is called once the predicate changes and gets the values of the _prevPredicate_
-      //(which is by then completely up to date)
-
-      //when we see the first predicate the prevPredicate is still empty so we ignore it in that case (happens inside
-      //updatePredicateOccurrence)
-      for (CursorQuad quad : (Iterable<CursorQuad>) predicates::iterator) {
-        boolean predicateSameAsPrev = prevPred.equals(quad.getPredicate()) && prevDir[0] == quad.getDirection();
-        if (!predicateSameAsPrev) {
-          updatePredicateOccurrence(
-            addedTypes,
-            removedTypes,
-            unchangedTypes,
-            retractedCount,
-            unchangedCount,
-            assertedCount,
-            prevPred,
-            prevDir[0]
-          );
-          prevPred = quad.getPredicate();
-          prevDir[0] = quad.getDirection();
-          retractedCount = 0;
-          assertedCount = 0;
-          unchangedCount = 0;
-        }
-        if (quad.getChangeType() == ChangeType.RETRACTED) {
-          retractedCount++;
-        } else if (quad.getChangeType() == ChangeType.UNCHANGED) {
-          unchangedCount++;
-        } else if (quad.getChangeType() == ChangeType.ASSERTED) {
-          assertedCount++;
-        }
-        if (quad.getDirection() != Direction.IN) {
+      int[] predCount = new int[] { 0, 0, 0 };
+      predicates
+        .forEach(quad -> {
+          boolean predicateSameAsPrev = prevPred[0].equals(quad.getPredicate()) && prevDir[0] == quad.getDirection();
+          if (!predicateSameAsPrev) {
+            updatePredicateOccurrence(
+              addedTypes,
+              removedTypes,
+              unchangedTypes,
+              prevPred,
+              predCount,
+              prevPred[0],
+              prevDir[0]
+            );
+            prevPred[0] = quad.getPredicate();
+            prevDir[0] = quad.getDirection();
+            predCount[0] = 0;
+            predCount[1] = 0;
+            predCount[2] = 0;
+          }
           if (quad.getChangeType() == ChangeType.RETRACTED) {
-            for (Type type : unchangedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
-            for (Type type : removedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
+            predCount[0]++;
           } else if (quad.getChangeType() == ChangeType.UNCHANGED) {
-            for (Type type : removedTypes) {
-              updatePredicateType(type, quad, false, changeFetcher);
-            }
-            for (Type type : addedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
-            }
+            predCount[1]++;
           } else if (quad.getChangeType() == ChangeType.ASSERTED) {
-            for (Type type : unchangedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
-            }
-            for (Type type : addedTypes) {
-              updatePredicateType(type, quad, true, changeFetcher);
+            predCount[2]++;
+          }
+          if (quad.getDirection() != Direction.IN) {
+            if (quad.getChangeType() == ChangeType.RETRACTED) {
+              for (Type type : unchangedTypes) {
+                updatePredicateType(type, quad, false, changeFetcher);
+              }
+              for (Type type : removedTypes) {
+                updatePredicateType(type, quad, false, changeFetcher);
+              }
+            } else if (quad.getChangeType() == ChangeType.UNCHANGED) {
+              for (Type type : removedTypes) {
+                updatePredicateType(type, quad, false, changeFetcher);
+              }
+              for (Type type : addedTypes) {
+                updatePredicateType(type, quad, true, changeFetcher);
+              }
+            } else if (quad.getChangeType() == ChangeType.ASSERTED) {
+              for (Type type : unchangedTypes) {
+                updatePredicateType(type, quad, true, changeFetcher);
+              }
+              for (Type type : addedTypes) {
+                updatePredicateType(type, quad, true, changeFetcher);
+              }
             }
           }
-        }
-      }
-
-      updatePredicateOccurrence(
-        addedTypes,
-        removedTypes,
-        unchangedTypes,
-        retractedCount,
-        unchangedCount,
-        assertedCount,
-        prevPred,
-        prevDir[0]
-      );
+        });
+      updatePredicateOccurrence(addedTypes, removedTypes, unchangedTypes, prevPred, predCount, prevPred[0], prevDir[0]);
     }
   }
 
   @Override
   public void notifyUpdate() {
+<<<<<<< HEAD
+    LOG.info("types-size is: " + types.values().stream().flatMap(t -> t.getPredicates().stream()).mapToLong(
+      p -> p.getValueTypes().values().size() + p.getReferenceTypes().values().size()).sum() + "");
+=======
     final long totalPredicateCount = types
       .values().stream()
       .flatMap(t -> t.getPredicates().stream())
       .mapToLong(p -> p.getValueTypes().values().size() + p.getReferenceTypes().values().size())
       .sum();
     LOG.info("types-size is: " + totalPredicateCount + "");
+>>>>>>> b9be226... Deprecate fields that are no longer in use
   }
 
   public void updatePredicateOccurrence(List<Type> addedTypes, List<Type> removedTypes, List<Type> unchangedTypes,
-                                        int retractedCount, int unchangedCount, int assertedCount, String predicate,
-                                        Direction direction) {
-    if (!predicate.isEmpty()) {
-      boolean wasList = (retractedCount + unchangedCount) > 1;
-      boolean isList = (unchangedCount + assertedCount) > 1;
-      boolean wasPresent = (retractedCount + unchangedCount) > 0;
-      boolean isPresent = (unchangedCount + assertedCount) > 0;
+                                        String[] prevPred, int[] predCount, String predicate, Direction direction) {
+    if (!prevPred[0].isEmpty()) {
+
+      boolean wasList = (predCount[0] + predCount[1]) > 1;
+      boolean isList = (predCount[1] + predCount[2]) > 1;
+      boolean wasPresent = (predCount[0] + predCount[1]) > 0;
+      boolean isPresent = (predCount[1] + predCount[2]) > 0;
       for (Type type : removedTypes) {
         setPredicateOccurrence(
           type,
@@ -291,7 +258,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       String typeName = typeEntry.getKey();
 
       for (Predicate predicate : type.getPredicates()) {
-        if (predicate.getDirection() == Direction.IN) {
+        if (predicate.getDirection() == Direction.IN || RDF_TYPE.equals(predicate.getName())) {
           continue;
         }
         for (String referenceType : predicate.getReferenceTypes().keySet()) {
@@ -320,6 +287,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
     try {
       try {
         String serializedValue = objectMapper.writeValueAsString(types);
+        LOG.info(serializedValue);
         dataStore.setValue(serializedValue);
       } catch (IOException | DatabaseWriteException e) {
         throw new SchemaUpdateException(e);
