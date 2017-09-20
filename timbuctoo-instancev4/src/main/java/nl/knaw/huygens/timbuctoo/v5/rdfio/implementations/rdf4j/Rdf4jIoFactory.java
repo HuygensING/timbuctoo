@@ -42,7 +42,7 @@ public class Rdf4jIoFactory implements RdfIoFactory {
 
   @Override
   public RdfPatchSerializer makeRdfPatchSerializer(OutputStream output) {
-    return new BasicRdfPatchSerializer(output);
+    return new BasicRdfPatchSerializer(output,"");
   }
 
   @Override

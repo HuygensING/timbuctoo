@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.jsonldimport;
 
 import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.BasicRdfPatchSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.MyTestRdfPatchSerializer;
 import org.junit.Test;
 
@@ -36,32 +35,36 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     MyTestRdfPatchSerializer basicRdfPatchSerializer = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateAdditions(basicRdfPatchSerializer);
 
-    assertThat(basicRdfPatchSerializer.getResults(), is("+ http://example/entity http://timbuctoo.huygens.knaw" +
-      ".nl/v5/vocabulary#propertyId/pred1 \"value1\"\n" +
-      "+ http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred1 \"value2\"\n" +
-      "+ http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value3\"\n" +
-      "+ http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value4\"\n"));
+    assertThat(basicRdfPatchSerializer.getResults(), is("+<http://example/entity> " +
+      "<http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred1> " +
+      "\"\"value1\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "+<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred1> " +
+      "\"\"value2\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "+<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2> " +
+      "\"\"value3\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "+<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2> " +
+      "\"\"value4\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n"));
   }
 
   private ImmutableEntity createAdditionEntity(String entityType, String uri, String predicate, String[] values) {
     return ImmutableEntity.builder()
-                          .entityType(entityType)
-                          .specializationOf(URI.create(uri))
-                          .putAdditions(predicate, values).build();
+      .entityType(entityType)
+      .specializationOf(URI.create(uri))
+      .putAdditions(predicate, values).build();
   }
 
   private ImmutableEntity createDeletionEntity(String entityType, String uri, String predicate, String[] values) {
     return ImmutableEntity.builder()
-                          .entityType(entityType)
-                          .specializationOf(URI.create(uri))
-                          .putDeletions(predicate, values).build();
+      .entityType(entityType)
+      .specializationOf(URI.create(uri))
+      .putDeletions(predicate, values).build();
   }
 
   private ImmutableEntity createReplacementEntity(String entityType, String uri, String predicate, String[] values) {
     return ImmutableEntity.builder()
-                          .entityType(entityType)
-                          .specializationOf(URI.create(uri))
-                          .putReplacements(predicate, values).build();
+      .entityType(entityType)
+      .specializationOf(URI.create(uri))
+      .putReplacements(predicate, values).build();
   }
 
 
@@ -86,20 +89,24 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     MyTestRdfPatchSerializer basicRdfPatchSerializer = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateDeletions(basicRdfPatchSerializer);
 
-    assertThat(basicRdfPatchSerializer.getResults(), is("- http://example/entity http://timbuctoo.huygens.knaw" +
-      ".nl/v5/vocabulary#propertyId/pred1 \"value1\"\n" +
-      "- http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred1 \"value2\"\n" +
-      "- http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value3\"\n" +
-      "- http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value4\"\n"));
+    assertThat(basicRdfPatchSerializer.getResults(), is("-<http://example/entity> " +
+      "<http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred1> " +
+      "\"\"value1\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "-<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred1> " +
+      "\"\"value2\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "-<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2> " +
+      "\"\"value3\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "-<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2> " +
+      "\"\"value4\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n"));
   }
 
   @Test
   public void testGenerateReplacements() throws Exception {
     Entity testEntity =
-      createReplacementEntity("test", "http://example/datasetuserid", "pred", new String[]{"value1", "value2"});
+      createReplacementEntity("test", "http://example/entity", "pred", new String[]{"value1", "value2"});
 
     Entity testEntity2 =
-      createReplacementEntity("test", "http://example/datasetuserid", "pred2", new String[]{"value3", "value4"});
+      createReplacementEntity("test", "http://example/entity", "pred2", new String[]{"value3", "value4"});
 
     Entity[] testEntities = new Entity[2];
 
@@ -110,7 +117,7 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     GenerateRdfPatchFromJsonLdEntity generateRdfPatchFromJsonLdEntity =
       new GenerateRdfPatchFromJsonLdEntity(testEntities,
         (subject, predicate, direction, cursor) -> {
-          if (subject.equals("http://example/datasetuserid") &&
+          if (subject.equals("http://example/entity") &&
             (predicate.equals("pred2") || predicate.equals("pred"))) {
             return Stream.of(
               CursorQuad.create(subject, predicate, Direction.OUT, "oldvalue1", STRING, null, ""),
@@ -125,14 +132,24 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     MyTestRdfPatchSerializer basicRdfPatchSerializer = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateReplacements(basicRdfPatchSerializer);
 
-    assertThat(basicRdfPatchSerializer.getResults(), is("- http://example/datasetuserid pred oldvalue1\n" +
-      "- http://example/datasetuserid pred oldvalue2\n" +
-      "- http://example/datasetuserid pred2 oldvalue1\n" +
-      "- http://example/datasetuserid pred2 oldvalue2\n" +
-      "+ http://example/datasetuserid http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred \"value1\"\n" +
-      "+ http://example/datasetuserid http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred \"value2\"\n" +
-      "+ http://example/datasetuserid http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value3\"\n" +
-      "+ http://example/datasetuserid http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2 \"value4\"\n"));
+    assertThat(basicRdfPatchSerializer.getResults(), is("-<http://example/entity> " +
+      "<pred> " +
+      "<oldvalue1> .\\n" +
+      "-<http://example/entity> <pred> " +
+      "<oldvalue2> .\\n" +
+      "-<http://example/entity> " +
+      "<pred2> " +
+      "<oldvalue1> .\\n" +
+      "-<http://example/entity> <pred2> " +
+      "<oldvalue2> .\\n" +
+      "+<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred> " +
+      "\"\"value1\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "+<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred> " +
+      "\"\"value2\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "+<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2> " +
+      "\"\"value3\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "+<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#propertyId/pred2> " +
+      "\"\"value4\"\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n"));
   }
 
   @Test
@@ -142,10 +159,10 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     revisionOf.put("@id", URI.create("htttp://previous/mutation"));
 
     Entity testEntity = ImmutableEntity.builder()
-                                       .entityType("test")
-                                       .specializationOf(URI.create("http://example/entity"))
-                                       .wasRevisionOf(revisionOf)
-                                       .putAdditions("pred1", new String[]{"value1", "value2"}).build();
+      .entityType("test")
+      .specializationOf(URI.create("http://example/entity"))
+      .wasRevisionOf(revisionOf)
+      .putAdditions("pred1", new String[]{"value1", "value2"}).build();
 
 
     Entity[] testEntities = new Entity[1];
@@ -159,12 +176,13 @@ public class GenerateRdfPatchFromJsonLdEntityTest {
     MyTestRdfPatchSerializer basicRdfPatchSerializer = new MyTestRdfPatchSerializer();
     generateRdfPatchFromJsonLdEntity.generateRevisionInfo(basicRdfPatchSerializer);
 
-    assertThat(basicRdfPatchSerializer.getResults(), is("+ http://example/entity http://timbuctoo.huygens.knaw" +
-      ".nl/v5/vocabulary#specialization <http://example/entity>\n" +
-      "+ http://example/entity http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestrevision " +
-      "<htttp://previous/mutation>\n" +
-      "- htttp://previous/mutation http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestrevision " +
-      "htttp://previous/mutation\n"));
+    assertThat(basicRdfPatchSerializer.getResults(), is("+<http://example/entity> " +
+      "<http://timbuctoo.huygens.knaw.nl/v5/vocabulary#specialization> \"<http://example/entity>" +
+      "\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "+<http://example/entity> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestrevision> " +
+      "\"<htttp://previous/mutation>\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n" +
+      "-<htttp://previous/mutation> <http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestrevision> " +
+      "\"htttp://previous/mutation\"^^<http://www.w3.org/2001/XMLSchema#string> .\\n"));
   }
 
 

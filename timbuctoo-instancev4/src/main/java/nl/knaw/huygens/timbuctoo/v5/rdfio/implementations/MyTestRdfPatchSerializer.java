@@ -7,7 +7,6 @@ import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
 
 public class MyTestRdfPatchSerializer implements RdfPatchSerializer {
-
   String results = "";
 
   public String getResults() {
@@ -16,20 +15,20 @@ public class MyTestRdfPatchSerializer implements RdfPatchSerializer {
 
   @Override
   public void delRelation(String subject, String predicate, String object, String graph)
-    throws LogStorageFailedException {
-    results += "- " + subject + " " + predicate + " " + object + "\n";
+          throws LogStorageFailedException {
+    results += "-" + "<" + subject + "> <" + predicate + "> <" + object + "> .\\n";
   }
 
   @Override
   public void delValue(String subject, String predicate, String value, String valueType, String graph)
-    throws LogStorageFailedException {
-    results += "- " + subject + " " + predicate + " " + value + "\n";
+          throws LogStorageFailedException {
+    results += "-" + "<" + subject + "> <" + predicate + "> \"" + value + "\"^^<" + valueType + "> .\\n";
   }
 
   @Override
   public void delLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
-    throws LogStorageFailedException {
-
+          throws LogStorageFailedException {
+    results += "-" + "<" + subject + "> <" + predicate + "> \"" + value + "\"@" + language + " .\\n";
   }
 
   @Override
@@ -49,20 +48,20 @@ public class MyTestRdfPatchSerializer implements RdfPatchSerializer {
 
   @Override
   public void onRelation(String subject, String predicate, String object, String graph)
-    throws LogStorageFailedException {
-    results += "+ " + subject + " " + predicate + " " + object + "\n";
+          throws LogStorageFailedException {
+    results += "+" + "<" + subject + "> <" + predicate + "> <" + object + "> .\\n";
   }
 
   @Override
   public void onValue(String subject, String predicate, String value, String valueType, String graph)
-    throws LogStorageFailedException {
-    results += "+ " + subject + " " + predicate + " " + value + "\n";
+          throws LogStorageFailedException {
+    results += "+" + "<" + subject + "> <" + predicate + "> \"" + value + "\"^^<" + valueType + "> .\\n";
   }
 
   @Override
   public void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
-    throws LogStorageFailedException {
-
+          throws LogStorageFailedException {
+    results += "+" + "<" + subject + "> <" + predicate + "> \"" + value + "\"@" + language + " .\\n";
   }
 
   @Override

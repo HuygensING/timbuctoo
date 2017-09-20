@@ -9,14 +9,24 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.util.function.Consumer;
 
 public class BasicRdfPatchSerializer implements RdfPatchSerializer {
-
-  String results = "";
+  private final Consumer<String> printer;
+  private final String defaultGraph;
   private final PrintWriter printWriter;
+  String results = "";
 
-  public BasicRdfPatchSerializer(OutputStream output) {
-    printWriter = new PrintWriter(new OutputStreamWriter(output, Charsets.UTF_8),true);
+  public BasicRdfPatchSerializer(OutputStream output, String defaultGraph) {
+    printWriter = new PrintWriter(new OutputStreamWriter(output, Charsets.UTF_8), true);
+    this.printer = s -> printWriter.write(s);
+    this.defaultGraph = defaultGraph;
+  }
+
+  BasicRdfPatchSerializer(Consumer<String> printWriter, String defaultGraph) {
+    this.printer = printWriter;
+    this.defaultGraph = defaultGraph;
+    this.printWriter = null;
   }
 
   public String getResults() {
@@ -26,19 +36,47 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
   @Override
   public void delRelation(String subject, String predicate, String object, String graph)
     throws LogStorageFailedException {
-    printWriter.write("-" + "<" + subject + "> <" + predicate + "> " + object + " .\n");
+    if (graph != null) {
+      printer.accept("-" + "<" + subject + "> <" + predicate + "> <" + object + "> <" + graph + "> < .\n");
+    } else {
+      printer.accept("-" + "<" + subject + "> <" + predicate + "> <" + object + "> <" + defaultGraph + "> < .\n");
+    }
   }
 
   @Override
   public void delValue(String subject, String predicate, String value, String valueType, String graph)
     throws LogStorageFailedException {
-    printWriter.write("-" + "<" + subject + "> <" + predicate + "> " + value + " .\n");
+    String toWrite;
+    if (valueType != "") {
+      toWrite = "-" + "<" + subject + "> <" + predicate + "> \"" + escapeCharacters(value) + "\"^^<" + valueType + ">";
+    } else {
+      toWrite = "-" + "<" + subject + "> <" + predicate + "> \"" + escapeCharacters(value) + "\"";
+    }
+    if (graph != null) {
+      printer.accept(toWrite + " <" + graph + "> .\n");
+    } else {
+      printer.accept(toWrite + " <" + defaultGraph + "> .\n");
+    }
+  }
+
+  private String escapeCharacters(String value) {
+    return value
+      .replace("\\", "\\\\")
+      .replace("\n", "\\\n")
+      .replace("\r", "\\\r")
+      .replace("\"", "\\\"");
   }
 
   @Override
   public void delLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
     throws LogStorageFailedException {
-    printWriter.write("-" + "<" + subject + "> <" + predicate + "> " + value + "@" + language + " .\n");
+    if (graph != null) {
+      printer.accept("-" + "<" + subject + "> <" + predicate + "> \"" + escapeCharacters(value) + "\"@" + language
+        + " <" + graph + "> .\n");
+    } else {
+      printer.accept("-" + "<" + subject + "> <" + predicate + "> \"" + escapeCharacters(value) + "\"@" + language
+        + " <" + defaultGraph + "> .\n");
+    }
   }
 
   @Override
@@ -59,24 +97,46 @@ public class BasicRdfPatchSerializer implements RdfPatchSerializer {
   @Override
   public void onRelation(String subject, String predicate, String object, String graph)
     throws LogStorageFailedException {
-    printWriter.write("+" + "<" + subject + "> <" + predicate + "> " + object + " .\n");
+    if (graph != null) {
+      printer.accept("+" + "<" + subject + "> <" + predicate + "> <" + object + "> <" + graph + "> < .\n");
+    } else {
+      printer.accept("+" + "<" + subject + "> <" + predicate + "> <" + object + "> <" + defaultGraph + "> < .\n");
+    }
   }
 
   @Override
   public void onValue(String subject, String predicate, String value, String valueType, String graph)
     throws LogStorageFailedException {
-    printWriter.write("+" + "<" + subject + "> <" + predicate + "> " + value + " .\n");
+    String toWrite;
+    if (valueType != "") {
+      toWrite = "+" + "<" + subject + "> <" + predicate + "> \"" + escapeCharacters(value) + "\"^^<" + valueType + ">";
+    } else {
+      toWrite = "+" + "<" + subject + "> <" + predicate + "> \"" + escapeCharacters(value) + "\"";
+    }
+    if (graph != null) {
+      printer.accept(toWrite + " <" + graph + "> .\n");
+    } else {
+      printer.accept(toWrite + " <" + defaultGraph + "> .\n");
+    }
   }
 
   @Override
   public void onLanguageTaggedString(String subject, String predicate, String value, String language, String graph)
     throws LogStorageFailedException {
-    printWriter.write("+" + "<" + subject + "> <" + predicate + "> " + value + "@" + language + " .\n");
+    if (graph != null) {
+      printer.accept("+" + "<" + subject + "> <" + predicate + "> \"" + escapeCharacters(value) + "\"@" + language
+        + " <" + graph + "> .\n");
+    } else {
+      printer.accept("+" + "<" + subject + "> <" + predicate + "> \"" + escapeCharacters(value) + "\"@" + language
+        + " <" + defaultGraph + "> .\n");
+    }
   }
 
   @Override
   public void close() throws LogStorageFailedException {
-    printWriter.flush();
-    printWriter.close();
+    if (printWriter != null) {
+      printWriter.flush();
+      printWriter.close();
+    }
   }
 }
