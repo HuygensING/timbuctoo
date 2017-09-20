@@ -40,7 +40,7 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
       throws RdfProcessingFailedException {
     if (predicate.equals(RDF_TYPE)) {
       try {
-        bdbWrapper.put(transaction, object, subject);
+        bdbWrapper.put(object, subject);
       } catch (DatabaseWriteException e) {
         throw new RdfProcessingFailedException(e.getCause());
       }
@@ -52,7 +52,7 @@ public class BdbCollectionIndex extends BerkeleyStore implements RdfProcessor, A
       throws RdfProcessingFailedException {
     if (predicate.equals(RDF_TYPE)) {
       try {
-        bdbWrapper.delete(transaction, object, subject);
+        bdbWrapper.delete(object, subject);
       } catch (DatabaseWriteException e) {
         throw new RdfProcessingFailedException(e.getCause());
       }

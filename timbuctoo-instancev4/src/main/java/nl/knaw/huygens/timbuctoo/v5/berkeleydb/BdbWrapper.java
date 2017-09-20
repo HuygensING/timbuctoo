@@ -40,15 +40,13 @@ public class BdbWrapper<T> {
     this.binder = binder;
   }
 
-  public Transaction beginTransaction() {
+  public void beginTransaction() {
     if (databaseConfig.getTransactional()) {
-      return dbEnvironment.beginTransaction(null, null);
-    } else {
-      return null;
+      transaction = dbEnvironment.beginTransaction(null, null);
     }
   }
 
-  public void close(Transaction transaction) {
+  public void close() {
     if (transaction != null) {
       transaction.abort();
     }
@@ -64,13 +62,13 @@ public class BdbWrapper<T> {
     return DatabaseGetter.databaseGetter(binder, database, cursors);
   }
 
-  public void commit(Transaction transaction) {
+  public void commit() {
     if (transaction != null) {
       transaction.commit();
     }
   }
 
-  public void put(Transaction transaction, T key, T value) throws DatabaseWriteException {
+  public void put(T key, T value) throws DatabaseWriteException {
     synchronized (keyEntry) {
       try {
         binder.objectToEntry(key, keyEntry);
@@ -82,7 +80,7 @@ public class BdbWrapper<T> {
     }
   }
 
-  public void delete(Transaction transaction, T key, T value) throws DatabaseWriteException {
+  public void delete(T key, T value) throws DatabaseWriteException {
     Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT);
     synchronized (keyEntry) {
       try {

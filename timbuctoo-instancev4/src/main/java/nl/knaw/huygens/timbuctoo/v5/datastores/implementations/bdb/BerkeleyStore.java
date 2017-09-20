@@ -5,7 +5,6 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.LockMode;
-import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
@@ -22,7 +21,6 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
 
   protected final BdbWrapper<String> bdbWrapper;
   private Stopwatch stopwatch;
-  protected Transaction transaction;
   private static final Logger LOG = getLogger(BerkeleyStore.class);
   private int currentVersion = -1;
 
@@ -42,7 +40,7 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
   @Override
   public void start(int index) throws RdfProcessingFailedException {
     currentVersion = index;
-    transaction = bdbWrapper.beginTransaction();
+    bdbWrapper.beginTransaction();
     stopwatch = Stopwatch.createStarted();
   }
 
@@ -56,14 +54,14 @@ public abstract class BerkeleyStore implements RdfProcessor, AutoCloseable {
     LOG.info("processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds (pre-sync)");
     stopwatch.reset();
     stopwatch.start();
-    bdbWrapper.commit(transaction);
+    bdbWrapper.commit();
     bdbWrapper.sync();
     LOG.info("Sync took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds");
   }
 
   @Override
   public void close() throws DatabaseException {
-    bdbWrapper.close(transaction);
+    bdbWrapper.close();
   }
 
   public List<String> dump(String prefix, int start, int count, LockMode lockMode) throws DatabaseException {

@@ -3,7 +3,6 @@ package nl.knaw.huygens.timbuctoo.v5.rml;
 import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.bind.tuple.TupleBinding;
 import com.sleepycat.je.DatabaseConfig;
-import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
@@ -23,7 +22,6 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
 public class RmlDataSourceStore {
   protected final BdbWrapper<String> bdbWrapper;
   protected final EntryBinding<String> binder = TupleBinding.getPrimitiveBinding(String.class);
-  protected Transaction transaction;
 
   public RmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
     throws DataStoreCreationException {
@@ -47,7 +45,7 @@ public class RmlDataSourceStore {
 
   public void put(String key, String value) throws RdfProcessingFailedException {
     try {
-      bdbWrapper.put(transaction, key, value);
+      bdbWrapper.put(key, value);
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e.getCause());
     }

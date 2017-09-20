@@ -96,7 +96,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
                        String object) throws RdfProcessingFailedException {
     try {
       String value = (dataType == null ? "" : dataType) + "\n" + (language == null ? "" : language) + "\n" + object;
-      bdbWrapper.put(transaction, subject + "\n" + predicate + "\n" + direction.name(), value);
+      bdbWrapper.put(subject + "\n" + predicate + "\n" + direction.name(), value);
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e.getCause());
     }
@@ -106,7 +106,7 @@ public class BdbTripleStore extends BerkeleyStore implements EntityProvider, Qua
                           String object) throws RdfProcessingFailedException {
     try {
       String value = (dataType == null ? "" : dataType) + "\n" + (language == null ? "" : language) + "\n" + object;
-      bdbWrapper.delete(transaction, subject + "\n" + predicate + "\n" + direction.name(), value);
+      bdbWrapper.delete(subject + "\n" + predicate + "\n" + direction.name(), value);
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e.getCause());
     }
