@@ -43,10 +43,15 @@ public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
 
   @Override
   public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
-                                                             DatabaseConfig config, EntryBinding<KeyT> keyBinder,
+                                                             boolean allowDuplicates, EntryBinding<KeyT> keyBinder,
                                                              EntryBinding<ValueT> valueBinder)
     throws DataStoreCreationException {
     try {
+      DatabaseConfig config = new DatabaseConfig();
+      config.setAllowCreate(true);
+      config.setDeferredWrite(true);
+      config.setSortedDuplicates(allowDuplicates);
+
       String environmentKey = environmentKey(userId, dataSetId);
       File envHome = new File(dbHome, environmentKey);
       envHome.mkdirs();

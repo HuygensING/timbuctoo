@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.google.common.collect.ImmutableMap;
+import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
@@ -43,10 +44,14 @@ public class BdbRmlDataSourceStoreTest {
     );
     RmlDataSourceStoreTestDataProvider dataSet = new RmlDataSourceStoreTestDataProvider(dataSetMetadata);
     final RmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
-      dataSetMetadata.getOwnerId(),
-      dataSetMetadata.getDataSetId(),
-      dbCreator,
-      dataSet
+      dbCreator.getDatabase(
+        "userid",
+        "datasetid",
+        "rmlSource",
+        true,
+        TupleBinding.getPrimitiveBinding(String.class),
+        TupleBinding.getPrimitiveBinding(String.class)
+      )
     );
     RawUploadRdfSaver rawUploadRdfSaver = dataSet.getRawUploadRdfSaver();
     final String inputCol1 = rawUploadRdfSaver.addCollection("collection1");
@@ -65,12 +70,13 @@ public class BdbRmlDataSourceStoreTest {
     rawUploadRdfSaver.addEntity(inputCol2, ImmutableMap.of("prop3", "entVal1", "prop4", "entVal2"));
 
 
-
-    RdfDataSource rdfDataSource = new RdfDataSource(rmlDataSourceStore,
+    RdfDataSource rdfDataSource = new RdfDataSource(
+      rmlDataSourceStore,
       "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId/rawData/fileName/collections/1",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
-    RdfDataSource rdfDataSource2 = new RdfDataSource(rmlDataSourceStore,
+    RdfDataSource rdfDataSource2 = new RdfDataSource(
+      rmlDataSourceStore,
       "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId/rawData/fileName/collections/2",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );

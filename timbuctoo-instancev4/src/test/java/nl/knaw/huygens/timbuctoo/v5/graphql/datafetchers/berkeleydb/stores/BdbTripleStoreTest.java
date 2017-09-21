@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.stores;
 
+import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
@@ -30,9 +31,14 @@ public class BdbTripleStoreTest {
   public void makeCollection() throws Exception {
     databaseCreator = new NonPersistentBdbDatabaseCreator();
     tripleStore = new BdbTripleStore(
-      databaseCreator,
-      "userId",
-      "dataSetId"
+      databaseCreator.getDatabase(
+        "userId",
+        "dataSetId",
+        "rdfData",
+        true,
+        TupleBinding.getPrimitiveBinding(String.class),
+        TupleBinding.getPrimitiveBinding(String.class)
+      )
     );
     Thread.sleep(2000); // to make the test work on slow systems
   }

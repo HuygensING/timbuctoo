@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
-import com.sleepycat.je.DatabaseConfig;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import org.junit.After;
 import org.junit.Before;
@@ -22,13 +21,9 @@ public class BdbWrapperTest {
   public void setUp() throws Exception {
     creator = new NonPersistentBdbDatabaseCreator();
     creator.start();
-    DatabaseConfig rdfConfig = new DatabaseConfig();
-    rdfConfig.setSortedDuplicates(true);
-    rdfConfig.setAllowCreate(true);
-    rdfConfig.setDeferredWrite(true);
 
     final TupleBinding<String> binder = getPrimitiveBinding(String.class);
-    database = creator.getDatabase("a", "b", "test", rdfConfig, binder, binder);
+    database = creator.getDatabase("a", "b", "test", true, binder, binder);
 
     database.put("aa", "bb");
     database.put("ab", "ac");

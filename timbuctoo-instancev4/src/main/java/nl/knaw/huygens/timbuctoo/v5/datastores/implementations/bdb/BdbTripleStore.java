@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
-import com.sleepycat.bind.tuple.TupleBinding;
-import com.sleepycat.je.DatabaseConfig;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.DatabaseGetter;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
@@ -20,24 +17,9 @@ public class BdbTripleStore implements QuadStore {
 
   protected final BdbWrapper<String, String> bdbWrapper;
 
-  public BdbTripleStore(BdbDatabaseCreator dbFactory, String userId, String datasetId)
+  public BdbTripleStore(BdbWrapper<String, String> rdfData)
     throws DataStoreCreationException {
-    this.bdbWrapper = dbFactory.getDatabase(
-      userId,
-      datasetId,
-      "rdfData",
-      getDatabaseConfig(),
-      TupleBinding.getPrimitiveBinding(String.class),
-      TupleBinding.getPrimitiveBinding(String.class)
-    );
-  }
-
-  protected DatabaseConfig getDatabaseConfig() {
-    DatabaseConfig rdfConfig = new DatabaseConfig();
-    rdfConfig.setSortedDuplicates(true);
-    rdfConfig.setAllowCreate(true);
-    rdfConfig.setDeferredWrite(true);
-    return rdfConfig;
+    this.bdbWrapper = rdfData;
   }
 
   @Override

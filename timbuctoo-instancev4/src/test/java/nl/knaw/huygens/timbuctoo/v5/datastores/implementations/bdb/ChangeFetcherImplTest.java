@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
+import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import org.junit.Test;
@@ -15,8 +16,22 @@ public class ChangeFetcherImplTest {
   @Test
   public void showsAdditions() throws Exception {
     final NonPersistentBdbDatabaseCreator databaseCreator = new NonPersistentBdbDatabaseCreator();
-    final BdbTripleStore bdbTripleStore = new BdbTripleStore(databaseCreator, "a", "b");
-    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(databaseCreator, "a", "b");
+    final BdbTripleStore bdbTripleStore = new BdbTripleStore(databaseCreator.getDatabase(
+      "a",
+      "b",
+      "rdfData",
+      true,
+      TupleBinding.getPrimitiveBinding(String.class),
+      TupleBinding.getPrimitiveBinding(String.class)
+    ));
+    final BdbTruePatchStore truePatchStore = new BdbTruePatchStore(databaseCreator.getDatabase(
+      "a",
+      "b",
+      "truePatch",
+      true,
+      TupleBinding.getPrimitiveBinding(String.class),
+      TupleBinding.getPrimitiveBinding(String.class)
+    ));
 
     bdbTripleStore.putQuad("subj", "pred", OUT, "obj", null, null);
     truePatchStore.put("subj", 0, "pred", OUT, true, "obj", null, null);

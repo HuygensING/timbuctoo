@@ -1,12 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
-import com.sleepycat.bind.EntryBinding;
-import com.sleepycat.bind.tuple.TupleBinding;
-import com.sleepycat.je.DatabaseConfig;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
@@ -22,19 +17,10 @@ import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROP_NAME;
 
 public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   protected final BdbWrapper<String, String> bdbWrapper;
-  protected final EntryBinding<String> binder = TupleBinding.getPrimitiveBinding(String.class);
 
-  public BdbRmlDataSourceStore(String userId, String dataSetId, BdbDatabaseCreator dbCreator, DataProvider dataSet)
+  public BdbRmlDataSourceStore(BdbWrapper<String, String> bdbWrapper)
     throws DataStoreCreationException {
-    bdbWrapper = dbCreator.getDatabase(userId, dataSetId, "rmlSource", getConfig(), binder, binder);
-    //dataSet.subscribeToRdf(new RdfHandler(this));
-  }
-
-  private DatabaseConfig getConfig() {
-    DatabaseConfig databaseConfig = new DatabaseConfig();
-    databaseConfig.setAllowCreate(true);
-    databaseConfig.setSortedDuplicates(true);
-    return databaseConfig;
+    this.bdbWrapper = bdbWrapper;
   }
 
   @Override

@@ -6,6 +6,7 @@ import com.sleepycat.bind.EntryBinding;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
+import com.sleepycat.je.Durability;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -30,16 +31,21 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
     this.databaseLocation = databaseLocation;
     configuration = new EnvironmentConfig(new Properties());
     configuration.setTransactional(true);
-    configuration.setTxnNoSync(true);
+    configuration.setDurability(Durability.COMMIT_NO_SYNC);
     configuration.setAllowCreate(true);
     configuration.setSharedCache(true);
   }
 
   @Override
   public <KeyT, ValueT> BdbWrapper<KeyT, ValueT> getDatabase(String userId, String dataSetId, String databaseName,
-                                                             DatabaseConfig config, EntryBinding<KeyT> keyBinder,
+                                                             boolean allowDuplicates, EntryBinding<KeyT> keyBinder,
                                                              EntryBinding<ValueT> valueBinder)
     throws DataStoreCreationException {
+    DatabaseConfig config = new DatabaseConfig();
+    config.setAllowCreate(true);
+    config.setDeferredWrite(true);
+    config.setSortedDuplicates(allowDuplicates);
+
     String environmentKey = environmentKey(userId, dataSetId);
     String databaseKey = environmentKey + "_" + databaseName;
     if (!databases.containsKey(databaseKey)) {

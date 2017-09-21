@@ -1,8 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
-import com.sleepycat.bind.tuple.TupleBinding;
-import com.sleepycat.je.DatabaseConfig;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -24,23 +21,12 @@ public class BdbBackedData implements DataStorage {
   private final BdbWrapper<String, String> bdbWrapper;
   private String value;
 
-  public BdbBackedData(BdbDatabaseCreator dbEnvironment, String userId, String datasetId, String dbname)
+  public BdbBackedData(BdbWrapper<String, String> bdbWrapper)
     throws DataStoreCreationException {
 
-    DatabaseConfig config = new DatabaseConfig();
-    config.setAllowCreate(true);
-    config.setDeferredWrite(true);
+    this.bdbWrapper = bdbWrapper;
 
-    this.bdbWrapper = dbEnvironment.getDatabase(
-      userId,
-      datasetId,
-      dbname,
-      config,
-      TupleBinding.getPrimitiveBinding(String.class),
-      TupleBinding.getPrimitiveBinding(String.class)
-    );
-
-    try (Stream<String> stream = bdbWrapper.databaseGetter().getAll().getValues()) {
+    try (Stream<String> stream = this.bdbWrapper.databaseGetter().getAll().getValues()) {
       final Optional<String> storedSchema = stream.findAny();
       if (storedSchema.isPresent()) {
         value = storedSchema.get();
