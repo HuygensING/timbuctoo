@@ -13,7 +13,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSource;
@@ -35,14 +35,15 @@ public class BdbRmlDataSourceStoreTest {
   @Test
   @Ignore
   public void itWorks() throws Exception {
-    NonPersistentBdbDatabaseCreator dbCreator = new NonPersistentBdbDatabaseCreator();
+    BdbNonPersistentEnvironmentCreator dbCreator = new BdbNonPersistentEnvironmentCreator();
     PromotedDataSet dataSetMetadata = PromotedDataSet.promotedDataSet(
       "userid",
       "datasetid",
-      "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId",
+      "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",
       false
     );
     RmlDataSourceStoreTestDataProvider dataSet = new RmlDataSourceStoreTestDataProvider(dataSetMetadata);
+
     final RmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
       dbCreator.getDatabase(
         "userid",

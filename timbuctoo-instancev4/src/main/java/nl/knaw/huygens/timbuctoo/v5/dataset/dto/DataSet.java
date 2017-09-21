@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.sleepycat.bind.tuple.TupleBinding;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -31,7 +31,7 @@ public interface DataSet {
 
   static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
                          FileHelper fileHelper, ExecutorService executorService,
-                         BdbDatabaseCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
+                         BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
 
     String userId = metadata.getOwnerId();

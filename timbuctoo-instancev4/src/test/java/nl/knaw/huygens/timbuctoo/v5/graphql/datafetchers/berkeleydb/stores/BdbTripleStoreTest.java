@@ -4,7 +4,7 @@ import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,16 +20,17 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
+
 public class BdbTripleStoreTest {
 
 
   public static final String EX = "http://example.org/";
-  protected NonPersistentBdbDatabaseCreator databaseCreator;
+  protected BdbNonPersistentEnvironmentCreator databaseCreator;
   protected BdbTripleStore tripleStore;
 
   @Before
   public void makeCollection() throws Exception {
-    databaseCreator = new NonPersistentBdbDatabaseCreator();
+    databaseCreator = new BdbNonPersistentEnvironmentCreator();
     tripleStore = new BdbTripleStore(
       databaseCreator.getDatabase(
         "userId",

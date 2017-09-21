@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-public class BdbDatabaseFactory implements BdbDatabaseCreator {
+public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
   private final String databaseLocation;
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
@@ -27,7 +27,7 @@ public class BdbDatabaseFactory implements BdbDatabaseCreator {
   private FileHelper fileHelper;
 
   @JsonCreator
-  public BdbDatabaseFactory(@JsonProperty("databaseLocation") String databaseLocation) {
+  public BdbPersistentEnvironmentCreator(@JsonProperty("databaseLocation") String databaseLocation) {
     this.databaseLocation = databaseLocation;
     configuration = new EnvironmentConfig(new Properties());
     configuration.setTransactional(true);

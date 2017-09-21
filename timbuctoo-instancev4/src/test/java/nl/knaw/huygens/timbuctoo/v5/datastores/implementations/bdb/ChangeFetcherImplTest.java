@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.Test;
 
 import java.util.stream.Stream;
@@ -15,7 +15,7 @@ public class ChangeFetcherImplTest {
 
   @Test
   public void showsAdditions() throws Exception {
-    final NonPersistentBdbDatabaseCreator databaseCreator = new NonPersistentBdbDatabaseCreator();
+    final BdbNonPersistentEnvironmentCreator databaseCreator = new BdbNonPersistentEnvironmentCreator();
     final BdbTripleStore bdbTripleStore = new BdbTripleStore(databaseCreator.getDatabase(
       "a",
       "b",

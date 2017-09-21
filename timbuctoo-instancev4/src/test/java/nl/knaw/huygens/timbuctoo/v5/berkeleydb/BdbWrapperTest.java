@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.berkeleydb;
 
 import com.sleepycat.bind.tuple.TupleBinding;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,12 +14,12 @@ import static org.hamcrest.Matchers.is;
 
 public class BdbWrapperTest {
 
-  private NonPersistentBdbDatabaseCreator creator;
+  private BdbNonPersistentEnvironmentCreator creator;
   private BdbWrapper<String, String> database;
 
   @Before
   public void setUp() throws Exception {
-    creator = new NonPersistentBdbDatabaseCreator();
+    creator = new BdbNonPersistentEnvironmentCreator();
     creator.start();
 
     final TupleBinding<String> binder = getPrimitiveBinding(String.class);

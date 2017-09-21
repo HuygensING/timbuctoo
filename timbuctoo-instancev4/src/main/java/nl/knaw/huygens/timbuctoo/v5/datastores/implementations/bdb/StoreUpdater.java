@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
 import com.google.common.base.Stopwatch;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
 import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
@@ -24,7 +24,7 @@ import static org.slf4j.LoggerFactory.getLogger;
 public class StoreUpdater implements RdfProcessor {
 
   private static final Logger LOG = getLogger(StoreUpdater.class);
-  private final BdbDatabaseCreator dbFactory;
+  private final BdbEnvironmentCreator dbFactory;
   private final BdbTripleStore tripleStore;
   private final BdbTypeNameStore typeNameStore;
   private final BdbTruePatchStore truePatchStore;
@@ -38,7 +38,7 @@ public class StoreUpdater implements RdfProcessor {
   private long prevTime;
   private String logString;
 
-  public StoreUpdater(BdbDatabaseCreator dbFactory, BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
+  public StoreUpdater(BdbEnvironmentCreator dbFactory, BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
                       BdbTruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
                       BdbSchemaStore schemaStore, RmlDataSourceStore rmlDataSourceStore,
                       VersionStore versionStore) {

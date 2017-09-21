@@ -8,7 +8,7 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import org.apache.commons.io.FileUtils;
@@ -23,15 +23,15 @@ import java.util.stream.Collectors;
 
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class NonPersistentBdbDatabaseCreator implements BdbDatabaseCreator {
+public class BdbNonPersistentEnvironmentCreator implements BdbEnvironmentCreator {
 
   protected final EnvironmentConfig configuration;
   protected final File dbHome;
   private final Map<String, Database> databases;
-  private static final Logger LOG = getLogger(NonPersistentBdbDatabaseCreator.class);
+  private static final Logger LOG = getLogger(BdbNonPersistentEnvironmentCreator.class);
   private Map<String, Environment> environmentMap;
 
-  public NonPersistentBdbDatabaseCreator() {
+  public BdbNonPersistentEnvironmentCreator() {
     configuration = new EnvironmentConfig(new Properties());
     configuration.setTransactional(true);
     configuration.setAllowCreate(true);

@@ -20,7 +20,7 @@ import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseFactory;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -106,7 +106,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract Optional<URI> getUserRedirectUrl();
 
   @Valid
-  public abstract BdbDatabaseFactory getDatabases();
+  public abstract BdbPersistentEnvironmentCreator getDatabases();
 
   @JsonProperty("dataSet")
   @Valid

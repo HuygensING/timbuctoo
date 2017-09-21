@@ -7,7 +7,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
@@ -51,7 +51,7 @@ public class DataSetRepositoryTest {
                                    .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
                                    .resourceSync(resourceSync)
                                    .build(),
-      new NonPersistentBdbDatabaseCreator(),
+      new BdbNonPersistentEnvironmentCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
       combinedId -> { }
     );
