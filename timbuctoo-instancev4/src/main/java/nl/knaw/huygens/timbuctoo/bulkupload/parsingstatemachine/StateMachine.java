@@ -75,7 +75,7 @@ public class StateMachine<T> {
   }
 
   public HashMap<Integer, Result> finishEntity() {
-    HashMap<String, Object> propertyValues = new HashMap<>();
+    HashMap<String, String> propertyValues = new HashMap<>();
     HashMap<Integer, Result> results = new HashMap<>();
     currentProperties.stream().filter(property -> property.getValue() != null).forEach(property -> {
       propertyValues.put(property.getName(), property.getValue());

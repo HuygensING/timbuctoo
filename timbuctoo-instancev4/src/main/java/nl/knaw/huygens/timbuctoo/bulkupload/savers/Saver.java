@@ -5,7 +5,7 @@ import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDe
 import java.util.Map;
 
 public interface Saver<T> {
-  T addEntity(T collection, Map<String, ?> currentProperties);
+  T addEntity(T collection, Map<String, String> currentProperties);
 
   T addCollection(String collectionName);
 

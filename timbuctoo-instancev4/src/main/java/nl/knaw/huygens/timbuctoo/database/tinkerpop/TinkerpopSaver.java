@@ -64,7 +64,7 @@ public class TinkerpopSaver implements AutoCloseable, Saver<Vertex> {
   }
 
   @Override
-  public Vertex addEntity(Vertex rawCollection, Map<String, ?> currentProperties) {
+  public Vertex addEntity(Vertex rawCollection, Map<String, String> currentProperties) {
     allowCommit();
 
     Vertex result = graphWrapper.getGraph().addVertex("tim_id", UUID.randomUUID().toString());

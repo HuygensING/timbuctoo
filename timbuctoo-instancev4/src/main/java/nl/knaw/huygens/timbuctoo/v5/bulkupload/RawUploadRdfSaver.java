@@ -74,7 +74,7 @@ public class RawUploadRdfSaver implements Saver<String> {
   }
 
   @Override
-  public String addEntity(String collection, Map<String, ?> currentProperties) {
+  public String addEntity(String collection, Map<String, String> currentProperties) {
     String subject = rawEntity(++curEntity);
 
     try {

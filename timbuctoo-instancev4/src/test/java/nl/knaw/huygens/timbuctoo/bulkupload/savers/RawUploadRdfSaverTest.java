@@ -88,9 +88,9 @@ public class RawUploadRdfSaverTest {
 
   @Test
   public void addEntityAddsAStringPropertyForEachPropertyOfTheEntity() throws Exception {
-    Map<String, Object> properties = Maps.newHashMap();
+    Map<String, String> properties = Maps.newHashMap();
     properties.put("prop1", "value1");
-    properties.put("prop2", 2);
+    properties.put("prop2", "2");
 
     String entity = instance.addEntity(COLLECTION, properties);
 
