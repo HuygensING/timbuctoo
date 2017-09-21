@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutorService;
 public interface DataSet {
 
   static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
-                         FileHelper fileHelper, ExecutorService executorService,
+                         FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
                          BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
 
@@ -63,7 +63,8 @@ public interface DataSet {
         false,
         stringBinding,
         stringBinding
-      ))
+      )),
+      rdfPrefix
     );
     final BdbSchemaStore schema = new BdbSchemaStore(
       new BdbBackedData(dataStoreFactory.getDatabase(

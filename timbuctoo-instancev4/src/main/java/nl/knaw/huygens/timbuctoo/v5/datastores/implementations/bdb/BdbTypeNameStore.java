@@ -29,8 +29,10 @@ public class BdbTypeNameStore implements TypeNameStore {
   protected final PrefixMapping prefixMapping;
   protected final TypeNames data;
   private final DataStorage dataStore;
+  private final String dataStoreRdfPrefix;
 
-  public BdbTypeNameStore(DataStorage dataStore) throws IOException {
+  public BdbTypeNameStore(DataStorage dataStore, String dataStoreRdfPrefix) throws IOException {
+    this.dataStoreRdfPrefix = dataStoreRdfPrefix;
     prefixMapping = new PrefixMappingImpl();
     final String storedValue = dataStore.getValue();
     if (storedValue == null) {
@@ -142,7 +144,8 @@ public class BdbTypeNameStore implements TypeNameStore {
     addPrefix("dbpedia", "http://dbpedia.org/resource/");
     addPrefix("schema", "http://schema.org/");
     addPrefix("tim", "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#");
-    addPrefix("timdata", "http://timbuctoo.huygens.knaw.nl/v5/data/");
+    addPrefix("timdata", this.dataStoreRdfPrefix);
+
   }
 
 }

@@ -20,6 +20,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.HEAD;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class DataSetRepository {
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final TimbuctooRdfIdHelper rdfIdHelper;
+  private final String rdfBaseUri;
   private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
   private final ResourceSync resourceSync;
@@ -77,6 +79,7 @@ public class DataSetRepository {
       }
     );
     this.rdfIdHelper = rdfIdHelper;
+    this.rdfBaseUri = rdfIdHelper.getBaseUri();
     statusMap = new HashMap<>();
     resourceSync = configuration.getResourceSync();
 
@@ -100,6 +103,7 @@ public class DataSetRepository {
                 configuration,
                 fileHelper,
                 executorService,
+                rdfBaseUri,
                 dataStoreFactory,
                 resourceSync,
                 () -> onUpdated.accept(promotedDataSet.getCombinedId())
@@ -151,6 +155,7 @@ public class DataSetRepository {
               configuration,
               fileHelper,
               executorService,
+              rdfBaseUri,
               dataStoreFactory,
               resourceSync,
               () -> onUpdated.accept(dataSet.getCombinedId())

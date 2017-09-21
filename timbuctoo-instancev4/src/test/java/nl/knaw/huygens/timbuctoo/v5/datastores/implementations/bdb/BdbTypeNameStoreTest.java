@@ -25,7 +25,8 @@ public class BdbTypeNameStoreTest {
         @Override
         public void close() throws Exception {
         }
-      }
+      },
+      "http://example.org"
     );
     store.addPrefix("_", "http://example.com/underscore#");
     store.addPrefix("foo", "http://example.com/foo#");
