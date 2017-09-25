@@ -498,7 +498,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "com_graphql_java_graphql_java",
-    artifact = "com.graphql-java:graphql-java:jar:3.0.0",
+    artifact = "com.graphql-java:graphql-java:jar:4.2",
   )
   native.maven_jar(
     name = "org_antlr_antlr4_runtime",
