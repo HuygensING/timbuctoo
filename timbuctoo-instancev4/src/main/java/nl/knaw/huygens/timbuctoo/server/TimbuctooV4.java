@@ -95,11 +95,13 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RootGraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.entity.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -311,6 +313,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
     register(environment, new Discover(resourceSyncService));
+
+    register(environment, new RootGraphQl(new RootQuery(dataSetRepository)));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager));

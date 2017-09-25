@@ -46,9 +46,9 @@ public class GetDataSets {
       Map<String, URI> mappedUserSets = userDataSets.getValue()
                                                     .stream()
                                                     .map(dataSetEntry -> Tuple.tuple(
-                                                      dataSetEntry.getName(),
+                                                      dataSetEntry.getDataSetId(),
                                                       graphQlEndpoint.makeUrl(userDataSets.getKey(),
-                                                        dataSetEntry.getName())
+                                                        dataSetEntry.getDataSetId())
                                                     ))
                                                     .collect(toMap(Tuple::getLeft, Tuple::getRight));
       dataSetUris.put(userDataSets.getKey(), mappedUserSets);
@@ -69,9 +69,9 @@ public class GetDataSets {
       Map<String, URI> mappedUserSets = userDataSets.getValue()
                                                     .stream()
                                                     .map(dataSetEntry -> Tuple.tuple(
-                                                      dataSetEntry.getName(),
+                                                      dataSetEntry.getDataSetId(),
                                                       graphQlEndpoint.makeUrl(userDataSets.getKey(),
-                                                        dataSetEntry.getName())
+                                                        dataSetEntry.getDataSetId())
                                                     ))
                                                     .collect(toMap(Tuple::getLeft, Tuple::getRight));
       dataSetUris.put(userDataSets.getKey(), mappedUserSets);
@@ -89,7 +89,10 @@ public class GetDataSets {
       .getDataSets()
       .getOrDefault(userId, new HashSet<>())
       .stream()
-      .map(dataSetEntry -> Tuple.tuple(dataSetEntry.getName(), graphQlEndpoint.makeUrl(userId, dataSetEntry.getName())))
+      .map(dataSetEntry -> Tuple.tuple(
+        dataSetEntry.getDataSetId(),
+        graphQlEndpoint.makeUrl(userId, dataSetEntry.getDataSetId()))
+      )
       .collect(toMap(Tuple::getLeft, Tuple::getRight));
   }
 

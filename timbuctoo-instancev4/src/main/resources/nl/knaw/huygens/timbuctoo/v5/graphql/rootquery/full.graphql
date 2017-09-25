@@ -1,0 +1,239 @@
+# Scalars
+scalar Uri
+scalar Url
+scalar Key #FIXME: ID?
+scalar Email
+scalar Markdown
+
+schema {
+  query: QueryType
+}
+
+type Query {
+  #the datasets that are supposed to get extra attention
+  promotedDataSets: [DataSetMetadata!]!
+  dataSets: DataSets
+  #all mimetypes that you can use when downloading data from a dataSet
+  availableExportMimetypes: [MimeType!]!
+
+  #information about the logged in user, or null of no user is logged in
+  aboutMe: AboutMe
+}
+
+type DataSets {
+  jauco_leaders: Jauco_Leaders
+}
+
+type MimeType {
+  value: String! @examples(values: ["application/json", "application/ld+json", "application/xml", "text/csv"])
+  en: MimeTypeDescription
+}
+
+type MimeTypeDescription {
+  name: String! @examples(values: ["json", "JSON-LD", "Gephi", "CSV"])
+  description: String! @fake(type: lorem)
+}
+
+type AboutMe {
+  #datasets that this user has some specific permissions on
+  dataSets: [DataSetMetadata!]!
+
+  #The unique identifier of this user
+  id: ID! @examples(values: ["1234"])
+
+  #a human readable name (or empty string if not available)
+  name: String! @fake(type: fullName)
+
+  #a url to a page with personal information on this user
+  personalInfo: Url! @fake(type: url)
+
+  #This user may create a new dataset on this timbuctoo instance
+  canCreateDataSet: Boolean!
+}
+
+type DataSetMetadata {
+  datasetId: ID! 	@examples(values: ["jauco_leaders"])
+  title: String!					@fake(type:county)
+  description: String			@fake(type:lorem)
+  imageUrl: Url						@fake(type:imageUrl options: {imageCategory: cats, randomizeImageUrl: true})
+  owner: ContactInfo!
+  contact: ContactInfo!
+  provenanceInfo: ProvenanceInfo!
+  contributors: [RoleWithMembers!]!
+
+  licence: Licence!
+  roles: [DataSetPermission!]!
+
+  collections(count: Int = 20, cursor: ID = ""): CollectionMetadataList
+}
+
+type Licence {
+  uri: Url @fake(type: url)
+}
+
+type CollectionMetadataList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [CollectionMetadata!]!
+}
+
+type CollectionMetadata {
+  collectionId: ID!						@examples(values:["Leaders"])
+  collectionListId: ID!				@examples(values:["LeadersList"])
+  uri: Uri! 									@fake(type: url)
+  title: String! 							@fake(type: productName)
+  summaryProperties: SummaryProperties!
+  components(count: Int = 20, cursor: ID = ""): ComponentList!
+  #facetconfig?
+  properties(count: Int = 20, cursor: ID = ""): PropertyList!
+  archeType: String
+  #estimatedTotal: String!
+}
+
+type SummaryProperties {
+  title: String! @examples(values:["schema_org_name"])
+  description: String @examples(values:["schema_org_description"])
+  image: String @examples(values:["schema_org_imageUrl"])
+}
+
+type RoleWithMembers {
+  name: String
+  members: [MemberInfo!]!
+}
+
+type ComponentList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [Component!]!
+}
+
+type PropertyList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [Property!]!
+}
+
+type Property {
+  name: String						@fake(type: colorName)
+  density: Int						@fake(type: money, options: {minMoney:0, maxMoney: 100})
+  referenceTypes(count: Int = 20, cursor: ID = ""): TypeList
+  valueTypes(count: Int = 20, cursor: ID = ""): TypeList
+}
+
+type TypeList {
+  prevCursor: ID 	@fake(type:uuid)
+  nextCursor: ID	@fake(type:uuid)
+  items: [Uri!]!	@fake(type:url)
+}
+
+type Jauco_Leaders {
+  metadata: DataSetMetadata
+  LeadersList(count: Int = 20, query: String, cursor: ID = ""): Jauco_Leaders_LeaderCollection
+  Leaders(uri: String): Jauco_Leaders_Leader
+}
+
+type Jauco_Leaders_LeaderCollection {
+  prevCursor: ID!,			@fake(type:uuid)
+  nextCursor: ID!,			@fake(type:uuid)
+  facets: [Facet!]!,
+  size: Int,
+  items: [Jauco_Leaders_Leader!]!
+}
+
+type Jauco_Leaders_Leader {
+  uri: Uri! 						@fake(type:url)
+  schema_org_name: ValueObject # Added ValueObject to show that these need a {value}
+  schema_org_description: DescriptionObject
+  schema_org_birthPlace: ValueObject
+  schema_org_imageUrl: UrlObject
+  schema_org_url: ValueObject
+}
+
+type DescriptionObject {
+  value: String  @fake(type: lorem)
+}
+
+type UrlObject {
+  value: Url @fake(type:imageUrl, options:{ imageCategory: cats, randomizeImageUrl: true })
+}
+
+type ValueObject {
+  value:String @fake(type:productName)
+}
+
+type Facet {
+  caption: String!	@fake(type: productCategory)
+  options: [Option!]!
+}
+
+type Option {
+  name: String!	@fake(type: productName)
+  count: Int! @fake(type:money)
+}
+
+# Different types for entryData
+union Component = TitleComponent | ValueComponent | LinkComponent | ImageComponent | KeyValueComponent | DividerComponent # | TableComponent # out of scope
+
+type TitleComponent {
+  valueKey: String! @examples(values:["schema_org_name"])
+}
+
+type KeyValueComponent {
+  key: Key! 							@fake(type: productName)
+  values: [Component!]!
+}
+
+type TableComponent {
+  hasHeading: Boolean!
+  tableColumns: [TableColumn!]!
+}
+
+type TableColumn {
+  columnName: String 			@fake(type:productCategory)
+  cells: [Component!]!
+}
+
+type DividerComponent {
+  title: String!				@fake(type: productCategory)
+}
+
+type ValueComponent {
+	valueKey: String! 			@examples(values:["schema_org_name", "schema_org_birthPlace", "schema_org_description"])
+}
+
+type LinkComponent {
+  valueKey: String!				@examples(values:["schema_org_name", "schema_org_birthPlace", "schema_org_description"])
+  urlKey: Url!						@examples(values:["schema_org_url"])
+}
+
+type ImageComponent {
+  urlKey: Url!						@examples(values:["schema_org_imageUrl"])
+  altKey: String					@examples(values:["schema_org_name", "schema_org_birthPlace"])
+}
+
+# Different kinds of values supported by the different Elements
+
+type ContactInfo {
+  name: String! 					@fake(type:fullName)
+  email: Email 						@fake(type:email)
+}
+
+type MemberInfo {
+  name: String! 					@fake(type:fullName)
+  url: Url 								@fake(type:url)
+}
+
+type ProvenanceInfo {
+  title: String!					@fake(type:state)
+  body: Markdown!					@fake(type:lorem) #FIXME: limit size
+}
+
+enum DataSetPermission {
+  SEARCH_AND_VIEW				#Is allowed to search the dataset and query it using graphql
+  DOWNLOAD_DUMP					#Is allowed to download raw rdf files with the data and query for recent changes
+  FORK									#Is allowed to fork the dataset (into a new dataset)
+  PUBLISH								#Is allowed to change this dataset into a publicly visible one
+  EDIT_ENTRIES					#Is allowed to edit entries using the REST endpoint
+  EDIT_DATASET					#Is allowed to upload rdf data/change dataset metadata/upload files etc.
+  EDIT_ROLES						#Is allowed to assign roles to users
+}

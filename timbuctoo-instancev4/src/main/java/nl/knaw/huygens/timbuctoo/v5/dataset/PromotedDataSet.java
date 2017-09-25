@@ -11,16 +11,22 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePromotedDataSet.class)
 public interface PromotedDataSet {
 
-  String getName();
+  String getDataSetId();
+
+  String getOwnerId();
+
+  String getCombinedId();
 
   @Value.Auxiliary
   boolean isPromoted();
   
   Optional<String> role = Optional.empty();
 
-  static PromotedDataSet promotedDataSet(String name, boolean promoted) {
+  static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, boolean promoted) {
     return ImmutablePromotedDataSet.builder()
-      .name(name)
+      .combinedId(ownerId + "_" + dataSetId)
+      .ownerId(ownerId)
+      .dataSetId(dataSetId)
       .isPromoted(promoted)
       .build();
   }

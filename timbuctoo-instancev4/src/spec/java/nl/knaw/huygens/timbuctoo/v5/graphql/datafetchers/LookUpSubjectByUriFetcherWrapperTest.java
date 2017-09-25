@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.execution.ExecutionId;
+import graphql.execution.ExecutionTypeInfo;
 import graphql.language.Field;
 import graphql.language.FragmentDefinition;
 import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.DataFetchingFieldSelectionSet;
+import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
@@ -108,6 +110,16 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     }
 
     @Override
+    public <T> T getRoot() {
+      throw new UnsupportedOperationException("");//FIXME: implement
+    }
+
+    @Override
+    public GraphQLFieldDefinition getFieldDefinition() {
+      throw new UnsupportedOperationException("");//FIXME: implement
+    }
+
+    @Override
     public List<Field> getFields() {
       throw new IllegalStateException("Not implemented yet");
     }
@@ -115,6 +127,11 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     @Override
     public GraphQLOutputType getFieldType() {
       throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public ExecutionTypeInfo getFieldTypeInfo() {
+      throw new UnsupportedOperationException("");//FIXME: implement
     }
 
     @Override

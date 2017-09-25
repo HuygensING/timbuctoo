@@ -78,7 +78,7 @@ public class DataSetRepository {
         HashMap<String, DataSet> ownersSets = new HashMap<>();
         dataSetMap.put(ownerId, ownersSets);
         for (PromotedDataSet promotedDataSet : entry.getValue()) {
-          String dataSetName = promotedDataSet.getName();
+          String dataSetName = promotedDataSet.getDataSetId();
           try {
             ownersSets.put(
               dataSetName,
@@ -117,7 +117,7 @@ public class DataSetRepository {
           storedDataSets.updateData(dataSets -> {
             dataSets
               .computeIfAbsent(ownerId, key -> new HashSet<>())
-              .add(promotedDataSet(dataSetId, false));
+              .add(promotedDataSet(ownerId, dataSetId, false));
             return dataSets;
           });
         } catch (AuthorizationCreationException | IOException | ResourceSyncException e1) {
@@ -164,7 +164,7 @@ public class DataSetRepository {
         try {
           vre = vreAuthorizationCrud
             .getAuthorization(
-              userDataSets.getKey() + "_" + dataSet.getName(),
+              dataSet.getCombinedId(),
               userId);
           if (vre.isPresent()) {
             roles = vre
@@ -176,7 +176,7 @@ public class DataSetRepository {
           roles = Collections.emptyList();
         }
         DataSetWithRoles dataSetWithWriteAccess = new DataSetWithRoles(
-          dataSet.getName(),
+          dataSet.getDataSetId(),
           dataSet.isPromoted(),
           roles, null
         );
@@ -211,7 +211,7 @@ public class DataSetRepository {
     // remove from datasets.json
     storedDataSets.updateData(dataSets -> {
       Set<PromotedDataSet>
-        dataSetsToKeep = dataSets.get(ownerId).stream().filter(dataSet -> !dataSet.getName().equals(dataSetName))
+        dataSetsToKeep = dataSets.get(ownerId).stream().filter(dataSet -> !dataSet.getDataSetId().equals(dataSetName))
                                  .collect(Collectors.toSet());
       dataSets.put(ownerId, dataSetsToKeep);
       return dataSets;
