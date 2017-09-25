@@ -505,6 +505,34 @@ def generated_maven_jars():
     artifact = "org.antlr:antlr4-runtime:jar:4.5.1",
   )
   native.maven_jar(
+    name = "com_graphql_java_graphql_java_tools",
+    artifact = "com.graphql-java:graphql-java-tools:jar:4.1.2",
+  )
+  native.maven_jar(
+    name = "org_jetbrains_kotlin_kotlin_stdlib",
+    artifact = "org.jetbrains.kotlin:kotlin-stdlib:jar:1.1.4-3",
+  )
+  native.maven_jar(
+    name = "org_jetbrains_annotations",
+    artifact = "org.jetbrains:annotations:jar:13.0",
+  )
+  native.maven_jar(
+    name = "com_fasterxml_jackson_module_jackson_module_kotlin",
+    artifact = "com.fasterxml.jackson.module:jackson-module-kotlin:jar:2.8.9",
+  )
+  native.maven_jar(
+    name = "org_jetbrains_kotlin_kotlin_reflect",
+    artifact = "org.jetbrains.kotlin:kotlin-reflect:jar:1.1.1",
+  )
+  native.maven_jar(
+    name = "com_esotericsoftware_reflectasm",
+    artifact = "com.esotericsoftware:reflectasm:jar:1.11.3",
+  )
+  native.maven_jar(
+    name = "org_ow2_asm_asm",
+    artifact = "org.ow2.asm:asm:jar:5.0.4",
+  )
+  native.maven_jar(
     name = "com_sleepycat_je",
     artifact = "com.sleepycat:je:jar:7.4.5",
     repository = "http://download.oracle.com/maven",
@@ -2295,6 +2323,70 @@ def generated_java_libraries():
     name = "org_antlr_antlr4_runtime",
     visibility = ["//visibility:public"],
     exports = ["@org_antlr_antlr4_runtime//jar"],
+    runtime_deps = [
+    ],
+  )
+  native.java_library(
+    name = "com_graphql_java_graphql_java_tools",
+    visibility = ["//visibility:public"],
+    exports = ["@com_graphql_java_graphql_java_tools//jar"],
+    runtime_deps = [
+      ":org_jetbrains_kotlin_kotlin_stdlib",
+      ":com_graphql_java_graphql_java",
+      ":com_fasterxml_jackson_core_jackson_core",
+      ":com_fasterxml_jackson_module_jackson_module_kotlin",
+      ":com_fasterxml_jackson_datatype_jackson_datatype_jdk8",
+      ":com_esotericsoftware_reflectasm",
+      ":org_apache_commons_commons_lang3",
+      ":com_google_guava_guava",
+      ":org_slf4j_slf4j_api",
+    ],
+  )
+  native.java_library(
+    name = "org_jetbrains_kotlin_kotlin_stdlib",
+    visibility = ["//visibility:public"],
+    exports = ["@org_jetbrains_kotlin_kotlin_stdlib//jar"],
+    runtime_deps = [
+      ":org_jetbrains_annotations",
+    ],
+  )
+  native.java_library(
+    name = "org_jetbrains_annotations",
+    visibility = ["//visibility:public"],
+    exports = ["@org_jetbrains_annotations//jar"],
+    runtime_deps = [
+    ],
+  )
+  native.java_library(
+    name = "com_fasterxml_jackson_module_jackson_module_kotlin",
+    visibility = ["//visibility:public"],
+    exports = ["@com_fasterxml_jackson_module_jackson_module_kotlin//jar"],
+    runtime_deps = [
+      ":com_fasterxml_jackson_core_jackson_databind",
+      ":com_fasterxml_jackson_core_jackson_annotations",
+      ":org_jetbrains_kotlin_kotlin_reflect",
+    ],
+  )
+  native.java_library(
+    name = "org_jetbrains_kotlin_kotlin_reflect",
+    visibility = ["//visibility:public"],
+    exports = ["@org_jetbrains_kotlin_kotlin_reflect//jar"],
+    runtime_deps = [
+      ":org_jetbrains_kotlin_kotlin_stdlib",
+    ],
+  )
+  native.java_library(
+    name = "com_esotericsoftware_reflectasm",
+    visibility = ["//visibility:public"],
+    exports = ["@com_esotericsoftware_reflectasm//jar"],
+    runtime_deps = [
+      ":org_ow2_asm_asm",
+    ],
+  )
+  native.java_library(
+    name = "org_ow2_asm_asm",
+    visibility = ["//visibility:public"],
+    exports = ["@org_ow2_asm_asm//jar"],
     runtime_deps = [
     ],
   )
