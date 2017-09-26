@@ -302,6 +302,14 @@
       <version>2.1.6</version>
     </dependency>
 
+    <!-- ### Search API's ## -->
+    <!-- ElasticSearch REST API -->
+    <dependency>
+      <groupId>org.elasticsearch.client</groupId>
+      <artifactId>rest</artifactId>
+      <version>5.5.3</version>
+    </dependency>
+
     <!-- ### HTML Parser ## -->
     <dependency>
       <groupId>org.jsoup</groupId>
