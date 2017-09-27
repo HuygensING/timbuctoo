@@ -2,12 +2,12 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
-import nl.knaw.huygens.timbuctoo.v5.datastores.jsonfilebackeddata.JsonFileBackedData;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaEntityProcessor;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaUpdateException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaUpdater;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaEntityProcessor;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaUpdateException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaUpdater;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 
 import java.io.File;
 import java.io.IOException;

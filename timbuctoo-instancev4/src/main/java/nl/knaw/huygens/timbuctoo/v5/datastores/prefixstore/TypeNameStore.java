@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore;
 
 import nl.knaw.huygens.timbuctoo.util.Tuple;
-import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 
 import java.util.Map;
 import java.util.Optional;

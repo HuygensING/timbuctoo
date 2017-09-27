@@ -1,18 +1,18 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
-import nl.knaw.huygens.timbuctoo.v5.bdbdatafetchers.DataStoreDataFetcherFactory;
-import nl.knaw.huygens.timbuctoo.v5.dataset.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.DataStoreDataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
-import nl.knaw.huygens.timbuctoo.v5.dataset.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json.JsonTypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;

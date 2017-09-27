@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.google.common.collect.ListMultimap;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 
 import java.util.Map;

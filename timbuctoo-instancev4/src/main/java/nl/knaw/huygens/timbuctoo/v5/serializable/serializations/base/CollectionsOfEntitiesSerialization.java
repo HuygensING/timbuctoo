@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base;
 
-import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 import nl.knaw.huygens.timbuctoo.v5.serializable.Serialization;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Entity;

@@ -7,9 +7,9 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbDatabaseCreator;
-import nl.knaw.huygens.timbuctoo.v5.bdb.BdbWrapper;
-import nl.knaw.huygens.timbuctoo.v5.datastores.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
