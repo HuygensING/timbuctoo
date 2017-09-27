@@ -32,6 +32,18 @@ public class QueryType implements GraphQLQueryResolver {
     return rootdata.currentUser;
   }
 
+  public Optional<PromotedDataSet> getDataSetMetadata(String dataSetId) {
+    String[] parsedId = dataSetId.split("_", 2);
+    return Optional.ofNullable(dataSetRepository.getDataSets().get(parsedId[0])).flatMap(d -> {
+      for (PromotedDataSet promotedDataSet : d) {
+        if (promotedDataSet.getDataSetId().equals(parsedId[1])) {
+          return Optional.of(promotedDataSet);
+        }
+      }
+      return Optional.empty();
+    });
+  }
+
   public static class RootData {
     private final Optional<User> currentUser;
 

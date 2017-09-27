@@ -18,7 +18,7 @@ public class DataSetMetadataResolver implements GraphQLResolver<PromotedDataSet>
     this.dataSetRepository = dataSetRepository;
   }
 
-  public String getDatasetId(PromotedDataSet input) {
+  public String getDataSetId(PromotedDataSet input) {
     return input.getCombinedId();
   }
 

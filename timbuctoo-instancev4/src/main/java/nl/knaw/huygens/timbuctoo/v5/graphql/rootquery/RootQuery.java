@@ -83,12 +83,15 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "  #the datasets that are supposed to get extra attention\n" +
           "  promotedDataSets: [DataSetMetadata!]!\n" +
           "\n" +
+          "  #metadata for a specific dataset\n" +
+          "  dataSetMetadata(dataSetId: ID): DataSetMetadata\n" +
+          "\n" +
           "  #information about the logged in user, or null of no user is logged in\n" +
           "  aboutMe: AboutMe\n" +
           "}\n" +
           "\n" +
           "type DataSetMetadata {\n" +
-          "  datasetId: ID!\n" +
+          "  dataSetId: ID!\n" +
           "  title: String!\n" +
           "  description: String\n" +
           "  imageUrl: String\n" +
