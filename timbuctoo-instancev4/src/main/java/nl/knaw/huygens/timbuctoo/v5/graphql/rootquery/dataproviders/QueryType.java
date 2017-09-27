@@ -5,6 +5,7 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,9 +15,11 @@ import java.util.stream.Collectors;
 public class QueryType implements GraphQLQueryResolver {
 
   private final DataSetRepository dataSetRepository;
+  private final SupportedExportFormats supportedExportFormats;
 
-  public QueryType(DataSetRepository dataSetRepository) {
+  public QueryType(DataSetRepository dataSetRepository, SupportedExportFormats supportedExportFormats) {
     this.dataSetRepository = dataSetRepository;
+    this.supportedExportFormats = supportedExportFormats;
   }
 
   public List<PromotedDataSet> getPromotedDataSets() {
@@ -42,6 +45,12 @@ public class QueryType implements GraphQLQueryResolver {
       }
       return Optional.empty();
     });
+  }
+
+  public List<MimeTypeDescription> getAvailableExportMimetypes() {
+    return supportedExportFormats.getSupportedMimeTypes().stream()
+      .map(MimeTypeDescription::create)
+      .collect(Collectors.toList());
   }
 
   public static class RootData {

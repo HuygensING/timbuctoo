@@ -6,6 +6,7 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.DataSetMetadataResolver;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.QueryType;
@@ -25,11 +26,14 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   private final DataSetRepository dataSetRepository;
   private final GraphQlService graphQlService;
+  private final SupportedExportFormats supportedFormats;
   private GraphQLSchema graphQlSchema;
 
-  public RootQuery(DataSetRepository dataSetRepository, GraphQlService graphQlService) throws IOException {
+  public RootQuery(DataSetRepository dataSetRepository, GraphQlService graphQlService,
+                   SupportedExportFormats supportedFormats) throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.graphQlService = graphQlService;
+    this.supportedFormats = supportedFormats;
   }
 
   public synchronized void rebuildSchema() {
@@ -88,6 +92,13 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "\n" +
           "  #information about the logged in user, or null of no user is logged in\n" +
           "  aboutMe: AboutMe\n" +
+          "\n" +
+          "  #all mimetypes that you can use when downloading data from a dataSet\n" +
+          "  availableExportMimetypes: [MimeType!]!\n" +
+          "}\n" +
+          "\n" +
+          "type MimeType {\n" +
+          "  name: String!\n" +
           "}\n" +
           "\n" +
           "type DataSetMetadata {\n" +
@@ -153,7 +164,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "}\n"
       )
       .resolvers(
-        new QueryType(dataSetRepository),
+        new QueryType(dataSetRepository, supportedFormats),
         new DataSetMetadataResolver(dataSetRepository),
         new UserResolver(dataSetRepository)
       )

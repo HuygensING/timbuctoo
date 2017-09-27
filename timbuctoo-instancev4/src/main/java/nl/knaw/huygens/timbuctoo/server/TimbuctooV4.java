@@ -323,7 +323,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Discover(resourceSyncService));
 
     register(environment, new RootGraphQl(
-      new RootQuery(dataSetRepository, graphQlService),
+      new RootQuery(dataSetRepository, graphQlService, serializerWriterRegistry),
       securityConfig.getLoggedInUsers()
     ));
 
