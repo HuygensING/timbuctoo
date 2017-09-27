@@ -16,6 +16,7 @@ public class JsonTypeNameStoreTest {
     File tempFile = File.createTempFile("JsonTypeNameStoreTest", "json");
     tempFile.delete();
     JsonTypeNameStore store = new JsonTypeNameStore(
+      "prefix",
       tempFile,
       new DataProvider() {
         @Override
@@ -35,8 +36,8 @@ public class JsonTypeNameStoreTest {
       }
     );
     String graphQlname = store.makeGraphQlname("http://example.com/underscore#test");
-    if (graphQlname == null) {
-      throw new RuntimeException();
+    if (!graphQlname.equals("prefix__test")) {
+      throw new RuntimeException(graphQlname + " != prefix__test");
     }
   }
 

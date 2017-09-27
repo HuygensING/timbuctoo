@@ -46,6 +46,7 @@ public interface DataSet {
       .quadStore(quadStore)
       .collectionIndex(collectionIndex)
       .typeNameStore(new JsonTypeNameStore(
+        userId + "_" + dataSetId,
         fileHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
         importManager
       ))

@@ -2,23 +2,38 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 
 import com.coxautodev.graphql.tools.SchemaObjects;
 import com.coxautodev.graphql.tools.SchemaParser;
+import graphql.schema.GraphQLFieldDefinition;
+import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.DataSetMetadataResolver;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.QueryType;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
+import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
 import static graphql.schema.GraphQLObjectType.newObject;
 import static graphql.schema.GraphQLSchema.newSchema;
 
 public class RootQuery implements Supplier<GraphQLSchema> {
 
-  private final GraphQLSchema graphQlSchema;
+  private final DataSetRepository dataSetRepository;
+  private final GraphQlService graphQlService;
+  private GraphQLSchema graphQlSchema;
 
-  public RootQuery(DataSetRepository dataSetRepository) throws IOException {
+  public RootQuery(DataSetRepository dataSetRepository, GraphQlService graphQlService) throws IOException {
+    this.dataSetRepository = dataSetRepository;
+    this.graphQlService = graphQlService;
+  }
+
+  public synchronized void rebuildSchema() {
     final SchemaObjects manualSchema = SchemaParser.newParser()
       .schemaString(
         "schema {\n" +
@@ -83,16 +98,45 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       )
       .build()
       .parseSchemaObjects();
+    final GraphQLObjectType.Builder dataSets = newObject()
+      .name("DataSets");
+    Set<GraphQLType> types = new HashSet<>();
+    types.addAll(manualSchema.getDictionary());
+    dataSetRepository.getDataSets().values().stream().flatMap(Collection::stream).forEach(promotedDataSet -> {
+      final GraphQlService.GeneratedSchema schema = graphQlService
+        .createSchema(
+          promotedDataSet.getOwnerId(),
+          promotedDataSet.getDataSetId(),
+          dataSetRepository.getDataSet(
+            promotedDataSet.getOwnerId(),
+            promotedDataSet.getDataSetId()).get()
+        );
+        types.addAll(schema.getAllObjectTypes());
+        dataSets
+          .field(newFieldDefinition()
+            .name(promotedDataSet.getCombinedId())
+            .type(schema.getRootObject())
+            .dataFetcher(environment -> "") //dummy so that datafetching continues
+            .build());
+    });
+
     graphQlSchema = newSchema()
       .query(newObject()
-        .name("Query")
+        .name("Query2")
         .field(manualSchema.getQuery().getFieldDefinition("promotedDataSets"))
+        .field(newFieldDefinition()
+          .name("dataSets")
+          .description("The auto-generated types for all datasets.")
+          .type(dataSets.build())
+          .dataFetcher(environment -> "") //dummy so that datafetching continues. All information has already been bound
+          .build())
         .build())
-      .build(manualSchema.getDictionary());
+      .build(types);
   }
 
   @Override
   public GraphQLSchema get() {
+    rebuildSchema();
     return graphQlSchema;
   }
 }

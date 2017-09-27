@@ -18,7 +18,7 @@ import static graphql.schema.GraphQLObjectType.newObject;
 
 public class CollectionIndexSchemaFactory {
 
-  public GraphQLObjectType createQuerySchema(Map<String, GraphQLObjectType> rdfTypeRepresentingTypes,
+  public GraphQLObjectType createQuerySchema(String typePrefix, Map<String, GraphQLObjectType> rdfTypeRepresentingTypes,
                                              Map<String, GraphQLObjectType> staticTypes,
                                              DataFetcherFactory fetcherFactory,
                                              PaginationArgumentsHelper paginationArgumentsHelper,
@@ -38,7 +38,7 @@ public class CollectionIndexSchemaFactory {
       String typeUri = typeMapping.getKey();
       GraphQLObjectType objectType = typeMapping.getValue();
       if (!typeUri.equals(RdfConstants.UNKNOWN)) {
-        String typeName = objectType.getName();
+        String typeName = objectType.getName().substring(typePrefix.length());
 
         GraphQLFieldDefinition.Builder collectionField = newFieldDefinition()
           .name(typeName + "List")

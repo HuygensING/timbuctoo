@@ -281,12 +281,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       errorResponseHelper
     ));
 
+    final GraphQlService graphQlService = new GraphQlService(
+      dataSetRepository,
+      new DerivedSchemaTypeGenerator(),
+      configuration.getArchetypes(), configuration.getRdfIdHelper()
+    );
     GraphQl graphQlEndpoint = new GraphQl(
-      new GraphQlService(
-        dataSetRepository,
-        new DerivedSchemaTypeGenerator(),
-        configuration.getArchetypes(), configuration.getRdfIdHelper()
-      ),
+      graphQlService,
       uriHelper,
       errorResponseHelper
     );
@@ -321,7 +322,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new LegacyIndexRedirect(uriHelper));
     register(environment, new Discover(resourceSyncService));
 
-    register(environment, new RootGraphQl(new RootQuery(dataSetRepository)));
+    register(environment, new RootGraphQl(new RootQuery(dataSetRepository, graphQlService)));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager));

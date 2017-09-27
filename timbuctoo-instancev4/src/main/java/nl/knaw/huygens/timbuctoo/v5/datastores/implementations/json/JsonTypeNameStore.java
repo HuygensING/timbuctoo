@@ -20,8 +20,10 @@ public class JsonTypeNameStore implements TypeNameStore {
   protected final PrefixMapping prefixMapping;
   protected final JsonFileBackedData<TypeNames> store;
   protected final TypeNames data;
+  private final String prefix;
 
-  public JsonTypeNameStore(File dataLocation, DataProvider dataProvider) throws IOException {
+  public JsonTypeNameStore(String prefix, File dataLocation, DataProvider dataProvider) throws IOException {
+    this.prefix = prefix;
     prefixMapping = new PrefixMappingImpl();
     store = JsonFileBackedData.getOrCreate(
       dataLocation,
@@ -57,7 +59,7 @@ public class JsonTypeNameStore implements TypeNameStore {
     if (data.shorteneds.containsKey(prefix + "\n" + uri)) {
       return data.shorteneds.get(prefix + "\n" + uri);
     } else {
-      String shortened = prefix + shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
+      String shortened = this.prefix + prefix + shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
       while (shortened.equals("PageInfo") ||
         shortened.endsWith("Connection") ||
         shortened.endsWith("Edge") ||
