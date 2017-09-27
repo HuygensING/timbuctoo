@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import io.dropwizard.setup.Environment;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
@@ -98,18 +99,28 @@ public class IntegrationTest {
   @AfterClass
   public static void afterClass() throws Exception {
     Path directory = Paths.get(resourceFilePath("integrationtest"), "datasets");
-
-    Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+    APP.addListener(new DropwizardAppRule.ServiceListener<TimbuctooConfiguration>() {
       @Override
-      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-        Files.delete(file);
-        return FileVisitResult.CONTINUE;
+      public void onRun(TimbuctooConfiguration configuration, Environment environment,
+                        DropwizardAppRule<TimbuctooConfiguration> rule) throws Exception {
+        super.onRun(configuration, environment, rule);
       }
 
       @Override
-      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-        Files.delete(dir);
-        return FileVisitResult.CONTINUE;
+      public void onStop(DropwizardAppRule<TimbuctooConfiguration> rule) throws Exception {
+        Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+          @Override
+          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            Files.delete(file);
+            return FileVisitResult.CONTINUE;
+          }
+
+          @Override
+          public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            Files.delete(dir);
+            return FileVisitResult.CONTINUE;
+          }
+        });
       }
     });
   }
