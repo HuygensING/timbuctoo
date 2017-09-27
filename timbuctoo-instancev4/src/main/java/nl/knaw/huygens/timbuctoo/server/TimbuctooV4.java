@@ -322,7 +322,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new LegacyIndexRedirect(uriHelper));
     register(environment, new Discover(resourceSyncService));
 
-    register(environment, new RootGraphQl(new RootQuery(dataSetRepository, graphQlService)));
+    register(environment, new RootGraphQl(
+      new RootQuery(dataSetRepository, graphQlService),
+      securityConfig.getLoggedInUsers()
+    ));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager));

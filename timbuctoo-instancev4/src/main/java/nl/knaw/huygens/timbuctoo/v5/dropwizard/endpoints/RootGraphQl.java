@@ -7,7 +7,11 @@ import com.sleepycat.je.DatabaseException;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.QueryType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -27,21 +31,27 @@ import static graphql.ExecutionInput.newExecutionInput;
 @Path("/v5/graphql")
 public class RootGraphQl {
 
+  private static final Logger LOG = LoggerFactory.getLogger(GraphQl.class);
+
+
   private final Supplier<GraphQLSchema> graphqlGetter;
+  private final LoggedInUsers loggedInUsers;
   private final ObjectMapper objectMapper;
   private GraphQL graphQl;
   private GraphQLSchema prevGraphQlSchema;
 
-  public RootGraphQl(Supplier<GraphQLSchema> graphqlGetter)
+  public RootGraphQl(Supplier<GraphQLSchema> graphqlGetter, LoggedInUsers loggedInUsers)
     throws DatabaseException, RdfProcessingFailedException {
     this.graphqlGetter = graphqlGetter;
+    this.loggedInUsers = loggedInUsers;
     objectMapper = new ObjectMapper();
   }
 
   @POST
   @Consumes("application/json")
   public Response postJson(JsonNode body, @QueryParam("query") String query,
-                           @HeaderParam("accept") String acceptHeader) {
+                           @HeaderParam("accept") String acceptHeader,
+                           @HeaderParam("Authorization") String authHeader) {
     final String queryFromBody;
     if (body.has("query")) {
       queryFromBody = body.get("query").asText();
@@ -61,24 +71,27 @@ public class RootGraphQl {
     }
     final String operationName = body.has("operationName") ? body.get("operationName").asText() : null;
 
-    return executeGraphql(query, acceptHeader, queryFromBody, variables, operationName);
+    return executeGraphql(query, acceptHeader, queryFromBody, variables, operationName, authHeader);
   }
 
   @POST
   @Consumes("application/graphql")
   public Response postGraphql(String query, @QueryParam("query") String queryParam,
-                              @HeaderParam("accept") String acceptHeader) {
-    return executeGraphql(queryParam, acceptHeader, query, null, null);
+                              @HeaderParam("accept") String acceptHeader,
+                              @HeaderParam("Authorization") String authHeader) {
+    return executeGraphql(queryParam, acceptHeader, query, null, null, authHeader);
   }
 
   @GET
-  public Response get(@QueryParam("query") String query, @HeaderParam("accept") String acceptHeader) {
-    return executeGraphql(null, acceptHeader, query, null, null);
+  public Response get(@QueryParam("query") String query, @HeaderParam("accept") String acceptHeader,
+                      @HeaderParam("Authorization") String authHeader) {
+    return executeGraphql(null, acceptHeader, query, null, null, authHeader);
   }
 
 
   public Response executeGraphql(String query, String acceptHeader, String queryFromBody, Map variables,
-                                 String operationName) {
+                                 String operationName, String authHeader) {
+
     if (unSpecifiedAcceptHeader(acceptHeader)) {
       return Response
         .status(400)
@@ -110,6 +123,7 @@ public class RootGraphQl {
     }
     final ExecutionResult result = graphQl
       .execute(newExecutionInput()
+        .root(new QueryType.RootData(loggedInUsers.userFor(authHeader)))
         .query(queryFromBody)
         .operationName(operationName)
         .variables(variables == null ? Collections.emptyMap() : variables)

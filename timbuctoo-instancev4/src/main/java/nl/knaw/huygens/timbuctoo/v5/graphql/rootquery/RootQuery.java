@@ -6,10 +6,10 @@ import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.DataSetMetadataResolver;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.QueryType;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.UserResolver;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -33,7 +33,47 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   }
 
   public synchronized void rebuildSchema() {
-    final SchemaObjects manualSchema = SchemaParser.newParser()
+    final GraphQLObjectType.Builder dataSets = newObject()
+      .name("DataSets");
+    Set<GraphQLType> types = new HashSet<>();
+
+    final SchemaObjects manualSchema = makeManualSchema();
+    types.addAll(manualSchema.getDictionary());
+
+    dataSetRepository.getDataSets().values().stream().flatMap(Collection::stream).forEach(promotedDataSet -> {
+      final GraphQlService.GeneratedSchema schema = graphQlService
+        .createSchema(
+          promotedDataSet.getOwnerId(),
+          promotedDataSet.getDataSetId(),
+          dataSetRepository.getDataSet(
+            promotedDataSet.getOwnerId(),
+            promotedDataSet.getDataSetId()).get()
+        );
+      types.addAll(schema.getAllObjectTypes());
+      dataSets
+        .field(newFieldDefinition()
+          .name(promotedDataSet.getCombinedId())
+          .type(schema.getRootObject())
+          .dataFetcher(environment -> "") //dummy so that datafetching continues
+          .build());
+    });
+
+    graphQlSchema = newSchema()
+      .query(newObject()
+        .name("Query")
+        .fields(manualSchema.getQuery().getFieldDefinitions())
+        .field(newFieldDefinition()
+          .name("dataSets")
+          .description("The auto-generated types for all datasets.")
+          .type(dataSets.build())
+          .dataFetcher(environment -> "") //dummy so that datafetching continues. All information has already been bound
+          .build())
+        .build())
+      .build(types);
+  }
+
+  public SchemaObjects makeManualSchema() {
+    return SchemaParser.newParser()
       .schemaString(
         "schema {\n" +
           "  query: StaticQueryType\n" +
@@ -42,6 +82,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "type StaticQueryType {\n" +
           "  #the datasets that are supposed to get extra attention\n" +
           "  promotedDataSets: [DataSetMetadata!]!\n" +
+          "\n" +
+          "  #information about the logged in user, or null of no user is logged in\n" +
+          "  aboutMe: AboutMe\n" +
           "}\n" +
           "\n" +
           "type DataSetMetadata {\n" +
@@ -53,6 +96,22 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "  collections(count: Int = 20, cursor: ID = \"\"): CollectionMetadataList\n" +
           "}\n" +
           "\n" +
+          "type AboutMe {\n" +
+          "  #datasets that this user has some specific permissions on\n" +
+          "  dataSets: [DataSetMetadata!]!\n" +
+          "\n" +
+          "  #The unique identifier of this user\n" +
+          "  id: ID!\n" +
+          "\n" +
+          "  #a human readable name (or empty string if not available)\n" +
+          "  name: String!\n" +
+          "\n" +
+          "  #a url to a page with personal information on this user\n" +
+          "  personalInfo: String!\n" +
+          "\n" +
+          "  #This user may create a new dataset on this timbuctoo instance\n" +
+          "  canCreateDataSet: Boolean!\n" +
+          "}\n" +
           "\n" +
           "type CollectionMetadataList {\n" +
           "  prevCursor: ID\n" +
@@ -90,47 +149,13 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "  items: [String!]!\n" +
           "}\n"
       )
-      .dictionary("DataSetMetadata", PromotedDataSet.class)
       .resolvers(
         new QueryType(dataSetRepository),
-        new DataSetMetadataResolver(dataSetRepository)
+        new DataSetMetadataResolver(dataSetRepository),
+        new UserResolver(dataSetRepository)
       )
       .build()
       .parseSchemaObjects();
-    final GraphQLObjectType.Builder dataSets = newObject()
-      .name("DataSets");
-    Set<GraphQLType> types = new HashSet<>();
-    types.addAll(manualSchema.getDictionary());
-    dataSetRepository.getDataSets().values().stream().flatMap(Collection::stream).forEach(promotedDataSet -> {
-      final GraphQlService.GeneratedSchema schema = graphQlService
-        .createSchema(
-          promotedDataSet.getOwnerId(),
-          promotedDataSet.getDataSetId(),
-          dataSetRepository.getDataSet(
-            promotedDataSet.getOwnerId(),
-            promotedDataSet.getDataSetId()).get()
-        );
-      types.addAll(schema.getAllObjectTypes());
-      dataSets
-        .field(newFieldDefinition()
-          .name(promotedDataSet.getCombinedId())
-          .type(schema.getRootObject())
-          .dataFetcher(environment -> "") //dummy so that datafetching continues
-          .build());
-    });
-
-    graphQlSchema = newSchema()
-      .query(newObject()
-        .name("Query2")
-        .field(manualSchema.getQuery().getFieldDefinition("promotedDataSets"))
-        .field(newFieldDefinition()
-          .name("dataSets")
-          .description("The auto-generated types for all datasets.")
-          .type(dataSets.build())
-          .dataFetcher(environment -> "") //dummy so that datafetching continues. All information has already been bound
-          .build())
-        .build())
-      .build(types);
   }
 
   @Override
