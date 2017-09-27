@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sleepycat.je.DatabaseException;
+import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
@@ -14,6 +15,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.Collections;
 import java.util.HashMap;
@@ -80,20 +82,23 @@ public class RootGraphQl {
     if (unSpecifiedAcceptHeader(acceptHeader)) {
       return Response
         .status(400)
-        .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity("{\"errors\": [\"Please specify a mimetype in the accept header. For example: application/ld+json\"]}")
         .build();
     }
     if (query != null && queryFromBody != null) {
       return Response
         .status(400)
-        .entity("There's both a query as url paramatere and a query in the body. Please pick one.")
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity("{\"errors\": [\"There's both a query as url paramatere and a query in the body. Please pick one.\"]}")
         .build();
     }
     if (query == null && queryFromBody == null) {
       return Response
         .status(400)
-        .entity("Please provide the graphql query as the query property of a JSON encoded object. E.g. " +
-          "{query: \"{\\n  persons {\\n ... \"}")
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity("{\"errors\": [\"Please provide the graphql query as the query property of a JSON encoded object. " +
+          "E.g. {query: \\\"{\\n  persons {\\n ... \\\"}\"]}")
         .build();
     }
     GraphQLSchema graphQlSchema = graphqlGetter.get();
@@ -103,14 +108,24 @@ public class RootGraphQl {
         .newGraphQL(graphQlSchema)
         .build();
     }
+    final ExecutionResult result = graphQl
+      .execute(newExecutionInput()
+        .query(queryFromBody)
+        .operationName(operationName)
+        .variables(variables == null ? Collections.emptyMap() : variables)
+        .build());
+    Map<String, Object> formattedResult = new HashMap<>();
+    formattedResult.put("data", result.getData());
+    if (!result.getErrors().isEmpty()) {
+      formattedResult.put("errors", result.getErrors());
+    }
+    if (result.getExtensions() != null && !result.getExtensions().isEmpty()) {
+      formattedResult.put("extensions", result.getExtensions());
+    }
     return Response
       .ok()
-      .entity(graphQl
-        .execute(newExecutionInput()
-          .query(queryFromBody)
-          .operationName(operationName)
-          .variables(variables == null ? Collections.emptyMap() : variables)
-          .build()))
+      .type(MediaType.APPLICATION_JSON_TYPE)
+      .entity(formattedResult)
       .build();
   }
 
