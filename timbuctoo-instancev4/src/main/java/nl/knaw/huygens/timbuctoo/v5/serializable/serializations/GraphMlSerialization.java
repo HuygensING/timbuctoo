@@ -57,10 +57,6 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
       System.out.println("<node id=\"n\"/>" + count);
       count++;
     }
-    //<node id="n0"/>
-    //<node id="n1"/>
-    //<edge id="e1" source="n0" target="n1"/>
-    //</graph>
-    //</graphml>
+    System.out.println("</graph>");
   }
 }
