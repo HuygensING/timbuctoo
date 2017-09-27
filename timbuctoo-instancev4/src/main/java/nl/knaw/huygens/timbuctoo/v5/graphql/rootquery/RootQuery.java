@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 
 import com.coxautodev.graphql.tools.SchemaObjects;
 import com.coxautodev.graphql.tools.SchemaParser;
-import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
@@ -111,13 +110,13 @@ public class RootQuery implements Supplier<GraphQLSchema> {
             promotedDataSet.getOwnerId(),
             promotedDataSet.getDataSetId()).get()
         );
-        types.addAll(schema.getAllObjectTypes());
-        dataSets
-          .field(newFieldDefinition()
-            .name(promotedDataSet.getCombinedId())
-            .type(schema.getRootObject())
-            .dataFetcher(environment -> "") //dummy so that datafetching continues
-            .build());
+      types.addAll(schema.getAllObjectTypes());
+      dataSets
+        .field(newFieldDefinition()
+          .name(promotedDataSet.getCombinedId())
+          .type(schema.getRootObject())
+          .dataFetcher(environment -> "") //dummy so that datafetching continues
+          .build());
     });
 
     graphQlSchema = newSchema()

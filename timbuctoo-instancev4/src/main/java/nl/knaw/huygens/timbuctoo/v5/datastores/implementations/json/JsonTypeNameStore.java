@@ -45,7 +45,7 @@ public class JsonTypeNameStore implements TypeNameStore {
   //and prevent collisions.
   @Override
   public String makeGraphQlname(String uri) {
-    return makeName(uri, "");
+    return makeName(uri, this.prefix);
   }
 
   @Override
@@ -59,7 +59,7 @@ public class JsonTypeNameStore implements TypeNameStore {
     if (data.shorteneds.containsKey(prefix + "\n" + uri)) {
       return data.shorteneds.get(prefix + "\n" + uri);
     } else {
-      String shortened = this.prefix + prefix + shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
+      String shortened = prefix + shorten(uri).replaceAll("[^_0-9A-Za-z]", "_");
       while (shortened.equals("PageInfo") ||
         shortened.endsWith("Connection") ||
         shortened.endsWith("Edge") ||
@@ -75,7 +75,7 @@ public class JsonTypeNameStore implements TypeNameStore {
 
   @Override
   public String makeGraphQlValuename(String uri) {
-    return makeName(uri, "value_");
+    return makeName(uri, this.prefix + "value_");
   }
 
   @Override
