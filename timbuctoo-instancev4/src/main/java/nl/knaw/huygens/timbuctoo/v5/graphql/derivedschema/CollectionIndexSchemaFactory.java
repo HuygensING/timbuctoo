@@ -25,7 +25,7 @@ public class CollectionIndexSchemaFactory {
                                              String baseUri) {
 
     GraphQLObjectType.Builder result = newObject()
-      .name("Query");
+      .name(typePrefix + "Query");
 
     final String uriArgument = "uri";
     final LookUpSubjectByUriFetcherWrapper lookupFetcher = new LookUpSubjectByUriFetcherWrapper(

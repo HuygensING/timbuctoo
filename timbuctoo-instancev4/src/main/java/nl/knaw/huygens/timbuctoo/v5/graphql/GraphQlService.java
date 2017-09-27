@@ -75,7 +75,7 @@ public class GraphQlService {
     allObjectTypes.addAll(paginationArgumentsHelper.getListObjects());
     return new GeneratedSchema(allObjectTypes, schemaFactory
       .createQuerySchema(
-        userId + "_" + dataSetName,
+        userId + "_" + dataSetName.replace("_", "__").replaceAll("[^_0-9A-Za-z]", "_"),
         typesContainer.getRdfTypeRepresentingTypes(),
         archetypesGenerator.makeGraphQlTypes(archetypes, typesContainer),
         dataFetcherFactory,

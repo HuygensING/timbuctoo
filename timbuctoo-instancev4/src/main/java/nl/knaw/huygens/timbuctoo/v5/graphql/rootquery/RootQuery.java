@@ -36,10 +36,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     final SchemaObjects manualSchema = SchemaParser.newParser()
       .schemaString(
         "schema {\n" +
-          "  query: QueryType\n" +
+          "  query: StaticQueryType\n" +
           "}\n" +
           "\n" +
-          "type QueryType {\n" +
+          "type StaticQueryType {\n" +
           "  #the datasets that are supposed to get extra attention\n" +
           "  promotedDataSets: [DataSetMetadata!]!\n" +
           "}\n" +
