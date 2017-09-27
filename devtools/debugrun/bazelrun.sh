@@ -67,17 +67,18 @@ export timbuctoo_adminPort="8081"
 
 if [ "$CLEAN" = "true" ]; then
   echo "Removing database and auth dirs"
-  [ -d ./temp_for_debugrun/authorizations ] && rm -r ./temp_for_debugrun/authorizations
-  [ -d ./temp_for_debugrun/database ] && rm -r ./temp_for_debugrun/database
-  [ -e ./temp_for_debugrun/logins.json ] && rm ./temp_for_debugrun/logins.json
-  [ -e ./temp_for_debugrun/users.json ] && rm ./temp_for_debugrun/users.json
+  [ -d ./"$timbuctoo_dataPath"/authorizations ] && rm -r ./"$timbuctoo_dataPath"/authorizations
+  [ -d ./"$timbuctoo_dataPath"/datasets ] && rm -r ./"$timbuctoo_dataPath"/datasets
+  [ -d ./"$timbuctoo_dataPath"/database ] && rm -r ./"$timbuctoo_dataPath"/database
+  [ -e ./"$timbuctoo_dataPath"/logins.json ] && rm ./"$timbuctoo_dataPath"/logins.json
+  [ -e ./"$timbuctoo_dataPath"/users.json ] && rm ./"$timbuctoo_dataPath"/users.json
 fi
 
-[ -d ./temp_for_debugrun/authorizations ] || mkdir -p ./temp_for_debugrun/authorizations
-[ -d ./temp_for_debugrun/database ] || mkdir -p ./temp_for_debugrun/database
+[ -d ./"$timbuctoo_dataPath"/authorizations ] || mkdir -p ./"$timbuctoo_dataPath"/authorizations
+[ -d ./"$timbuctoo_dataPath"/database ] || mkdir -p ./"$timbuctoo_dataPath"/database
 
-[ -e ./temp_for_debugrun/logins.json ] || echo "[]" > ./temp_for_debugrun/logins.json
-[ -e ./temp_for_debugrun/users.json ] || echo "[]" > ./temp_for_debugrun/users.json
+[ -e ./"$timbuctoo_dataPath"/logins.json ] || echo "[]" > ./"$timbuctoo_dataPath"/logins.json
+[ -e ./"$timbuctoo_dataPath"/users.json ] || echo "[]" > ./"$timbuctoo_dataPath"/users.json
 
 if [ -n "$DEBUG_PORT" ]; then
   COMMAND_OPTS="--debug=$DEBUG_PORT "
