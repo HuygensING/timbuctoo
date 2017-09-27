@@ -20,6 +20,7 @@ junit_suite_test(
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/datasource/jexl",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security",
+      "//third_party:com_github_jsonld_java_jsonld_java",
       "//third_party:org_apache_jena_jena_core",
       "//third_party:com_google_code_findbugs_jsr305",
       "//third_party:org_apache_commons_commons_csv",
