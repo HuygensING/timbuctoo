@@ -50,7 +50,13 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
   }
 
   protected void writeRow(List<Value> values) throws IOException {
-    //<graph id="G" edgedefault="undirected">
+    System.out.println("<graph id=\"G\" edgedefault=\"undirected\">");
+    int count = 0;
+    for (Value value: values) {
+      System.out.println(value);
+      System.out.println("<node id=\"n\"/>" + count);
+      count++;
+    }
     //<node id="n0"/>
     //<node id="n1"/>
     //<edge id="e1" source="n0" target="n1"/>
