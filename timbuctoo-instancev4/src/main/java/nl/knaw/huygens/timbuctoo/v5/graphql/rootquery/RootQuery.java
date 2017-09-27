@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 
 import com.coxautodev.graphql.tools.SchemaParser;
-import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
@@ -11,12 +10,12 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.QueryType;
 import java.io.IOException;
 import java.util.function.Supplier;
 
-public class RootQuery implements Supplier<GraphQL> {
+public class RootQuery implements Supplier<GraphQLSchema> {
 
-  private final GraphQL graphQl;
+  private final GraphQLSchema graphQlSchema;
 
   public RootQuery(DataSetRepository dataSetRepository) throws IOException {
-    final GraphQLSchema graphQlSchema = SchemaParser.newParser()
+    graphQlSchema = SchemaParser.newParser()
       .schemaString(
         "schema {\n" +
           "  query: QueryType\n" +
@@ -44,10 +43,10 @@ public class RootQuery implements Supplier<GraphQL> {
           "}\n" +
           "\n" +
           "type CollectionMetadata {\n" +
-          "  collectionId: ID!\t\t\t\t\t\t@examples(values:[\"Leaders\"])\n" +
-          "  collectionListId: ID!\t\t\t\t@examples(values:[\"LeadersList\"])\n" +
-          "  uri: String! \t\t\t\t\t\t\t\t\t@fake(type: url)\n" +
-          "  title: String! \t\t\t\t\t\t\t@fake(type: productName)\n" +
+          "  collectionId: ID!\n" +
+          "  collectionListId: ID!\n" +
+          "  uri: String!\n" +
+          "  title: String!\n" +
           "  archeType: String\n" +
           "  properties(count: Int = 20, cursor: ID = \"\"): PropertyList!\n" +
           "  total: Int!\n" +
@@ -61,16 +60,16 @@ public class RootQuery implements Supplier<GraphQL> {
           "}\n" +
           "\n" +
           "type Property {\n" +
-          "  name: String\t\t\t\t\t\t@fake(type: colorName)\n" +
-          "  density: Int\t\t\t\t\t\t@fake(type: money, options: {minMoney:0, maxMoney: 100})\n" +
+          "  name: String\n" +
+          "  density: Int\n" +
           "  referenceTypes(count: Int = 20, cursor: ID = \"\"): TypeList\n" +
           "  valueTypes(count: Int = 20, cursor: ID = \"\"): TypeList\n" +
           "}\n" +
           "\n" +
           "type TypeList {\n" +
-          "  prevCursor: ID \t@fake(type:uuid)\n" +
-          "  nextCursor: ID\t@fake(type:uuid)\n" +
-          "  items: [String!]!\t@fake(type:url)\n" +
+          "  prevCursor: ID\n" +
+          "  nextCursor: ID\n" +
+          "  items: [String!]!\n" +
           "}\n"
       )
       .dictionary("DataSetMetadata", PromotedDataSet.class)
@@ -80,13 +79,10 @@ public class RootQuery implements Supplier<GraphQL> {
       )
       .build()
       .makeExecutableSchema();
-    graphQl = GraphQL
-      .newGraphQL(graphQlSchema)
-      .build();
   }
 
   @Override
-  public GraphQL get() {
-    return graphQl;
+  public GraphQLSchema get() {
+    return graphQlSchema;
   }
 }

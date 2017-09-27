@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sleepycat.je.DatabaseException;
 import graphql.GraphQL;
+import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 
 import javax.ws.rs.Consumes;
@@ -24,10 +25,12 @@ import static graphql.ExecutionInput.newExecutionInput;
 @Path("/v5/graphql")
 public class RootGraphQl {
 
-  private final Supplier<GraphQL> graphqlGetter;
+  private final Supplier<GraphQLSchema> graphqlGetter;
   private final ObjectMapper objectMapper;
+  private GraphQL graphQl;
+  private GraphQLSchema prevGraphQlSchema;
 
-  public RootGraphQl(Supplier<GraphQL> graphqlGetter)
+  public RootGraphQl(Supplier<GraphQLSchema> graphqlGetter)
     throws DatabaseException, RdfProcessingFailedException {
     this.graphqlGetter = graphqlGetter;
     objectMapper = new ObjectMapper();
@@ -93,7 +96,13 @@ public class RootGraphQl {
           "{query: \"{\\n  persons {\\n ... \"}")
         .build();
     }
-    GraphQL graphQl = graphqlGetter.get();
+    GraphQLSchema graphQlSchema = graphqlGetter.get();
+    if (graphQlSchema != prevGraphQlSchema) {
+      prevGraphQlSchema = graphQlSchema;
+      graphQl = GraphQL
+        .newGraphQL(graphQlSchema)
+        .build();
+    }
     return Response
       .ok()
       .entity(graphQl
