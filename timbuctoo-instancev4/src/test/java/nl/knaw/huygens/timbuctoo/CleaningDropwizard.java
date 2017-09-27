@@ -24,19 +24,22 @@ public class CleaningDropwizard extends DropwizardAppRule<TimbuctooConfiguration
   @Override
   protected void before() {
     try {
-      walkFileTree(dataPath, new SimpleFileVisitor<Path>() {
-        @Override
-        public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-          Files.delete(file);
-          return FileVisitResult.CONTINUE;
-        }
+      if (dataPath.toFile().exists()) {
+        walkFileTree(dataPath, new SimpleFileVisitor<Path>() {
+          @Override
+          public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+            Files.delete(file);
+            return FileVisitResult.CONTINUE;
+          }
 
-        @Override
-        public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-          Files.delete(dir);
-          return FileVisitResult.CONTINUE;
-        }
-      });
+          @Override
+          public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+            Files.delete(dir);
+            return FileVisitResult.CONTINUE;
+          }
+        });
+      }
+      dataPath.toFile().mkdirs();
     } catch (IOException e) {
       throw new RuntimeException(e);
     }
