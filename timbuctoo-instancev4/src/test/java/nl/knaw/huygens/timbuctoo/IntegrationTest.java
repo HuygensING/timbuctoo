@@ -5,9 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
-import nl.knaw.huygens.timbuctoo.server.TimbuctooV4;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
-import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -37,6 +35,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +45,7 @@ import java.util.stream.Collectors;
 
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
+import static io.dropwizard.testing.ResourceHelpers.resourceFilePath;
 import static java.lang.String.format;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
@@ -62,19 +62,19 @@ import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
 
-public class IntegrationTest extends IntegrationTestCleaner {
+public class IntegrationTest {
 
   @ClassRule
-  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new DropwizardAppRule<>(
-    TimbuctooV4.class,
-    "example_config.yaml"
+  public static final DropwizardAppRule<TimbuctooConfiguration> APP = new CleaningDropwizard(
+    "example_config.yaml",
+    Paths.get(resourceFilePath("integrationtest"), "datasets")
   );
   private static final String AUTH = "FAKE_AUTH_TOKEN";
   private static Client client;
 
   static {
     EvilEnvironmentVariableHacker.setEnv(ImmutableMap.of(
-      "timbuctoo_dataPath", tempPath,
+      "timbuctoo_dataPath", resourceFilePath("integrationtest"),
       "timbuctoo_port", "0",
       "timbuctoo_adminPort", "0"
     ));
@@ -82,9 +82,7 @@ public class IntegrationTest extends IntegrationTestCleaner {
 
   @BeforeClass
   public static void beforeClass() throws IOException {
-    // client = new JerseyClientBuilder(APP.getEnvironment()).build("test client");
-    ClientConfig configuration = new ClientConfig();
-    client = ClientBuilder.newClient(configuration);
+    client = APP.client();
   }
 
   @Test
