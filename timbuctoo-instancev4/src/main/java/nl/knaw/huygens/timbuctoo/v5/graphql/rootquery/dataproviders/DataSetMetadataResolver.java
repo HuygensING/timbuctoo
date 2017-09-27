@@ -2,8 +2,8 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders;
 
 import com.coxautodev.graphql.tools.GraphQLResolver;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 
 import java.util.List;
@@ -17,6 +17,23 @@ public class DataSetMetadataResolver implements GraphQLResolver<PromotedDataSet>
   public DataSetMetadataResolver(DataSetRepository dataSetRepository) {
     this.dataSetRepository = dataSetRepository;
   }
+
+  public ContactInfo getOwner(PromotedDataSet input) {
+    return ContactInfo.contactInfo("", ""); //FIXME:
+  }
+
+  public ContactInfo getContact(PromotedDataSet input) {
+    return ContactInfo.contactInfo("", ""); //FIXME:
+  }
+
+  public ProvenanceInfo getProvenanceInfo(PromotedDataSet input) {
+    return ProvenanceInfo.provenanceInfo("", ""); //FIXME:
+  }
+
+  public License getLicense(PromotedDataSet input) {
+    return License.license(""); //FIXME:
+  }
+
 
   public String getDataSetId(PromotedDataSet input) {
     return input.getCombinedId();

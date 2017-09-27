@@ -106,6 +106,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "  title: String!\n" +
           "  description: String\n" +
           "  imageUrl: String\n" +
+          "  owner: ContactInfo!\n" +
+          "  contact: ContactInfo!\n" +
+          "  provenanceInfo: ProvenanceInfo!\n" +
+          "  license: License! \n" +
           "\n" +
           "  collections(count: Int = 20, cursor: ID = \"\"): CollectionMetadataList\n" +
           "}\n" +
@@ -143,7 +147,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "  total: Int!\n" +
           "}\n" +
           "\n" +
-          "\n" +
           "type PropertyList {\n" +
           "  prevCursor: ID\n" +
           "  nextCursor: ID\n" +
@@ -161,7 +164,21 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           "  prevCursor: ID\n" +
           "  nextCursor: ID\n" +
           "  items: [String!]!\n" +
-          "}\n"
+          "}\n" +
+          "\n" +
+          "type ContactInfo {\n" +
+          "  name: String!\n" +
+          "  email: String\n" +
+          "}\n" +
+          "\n" +
+          "type License {\n" +
+          "  uri: String @fake(type: url)\n" +
+          "}\n" +
+          "\n" +
+          "type ProvenanceInfo {\n" +
+          "  title: String!\n" +
+          "  body: String!\n" +
+          "}"
       )
       .resolvers(
         new QueryType(dataSetRepository, supportedFormats),
