@@ -15,6 +15,7 @@ import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.hamcrest.Matchers;
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Test;
@@ -37,11 +38,18 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import static com.google.common.io.Resources.asCharSource;
 import static com.google.common.io.Resources.getResource;
@@ -54,6 +62,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonContractMatcher.matchesContract
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.assertj.core.util.Lists.newArrayList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -86,6 +95,25 @@ public class IntegrationTest {
     client = ClientBuilder.newClient(configuration);
   }
 
+  @AfterClass
+  public static void afterClass() throws Exception {
+    Path directory = Paths.get(resourceFilePath("integrationtest"), "datasets");
+
+    Files.walkFileTree(directory, new SimpleFileVisitor<Path>() {
+      @Override
+      public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        Files.delete(file);
+        return FileVisitResult.CONTINUE;
+      }
+
+      @Override
+      public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+        Files.delete(dir);
+        return FileVisitResult.CONTINUE;
+      }
+    });
+  }
+
   @Test
   public void succeedingSmallUpload() throws Exception {
     String vreName = "demo-upload";
@@ -100,8 +128,10 @@ public class IntegrationTest {
 
     Response rmlResponse = map(
       prefixedVreName,
-      asCharSource(getResource(IntegrationTest.class, "demo-upload-rml.json"), Charset.forName("UTF8")).read()
-        .replace("{VRE_NAME}", prefixedVreName)
+      asCharSource(getResource(IntegrationTest.class, "demo-upload-rml.json"), Charset.forName("UTF8"))
+        .read().replace(
+        "{VRE_NAME}",
+        prefixedVreName)
     );
 
     String output = rmlResponse.readEntity(String.class); //also needed for blocking side-effect
@@ -492,6 +522,192 @@ public class IntegrationTest {
 
     // check if the dataset still exists
     assertThat(getDataSetNamesOfDummy(client), not(hasItem(dataSetId)));
+  }
+  
+  @Test
+  public void checkJsonLdDeserialization() throws Exception {
+    final String context = "{\n" +
+      "    \"@vocab\": \"http://example.org/UNKNOWN#\",\n" +
+      "    \"prov\": \"http://www.w3.org/ns/prov#\",\n" +
+      "    \"tim\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#\",\n" +
+      "    \"ex\": \"http://example.org/\",\n" +
+      "    \"additions\": {\n" +
+      "      \"@id\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#additions\"\n" +
+      "    },\n" +
+      "    \"deletions\": {\n" +
+      "      \"@id\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#deletions\"\n" +
+      "    },\n" +
+      "    \"replacements\": {\n" +
+      "      \"@id\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#replacements\"\n" +
+      "    },\n" +
+      "    \"latestRevision\": {\n" +
+      "      \"@id\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#latestRevision\",\n" +
+      "      \"@type\": \"@id\"\n" +
+      "    },\n" +
+      "    \"used\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#used\"\n" +
+      "    },\n" +
+      "    \"generates\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#generates\"\n" +
+      "    },\n" +
+      "    \"qualifiedAssociation\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#qualifiedAssociation\"\n" +
+      "    },\n" +
+      "    \"agent\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#agent\",\n" +
+      "      \"@type\": \"@id\"\n" +
+      "    },\n" +
+      "    \"hadRole\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#hadRole\",\n" +
+      "      \"@type\": \"@id\"\n" +
+      "    },\n" +
+      "    \"specializationOf\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#specializationOf\",\n" +
+      "      \"@type\": \"@id\"\n" +
+      "    },\n" +
+      "    \"entityType\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#entityType\",\n" +
+      "      \"@type\": \"@id\"\n" +
+      "    },\n" +
+      "    \"entity\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#entity\",\n" +
+      "      \"@type\": \"@id\"\n" +
+      "    },\n" +
+      "    \"wasRevisionOf\": {\n" +
+      "      \"@id\": \"http://www.w3.org/ns/prov#wasRevisionOf\",\n" +
+      "      \"@type\": \"@id\"\n" +
+      "    },\n" +
+      "    \"predicate\": {\n" +
+      "      \"@id\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#predicate\"\n" +
+      "    },\n" +
+      "    \"value\": {\n" +
+      "      \"@id\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#value\"\n" +
+      "    }\n" +
+      "  }";
+    final String testRdfReader = "{\n" +
+      "  \"@context\":" + context + ",\n" +
+      "  \"@type\": \"prov:Activity\",\n" +
+      "  \"generates\": [{\n" +
+      "    \"@type\": \"prov:Entity\",\n" +
+      "    \"specializationOf\": \"http://example.com/the/actual/entity\",\n" +
+      "    \"additions\": [\n" +
+      "      {\n" +
+      "        \"@type\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mutation\", \n" +
+      "        \"predicate\": \"http://example.org/pred2\", \n" +
+      "        \"value\": [\"multiple\", \"values\"]\n" +
+      "      },\n" +
+      "      {\n" +
+      "        \"@type\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mutation\", \n" +
+      "        \"predicate\": \"http://www.w3.org/1999/02/22-rdf-syntax-ns#type\", \n" +
+      "        \"value\": {\"@id\": \"http://example.org/Person\"}\n" +
+      "      }\n" +
+      "    ]\n" +
+      "  }]\n" +
+      "}\n";
+
+    Client client = ClientBuilder.newBuilder().build();
+
+
+    WebTarget createDataSet =
+      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/testset/create/", APP.getLocalPort()));
+
+    createDataSet.request()
+                 .header(HttpHeaders.AUTHORIZATION, "fake")
+                 .post(Entity.json(null));
+
+    final WebTarget createTarget =
+      client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+
+
+    Response createResponse = createTarget.request()
+                                          .header(HttpHeaders.AUTHORIZATION, "fake")
+                                          .put(Entity.json(testRdfReader));
+
+    if (createResponse.getStatus() != 204) {
+      System.out.println(createResponse.readEntity(String.class));
+    }
+    assertThat(createResponse.getStatus(), is(204));
+
+
+    Response graphqlCall = call("/v5/DUMMY/testset/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity("{\n" +
+        "  http___example_org_Person(uri: \"http://example.com/the/actual/entity\") {\n" +
+        "    http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision {\n" +
+        "      uri\n" +
+        "    }\n" +
+        "  }\n" +
+        "}", MediaType.valueOf("application/graphql")));
+    ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
+    String revision = objectNode
+      .get("data")
+      .get("http___example_org_Person")
+      .get("http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision")
+      .get("@id")
+      .asText();
+
+    String testRdfReader2 = "{\n" +
+      "  \"@context\":" + context + ",\n" +
+      "  \"@type\": \"prov:Activity\",\n" +
+      "  \"generates\": [{\n" +
+      "    \"@type\": \"prov:Entity\",\n" +
+      "    \"specializationOf\": \"http://example.com/the/actual/entity\",\n" +
+      "    \"wasRevisionOf\": \"" + revision + "\",\n" +
+      "    \"additions\": [\n" +
+      "      {\n" +
+      "        \"@type\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mutation\", \n" +
+      "        \"predicate\": \"http://example.org/pred2\", \n" +
+      "        \"value\": \"extra value\"\n" +
+      "      }\n" +
+      "    ],\n" +
+      "    \"deletions\": [\n" +
+      "      {\n" +
+      "        \"@type\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mutation\", \n" +
+      "        \"predicate\": \"http://example.org/pred2\", \n" +
+      "        \"value\": \"multiple\"\n" +
+      "      }\n" +
+      "    ]\n" +
+      "  }]\n" +
+      "}\n";
+
+    final WebTarget createTarget2 =
+      client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+
+
+    Response createResponse2 = createTarget2.request()
+                                            .header(HttpHeaders.AUTHORIZATION, "fake")
+                                            .put(Entity.json(testRdfReader2));
+
+    if (createResponse2.getStatus() != 204) {
+      System.out.println(createResponse2.readEntity(String.class));
+    }
+    assertThat(createResponse2.getStatus(), is(204));
+
+    graphqlCall = call("/v5/DUMMY/testset/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity("{\n" +
+        "  http___example_org_Person(uri:\"http://example.com/the/actual/entity\"){\n" +
+        "    http___example_org_pred2 {\n" +
+        "      items {\n" +
+        "        value\n" +
+        "      }\n" +
+        "    }\n" +
+        "  }\n" +
+        "}", MediaType.valueOf("application/graphql")));
+    objectNode = graphqlCall.readEntity(ObjectNode.class);
+
+    assertThat(stream(objectNode
+      .get("data")
+      .get("http___example_org_Person")
+      .get("http___example_org_pred2")
+      .get("items").iterator())
+      .map(x -> x.get("value").asText())
+      .collect(Collectors.toList()),
+      contains(
+        "extra value",
+        "values"
+      )
+    );
   }
 
   private List<String> getDataSetNamesOfDummy(Client client) {

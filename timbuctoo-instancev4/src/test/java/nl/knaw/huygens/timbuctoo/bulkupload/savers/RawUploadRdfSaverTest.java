@@ -220,7 +220,6 @@ public class RawUploadRdfSaverTest {
     String prop = "http://timbuctoo.huygens.knaw.nl/v5/props/userId/dataSet/fileName/";
     String rawData = "http://timbuctoo.huygens.knaw.nl/v5/rawData/userId/dataSet/fileName/";
     String graphName = DATA_SET_URI;
-    String propdescType = "http://timbuctoo.huygens.knaw.nl/v5/propertyDescription/";
     assertEquals(
       rawData + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
         graphName + " "     + PROV_DERIVED_FROM  + " " + rawData + " "                           + graphName + "\n" +
@@ -228,19 +227,19 @@ public class RawUploadRdfSaverTest {
         collection + "1 "   + RDF_TYPE           + " " + TIM_COLLECTION +   " "                  + graphName + "\n" +
         collection + "1 "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "1 "   + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
-        prop + "propName1 " + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "propName1 " + RDF_TYPE           + " " + TIM_PROP_DESC + " "                     + graphName + "\n" +
         prop + "propName1 " + TIM_PROP_ID        + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "propName1 " + TIMBUCTOO_ORDER    + " 0" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "propName1 " + RDFS_LABEL         + " propName1" +           "^^" + STRING + " "  + graphName + "\n" +
         prop + "propName1 " + TIM_PROP_NAME      + " propName1" +           "^^" + STRING + " "  + graphName + "\n" +
         prop + "propName1 " + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
-        prop + "propName2 " + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "propName2 " + RDF_TYPE           + " " + TIM_PROP_DESC + " "                     + graphName + "\n" +
         prop + "propName2 " + TIM_PROP_ID        + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "propName2 " + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "propName2 " + RDFS_LABEL         + " propName2" +           "^^" + STRING + " "  + graphName + "\n" +
         prop + "propName2 " + TIM_PROP_NAME      + " propName2" +           "^^" + STRING + " "  + graphName + "\n" +
         prop + "propName2 " + OF_COLLECTION      + " " + collection + "1 "                       + graphName + "\n" +
-        prop + "tim_id "    + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "tim_id "    + RDF_TYPE           + " " + TIM_PROP_DESC + " "                     + graphName + "\n" +
         prop + "tim_id "    + TIM_PROP_ID        + " -1" +                  "^^" + INTEGER + " " + graphName + "\n" +
         prop + "tim_id "    + TIMBUCTOO_ORDER    + " -1" +                  "^^" + INTEGER + " " + graphName + "\n" +
         prop + "tim_id "    + RDFS_LABEL         + " tim_id" +              "^^" + STRING + " "  + graphName + "\n" +
@@ -259,19 +258,19 @@ public class RawUploadRdfSaverTest {
         collection + "2 "   + RDF_TYPE           + " " + TIM_COLLECTION + " "                    + graphName + "\n" +
         collection + "2 "   + RDFS_LABEL         + " collection2" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "2 "   + TIMBUCTOO_ORDER    + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
-        prop + "prop3 "     + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "prop3 "     + RDF_TYPE           + " " + TIM_PROP_DESC + " "                     + graphName + "\n" +
         prop + "prop3 "     + TIM_PROP_ID        + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "prop3 "     + TIMBUCTOO_ORDER    + " 0" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "prop3 "     + RDFS_LABEL         + " prop3" +               "^^" + STRING + " "  + graphName + "\n" +
         prop + "prop3 "     + TIM_PROP_NAME      + " prop3" +               "^^" + STRING + " "  + graphName + "\n" +
         prop + "prop3 "     + OF_COLLECTION      + " " + collection + "2 "                       + graphName + "\n" +
-        prop + "prop4 "     + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "prop4 "     + RDF_TYPE           + " " + TIM_PROP_DESC + " "                     + graphName + "\n" +
         prop + "prop4 "     + TIM_PROP_ID        + " 2" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "prop4 "     + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +
         prop + "prop4 "     + RDFS_LABEL         + " prop4" +               "^^" + STRING + " "  + graphName + "\n" +
         prop + "prop4 "     + TIM_PROP_NAME      + " prop4" +               "^^" + STRING + " "  + graphName + "\n" +
         prop + "prop4 "     + OF_COLLECTION      + " " + collection + "2 "                       + graphName + "\n" +
-        prop + "tim_id "    + RDF_TYPE           + " " + propdescType + " "                      + graphName + "\n" +
+        prop + "tim_id "    + RDF_TYPE           + " " + TIM_PROP_DESC + " "                     + graphName + "\n" +
         prop + "tim_id "    + TIM_PROP_ID        + " -1" +                  "^^" + INTEGER + " " + graphName + "\n" +
         prop + "tim_id "    + TIMBUCTOO_ORDER    + " -1" +                  "^^" + INTEGER + " " + graphName + "\n" +
         prop + "tim_id "    + RDFS_LABEL         + " tim_id" +              "^^" + STRING + " "  + graphName + "\n" +

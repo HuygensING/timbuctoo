@@ -4,4 +4,4 @@ d34d24c8013df6412c755088853f531b1ffb5f20  ./HttpCommand/pom.xml
 6b1c1bbf94ffbf4124a58dede18d3916bad4b9ad  ./security-client-agnostic/pom.xml
 ec6efd34af68e1910237e5f9b2b67bd20aabcea1  ./timbuctoo-instancev4/pom.xml
 d9c324fb24b3c7a11fc57cc2bb324fb4449a1e7f  ./timbuctoo-test-services/pom.xml
-79025eb9f19c740cf3b53c26b40f8ec5e833fbb1  ./devtools/update_dependencies/dependencyparser.js
+021b25dc5b52fe7cd04089e7cde13d950c188add  ./devtools/update_dependencies/dependencyparser.js

@@ -92,6 +92,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
@@ -298,7 +299,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         securityConfig.getAuthorizer(), dataSetRepository
       )
     );
-
+    register(environment, new JsonLdEditEndpoint(
+      securityConfig.getLoggedInUsers(),
+      securityConfig.getAuthorizer(),
+      dataSetRepository,
+      configuration.getRdfIdHelper(),
+      new HttpClientBuilder(environment).build("json-ld")
+    ));
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers()));
     register(environment, new Me(securityConfig.getLoggedInUsers()));

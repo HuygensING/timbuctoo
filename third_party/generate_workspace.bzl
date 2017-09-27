@@ -715,7 +715,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "com_github_jsonld_java_jsonld_java",
-    artifact = "com.github.jsonld-java:jsonld-java:jar:0.8.3",
+    artifact = "com.github.jsonld-java:jsonld-java:jar:0.11.0",
   )
   native.maven_jar(
     name = "org_apache_httpcomponents_httpclient_cache",
@@ -772,26 +772,6 @@ def generated_maven_jars():
   native.maven_jar(
     name = "org_eclipse_rdf4j_rdf4j_rio_jsonld",
     artifact = "org.eclipse.rdf4j:rdf4j-rio-jsonld:jar:2.2",
-  )
-  native.maven_jar(
-    name = "org_apache_httpcomponents_httpclient_osgi",
-    artifact = "org.apache.httpcomponents:httpclient-osgi:jar:4.5.2",
-  )
-  native.maven_jar(
-    name = "org_apache_httpcomponents_httpmime",
-    artifact = "org.apache.httpcomponents:httpmime:jar:4.5.2",
-  )
-  native.maven_jar(
-    name = "org_apache_httpcomponents_fluent_hc",
-    artifact = "org.apache.httpcomponents:fluent-hc:jar:4.5.2",
-  )
-  native.maven_jar(
-    name = "org_apache_httpcomponents_httpcore_osgi",
-    artifact = "org.apache.httpcomponents:httpcore-osgi:jar:4.4.4",
-  )
-  native.maven_jar(
-    name = "org_apache_httpcomponents_httpcore_nio",
-    artifact = "org.apache.httpcomponents:httpcore-nio:jar:4.4.4",
   )
   native.maven_jar(
     name = "com_googlecode_juniversalchardet_juniversalchardet",
@@ -1180,6 +1160,26 @@ def generated_maven_jars():
   native.maven_jar(
     name = "org_xmlunit_xmlunit_matchers",
     artifact = "org.xmlunit:xmlunit-matchers:jar:2.4.0",
+  )
+  native.maven_jar(
+    name = "org_apache_httpcomponents_httpclient_osgi",
+    artifact = "org.apache.httpcomponents:httpclient-osgi:jar:4.5.3",
+  )
+  native.maven_jar(
+    name = "org_apache_httpcomponents_httpmime",
+    artifact = "org.apache.httpcomponents:httpmime:jar:4.5.3",
+  )
+  native.maven_jar(
+    name = "org_apache_httpcomponents_fluent_hc",
+    artifact = "org.apache.httpcomponents:fluent-hc:jar:4.5.3",
+  )
+  native.maven_jar(
+    name = "org_apache_httpcomponents_httpcore_osgi",
+    artifact = "org.apache.httpcomponents:httpcore-osgi:jar:4.4.6",
+  )
+  native.maven_jar(
+    name = "org_apache_httpcomponents_httpcore_nio",
+    artifact = "org.apache.httpcomponents:httpcore-nio:jar:4.4.6",
   )
 def generated_java_libraries():
   native.java_library(
@@ -2930,51 +2930,6 @@ def generated_java_libraries():
     ],
   )
   native.java_library(
-    name = "org_apache_httpcomponents_httpclient_osgi",
-    visibility = ["//visibility:public"],
-    exports = ["@org_apache_httpcomponents_httpclient_osgi//jar"],
-    runtime_deps = [
-      ":org_apache_httpcomponents_httpclient",
-      ":commons_codec_commons_codec",
-      ":org_apache_httpcomponents_httpmime",
-      ":org_apache_httpcomponents_httpclient_cache",
-      ":org_apache_httpcomponents_fluent_hc",
-    ],
-  )
-  native.java_library(
-    name = "org_apache_httpcomponents_httpmime",
-    visibility = ["//visibility:public"],
-    exports = ["@org_apache_httpcomponents_httpmime//jar"],
-    runtime_deps = [
-      ":org_apache_httpcomponents_httpclient",
-    ],
-  )
-  native.java_library(
-    name = "org_apache_httpcomponents_fluent_hc",
-    visibility = ["//visibility:public"],
-    exports = ["@org_apache_httpcomponents_fluent_hc//jar"],
-    runtime_deps = [
-      ":org_apache_httpcomponents_httpclient",
-    ],
-  )
-  native.java_library(
-    name = "org_apache_httpcomponents_httpcore_osgi",
-    visibility = ["//visibility:public"],
-    exports = ["@org_apache_httpcomponents_httpcore_osgi//jar"],
-    runtime_deps = [
-      ":org_apache_httpcomponents_httpcore",
-      ":org_apache_httpcomponents_httpcore_nio",
-    ],
-  )
-  native.java_library(
-    name = "org_apache_httpcomponents_httpcore_nio",
-    visibility = ["//visibility:public"],
-    exports = ["@org_apache_httpcomponents_httpcore_nio//jar"],
-    runtime_deps = [
-      ":org_apache_httpcomponents_httpcore",
-    ],
-  )
-  native.java_library(
     name = "com_googlecode_juniversalchardet_juniversalchardet",
     visibility = ["//visibility:public"],
     exports = ["@com_googlecode_juniversalchardet_juniversalchardet//jar"],
@@ -3897,5 +3852,50 @@ def generated_java_libraries():
     runtime_deps = [
       ":org_xmlunit_xmlunit_core",
       ":org_hamcrest_hamcrest_core",
+    ],
+  )
+  native.java_library(
+    name = "org_apache_httpcomponents_httpclient_osgi",
+    visibility = ["//visibility:public"],
+    exports = ["@org_apache_httpcomponents_httpclient_osgi//jar"],
+    runtime_deps = [
+      ":org_apache_httpcomponents_httpclient",
+      ":commons_codec_commons_codec",
+      ":org_apache_httpcomponents_httpmime",
+      ":org_apache_httpcomponents_httpclient_cache",
+      ":org_apache_httpcomponents_fluent_hc",
+    ],
+  )
+  native.java_library(
+    name = "org_apache_httpcomponents_httpmime",
+    visibility = ["//visibility:public"],
+    exports = ["@org_apache_httpcomponents_httpmime//jar"],
+    runtime_deps = [
+      ":org_apache_httpcomponents_httpclient",
+    ],
+  )
+  native.java_library(
+    name = "org_apache_httpcomponents_fluent_hc",
+    visibility = ["//visibility:public"],
+    exports = ["@org_apache_httpcomponents_fluent_hc//jar"],
+    runtime_deps = [
+      ":org_apache_httpcomponents_httpclient",
+    ],
+  )
+  native.java_library(
+    name = "org_apache_httpcomponents_httpcore_osgi",
+    visibility = ["//visibility:public"],
+    exports = ["@org_apache_httpcomponents_httpcore_osgi//jar"],
+    runtime_deps = [
+      ":org_apache_httpcomponents_httpcore",
+      ":org_apache_httpcomponents_httpcore_nio",
+    ],
+  )
+  native.java_library(
+    name = "org_apache_httpcomponents_httpcore_nio",
+    visibility = ["//visibility:public"],
+    exports = ["@org_apache_httpcomponents_httpcore_nio//jar"],
+    runtime_deps = [
+      ":org_apache_httpcomponents_httpcore",
     ],
   )

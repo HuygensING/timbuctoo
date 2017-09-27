@@ -193,12 +193,13 @@ public class DataSetRepository {
     return statusMap.containsKey(uuid) ? Optional.of(statusMap.get(uuid).toString()) : Optional.empty();
   }
 
-  public Tuple<UUID, RdfCreator> registerRdfCreator(Function<Consumer<String>, RdfCreator> rdfCreatorBuilder) {
+  public Tuple<UUID, PlainRdfCreator> registerRdfCreator(
+    Function<Consumer<String>, PlainRdfCreator> rdfCreatorBuilder) {
     StringBuffer stringBuffer = new StringBuffer();
     UUID uuid = UUID.randomUUID();
     statusMap.put(uuid, stringBuffer);
 
-    RdfCreator rdfCreator = rdfCreatorBuilder.apply((str) -> {
+    PlainRdfCreator rdfCreator = rdfCreatorBuilder.apply((str) -> {
       stringBuffer.setLength(0);
       stringBuffer.append(str);
     });
