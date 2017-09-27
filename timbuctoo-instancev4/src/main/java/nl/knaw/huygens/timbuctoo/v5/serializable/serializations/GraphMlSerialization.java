@@ -14,6 +14,7 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
   private String tableName;
   private String columnHeaders;
   private List<String> columns;
+  private int count = 0;
 
   public GraphMlSerialization(OutputStream outputStream) throws IOException {
     //    csvPrinter = new CSVPrinter(new PrintWriter(outputStream), CSVFormat.EXCEL);
@@ -42,21 +43,21 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
       "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n" +
       "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">";
     System.out.println(header);
+    System.out.println("<graph id=\"G\" edgedefault=\"undirected\">");
   }
 
   protected void writeFooter() {
+    System.out.println("</graph>");
     String footer = "</graphml>";
     System.out.println(footer);
   }
 
   protected void writeRow(List<Value> values) throws IOException {
-    System.out.println("<graph id=\"G\" edgedefault=\"undirected\">");
-    int count = 0;
+    System.out.println("<node id=\"n" + count + "\">");
     for (Value value: values) {
-      System.out.println(value);
-      System.out.println("<node id=\"n\"/>" + count);
-      count++;
+      System.out.println("<data key=\"" + value.getType() + "\">" + value.getValue() + "</data>");
     }
-    System.out.println("</graph>");
+    System.out.println("</node>");
+    count++;
   }
 }
