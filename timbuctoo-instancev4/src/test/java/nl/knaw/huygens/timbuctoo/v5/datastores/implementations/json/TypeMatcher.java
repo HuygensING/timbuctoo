@@ -3,8 +3,8 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
 import nl.knaw.huygens.hamcrest.PropertyMatcher;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Predicate;
-import nl.knaw.huygens.timbuctoo.v5.datastores.schema.dto.Type;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import org.hamcrest.Matchers;
 
 import java.util.Collection;

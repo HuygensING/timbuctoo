@@ -2,7 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders;
 
 import com.coxautodev.graphql.tools.GraphQLResolver;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dataset.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 

@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.serializable.dto;
 
-import nl.knaw.huygens.timbuctoo.v5.dataset.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import org.immutables.value.Value;
 
 import java.util.Optional;

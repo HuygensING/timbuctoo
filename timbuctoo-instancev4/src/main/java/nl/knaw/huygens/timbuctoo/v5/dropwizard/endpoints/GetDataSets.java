@@ -4,8 +4,8 @@ import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetWithRoles;
-import nl.knaw.huygens.timbuctoo.v5.dataset.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetWithRoles;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
