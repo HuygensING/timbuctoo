@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 
+import com.coxautodev.graphql.tools.SchemaObjects;
 import com.coxautodev.graphql.tools.SchemaParser;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -10,12 +11,15 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.QueryType;
 import java.io.IOException;
 import java.util.function.Supplier;
 
+import static graphql.schema.GraphQLObjectType.newObject;
+import static graphql.schema.GraphQLSchema.newSchema;
+
 public class RootQuery implements Supplier<GraphQLSchema> {
 
   private final GraphQLSchema graphQlSchema;
 
   public RootQuery(DataSetRepository dataSetRepository) throws IOException {
-    graphQlSchema = SchemaParser.newParser()
+    final SchemaObjects manualSchema = SchemaParser.newParser()
       .schemaString(
         "schema {\n" +
           "  query: QueryType\n" +
@@ -78,7 +82,13 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         new DataSetMetadataResolver(dataSetRepository)
       )
       .build()
-      .makeExecutableSchema();
+      .parseSchemaObjects();
+    graphQlSchema = newSchema()
+      .query(newObject()
+        .name("Query")
+        .field(manualSchema.getQuery().getFieldDefinition("promotedDataSets"))
+        .build())
+      .build(manualSchema.getDictionary());
   }
 
   @Override
