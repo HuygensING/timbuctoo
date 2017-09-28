@@ -39,25 +39,25 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
   protected void writeHeader() {
     String header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
       "<graphml xmlns=\"http://graphml.graphdrawing.org/xmlns\"\n" +  
-      "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-      "xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n" +
-      "http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">";
+      "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+      "    xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n" +
+      "        http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">";
     System.out.println(header);
-    System.out.println("<graph id=\"G\" edgedefault=\"undirected\">");
+    System.out.println("  <graph id=\"G\" edgedefault=\"undirected\">");
   }
 
   protected void writeFooter() {
-    System.out.println("</graph>");
+    System.out.println("  </graph>");
     String footer = "</graphml>";
     System.out.println(footer);
   }
 
   protected void writeRow(List<Value> values) throws IOException {
-    System.out.println("<node id=\"n" + count + "\">");
+    System.out.println("    <node id=\"n" + count + "\">");
     for (Value value: values) {
-      System.out.println("<data key=\"" + value.getType() + "\">" + value.getValue() + "</data>");
+      System.out.println("      <data key=\"" + value.getType() + "\">" + value.getValue() + "</data>");
     }
-    System.out.println("</node>");
+    System.out.println("    </node>");
     count++;
   }
 }
