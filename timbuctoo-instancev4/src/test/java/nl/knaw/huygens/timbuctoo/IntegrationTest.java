@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
+import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -82,7 +83,8 @@ public class IntegrationTest {
 
   @BeforeClass
   public static void beforeClass() throws IOException {
-    client = APP.client();
+    ClientConfig configuration = new ClientConfig();
+    client = ClientBuilder.newClient(configuration);
   }
 
   @Test
