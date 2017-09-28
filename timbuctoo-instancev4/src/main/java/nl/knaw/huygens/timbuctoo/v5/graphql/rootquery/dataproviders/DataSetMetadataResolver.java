@@ -60,9 +60,13 @@ public class DataSetMetadataResolver implements GraphQLResolver<PromotedDataSet>
       .getTypes().values().stream()
       .map(x -> {
         final long occurrences = x.getOccurrences();
+        final int prefixLength = (input.getOwnerId() + "_" + input.getDataSetId()
+          .replace("_", "__")
+          .replaceAll("[^_0-9A-Za-z]", "_")).length();
+        final String collectionId = typeNameStore.makeGraphQlname(x.getName()).substring(prefixLength);
         return ImmutableCollectionMetadata.builder()
-          .collectionId(typeNameStore.makeGraphQlname(x.getName()))
-          .collectionListId(typeNameStore.makeGraphQlname(x.getName()) + "List")
+          .collectionId(collectionId)
+          .collectionListId(collectionId + "List")
           .uri(x.getName())
           .total(occurrences)
           .properties(ImmutablePropertyList.builder()
