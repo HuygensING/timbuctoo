@@ -54,7 +54,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
     dataSetRepository.getDataSets().values().stream().flatMap(Collection::stream).forEach(promotedDataSet -> {
       final String name = promotedDataSet.getOwnerId() + "_" + promotedDataSet.getDataSetId();
-      root.append("  ").append(name).append(":").append(name).append("\n");
+      root.append("  ").append(name).append(":").append(name).append(" @dataSet(userId:\"\", dataSetId:\"\")\n");
       registry.merge(graphQlService.createSchema(
         promotedDataSet.getOwnerId(),
         promotedDataSet.getDataSetId(),

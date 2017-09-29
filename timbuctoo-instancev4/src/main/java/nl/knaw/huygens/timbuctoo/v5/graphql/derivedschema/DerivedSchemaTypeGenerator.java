@@ -5,7 +5,6 @@ import graphql.schema.idl.TypeDefinitionRegistry;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 
 import java.util.HashSet;
@@ -18,7 +17,6 @@ public class DerivedSchemaTypeGenerator {
                                                         Map<String, Type> types,
                                                         TypeNameStore typeNameStore,
                                                         RuntimeWiring.Builder runtimeWiring,
-                                                        DataFetcherFactory dataFetcherFactory,
                                                         PaginationArgumentsHelper argumentsHelper) {
     GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(
       rootType,

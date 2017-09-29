@@ -1,19 +1,17 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 
 public class QuadStoreLookUpSubjectByUriFetcher implements LookUpSubjectByUriFetcher {
-  private final QuadStore quadStore;
 
-  public QuadStoreLookUpSubjectByUriFetcher(QuadStore quadStore) {
-    this.quadStore = quadStore;
+  public QuadStoreLookUpSubjectByUriFetcher() {
   }
 
   @Override
-  public SubjectReference getItem(String uri) {
-    return new LazyTypeSubjectReference(uri, quadStore);
+  public SubjectReference getItem(String uri, DataSet dataSet) {
+    return new LazyTypeSubjectReference(uri, dataSet);
   }
 }

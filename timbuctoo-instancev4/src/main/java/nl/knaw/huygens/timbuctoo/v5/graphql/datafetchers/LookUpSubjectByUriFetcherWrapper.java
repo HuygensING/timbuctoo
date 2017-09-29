@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import org.eclipse.rdf4j.common.net.ParsedURI;
 
 /**
@@ -22,6 +23,9 @@ public class LookUpSubjectByUriFetcherWrapper implements DataFetcher {
   @Override
   public Object get(DataFetchingEnvironment environment) {
     String uri = environment.getArgument(uriArgument);
-    return lookUpSubjectByUriFetcher.getItem(baseUri.resolve(uri).toString());
+    return lookUpSubjectByUriFetcher.getItem(
+      baseUri.resolve(uri).toString(),
+      ((DatabaseResult) environment.getSource()).getDataSet()
+    );
   }
 }

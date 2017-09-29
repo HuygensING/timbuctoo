@@ -24,11 +24,16 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrapper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookUpSubjectByUriFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.CollectionDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.TypedLiteralDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.UnionDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
@@ -57,13 +62,11 @@ public class GraphQlService {
     return dataSetRepository
       .getDataSet(userId, dataSetName)
       .map(dataSet -> {
-        final DataFetcherFactory dataFetcherFactory = dataSet.getDataFetcherFactory();
         final LookUpSubjectByUriFetcherWrapper lookupFetcher = new LookUpSubjectByUriFetcherWrapper(
           "uri",
-          dataFetcherFactory.lookupFetcher(),
+          new QuadStoreLookUpSubjectByUriFetcher(),
           "" //FIXME: baseUri
         );
-
 
         final RuntimeWiring.Builder runtimeWiring = RuntimeWiring.newRuntimeWiring();
         runtimeWiring.wiringFactory(new WiringFactory() {
@@ -103,7 +106,7 @@ public class GraphQlService {
               String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
               boolean listAll = ((BooleanValue) directive.getArgument("listAll").getValue()).isValue();
               if (listAll) {
-                return new CollectionFetcherWrapper(dataFetcherFactory.collectionFetcher(uri));
+                return new CollectionFetcherWrapper(new CollectionDataFetcher(uri));
               } else {
                 return lookupFetcher;
               }
@@ -115,12 +118,12 @@ public class GraphQlService {
               boolean isObject = ((BooleanValue) directive.getArgument("isObject").getValue()).isValue();
               boolean isValue = ((BooleanValue) directive.getArgument("isValue").getValue()).isValue();
               if (isObject && isValue) {
-                return new DataFetcherWrapper(isList, dataFetcherFactory.unionFetcher(uri, direction));
+                return new DataFetcherWrapper(isList, new UnionDataFetcher(uri, direction));
               } else {
                 if (isObject) {
-                  return new DataFetcherWrapper(isList, dataFetcherFactory.relationFetcher(uri, direction));
+                  return new DataFetcherWrapper(isList, new RelationDataFetcher(uri, direction));
                 } else {
-                  return new DataFetcherWrapper(isList, dataFetcherFactory.typedLiteralFetcher(uri));
+                  return new DataFetcherWrapper(isList, new TypedLiteralDataFetcher(uri));
                 }
               }
             } else if (environment.getFieldDefinition().getDirective("uri") != null) {
@@ -183,7 +186,6 @@ public class GraphQlService {
       schemaStore.getTypes(),
       typeNameStore,
       runtimeWiring,
-      dataSet.getDataFetcherFactory(),
       argumentsHelper
     );
     return typeDefinitionRegistry;
@@ -194,7 +196,10 @@ public class GraphQlService {
     try {
       Optional<GraphQL> graphQl = loadSchema(userId, dataSet);
       if (graphQl.isPresent()) {
-        ExecutionResult result = graphQl.get().execute(query);
+        ExecutionResult result = graphQl.get().execute(builder -> builder
+          .root((DatabaseResult) () -> dataSetRepository.getDataSet(userId, dataSet).get())
+          .query(query)
+        );
         if (result.getErrors().isEmpty()) {
           return Optional.of(new SerializableResult(result.getData()));
         } else {

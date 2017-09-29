@@ -10,6 +10,7 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import org.junit.Test;
 
@@ -71,7 +72,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     private String uri;
 
     @Override
-    public SubjectReference getItem(String uri) {
+    public SubjectReference getItem(String uri, DataSet dataSet) {
       this.uri = uri;
       return null;
     }
