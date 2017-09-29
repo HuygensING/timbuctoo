@@ -46,7 +46,6 @@ public interface DataSet {
       .quadStore(quadStore)
       .collectionIndex(collectionIndex)
       .typeNameStore(new JsonTypeNameStore(
-        userId + "_" + dataSetId.replace("_", "__").replaceAll("[^_0-9A-Za-z]", "_"),
         fileHelper.fileInDataSet(userId, dataSetId, "prefixes.json"),
         importManager
       ))

@@ -1,88 +1,98 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLTypeReference;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-
-import static com.google.common.collect.Lists.newArrayList;
-import static java.util.stream.Collectors.toList;
+import java.util.Set;
 
 public class DerivedSchemaTypeGenerator {
 
-  public void makeGraphQlTypes(Map<String, Type> types, TypeNameStore typeNameStore,
-                               GraphQlTypesContainer typesContainer) {
-    for (Type type : types.values()) {
-      List<GraphQLFieldDefinition> fieldDefinitions = type.getPredicates().stream()
-        .map(predicate -> fieldForDerivedType(
-          predicate,
-          typesContainer,
-          typeNameStore
-        ))
-        .filter(Objects::nonNull)
-        .collect(toList());
+  public static TypeDefinitionRegistry makeGraphQlTypes(String userId, String dataSetId, String rootType,
+                                                        Map<String, Type> types,
+                                                        TypeNameStore typeNameStore,
+                                                        RuntimeWiring.Builder runtimeWiring,
+                                                        DataFetcherFactory dataFetcherFactory,
+                                                        PaginationArgumentsHelper argumentsHelper) {
+    GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(
+      rootType,
+      typeNameStore,
+      userId,
+      dataSetId,
+      runtimeWiring,
+      dataFetcherFactory,
+      argumentsHelper
+    );
 
-      String typeUri = type.getName();
-      typesContainer.objectType(
-        typeNameStore.makeGraphQlname(typeUri),
-        "Subjects that are a [" + typeNameStore.shorten(typeUri) + "](" + typeUri + ")",
-        Optional.of(typeUri),
-        fieldDefinitions
-      );
+    for (Type type : types.values()) {
+      typesContainer.openObjectType(type.getName());
+      for (Predicate predicate : type.getPredicates()) {
+        fieldForDerivedType(predicate, typesContainer, typeNameStore);
+      }
+      typesContainer.closeObjectType(type.getName());
     }
+    return typesContainer.getSchema();
   }
 
-  private static GraphQLFieldDefinition fieldForDerivedType(Predicate pred, GraphQlTypesContainer typesContainer,
-                                                            TypeNameStore typeNameStore) {
+  private static void fieldForDerivedType(Predicate pred, GraphQlTypesContainer typesContainer,
+                                          TypeNameStore typeNameStore) {
     String fieldName = typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection());
     if (pred.getReferenceTypes().size() == 0) {
       if (pred.getValueTypes().size() == 0) {
-        System.out.println("This shouldn't happen! Typetracker has no types");
-        return null;
+        System.out.println("This shouldn't happen! The predicate has no value types and no reference types!");
       } else if (pred.getValueTypes().size() == 1) {
-        return typesContainer.valueField(
-          fieldName, null, pred.getValueTypes().iterator().next(), pred.isList(), pred.isOptional(), pred.getName()
+        typesContainer.valueField(
+          fieldName,
+          null,
+          pred.getValueTypes().iterator().next(),
+          pred.isList(),
+          pred.isOptional(),
+          pred.getName()
         );
       } else {
-        List<GraphQLObjectType> types = new ArrayList<>();
+        Set<String> types = new HashSet<>();
         for (String valueType : pred.getValueTypes()) {
           types.add(typesContainer.valueType(valueType));
         }
-        ArrayList<GraphQLTypeReference> refs = newArrayList();
-        return typesContainer.unionField(
-          fieldName, null, refs, types, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList()
+        typesContainer.unionField(
+          fieldName, null, types, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList()
         );
       }
     } else {
       if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
-        return typesContainer.objectField(
+        typesContainer.objectField(
           fieldName,
-          null, pred.getName(),
+          null,
+          pred.getName(),
           pred.getDirection(),
-          typeNameStore.makeGraphQlname(pred.getReferenceTypes().iterator().next()),
+          typesContainer.objectType(pred.getReferenceTypes().iterator().next()),
           pred.isList(),
           pred.isOptional()
         );
       } else {
-        List<GraphQLTypeReference> refs = new ArrayList<>();
-        List<GraphQLObjectType> values = new ArrayList<>();
+        Set<String> refs = new HashSet<>();
         for (String referenceType : pred.getReferenceTypes()) {
-          refs.add(new GraphQLTypeReference(typeNameStore.makeGraphQlname(referenceType)));
+          refs.add(typesContainer.objectType(referenceType));
         }
         for (String valueType : pred.getValueTypes()) {
-          values.add(typesContainer.valueType(valueType));
+          refs.add(typesContainer.valueType(valueType));
         }
 
-        return typesContainer.unionField(fieldName, null, refs, values, pred.getName(), pred.getDirection(),
-          pred.isOptional(), pred.isList());
+        typesContainer.unionField(
+          fieldName,
+          null,
+          refs,
+          pred.getName(),
+          pred.getDirection(),
+          pred.isOptional(),
+          pred.isList()
+        );
       }
     }
   }

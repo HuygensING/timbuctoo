@@ -2,9 +2,10 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 
 import com.coxautodev.graphql.tools.SchemaObjects;
 import com.coxautodev.graphql.tools.SchemaParser;
-import graphql.schema.GraphQLObjectType;
 import graphql.schema.GraphQLSchema;
-import graphql.schema.GraphQLType;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
@@ -14,13 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.UserResolver
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Supplier;
-
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static graphql.schema.GraphQLSchema.newSchema;
 
 public class RootQuery implements Supplier<GraphQLSchema> {
 
@@ -37,43 +32,46 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   }
 
   public synchronized void rebuildSchema() {
-    final GraphQLObjectType.Builder dataSets = newObject()
-      .name("DataSets");
-    Set<GraphQLType> types = new HashSet<>();
+    String preamble = "interface Value {\n" +
+      "  value: String!\n" +
+      "  type: String!\n" +
+      "}\n" +
+      "\n" +
+      "interface Entity {\n" +
+      "  uri: String!\n" +
+      "}\n" +
+      "\n" +
+      "schema {\n" +
+      "  query: Query\n" +
+      "}\n";
 
-    final SchemaObjects manualSchema = makeManualSchema();
-    types.addAll(manualSchema.getDictionary());
+    final graphql.schema.idl.SchemaParser schemaParser = new graphql.schema.idl.SchemaParser();
+    final TypeDefinitionRegistry registry = schemaParser.parse(preamble);
+    final RuntimeWiring.Builder wiring = RuntimeWiring.newRuntimeWiring();
+
+    wiring.type("Query", builder -> builder.defaultDataFetcher(dataFetchingEnvironment -> ""));
+    StringBuilder root = new StringBuilder("type Query {\n");
 
     dataSetRepository.getDataSets().values().stream().flatMap(Collection::stream).forEach(promotedDataSet -> {
-      final GraphQlService.GeneratedSchema schema = graphQlService
-        .createSchema(
+      final String name = promotedDataSet.getOwnerId() + "_" + promotedDataSet.getDataSetId();
+      root.append("  ").append(name).append(":").append(name).append("\n");
+      registry.merge(graphQlService.createSchema(
+        promotedDataSet.getOwnerId(),
+        promotedDataSet.getDataSetId(),
+        name,
+        dataSetRepository.getDataSet(
           promotedDataSet.getOwnerId(),
-          promotedDataSet.getDataSetId(),
-          dataSetRepository.getDataSet(
-            promotedDataSet.getOwnerId(),
-            promotedDataSet.getDataSetId()).get()
-        );
-      types.addAll(schema.getAllObjectTypes());
-      dataSets
-        .field(newFieldDefinition()
-          .name(promotedDataSet.getCombinedId())
-          .type(schema.getRootObject())
-          .dataFetcher(environment -> "") //dummy so that datafetching continues
-          .build());
+          promotedDataSet.getDataSetId()
+        ).get(),
+        wiring
+      ));
     });
+    root.append("}\n\n");
 
-    graphQlSchema = newSchema()
-      .query(newObject()
-        .name("Query")
-        .fields(manualSchema.getQuery().getFieldDefinitions())
-        .field(newFieldDefinition()
-          .name("dataSets")
-          .description("The auto-generated types for all datasets.")
-          .type(dataSets.build())
-          .dataFetcher(environment -> "") //dummy so that datafetching continues. All information has already been bound
-          .build())
-        .build())
-      .build(types);
+    registry.merge(schemaParser.parse(root.toString()));
+
+    SchemaGenerator schemaGenerator = new SchemaGenerator();
+    graphQlSchema = schemaGenerator.makeExecutableSchema(registry, wiring.build());
   }
 
   public SchemaObjects makeManualSchema() {

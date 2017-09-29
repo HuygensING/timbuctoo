@@ -1,21 +1,20 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import graphql.Scalars;
 import graphql.TypeResolutionEnvironment;
 import graphql.language.InlineFragment;
 import graphql.language.Selection;
-import graphql.schema.GraphQLFieldDefinition;
-import graphql.schema.GraphQLInterfaceType;
 import graphql.schema.GraphQLObjectType;
-import graphql.schema.GraphQLOutputType;
-import graphql.schema.GraphQLType;
-import graphql.schema.GraphQLTypeReference;
-import graphql.schema.GraphQLUnionType;
 import graphql.schema.TypeResolver;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.schema.idl.TypeRuntimeWiring;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherWrapper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookUpSubjectByUriFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcher;
@@ -26,17 +25,9 @@ import org.slf4j.Logger;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
-import static graphql.schema.GraphQLFieldDefinition.newFieldDefinition;
-import static graphql.schema.GraphQLInterfaceType.newInterface;
-import static graphql.schema.GraphQLNonNull.nonNull;
-import static graphql.schema.GraphQLObjectType.newObject;
-import static graphql.schema.GraphQLUnionType.newUnionType;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class GraphQlTypesContainer {
@@ -45,234 +36,241 @@ public class GraphQlTypesContainer {
   public static final String VALUE_INTERFACE_NAME = "Value";
   private static final Logger LOG = getLogger(GraphQlTypesContainer.class);
 
-  final Map<String, GraphQLObjectType> typeForUri;
-  final Map<String, GraphQLObjectType> wrappedValueTypes;
-  final Set<GraphQLType> allTypes;
-
-  final GraphQLInterfaceType entityInterface;
-  final GraphQLInterfaceType valueInterface;
+  final Map<String, StringBuilder> types;
+  final Set<String> topLevelTypes;
+  private final String prefix;
+  StringBuilder currentType = null;
+  TypeRuntimeWiring.Builder currentWiring;
 
   final ObjectTypeResolver objectResolver;
-  final ValueTypeResolver valueTypeResolver;
-  final TypeResolver unionTypeResolver;
 
+  private final String rootType;
   private final TypeNameStore typeNameStore;
+  private final RuntimeWiring.Builder runtimeWiring;
   private final DataFetcherFactory dataFetcherFactory;
   private final PaginationArgumentsHelper argumentsHelper;
+  private TypeDefinitionRegistry registry;
 
-  public GraphQlTypesContainer(TypeNameStore typeNameStore, DataFetcherFactory dataFetcherFactory,
+  public GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore, String ownerId, String dataSetId,
+                               RuntimeWiring.Builder runtimeWiring, DataFetcherFactory dataFetcherFactory,
                                PaginationArgumentsHelper argumentsHelper) {
+    this.rootType = rootType;
     this.typeNameStore = typeNameStore;
+    this.prefix = ownerId + "_" + dataSetId.replace("_", "__").replaceAll("[^a-zA-Z0-9_]", "_");
+    this.runtimeWiring = runtimeWiring;
     this.dataFetcherFactory = dataFetcherFactory;
     this.argumentsHelper = argumentsHelper;
-    allTypes = new HashSet<>();
-    typeForUri = new HashMap<>();
-    objectResolver = new ObjectTypeResolver(this.typeForUri, this.typeNameStore);
-    wrappedValueTypes = new HashMap<>();
-    valueTypeResolver = new ValueTypeResolver(wrappedValueTypes);
-    unionTypeResolver = new UnionTypeResolver(valueTypeResolver, objectResolver);
-    entityInterface = newInterface()
-      .name(ENTITY_INTERFACE_NAME)
-      .field(newFieldDefinition()
-        .name("uri")
-        .type(Scalars.GraphQLID)
-      )
-      .typeResolver(objectResolver)
-      .build();
-    valueInterface = newInterface()
-      .name(VALUE_INTERFACE_NAME)
-      .field(newFieldDefinition()
-        .name("value")
-        .type(nonNull(Scalars.GraphQLString))
-      )
-      .field(newFieldDefinition()
-        .name("type")
-        .type(nonNull(Scalars.GraphQLString))
-      )
-      .typeResolver(valueTypeResolver)
-      .build();
+
+    types = new HashMap<>();
+    objectResolver = new ObjectTypeResolver();
+    topLevelTypes = new HashSet<>();
   }
 
-  public GraphQLFieldDefinition objectField(String fieldName, String description, String predicateUri,
-                                            Direction predicateDirection, String typeName, boolean isList,
-                                            boolean isOptional) {
-    GraphQLTypeReference type = new GraphQLTypeReference(typeName);
+  public void objectField(String fieldName, String description, String predicateUri,
+                          Direction predicateDirection, String typeName, boolean isList,
+                          boolean isOptional) {
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.relationFetcher(predicateUri, predicateDirection);
-    return makeField(fieldName, description, type, dataFetcher, isList, isOptional);
+    makeField(fieldName, description, typeName, isList, isOptional, dataFetcher);
   }
 
-  public GraphQLFieldDefinition unionField(String name, String description, List<GraphQLTypeReference> refs,
-                                           List<GraphQLObjectType> types,
-                                           String predicateUri, Direction direction, boolean isOptional,
-                                           boolean isList) {
-    String unionName = "Union_";
-    for (GraphQLObjectType type : types) {
-      unionName += type.getName() + "_";
-    }
-    for (GraphQLTypeReference type : refs) {
-      unionName += type.getName() + "_";
-    }
-    unionName += UUID.randomUUID().toString().replaceAll("[^a-zA-Z0-9]", "");
-    GraphQLUnionType.Builder unionType = newUnionType()
-      .name(unionName)
-      .typeResolver(this.unionTypeResolver);
-    for (GraphQLObjectType type : types) {
-      unionType.possibleType(type);
-    }
-    for (GraphQLTypeReference type : refs) {
-      unionType.possibleType(type);
-    }
+  public void unionField(String name, String description, Set<String> refs,
+                         String predicateUri, Direction direction, boolean isOptional,
+                         boolean isList) {
+    String unionType = unionType(refs);
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.unionFetcher(predicateUri, direction);
-    GraphQLUnionType type = unionType.build();
-    return makeField(name, description, type, dataFetcher, isList, isOptional);
+    makeField(name, description, unionType, isList, isOptional, dataFetcher);
   }
 
-  public GraphQLFieldDefinition valueField(String name, String description, String typeUri, boolean isList,
-                                           boolean isOptional,
-                                           String predicateUri) {
-    GraphQLObjectType type = valueType(typeUri);
+  public void valueField(String name, String description, String typeUri, boolean isList,
+                         boolean isOptional,
+                         String predicateUri) {
+    String type = valueType(typeUri);
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.typedLiteralFetcher(predicateUri);
-    return makeField(name, description, type, dataFetcher, isList, isOptional);
+    makeField(name, description, type, isList, isOptional, dataFetcher);
   }
 
-  public GraphQLFieldDefinition valueField(String name, String description, boolean isList, boolean isOptional,
-                                           String predicateUri) {
+  public void valueField(String name, String description, boolean isList, boolean isOptional,
+                         String predicateUri) {
     RelatedDataFetcher dataFetcher = this.dataFetcherFactory.typedLiteralFetcher(predicateUri);
-    return makeField(name, description, valueInterface, dataFetcher, isList, isOptional);
+    makeField(name, description, "Value", isList, isOptional, dataFetcher);
   }
 
-  private GraphQLFieldDefinition makeField(String name, String description, GraphQLOutputType type,
-                                           RelatedDataFetcher dataFetcher,
-                                           boolean list, boolean optional) {
-    GraphQLFieldDefinition.Builder result = newFieldDefinition()
-      .name(name)
-      .dataFetcher(new DataFetcherWrapper(list, dataFetcher));
+  private void makeField(String name, String description, String targetType, boolean list,
+                         boolean optional, RelatedDataFetcher dataFetcher) {
+    if (registry != null) {
+      throw new IllegalStateException("Schema has already been built");
+    }
+    currentWiring.dataFetcher(name, new DataFetcherWrapper(list, dataFetcher));
 
     if (description != null) {
-      result.description(description);
+      currentType.append("  #").append(description).append("\n");
     }
+
+    currentType.append("  ");
     if (list) {
-      argumentsHelper.makePaginatedList(result, type);
-    } else if (!optional) {
-      result.type(nonNull(type));
+      currentType.append(listType(name, targetType));
     } else {
-      result.type(type);
+      currentType.append(name).append(": ").append(targetType);
+      if (!optional) {
+        currentType.append("!");
+      }
     }
-
-    return result.build();
+    currentType.append("\n");
   }
 
-  public GraphQLObjectType valueType(String typeUri) {
-    return wrappedValueTypes.computeIfAbsent(typeUri, uri -> {
-      final String name = typeNameStore.makeGraphQlValuename(uri);
-      GraphQLObjectType valueType = newObject()
-        .name(name)
-        .withInterface(this.valueInterface)
-        .field(newFieldDefinition()
-          .name("value")
-          .type(nonNull(Scalars.GraphQLString))
-        )
-        .field(newFieldDefinition()
-          .name("type")
-          .type(nonNull(Scalars.GraphQLString))
-        )
-        .build();
-      wrappedValueTypes.put(uri, valueType);
-      allTypes.add(valueType);
-      return valueType;
-    });
-  }
-
-  public GraphQLObjectType objectType(String objectName, String description, Optional<String> typeUri,
-                                      List<GraphQLFieldDefinition> fieldDefinitions) {
-    GraphQLObjectType objectType = newObject()
-      .name(objectName)
-      .withInterface(entityInterface)
-      .field(newFieldDefinition()
-        .name("uri")
-        .type(Scalars.GraphQLID)
-        .dataFetcher(new UriFetcher())
-      )
-      .fields(fieldDefinitions)
-      .description(description)
-      .build();
-    if (typeUri.isPresent()) {
-      typeForUri.put(typeUri.get(), objectType);
+  private String listType(String fieldName, String typeName) {
+    final String listTypeName = argumentsHelper.makeListName(typeName);
+    if (!types.containsKey(listTypeName)) {
+      StringBuilder builder = new StringBuilder();
+      types.put(listTypeName, builder);
+      builder.append(argumentsHelper.makePaginatedListDefinition(typeName));
     }
-    allTypes.add(objectType);
-    return objectType;
+    return argumentsHelper.makeListField(fieldName, typeName);
   }
 
-  public Map<String, GraphQLObjectType> getRdfTypeRepresentingTypes() {
-    return typeForUri;
+  public String unionType(Set<String> refs) {
+    String unionName = "Union_";
+    for (String type : refs) {
+      unionName += type + "__";
+    }
+    if (!types.containsKey(unionName)) {
+      StringBuilder builder = new StringBuilder();
+      types.put(unionName, builder);
+      runtimeWiring.type(unionName, wiring -> wiring.typeResolver(objectResolver));
+
+      builder.append("union ").append(unionName).append(" = ");
+
+      boolean needsJoinChar = false;
+      for (String type : refs) {
+        if (needsJoinChar) {
+          builder.append(" | ");
+        }
+        builder.append(type);
+        needsJoinChar = true;
+      }
+      builder.append("\n\n");
+    }
+    return unionName;
   }
 
-  public Set<GraphQLType> getAllObjectTypes() {
-    return allTypes;
+  public String valueType(String typeUri) {
+    final String name = prefix + typeNameStore.makeGraphQlValuename(typeUri);
+    if (!types.containsKey(name)) {
+      StringBuilder builder = new StringBuilder();
+      types.put(name, builder);
+
+      builder.append("type ").append(name).append(" implements ").append(VALUE_INTERFACE_NAME).append(" {\n")
+        .append("  value: String!\n")
+        .append("  type: String!\n")
+        .append("}\n\n");
+    }
+    return name;
+  }
+
+  public String objectType(String typeUri) {
+    return prefix + typeNameStore.makeGraphQlname(typeUri);
+  }
+
+  public void openObjectType(String typeUri) {
+    final String name = objectType(typeUri);
+    if (!types.containsKey(name)) {
+      StringBuilder builder = new StringBuilder();
+      types.put(name, builder);
+      topLevelTypes.add(typeUri);
+      currentType = builder;
+      currentWiring = TypeRuntimeWiring.newTypeWiring(name);
+      currentWiring.dataFetcher("uri", new UriFetcher());
+      currentType
+        .append("#")
+        .append("Subjects that are a [")
+        .append(typeNameStore.shorten(typeUri))
+        .append("](")
+        .append(typeUri)
+        .append(")")
+        .append("\n")
+
+        .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME).append(" {\n")
+        .append("  uri: String!\n");
+    }
+  }
+
+  public void closeObjectType(String typeUri) {
+    final String name = objectType(typeUri);
+    types.get(name).append("}\n\n");
+    runtimeWiring.type(currentWiring);
+    currentWiring = null;
+    currentType = null;
+  }
+
+  public TypeDefinitionRegistry getSchema() {
+
+    if (registry == null) {
+      StringBuilder total = new StringBuilder();
+      runtimeWiring.type(ENTITY_INTERFACE_NAME, builder -> builder.typeResolver(objectResolver));
+      runtimeWiring.type(VALUE_INTERFACE_NAME, builder -> builder.typeResolver(objectResolver));
+
+      total.append("type ").append(rootType).append("{\n");
+
+      final TypeRuntimeWiring.Builder builder = TypeRuntimeWiring.newTypeWiring(rootType);
+      final LookUpSubjectByUriFetcherWrapper lookupFetcher = new LookUpSubjectByUriFetcherWrapper(
+        "uri",
+        dataFetcherFactory.lookupFetcher(),
+        "" //FIXME: baseUri
+      );
+
+      for (String uri : topLevelTypes) {
+        String typename = objectType(uri);
+        String name = typename.substring(prefix.length());
+        total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append("\n");
+        builder.dataFetcher(name, lookupFetcher);
+        total.append("  ").append(listType(name + "List", typename)).append("\n");
+        builder.dataFetcher(name + "List", new CollectionFetcherWrapper(dataFetcherFactory.collectionFetcher(uri)));
+      }
+      runtimeWiring.type(builder.build());
+
+      total.append("}\n\n");
+      for (StringBuilder stringBuilder : types.values()) {
+        total.append(stringBuilder);
+      }
+
+      registry = new SchemaParser().parse(total.toString());
+    }
+    return registry;
   }
 
   private class ObjectTypeResolver implements TypeResolver {
 
-    protected final TypeNameStore typeNameStore;
-    protected final Map<String, GraphQLObjectType> typeForUri;
-
-    private ObjectTypeResolver(Map<String, GraphQLObjectType> typeForUri, TypeNameStore typeNameStore) {
-      this.typeForUri = typeForUri;
-      this.typeNameStore = typeNameStore;
-    }
-
     @Override
     public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
-      //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
-      //In rdf things can have more then one type though (types are like java interfaces)
-      //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types that
-      //the user actually requested
-      Set<String> typeUris = ((SubjectReference) environment.getObject()).getTypes();
-      for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
-        if (selection instanceof InlineFragment) {
-          InlineFragment fragment = (InlineFragment) selection;
-          String typeUri = typeNameStore.makeUri(fragment.getTypeCondition().getName());
-          if (typeUris.contains(typeUri)) {
-            return typeForUri.get(typeUri);
-          }
+      String typeName = null;
+      if (environment.getObject() instanceof TypedValue) {
+        final String typeUri = ((TypedValue) environment.getObject()).getType();
+        typeName = typeNameStore.makeGraphQlValuename(typeUri);
+      } else {
+        //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
+        //In rdf things can have more then one type though (types are like java interfaces)
+        //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types
+        // that
+        //the user actually requested
+        Set<String> typeUris = ((SubjectReference) environment.getObject()).getTypes();
+        if (typeUris.isEmpty()) {
+          typeName = typeNameStore.makeGraphQlname(RdfConstants.UNKNOWN);
         } else {
-          LOG.error("I have a union type whose selection is not an InlineFragment!");
+          for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
+            if (selection instanceof InlineFragment) {
+              InlineFragment fragment = (InlineFragment) selection;
+              String typeUri = typeNameStore.makeUri(fragment.getTypeCondition().getName());
+              if (typeUris.contains(typeUri)) {
+                typeName = typeNameStore.makeGraphQlname(typeUri);
+                break;
+              }
+            } else {
+              LOG.error("I have a union type whose selection is not an InlineFragment!");
+            }
+          }
         }
       }
-      return typeUris.isEmpty() ? typeForUri.get(RdfConstants.UNKNOWN) : typeForUri.get(typeUris.iterator().next());
-    }
-  }
-
-  private class UnionTypeResolver implements TypeResolver {
-    private final ValueTypeResolver valueTypeResolver;
-    private final ObjectTypeResolver objectTypeResolver;
-
-    private UnionTypeResolver(ValueTypeResolver valueTypeResolver, ObjectTypeResolver objectTypeResolver) {
-      this.valueTypeResolver = valueTypeResolver;
-      this.objectTypeResolver = objectTypeResolver;
-    }
-
-    @Override
-    public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
-      if (environment.getObject() instanceof TypedValue) {
-        return valueTypeResolver.getType(environment);
-      } else {
-        return objectTypeResolver.getType(environment);
-      }
-    }
-  }
-
-  private class ValueTypeResolver implements TypeResolver {
-
-    protected Map<String, GraphQLObjectType> wrappedValueTypes;
-
-    private ValueTypeResolver(Map<String, GraphQLObjectType> wrappedValueTypes) {
-      this.wrappedValueTypes = wrappedValueTypes;
-    }
-
-    @Override
-    public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
-      return wrappedValueTypes.get(((TypedValue) environment.getObject()).getType());
+      return typeName == null ? null : (GraphQLObjectType) getSchema().getType(typeName).orElse(null);
     }
   }
 }
