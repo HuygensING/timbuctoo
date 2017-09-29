@@ -8,16 +8,9 @@ import graphql.schema.TypeResolver;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
-import graphql.schema.idl.TypeRuntimeWiring;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrapper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherWrapper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookUpSubjectByUriFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RelatedDataFetcher;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -40,25 +33,22 @@ public class GraphQlTypesContainer {
   final Set<String> topLevelTypes;
   private final String prefix;
   StringBuilder currentType = null;
-  TypeRuntimeWiring.Builder currentWiring;
 
   final ObjectTypeResolver objectResolver;
 
   private final String rootType;
   private final TypeNameStore typeNameStore;
   private final RuntimeWiring.Builder runtimeWiring;
-  private final DataFetcherFactory dataFetcherFactory;
   private final PaginationArgumentsHelper argumentsHelper;
   private TypeDefinitionRegistry registry;
 
   public GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore, String ownerId, String dataSetId,
-                               RuntimeWiring.Builder runtimeWiring, DataFetcherFactory dataFetcherFactory,
+                               RuntimeWiring.Builder runtimeWiring,
                                PaginationArgumentsHelper argumentsHelper) {
     this.rootType = rootType;
     this.typeNameStore = typeNameStore;
     this.prefix = ownerId + "_" + dataSetId.replace("_", "__").replaceAll("[^a-zA-Z0-9_]", "_");
     this.runtimeWiring = runtimeWiring;
-    this.dataFetcherFactory = dataFetcherFactory;
     this.argumentsHelper = argumentsHelper;
 
     types = new HashMap<>();
@@ -67,9 +57,10 @@ public class GraphQlTypesContainer {
   }
 
   public void objectField(String fieldName, String description, String predicateUri,
-                          Direction predicateDirection, String typeName, boolean isList,
+                          Direction direction, String typeName, boolean isList,
                           boolean isOptional) {
-    RelatedDataFetcher dataFetcher = this.dataFetcherFactory.relationFetcher(predicateUri, predicateDirection);
+    String dataFetcher = "@rdf(uri: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"" + direction.name() +
+      "\", isValue: false, isObject: true, isList: " + isList + ")";
     makeField(fieldName, description, typeName, isList, isOptional, dataFetcher);
   }
 
@@ -77,7 +68,8 @@ public class GraphQlTypesContainer {
                          String predicateUri, Direction direction, boolean isOptional,
                          boolean isList) {
     String unionType = unionType(refs);
-    RelatedDataFetcher dataFetcher = this.dataFetcherFactory.unionFetcher(predicateUri, direction);
+    String dataFetcher = "@rdf(uri: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"" + direction.name() +
+      "\", isValue: true, isObject: true, isList: " + isList + ")";
     makeField(name, description, unionType, isList, isOptional, dataFetcher);
   }
 
@@ -85,22 +77,16 @@ public class GraphQlTypesContainer {
                          boolean isOptional,
                          String predicateUri) {
     String type = valueType(typeUri);
-    RelatedDataFetcher dataFetcher = this.dataFetcherFactory.typedLiteralFetcher(predicateUri);
+    String dataFetcher = "@rdf(uri: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"OUT\", isValue: " +
+      "true, isObject: false, isList: " + isList + ")";
     makeField(name, description, type, isList, isOptional, dataFetcher);
   }
 
-  public void valueField(String name, String description, boolean isList, boolean isOptional,
-                         String predicateUri) {
-    RelatedDataFetcher dataFetcher = this.dataFetcherFactory.typedLiteralFetcher(predicateUri);
-    makeField(name, description, "Value", isList, isOptional, dataFetcher);
-  }
-
   private void makeField(String name, String description, String targetType, boolean list,
-                         boolean optional, RelatedDataFetcher dataFetcher) {
+                         boolean optional, String directive) {
     if (registry != null) {
       throw new IllegalStateException("Schema has already been built");
     }
-    currentWiring.dataFetcher(name, new DataFetcherWrapper(list, dataFetcher));
 
     if (description != null) {
       currentType.append("  #").append(description).append("\n");
@@ -115,7 +101,7 @@ public class GraphQlTypesContainer {
         currentType.append("!");
       }
     }
-    currentType.append("\n");
+    currentType.append(directive).append("\n");
   }
 
   private String listType(String fieldName, String typeName) {
@@ -178,8 +164,6 @@ public class GraphQlTypesContainer {
       types.put(name, builder);
       topLevelTypes.add(typeUri);
       currentType = builder;
-      currentWiring = TypeRuntimeWiring.newTypeWiring(name);
-      currentWiring.dataFetcher("uri", new UriFetcher());
       currentType
         .append("#")
         .append("Subjects that are a [")
@@ -190,15 +174,13 @@ public class GraphQlTypesContainer {
         .append("\n")
 
         .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME).append(" {\n")
-        .append("  uri: String!\n");
+        .append("  uri: String! @uri\n");
     }
   }
 
   public void closeObjectType(String typeUri) {
     final String name = objectType(typeUri);
     types.get(name).append("}\n\n");
-    runtimeWiring.type(currentWiring);
-    currentWiring = null;
     currentType = null;
   }
 
@@ -211,22 +193,14 @@ public class GraphQlTypesContainer {
 
       total.append("type ").append(rootType).append("{\n");
 
-      final TypeRuntimeWiring.Builder builder = TypeRuntimeWiring.newTypeWiring(rootType);
-      final LookUpSubjectByUriFetcherWrapper lookupFetcher = new LookUpSubjectByUriFetcherWrapper(
-        "uri",
-        dataFetcherFactory.lookupFetcher(),
-        "" //FIXME: baseUri
-      );
-
       for (String uri : topLevelTypes) {
         String typename = objectType(uri);
         String name = typename.substring(prefix.length());
-        total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append("\n");
-        builder.dataFetcher(name, lookupFetcher);
-        total.append("  ").append(listType(name + "List", typename)).append("\n");
-        builder.dataFetcher(name + "List", new CollectionFetcherWrapper(dataFetcherFactory.collectionFetcher(uri)));
+        total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
+          "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");
+        total.append("  ").append(listType(name + "List", typename)).append(" " +
+          "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: true)\n");
       }
-      runtimeWiring.type(builder.build());
 
       total.append("}\n\n");
       for (StringBuilder stringBuilder : types.values()) {

@@ -2,17 +2,33 @@ package nl.knaw.huygens.timbuctoo.v5.graphql;
 
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.language.BooleanValue;
+import graphql.language.Directive;
+import graphql.language.StringValue;
+import graphql.schema.DataFetcher;
 import graphql.schema.GraphQLSchema;
+import graphql.schema.PropertyDataFetcher;
+import graphql.schema.TypeResolver;
+import graphql.schema.idl.FieldWiringEnvironment;
+import graphql.schema.idl.InterfaceWiringEnvironment;
 import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import graphql.schema.idl.UnionWiringEnvironment;
+import graphql.schema.idl.WiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.graphql.archetypes.dto.Archetypes;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcherWrapper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.DataFetcherWrapper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.LookUpSubjectByUriFetcherWrapper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.UriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
@@ -21,6 +37,8 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 
 import java.util.Optional;
+
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.valueOf;
 
 public class GraphQlService {
   private final DerivedSchemaTypeGenerator typeGenerator;
@@ -39,7 +57,84 @@ public class GraphQlService {
     return dataSetRepository
       .getDataSet(userId, dataSetName)
       .map(dataSet -> {
+        final DataFetcherFactory dataFetcherFactory = dataSet.getDataFetcherFactory();
+        final LookUpSubjectByUriFetcherWrapper lookupFetcher = new LookUpSubjectByUriFetcherWrapper(
+          "uri",
+          dataFetcherFactory.lookupFetcher(),
+          "" //FIXME: baseUri
+        );
+
+
         final RuntimeWiring.Builder runtimeWiring = RuntimeWiring.newRuntimeWiring();
+        runtimeWiring.wiringFactory(new WiringFactory() {
+          final UriFetcher uriFetcher = new UriFetcher();
+
+          @Override
+          public boolean providesTypeResolver(InterfaceWiringEnvironment environment) {
+            return false;
+          }
+
+          @Override
+          public boolean providesTypeResolver(UnionWiringEnvironment environment) {
+            return false;
+          }
+
+          @Override
+          public TypeResolver getTypeResolver(InterfaceWiringEnvironment environment) {
+            return null;
+          }
+
+          @Override
+          public TypeResolver getTypeResolver(UnionWiringEnvironment environment) {
+            return null;
+          }
+
+          @Override
+          public boolean providesDataFetcher(FieldWiringEnvironment environment) {
+            return environment.getFieldDefinition().getDirective("fromCollection") != null ||
+              environment.getFieldDefinition().getDirective("rdf") != null ||
+              environment.getFieldDefinition().getDirective("uri") != null;
+          }
+
+          @Override
+          public DataFetcher getDataFetcher(FieldWiringEnvironment environment) {
+            if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
+              final Directive directive = environment.getFieldDefinition().getDirective("fromCollection");
+              String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
+              boolean listAll = ((BooleanValue) directive.getArgument("listAll").getValue()).isValue();
+              if (listAll) {
+                return new CollectionFetcherWrapper(dataFetcherFactory.collectionFetcher(uri));
+              } else {
+                return lookupFetcher;
+              }
+            } else if (environment.getFieldDefinition().getDirective("rdf") != null) {
+              final Directive directive = environment.getFieldDefinition().getDirective("rdf");
+              String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
+              Direction direction = valueOf(((StringValue) directive.getArgument("direction").getValue()).getValue());
+              boolean isList = ((BooleanValue) directive.getArgument("isList").getValue()).isValue();
+              boolean isObject = ((BooleanValue) directive.getArgument("isObject").getValue()).isValue();
+              boolean isValue = ((BooleanValue) directive.getArgument("isValue").getValue()).isValue();
+              if (isObject && isValue) {
+                return new DataFetcherWrapper(isList, dataFetcherFactory.unionFetcher(uri, direction));
+              } else {
+                if (isObject) {
+                  return new DataFetcherWrapper(isList, dataFetcherFactory.relationFetcher(uri, direction));
+                } else {
+                  return new DataFetcherWrapper(isList, dataFetcherFactory.typedLiteralFetcher(uri));
+                }
+              }
+            } else if (environment.getFieldDefinition().getDirective("uri") != null) {
+              return uriFetcher;
+            }
+            return null;
+          }
+
+          @Override
+          public DataFetcher getDefaultDataFetcher(FieldWiringEnvironment environment) {
+            return new PropertyDataFetcher(environment.getFieldDefinition().getName());
+          }
+        });
+
         final TypeDefinitionRegistry registry = createSchema(
           userId,
           dataSetName,

@@ -26,7 +26,6 @@ public class DerivedSchemaTypeGenerator {
       userId,
       dataSetId,
       runtimeWiring,
-      dataFetcherFactory,
       argumentsHelper
     );
 
