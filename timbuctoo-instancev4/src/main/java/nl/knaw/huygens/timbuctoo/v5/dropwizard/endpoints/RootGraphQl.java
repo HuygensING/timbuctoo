@@ -128,18 +128,10 @@ public class RootGraphQl {
         .operationName(operationName)
         .variables(variables == null ? Collections.emptyMap() : variables)
         .build());
-    Map<String, Object> formattedResult = new HashMap<>();
-    formattedResult.put("data", result.getData());
-    if (!result.getErrors().isEmpty()) {
-      formattedResult.put("errors", result.getErrors());
-    }
-    if (result.getExtensions() != null && !result.getExtensions().isEmpty()) {
-      formattedResult.put("extensions", result.getExtensions());
-    }
     return Response
       .ok()
       .type(MediaType.APPLICATION_JSON_TYPE)
-      .entity(formattedResult)
+      .entity(result.toSpecification())
       .build();
   }
 
