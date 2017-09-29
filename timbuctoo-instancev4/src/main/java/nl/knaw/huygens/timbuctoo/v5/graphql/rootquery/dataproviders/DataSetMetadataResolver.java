@@ -85,7 +85,7 @@ public class DataSetMetadataResolver implements GraphQLResolver<PromotedDataSet>
                   .valueTypes(ImmutableStringList.builder()
                     .prevCursor(Optional.empty())
                     .nextCursor(Optional.empty())
-                    .items(() -> pred.getReferenceTypes().stream().map(typeNameStore::makeGraphQlValuename).iterator())
+                    .items(() -> pred.getValueTypes().stream().map(typeNameStore::makeGraphQlValuename).iterator())
                     .build()
                   )
                   .build();
