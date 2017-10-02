@@ -23,28 +23,28 @@ public class ElasticSearchTest {
   @Test
   public void elaborateQueryAsIs() throws Exception {
     String originalQuery = createQuery1();
-    JsonNode qAsNode = eSearch.elaborateQuery(originalQuery, null, -1);
+    JsonNode queryAsNode = eSearch.elaborateQuery(originalQuery, null, -1);
 
-    assertThat(qAsNode.toString(), equalTo(originalQuery.replaceAll("\n|\\s", "")));
-    JsonNode sizeNode = qAsNode.findValue("size");
+    assertThat(queryAsNode.toString(), equalTo(originalQuery.replaceAll("\n|\\s", "")));
+    JsonNode sizeNode = queryAsNode.findValue("size");
     assertThat(sizeNode.asInt(), equalTo(3));
   }
 
   @Test
   public void elaborateQueryWithSize() throws Exception {
     String originalQuery = createQuery1();
-    JsonNode qAsNode = eSearch.elaborateQuery(originalQuery, null, 4);
+    JsonNode queryAsNode = eSearch.elaborateQuery(originalQuery, null, 4);
 
-    JsonNode sizeNode = qAsNode.findValue("size");
+    JsonNode sizeNode = queryAsNode.findValue("size");
     assertThat(sizeNode.asInt(), equalTo(4));
   }
 
   @Test
   public void elaborateQueryWithoutSize() throws Exception {
     String originalQuery = createQueryWithoutSize();
-    JsonNode qAsNode = eSearch.elaborateQuery(originalQuery, null, 4);
+    JsonNode queryAsNode = eSearch.elaborateQuery(originalQuery, null, 4);
 
-    JsonNode sizeNode = qAsNode.findValue("size");
+    JsonNode sizeNode = queryAsNode.findValue("size");
     assertThat(sizeNode.asInt(), equalTo(4));
   }
 

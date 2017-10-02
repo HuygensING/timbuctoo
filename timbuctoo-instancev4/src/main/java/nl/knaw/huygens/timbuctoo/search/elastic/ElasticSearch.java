@@ -68,11 +68,11 @@ public class ElasticSearch {
   }
 
   ObjectNode elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize) throws IOException {
-    ObjectNode qNode = (ObjectNode) mapper.readTree(elasticSearchQuery);
+    ObjectNode node = (ObjectNode) mapper.readTree(elasticSearchQuery);
     if (preferredPageSize > 0) {
-      qNode.put("size", preferredPageSize);
+      node.put("size", preferredPageSize);
     }
-    return qNode;
+    return node;
   }
 
 
