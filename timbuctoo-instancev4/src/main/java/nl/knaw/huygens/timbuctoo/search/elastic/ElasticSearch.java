@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.search.elastic;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -9,28 +11,26 @@ import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.BasicCredentialsProvider;
-import org.apache.http.impl.nio.client.HttpAsyncClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.nio.entity.NStringEntity;
-import org.apache.http.util.EntityUtils;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
-import org.elasticsearch.client.RestClientBuilder;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * Created on 2017-09-25 15:28.
  */
 public class ElasticSearch {
 
-  public static final String METHOD_GET = "GET";
+  public static final String FIELD_NAME = "_uid";
+  private static final String METHOD_GET = "GET";
 
   private final RestClient restClient;
+  private final ObjectMapper mapper;
 
   public ElasticSearch(String hostname, int port, String username, String password) {
     Header[] headers = {
@@ -40,21 +40,37 @@ public class ElasticSearch {
     credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
     restClient = RestClient.builder(new HttpHost(hostname, port))
                            .setDefaultHeaders(headers)
-                           .setHttpClientConfigCallback(new RestClientBuilder.HttpClientConfigCallback() {
-                             public HttpAsyncClientBuilder customizeHttpClient(HttpAsyncClientBuilder builder) {
-
-                               return builder.setDefaultCredentialsProvider(credentialsProvider);
-                             }
-                           })
+                           .setHttpClientConfigCallback(
+                             builder -> builder.setDefaultCredentialsProvider(credentialsProvider))
                            .build();
+    mapper = new ObjectMapper();
   }
 
-  public void query(String index, String elasticsearchQuery, Optional<String> token, int preferredPageSize)
+  public PageableResult2 query(String index, String elasticSearchQuery, String token, int preferredPageSize)
     throws IOException {
     String endpoint = index.endsWith("_search") ? index : index.endsWith("/") ? index + "_search" : index + "/_search";
     Map<String, String> params = Collections.singletonMap("pretty", "true");
-    HttpEntity entity = new NStringEntity(elasticsearchQuery, ContentType.APPLICATION_JSON);
+    HttpEntity entity = new NStringEntity(elasticSearchQuery, ContentType.APPLICATION_JSON);
     Response response = restClient.performRequest(METHOD_GET, endpoint, params, entity);
-    System.out.println(EntityUtils.toString(response.getEntity()));
+
+    // System.out.println(EntityUtils.toString(response.getEntity()));
+    JsonNode jsonNode = mapper.readTree(response.getEntity().getContent());
+    System.err.println("++" + "\n" + jsonNode.toString());
+    List<JsonNode> sortNodes = jsonNode.findValues("sort");
+    for (JsonNode node : sortNodes) {
+      System.out.println(node.toString());
+    }
+    // for (JsonNode node : sortNodes) {
+    //   System.out.println(node.getNodeType().name());
+    // }
+    return new PageableResult2().setIdFields(jsonNode.findValuesAsText(FIELD_NAME));
   }
+
+  String elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize) throws IOException {
+    JsonNode query = mapper.readTree(elasticSearchQuery);
+
+    return null;
+  }
+
+
 }
