@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.search.elastic;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -66,10 +67,12 @@ public class ElasticSearch {
     return new PageableResult2().setIdFields(jsonNode.findValuesAsText(FIELD_NAME));
   }
 
-  String elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize) throws IOException {
-    JsonNode query = mapper.readTree(elasticSearchQuery);
-
-    return null;
+  ObjectNode elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize) throws IOException {
+    ObjectNode qNode = (ObjectNode) mapper.readTree(elasticSearchQuery);
+    if (preferredPageSize > 0) {
+      qNode.put("size", preferredPageSize);
+    }
+    return qNode;
   }
 
 
