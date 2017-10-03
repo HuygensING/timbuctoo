@@ -59,19 +59,19 @@
       }
 
       
-      fetch("/v5/supported_formats/export", {
+      fetch("/v5/graphql?query={availableExportMimetypes{name}}", {
           method: 'get',
           headers: {'Accept': 'application/json'}
       }).then(function (mediaTypes) {
           return mediaTypeMenuItems = mediaTypes.json();
       }).then(function (mediaTypes) {
-          return mediaTypes.map(function (type) {
+          return mediaTypes.data.availableExportMimetypes.map(function (type) {
               return React.createElement(GraphiQL.MenuItem, {
-                  key: type,
+                  key: type.name,
                   onSelect: function () {
-                      setAcceptMediaType(type);
+                      setAcceptMediaType(type.name);
                   },
-                  label: type
+                  label: type.name
               })
           })
       }).then(function (newMenuItems) {

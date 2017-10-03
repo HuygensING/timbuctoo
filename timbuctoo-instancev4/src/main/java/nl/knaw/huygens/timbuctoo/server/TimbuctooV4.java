@@ -96,7 +96,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RootGraphQl;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
@@ -238,15 +237,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       pathWithoutVersionAndRevision
     );
 
-
-    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(environment.jersey());
-    serializerWriterRegistry.register(new CsvWriter());
-    serializerWriterRegistry.register(new JsonLdWriter());
-    serializerWriterRegistry.register(new JsonWriter());
-    serializerWriterRegistry.register(new GraphVizWriter());
-
-    register(environment, new SupportedFormats(serializerWriterRegistry));
-
     configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
 
     DataSetRepository dataSetRepository = configuration.getDataSet();
@@ -294,6 +284,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     register(environment, graphQlEndpoint);
 
+    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(environment.jersey());
+    serializerWriterRegistry.register(new CsvWriter());
+    serializerWriterRegistry.register(new JsonLdWriter());
+    serializerWriterRegistry.register(new JsonWriter());
+    serializerWriterRegistry.register(new GraphVizWriter());
+    
     register(environment, new RootGraphQl(
       new RootQuery(
         dataSetRepository,
