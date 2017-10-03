@@ -2,6 +2,8 @@ package nl.knaw.huygens.timbuctoo.search.elastic;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -68,9 +70,33 @@ public class ElasticSearch {
   }
 
   ObjectNode elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize) throws IOException {
+    // size -1 gives the default 10 results. size 0 gives 0 results. totals are always given.
+    // requests without a 'query' clause are legal, so don't check.
+    // if 'search_after' is present, 'sort' must contain just as many fields of same type (not checked).
+    // if 'search_after' is present, 'sort' must contain "..one unique value per document.."
+    // (we check on/put FIELD_NAME).
     ObjectNode node = (ObjectNode) mapper.readTree(elasticSearchQuery);
-    if (preferredPageSize > 0) {
-      node.put("size", preferredPageSize);
+    node.put("size", preferredPageSize);
+    if (token != null) {
+      if (!node.has("search_after")) {
+        node.putArray("search_after");
+      }
+      ArrayNode searchAfterNode = (ArrayNode) node.findValue("search_after");
+      searchAfterNode.removeAll();
+      searchAfterNode.addAll((ArrayNode) mapper.readTree(token));
+
+      if (!node.has("sort")) {
+        node.putArray("sort");
+      }
+      ArrayNode sortNode = (ArrayNode) node.findValue("sort");
+      if (sortNode.findValue(FIELD_NAME) == null) {
+        ObjectNode objNode = JsonNodeFactory.instance.objectNode();
+        objNode.put(FIELD_NAME, "desc");
+        sortNode.add(objNode);
+      }
+
+    } else {
+      node.remove("search_after");
     }
     return node;
   }
