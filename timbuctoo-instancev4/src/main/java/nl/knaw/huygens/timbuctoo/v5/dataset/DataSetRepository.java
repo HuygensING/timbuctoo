@@ -7,19 +7,19 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationExcept
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetWithRoles;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,8 +32,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.promotedDataSet;
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.promotedDataSet;
 
 /**
  * - stores all configuration parameters so it can inject them in the dataset constructor
@@ -155,41 +155,25 @@ public class DataSetRepository {
     return promotedDataSets;
   }
 
-  public Map<String, Set<DataSetWithRoles>> getDataSetsWithWriteAccess(String userId) {
+  public Collection<PromotedDataSet> getDataSetsWithWriteAccess(String userId) {
     Map<String, Set<PromotedDataSet>> dataSets = storedDataSets.getData();
-    Map<String, Set<PromotedDataSet>> promotedDataSets = new HashMap<>();
-    Map<String, Set<DataSetWithRoles>> dataSetsWithWriteAccess = new HashMap<>();
+    List<PromotedDataSet> dataSetsWithWriteAccess = new ArrayList<>();
+
 
     for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
-      Set<DataSetWithRoles> dataSetWithRoles = new HashSet<>();
-
       userDataSets.getValue().forEach((dataSet) -> {
-        List<String> roles;
-        Optional<VreAuthorization> vre;
         try {
-          vre = vreAuthorizationCrud
-            .getAuthorization(
-              dataSet.getCombinedId(),
-              userId);
-          if (vre.isPresent()) {
-            roles = vre
-              .get().getRoles();
-          } else {
-            roles = Collections.emptyList();
+          boolean isAllowedToWrite = vreAuthorizationCrud
+            .getAuthorization(dataSet.getCombinedId(), userId)
+            .map(VreAuthorization::isAllowedToWrite)
+            .orElse(false);
+          if (isAllowedToWrite) {
+            dataSetsWithWriteAccess.add(dataSet);
           }
         } catch (AuthorizationUnavailableException e) {
-          roles = Collections.emptyList();
+          //ignore
         }
-        DataSetWithRoles dataSetWithWriteAccess = new DataSetWithRoles(
-          dataSet.getDataSetId(),
-          dataSet.isPromoted(),
-          roles, null
-        );
-
-        dataSetWithRoles.add(dataSetWithWriteAccess);
       });
-
-      dataSetsWithWriteAccess.put(userDataSets.getKey(), dataSetWithRoles);
     }
     return dataSetsWithWriteAccess;
   }

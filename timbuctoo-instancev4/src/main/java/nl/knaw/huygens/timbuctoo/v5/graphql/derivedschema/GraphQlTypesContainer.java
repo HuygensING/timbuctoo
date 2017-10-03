@@ -42,8 +42,8 @@ public class GraphQlTypesContainer {
   public void objectField(String fieldName, String description, String predicateUri,
                           Direction direction, String typeName, boolean isList,
                           boolean isOptional) {
-    String dataFetcher = "@rdf(uri: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"" + direction.name() +
-      "\", isValue: false, isObject: true, isList: " + isList + ")";
+    String dataFetcher = "@rdf(predicate: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"" +
+      direction.name() + "\", isValue: false, isObject: true, isList: " + isList + ")";
     makeField(fieldName, description, typeName, isList, isOptional, dataFetcher);
   }
 
@@ -51,8 +51,8 @@ public class GraphQlTypesContainer {
                          String predicateUri, Direction direction, boolean isOptional,
                          boolean isList) {
     String unionType = unionType(refs);
-    String dataFetcher = "@rdf(uri: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"" + direction.name() +
-      "\", isValue: true, isObject: true, isList: " + isList + ")";
+    String dataFetcher = "@rdf(predicate: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"" +
+      direction.name() + "\", isValue: true, isObject: true, isList: " + isList + ")";
     makeField(name, description, unionType, isList, isOptional, dataFetcher);
   }
 
@@ -60,8 +60,8 @@ public class GraphQlTypesContainer {
                          boolean isOptional,
                          String predicateUri) {
     String type = valueType(typeUri);
-    String dataFetcher = "@rdf(uri: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"OUT\", isValue: " +
-      "true, isObject: false, isList: " + isList + ")";
+    String dataFetcher = "@rdf(predicate: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"OUT\", " +
+      "isValue: true, isObject: false, isList: " + isList + ")";
     makeField(name, description, type, isList, isOptional, dataFetcher);
   }
 

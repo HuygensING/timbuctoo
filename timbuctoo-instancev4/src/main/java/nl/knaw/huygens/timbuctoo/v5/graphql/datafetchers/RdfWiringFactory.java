@@ -91,7 +91,7 @@ public class RdfWiringFactory implements WiringFactory {
       }
     } else if (environment.getFieldDefinition().getDirective("rdf") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("rdf");
-      String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
+      String uri = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
       Direction direction = valueOf(((StringValue) directive.getArgument("direction").getValue()).getValue());
       boolean isList = ((BooleanValue) directive.getArgument("isList").getValue()).isValue();
       boolean isObject = ((BooleanValue) directive.getArgument("isObject").getValue()).isValue();

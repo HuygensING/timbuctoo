@@ -14,7 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadataList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadata;
@@ -24,7 +24,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePro
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
-import org.immutables.value.Value;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -61,14 +60,14 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     wiring.type("Query", builder -> builder
       .dataFetcher("promotedDataSets", env -> dataSetRepository.getDataSets()
         .values().stream().flatMap(Collection::stream)
-        .map(p -> new DataSetWithDatabase(dataSetRepository.getDataSet(p.getOwnerId(), p.getDataSetId()).get(), p))
+        .map(this::makeDbResult)
         .collect(Collectors.toList()))
       .dataFetcher("dataSetMetadata", env -> {
         String[] parsedId = ((String) env.getArgument("dataSetId")).split("__", 2);
         return Optional.ofNullable(dataSetRepository.getDataSets().get(parsedId[0])).map(d -> {
           for (PromotedDataSet promotedDataSet : d) {
             if (promotedDataSet.getDataSetId().equals(parsedId[1])) {
-              return promotedDataSet;
+              return makeDbResult(promotedDataSet);
             }
           }
           return null;
@@ -86,11 +85,12 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.type("AboutMe", builder -> builder
-      .dataFetcher("dataSets", env -> dataSetRepository.getDataSetsWithWriteAccess(((User) env.getSource()).getId()))
-      .dataFetcher("id", env ->
-        dataSetRepository.getDataSetsWithWriteAccess(((User) env.getSource()).getPersistentId()))
-      .dataFetcher("name", env ->
-        dataSetRepository.getDataSetsWithWriteAccess(((User) env.getSource()).getDisplayName()))
+      .dataFetcher("dataSets", env -> dataSetRepository
+        .getDataSetsWithWriteAccess(((User) env.getSource()).getId())
+        .stream().map(this::makeDbResult)
+      )
+      .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
+      .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
       .dataFetcher("personalInfo", env -> "http://example.com")
       .dataFetcher("canCreateDataSet", env -> true)
     );
@@ -120,6 +120,16 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
     SchemaGenerator schemaGenerator = new SchemaGenerator();
     graphQlSchema = schemaGenerator.makeExecutableSchema(registry, wiring.build());
+  }
+
+  public DataSetWithDatabase makeDbResult(PromotedDataSet promotedDataSet) {
+    return new DataSetWithDatabase(
+      dataSetRepository.getDataSet(
+        promotedDataSet.getOwnerId(),
+        promotedDataSet.getDataSetId()
+      ).get(),
+      promotedDataSet
+    );
   }
 
   public CollectionMetadataList getCollections(PromotedDataSet input) {
@@ -188,8 +198,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     }
   }
 
-  private static class DataSetWithDatabase implements DatabaseResult, PromotedDataSet {
-    private final DataSet dataSet;
+  private static class DataSetWithDatabase extends LazyTypeSubjectReference implements PromotedDataSet {
     private final PromotedDataSet promotedDataSet;
 
     @Override
@@ -212,19 +221,19 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       return promotedDataSet.getCombinedId();
     }
 
-    @Value.Auxiliary
     public boolean isPromoted() {
       return promotedDataSet.isPromoted();
     }
 
     public DataSetWithDatabase(DataSet dataSet, PromotedDataSet promotedDataSet) {
-      this.dataSet = dataSet;
+      super(promotedDataSet.getBaseUri(), dataSet);
       this.promotedDataSet = promotedDataSet;
     }
 
     @Override
-    public DataSet getDataSet() {
-      return dataSet;
+    public String getSubjectUri() {
+      return promotedDataSet.getBaseUri();
     }
+
   }
 }

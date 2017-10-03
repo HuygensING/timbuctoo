@@ -90,7 +90,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegi
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
@@ -305,8 +304,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getLoggedInUsers()
     ));
 
-    register(environment,
-      new GetDataSets(dataSetRepository, graphQlEndpoint, securityConfig.getLoggedInUsers()));
     register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(), dataSetRepository));
     register(environment, new DataSet(
         securityConfig.getLoggedInUsers(),

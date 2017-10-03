@@ -34,13 +34,13 @@ type MimeType {
 
 type DataSetMetadata {
   dataSetId: ID!
-  title: String @fromRdf(uri: "", direction: "OUT", isList: false)
-  description: String @fromRdf(uri: "", direction: "OUT", isList: false)
-  imageUrl: String @fromRdf(uri: "", direction: "OUT", isList: false)
-  owner: ContactInfo @fromRdf(uri: "", direction: "OUT", isList: false)
-  contact: ContactInfo @fromRdf(uri: "", direction: "OUT", isList: false)
-  provenanceInfo: ProvenanceInfo @fromRdf(uri: "", direction: "OUT", isList: false)
-  license: License @fromRdf(uri: "", direction: "OUT", isList: false)
+  title: String @fromRdf(predicate: "", direction: "OUT", isList: false)
+  description: String @fromRdf(predicate: "", direction: "OUT", isList: false)
+  imageUrl: String @fromRdf(predicate: "", direction: "OUT", isList: false)
+  owner: ContactInfo @fromRdf(predicate: "", direction: "OUT", isList: false)
+  contact: ContactInfo @fromRdf(predicate: "", direction: "OUT", isList: false)
+  provenanceInfo: ProvenanceInfo @fromRdf(predicate: "", direction: "OUT", isList: false)
+  license: License @fromRdf(predicate: "", direction: "OUT", isList: false)
 
   collections(count: Int = 20, cursor: ID = ""): CollectionMetadataList
 }
