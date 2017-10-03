@@ -42,7 +42,7 @@
         return fetch("/v5/graphql", {
           method: 'post',
           headers: { 'Accept': acceptMediaType, 'Content-Type': "application/json" },
-          body: JSON.stringify({ query: graphQLParams.query})
+          body: JSON.stringify(graphQLParams)
         }).then(function (response) {
           var s;
           var contentType = response.headers.get('Content-Type');
