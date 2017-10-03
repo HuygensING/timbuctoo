@@ -47,7 +47,6 @@ public class GraphQlTypesContainer {
                                PaginationArgumentsHelper argumentsHelper) {
     this.rootType = rootType;
     this.typeNameStore = typeNameStore;
-    this.prefix = ownerId + "_" + dataSetId.replace("_", "__").replaceAll("[^a-zA-Z0-9_]", "_");
     this.runtimeWiring = runtimeWiring;
     this.argumentsHelper = argumentsHelper;
 
@@ -140,7 +139,7 @@ public class GraphQlTypesContainer {
   }
 
   public String valueType(String typeUri) {
-    final String name = prefix + typeNameStore.makeGraphQlValuename(typeUri);
+    final String name = rootType + "_" + typeNameStore.makeGraphQlValuename(typeUri);
     if (!types.containsKey(name)) {
       StringBuilder builder = new StringBuilder();
       types.put(name, builder);
@@ -154,7 +153,7 @@ public class GraphQlTypesContainer {
   }
 
   public String objectType(String typeUri) {
-    return prefix + typeNameStore.makeGraphQlname(typeUri);
+    return rootType + "_" + typeNameStore.makeGraphQlname(typeUri);
   }
 
   public void openObjectType(String typeUri) {
@@ -195,7 +194,7 @@ public class GraphQlTypesContainer {
 
       for (String uri : topLevelTypes) {
         String typename = objectType(uri);
-        String name = typename.substring(prefix.length());
+        String name = typename.substring(rootType.length() + 1);
         total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
           "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");
         total.append("  ").append(listType(name + "List", typename)).append(" " +
