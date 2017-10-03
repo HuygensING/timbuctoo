@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import org.slf4j.Logger;
 
@@ -36,48 +36,48 @@ public class GraphQlTypesContainer {
     topLevelTypes = new HashSet<>();
   }
 
-  public void objectField(String fieldName, String description, String predicateUri,
-                          Direction direction, String typeName, boolean isList,
-                          boolean isOptional) {
-    String dataFetcher = "@rdf(predicate: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"" +
-      direction.name() + "\", isValue: false, isObject: true, isList: " + isList + ")";
-    makeField(fieldName, description, typeName, isList, isOptional, dataFetcher);
+  public void objectField(String description, Predicate predicate, String typeUri) {
+    makeField(description, predicate, typeUri, false, true);
   }
 
-  public void unionField(String name, String description, Set<String> refs,
-                         String predicateUri, Direction direction, boolean isOptional,
-                         boolean isList) {
-    String unionType = unionType(refs);
-    String dataFetcher = "@rdf(predicate: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"" +
-      direction.name() + "\", isValue: true, isObject: true, isList: " + isList + ")";
-    makeField(name, description, unionType, isList, isOptional, dataFetcher);
+  public void unionField(String description, Predicate predicate, Set<String> typeUris) {
+    String unionType = unionType(typeUris);
+    makeField(description, predicate, unionType, true, true);
   }
 
-  public void valueField(String name, String description, String typeUri, boolean isList,
-                         boolean isOptional,
-                         String predicateUri) {
+  public void valueField(String description, Predicate predicate, String typeUri) {
     String type = valueType(typeUri);
-    String dataFetcher = "@rdf(predicate: \"" + predicateUri.replace("\"", "\\\"") + "\", direction: \"OUT\", " +
-      "isValue: true, isObject: false, isList: " + isList + ")";
-    makeField(name, description, type, isList, isOptional, dataFetcher);
+    makeField(description, predicate, type, true, false);
   }
 
-  private void makeField(String name, String description, String targetType, boolean list,
-                         boolean optional, String directive) {
+  private void makeField(String description, Predicate predicate, String targetType, boolean isValue,
+                         boolean isObject) {
+    String fieldName = typeNameStore.makeGraphQlnameForPredicate(predicate.getName(), predicate.getDirection());
     if (description != null) {
       currentType.append("  #").append(description).append("\n");
     }
 
     currentType.append("  ");
-    if (list) {
-      currentType.append(listType(name, targetType));
+    if (predicate.isList()) {
+      currentType.append(listType(fieldName, targetType));
     } else {
-      currentType.append(name).append(": ").append(targetType);
-      if (!optional) {
-        currentType.append("!");
-      }
+      currentType.append(fieldName).append(": ").append(targetType);
     }
-    currentType.append(" ").append(directive).append("\n");
+    final String safeName = predicate.getName().replace("\"", "");
+    currentType.append(" ")
+      .append("@rdf(predicate: \"")
+      .append(safeName)
+      .append("\", direction: \"")
+      .append(predicate.getDirection())
+      .append("\", ")
+      .append("isValue: ")
+      .append(isValue)
+      .append(", isObject: ")
+      .append(isObject)
+      .append(", isList: ")
+      .append(predicate.isList())
+      .append(")")
+      .append("\n");
   }
 
   private String listType(String fieldName, String typeName) {
@@ -148,7 +148,9 @@ public class GraphQlTypesContainer {
         .append(")")
         .append("\n")
 
-        .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME).append(" {\n")
+        .append("type ").append(name).append(" implements ").append(ENTITY_INTERFACE_NAME).append(" @rdfType(uri: \"")
+        .append(typeUri.replace("\"", "")) //quotes are not allowed in uri's anyway so this shouldn't happen
+        .append("\") {\n")
         .append("  uri: String! @uri\n");
     }
   }

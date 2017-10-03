@@ -24,47 +24,36 @@ public class DerivedSchemaTypeGenerator {
     for (Type type : types.values()) {
       typesContainer.openObjectType(type.getName());
       for (Predicate predicate : type.getPredicates()) {
-        fieldForDerivedType(predicate, typesContainer, nameStore);
+        fieldForDerivedType(predicate, typesContainer);
       }
       typesContainer.closeObjectType(type.getName());
     }
     return typesContainer.getSchema();
   }
 
-  private static void fieldForDerivedType(Predicate pred, GraphQlTypesContainer typesContainer,
-                                          TypeNameStore typeNameStore) {
-    String fieldName = typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection());
+  private static void fieldForDerivedType(Predicate pred, GraphQlTypesContainer typesContainer) {
     if (pred.getReferenceTypes().size() == 0) {
       if (pred.getValueTypes().size() == 0) {
         System.out.println("This shouldn't happen! The predicate has no value types and no reference types!");
       } else if (pred.getValueTypes().size() == 1) {
         typesContainer.valueField(
-          fieldName,
           null,
-          pred.getValueTypes().iterator().next(),
-          pred.isList(),
-          pred.isOptional(),
-          pred.getName()
+          pred,
+          pred.getValueTypes().iterator().next()
         );
       } else {
         Set<String> types = new HashSet<>();
         for (String valueType : pred.getValueTypes()) {
           types.add(typesContainer.valueType(valueType));
         }
-        typesContainer.unionField(
-          fieldName, null, types, pred.getName(), pred.getDirection(), pred.isOptional(), pred.isList()
-        );
+        typesContainer.unionField(null, pred, types);
       }
     } else {
       if (pred.getReferenceTypes().size() == 1 && pred.getValueTypes().size() == 0) {
         typesContainer.objectField(
-          fieldName,
           null,
-          pred.getName(),
-          pred.getDirection(),
-          typesContainer.objectType(pred.getReferenceTypes().iterator().next()),
-          pred.isList(),
-          pred.isOptional()
+          pred,
+          typesContainer.objectType(pred.getReferenceTypes().iterator().next())
         );
       } else {
         Set<String> refs = new HashSet<>();
@@ -76,13 +65,9 @@ public class DerivedSchemaTypeGenerator {
         }
 
         typesContainer.unionField(
-          fieldName,
           null,
-          refs,
-          pred.getName(),
-          pred.getDirection(),
-          pred.isOptional(),
-          pred.isList()
+          pred,
+          refs
         );
       }
     }

@@ -75,7 +75,7 @@ public class GraphQlService {
         );
         return GraphQL
           .newGraphQL(schema)
-          .queryExecutionStrategy(new SerializerExecutionStrategy(dataSet.getTypeNameStore()))
+          .queryExecutionStrategy(new SerializerExecutionStrategy())
           .build();
       });
   }
