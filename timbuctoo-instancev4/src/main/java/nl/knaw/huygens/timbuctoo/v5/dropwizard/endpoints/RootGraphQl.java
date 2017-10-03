@@ -69,7 +69,9 @@ public class RootGraphQl {
           .build();
       }
     }
-    final String operationName = body.has("operationName") ? body.get("operationName").asText() : null;
+    final String operationName = body.has("operationName") && !body.get("operationName").isNull() ?
+      body.get("operationName").asText() :
+      null;
 
     return executeGraphql(query, acceptHeader, queryFromBody, variables, operationName, authHeader);
   }
