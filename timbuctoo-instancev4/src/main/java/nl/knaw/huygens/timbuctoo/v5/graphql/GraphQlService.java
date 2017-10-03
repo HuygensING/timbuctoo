@@ -46,11 +46,12 @@ public class GraphQlService {
         TypeNameStore typeNameStore = dataSet.getTypeNameStore();
         SchemaStore schemaStore = dataSet.getSchemaStore();
 
-        final TypeDefinitionRegistry registry = typeGenerator.makeGraphQlTypes(
+        final SchemaParser schemaParser = new SchemaParser();
+        final TypeDefinitionRegistry registry = schemaParser.parse(typeGenerator.makeGraphQlTypes(
           "Query",
           schemaStore.getTypes(),
           typeNameStore
-        );
+        ));
 
         SchemaGenerator schemaGenerator = new SchemaGenerator();
 
@@ -67,7 +68,6 @@ public class GraphQlService {
           "  query: Query\n" +
           "}\n";
 
-        final SchemaParser schemaParser = new SchemaParser();
         registry.merge(schemaParser.parse(preamble));
         final GraphQLSchema schema = schemaGenerator.makeExecutableSchema(
           registry,

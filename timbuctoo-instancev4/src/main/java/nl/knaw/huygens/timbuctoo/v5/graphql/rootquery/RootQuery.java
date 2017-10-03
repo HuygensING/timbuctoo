@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
@@ -28,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -58,7 +60,11 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
     final TypeDefinitionRegistry registry = schemaParser.parse(staticQuery);
     wiring.type("Query", builder -> builder
-      .dataFetcher("promotedDataSets", env -> dataSetRepository.getDataSets()
+      .dataFetcher("promotedDataSets", env -> dataSetRepository.getPromotedDataSets()
+        .values().stream().flatMap(Collection::stream)
+        .map(this::makeDbResult)
+        .collect(Collectors.toList()))
+      .dataFetcher("allDataSets", env -> dataSetRepository.getDataSets()
         .values().stream().flatMap(Collection::stream)
         .map(this::makeDbResult)
         .collect(Collectors.toList()))
@@ -101,18 +107,33 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     dataSetRepository.getDataSets().values().stream().flatMap(Collection::stream).forEach(promotedDataSet -> {
       final String name = promotedDataSet.getCombinedId();
 
-      root.append("  ").append(name).append(":").append(name).append(" @dataSet(userId:\"" + promotedDataSet
-        .getOwnerId() + "\", dataSetId:\"" + promotedDataSet.getDataSetId() + "\")\n");
-
       final DataSet dataSet = dataSetRepository.getDataSet(
         promotedDataSet.getOwnerId(),
         promotedDataSet.getDataSetId()
       ).get();
-      registry.merge(typeGenerator.makeGraphQlTypes(
-        name,
-        dataSet.getSchemaStore().getTypes(),
-        dataSet.getTypeNameStore()
-      ));
+      final Map<String, Type> types = dataSet.getSchemaStore().getTypes();
+      if (types != null) {
+        root.append("  ")
+          .append(name)
+          .append(":")
+          .append(name)
+          .append(" @dataSet(userId:\"")
+          .append(promotedDataSet.getOwnerId())
+          .append("\", dataSetId:\"")
+          .append(promotedDataSet.getDataSetId())
+          .append("\")\n");
+
+        wiring.type(name, c -> c
+          .dataFetcher("metadata", env -> makeDbResult(promotedDataSet))
+        );
+
+        final String schema = typeGenerator.makeGraphQlTypes(
+          name,
+          types,
+          dataSet.getTypeNameStore()
+        );
+        registry.merge(schemaParser.parse(schema));
+      }
     });
     root.append("}\n\n");
 

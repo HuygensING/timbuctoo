@@ -6,6 +6,25 @@
 @prefix custom: <http://timbuctoo.huygens.knaw.nl/datatypes/> .
 @prefix clusius: <http://timbuctoo.huygens.knaw.nl/datasets/clusius/> .
 
+<> <http://purl.org/dc/terms/title> "DWC Data" ;
+  <http://purl.org/dc/terms/description> "Biographical data of the Digital Web Centre for the History of Science (DWC)" ;
+  <http://xmlns.com/foaf/0.1/depiction> "http://example.com/image.jpg" ;
+  <http://purl.org/dc/terms/rightsHolder> <./rightsHolder> ;
+  <http://schema.org/ContactPoint> <./contactPerson> ;
+  <http://purl.org/dc/terms/license> <https://creativecommons.org/publicdomain/zero/1.0/> ;
+  <http://purl.org/dc/terms/provenance> <./provenance> ;
+  <http://purl.org/dc/terms/abstract> <./summaryProperties> .
+
+<./rightsHolder> <http://schema.org/name> "Huygens ING" .
+<./rightsHolder> <http://schema.org/email> "owner@email.com" .
+
+<./contactPerson> <http://schema.org/name> "Huygens ING" .
+<./contactPerson> <http://schema.org/email> "dwc@huygens.knaw.nl" .
+
+<./provenance> <http://purl.org/dc/terms/title> "Example Provenance Title" .
+<./provenance> <http://purl.org/dc/terms/description> "This is an example description for the example provenance." .
+
+
 clusius:Places rdfs:subClassOf archetypes:location .
 clusius:Provenance_type rdfs:subClassOf archetypes:keyword .
 clusius:Fields_of_interest rdfs:subClassOf archetypes:keyword .

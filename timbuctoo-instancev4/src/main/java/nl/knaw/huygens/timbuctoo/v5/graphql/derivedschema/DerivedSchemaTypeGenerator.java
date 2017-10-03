@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import graphql.schema.idl.TypeDefinitionRegistry;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
@@ -19,7 +18,7 @@ public class DerivedSchemaTypeGenerator {
     this.argumentsHelper = argumentsHelper;
   }
 
-  public TypeDefinitionRegistry makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore) {
+  public String makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore) {
     GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(rootType, nameStore, this.argumentsHelper);
 
     for (Type type : types.values()) {

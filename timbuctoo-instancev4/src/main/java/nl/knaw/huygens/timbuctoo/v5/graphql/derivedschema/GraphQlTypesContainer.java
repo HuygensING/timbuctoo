@@ -1,7 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import graphql.schema.idl.SchemaParser;
-import graphql.schema.idl.TypeDefinitionRegistry;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
@@ -27,7 +25,6 @@ public class GraphQlTypesContainer {
   private final String rootType;
   private final TypeNameStore typeNameStore;
   private final PaginationArgumentsHelper argumentsHelper;
-  private TypeDefinitionRegistry registry;
 
   public GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore,
                                PaginationArgumentsHelper argumentsHelper) {
@@ -67,10 +64,6 @@ public class GraphQlTypesContainer {
 
   private void makeField(String name, String description, String targetType, boolean list,
                          boolean optional, String directive) {
-    if (registry != null) {
-      throw new IllegalStateException("Schema has already been built");
-    }
-
     if (description != null) {
       currentType.append("  #").append(description).append("\n");
     }
@@ -84,7 +77,7 @@ public class GraphQlTypesContainer {
         currentType.append("!");
       }
     }
-    currentType.append(directive).append("\n");
+    currentType.append(" ").append(directive).append("\n");
   }
 
   private String listType(String fieldName, String typeName) {
@@ -166,29 +159,28 @@ public class GraphQlTypesContainer {
     currentType = null;
   }
 
-  public TypeDefinitionRegistry getSchema() {
+  public String getSchema() {
+    StringBuilder total = new StringBuilder();
+    total.append("type ").append(rootType).append("{\n");
 
-    if (registry == null) {
-      StringBuilder total = new StringBuilder();
-      total.append("type ").append(rootType).append("{\n");
+    total.append("  metadata: DataSetMetadata!");
 
-      for (String uri : topLevelTypes) {
-        String typename = objectType(uri);
-        String name = typename.substring(rootType.length() + 1);
-        total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
-          "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");
-        total.append("  ").append(listType(name + "List", typename)).append(" " +
-          "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: true)\n");
-      }
 
-      total.append("}\n\n");
-      for (StringBuilder stringBuilder : types.values()) {
-        total.append(stringBuilder);
-      }
-
-      registry = new SchemaParser().parse(total.toString());
+    for (String uri : topLevelTypes) {
+      String typename = objectType(uri);
+      String name = typename.substring(rootType.length() + 1);
+      total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
+        "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");
+      total.append("  ").append(listType(name + "List", typename)).append(" " +
+        "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: true)\n");
     }
-    return registry;
+
+    total.append("}\n\n");
+    for (StringBuilder stringBuilder : types.values()) {
+      total.append(stringBuilder);
+    }
+
+    return total.toString();
   }
 
 }

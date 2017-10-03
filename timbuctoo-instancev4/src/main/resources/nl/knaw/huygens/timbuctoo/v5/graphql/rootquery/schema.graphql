@@ -11,12 +11,20 @@ interface Entity {
   uri: String!
 }
 
+type xsd_string implements Value {
+  value: String!
+  type: String!
+}
+
 type Query {
   #the datasets that are supposed to get extra attention
   promotedDataSets: [DataSetMetadata!]!
 
+  #all the dataSets, with and without the promoted ones
+  allDataSets: [DataSetMetadata!]!
+
   #The actual dataSets
-  dataSets: DataSets
+  dataSets: DataSets @passThrough
 
   #metadata for a specific dataset
   dataSetMetadata(dataSetId: ID): DataSetMetadata
@@ -33,14 +41,15 @@ type MimeType {
 }
 
 type DataSetMetadata {
+  uri: String! @uri
   dataSetId: ID!
-  title: String @fromRdf(predicate: "", direction: "OUT", isList: false)
-  description: String @fromRdf(predicate: "", direction: "OUT", isList: false)
-  imageUrl: String @fromRdf(predicate: "", direction: "OUT", isList: false)
-  owner: ContactInfo @fromRdf(predicate: "", direction: "OUT", isList: false)
-  contact: ContactInfo @fromRdf(predicate: "", direction: "OUT", isList: false)
-  provenanceInfo: ProvenanceInfo @fromRdf(predicate: "", direction: "OUT", isList: false)
-  license: License @fromRdf(predicate: "", direction: "OUT", isList: false)
+  title: xsd_string @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
+  description: xsd_string @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
+  imageUrl: xsd_string @rdf(predicate: "http://xmlns.com/foaf/0.1/depiction", direction: "OUT", isList: false, isObject: false, isValue: true)
+  owner: ContactInfo @rdf(predicate: "http://purl.org/dc/terms/rightsHolder", direction: "OUT", isList: false, isObject: true, isValue: false)
+  contact: ContactInfo @rdf(predicate: "http://schema.org/ContactPoint", direction: "OUT", isList: false, isObject: true, isValue: false)
+  provenanceInfo: ProvenanceInfo @rdf(predicate: "http://purl.org/dc/terms/provenance", direction: "OUT", isList: false, isObject: true, isValue: false)
+  license: License @rdf(predicate: "http://purl.org/dc/terms/license", direction: "OUT", isList: false, isObject: true, isValue: false)
 
   collections(count: Int = 20, cursor: ID = ""): CollectionMetadataList
 }
@@ -98,15 +107,15 @@ type TypeList {
 }
 
 type ContactInfo {
-  name: String!
-  email: String
+  name: xsd_string @rdf(predicate: "http://schema.org/name", direction: "OUT", isList: false, isObject: false, isValue: true)
+  email: xsd_string @rdf(predicate: "http://schema.org/email", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
 
 type License {
-  uri: String @fromRdf(uri: "", direction: "OUT", isList: false)
+  uri: String! @uri
 }
 
 type ProvenanceInfo {
-  title: String!
-  body: String!
+  title: xsd_string @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
+  body: xsd_string @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
