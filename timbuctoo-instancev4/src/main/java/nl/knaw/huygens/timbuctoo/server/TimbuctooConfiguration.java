@@ -120,7 +120,8 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
         dataSetExecutorService,
         getSecurityConfiguration().getVreAuthorizationCreator(),
         getDataSetConfiguration(),
-        new BdbDataStoreFactory(getDatabases())
+        new BdbDataStoreFactory(getDatabases()),
+        getRdfIdHelper()
       );
     } catch (IOException | AccessNotPossibleException e) {
       throw new DataStoreCreationException(e);

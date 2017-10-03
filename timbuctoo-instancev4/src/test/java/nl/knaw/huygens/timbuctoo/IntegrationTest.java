@@ -158,7 +158,7 @@ public class IntegrationTest {
 
   @Test
   public void personNameVariantAreAddedToThePersonTheyBelongTo() throws Exception {
-    String vreName = "demo-upload";
+    String vreName = "demo_upload";
     String prefixedVreName = "DUMMY_" + vreName;
     Response uploadResponse = rawUpload(
       vreName,
@@ -248,7 +248,7 @@ public class IntegrationTest {
 
   @Test
   public void succeedingRdfUploadWithGraphql() throws Exception {
-    String vreName = "clusius-" + UUID.randomUUID();
+    String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + vreName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
@@ -331,7 +331,7 @@ public class IntegrationTest {
 
   @Test
   public void succeedingNQuadUdUploadWithGraphql() throws Exception {
-    String vreName = "clusius-" + UUID.randomUUID();
+    String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + vreName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
@@ -390,7 +390,7 @@ public class IntegrationTest {
 
   @Test
   public void succeedingRdfUploadResourceSync() throws Exception {
-    String dataSetName = "clusius-" + UUID.randomUUID();
+    String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + dataSetName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
@@ -441,7 +441,7 @@ public class IntegrationTest {
   @Test
   public void tabularUpload() {
     Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
-    String dataSetId = "dataset" + UUID.randomUUID();
+    String dataSetId = "dataset" + UUID.randomUUID().toString().replace("-", "_");
     WebTarget target = client.target(
       format("http://localhost:%d/v5/DUMMY/" + dataSetId + "/upload/table?forceCreation=true", APP.getLocalPort())
     );
@@ -469,7 +469,7 @@ public class IntegrationTest {
   public void deleteDataSet() throws Exception {
     // Create a dataset
     Client client = ClientBuilder.newBuilder().build();
-    String dataSetId = "dataset" + UUID.randomUUID();
+    String dataSetId = "dataset" + UUID.randomUUID().toString().replace("-", "_");
     WebTarget createTarget =
       client
         .target(format("http://localhost:%d/v5/dataSets/DUMMY/" + dataSetId + "/create/", APP.getLocalPort()));

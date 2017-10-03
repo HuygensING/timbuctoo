@@ -7,7 +7,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
@@ -33,18 +32,16 @@ public class RdfUpload {
 
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
-  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final DataSetRepository dataSetRepository;
   private final ErrorResponseHelper errorResponseHelper;
 
 
   public RdfUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
-                   ErrorResponseHelper errorResponseHelper, TimbuctooRdfIdHelper rdfIdHelper) {
+                   ErrorResponseHelper errorResponseHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
     this.dataSetRepository = dataSetRepository;
     this.errorResponseHelper = errorResponseHelper;
-    this.rdfIdHelper = rdfIdHelper;
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -62,8 +59,14 @@ public class RdfUpload {
                          @QueryParam("async") final boolean async)
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
+    final Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(userId, dataSetId);
     final Response response = checkWriteAccess(
-      dataSetRepository::dataSetExists, authorizer, loggedInUsers, authHeader, userId, dataSetId
+      userId,
+      dataSetId,
+      (ownerId, dataSetId1) -> dataSetRepository.getDataSet(ownerId, dataSetId1).map(DataSet::getMetadata),
+      authorizer,
+      loggedInUsers,
+      authHeader
     );
     if (response != null) {
       return response;
@@ -71,7 +74,6 @@ public class RdfUpload {
 
     final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
-    final Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(userId, dataSetId);
     final DataSet dataSet;
     if (dataSetOpt.isPresent()) {
       dataSet = dataSetOpt.get();
@@ -95,8 +97,8 @@ public class RdfUpload {
     }
 
     Future<?> promise = importManager.addLog(
-      baseUri == null ? rdfIdHelper.dataSet(userId, dataSetId) : baseUri.toString(),
-      defaultGraph == null ? rdfIdHelper.dataSet(userId, dataSetId) : defaultGraph.toString(),
+      baseUri == null ? dataSet.getMetadata().getBaseUri() : baseUri.toString(),
+      defaultGraph == null ? dataSet.getMetadata().getBaseUri() : defaultGraph.toString(),
       body.getContentDisposition().getFileName(),
       rdfInputStream,
       Optional.of(Charset.forName(encoding)),

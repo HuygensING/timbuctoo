@@ -10,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +51,8 @@ public class DataSetRepositoryTest {
                                    .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
                                    .resourceSync(resourceSync)
                                    .build(),
-      new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator())
+      new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator()),
+      new TimbuctooRdfIdHelper("http://example.org/timbuctoo/")
     );
   }
 

@@ -4,9 +4,9 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
-import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -43,21 +43,25 @@ import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 public class RawUploadRdfSaverTest {
 
   private static final String COLLECTION = "coll";
-  private static final String DATA_SET_ID = "dataSet";
-  private static final String USER_ID = "userId";
-  private static final String DATA_SET_URI = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet";
   private RawUploadRdfSaver instance;
   private RdfSerializer rdfSerializer;
+  private PromotedDataSet dataSetMetadata;
 
   @Before
   public void setUp() throws Exception {
     rdfSerializer = mock(RdfSerializer.class);
-    instance = instanceWithRdfSerializer(rdfSerializer);
+    dataSetMetadata = PromotedDataSet.promotedDataSet(
+      "userId",
+      "dataSet",
+      "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet",
+      false
+    );
+    instance = instanceWithRdfSerializer(rdfSerializer, dataSetMetadata);
   }
 
-  private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer) throws LogStorageFailedException {
-    return new RawUploadRdfSaver(USER_ID, DATA_SET_ID, "fileName", APPLICATION_OCTET_STREAM_TYPE, rdfSerializer,
-      new TimbuctooRdfIdHelper("http://timbuctoo.huygens.knaw.nl/v5/"));
+  private RawUploadRdfSaver instanceWithRdfSerializer(RdfSerializer rdfSerializer, PromotedDataSet dataSetMetadata)
+    throws LogStorageFailedException {
+    return new RawUploadRdfSaver(dataSetMetadata, "fileName", APPLICATION_OCTET_STREAM_TYPE, rdfSerializer);
   }
 
   @Test
@@ -79,7 +83,7 @@ public class RawUploadRdfSaverTest {
   public void addEntityAddsTheEntityToTheCollection() throws Exception {
     String entity = instance.addEntity(COLLECTION, Maps.newHashMap());
 
-    verify(rdfSerializer).onRelation(entity, TIM_HAS_ROW, COLLECTION, DATA_SET_URI);
+    verify(rdfSerializer).onRelation(entity, TIM_HAS_ROW, COLLECTION, dataSetMetadata.getBaseUri());
   }
 
   @Test
@@ -95,14 +99,14 @@ public class RawUploadRdfSaverTest {
       argThat(containsString("prop1")),
       eq("value1"),
       eq(STRING),
-      eq(DATA_SET_URI)
+      eq(dataSetMetadata.getBaseUri())
     );
     verify(rdfSerializer).onValue(
       eq(entity),
       argThat(containsString("prop2")),
       eq("2"),
       eq(STRING),
-      eq(DATA_SET_URI)
+      eq(dataSetMetadata.getBaseUri())
     );
   }
 
@@ -125,7 +129,7 @@ public class RawUploadRdfSaverTest {
   public void addCollectionAddsALabelWithTheCollectionName() throws Exception {
     String collection = instance.addCollection(COLLECTION);
 
-    verify(rdfSerializer).onValue(collection, RDFS_LABEL, COLLECTION, STRING, DATA_SET_URI);
+    verify(rdfSerializer).onValue(collection, RDFS_LABEL, COLLECTION, STRING, dataSetMetadata.getBaseUri());
   }
 
   @Test
@@ -133,7 +137,7 @@ public class RawUploadRdfSaverTest {
     String collection = instance.addCollection(COLLECTION);
 
     // It is the first collection, so the value of the order will be "1".
-    verify(rdfSerializer).onValue(collection, TIMBUCTOO_ORDER, "1", INTEGER, DATA_SET_URI);
+    verify(rdfSerializer).onValue(collection, TIMBUCTOO_ORDER, "1", INTEGER, dataSetMetadata.getBaseUri());
   }
 
   @Test
@@ -147,28 +151,28 @@ public class RawUploadRdfSaverTest {
       argThat(containsString("propName")),
       eq(RDF_TYPE),
       eq(TIM_PROP_DESC),
-      eq(DATA_SET_URI)
+      eq(dataSetMetadata.getBaseUri())
     );
     verify(rdfSerializer).onValue(
       argThat(containsString("propName")),
       eq(TIM_PROP_ID),
       eq("1"),
       eq(INTEGER),
-      eq(DATA_SET_URI)
+      eq(dataSetMetadata.getBaseUri())
     );
     verify(rdfSerializer).onValue(
       argThat(containsString("propName")),
       eq(TIMBUCTOO_ORDER),
       eq("0"), // Order start with 0.
       eq(INTEGER),
-      eq(DATA_SET_URI)
+      eq(dataSetMetadata.getBaseUri())
     );
     verify(rdfSerializer).onValue(
       argThat(containsString("propName")),
       eq(RDFS_LABEL),
       eq("propName"),
       eq(STRING),
-      eq(DATA_SET_URI)
+      eq(dataSetMetadata.getBaseUri())
     );
   }
 
@@ -184,20 +188,20 @@ public class RawUploadRdfSaverTest {
       argThat(containsString("propName1")),
       eq(OF_COLLECTION),
       eq(COLLECTION),
-      eq(DATA_SET_URI)
+      eq(dataSetMetadata.getBaseUri())
     );
     verify(rdfSerializer).onRelation(
       argThat(containsString("propName2")),
       eq(OF_COLLECTION),
       eq(COLLECTION),
-      eq(DATA_SET_URI)
+      eq(dataSetMetadata.getBaseUri())
     );
   }
 
   @Test
   public void usageTest() throws LogStorageFailedException {
     RdfToStringFaker rdfSerializer = new RdfToStringFaker();
-    RawUploadRdfSaver instance = instanceWithRdfSerializer(rdfSerializer);
+    RawUploadRdfSaver instance = instanceWithRdfSerializer(rdfSerializer, dataSetMetadata);
 
     final String collection1 = instance.addCollection("collection1");
     ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
@@ -216,14 +220,15 @@ public class RawUploadRdfSaverTest {
 
     String generatedRdf = rdfSerializer.toString();
     // Use assertEquals because the failing Hamcrest output is hard to compare
-    String collection = "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSet/fileName/";
-    String prop = "http://timbuctoo.huygens.knaw.nl/v5/props/userId/dataSet/fileName/";
-    String rawData = "http://timbuctoo.huygens.knaw.nl/v5/rawData/userId/dataSet/fileName/";
-    String graphName = DATA_SET_URI;
+    String graphName = dataSetMetadata.getBaseUri();
+    String collection = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet/rawData/fileName/collections/";
+    String prop = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet/rawData/fileName/props/";
+    String rawData = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet/rawData/fileName/entities/";
+    String fileUri = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet/rawData/fileName/";
     assertEquals(
-      rawData + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
-        graphName + " "     + PROV_DERIVED_FROM  + " " + rawData + " "                           + graphName + "\n" +
-        rawData + " "    + TIM_MIMETYPE + " " + "application/octet-stream" + "^^" + STRING + " " + graphName + "\n" +
+      fileUri + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
+        graphName + " "     + PROV_DERIVED_FROM  + " " + fileUri + " "                           + graphName + "\n" +
+        fileUri + " "    + TIM_MIMETYPE + " " + "application/octet-stream" + "^^" + STRING + " " + graphName + "\n" +
         collection + "1 "   + RDF_TYPE           + " " + TIM_COLLECTION +   " "                  + graphName + "\n" +
         collection + "1 "   + RDFS_LABEL         + " collection1" +         "^^" + STRING + " "  + graphName + "\n" +
         collection + "1 "   + TIMBUCTOO_ORDER    + " 1" +                   "^^" + INTEGER + " " + graphName + "\n" +

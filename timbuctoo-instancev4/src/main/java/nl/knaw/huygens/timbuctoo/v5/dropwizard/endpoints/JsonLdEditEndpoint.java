@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
-import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,18 +39,16 @@ public class JsonLdEditEndpoint {
   private static final Logger LOG = LoggerFactory.getLogger(JsonLdEditEndpoint.class);
 
   private final DataSetRepository dataSetRepository;
-  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
   private DocumentLoader documentLoader;
 
   public JsonLdEditEndpoint(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
-                            TimbuctooRdfIdHelper rdfIdHelper, CloseableHttpClient httpClient
+                            CloseableHttpClient httpClient
   ) throws JsonLdError, IOException {
     this.dataSetRepository = dataSetRepository;
     this.authorizer = authorizer;
     this.loggedInUsers = loggedInUsers;
-    this.rdfIdHelper = rdfIdHelper;
     documentLoader = new DocumentLoader();
     documentLoader.setHttpClient(httpClient);
     final String prefilledContext =
@@ -84,8 +81,8 @@ public class JsonLdEditEndpoint {
 
     try {
       importManager.generateLog(
-        rdfIdHelper.dataSet(userId, dataSetId),
-        rdfIdHelper.dataSet(userId, dataSetId),
+        dataSet.getMetadata().getBaseUri(),
+        dataSet.getMetadata().getBaseUri(),
         fromCurrentState(
           documentLoader,
           jsonLdImport,

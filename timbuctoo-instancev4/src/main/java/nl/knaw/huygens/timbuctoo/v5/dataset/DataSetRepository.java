@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
@@ -47,14 +48,15 @@ public class DataSetRepository {
   private final DataStoreFactory dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
   private final ResourceSync resourceSync;
 
 
   public DataSetRepository(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
-                           DataSetConfiguration configuration,
-                           DataStoreFactory dataStoreFactory) throws IOException {
+                           DataSetConfiguration configuration, DataStoreFactory dataStoreFactory,
+                           TimbuctooRdfIdHelper rdfIdHelper) throws IOException {
     this.executorService = executorService;
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
@@ -67,6 +69,7 @@ public class DataSetRepository {
       new TypeReference<Map<String, Set<PromotedDataSet>>>() {
       }
     );
+    this.rdfIdHelper = rdfIdHelper;
     statusMap = new HashMap<>();
     resourceSync = configuration.getResourceSync();
 
@@ -84,7 +87,7 @@ public class DataSetRepository {
           try {
             ownersSets.put(
               dataSetName,
-              dataSet(ownerId, dataSetName, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+              dataSet(promotedDataSet, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
             );
           } catch (IOException | DataStoreCreationException | ResourceSyncException e) {
             throw new IOException(e);
@@ -105,7 +108,7 @@ public class DataSetRepository {
   }
 
   public DataSet createDataSet(String ownerId, String dataSetId) throws DataStoreCreationException {
-    final PromotedDataSet dataSet = promotedDataSet(ownerId, dataSetId, false);
+    final PromotedDataSet dataSet = promotedDataSet(ownerId, dataSetId, rdfIdHelper.dataSet(ownerId, dataSetId), false);
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerId, key -> new HashMap<>());
 
@@ -114,7 +117,7 @@ public class DataSetRepository {
           vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), ownerId, "ADMIN");
           userDataSets.put(
             dataSetId,
-            dataSet(ownerId, dataSetId, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+            dataSet(dataSet, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
           );
           storedDataSets.updateData(dataSets -> {
             dataSets

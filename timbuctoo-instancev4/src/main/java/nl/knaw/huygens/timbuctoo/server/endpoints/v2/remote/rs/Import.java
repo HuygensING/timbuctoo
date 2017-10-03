@@ -4,11 +4,10 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.RemoteFile;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,15 +30,13 @@ public class Import {
   public static final Logger LOG = LoggerFactory.getLogger(Import.class);
   private final ResourceSyncFileLoader resourceSyncFileLoader;
   private final DataSetRepository dataSetRepository;
-  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final ErrorResponseHelper errorResponseHelper;
 
   public Import(ResourceSyncFileLoader resourceSyncFileLoader, DataSetRepository dataSetRepository,
-                ErrorResponseHelper errorResponseHelper, TimbuctooRdfIdHelper rdfIdHelper) {
+                ErrorResponseHelper errorResponseHelper) {
     this.resourceSyncFileLoader = resourceSyncFileLoader;
     this.dataSetRepository = dataSetRepository;
     this.errorResponseHelper = errorResponseHelper;
-    this.rdfIdHelper = rdfIdHelper;
   }
 
   @POST
@@ -76,8 +73,8 @@ public class Import {
         if (importManager.isRdfTypeSupported(parsedMediatype)) {
           resourceSyncResport.importedFiles.add(file.getUrl());
           importManager.addLog(
-            rdfIdHelper.dataSet(importData.userId, importData.dataSetId),
-            rdfIdHelper.dataSet(importData.userId, importData.dataSetId),
+            dataSet.getMetadata().getBaseUri(),
+            dataSet.getMetadata().getBaseUri(),
             file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1),
             file.getData(),
             Optional.of(Charsets.UTF_8),

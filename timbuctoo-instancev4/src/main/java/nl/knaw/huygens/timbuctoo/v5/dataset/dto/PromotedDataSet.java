@@ -17,6 +17,8 @@ public interface PromotedDataSet {
 
   String getOwnerId();
 
+  String getBaseUri();
+
   String getCombinedId();
 
   @Value.Auxiliary
@@ -24,7 +26,7 @@ public interface PromotedDataSet {
   
   Optional<String> role = Optional.empty();
 
-  static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, boolean promoted) {
+  static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, String baseUri, boolean promoted) {
     if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
       throw new IllegalArgumentException("Owner id and dataSet id should match " + VALID_ID);
     }
@@ -32,6 +34,7 @@ public interface PromotedDataSet {
     return ImmutablePromotedDataSet.builder()
       .combinedId(ownerId + "__" + dataSetId)
       .ownerId(ownerId)
+      .baseUri(baseUri)
       .dataSetId(dataSetId)
       .isPromoted(promoted)
       .build();

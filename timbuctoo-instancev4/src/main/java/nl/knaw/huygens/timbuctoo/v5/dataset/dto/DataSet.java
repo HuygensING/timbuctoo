@@ -22,11 +22,13 @@ import java.util.concurrent.ExecutorService;
 @Value.Immutable
 public interface DataSet {
 
-  static DataSet dataSet(String userId, String dataSetId, DataSetConfiguration configuration,
+  static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
                          FileHelper fileHelper, ExecutorService executorService,
                          DataStoreFactory dataStoreFactory, ResourceSync resourceSync)
     throws IOException, DataStoreCreationException, ResourceSyncException {
 
+    String userId = metadata.getOwnerId();
+    String dataSetId = metadata.getDataSetId();
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
       configuration.getFileStorage().makeFileStorage(userId, dataSetId),
@@ -39,8 +41,7 @@ public interface DataSet {
     QuadStore quadStore = dataStoreFactory.createQuadStore(importManager, userId, dataSetId);
     CollectionIndex collectionIndex = dataStoreFactory.createCollectionIndex(importManager, userId, dataSetId);
     return ImmutableDataSet.builder()
-      .ownerId(userId)
-      .dataSetId(dataSetId)
+      .metadata(metadata)
       .quadStore(quadStore)
       .collectionIndex(collectionIndex)
       .typeNameStore(new JsonTypeNameStore(
@@ -70,8 +71,5 @@ public interface DataSet {
 
   CollectionIndex getCollectionIndex();
 
-  String getOwnerId();
-
-  String getDataSetId();
-
+  PromotedDataSet getMetadata();
 }
