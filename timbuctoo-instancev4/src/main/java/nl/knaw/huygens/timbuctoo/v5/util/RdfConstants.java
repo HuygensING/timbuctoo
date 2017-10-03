@@ -24,6 +24,10 @@ public class RdfConstants {
   public static final String TIM_MIMETYPE = TIM_VOCAB + "mimetype";
   public static final String TIM_HASCOLOR = TIM_VOCAB + "hasColor";
   public static final String TIM_EDITOR = TIM_VOCAB + "editor";
+  public static final String TIM_HASINDEXERCONFIG = TIM_VOCAB + "hasIndexerConfig";
+  public static final String TIM_HASFULLTEXTSEARCH = TIM_VOCAB + "hasFullTextSearch";
+  public static final String TIM_HASFACETPATH = TIM_VOCAB + "hasFacetPath";
+  public static final String TIM_NEXTFACET = TIM_VOCAB + "nextFacet";
 
   public static final String PROV_DERIVED_FROM = "http://www.w3.org/ns/prov#wasDerivedFrom";
   public static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";

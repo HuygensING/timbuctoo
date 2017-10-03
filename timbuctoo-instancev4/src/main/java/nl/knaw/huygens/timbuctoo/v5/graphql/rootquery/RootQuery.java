@@ -17,6 +17,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadataList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadata;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadataList;
@@ -28,6 +29,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -157,16 +159,18 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     final DataSet dataSet = dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId()).get();
 
     final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
-    final List<ImmutableCollectionMetadata> colls = dataSet
+    final List<CollectionMetadata> colls = dataSet
       .getSchemaStore()
       .getTypes().values().stream()
       .map(x -> {
         final long occurrences = x.getOccurrences();
         final String collectionId = typeNameStore.makeGraphQlname(x.getName());
         return ImmutableCollectionMetadata.builder()
+          .subjectUri(x.getName())
+          .types(Collections.emptySet())
+          .dataSet(dataSet)
           .collectionId(collectionId)
           .collectionListId(collectionId + "List")
-          .uri(x.getName())
           .total(occurrences)
           .properties(ImmutablePropertyList.builder()
             .prevCursor(Optional.empty())

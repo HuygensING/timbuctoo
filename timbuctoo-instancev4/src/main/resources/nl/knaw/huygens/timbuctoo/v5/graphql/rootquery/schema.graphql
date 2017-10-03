@@ -11,11 +11,6 @@ interface Entity {
   uri: String!
 }
 
-type xsd_string implements Value {
-  value: String!
-  type: String!
-}
-
 type Query {
   #the datasets that are supposed to get extra attention
   promotedDataSets: [DataSetMetadata!]!
@@ -43,9 +38,9 @@ type MimeType {
 type DataSetMetadata {
   uri: String! @uri
   dataSetId: ID!
-  title: xsd_string @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
-  description: xsd_string @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
-  imageUrl: xsd_string @rdf(predicate: "http://xmlns.com/foaf/0.1/depiction", direction: "OUT", isList: false, isObject: false, isValue: true)
+  title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
+  description: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
+  imageUrl: Value @rdf(predicate: "http://xmlns.com/foaf/0.1/depiction", direction: "OUT", isList: false, isObject: false, isValue: true)
   owner: ContactInfo @rdf(predicate: "http://purl.org/dc/terms/rightsHolder", direction: "OUT", isList: false, isObject: true, isValue: false)
   contact: ContactInfo @rdf(predicate: "http://schema.org/ContactPoint", direction: "OUT", isList: false, isObject: true, isValue: false)
   provenanceInfo: ProvenanceInfo @rdf(predicate: "http://purl.org/dc/terms/provenance", direction: "OUT", isList: false, isObject: true, isValue: false)
@@ -78,13 +73,23 @@ type CollectionMetadataList {
 }
 
 type CollectionMetadata {
+  uri: String! @uri
   collectionId: ID!
   collectionListId: ID!
-  uri: String!
-  title: String!
-  archeType: String
+
   properties(count: Int = 20, cursor: ID = ""): PropertyList!
   total: Int!
+
+  title: Value @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#label", direction: "OUT", isList: false, isObject: false, isValue: true)
+  archeType: String @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#subClassOf", direction: "OUT", isList: false, isObject: false, isValue: true)
+  indexerConfig: IndexerConfig @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasIndexerConfig", direction: "OUT", isList: false, isObject: true, isValue: false)
+}
+
+type IndexerConfig {
+  path: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFacetPath", direction: "OUT", isList: false, isObject: false, isValue: true)
+  type: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFacetType", direction: "OUT", isList: false, isObject: false, isValue: true)
+  fullTextSearch: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFullTextSearch", direction: "OUT", isList: false, isObject: false, isValue: true)
+  next: IndexerConfig @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#nextFacet", direction: "OUT", isList: false, isObject: true, isValue: false)
 }
 
 type PropertyList {
@@ -107,8 +112,8 @@ type TypeList {
 }
 
 type ContactInfo {
-  name: xsd_string @rdf(predicate: "http://schema.org/name", direction: "OUT", isList: false, isObject: false, isValue: true)
-  email: xsd_string @rdf(predicate: "http://schema.org/email", direction: "OUT", isList: false, isObject: false, isValue: true)
+  name: Value @rdf(predicate: "http://schema.org/name", direction: "OUT", isList: false, isObject: false, isValue: true)
+  email: Value @rdf(predicate: "http://schema.org/email", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
 
 type License {
@@ -116,6 +121,6 @@ type License {
 }
 
 type ProvenanceInfo {
-  title: xsd_string @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
-  body: xsd_string @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
+  title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
+  body: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
 }

@@ -1,22 +1,13 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders;
 
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface CollectionMetadata {
+public interface CollectionMetadata extends SubjectReference {
   String getCollectionId();
 
   String getCollectionListId();
-
-  String getUri();
-
-  default String getTitle() {
-    return "FIXME: list title";//FIXME
-  }
-
-  default String getArcheType() {
-    return "FIXME: archetype";//FIXME
-  }
 
   PropertyList getProperties();
 
