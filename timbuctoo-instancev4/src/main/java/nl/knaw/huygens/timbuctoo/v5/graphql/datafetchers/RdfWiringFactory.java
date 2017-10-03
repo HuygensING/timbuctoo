@@ -44,11 +44,7 @@ public class RdfWiringFactory implements WiringFactory {
     this.dataSetRepository = dataSetRepository;
     objectTypeResolver = new ObjectTypeResolver();
     uriFetcher = new UriFetcher();
-    lookupFetcher = new LookUpSubjectByUriFetcherWrapper(
-      "uri",
-      new QuadStoreLookUpSubjectByUriFetcher(),
-      "" //FIXME: baseUri
-    );
+    lookupFetcher = new LookUpSubjectByUriFetcherWrapper("uri", new QuadStoreLookUpSubjectByUriFetcher());
   }
 
   @Override
