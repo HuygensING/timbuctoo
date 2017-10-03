@@ -64,11 +64,11 @@ public class RmlDataSourceStoreTest {
 
 
     RdfDataSource rdfDataSource = new RdfDataSource(rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSetId/fileName/1",
+      "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId/rawData/fileName/collections/1",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
     RdfDataSource rdfDataSource2 = new RdfDataSource(rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSetId/fileName/2",
+      "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId/rawData/fileName/collections/2",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
 

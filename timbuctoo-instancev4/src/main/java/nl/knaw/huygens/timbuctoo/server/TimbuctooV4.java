@@ -101,6 +101,8 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -253,38 +255,38 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
+
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(),
       securityConfig.getAuthorizer(),
       dataSetRepository,
-      errorResponseHelper,
-      configuration.getRdfIdHelper()
+      errorResponseHelper
     ));
 
     register(environment, new TabularUpload(
       securityConfig.getLoggedInUsers(),
       securityConfig.getAuthorizer(),
       dataSetRepository,
-      configuration.getRdfIdHelper(),
       errorResponseHelper
     ));
 
     register(environment, new Rml(
       dataSetRepository,
-      configuration.getRdfIdHelper(),
       errorResponseHelper
     ));
 
     register(environment, new Rml(
       dataSetRepository,
-      configuration.getRdfIdHelper(),
       errorResponseHelper
     ));
 
+    final PaginationArgumentsHelper paginationArgumentsHelper = new PaginationArgumentsHelper();
+    final DerivedSchemaTypeGenerator typeGenerator = new DerivedSchemaTypeGenerator(paginationArgumentsHelper);
+    final RdfWiringFactory wiringFactory = new RdfWiringFactory(dataSetRepository);
     final GraphQlService graphQlService = new GraphQlService(
       dataSetRepository,
-      new DerivedSchemaTypeGenerator(),
-      configuration.getArchetypes(), configuration.getRdfIdHelper()
+      typeGenerator,
+      wiringFactory
     );
     GraphQl graphQlEndpoint = new GraphQl(
       graphQlService,
@@ -292,6 +294,17 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       errorResponseHelper
     );
     register(environment, graphQlEndpoint);
+
+    register(environment, new RootGraphQl(
+      new RootQuery(
+        dataSetRepository,
+        serializerWriterRegistry,
+        wiringFactory,
+        typeGenerator
+      ),
+      securityConfig.getLoggedInUsers()
+    ));
+
     register(environment,
       new GetDataSets(dataSetRepository, graphQlEndpoint, securityConfig.getLoggedInUsers()));
     register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(), dataSetRepository));
@@ -304,7 +317,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getLoggedInUsers(),
       securityConfig.getAuthorizer(),
       dataSetRepository,
-      configuration.getRdfIdHelper(),
       new HttpClientBuilder(environment).build("json-ld")
     ));
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
@@ -321,11 +333,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
     register(environment, new Discover(resourceSyncService));
-
-    register(environment, new RootGraphQl(
-      new RootQuery(dataSetRepository, graphQlService, serializerWriterRegistry),
-      securityConfig.getLoggedInUsers()
-    ));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager));
@@ -372,8 +379,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
       dataSetRepository,
-      errorResponseHelper,
-      configuration.getRdfIdHelper()
+      errorResponseHelper
     ));
 
     register(environment, new WellKnown());

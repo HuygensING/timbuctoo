@@ -1,12 +1,112 @@
 schema {
-  query: QueryType
+  query: Query
 }
 
-type QueryType {
+interface Value {
+  value: String!
+  type: String!
+}
+
+interface Entity {
+  uri: String!
+}
+
+type Query {
   #the datasets that are supposed to get extra attention
   promotedDataSets: [DataSetMetadata!]!
+
+  #The actual dataSets
+  dataSets: DataSets
+
+  #metadata for a specific dataset
+  dataSetMetadata(dataSetId: ID): DataSetMetadata
+
+  #information about the logged in user, or null of no user is logged in
+  aboutMe: AboutMe
+
+  #all mimetypes that you can use when downloading data from a dataSet
+  availableExportMimetypes: [MimeType!]!
+}
+
+type MimeType {
+  name: String!
 }
 
 type DataSetMetadata {
-  datasetId: ID!
+  dataSetId: ID!
+  title: String @fromRdf(uri: "", direction: "OUT", isList: false)
+  description: String @fromRdf(uri: "", direction: "OUT", isList: false)
+  imageUrl: String @fromRdf(uri: "", direction: "OUT", isList: false)
+  owner: ContactInfo @fromRdf(uri: "", direction: "OUT", isList: false)
+  contact: ContactInfo @fromRdf(uri: "", direction: "OUT", isList: false)
+  provenanceInfo: ProvenanceInfo @fromRdf(uri: "", direction: "OUT", isList: false)
+  license: License @fromRdf(uri: "", direction: "OUT", isList: false)
+
+  collections(count: Int = 20, cursor: ID = ""): CollectionMetadataList
+}
+
+type AboutMe {
+  #datasets that this user has some specific permissions on
+  dataSets: [DataSetMetadata!]!
+
+  #The unique identifier of this user
+  id: ID!
+
+  #a human readable name (or empty string if not available)
+  name: String!
+
+  #a url to a page with personal information on this user
+  personalInfo: String!
+
+  #This user may create a new dataset on this timbuctoo instance
+  canCreateDataSet: Boolean!
+}
+
+type CollectionMetadataList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [CollectionMetadata!]!
+}
+
+type CollectionMetadata {
+  collectionId: ID!
+  collectionListId: ID!
+  uri: String!
+  title: String!
+  archeType: String
+  properties(count: Int = 20, cursor: ID = ""): PropertyList!
+  total: Int!
+}
+
+type PropertyList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [Property!]!
+}
+
+type Property {
+  name: String
+  density: Int
+  referenceTypes(count: Int = 20, cursor: ID = ""): TypeList
+  valueTypes(count: Int = 20, cursor: ID = ""): TypeList
+}
+
+type TypeList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [String!]!
+}
+
+type ContactInfo {
+  name: String!
+  email: String
+}
+
+type License {
+  uri: String @fromRdf(uri: "", direction: "OUT", isList: false)
+}
+
+type ProvenanceInfo {
+  title: String!
+  body: String!
 }

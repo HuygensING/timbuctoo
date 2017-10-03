@@ -72,12 +72,15 @@ public class RdfWiringFactory implements WiringFactory {
     return environment.getFieldDefinition().getDirective("fromCollection") != null ||
       environment.getFieldDefinition().getDirective("rdf") != null ||
       environment.getFieldDefinition().getDirective("uri") != null ||
+      environment.getFieldDefinition().getDirective("passThrough") != null ||
       environment.getFieldDefinition().getDirective("dataSet") != null;
   }
 
   @Override
   public DataFetcher getDataFetcher(FieldWiringEnvironment environment) {
-    if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
+    if (environment.getFieldDefinition().getDirective("passThrough") != null) {
+      return dataFetchingEnvironment -> "";
+    } else if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("fromCollection");
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
       boolean listAll = ((BooleanValue) directive.getArgument("listAll").getValue()).isValue();

@@ -1,8 +1,0 @@
-extend type QueryType {
-  #the datasets that are supposed to get extra attention
-  promotedDataSets: [DataSetMetadata!]!
-}
-
-type DataSetMetadata {
-  datasetId: ID!
-}

@@ -21,7 +21,7 @@ public class PromotedDataSetTest {
       //not ok
       "foo__bar",
       "foo_bar_",
-      "foo_bar",
+      "foo-bar",
       "foo_bar ",
       "_foo-bar"
     );
@@ -29,7 +29,7 @@ public class PromotedDataSetTest {
       ids.stream().filter(x -> x.matches(PromotedDataSet.VALID_ID)).collect(Collectors.toList()),
       contains(
         "foo",
-        "foo-bar"
+        "foo_bar"
       )
     );
   }

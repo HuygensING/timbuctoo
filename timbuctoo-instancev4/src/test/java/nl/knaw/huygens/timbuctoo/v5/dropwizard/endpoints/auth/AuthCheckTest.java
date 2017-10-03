@@ -59,7 +59,6 @@ public class AuthCheckTest {
       "auth"
     );
 
-    assertThat(response, is(notNullValue()));
     assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
   }
 
@@ -77,7 +76,7 @@ public class AuthCheckTest {
       PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
     );
 
-    assertThat(response, is(nullValue()));
+    assertThat(response.getStatus(), is(200));
   }
 
   @Test
@@ -91,7 +90,6 @@ public class AuthCheckTest {
       PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
     );
 
-    assertThat(response, is(notNullValue()));
     assertThat(response.getStatus(), is(UNAUTHORIZED.getStatusCode()));
   }
 
@@ -109,7 +107,6 @@ public class AuthCheckTest {
       PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
     );
 
-    assertThat(response, is(notNullValue()));
     assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
   }
 
@@ -127,7 +124,7 @@ public class AuthCheckTest {
       PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
     );
 
-    assertThat(response, is(nullValue()));
+    assertThat(response.getStatus(), is(200));
   }
 
   private static Authorization authorizationForNonAdmin() {
