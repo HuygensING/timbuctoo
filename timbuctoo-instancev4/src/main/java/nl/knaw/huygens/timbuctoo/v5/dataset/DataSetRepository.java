@@ -105,13 +105,13 @@ public class DataSetRepository {
   }
 
   public DataSet createDataSet(String ownerId, String dataSetId) throws DataStoreCreationException {
-    String authorizationKey = ownerId + "_" + dataSetId;
+    final PromotedDataSet dataSet = promotedDataSet(ownerId, dataSetId, false);
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerId, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          vreAuthorizationCrud.createAuthorization(authorizationKey, ownerId, "ADMIN");
+          vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), ownerId, "ADMIN");
           userDataSets.put(
             dataSetId,
             dataSet(ownerId, dataSetId, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
@@ -119,7 +119,7 @@ public class DataSetRepository {
           storedDataSets.updateData(dataSets -> {
             dataSets
               .computeIfAbsent(ownerId, key -> new HashSet<>())
-              .add(promotedDataSet(ownerId, dataSetId, false));
+              .add(dataSet);
             return dataSets;
           });
         } catch (AuthorizationCreationException | IOException | ResourceSyncException e1) {

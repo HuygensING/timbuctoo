@@ -11,6 +11,8 @@ import java.util.Optional;
 @JsonDeserialize(as = ImmutablePromotedDataSet.class)
 public interface PromotedDataSet {
 
+  String VALID_ID = "^([a-zA-Z0-9]+_)*[a-zA-Z0-9]+$";
+
   String getDataSetId();
 
   String getOwnerId();
@@ -23,8 +25,12 @@ public interface PromotedDataSet {
   Optional<String> role = Optional.empty();
 
   static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, boolean promoted) {
+    if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
+      throw new IllegalArgumentException("Owner id and dataSet id should match " + VALID_ID);
+    }
+
     return ImmutablePromotedDataSet.builder()
-      .combinedId(ownerId + "_" + dataSetId)
+      .combinedId(ownerId + "__" + dataSetId)
       .ownerId(ownerId)
       .dataSetId(dataSetId)
       .isPromoted(promoted)
