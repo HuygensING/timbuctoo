@@ -15,6 +15,7 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
   private String columnHeaders;
   private List<String> columns;
   private int count = 0;
+  private int countEdge = 0;
 
   public GraphMlSerialization(OutputStream outputStream) throws IOException {
     //    csvPrinter = new CSVPrinter(new PrintWriter(outputStream), CSVFormat.EXCEL);
@@ -59,5 +60,11 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
     }
     System.out.println("    </node>");
     count++;
+  }
+  
+  protected void writeEdge(String source, String target) throws IOException {
+    System.out.println("    <edge id=\"e" + countEdge  + "\" source=\"" +
+      source  + "\" target=\"" + target + "\"/>");
+    countEdge++;
   }
 }
