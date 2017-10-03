@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
@@ -13,24 +12,20 @@ import java.util.Set;
 
 public class DerivedSchemaTypeGenerator {
 
-  public static TypeDefinitionRegistry makeGraphQlTypes(String userId, String dataSetId, String rootType,
-                                                        Map<String, Type> types,
-                                                        TypeNameStore typeNameStore,
-                                                        RuntimeWiring.Builder runtimeWiring,
-                                                        PaginationArgumentsHelper argumentsHelper) {
-    GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(
-      rootType,
-      typeNameStore,
-      userId,
-      dataSetId,
-      runtimeWiring,
-      argumentsHelper
-    );
+  private final PaginationArgumentsHelper argumentsHelper;
+
+  public DerivedSchemaTypeGenerator(
+    PaginationArgumentsHelper argumentsHelper) {
+    this.argumentsHelper = argumentsHelper;
+  }
+
+  public TypeDefinitionRegistry makeGraphQlTypes(String rootType, Map<String, Type> types, TypeNameStore nameStore) {
+    GraphQlTypesContainer typesContainer = new GraphQlTypesContainer(rootType, nameStore, this.argumentsHelper);
 
     for (Type type : types.values()) {
       typesContainer.openObjectType(type.getName());
       for (Predicate predicate : type.getPredicates()) {
-        fieldForDerivedType(predicate, typesContainer, typeNameStore);
+        fieldForDerivedType(predicate, typesContainer, nameStore);
       }
       typesContainer.closeObjectType(type.getName());
     }

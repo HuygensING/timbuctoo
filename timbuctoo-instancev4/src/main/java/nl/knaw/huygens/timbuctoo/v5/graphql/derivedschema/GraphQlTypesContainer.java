@@ -1,19 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema;
 
-import graphql.TypeResolutionEnvironment;
-import graphql.language.InlineFragment;
-import graphql.language.Selection;
-import graphql.schema.GraphQLObjectType;
-import graphql.schema.TypeResolver;
-import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.TypedValue;
-import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 
 import java.util.HashMap;
@@ -31,27 +22,20 @@ public class GraphQlTypesContainer {
 
   final Map<String, StringBuilder> types;
   final Set<String> topLevelTypes;
-  private final String prefix;
   StringBuilder currentType = null;
-
-  final ObjectTypeResolver objectResolver;
 
   private final String rootType;
   private final TypeNameStore typeNameStore;
-  private final RuntimeWiring.Builder runtimeWiring;
   private final PaginationArgumentsHelper argumentsHelper;
   private TypeDefinitionRegistry registry;
 
-  public GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore, String ownerId, String dataSetId,
-                               RuntimeWiring.Builder runtimeWiring,
+  public GraphQlTypesContainer(String rootType, TypeNameStore typeNameStore,
                                PaginationArgumentsHelper argumentsHelper) {
     this.rootType = rootType;
     this.typeNameStore = typeNameStore;
-    this.runtimeWiring = runtimeWiring;
     this.argumentsHelper = argumentsHelper;
 
     types = new HashMap<>();
-    objectResolver = new ObjectTypeResolver();
     topLevelTypes = new HashSet<>();
   }
 
@@ -121,7 +105,6 @@ public class GraphQlTypesContainer {
     if (!types.containsKey(unionName)) {
       StringBuilder builder = new StringBuilder();
       types.put(unionName, builder);
-      runtimeWiring.type(unionName, wiring -> wiring.typeResolver(objectResolver));
 
       builder.append("union ").append(unionName).append(" = ");
 
@@ -187,9 +170,6 @@ public class GraphQlTypesContainer {
 
     if (registry == null) {
       StringBuilder total = new StringBuilder();
-      runtimeWiring.type(ENTITY_INTERFACE_NAME, builder -> builder.typeResolver(objectResolver));
-      runtimeWiring.type(VALUE_INTERFACE_NAME, builder -> builder.typeResolver(objectResolver));
-
       total.append("type ").append(rootType).append("{\n");
 
       for (String uri : topLevelTypes) {
@@ -211,39 +191,4 @@ public class GraphQlTypesContainer {
     return registry;
   }
 
-  private class ObjectTypeResolver implements TypeResolver {
-
-    @Override
-    public GraphQLObjectType getType(TypeResolutionEnvironment environment) {
-      String typeName = null;
-      if (environment.getObject() instanceof TypedValue) {
-        final String typeUri = ((TypedValue) environment.getObject()).getType();
-        typeName = typeNameStore.makeGraphQlValuename(typeUri);
-      } else {
-        //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
-        //In rdf things can have more then one type though (types are like java interfaces)
-        //Since this lambda only allows us to return 1 type we need to do a bit more work and return one of the types
-        // that
-        //the user actually requested
-        Set<String> typeUris = ((SubjectReference) environment.getObject()).getTypes();
-        if (typeUris.isEmpty()) {
-          typeName = typeNameStore.makeGraphQlname(RdfConstants.UNKNOWN);
-        } else {
-          for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
-            if (selection instanceof InlineFragment) {
-              InlineFragment fragment = (InlineFragment) selection;
-              String typeUri = typeNameStore.makeUri(fragment.getTypeCondition().getName());
-              if (typeUris.contains(typeUri)) {
-                typeName = typeNameStore.makeGraphQlname(typeUri);
-                break;
-              }
-            } else {
-              LOG.error("I have a union type whose selection is not an InlineFragment!");
-            }
-          }
-        }
-      }
-      return typeName == null ? null : (GraphQLObjectType) getSchema().getType(typeName).orElse(null);
-    }
-  }
 }

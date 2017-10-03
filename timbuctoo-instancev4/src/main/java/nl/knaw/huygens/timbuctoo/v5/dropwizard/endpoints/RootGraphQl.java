@@ -9,7 +9,7 @@ import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.QueryType;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,7 +123,7 @@ public class RootGraphQl {
     }
     final ExecutionResult result = graphQl
       .execute(newExecutionInput()
-        .root(new QueryType.RootData(loggedInUsers.userFor(authHeader)))
+        .root(new RootQuery.RootData(loggedInUsers.userFor(authHeader)))
         .query(queryFromBody)
         .operationName(operationName)
         .variables(variables == null ? Collections.emptyMap() : variables)
