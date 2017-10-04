@@ -90,7 +90,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegi
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
@@ -98,7 +97,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RootGraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
-import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
@@ -269,33 +267,19 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       errorResponseHelper
     ));
 
-    final PaginationArgumentsHelper paginationArgumentsHelper = new PaginationArgumentsHelper();
-    final DerivedSchemaTypeGenerator typeGenerator = new DerivedSchemaTypeGenerator(paginationArgumentsHelper);
-    final RdfWiringFactory wiringFactory = new RdfWiringFactory(dataSetRepository);
-    final GraphQlService graphQlService = new GraphQlService(
-      dataSetRepository,
-      typeGenerator,
-      wiringFactory
+    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(
+      new CsvWriter(),
+      new JsonLdWriter(),
+      new JsonWriter(),
+      new GraphVizWriter()
     );
-    GraphQl graphQlEndpoint = new GraphQl(
-      graphQlService,
-      uriHelper,
-      errorResponseHelper
-    );
-    register(environment, graphQlEndpoint);
-
-    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry();
-    serializerWriterRegistry.register(new CsvWriter());
-    serializerWriterRegistry.register(new JsonLdWriter());
-    serializerWriterRegistry.register(new JsonWriter());
-    serializerWriterRegistry.register(new GraphVizWriter());
 
     register(environment, new RootGraphQl(
       new RootQuery(
         dataSetRepository,
         serializerWriterRegistry,
-        wiringFactory,
-        typeGenerator
+        new RdfWiringFactory(dataSetRepository),
+        new DerivedSchemaTypeGenerator(new PaginationArgumentsHelper())
       ),
       serializerWriterRegistry,
       securityConfig.getLoggedInUsers()

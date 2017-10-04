@@ -11,8 +11,11 @@ import static java.lang.String.format;
 public class SerializerWriterRegistry implements SupportedExportFormats {
   private HashMap<String, SerializerWriter> supportedMimeTypes;
 
-  public SerializerWriterRegistry() {
+  public SerializerWriterRegistry(SerializerWriter... writers) {
     supportedMimeTypes = new HashMap<>();
+    for (SerializerWriter writer : writers) {
+      register(writer);
+    }
   }
 
 
@@ -21,16 +24,12 @@ public class SerializerWriterRegistry implements SupportedExportFormats {
     return supportedMimeTypes.keySet();
   }
 
-  public void register(SerializerWriter serializerWriter) {
+  private void register(SerializerWriter serializerWriter) {
     String mimeType = serializerWriter.getMimeType();
     SerializerWriter added = supportedMimeTypes.putIfAbsent(mimeType, serializerWriter);
     if (added != null) {
       throw new RuntimeException(format("Timbuctoo supports only one serializer writer for '%s'", mimeType));
     }
-  }
-
-  public Optional<SerializerWriter> get(String mimeType) {
-    return Optional.ofNullable(supportedMimeTypes.get(mimeType));
   }
 
   public Optional<SerializerWriter> getBestMatch(String acceptHeader) {

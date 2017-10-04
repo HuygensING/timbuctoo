@@ -14,8 +14,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegi
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -36,10 +34,6 @@ import static graphql.ExecutionInput.newExecutionInput;
 
 @Path("/v5/graphql")
 public class RootGraphQl {
-
-  private static final Logger LOG = LoggerFactory.getLogger(GraphQl.class);
-
-
   private final Supplier<GraphQLSchema> graphqlGetter;
   private final SerializerWriterRegistry serializerWriterRegistry;
   private final LoggedInUsers loggedInUsers;
