@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.search.elastic;
+package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
 import org.junit.BeforeClass;
 import org.junit.Test;

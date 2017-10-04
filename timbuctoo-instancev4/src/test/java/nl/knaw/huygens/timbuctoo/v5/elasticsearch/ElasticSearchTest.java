@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.search.elastic;
+package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
