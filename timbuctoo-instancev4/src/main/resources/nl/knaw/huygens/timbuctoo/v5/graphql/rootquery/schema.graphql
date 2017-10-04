@@ -86,6 +86,13 @@ type CollectionMetadata {
   title: Value @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#label", direction: "OUT", isList: false, isObject: false, isValue: true)
   archeType: Entity @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#subClassOf", direction: "OUT", isList: false, isObject: true, isValue: false)
   indexerConfig: IndexerConfig @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasIndexerConfig", direction: "OUT", isList: false, isObject: true, isValue: false)
+  summaryProperties: SummaryProperties! @passThrough
+}
+
+type SummaryProperties {
+  title: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+  description: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryDescriptionPredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+  image: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
 
 type IndexerConfig {

@@ -25,11 +25,17 @@
 <./provenance> <http://purl.org/dc/terms/description> "This is an example description for the example provenance." .
 
 
-clusius:Places rdfs:subClassOf archetypes:location .
+clusius:Places 
+  rdfs:subClassOf archetypes:location ;
+  <http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate> "tim_name" .
+
+clusius:Persons
+  rdfs:subClassOf archetypes:person ;
+  <http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate> "tim_names" .
+
 clusius:Provenance_type rdfs:subClassOf archetypes:keyword .
 clusius:Fields_of_interest rdfs:subClassOf archetypes:keyword .
 clusius:Publications rdfs:subClassOf archetypes:document .
-clusius:Persons rdfs:subClassOf archetypes:person .
 clusius:Institutes rdfs:subClassOf archetypes:collective .
 clusius:Provenance rdfs:subClassOf archetypes:document .
 

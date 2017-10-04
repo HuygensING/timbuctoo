@@ -28,6 +28,9 @@ public class RdfConstants {
   public static final String TIM_HASFULLTEXTSEARCH = TIM_VOCAB + "hasFullTextSearch";
   public static final String TIM_HASFACETPATH = TIM_VOCAB + "hasFacetPath";
   public static final String TIM_NEXTFACET = TIM_VOCAB + "nextFacet";
+  public static final String TIM_SUMMARYTITLEPREDICATE = TIM_VOCAB + "summaryTitlePredicate";
+  public static final String TIM_SUMMARYDESCRIPTIONPREDICATE = TIM_VOCAB + "summaryDescriptionPredicate";
+  public static final String TIM_SUMMARYIMAGEPREDICATE = TIM_VOCAB + "summaryImagePredicate";
 
   public static final String PROV_DERIVED_FROM = "http://www.w3.org/ns/prov#wasDerivedFrom";
   public static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
