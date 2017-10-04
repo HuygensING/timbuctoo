@@ -505,9 +505,9 @@ public class IntegrationTest {
                                           .post(Entity.json(jsnO()));
     assertThat(createResponse.getStatus(), is(201));
     // check if the dataset is created
-    List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy(client);
+    List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy();
     System.out.println("datasets: " + dataSetNamesOfDummy);
-    assertThat(dataSetNamesOfDummy, hasItem(dataSetId));
+    assertThat(dataSetNamesOfDummy, hasItem("DUMMY__" + dataSetId));
 
     // delete dataset
     WebTarget deleteTarget =
@@ -520,7 +520,7 @@ public class IntegrationTest {
     assertThat(deleteResponse.getStatus(), is(204));
 
     // check if the dataset still exists
-    assertThat(getDataSetNamesOfDummy(client), not(hasItem(dataSetId)));
+    assertThat(getDataSetNamesOfDummy(), not(hasItem(dataSetId)));
   }
   
   @Test
@@ -648,7 +648,7 @@ public class IntegrationTest {
       .get("DUMMY__" + vreName)
       .get("http___example_org_Person")
       .get("http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision")
-      .get("@id")
+      .get("uri")
       .asText();
 
     String testRdfReader2 = "{\n" +
@@ -721,14 +721,20 @@ public class IntegrationTest {
     );
   }
 
-  private List<String> getDataSetNamesOfDummy(Client client) {
-    WebTarget allDataSetsTarget =
-      client.target(format("http://localhost:%d/v5/dataSets/DUMMY/", APP.getLocalPort()));
+  private List<String> getDataSetNamesOfDummy() {
+    Response graphqlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity("{aboutMe{dataSets{dataSetId}}}", MediaType.valueOf("application/graphql")));
+    ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
 
-    Response allDataSetsResponse = allDataSetsTarget.request().get();
-
-    assertThat(allDataSetsResponse.getStatus(), is(200));
-    return newArrayList(allDataSetsResponse.readEntity(ObjectNode.class).fieldNames());
+    assertThat(graphqlCall.getStatus(), is(200));
+    return stream(
+      objectNode
+        .get("data")
+        .get("aboutMe")
+        .get("dataSets").iterator())
+      .map(x -> x.get("dataSetId").asText())
+      .collect(Collectors.toList());
   }
 
 
