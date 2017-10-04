@@ -48,30 +48,47 @@ public class ElasticSearchOnLineTest {
     String elasticsearchQuery = createQuery1();
     String token = null;
     int preferredPageSize = 3;
-    PageableResult2 result = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+    PageableResult pageableResult = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
 
-    //assertThat(result.getIdFields().size(), equalTo(3));
-    //assertThat(result.getIdFields(), contains("820", "315", "490"));
+    //System.out.println(pageableResult.getResult());
+    token = pageableResult.getToken();
+    assertThat(token, equalTo("[1447,\"account#490\"]"));
+    assertThat(pageableResult.getIdList(), contains("820", "315", "490"));
+    assertThat(pageableResult.getTotalHits(), equalTo(493));
 
+    pageableResult = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+
+    //System.out.println(pageableResult.getResult());
+    token = pageableResult.getToken();
+    assertThat(token, equalTo("[1696,\"account#159\"]"));
+    assertThat(pageableResult.getIdList(), contains("427", "174", "159"));
+    assertThat(pageableResult.getTotalHits(), equalTo(493));
   }
 
   @Test(expected = org.elasticsearch.client.ResponseException.class)
   public void queryAndIndexDoesNotExist() throws Exception {
     String index = "does_not_exist";
     String elasticsearchQuery = createQuery1();
-    String token = null;
     int preferredPageSize = 3;
-    eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+    eSearch.query(index, elasticsearchQuery, null, preferredPageSize);
   }
 
   @Test
-  public void queryWithFieldName() throws Exception {
+  public void queryAndNoResult() throws Exception {
     String index = "bank";
     String elasticsearchQuery = createQuery2();
     String token = null;
     int preferredPageSize = 3;
-    PageableResult2 result = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
-    System.out.println(result.getIdFields());
+    PageableResult pageableResult = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+
+    assertThat(pageableResult.getToken(), equalTo(null));
+    assertThat(pageableResult.getIdList().size(), equalTo(0));
+    assertThat(pageableResult.getTotalHits(), equalTo(0));
+
+    token = pageableResult.getToken();
+    pageableResult = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+
+    assertThat(pageableResult.getTotalHits(), equalTo(0));
   }
 
   private String createQuery1() {
@@ -83,8 +100,7 @@ public class ElasticSearchOnLineTest {
         "        }\n" +
         "    },\n" +
         "    \"sort\": [\n" +
-        "        {\"balance\": \"asc\"},\n" +
-        "        {\"account_number\": \"desc\"}\n" +
+        "        {\"balance\": \"asc\"}\n" +
         "    ]\n" +
         "}";
   }
@@ -94,12 +110,12 @@ public class ElasticSearchOnLineTest {
       "    \"size\": 3,\n" +
       "    \"query\": {\n" +
       "        \"match\" : {\n" +
-      "            \"gender\" : \"F\"\n" +
+      "            \"gender\" : \"U\"\n" +
       "        }\n" +
       "    },\n" +
       "    \"sort\": [\n" +
       "        {\"balance\": \"asc\"},\n" +
-      "        {\"" + ElasticSearch.FIELD_NAME + "\": \"desc\"}\n" +
+      "        {\"" + ElasticSearch.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
       "    ]\n" +
       "}";
   }
