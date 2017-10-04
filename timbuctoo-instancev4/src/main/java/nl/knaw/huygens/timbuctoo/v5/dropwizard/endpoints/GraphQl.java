@@ -54,6 +54,7 @@ public class GraphQl {
   @Consumes("application/json")
   public Response postJson(JsonNode body, @QueryParam("query") String query,
                            @HeaderParam("accept") String acceptHeader,
+                           @QueryParam("accept") String acceptParam,
                            @HeaderParam("Authorization") String authHeader) {
     final String queryFromBody;
     if (body.has("query")) {
@@ -76,28 +77,33 @@ public class GraphQl {
       body.get("operationName").asText() :
       null;
 
-    return executeGraphql(query, acceptHeader, queryFromBody, variables, operationName, authHeader);
+    return executeGraphql(query, acceptHeader, acceptParam, queryFromBody, variables, operationName, authHeader);
   }
 
   @POST
   @Consumes("application/graphql")
   public Response postGraphql(String query, @QueryParam("query") String queryParam,
                               @HeaderParam("accept") String acceptHeader,
+                              @QueryParam("accept") String acceptParam,
                               @HeaderParam("Authorization") String authHeader) {
-    return executeGraphql(queryParam, acceptHeader, query, null, null, authHeader);
+    return executeGraphql(queryParam, acceptHeader, acceptParam, query, null, null, authHeader);
   }
 
   @GET
   public Response get(@QueryParam("query") String query, @HeaderParam("accept") String acceptHeader,
+                      @QueryParam("accept") String acceptParam,
                       @HeaderParam("Authorization") String authHeader) {
-    return executeGraphql(null, acceptHeader, query, null, null, authHeader);
+    return executeGraphql(null, acceptHeader, acceptParam, query, null, null, authHeader);
   }
 
 
-  public Response executeGraphql(String query, String acceptHeader, String queryFromBody, Map variables,
-                                 String operationName, String authHeader) {
+  public Response executeGraphql(String query, String acceptHeader, String acceptParam, String queryFromBody,
+                                 Map variables, String operationName, String authHeader) {
 
     final SerializerWriter serializerWriter;
+    if (acceptParam != null && !acceptParam.isEmpty()) {
+      acceptHeader = acceptParam; //Accept param overrules header because it's more under the user's control
+    }
     if (unSpecifiedAcceptHeader(acceptHeader) || acceptHeader.equals(MediaType.APPLICATION_JSON)) {
       serializerWriter = null;
     } else {
