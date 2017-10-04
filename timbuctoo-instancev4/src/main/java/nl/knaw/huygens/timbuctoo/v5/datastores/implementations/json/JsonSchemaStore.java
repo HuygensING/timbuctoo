@@ -2,15 +2,16 @@ package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.json;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaEntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaUpdateException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaUpdater;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 
 public class JsonSchemaStore implements SchemaStore {
@@ -38,7 +39,12 @@ public class JsonSchemaStore implements SchemaStore {
 
   @Override
   public Map<String, Type> getTypes() {
-    return schemaFile.getData();
+    final Map<String, Type> data = schemaFile.getData();
+    if (data == null) {
+      return Collections.emptyMap();
+    } else {
+      return data;
+    }
   }
 
   @Override
