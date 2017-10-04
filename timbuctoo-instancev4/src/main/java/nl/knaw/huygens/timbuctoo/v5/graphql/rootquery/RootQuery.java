@@ -106,6 +106,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     wiring.wiringFactory(wiringFactory);
     StringBuilder root = new StringBuilder("type DataSets {\n");
 
+    boolean[] dataSetAvailable = new boolean[] {false};
     dataSetRepository.getDataSets().values().stream().flatMap(Collection::stream).forEach(promotedDataSet -> {
       final String name = promotedDataSet.getCombinedId();
 
@@ -115,6 +116,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       ).get();
       final Map<String, Type> types = dataSet.getSchemaStore().getTypes();
       if (types != null) {
+        dataSetAvailable[0] = true;
         root.append("  ")
           .append(name)
           .append(":")
@@ -137,9 +139,11 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         registry.merge(schemaParser.parse(schema));
       }
     });
-    root.append("}\n\n");
+    root.append("}\n\nextend type Query {\n  #The actual dataSets\n  dataSets: DataSets @passThrough\n}\n\n");
 
-    registry.merge(schemaParser.parse(root.toString()));
+    if (dataSetAvailable[0]) {
+      registry.merge(schemaParser.parse(root.toString()));
+    }
 
     SchemaGenerator schemaGenerator = new SchemaGenerator();
     graphQlSchema = schemaGenerator.makeExecutableSchema(registry, wiring.build());

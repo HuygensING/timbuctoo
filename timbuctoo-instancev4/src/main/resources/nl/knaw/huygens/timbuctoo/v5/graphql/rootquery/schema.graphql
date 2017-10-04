@@ -19,7 +19,7 @@ type Query {
   allDataSets: [DataSetMetadata!]!
 
   #The actual dataSets
-  dataSets: DataSets @passThrough
+  #dataSets: DataSets (Added using extends if there is actually a dataSet available)
 
   #metadata for a specific dataset
   dataSetMetadata(dataSetId: ID): DataSetMetadata
