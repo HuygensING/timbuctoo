@@ -158,7 +158,7 @@ public class IntegrationTest {
 
   @Test
   public void personNameVariantAreAddedToThePersonTheyBelongTo() throws Exception {
-    String vreName = "demo-upload";
+    String vreName = "demo_upload";
     String prefixedVreName = "DUMMY_" + vreName;
     Response uploadResponse = rawUpload(
       vreName,
@@ -248,7 +248,7 @@ public class IntegrationTest {
 
   @Test
   public void succeedingRdfUploadWithGraphql() throws Exception {
-    String vreName = "clusius-" + UUID.randomUUID();
+    String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + vreName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
@@ -262,43 +262,55 @@ public class IntegrationTest {
     assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
     uploadResponse.readEntity(String.class);
 
-    Response graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+    Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  clusius_ResidenceList {\n" +
-        "    items {\n" +
-        "      uri\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      clusius_ResidenceList {\n" +
+        "        items {\n" +
+        "          uri\n" +
+        "        }\n" +
+        "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("clusius_ResidenceList")
         .get("items").size(),
       is(20)
     );
 
-    graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+    graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  clusius_ResidenceList {\n" +
-        "    items {\n" +
-        "      tim_hasLocation {\n" +
-        "        tim_name {value}\n" +
-        "        _inverse_tim_hasBirthPlace {\n" +
-        "          items {\n" +
-        "            tim_gender {value}\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      clusius_ResidenceList {\n" +
+        "        items {\n" +
+        "          tim_hasLocation {\n" +
+        "            tim_name {value}\n" +
+        "            _inverse_tim_hasBirthPlace {\n" +
+        "              items {\n" +
+        "                tim_gender {value}\n" +
+        "              }\n" +
+        "            }\n" +
         "          }\n" +
         "        }\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat( //every result has a value for name
       stream(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("clusius_ResidenceList")
         .get("items").iterator())
         .map(item -> item
@@ -312,6 +324,8 @@ public class IntegrationTest {
     assertThat(
       stream(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("clusius_ResidenceList")
         .get("items").iterator())
         .flatMap(item ->
@@ -331,7 +345,7 @@ public class IntegrationTest {
 
   @Test
   public void succeedingNQuadUdUploadWithGraphql() throws Exception {
-    String vreName = "clusius-" + UUID.randomUUID();
+    String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + vreName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.nqud").toURI()),
@@ -344,39 +358,51 @@ public class IntegrationTest {
 
     assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
 
-    Response graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+    Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
-        "    items { uri }\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
+        "        items { uri }\n" +
+        "      }\n" +
+        "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
         .get("items")
         .size(),
       is(20)
     );
 
-    graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+    graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
-        "    items {\n" +
-        "      http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
-        "        http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
-        "          value\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
+        "        items {\n" +
+        "          http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
+        "            http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
+        "              value\n" +
+        "            }\n" +
+        "          }\n" +
         "        }\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(
       stream(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
         .get("items").iterator())
         .map(item -> item
@@ -390,7 +416,7 @@ public class IntegrationTest {
 
   @Test
   public void succeedingRdfUploadResourceSync() throws Exception {
-    String dataSetName = "clusius-" + UUID.randomUUID();
+    String dataSetName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
       "/v5/DUMMY/" + dataSetName + "/upload/rdf?forceCreation=true",
       new File(getResource(IntegrationTest.class, "bia_clusius.ttl").toURI()),
@@ -441,7 +467,7 @@ public class IntegrationTest {
   @Test
   public void tabularUpload() {
     Client client = ClientBuilder.newBuilder().register(MultiPartFeature.class).build();
-    String dataSetId = "dataset" + UUID.randomUUID();
+    String dataSetId = "dataset" + UUID.randomUUID().toString().replace("-", "_");
     WebTarget target = client.target(
       format("http://localhost:%d/v5/DUMMY/" + dataSetId + "/upload/table?forceCreation=true", APP.getLocalPort())
     );
@@ -469,7 +495,7 @@ public class IntegrationTest {
   public void deleteDataSet() throws Exception {
     // Create a dataset
     Client client = ClientBuilder.newBuilder().build();
-    String dataSetId = "dataset" + UUID.randomUUID();
+    String dataSetId = "dataset" + UUID.randomUUID().toString().replace("-", "_");
     WebTarget createTarget =
       client
         .target(format("http://localhost:%d/v5/dataSets/DUMMY/" + dataSetId + "/create/", APP.getLocalPort()));
@@ -479,9 +505,9 @@ public class IntegrationTest {
                                           .post(Entity.json(jsnO()));
     assertThat(createResponse.getStatus(), is(201));
     // check if the dataset is created
-    List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy(client);
+    List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy();
     System.out.println("datasets: " + dataSetNamesOfDummy);
-    assertThat(dataSetNamesOfDummy, hasItem(dataSetId));
+    assertThat(dataSetNamesOfDummy, hasItem("DUMMY__" + dataSetId));
 
     // delete dataset
     WebTarget deleteTarget =
@@ -494,7 +520,7 @@ public class IntegrationTest {
     assertThat(deleteResponse.getStatus(), is(204));
 
     // check if the dataset still exists
-    assertThat(getDataSetNamesOfDummy(client), not(hasItem(dataSetId)));
+    assertThat(getDataSetNamesOfDummy(), not(hasItem(dataSetId)));
   }
   
   @Test
@@ -580,16 +606,16 @@ public class IntegrationTest {
 
     Client client = ClientBuilder.newBuilder().build();
 
-
+    String vreName = "ldtest" + UUID.randomUUID().toString().replace("-", "_");
     WebTarget createDataSet =
-      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/testset/create/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/" + vreName + "/create/", APP.getLocalPort()));
 
     createDataSet.request()
                  .header(HttpHeaders.AUTHORIZATION, "fake")
                  .post(Entity.json(null));
 
     final WebTarget createTarget =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/DUMMY/" + vreName + "/upload/jsonld/", APP.getLocalPort()));
 
 
     Response createResponse = createTarget.request()
@@ -602,21 +628,27 @@ public class IntegrationTest {
     assertThat(createResponse.getStatus(), is(204));
 
 
-    Response graphqlCall = call("/v5/DUMMY/testset/graphql")
+    Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  http___example_org_Person(uri: \"http://example.com/the/actual/entity\") {\n" +
-        "    http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision {\n" +
-        "      uri\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      http___example_org_Person(uri: \"http://example.com/the/actual/entity\") {\n" +
+        "        http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision {\n" +
+        "          uri\n" +
+        "        }\n" +
+        "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     String revision = objectNode
       .get("data")
+      .get("dataSets")
+      .get("DUMMY__" + vreName)
       .get("http___example_org_Person")
       .get("http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision")
-      .get("@id")
+      .get("uri")
       .asText();
 
     String testRdfReader2 = "{\n" +
@@ -644,7 +676,7 @@ public class IntegrationTest {
       "}\n";
 
     final WebTarget createTarget2 =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/DUMMY/" + vreName + "/upload/jsonld/", APP.getLocalPort()));
 
 
     Response createResponse2 = createTarget2.request()
@@ -656,21 +688,27 @@ public class IntegrationTest {
     }
     assertThat(createResponse2.getStatus(), is(204));
 
-    graphqlCall = call("/v5/DUMMY/testset/graphql")
+    graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  http___example_org_Person(uri:\"http://example.com/the/actual/entity\"){\n" +
-        "    http___example_org_pred2 {\n" +
-        "      items {\n" +
-        "        value\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      http___example_org_Person(uri:\"http://example.com/the/actual/entity\"){\n" +
+        "        http___example_org_pred2 {\n" +
+        "          items {\n" +
+        "            value\n" +
+        "          }\n" +
+        "        }\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
 
     assertThat(stream(objectNode
       .get("data")
+      .get("dataSets")
+      .get("DUMMY__" + vreName)
       .get("http___example_org_Person")
       .get("http___example_org_pred2")
       .get("items").iterator())
@@ -683,14 +721,20 @@ public class IntegrationTest {
     );
   }
 
-  private List<String> getDataSetNamesOfDummy(Client client) {
-    WebTarget allDataSetsTarget =
-      client.target(format("http://localhost:%d/v5/dataSets/DUMMY/", APP.getLocalPort()));
+  private List<String> getDataSetNamesOfDummy() {
+    Response graphqlCall = call("/v5/graphql")
+      .accept(MediaType.APPLICATION_JSON)
+      .post(Entity.entity("{aboutMe{dataSets{dataSetId}}}", MediaType.valueOf("application/graphql")));
+    ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
 
-    Response allDataSetsResponse = allDataSetsTarget.request().get();
-
-    assertThat(allDataSetsResponse.getStatus(), is(200));
-    return newArrayList(allDataSetsResponse.readEntity(ObjectNode.class).fieldNames());
+    assertThat(graphqlCall.getStatus(), is(200));
+    return stream(
+      objectNode
+        .get("data")
+        .get("aboutMe")
+        .get("dataSets").iterator())
+      .map(x -> x.get("dataSetId").asText())
+      .collect(Collectors.toList());
   }
 
 

@@ -10,7 +10,16 @@ import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLOutputType;
 import graphql.schema.GraphQLSchema;
 import graphql.schema.GraphQLType;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
+import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -26,7 +35,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesAbsoluteUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
+      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
 
     sut.get(new MockEnv("http://example.com/2"));
 
@@ -38,7 +47,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesRelativeUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
+      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
     sut.get(new MockEnv("/2"));
 
     assertThat(lookupFetcherMock.uri, is("http://example.org/2"));
@@ -48,7 +57,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void handlesEmptyUrls() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock, "http://example.org");
+      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
 
     sut.get(new MockEnv(""));
 
@@ -59,7 +68,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
   public void doesntDoTooMuchNormalization() {
     LookUpSubjectByUriFetcherMock lookupFetcherMock = new LookUpSubjectByUriFetcherMock();
     LookUpSubjectByUriFetcherWrapper
-      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock, "http://example.org/");
+      sut = new LookUpSubjectByUriFetcherWrapper("uri", lookupFetcherMock);
 
     sut.get(new MockEnv("."));
 
@@ -71,7 +80,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     private String uri;
 
     @Override
-    public SubjectReference getItem(String uri) {
+    public SubjectReference getItem(String uri, DataSet dataSet) {
       this.uri = uri;
       return null;
     }
@@ -84,9 +93,55 @@ public class LookUpSubjectByUriFetcherWrapperTest {
     public MockEnv(String uri) {
       arguments.put("uri", uri);
     }
+
     @Override
-    public <T> T getSource() {
-      throw new IllegalStateException("Not implemented yet");
+    public DatabaseResult getSource() {
+      return new DatabaseResult() {
+        @Override
+        public DataSet getDataSet() {
+          return new DataSet() {
+            @Override
+            public SchemaStore getSchemaStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public TypeNameStore getTypeNameStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public ImportManager getImportManager() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public RdfDataSourceFactory getDataSource() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public QuadStore getQuadStore() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public CollectionIndex getCollectionIndex() {
+              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
+            }
+
+            @Override
+            public PromotedDataSet getMetadata() {
+              return PromotedDataSet.promotedDataSet(
+                "ownerId",
+                "dataSetId",
+                "http://example.org",
+                false
+              );
+            }
+          };
+        }
+      };
     }
 
     @Override

@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +26,7 @@ public class AuthCheck {
     try {
       final Authorization authorization = getAuthorization(
         authorizer,
-        dataSet.getOwnerId(),
-        dataSet.getDataSetId(),
+        dataSet.getMetadata(),
         currentUserId
       );
       if (!authorization.isAllowedToWrite()) {
@@ -40,10 +40,11 @@ public class AuthCheck {
     return null;
   }
 
-  public static Response checkWriteAccess(BiFunction<String, String, Boolean> dataSetExists,
-                                          Authorizer authorizer, LoggedInUsers loggedInUsers, String authHeader,
-                                          String dataSetOwnerId, String dataSetId) {
-    if (dataSetOwnerId == null || dataSetOwnerId.isEmpty()) {
+  public static Response checkWriteAccess(String ownerId, String dataSetId,
+                                          BiFunction<String, String, Optional<PromotedDataSet>> dataSetGetter,
+                                          Authorizer authorizer, LoggedInUsers loggedInUsers, String authHeader) {
+
+    if (ownerId == null || ownerId.isEmpty()) {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
     if (dataSetId == null || dataSetId.isEmpty()) {
@@ -56,37 +57,32 @@ public class AuthCheck {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
     String currentUserId = user.get().getPersistentId();
-    if (dataSetExists.apply(dataSetOwnerId, dataSetId)) {
-
+    final Optional<PromotedDataSet> dataSet = dataSetGetter.apply(ownerId, dataSetId);
+    if (dataSet.isPresent()) {
       try {
-        if (!getAuthorization(authorizer, dataSetOwnerId, dataSetId, currentUserId).isAllowedToWrite()) {
+        if (!getAuthorization(authorizer, dataSet.get(), currentUserId).isAllowedToWrite()) {
           return Response.status(Response.Status.FORBIDDEN).build();
         }
       } catch (AuthorizationUnavailableException e) {
-        // The does not yet exist. It will be created by getOrCreate below. So check if the user is accessing a dataSet
-        // under his or her own namespace
-        if (!dataSetOwnerId.equals(currentUserId)) {
+        // The dataSet does not yet exist. It might be created by getOrCreate below. So check if the user is
+        // accessing a dataSet under his or her own namespace
+        if (!ownerId.equals(currentUserId)) {
           return Response.status(Response.Status.FORBIDDEN).build();
         }
       }
-    } else if (!Objects.equals(currentUserId, dataSetOwnerId)) {
+    } else if (!Objects.equals(currentUserId, ownerId)) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
     return null;
   }
 
-  private static Authorization getAuthorization(Authorizer authorizer, String dataSetOwnerId, String dataSetId,
+  private static Authorization getAuthorization(Authorizer authorizer, PromotedDataSet dataSet,
                                                 String currentUserId) throws AuthorizationUnavailableException {
-    return authorizer.authorizationFor(dataSetOwnerId + "_" + dataSetId, currentUserId);
+    return authorizer.authorizationFor(dataSet.getCombinedId(), currentUserId);
   }
 
-  public static Response checkAdminAccess(BiFunction<String, String, Boolean> dataSetExists,
-                                          Authorizer authorizer, LoggedInUsers loggedInUsers, String authHeader,
-                                          String dataSetOwnerId, String dataSetId) {
-
-    if (!dataSetExists.apply(dataSetOwnerId, dataSetId)) {
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
+  public static Response checkAdminAccess(Authorizer authorizer, LoggedInUsers loggedInUsers, String authHeader,
+                                          PromotedDataSet dataSet) {
 
     Optional<User> user = loggedInUsers.userFor(authHeader);
     if (!user.isPresent()) {
@@ -95,14 +91,14 @@ public class AuthCheck {
     String currentUserId = user.get().getPersistentId();
 
     try {
-      if (!getAuthorization(authorizer, dataSetOwnerId, dataSetId, currentUserId).hasAdminAccess()) {
+      if (!getAuthorization(authorizer, dataSet, currentUserId).hasAdminAccess()) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
     } catch (AuthorizationUnavailableException e) {
       return Response.status(Response.Status.FORBIDDEN).build();
     }
 
-    return null;
+    return Response.status(200).build();
 
   }
 }

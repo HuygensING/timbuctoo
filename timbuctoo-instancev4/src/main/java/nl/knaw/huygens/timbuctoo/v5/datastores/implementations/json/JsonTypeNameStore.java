@@ -20,10 +20,8 @@ public class JsonTypeNameStore implements TypeNameStore {
   protected final PrefixMapping prefixMapping;
   protected final JsonFileBackedData<TypeNames> store;
   protected final TypeNames data;
-  private final String prefix;
 
-  public JsonTypeNameStore(String prefix, File dataLocation, DataProvider dataProvider) throws IOException {
-    this.prefix = prefix;
+  public JsonTypeNameStore(File dataLocation, DataProvider dataProvider) throws IOException {
     prefixMapping = new PrefixMappingImpl();
     store = JsonFileBackedData.getOrCreate(
       dataLocation,
@@ -45,7 +43,7 @@ public class JsonTypeNameStore implements TypeNameStore {
   //and prevent collisions.
   @Override
   public String makeGraphQlname(String uri) {
-    return makeName(uri, this.prefix);
+    return makeName(uri, "");
   }
 
   @Override
@@ -75,7 +73,7 @@ public class JsonTypeNameStore implements TypeNameStore {
 
   @Override
   public String makeGraphQlValuename(String uri) {
-    return makeName(uri, this.prefix + "value_");
+    return makeName(uri, "value_");
   }
 
   @Override

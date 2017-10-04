@@ -4,12 +4,11 @@ import com.google.common.base.Charsets;
 import org.immutables.value.Value;
 
 import java.util.Base64;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
 @Value.Immutable
-public interface PaginatedList<T extends DatabaseResult> extends Iterable<T> {
+public interface PaginatedList<T extends DatabaseResult> {
 
   Base64.Encoder ENCODER = Base64.getEncoder();
 
@@ -18,10 +17,6 @@ public interface PaginatedList<T extends DatabaseResult> extends Iterable<T> {
   Optional<String> getNextCursor();
 
   List<T> getItems();
-
-  default Iterator<T> iterator() {
-    return getItems().iterator();
-  }
 
   static <U extends DatabaseResult> PaginatedList<U> create(String prevCursor, String nextCursor, List<U> items) {
     return ImmutablePaginatedList.<U>builder()

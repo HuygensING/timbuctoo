@@ -42,16 +42,16 @@ public class DataSet {
   public Response delete(@PathParam("userId") String ownerId, @PathParam("dataSetId") String dataSetName,
                          @HeaderParam("authorization") String authorization) {
 
-    Response response = checkAdminAccess(
-      dataSetRepository::dataSetExists,
-      authorizer,
-      loggedInUsers,
-      authorization,
-      ownerId,
-      dataSetName
-    );
+    Response response = dataSetRepository.getDataSet(ownerId, dataSetName)
+      .map(dataSet -> checkAdminAccess(
+        authorizer,
+        loggedInUsers,
+        authorization,
+        dataSet.getMetadata()
+      ))
+      .orElse(Response.status(Response.Status.NOT_FOUND).build());
 
-    if (response != null) {
+    if (response.getStatus() != 200) {
       return response;
     }
 

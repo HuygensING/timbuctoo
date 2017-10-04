@@ -42,7 +42,7 @@
         return fetch("/v5/graphql", {
           method: 'post',
           headers: { 'Accept': acceptMediaType, 'Content-Type': "application/json" },
-          body: JSON.stringify({ query: graphQLParams.query})
+          body: JSON.stringify(graphQLParams)
         }).then(function (response) {
           var s;
           var contentType = response.headers.get('Content-Type');
@@ -59,19 +59,19 @@
       }
 
       
-      fetch("/v5/supported_formats/export", {
+      fetch("/v5/graphql?query={availableExportMimetypes{name}}", {
           method: 'get',
           headers: {'Accept': 'application/json'}
       }).then(function (mediaTypes) {
           return mediaTypeMenuItems = mediaTypes.json();
       }).then(function (mediaTypes) {
-          return mediaTypes.map(function (type) {
+          return mediaTypes.data.availableExportMimetypes.map(function (type) {
               return React.createElement(GraphiQL.MenuItem, {
-                  key: type,
+                  key: type.name,
                   onSelect: function () {
-                      setAcceptMediaType(type);
+                      setAcceptMediaType(type.name);
                   },
-                  label: type
+                  label: type.name
               })
           })
       }).then(function (newMenuItems) {
@@ -88,7 +88,7 @@
                   null,
                   React.createElement(
                       GraphiQL.Menu,
-                      {label: "select accept media type"},
+                      {label: "select media type"},
                       mediaTypeMenuItems
                   ),
               )

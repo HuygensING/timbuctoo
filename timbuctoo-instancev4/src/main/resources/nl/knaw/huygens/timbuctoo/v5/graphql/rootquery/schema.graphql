@@ -1,12 +1,137 @@
 schema {
-  query: QueryType
+  query: Query
 }
 
-type QueryType {
+interface Value {
+  value: String!
+  type: String!
+}
+
+interface Entity {
+  uri: String!
+}
+
+type Query {
   #the datasets that are supposed to get extra attention
   promotedDataSets: [DataSetMetadata!]!
+
+  #all the dataSets, with and without the promoted ones
+  allDataSets: [DataSetMetadata!]!
+
+  #The actual dataSets
+  #dataSets: DataSets (Added using extends if there is actually a dataSet available)
+
+  #metadata for a specific dataset
+  dataSetMetadata(dataSetId: ID): DataSetMetadata
+
+  #information about the logged in user, or null of no user is logged in
+  aboutMe: AboutMe
+
+  #all mimetypes that you can use when downloading data from a dataSet
+  availableExportMimetypes: [MimeType!]!
+}
+
+type MimeType {
+  name: String!
 }
 
 type DataSetMetadata {
-  datasetId: ID!
+  uri: String! @uri
+  dataSetId: ID!
+  title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
+  description: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
+  imageUrl: Value @rdf(predicate: "http://xmlns.com/foaf/0.1/depiction", direction: "OUT", isList: false, isObject: false, isValue: true)
+  owner: ContactInfo @rdf(predicate: "http://purl.org/dc/terms/rightsHolder", direction: "OUT", isList: false, isObject: true, isValue: false)
+  contact: ContactInfo @rdf(predicate: "http://schema.org/ContactPoint", direction: "OUT", isList: false, isObject: true, isValue: false)
+  provenanceInfo: ProvenanceInfo @rdf(predicate: "http://purl.org/dc/terms/provenance", direction: "OUT", isList: false, isObject: true, isValue: false)
+  license: License @rdf(predicate: "http://purl.org/dc/terms/license", direction: "OUT", isList: false, isObject: true, isValue: false)
+
+  #archetypes: Archetypes! @passThrough (added by the RootQuery based on the config)
+
+  collection(collectionId: ID!): CollectionMetadata
+  collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
+}
+
+type AboutMe {
+  #datasets that this user has some specific permissions on
+  dataSets: [DataSetMetadata!]!
+
+  #The unique identifier of this user
+  id: ID!
+
+  #a human readable name (or empty string if not available)
+  name: String!
+
+  #a url to a page with personal information on this user
+  personalInfo: String!
+
+  #This user may create a new dataset on this timbuctoo instance
+  canCreateDataSet: Boolean!
+}
+
+type CollectionMetadataList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [CollectionMetadata!]!
+}
+
+type CollectionMetadata {
+  uri: String! @uri
+  collectionId: ID!
+  collectionListId: ID!
+
+  properties(count: Int = 20, cursor: ID = ""): PropertyList!
+  total: Int!
+
+  title: Value @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#label", direction: "OUT", isList: false, isObject: false, isValue: true)
+  archeType: Entity @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#subClassOf", direction: "OUT", isList: false, isObject: true, isValue: false)
+  indexerConfig: IndexerConfig @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasIndexerConfig", direction: "OUT", isList: false, isObject: true, isValue: false)
+  summaryProperties: SummaryProperties! @passThrough
+}
+
+type SummaryProperties {
+  title: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+  description: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryDescriptionPredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+  image: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
+}
+
+type IndexerConfig {
+  path: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFacetPath", direction: "OUT", isList: false, isObject: false, isValue: true)
+  type: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFacetType", direction: "OUT", isList: false, isObject: false, isValue: true)
+  fullTextSearch: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFullTextSearch", direction: "OUT", isList: false, isObject: false, isValue: true)
+  next: IndexerConfig @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#nextFacet", direction: "OUT", isList: false, isObject: true, isValue: false)
+}
+
+type PropertyList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [Property!]!
+}
+
+type Property {
+  name: String
+  density: Int
+  isList: Boolean
+  referencedCollections(count: Int = 20, cursor: ID = ""): CollectionIdList
+  isValueType: Boolean
+}
+
+type CollectionIdList {
+  prevCursor: ID
+  nextCursor: ID
+  items: [String!]!
+}
+
+type ContactInfo {
+  name: Value @rdf(predicate: "http://schema.org/name", direction: "OUT", isList: false, isObject: false, isValue: true)
+  email: Value @rdf(predicate: "http://schema.org/email", direction: "OUT", isList: false, isObject: false, isValue: true)
+}
+
+type License {
+  uri: String! @uri
+}
+
+type ProvenanceInfo {
+  title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
+  body: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
 }

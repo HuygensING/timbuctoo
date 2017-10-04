@@ -90,17 +90,15 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegi
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GetDataSets;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RootGraphQl;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.SupportedFormats;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
-import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -237,15 +235,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       pathWithoutVersionAndRevision
     );
 
-
-    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(environment.jersey());
-    serializerWriterRegistry.register(new CsvWriter());
-    serializerWriterRegistry.register(new JsonLdWriter());
-    serializerWriterRegistry.register(new JsonWriter());
-    serializerWriterRegistry.register(new GraphVizWriter());
-
-    register(environment, new SupportedFormats(serializerWriterRegistry));
-
     configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
 
     DataSetRepository dataSetRepository = configuration.getDataSet();
@@ -253,47 +242,50 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
+
     register(environment, new RdfUpload(
       securityConfig.getLoggedInUsers(),
       securityConfig.getAuthorizer(),
       dataSetRepository,
-      errorResponseHelper,
-      configuration.getRdfIdHelper()
+      errorResponseHelper
     ));
 
     register(environment, new TabularUpload(
       securityConfig.getLoggedInUsers(),
       securityConfig.getAuthorizer(),
       dataSetRepository,
-      configuration.getRdfIdHelper(),
       errorResponseHelper
     ));
 
     register(environment, new Rml(
       dataSetRepository,
-      configuration.getRdfIdHelper(),
       errorResponseHelper
     ));
 
     register(environment, new Rml(
       dataSetRepository,
-      configuration.getRdfIdHelper(),
       errorResponseHelper
     ));
 
-    final GraphQlService graphQlService = new GraphQlService(
-      dataSetRepository,
-      new DerivedSchemaTypeGenerator(),
-      configuration.getArchetypes(), configuration.getRdfIdHelper()
+    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(
+      new CsvWriter(),
+      new JsonLdWriter(),
+      new JsonWriter(),
+      new GraphVizWriter()
     );
-    GraphQl graphQlEndpoint = new GraphQl(
-      graphQlService,
-      uriHelper,
-      errorResponseHelper
-    );
-    register(environment, graphQlEndpoint);
-    register(environment,
-      new GetDataSets(dataSetRepository, graphQlEndpoint, securityConfig.getLoggedInUsers()));
+
+    register(environment, new GraphQl(
+      new RootQuery(
+        dataSetRepository,
+        serializerWriterRegistry,
+        configuration.getArchetypesSchema(),
+        new RdfWiringFactory(dataSetRepository),
+        new DerivedSchemaTypeGenerator(new PaginationArgumentsHelper())
+      ),
+      serializerWriterRegistry,
+      securityConfig.getLoggedInUsers()
+    ));
+
     register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(), dataSetRepository));
     register(environment, new DataSet(
         securityConfig.getLoggedInUsers(),
@@ -304,7 +296,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       securityConfig.getLoggedInUsers(),
       securityConfig.getAuthorizer(),
       dataSetRepository,
-      configuration.getRdfIdHelper(),
       new HttpClientBuilder(environment).build("json-ld")
     ));
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
@@ -321,11 +312,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new LegacySingleEntityRedirect(uriHelper));
     register(environment, new LegacyIndexRedirect(uriHelper));
     register(environment, new Discover(resourceSyncService));
-
-    register(environment, new RootGraphQl(
-      new RootQuery(dataSetRepository, graphQlService, serializerWriterRegistry),
-      securityConfig.getLoggedInUsers()
-    ));
 
     if (configuration.isAllowGremlinEndpoint()) {
       register(environment, new Gremlin(graphManager));
@@ -372,8 +358,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
       dataSetRepository,
-      errorResponseHelper,
-      configuration.getRdfIdHelper()
+      errorResponseHelper
     ));
 
     register(environment, new WellKnown());

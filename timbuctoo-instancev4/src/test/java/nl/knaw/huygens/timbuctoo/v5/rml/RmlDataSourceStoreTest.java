@@ -10,11 +10,11 @@ import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
-import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
@@ -32,10 +32,16 @@ public class RmlDataSourceStoreTest {
   @Test
   public void itWorks() throws Exception {
     NonPersistentBdbDatabaseCreator dbCreator = new NonPersistentBdbDatabaseCreator();
-    RmlDataSourceStoreTestDataProvider dataSet = new RmlDataSourceStoreTestDataProvider();
-    final RmlDataSourceStore rmlDataSourceStore = new RmlDataSourceStore(
+    PromotedDataSet dataSetMetadata = PromotedDataSet.promotedDataSet(
       "userId",
       "dataSetId",
+      "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId",
+      false
+    );
+    RmlDataSourceStoreTestDataProvider dataSet = new RmlDataSourceStoreTestDataProvider(dataSetMetadata);
+    final RmlDataSourceStore rmlDataSourceStore = new RmlDataSourceStore(
+      dataSetMetadata.getOwnerId(),
+      dataSetMetadata.getDataSetId(),
       dbCreator,
       dataSet
     );
@@ -58,11 +64,11 @@ public class RmlDataSourceStoreTest {
 
 
     RdfDataSource rdfDataSource = new RdfDataSource(rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSetId/fileName/1",
+      "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId/rawData/fileName/collections/1",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
     RdfDataSource rdfDataSource2 = new RdfDataSource(rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/collections/userId/dataSetId/fileName/2",
+      "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId/rawData/fileName/collections/2",
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
 
@@ -86,15 +92,24 @@ public class RmlDataSourceStoreTest {
 
   private static class RmlDataSourceStoreTestDataProvider implements DataProvider {
 
+    private final PromotedDataSet dataSetMetadata;
     private RawUploadRdfSaver rawUploadRdfSaver;
+
+    public RmlDataSourceStoreTestDataProvider(PromotedDataSet dataSetMetadata) {
+      this.dataSetMetadata = dataSetMetadata;
+    }
 
     @Override
     public void subscribeToRdf(RdfProcessor processor, String cursor) {
       RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
 
       try {
-        rawUploadRdfSaver = new RawUploadRdfSaver("userId", "dataSetId", "fileName", APPLICATION_OCTET_STREAM_TYPE,
-          rdfSerializer, new TimbuctooRdfIdHelper("http://timbuctoo.huygens.knaw.nl/v5/"));
+        rawUploadRdfSaver = new RawUploadRdfSaver(
+          dataSetMetadata,
+          "fileName",
+          APPLICATION_OCTET_STREAM_TYPE,
+          rdfSerializer
+        );
         processor.start();
       } catch (RdfProcessingFailedException | LogStorageFailedException e) {
         throw new RuntimeException(e.getCause());

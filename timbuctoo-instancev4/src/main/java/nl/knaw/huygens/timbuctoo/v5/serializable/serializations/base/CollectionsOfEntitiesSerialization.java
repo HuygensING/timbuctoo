@@ -90,10 +90,18 @@ public abstract class CollectionsOfEntitiesSerialization implements Serializatio
     }
 
     @Override
-    public void handleGraphqlObject(GraphqlIntrospectionObject object, Setter context) throws IOException { }
+    public void handleGraphqlObject(GraphqlIntrospectionObject object, Setter context) throws IOException {
+      for (Serializable item : object.getContents().values()) {
+        dispatch(item, context);
+      }
+    }
 
     @Override
-    public void handleGraphqlList(GraphqlIntrospectionList list, Setter context) throws IOException { }
+    public void handleGraphqlList(GraphqlIntrospectionList list, Setter context) throws IOException {
+      for (Serializable item : list.getItems()) {
+        dispatch(item, context);
+      }
+    }
 
     @Override
     public void handleGraphqlValue(GraphqlIntrospectionValue object, Setter context) throws IOException { }

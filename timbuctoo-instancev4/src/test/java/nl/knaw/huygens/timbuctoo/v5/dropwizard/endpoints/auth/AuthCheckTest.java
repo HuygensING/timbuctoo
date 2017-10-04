@@ -1,9 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
-import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
@@ -31,7 +32,14 @@ public class AuthCheckTest {
     LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
     given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(owner));
 
-    Response response = checkWriteAccess((user, dataSet) -> false, null, loggedInUsers, "auth", ownerId, "dataSet");
+    Response response = checkWriteAccess(
+      ownerId,
+      "dataSet",
+      (user, dataSet) -> Optional.empty(),
+      null,
+      loggedInUsers,
+      "auth"
+    );
 
     assertThat(response, is(nullValue()));
   }
@@ -42,9 +50,15 @@ public class AuthCheckTest {
     LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
     given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
 
-    Response response = checkWriteAccess((user, dataSet) -> false, null, loggedInUsers, "auth", "ownerId", "dataSet");
+    Response response = checkWriteAccess(
+      "ownerId",
+      "dataSet",
+      (user, dataSet) -> Optional.empty(),
+      null,
+      loggedInUsers,
+      "auth"
+    );
 
-    assertThat(response, is(notNullValue()));
     assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
   }
 
@@ -56,15 +70,13 @@ public class AuthCheckTest {
     Authorizer authorizer = mock(Authorizer.class);
     given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForAdmin());
     Response response = checkAdminAccess(
-      (user, dataSet) -> true,
       authorizer,
       loggedInUsers,
       "auth",
-      "ownerId",
-      "dataSet"
+      PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
     );
 
-    assertThat(response, is(nullValue()));
+    assertThat(response.getStatus(), is(200));
   }
 
   @Test
@@ -72,15 +84,12 @@ public class AuthCheckTest {
     LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
     given(loggedInUsers.userFor(anyString())).willReturn(Optional.empty());
     Response response = checkAdminAccess(
-      (user, dataSet) -> true,
       null,
       loggedInUsers,
       "auth",
-      "ownerId",
-      "dataSet"
+      PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
     );
 
-    assertThat(response, is(notNullValue()));
     assertThat(response.getStatus(), is(UNAUTHORIZED.getStatusCode()));
   }
 
@@ -92,15 +101,12 @@ public class AuthCheckTest {
     Authorizer authorizer = mock(Authorizer.class);
     given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForNonAdmin());
     Response response = checkAdminAccess(
-      (user, dataSet) -> true,
       authorizer,
       loggedInUsers,
       "auth",
-      "ownerId",
-      "dataSet"
+      PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
     );
 
-    assertThat(response, is(notNullValue()));
     assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
   }
 
@@ -112,15 +118,13 @@ public class AuthCheckTest {
     Authorizer authorizer = mock(Authorizer.class);
     given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForAdmin());
     Response response = checkAdminAccess(
-      (user, dataSet) -> true,
       authorizer,
       loggedInUsers,
       "auth",
-      "ownerId",
-      "dataSet"
+      PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
     );
 
-    assertThat(response, is(nullValue()));
+    assertThat(response.getStatus(), is(200));
   }
 
   private static Authorization authorizationForNonAdmin() {

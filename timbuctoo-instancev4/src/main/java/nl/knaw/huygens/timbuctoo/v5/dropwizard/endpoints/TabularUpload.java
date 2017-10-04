@@ -14,7 +14,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
-import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -46,16 +45,14 @@ public class TabularUpload {
 
   private final LoggedInUsers loggedInUsers;
   private final Authorizer authorizer;
-  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final DataSetRepository dataSetRepository;
   private final ErrorResponseHelper errorResponseHelper;
 
   public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
-                       TimbuctooRdfIdHelper rdfIdHelper, ErrorResponseHelper errorResponseHelper) {
+                       ErrorResponseHelper errorResponseHelper) {
     this.loggedInUsers = loggedInUsers;
     this.authorizer = authorizer;
     this.dataSetRepository = dataSetRepository;
-    this.rdfIdHelper = rdfIdHelper;
     this.errorResponseHelper = errorResponseHelper;
   }
 
@@ -75,7 +72,12 @@ public class TabularUpload {
     LogStorageFailedException {
 
     final Response response = checkWriteAccess(
-      dataSetRepository::dataSetExists, authorizer, loggedInUsers, authHeader, ownerId, dataSetId
+      ownerId,
+      dataSetId,
+      (ownerId1, dataSetId1) -> dataSetRepository.getDataSet(ownerId1, dataSetId1).map(DataSet::getMetadata),
+      authorizer,
+      loggedInUsers,
+      authHeader
     );
     if (response != null) {
       return response;
@@ -122,17 +124,15 @@ public class TabularUpload {
       (statusConsumer) -> new TabularRdfCreator(
         importManager,
         loader.get(),
-        ownerId,
-        dataSetId,
+        dataSet.getMetadata(),
         statusConsumer,
-        fileToken,
-        rdfIdHelper
+        fileToken
       )
     );
 
     Future<?> promise = importManager.generateLog(
-      rdfIdHelper.dataSet(ownerId, dataSetId),
-      rdfIdHelper.dataSet(ownerId, dataSetId),
+      dataSet.getMetadata().getBaseUri(),
+      dataSet.getMetadata().getBaseUri(),
       rdfCreator.getRight()
     );
 

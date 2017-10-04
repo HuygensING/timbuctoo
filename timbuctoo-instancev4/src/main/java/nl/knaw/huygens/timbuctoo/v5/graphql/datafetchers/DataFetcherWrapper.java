@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 
 import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper.getPaginationArguments;
@@ -20,9 +21,13 @@ public class DataFetcherWrapper implements DataFetcher {
     if (environment.getSource() instanceof SubjectReference) {
       SubjectReference source = environment.getSource();
       if (isList) {
-        return inner.getList(source, getPaginationArguments(environment));
+        return inner.getList(
+          source,
+          getPaginationArguments(environment),
+          ((DatabaseResult) environment.getSource()).getDataSet()
+        );
       } else {
-        return inner.getItem(source);
+        return inner.getItem(source, ((DatabaseResult) environment.getSource()).getDataSet());
       }
     } else {
       throw new IllegalStateException("Source is not a SubjectReference");

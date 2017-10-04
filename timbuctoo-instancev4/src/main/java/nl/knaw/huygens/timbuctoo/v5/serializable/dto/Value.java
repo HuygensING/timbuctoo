@@ -29,6 +29,14 @@ public interface Value extends RdfData {
       .build();
   }
 
+  static Value create(String value, String type, String graphqlType) {
+    return ImmutableValue.builder()
+      .value(value)
+      .type(type)
+      .graphqlTypeName(graphqlType)
+      .build();
+  }
+
   default Serializable withGraphqlType(String graphqlType) {
     return ImmutableValue.copyOf(this).withGraphqlTypeName(graphqlType);
   }

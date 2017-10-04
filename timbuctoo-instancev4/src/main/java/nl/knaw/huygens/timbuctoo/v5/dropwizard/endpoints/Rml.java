@@ -1,10 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import io.dropwizard.jersey.params.UUIDParam;
+import nl.knaw.huygens.timbuctoo.rml.LoggingErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.RmlMappingDocument;
-import nl.knaw.huygens.timbuctoo.rml.LoggingErrorHandler;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
@@ -13,7 +13,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
-import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 
@@ -33,14 +32,11 @@ import java.util.stream.Stream;
 @Path("/v5/{userId}/{dataSetId}/rml")
 public class Rml {
   private final DataSetRepository dataSetRepository;
-  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final ErrorResponseHelper errorResponseHelper;
   private final JenaBasedReader rmlBuilder = new JenaBasedReader();
 
-  public Rml(DataSetRepository dataSetRepository, TimbuctooRdfIdHelper rdfIdHelper,
-             ErrorResponseHelper errorResponseHelper) {
+  public Rml(DataSetRepository dataSetRepository, ErrorResponseHelper errorResponseHelper) {
     this.dataSetRepository = dataSetRepository;
-    this.rdfIdHelper = rdfIdHelper;
     this.errorResponseHelper = errorResponseHelper;
   }
 
@@ -67,9 +63,10 @@ public class Rml {
       }
       //FIXME: trigger onprefix for all rml prefixes
       //FIXME: store rml and retrieve it from tripleStore when mapping
+      final String baseUri = dataSet.get().getMetadata().getBaseUri();
       Future<?> future = importManager.generateLog(
-        rdfIdHelper.dataSet(ownerId, dataSetId),
-        rdfIdHelper.dataSet(ownerId, dataSetId),
+        baseUri,
+        baseUri,
         new PlainRdfCreator() {
           @Override
           public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
@@ -83,7 +80,7 @@ public class Rml {
                 triple.getObject().getContent(),
                 triple.getObject().getLiteralType().orElse(null),
                 triple.getObject().getLiteralLanguage().orElse(null),
-                rdfIdHelper.dataSet(ownerId, dataSetId)
+                baseUri
               );
             }
           }

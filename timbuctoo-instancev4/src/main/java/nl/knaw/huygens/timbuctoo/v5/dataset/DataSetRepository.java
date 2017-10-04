@@ -7,18 +7,21 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationExcept
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSetWithRoles;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,8 +34,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.promotedDataSet;
 import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
+import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.promotedDataSet;
 
 /**
  * - stores all configuration parameters so it can inject them in the dataset constructor
@@ -41,20 +44,23 @@ import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet.dataSet;
  */
 public class DataSetRepository {
 
+  private static final Logger LOG = LoggerFactory.getLogger(DataSetRepository.class);
+
   private final ExecutorService executorService;
   private final VreAuthorizationCrud vreAuthorizationCrud;
   private final DataSetConfiguration configuration;
   private final DataStoreFactory dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
+  private final TimbuctooRdfIdHelper rdfIdHelper;
   private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
   private final ResourceSync resourceSync;
 
 
   public DataSetRepository(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
-                           DataSetConfiguration configuration,
-                           DataStoreFactory dataStoreFactory) throws IOException {
+                           DataSetConfiguration configuration, DataStoreFactory dataStoreFactory,
+                           TimbuctooRdfIdHelper rdfIdHelper) throws IOException {
     this.executorService = executorService;
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
@@ -67,6 +73,7 @@ public class DataSetRepository {
       new TypeReference<Map<String, Set<PromotedDataSet>>>() {
       }
     );
+    this.rdfIdHelper = rdfIdHelper;
     statusMap = new HashMap<>();
     resourceSync = configuration.getResourceSync();
 
@@ -84,7 +91,7 @@ public class DataSetRepository {
           try {
             ownersSets.put(
               dataSetName,
-              dataSet(ownerId, dataSetName, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+              dataSet(promotedDataSet, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
             );
           } catch (IOException | DataStoreCreationException | ResourceSyncException e) {
             throw new IOException(e);
@@ -105,21 +112,21 @@ public class DataSetRepository {
   }
 
   public DataSet createDataSet(String ownerId, String dataSetId) throws DataStoreCreationException {
-    String authorizationKey = ownerId + "_" + dataSetId;
+    final PromotedDataSet dataSet = promotedDataSet(ownerId, dataSetId, rdfIdHelper.dataSet(ownerId, dataSetId), false);
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerId, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          vreAuthorizationCrud.createAuthorization(authorizationKey, ownerId, "ADMIN");
+          vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), ownerId, "ADMIN");
           userDataSets.put(
             dataSetId,
-            dataSet(ownerId, dataSetId, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+            dataSet(dataSet, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
           );
           storedDataSets.updateData(dataSets -> {
             dataSets
               .computeIfAbsent(ownerId, key -> new HashSet<>())
-              .add(promotedDataSet(ownerId, dataSetId, false));
+              .add(dataSet);
             return dataSets;
           });
         } catch (AuthorizationCreationException | IOException | ResourceSyncException e1) {
@@ -152,41 +159,23 @@ public class DataSetRepository {
     return promotedDataSets;
   }
 
-  public Map<String, Set<DataSetWithRoles>> getDataSetsWithWriteAccess(String userId) {
-    Map<String, Set<PromotedDataSet>> dataSets = storedDataSets.getData();
-    Map<String, Set<PromotedDataSet>> promotedDataSets = new HashMap<>();
-    Map<String, Set<DataSetWithRoles>> dataSetsWithWriteAccess = new HashMap<>();
+  public Collection<PromotedDataSet> getDataSetsWithWriteAccess(String userId) {
+    List<PromotedDataSet> dataSetsWithWriteAccess = new ArrayList<>();
 
-    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
-      Set<DataSetWithRoles> dataSetWithRoles = new HashSet<>();
-
-      userDataSets.getValue().forEach((dataSet) -> {
-        List<String> roles;
-        Optional<VreAuthorization> vre;
+    for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
+      for (DataSet dataSet : userDataSets.values()) {
         try {
-          vre = vreAuthorizationCrud
-            .getAuthorization(
-              dataSet.getCombinedId(),
-              userId);
-          if (vre.isPresent()) {
-            roles = vre
-              .get().getRoles();
-          } else {
-            roles = Collections.emptyList();
+          boolean isAllowedToWrite = vreAuthorizationCrud
+            .getAuthorization(dataSet.getMetadata().getCombinedId(), userId)
+            .map(VreAuthorization::isAllowedToWrite)
+            .orElse(false);
+          if (isAllowedToWrite) {
+            dataSetsWithWriteAccess.add(dataSet.getMetadata());
           }
         } catch (AuthorizationUnavailableException e) {
-          roles = Collections.emptyList();
+          LOG.error("Could not fetch authorization", e);
         }
-        DataSetWithRoles dataSetWithWriteAccess = new DataSetWithRoles(
-          dataSet.getDataSetId(),
-          dataSet.isPromoted(),
-          roles, null
-        );
-
-        dataSetWithRoles.add(dataSetWithWriteAccess);
-      });
-
-      dataSetsWithWriteAccess.put(userDataSets.getKey(), dataSetWithRoles);
+      }
     }
     return dataSetsWithWriteAccess;
   }

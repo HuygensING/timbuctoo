@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.schema.DataFetcher;
 import graphql.schema.DataFetchingEnvironment;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import org.eclipse.rdf4j.common.net.ParsedURI;
 
 /**
@@ -10,18 +11,20 @@ import org.eclipse.rdf4j.common.net.ParsedURI;
 public class LookUpSubjectByUriFetcherWrapper implements DataFetcher {
   private final String uriArgument;
   private final LookUpSubjectByUriFetcher lookUpSubjectByUriFetcher;
-  private final ParsedURI baseUri;
 
-  public LookUpSubjectByUriFetcherWrapper(String uriArgument, LookUpSubjectByUriFetcher lookUpSubjectByUriFetcher,
-                                          String baseUri) {
+  public LookUpSubjectByUriFetcherWrapper(String uriArgument, LookUpSubjectByUriFetcher lookUpSubjectByUriFetcher) {
     this.uriArgument = uriArgument;
     this.lookUpSubjectByUriFetcher = lookUpSubjectByUriFetcher;
-    this.baseUri = new ParsedURI(baseUri);
   }
 
   @Override
   public Object get(DataFetchingEnvironment environment) {
+    final DatabaseResult source = environment.getSource();
+    ParsedURI baseUri = new ParsedURI(source.getDataSet().getMetadata().getBaseUri());
     String uri = environment.getArgument(uriArgument);
-    return lookUpSubjectByUriFetcher.getItem(baseUri.resolve(uri).toString());
+    return lookUpSubjectByUriFetcher.getItem(
+      baseUri.resolve(uri).toString(),
+      source.getDataSet()
+    );
   }
 }

@@ -1,13 +1,18 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.ImmutableMap;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sleepycat.je.DatabaseException;
-import nl.knaw.huygens.timbuctoo.util.UriHelper;
+import graphql.ExecutionResult;
+import graphql.GraphQL;
+import graphql.schema.GraphQLSchema;
+import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.GraphQlService;
-import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlFailedException;
-import nl.knaw.huygens.timbuctoo.v5.graphql.exceptions.GraphQlProcessingException;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriter;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
+import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
+import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 
 import javax.ws.rs.Consumes;
@@ -15,114 +20,158 @@ import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-import java.net.URI;
+import javax.ws.rs.core.StreamingOutput;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
-import static javax.ws.rs.core.Response.ok;
+import static graphql.ExecutionInput.newExecutionInput;
 
-@Path("/v5/{userId}/{dataSet}/graphql")
+@Path("/v5/graphql")
 public class GraphQl {
-  private final GraphQlService graphQlService;
-  private final UriHelper uriHelper;
-  private final ErrorResponseHelper errorResponseHelper;
+  private final Supplier<GraphQLSchema> graphqlGetter;
+  private final SerializerWriterRegistry serializerWriterRegistry;
+  private final LoggedInUsers loggedInUsers;
+  private final ObjectMapper objectMapper;
+  private GraphQL graphQl;
+  private GraphQLSchema prevGraphQlSchema;
 
-  public GraphQl(GraphQlService service, UriHelper uriHelper, ErrorResponseHelper errorResponseHelper)
+  public GraphQl(Supplier<GraphQLSchema> graphqlGetter, SerializerWriterRegistry serializerWriterRegistry,
+                 LoggedInUsers loggedInUsers)
     throws DatabaseException, RdfProcessingFailedException {
-    graphQlService = service;
-    this.uriHelper = uriHelper;
-    this.errorResponseHelper = errorResponseHelper;
-  }
-
-  public URI makeUrl(String userId, String dataSetId) {
-    return uriHelper.fromResourceUri(UriBuilder.fromResource(this.getClass())
-      .buildFromMap(ImmutableMap.of(
-        "userId", userId,
-        "dataSet", dataSetId
-      )));
+    this.graphqlGetter = graphqlGetter;
+    this.serializerWriterRegistry = serializerWriterRegistry;
+    this.loggedInUsers = loggedInUsers;
+    objectMapper = new ObjectMapper();
   }
 
   @POST
   @Consumes("application/json")
-  public Response postJson(JsonNode query, @HeaderParam("accept") String acceptHeader,
-                           @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
-    if (unSpecifiedAcceptHeader(acceptHeader)) {
-      return Response
-        .status(400)
-        .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
-        .build();
+  public Response postJson(JsonNode body, @QueryParam("query") String query,
+                           @HeaderParam("accept") String acceptHeader,
+                           @QueryParam("accept") String acceptParam,
+                           @HeaderParam("Authorization") String authHeader) {
+    final String queryFromBody;
+    if (body.has("query")) {
+      queryFromBody = body.get("query").asText();
+    } else {
+      queryFromBody = null;
     }
-    if (!query.has("query")) {
-      return Response
-        .status(400)
-        .entity("Please provide the graphql query as the query property of a JSON encoded object. E.g. " +
-          "{query: \"{\\n  persons {\\n ... \"}")
-        .build();
+    Map variables = null;
+    if (body.has("variables")) {
+      try {
+        variables = objectMapper.treeToValue(body.get("variables"), HashMap.class);
+      } catch (JsonProcessingException e) {
+        return Response
+          .status(400)
+          .entity("'variables' should be an object node")
+          .build();
+      }
     }
-    return executeGraphQlQuery(query.get("query").asText(), userId, dataSet);
+    final String operationName = body.has("operationName") && !body.get("operationName").isNull() ?
+      body.get("operationName").asText() :
+      null;
+
+    return executeGraphql(query, acceptHeader, acceptParam, queryFromBody, variables, operationName, authHeader);
   }
 
   @POST
   @Consumes("application/graphql")
-  public Response postGraphql(String query, @HeaderParam("accept") String acceptHeader,
-                              @PathParam("userId") String userId, @PathParam("dataSet") String dataSet) {
-    if (unSpecifiedAcceptHeader(acceptHeader)) {
+  public Response postGraphql(String query, @QueryParam("query") String queryParam,
+                              @HeaderParam("accept") String acceptHeader,
+                              @QueryParam("accept") String acceptParam,
+                              @HeaderParam("Authorization") String authHeader) {
+    return executeGraphql(queryParam, acceptHeader, acceptParam, query, null, null, authHeader);
+  }
+
+  @GET
+  public Response get(@QueryParam("query") String query, @HeaderParam("accept") String acceptHeader,
+                      @QueryParam("accept") String acceptParam,
+                      @HeaderParam("Authorization") String authHeader) {
+    return executeGraphql(null, acceptHeader, acceptParam, query, null, null, authHeader);
+  }
+
+
+  public Response executeGraphql(String query, String acceptHeader, String acceptParam, String queryFromBody,
+                                 Map variables, String operationName, String authHeader) {
+
+    final SerializerWriter serializerWriter;
+    if (acceptParam != null && !acceptParam.isEmpty()) {
+      acceptHeader = acceptParam; //Accept param overrules header because it's more under the user's control
+    }
+    if (unSpecifiedAcceptHeader(acceptHeader) || acceptHeader.equals(MediaType.APPLICATION_JSON)) {
+      serializerWriter = null;
+    } else {
+      Optional<SerializerWriter> bestMatch = serializerWriterRegistry.getBestMatch(acceptHeader);
+      if (bestMatch.isPresent()) {
+        serializerWriter = bestMatch.get();
+      } else {
+        return Response
+          .status(415)
+          .type(MediaType.APPLICATION_JSON_TYPE)
+          .entity("{\"errors\": [\"The available mediatypes are: " +
+            String.join(", ", serializerWriterRegistry.getSupportedMimeTypes()) + "\"]}")
+          .build();
+      }
+    }
+    if (query != null && queryFromBody != null) {
       return Response
         .status(400)
-        .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity("{\"errors\": [\"There's both a query as url paramatere and a query in the body. Please pick one.\"]}")
         .build();
     }
-    return executeGraphQlQuery(query, userId, dataSet);
+    if (query == null && queryFromBody == null) {
+      return Response
+        .status(400)
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity("{\"errors\": [\"Please provide the graphql query as the query property of a JSON encoded object. " +
+          "E.g. {query: \\\"{\\n  persons {\\n ... \\\"}\"]}")
+        .build();
+    }
+    GraphQLSchema graphQlSchema = graphqlGetter.get();
+    if (graphQlSchema != prevGraphQlSchema) {
+      prevGraphQlSchema = graphQlSchema;
+      final GraphQL.Builder builder = GraphQL
+        .newGraphQL(graphQlSchema);
+      if (!acceptHeader.equals(MediaType.APPLICATION_JSON)) {
+        builder.queryExecutionStrategy(new SerializerExecutionStrategy());
+      }
+      graphQl = builder
+        .build();
+    }
+    final ExecutionResult result = graphQl
+      .execute(newExecutionInput()
+        .root(new RootQuery.RootData(loggedInUsers.userFor(authHeader)))
+        .query(queryFromBody)
+        .operationName(operationName)
+        .variables(variables == null ? Collections.emptyMap() : variables)
+        .build());
+    if (serializerWriter == null) {
+      return Response
+        .ok()
+        .type(MediaType.APPLICATION_JSON_TYPE)
+        .entity(result.toSpecification())
+        .build();
+    } else {
+      return Response
+        .ok()
+        .type(serializerWriter.getMimeType())
+        .entity((StreamingOutput) os -> {
+          serializerWriter.getSerializationFactory().create(os).serialize(new SerializableResult(result.getData()));
+        })
+        .build();
+    }
   }
 
 
   public boolean unSpecifiedAcceptHeader(@HeaderParam("accept") String acceptHeader) {
     return acceptHeader == null || acceptHeader.isEmpty() || "*/*".equals(acceptHeader);
-  }
-
-
-  @GET
-  public Response get(@HeaderParam("accept") String acceptHeader,
-                      @QueryParam("query") String query,
-                      @PathParam("userId") String userId,
-                      @PathParam("dataSet") String dataSet
-  ) {
-    if (unSpecifiedAcceptHeader(acceptHeader)) {
-      return Response
-        .status(400)
-        .entity("Please specify a mimetype in the accept header. For example: application/ld+json")
-        .build();
-    }
-    return executeGraphQlQuery(query, userId, dataSet);
-  }
-
-  @Path("csv")
-  @GET
-  @Produces("text/csv")
-  public Response getCsv(@QueryParam("query") String query,
-                         @PathParam("userId") String userId,
-                         @PathParam("dataSet") String dataSet
-  ) {
-    return executeGraphQlQuery(query, userId, dataSet);
-  }
-
-  private Response executeGraphQlQuery(@QueryParam("query") String query, @PathParam("userId") String userId,
-                                       @PathParam("dataSet") String dataSet) {
-    try {
-      final Optional<SerializableResult> result = graphQlService.executeQuery(userId, dataSet, query);
-      if (result.isPresent()) {
-        return ok(result.get()).build();
-      } else {
-        return errorResponseHelper.dataSetNotFound(userId, dataSet);
-      }
-    } catch (GraphQlProcessingException | GraphQlFailedException e) {
-      e.printStackTrace();
-      return Response.status(500).entity(e.getMessage()).build();
-    }
   }
 
 }
