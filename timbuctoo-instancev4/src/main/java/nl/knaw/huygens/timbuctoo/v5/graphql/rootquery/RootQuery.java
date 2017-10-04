@@ -221,8 +221,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .prevCursor(Optional.empty())
         .nextCursor(Optional.empty())
         .items(() -> collectionType.getPredicates().stream().map(pred -> {
-            return (Property) ImmutableProperty.builder()
-              .density((pred.getOccurrences() * 100) / occurrences)
+          return (Property) ImmutableProperty.builder()
+              .density(getDensity(occurrences, pred.getOccurrences()))
               .isList(pred.isList())
               .name(typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection()))
               .referencedCollections(ImmutableStringList.builder()
@@ -240,6 +240,17 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         ).iterator())
         .build())
       .build();
+  }
+
+  public long getDensity(long allOccurrences, long predOccurrences) {
+    final long percentage = (predOccurrences * 100) / allOccurrences;
+    if (percentage == 0 && predOccurrences > 0) {
+      return 1;//don't return 0 unless it's actually an empty predicate
+    } else if (percentage == 100 && predOccurrences < allOccurrences) {
+      return 99;//don't return 100 unless it's actually a 100%
+    } else {
+      return percentage;
+    }
   }
 
   @Override
