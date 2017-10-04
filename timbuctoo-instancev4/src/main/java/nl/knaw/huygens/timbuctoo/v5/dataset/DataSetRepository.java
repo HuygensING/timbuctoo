@@ -15,6 +15,8 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileH
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,6 +43,8 @@ import static nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet.promotedD
  * - keeps track of all created dataSets across restarts (stores them in a file)
  */
 public class DataSetRepository {
+
+  private static final Logger LOG = LoggerFactory.getLogger(DataSetRepository.class);
 
   private final ExecutorService executorService;
   private final VreAuthorizationCrud vreAuthorizationCrud;
@@ -156,24 +160,22 @@ public class DataSetRepository {
   }
 
   public Collection<PromotedDataSet> getDataSetsWithWriteAccess(String userId) {
-    Map<String, Set<PromotedDataSet>> dataSets = storedDataSets.getData();
     List<PromotedDataSet> dataSetsWithWriteAccess = new ArrayList<>();
 
-
-    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
-      userDataSets.getValue().forEach((dataSet) -> {
+    for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
+      for (DataSet dataSet : userDataSets.values()) {
         try {
           boolean isAllowedToWrite = vreAuthorizationCrud
-            .getAuthorization(dataSet.getCombinedId(), userId)
+            .getAuthorization(dataSet.getMetadata().getCombinedId(), userId)
             .map(VreAuthorization::isAllowedToWrite)
             .orElse(false);
           if (isAllowedToWrite) {
-            dataSetsWithWriteAccess.add(dataSet);
+            dataSetsWithWriteAccess.add(dataSet.getMetadata());
           }
         } catch (AuthorizationUnavailableException e) {
-          //ignore
+          LOG.error("Could not fetch authorization", e);
         }
-      });
+      }
     }
     return dataSetsWithWriteAccess;
   }
