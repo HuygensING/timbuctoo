@@ -4,6 +4,7 @@ import com.google.common.base.Charsets;
 import org.immutables.value.Value;
 
 import java.util.Base64;
+import java.util.Optional;
 
 @Value.Immutable
 public interface PaginationArguments {
@@ -19,15 +20,22 @@ public interface PaginationArguments {
    */
   String getCursor();
 
+
+  /**
+   * SearchQuery is a String-serialized elasticsearch query
+   */
+  Optional<String> getSearchQuery();
+
   /**
    * Count is either a positive number which provides a suggestion on how many items to return (might be overridden by
    * the data provider) or a negative number (usually -1) that indicates that there is no preference
    */
   int getCount();
 
-  static PaginationArguments create(int count, String cursor) {
+  static PaginationArguments create(int count, String cursor, String searchQuery) {
     return ImmutablePaginationArguments.builder()
       .count(count)
+      .searchQuery(Optional.ofNullable(searchQuery))
       .cursor(new String(DECODER.decode(cursor), Charsets.UTF_8))
       .build();
   }

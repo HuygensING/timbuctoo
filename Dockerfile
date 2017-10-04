@@ -19,3 +19,8 @@ COPY ./timbuctoo-instancev4/docker_config.yaml ./timbuctoo-instancev4/docker_con
 CMD ["./timbuctoo-instancev4/target/appassembler/bin/timbuctoo", "server", "./timbuctoo-instancev4/docker_config.yaml"]
 
 RUN mkdir -p /root/data/dataSets
+
+ENV TIMBUCTOO_ELASTICSEARCH_HOST=http://example.com/elasticsearchhost
+ENV TIMBUCTOO_ELASTICSEARCH_PORT=80
+ENV TIMBUCTOO_ELASTICSEARCH_USER=user
+ENV TIMBUCTOO_ELASTICSEARCH_PASSWORD=password

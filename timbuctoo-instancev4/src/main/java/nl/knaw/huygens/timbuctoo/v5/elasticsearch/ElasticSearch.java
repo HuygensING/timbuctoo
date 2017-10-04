@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -23,9 +25,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 
-/**
- * Created on 2017-09-25 15:28.
- */
 public class ElasticSearch {
 
   public static final String UNIQUE_FIELD_NAME = "_uid";
@@ -35,7 +34,9 @@ public class ElasticSearch {
   private final RestClient restClient;
   private final ObjectMapper mapper;
 
-  public ElasticSearch(String hostname, int port, String username, String password) {
+  @JsonCreator
+  public ElasticSearch(@JsonProperty("hostname") String hostname, @JsonProperty("port") int port,
+                       @JsonProperty("username") String username, @JsonProperty("password") String password) {
     Header[] headers = {
       new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json"),
       new BasicHeader("Role", "Read")};
@@ -74,7 +75,7 @@ public class ElasticSearch {
     node.put("size", preferredPageSize);
 
     // search_after
-    if (token != null) {
+    if (token != null && !token.isEmpty()) {
       ArrayNode searchAfterNode = (ArrayNode) node.findValue("search_after");
       if (searchAfterNode == null) {
         searchAfterNode = node.putArray("search_after");

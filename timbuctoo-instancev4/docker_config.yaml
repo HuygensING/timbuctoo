@@ -20,6 +20,13 @@ securityConfiguration:
 baseUri: ${BASE_URI} # used to generate next and previous links of a search result
 userRedirectUrl: ${TIMBUCTOO_GUI_PUBLIC_URL}
 
+elasticSearch:
+  hostname: ${TIMBUCTOO_ELASTICSEARCH_HOST}
+  port: ${TIMBUCTOO_ELASTICSEARCH_PORT}
+  username: ${TIMBUCTOO_ELASTICSEARCH_USER}
+  password: ${TIMBUCTOO_ELASTICSEARCH_PASSWORD}
+
+
 archetypesSchema: |
   type Archetypes {
     persons: PersonArchetypeList @fromCollection(uri: "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", listAll: true)

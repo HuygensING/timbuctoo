@@ -390,7 +390,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "commons_codec_commons_codec",
-    artifact = "commons-codec:commons-codec:jar:1.9",
+    artifact = "commons-codec:commons-codec:jar:1.10",
   )
   native.maven_jar(
     name = "io_dropwizard_metrics_metrics_httpclient",
@@ -648,6 +648,14 @@ def generated_maven_jars():
   native.maven_jar(
     name = "com_healthmarketscience_jackcess_jackcess",
     artifact = "com.healthmarketscience.jackcess:jackcess:jar:2.1.6",
+  )
+  native.maven_jar(
+    name = "org_elasticsearch_client_rest",
+    artifact = "org.elasticsearch.client:rest:jar:5.5.3",
+  )
+  native.maven_jar(
+    name = "org_apache_httpcomponents_httpasyncclient",
+    artifact = "org.apache.httpcomponents:httpasyncclient:jar:4.1.2",
   )
   native.maven_jar(
     name = "org_jsoup_jsoup",
@@ -2615,6 +2623,26 @@ def generated_java_libraries():
     runtime_deps = [
       ":commons_lang_commons_lang",
       ":commons_logging_commons_logging",
+    ],
+  )
+  native.java_library(
+    name = "org_elasticsearch_client_rest",
+    visibility = ["//visibility:public"],
+    exports = ["@org_elasticsearch_client_rest//jar"],
+    runtime_deps = [
+      ":org_apache_httpcomponents_httpclient",
+      ":org_apache_httpcomponents_httpcore",
+      ":org_apache_httpcomponents_httpasyncclient",
+      ":org_apache_httpcomponents_httpcore_nio",
+      ":commons_codec_commons_codec",
+      ":commons_logging_commons_logging",
+    ],
+  )
+  native.java_library(
+    name = "org_apache_httpcomponents_httpasyncclient",
+    visibility = ["//visibility:public"],
+    exports = ["@org_apache_httpcomponents_httpasyncclient//jar"],
+    runtime_deps = [
     ],
   )
   native.java_library(

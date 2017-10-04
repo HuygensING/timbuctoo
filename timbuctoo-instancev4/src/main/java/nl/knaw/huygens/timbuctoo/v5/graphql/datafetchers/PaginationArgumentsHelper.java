@@ -8,6 +8,7 @@ public class PaginationArgumentsHelper {
 
   static PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
     String cursor = "";
+    String searchQuery = null;
     int count = DEFAULT_COUNT;
     if (environment.containsArgument("cursor")) {
       cursor = environment.getArgument("cursor");
@@ -17,7 +18,12 @@ public class PaginationArgumentsHelper {
       count = environment.getArgument("count");
     }
 
-    return PaginationArguments.create(count, cursor);
+    if (environment.containsArgument("elasticsearch")) {
+      searchQuery = environment.getArgument("elasticsearch");
+    }
+
+
+    return PaginationArguments.create(count, cursor, searchQuery);
   }
 
   public String makeListName(String outputTypeName) {
@@ -33,7 +39,7 @@ public class PaginationArgumentsHelper {
     //    .name("count")
     //    .description("The amount of items to request. You might get less items then requested.")
     //  );
-    return fieldName + "(cursor: ID, count: Int): " + makeListName(outputTypeName);
+    return fieldName + "(cursor: ID, count: Int, elasticsearch: String): " + makeListName(outputTypeName);
   }
 
   public String makePaginatedListDefinition(String outputType) {
