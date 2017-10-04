@@ -8,6 +8,8 @@ public interface Property {
 
   long getDensity();
 
+  boolean getIsList();
+
   StringList getReferenceTypes();
 
   default StringList getReferenceTypes(int count, String cursor) {
