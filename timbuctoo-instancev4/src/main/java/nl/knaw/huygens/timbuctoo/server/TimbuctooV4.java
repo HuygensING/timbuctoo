@@ -88,6 +88,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.GraphVizWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonLdWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.JsonWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SqlWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.CreateDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
@@ -282,7 +283,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new CsvWriter(),
       new JsonLdWriter(),
       new JsonWriter(),
-      new GraphVizWriter()
+      new GraphVizWriter(),
+      new SqlWriter()
     );
 
     final PaginationArgumentsHelper argHelper = new PaginationArgumentsHelper(configuration.getCollectionFilters());
