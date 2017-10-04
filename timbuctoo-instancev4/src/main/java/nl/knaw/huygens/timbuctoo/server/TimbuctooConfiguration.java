@@ -2,7 +2,6 @@ package nl.knaw.huygens.timbuctoo.server;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.kjetland.dropwizard.activemq.ActiveMQConfig;
@@ -21,12 +20,11 @@ import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
-import nl.knaw.huygens.timbuctoo.v5.graphql.archetypes.dto.Archetypes;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseFactory;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
@@ -100,9 +98,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   @JsonProperty("persistenceManager")
   public abstract PersistenceManagerFactory getPersistenceManagerFactory();
 
-  @Valid
-  @JsonUnwrapped
-  public abstract Archetypes getArchetypes();
+  public abstract String getArchetypesSchema();
 
   public abstract Optional<URI> getUserRedirectUrl();
 

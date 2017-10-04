@@ -7,6 +7,7 @@ import graphql.language.InlineFragment;
 import graphql.language.Selection;
 import graphql.language.StringValue;
 import graphql.schema.DataFetcher;
+import graphql.schema.DataFetchingEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.PropertyDataFetcher;
 import graphql.schema.TypeResolver;
@@ -21,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.CollectionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationsOfSubjectDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.TypedLiteralDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.UnionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
@@ -73,13 +75,24 @@ public class RdfWiringFactory implements WiringFactory {
       environment.getFieldDefinition().getDirective("rdf") != null ||
       environment.getFieldDefinition().getDirective("uri") != null ||
       environment.getFieldDefinition().getDirective("passThrough") != null ||
+      environment.getFieldDefinition().getDirective("related") != null ||
       environment.getFieldDefinition().getDirective("dataSet") != null;
   }
 
   @Override
   public DataFetcher getDataFetcher(FieldWiringEnvironment environment) {
     if (environment.getFieldDefinition().getDirective("passThrough") != null) {
-      return dataFetchingEnvironment -> "";
+      return DataFetchingEnvironment::getSource;
+    } else if (environment.getFieldDefinition().getDirective("related") != null) {
+      final Directive directive = environment.getFieldDefinition().getDirective("related");
+      String source = ((StringValue) directive.getArgument("source").getValue()).getValue();
+      String predicate = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
+      String direction = ((StringValue) directive.getArgument("direction").getValue()).getValue();
+      return new CollectionFetcherWrapper(new RelationsOfSubjectDataFetcher(
+        source,
+        predicate,
+        Direction.valueOf(direction)
+      ));
     } else if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("fromCollection");
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
@@ -160,7 +173,7 @@ public class RdfWiringFactory implements WiringFactory {
             if (selection instanceof InlineFragment) {
               InlineFragment fragment = (InlineFragment) selection;
               String typeUri = typeNameStore.makeUri(
-                fragment.getTypeCondition().getName().substring(prefix.length()+ 1)
+                fragment.getTypeCondition().getName().substring(prefix.length() + 1)
               );
               if (typeUris.contains(typeUri)) {
                 typeName = prefix + "_" + typeNameStore.makeGraphQlname(typeUri);

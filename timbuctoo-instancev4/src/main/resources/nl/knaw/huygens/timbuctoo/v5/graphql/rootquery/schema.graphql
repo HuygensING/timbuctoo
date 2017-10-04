@@ -46,6 +46,8 @@ type DataSetMetadata {
   provenanceInfo: ProvenanceInfo @rdf(predicate: "http://purl.org/dc/terms/provenance", direction: "OUT", isList: false, isObject: true, isValue: false)
   license: License @rdf(predicate: "http://purl.org/dc/terms/license", direction: "OUT", isList: false, isObject: true, isValue: false)
 
+  #archetypes: Archetypes! @passThrough (added by the RootQuery based on the config)
+
   collections(count: Int = 20, cursor: ID = ""): CollectionMetadataList
 }
 

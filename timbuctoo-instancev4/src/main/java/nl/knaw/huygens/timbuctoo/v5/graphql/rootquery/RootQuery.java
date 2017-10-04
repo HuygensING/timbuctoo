@@ -42,25 +42,39 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   private final DataSetRepository dataSetRepository;
   private final SupportedExportFormats supportedFormats;
+  private final String archetypes;
   private final RdfWiringFactory wiringFactory;
   private final DerivedSchemaTypeGenerator typeGenerator;
   private GraphQLSchema graphQlSchema;
+  private final SchemaParser schemaParser;
   private final String staticQuery;
 
-  public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats,
+  public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats, String archetypes,
                    RdfWiringFactory wiringFactory, DerivedSchemaTypeGenerator typeGenerator) throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
+    this.archetypes = archetypes;
     this.wiringFactory = wiringFactory;
     this.typeGenerator = typeGenerator;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
+    schemaParser = new SchemaParser();
   }
 
   public synchronized void rebuildSchema() {
-    final SchemaParser schemaParser = new SchemaParser();
+    final TypeDefinitionRegistry staticQuery = schemaParser.parse(this.staticQuery);
+    if (archetypes != null && !archetypes.isEmpty()) {
+      staticQuery.merge(schemaParser.parse(
+        archetypes +
+          "extend type DataSetMetadata {\n" +
+          "  archetypes: Archetypes! @passThrough\n" +
+          "}\n" +
+          "\n")
+      );
+    }
+    TypeDefinitionRegistry registry = new TypeDefinitionRegistry();
+    registry.merge(staticQuery);
     final RuntimeWiring.Builder wiring = RuntimeWiring.newRuntimeWiring();
 
-    final TypeDefinitionRegistry registry = schemaParser.parse(staticQuery);
     wiring.type("Query", builder -> builder
       .dataFetcher("promotedDataSets", env -> dataSetRepository.getPromotedDataSets()
         .values().stream().flatMap(Collection::stream)
@@ -136,17 +150,17 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           types,
           dataSet.getTypeNameStore()
         );
-        registry.merge(schemaParser.parse(schema));
+        staticQuery.merge(schemaParser.parse(schema));
       }
     });
     root.append("}\n\nextend type Query {\n  #The actual dataSets\n  dataSets: DataSets @passThrough\n}\n\n");
 
     if (dataSetAvailable[0]) {
-      registry.merge(schemaParser.parse(root.toString()));
+      staticQuery.merge(schemaParser.parse(root.toString()));
     }
 
     SchemaGenerator schemaGenerator = new SchemaGenerator();
-    graphQlSchema = schemaGenerator.makeExecutableSchema(registry, wiring.build());
+    graphQlSchema = schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
   }
 
   public DataSetWithDatabase makeDbResult(PromotedDataSet promotedDataSet) {

@@ -278,6 +278,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new RootQuery(
         dataSetRepository,
         serializerWriterRegistry,
+        configuration.getArchetypesSchema(),
         new RdfWiringFactory(dataSetRepository),
         new DerivedSchemaTypeGenerator(new PaginationArgumentsHelper())
       ),
