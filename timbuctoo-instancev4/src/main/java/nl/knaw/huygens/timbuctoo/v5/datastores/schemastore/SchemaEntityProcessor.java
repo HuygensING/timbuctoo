@@ -1,10 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.schemastore;
 
 import com.google.common.collect.ListMultimap;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.dataset.EntityProcessor;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PredicateData;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PredicateHandler;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PredicateData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RelationPredicate;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -45,7 +46,7 @@ public class SchemaEntityProcessor implements EntityProcessor {
     //Step 1: create all the types that this subject belongs to
     Map<String, Type> curTypes = new HashMap<>();
     List<PredicateData> subjectTypes = addedPredicates.get(RDF_TYPE);
-    if (subjectTypes.isEmpty()) {
+    if (subjectTypes.stream().noneMatch(p -> p instanceof RelationPredicate)) {
       curTypes.put(UNKNOWN, types.computeIfAbsent(UNKNOWN, TYPE_MAKER));
     } else {
       for (PredicateData type : subjectTypes) {
