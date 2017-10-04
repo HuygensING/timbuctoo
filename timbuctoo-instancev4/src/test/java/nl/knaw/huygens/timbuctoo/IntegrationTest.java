@@ -262,43 +262,55 @@ public class IntegrationTest {
     assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
     uploadResponse.readEntity(String.class);
 
-    Response graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+    Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  clusius_ResidenceList {\n" +
-        "    items {\n" +
-        "      uri\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      clusius_ResidenceList {\n" +
+        "        items {\n" +
+        "          uri\n" +
+        "        }\n" +
+        "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("clusius_ResidenceList")
         .get("items").size(),
       is(20)
     );
 
-    graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+    graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  clusius_ResidenceList {\n" +
-        "    items {\n" +
-        "      tim_hasLocation {\n" +
-        "        tim_name {value}\n" +
-        "        _inverse_tim_hasBirthPlace {\n" +
-        "          items {\n" +
-        "            tim_gender {value}\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      clusius_ResidenceList {\n" +
+        "        items {\n" +
+        "          tim_hasLocation {\n" +
+        "            tim_name {value}\n" +
+        "            _inverse_tim_hasBirthPlace {\n" +
+        "              items {\n" +
+        "                tim_gender {value}\n" +
+        "              }\n" +
+        "            }\n" +
         "          }\n" +
         "        }\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat( //every result has a value for name
       stream(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("clusius_ResidenceList")
         .get("items").iterator())
         .map(item -> item
@@ -312,6 +324,8 @@ public class IntegrationTest {
     assertThat(
       stream(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("clusius_ResidenceList")
         .get("items").iterator())
         .flatMap(item ->
@@ -344,39 +358,51 @@ public class IntegrationTest {
 
     assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
 
-    Response graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+    Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
-        "    items { uri }\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
+        "        items { uri }\n" +
+        "      }\n" +
+        "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
         .get("items")
         .size(),
       is(20)
     );
 
-    graphqlCall = call("/v5/DUMMY/" + vreName + "/graphql")
+    graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
-        "    items {\n" +
-        "      http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
-        "        http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
-        "          value\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList {\n" +
+        "        items {\n" +
+        "          http___timbuctoo_huygens_knaw_nl_properties_hasLocation {\n" +
+        "            http___timbuctoo_huygens_knaw_nl_properties_name {\n" +
+        "              value\n" +
+        "            }\n" +
+        "          }\n" +
         "        }\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
     assertThat(
       stream(objectNode
         .get("data")
+        .get("dataSets")
+        .get("DUMMY__" + vreName)
         .get("http___timbuctoo_huygens_knaw_nl_datasets_clusius_ResidenceList")
         .get("items").iterator())
         .map(item -> item
@@ -580,16 +606,16 @@ public class IntegrationTest {
 
     Client client = ClientBuilder.newBuilder().build();
 
-
+    String vreName = "ldtest" + UUID.randomUUID().toString().replace("-", "_");
     WebTarget createDataSet =
-      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/testset/create/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/dataSets/DUMMY/" + vreName + "/create/", APP.getLocalPort()));
 
     createDataSet.request()
                  .header(HttpHeaders.AUTHORIZATION, "fake")
                  .post(Entity.json(null));
 
     final WebTarget createTarget =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/DUMMY/" + vreName + "/upload/jsonld/", APP.getLocalPort()));
 
 
     Response createResponse = createTarget.request()
@@ -602,18 +628,24 @@ public class IntegrationTest {
     assertThat(createResponse.getStatus(), is(204));
 
 
-    Response graphqlCall = call("/v5/DUMMY/testset/graphql")
+    Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  http___example_org_Person(uri: \"http://example.com/the/actual/entity\") {\n" +
-        "    http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision {\n" +
-        "      uri\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      http___example_org_Person(uri: \"http://example.com/the/actual/entity\") {\n" +
+        "        http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision {\n" +
+        "          uri\n" +
+        "        }\n" +
+        "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     ObjectNode objectNode = graphqlCall.readEntity(ObjectNode.class);
     String revision = objectNode
       .get("data")
+      .get("dataSets")
+      .get("DUMMY__" + vreName)
       .get("http___example_org_Person")
       .get("http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision")
       .get("@id")
@@ -644,7 +676,7 @@ public class IntegrationTest {
       "}\n";
 
     final WebTarget createTarget2 =
-      client.target(String.format("http://localhost:%d/v5/DUMMY/testset/upload/jsonld/", APP.getLocalPort()));
+      client.target(String.format("http://localhost:%d/v5/DUMMY/" + vreName + "/upload/jsonld/", APP.getLocalPort()));
 
 
     Response createResponse2 = createTarget2.request()
@@ -656,21 +688,27 @@ public class IntegrationTest {
     }
     assertThat(createResponse2.getStatus(), is(204));
 
-    graphqlCall = call("/v5/DUMMY/testset/graphql")
+    graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity("{\n" +
-        "  http___example_org_Person(uri:\"http://example.com/the/actual/entity\"){\n" +
-        "    http___example_org_pred2 {\n" +
-        "      items {\n" +
-        "        value\n" +
+      .post(Entity.entity(String.format("{\n" +
+        "  dataSets {\n" +
+        "    DUMMY__%1s {\n" +
+        "      http___example_org_Person(uri:\"http://example.com/the/actual/entity\"){\n" +
+        "        http___example_org_pred2 {\n" +
+        "          items {\n" +
+        "            value\n" +
+        "          }\n" +
+        "        }\n" +
         "      }\n" +
         "    }\n" +
         "  }\n" +
-        "}", MediaType.valueOf("application/graphql")));
+        "}", vreName), MediaType.valueOf("application/graphql")));
     objectNode = graphqlCall.readEntity(ObjectNode.class);
 
     assertThat(stream(objectNode
       .get("data")
+      .get("dataSets")
+      .get("DUMMY__" + vreName)
       .get("http___example_org_Person")
       .get("http___example_org_pred2")
       .get("items").iterator())

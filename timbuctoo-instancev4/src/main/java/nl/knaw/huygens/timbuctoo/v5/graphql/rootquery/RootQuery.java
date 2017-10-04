@@ -93,9 +93,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     );
 
     wiring.type("AboutMe", builder -> builder
-      .dataFetcher("dataSets", env -> dataSetRepository
-        .getDataSetsWithWriteAccess(((User) env.getSource()).getId())
-        .stream().map(this::makeDbResult)
+      .dataFetcher("dataSets", env -> (Iterable) () -> dataSetRepository
+        .getDataSetsWithWriteAccess(((User) env.getSource()).getPersistentId())
+        .stream().map(this::makeDbResult).iterator()
       )
       .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
       .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
