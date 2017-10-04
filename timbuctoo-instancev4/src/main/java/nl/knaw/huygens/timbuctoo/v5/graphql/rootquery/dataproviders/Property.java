@@ -10,16 +10,12 @@ public interface Property {
 
   boolean getIsList();
 
-  StringList getReferenceTypes();
+  StringList getReferencedCollections();
 
-  default StringList getReferenceTypes(int count, String cursor) {
-    return getReferenceTypes();
+  default StringList getReferencedCollections(int count, String cursor) {
+    return getReferencedCollections();
   }
 
-  StringList getValueTypes();
-
-  default StringList getValueTypes(int count, String cursor) {
-    return getValueTypes();
-  }
+  boolean getIsValueType();
 
 }

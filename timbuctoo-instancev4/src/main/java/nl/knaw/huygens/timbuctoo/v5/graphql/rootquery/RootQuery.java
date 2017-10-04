@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePro
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -101,7 +102,23 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       )
     );
     wiring.type("DataSetMetadata", builder -> builder
-      .dataFetcher("collections", env -> getCollections(env.getSource()))
+      .dataFetcher("collectionList", env -> getCollections(env.getSource()))
+      .dataFetcher("collection", env -> {
+        String collectionId = (String) env.getArguments().get("collectionId");
+        if (collectionId != null && collectionId.endsWith("List")) {
+          collectionId = collectionId.substring(0, collectionId.length() - "List".length());
+        }
+        PromotedDataSet input = env.getSource();
+        final DataSet dataSet = dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId()).get();
+        final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
+        String collectionUri = typeNameStore.makeUri(collectionId);
+        if (dataSet.getSchemaStore().getTypes() == null ||
+          dataSet.getSchemaStore().getTypes().get(collectionUri) == null) {
+          return null;
+        } else {
+          return getCollection(dataSet, typeNameStore, dataSet.getSchemaStore().getTypes().get(collectionUri));
+        }
+      })
       .dataFetcher("dataSetId", env -> ((PromotedDataSet) env.getSource()).getCombinedId())
     );
 
@@ -180,46 +197,48 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .getSchemaStore()
       .getTypes().values().stream()
       .map(x -> {
-        final long occurrences = x.getOccurrences();
-        final String collectionId = typeNameStore.makeGraphQlname(x.getName());
-        return ImmutableCollectionMetadata.builder()
-          .subjectUri(x.getName())
-          .types(Collections.emptySet())
-          .dataSet(dataSet)
-          .collectionId(collectionId)
-          .collectionListId(collectionId + "List")
-          .total(occurrences)
-          .properties(ImmutablePropertyList.builder()
-            .prevCursor(Optional.empty())
-            .nextCursor(Optional.empty())
-            .items(() -> x.getPredicates().stream().map(pred -> {
-                return (Property) ImmutableProperty.builder()
-                  .density((pred.getOccurrences() * 100) / occurrences)
-                  .isList(pred.isList())
-                  .name(typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection()))
-                  .referenceTypes(ImmutableStringList.builder()
-                    .prevCursor(Optional.empty())
-                    .nextCursor(Optional.empty())
-                    .items(() -> pred.getReferenceTypes().stream().map(typeNameStore::makeGraphQlname).iterator())
-                    .build()
-                  )
-                  .valueTypes(ImmutableStringList.builder()
-                    .prevCursor(Optional.empty())
-                    .nextCursor(Optional.empty())
-                    .items(() -> pred.getValueTypes().stream().map(typeNameStore::makeGraphQlValuename).iterator())
-                    .build()
-                  )
-                  .build();
-              }
-            ).iterator())
-            .build())
-          .build();
+        return getCollection(dataSet, typeNameStore, x);
       })
       .collect(Collectors.toList());
     return ImmutableCollectionMetadataList.builder()
       .nextCursor(Optional.empty())
       .prevCursor(Optional.empty())
       .items(colls)
+      .build();
+  }
+
+  public ImmutableCollectionMetadata getCollection(DataSet dataSet, TypeNameStore typeNameStore, Type collectionType) {
+    final long occurrences = collectionType.getOccurrences();
+    final String collectionId = typeNameStore.makeGraphQlname(collectionType.getName());
+    return ImmutableCollectionMetadata.builder()
+      .subjectUri(collectionType.getName())
+      .types(Collections.emptySet())
+      .dataSet(dataSet)
+      .collectionId(collectionId)
+      .collectionListId(collectionId + "List")
+      .total(occurrences)
+      .properties(ImmutablePropertyList.builder()
+        .prevCursor(Optional.empty())
+        .nextCursor(Optional.empty())
+        .items(() -> collectionType.getPredicates().stream().map(pred -> {
+            return (Property) ImmutableProperty.builder()
+              .density((pred.getOccurrences() * 100) / occurrences)
+              .isList(pred.isList())
+              .name(typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection()))
+              .referencedCollections(ImmutableStringList.builder()
+                .prevCursor(Optional.empty())
+                .nextCursor(Optional.empty())
+                .items(() -> pred.getReferenceTypes().stream()
+                  .filter(t -> !t.equals(RdfConstants.UNKNOWN))
+                  .map(typeNameStore::makeGraphQlname)
+                  .iterator())
+                .build()
+              )
+              .isValueType(!pred.getValueTypes().isEmpty())
+              .build();
+          }
+        ).iterator())
+        .build())
       .build();
   }
 

@@ -48,7 +48,8 @@ type DataSetMetadata {
 
   #archetypes: Archetypes! @passThrough (added by the RootQuery based on the config)
 
-  collections(count: Int = 20, cursor: ID = ""): CollectionMetadataList
+  collection(collectionId: ID!): CollectionMetadata
+  collectionList(count: Int = 20, cursor: ID = ""): CollectionMetadataList
 }
 
 type AboutMe {
@@ -103,11 +104,12 @@ type PropertyList {
 type Property {
   name: String
   density: Int
-  referenceTypes(count: Int = 20, cursor: ID = ""): TypeList
-  valueTypes(count: Int = 20, cursor: ID = ""): TypeList
+  isList: Boolean
+  referencedCollections(count: Int = 20, cursor: ID = ""): CollectionIdList
+  isValueType: Boolean
 }
 
-type TypeList {
+type CollectionIdList {
   prevCursor: ID
   nextCursor: ID
   items: [String!]!
