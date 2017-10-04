@@ -45,7 +45,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   private final String archetypes;
   private final RdfWiringFactory wiringFactory;
   private final DerivedSchemaTypeGenerator typeGenerator;
-  private GraphQLSchema graphQlSchema;
   private final SchemaParser schemaParser;
   private final String staticQuery;
 
@@ -60,7 +59,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     schemaParser = new SchemaParser();
   }
 
-  public synchronized void rebuildSchema() {
+  public synchronized GraphQLSchema rebuildSchema() {
     final TypeDefinitionRegistry staticQuery = schemaParser.parse(this.staticQuery);
     if (archetypes != null && !archetypes.isEmpty()) {
       staticQuery.merge(schemaParser.parse(
@@ -160,7 +159,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     }
 
     SchemaGenerator schemaGenerator = new SchemaGenerator();
-    graphQlSchema = schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
+    return schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
   }
 
   public DataSetWithDatabase makeDbResult(PromotedDataSet promotedDataSet) {
@@ -225,8 +224,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
   @Override
   public GraphQLSchema get() {
-    rebuildSchema();
-    return graphQlSchema;
+    return rebuildSchema();
   }
 
   public static class RootData {
