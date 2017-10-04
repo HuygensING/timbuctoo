@@ -138,7 +138,11 @@ public class RdfWiringFactory implements WiringFactory {
       if (environment.getObject() instanceof TypedValue) {
         final TypedValue typedValue = (TypedValue) environment.getObject();
         final String typeUri = typedValue.getType();
-        typeName = typedValue.getDataSet().getTypeNameStore().makeGraphQlValuename(typeUri);
+        final String prefix = typedValue.getDataSet().getMetadata().getCombinedId();
+        typeName =
+          prefix +
+          "_" +
+          typedValue.getDataSet().getTypeNameStore().makeGraphQlValuename(typeUri);
       } else {
         //Often a thing has one type. In that case this lambda is easy to implement. Simply return that type
         //In rdf things can have more then one type though (types are like java interfaces)
@@ -146,17 +150,20 @@ public class RdfWiringFactory implements WiringFactory {
         // that
         //the user actually requested
         final SubjectReference subjectReference = (SubjectReference) environment.getObject();
+        final String prefix = subjectReference.getDataSet().getMetadata().getCombinedId();
         Set<String> typeUris = subjectReference.getTypes();
         final TypeNameStore typeNameStore = subjectReference.getDataSet().getTypeNameStore();
         if (typeUris.isEmpty()) {
-          typeName = typeNameStore.makeGraphQlname(RdfConstants.UNKNOWN);
+          typeName = prefix + "_" + typeNameStore.makeGraphQlname(RdfConstants.UNKNOWN);
         } else {
           for (Selection selection : environment.getField().getSelectionSet().getSelections()) {
             if (selection instanceof InlineFragment) {
               InlineFragment fragment = (InlineFragment) selection;
-              String typeUri = typeNameStore.makeUri(fragment.getTypeCondition().getName());
+              String typeUri = typeNameStore.makeUri(
+                fragment.getTypeCondition().getName().substring(prefix.length()+ 1)
+              );
               if (typeUris.contains(typeUri)) {
-                typeName = typeNameStore.makeGraphQlname(typeUri);
+                typeName = prefix + "_" + typeNameStore.makeGraphQlname(typeUri);
                 break;
               }
             } else {
@@ -165,7 +172,12 @@ public class RdfWiringFactory implements WiringFactory {
           }
         }
       }
-      return typeName == null ? null : (GraphQLObjectType) environment.getSchema().getType(typeName);
+      if (typeName == null) {
+        return null;
+      } else {
+        final GraphQLObjectType type = (GraphQLObjectType) environment.getSchema().getType(typeName);
+        return type;
+      }
     }
   }
 }

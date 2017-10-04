@@ -115,7 +115,7 @@ public class GraphQlTypesContainer {
   }
 
   public String valueType(String typeUri) {
-    final String name = rootType + "_" + typeNameStore.makeGraphQlValuename(typeUri);
+    final String name = getValueTypeName(typeUri);
     if (!types.containsKey(name)) {
       StringBuilder builder = new StringBuilder();
       types.put(name, builder);
@@ -128,12 +128,18 @@ public class GraphQlTypesContainer {
     return name;
   }
 
-  public String objectType(String typeUri) {
+
+  public String getValueTypeName(String typeUri) {
+    //rootType prefix logic is also present in the ObjectTypeResolver of RdfWiringFactory
+    return rootType + "_" + typeNameStore.makeGraphQlValuename(typeUri);
+  }
+
+  public String getObjectTypeName(String typeUri) {
     return rootType + "_" + typeNameStore.makeGraphQlname(typeUri);
   }
 
   public void openObjectType(String typeUri) {
-    final String name = objectType(typeUri);
+    final String name = getObjectTypeName(typeUri);
     if (!types.containsKey(name)) {
       StringBuilder builder = new StringBuilder();
       types.put(name, builder);
@@ -156,7 +162,7 @@ public class GraphQlTypesContainer {
   }
 
   public void closeObjectType(String typeUri) {
-    final String name = objectType(typeUri);
+    final String name = getObjectTypeName(typeUri);
     types.get(name).append("}\n\n");
     currentType = null;
   }
@@ -169,7 +175,7 @@ public class GraphQlTypesContainer {
 
 
     for (String uri : topLevelTypes) {
-      String typename = objectType(uri);
+      String typename = getObjectTypeName(uri);
       String name = typename.substring(rootType.length() + 1);
       total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
         "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");

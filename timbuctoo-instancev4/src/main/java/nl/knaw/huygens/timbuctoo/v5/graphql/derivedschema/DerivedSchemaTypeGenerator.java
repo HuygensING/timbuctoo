@@ -53,12 +53,12 @@ public class DerivedSchemaTypeGenerator {
         typesContainer.objectField(
           null,
           pred,
-          typesContainer.objectType(pred.getReferenceTypes().iterator().next())
+          typesContainer.getObjectTypeName(pred.getReferenceTypes().iterator().next())
         );
       } else {
         Set<String> refs = new HashSet<>();
         for (String referenceType : pred.getReferenceTypes()) {
-          refs.add(typesContainer.objectType(referenceType));
+          refs.add(typesContainer.getObjectTypeName(referenceType));
         }
         for (String valueType : pred.getValueTypes()) {
           refs.add(typesContainer.valueType(valueType));
