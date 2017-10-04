@@ -94,7 +94,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RootGraphQl;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
@@ -274,7 +274,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new GraphVizWriter()
     );
 
-    register(environment, new RootGraphQl(
+    register(environment, new GraphQl(
       new RootQuery(
         dataSetRepository,
         serializerWriterRegistry,

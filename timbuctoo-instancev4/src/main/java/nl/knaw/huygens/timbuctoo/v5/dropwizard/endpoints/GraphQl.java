@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 import static graphql.ExecutionInput.newExecutionInput;
 
 @Path("/v5/graphql")
-public class RootGraphQl {
+public class GraphQl {
   private final Supplier<GraphQLSchema> graphqlGetter;
   private final SerializerWriterRegistry serializerWriterRegistry;
   private final LoggedInUsers loggedInUsers;
@@ -41,8 +41,8 @@ public class RootGraphQl {
   private GraphQL graphQl;
   private GraphQLSchema prevGraphQlSchema;
 
-  public RootGraphQl(Supplier<GraphQLSchema> graphqlGetter, SerializerWriterRegistry serializerWriterRegistry,
-                     LoggedInUsers loggedInUsers)
+  public GraphQl(Supplier<GraphQLSchema> graphqlGetter, SerializerWriterRegistry serializerWriterRegistry,
+                 LoggedInUsers loggedInUsers)
     throws DatabaseException, RdfProcessingFailedException {
     this.graphqlGetter = graphqlGetter;
     this.serializerWriterRegistry = serializerWriterRegistry;
