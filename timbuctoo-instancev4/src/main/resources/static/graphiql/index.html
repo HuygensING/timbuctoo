@@ -36,6 +36,7 @@
 
       function setAcceptMediaType(mediaType) {
           acceptMediaType = mediaType;
+          reRender();
       }
       
       function graphQLFetcher(graphQLParams) {
@@ -88,7 +89,7 @@
                   null,
                   React.createElement(
                       GraphiQL.Menu,
-                      {label: "select media type"},
+                      {label: acceptMediaType},
                       mediaTypeMenuItems
                   ),
               )
