@@ -284,12 +284,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     register(environment, graphQlEndpoint);
 
-    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(environment.jersey());
+    SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry();
     serializerWriterRegistry.register(new CsvWriter());
     serializerWriterRegistry.register(new JsonLdWriter());
     serializerWriterRegistry.register(new JsonWriter());
     serializerWriterRegistry.register(new GraphVizWriter());
-    
+
     register(environment, new RootGraphQl(
       new RootQuery(
         dataSetRepository,
@@ -297,6 +297,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         wiringFactory,
         typeGenerator
       ),
+      serializerWriterRegistry,
       securityConfig.getLoggedInUsers()
     ));
 

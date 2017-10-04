@@ -1,36 +1,39 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes;
 
-import io.dropwizard.jersey.setup.JerseyEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
+import java.util.Optional;
 import java.util.Set;
 
 import static java.lang.String.format;
 
 public class SerializerWriterRegistry implements SupportedExportFormats {
-  private final JerseyEnvironment jersey;
-  private HashSet<String> supportedMimeTypes;
+  private HashMap<String, SerializerWriter> supportedMimeTypes;
 
-  public SerializerWriterRegistry(JerseyEnvironment jersey) {
-    supportedMimeTypes = new LinkedHashSet<>();
-    this.jersey = jersey;
+  public SerializerWriterRegistry() {
+    supportedMimeTypes = new HashMap<>();
   }
 
 
   @Override
   public Set<String> getSupportedMimeTypes() {
-    return supportedMimeTypes;
+    return supportedMimeTypes.keySet();
   }
 
   public void register(SerializerWriter serializerWriter) {
     String mimeType = serializerWriter.getMimeType();
-    boolean addSucceeded = supportedMimeTypes.add(mimeType);
-    if (!addSucceeded) {
+    SerializerWriter added = supportedMimeTypes.putIfAbsent(mimeType, serializerWriter);
+    if (added != null) {
       throw new RuntimeException(format("Timbuctoo supports only one serializer writer for '%s'", mimeType));
     }
+  }
 
-    jersey.register(serializerWriter);
+  public Optional<SerializerWriter> get(String mimeType) {
+    return Optional.ofNullable(supportedMimeTypes.get(mimeType));
+  }
+
+  public Optional<SerializerWriter> getBestMatch(String acceptHeader) {
+    return MimeParser.bestMatch(supportedMimeTypes.keySet(), acceptHeader).map(supportedMimeTypes::get);
   }
 }

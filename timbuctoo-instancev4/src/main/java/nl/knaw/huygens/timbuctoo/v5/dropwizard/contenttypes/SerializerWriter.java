@@ -37,4 +37,8 @@ public abstract class SerializerWriter implements MessageBodyWriter<Serializable
   }
 
   public abstract String getMimeType() ;
+
+  public SerializationFactory getSerializationFactory() {
+    return serializationFactory;
+  }
 }
