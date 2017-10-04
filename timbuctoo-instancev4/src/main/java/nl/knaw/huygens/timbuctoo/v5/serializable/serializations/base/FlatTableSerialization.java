@@ -9,7 +9,6 @@ import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionObject;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.GraphqlIntrospectionValue;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.PredicateInfo;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.QueryContainer;
-import nl.knaw.huygens.timbuctoo.v5.serializable.dto.RdfData;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Serializable;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.SerializableList;
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
@@ -19,11 +18,11 @@ import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.toList;
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static org.slf4j.LoggerFactory.getLogger;
 
@@ -75,15 +74,16 @@ public abstract class FlatTableSerialization implements Serialization {
     if (data.keySet().isEmpty()) {
       LOG.error("I though maps could not be empty because graphql requires you to ask for at least 1 key");
     }
-    List<Serializable> dataItems = data.values().stream()
-      .filter(v -> v instanceof RdfData)
-      .collect(toList());
-    if (dataItems.size() == 1) {
-      Serializable entry = dataItems.get(0);
+    if (data.size() == 1) {
+      Serializable entry = data.values().iterator().next();
       if (entry instanceof Entity) {
         return findListRecurser(((Entity) entry).getContents());
       } else if (entry instanceof SerializableList) {
         return ((SerializableList) entry).getItems();
+      } else if (entry instanceof GraphqlIntrospectionList) {
+        return ((GraphqlIntrospectionList) entry).getItems();
+      } else if (entry instanceof GraphqlIntrospectionObject) {
+        return findListRecurser(((GraphqlIntrospectionObject) entry).getContents());
       } else {
         return null;
       }
@@ -102,7 +102,7 @@ public abstract class FlatTableSerialization implements Serialization {
     return toc;
   }
 
-  private TocItem generateToc(List<Serializable> list) throws IOException {
+  private TocItem generateToc(Collection<Serializable> list) throws IOException {
     TocItem toc = new TocItem();
     GenerateTocDispatcher dispatcher = new GenerateTocDispatcher();
     for (Serializable item : list) {
@@ -123,7 +123,7 @@ public abstract class FlatTableSerialization implements Serialization {
     return header;
   }
 
-  private void writeBody(List<Serializable> list, TocItem toc) throws IOException {
+  private void writeBody(Collection<Serializable> list, TocItem toc) throws IOException {
     WriteBodyDispatcher dispatcher = new WriteBodyDispatcher();
     for (Serializable item : list) {
       List<Value> result = new ArrayList<>();
