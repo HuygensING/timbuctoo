@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
+import nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearch;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.CollectionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationDataFetcher;
@@ -41,9 +42,11 @@ public class RdfWiringFactory implements WiringFactory {
   private final LookUpSubjectByUriFetcherWrapper lookupFetcher;
   private final ObjectTypeResolver objectTypeResolver;
   private final DataSetRepository dataSetRepository;
+  private final ElasticSearch elasticSearch;
 
-  public RdfWiringFactory(DataSetRepository dataSetRepository) {
+  public RdfWiringFactory(DataSetRepository dataSetRepository, ElasticSearch elasticSearch) {
     this.dataSetRepository = dataSetRepository;
+    this.elasticSearch = elasticSearch;
     objectTypeResolver = new ObjectTypeResolver();
     uriFetcher = new UriFetcher();
     lookupFetcher = new LookUpSubjectByUriFetcherWrapper("uri", new QuadStoreLookUpSubjectByUriFetcher());
@@ -98,7 +101,7 @@ public class RdfWiringFactory implements WiringFactory {
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
       boolean listAll = ((BooleanValue) directive.getArgument("listAll").getValue()).isValue();
       if (listAll) {
-        return new CollectionFetcherWrapper(new CollectionDataFetcher(uri));
+        return new CollectionFetcherWrapper(new CollectionDataFetcher(uri, elasticSearch));
       } else {
         return lookupFetcher;
       }

@@ -26,6 +26,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
+import nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearch;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
 
@@ -108,6 +109,8 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   @JsonProperty("dataSet")
   @Valid
   public abstract DataSetConfiguration getDataSetConfiguration();
+
+  public abstract ElasticSearch getElasticSearch();
 
   @JsonIgnore
   public DataSetRepository getDataSet() throws DataStoreCreationException {
