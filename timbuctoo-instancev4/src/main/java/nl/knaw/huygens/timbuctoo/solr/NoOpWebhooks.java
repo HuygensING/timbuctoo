@@ -7,4 +7,9 @@ public class NoOpWebhooks implements Webhooks {
   public void startIndexingForVre(String vreName) throws IOException {
     //ignore
   }
+
+  @Override
+  public void dataSetUpdated(String dataSetId) throws IOException {
+    //ignore
+  }
 }

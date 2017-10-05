@@ -4,14 +4,14 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import nl.knaw.huygens.hamcrest.CompositeMatcher;
 import nl.knaw.huygens.hamcrest.PropertyEqualityMatcher;
+import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileSystemFileStorage;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.Rdf4jIoFactory;
-import nl.knaw.huygens.timbuctoo.util.FileHelpers;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -54,7 +54,9 @@ public class ImportManagerTest {
       fileStorage,
       Executors.newSingleThreadExecutor(),
       new Rdf4jIoFactory(),
-      resourceList);
+      resourceList,
+      () -> { }
+    );
   }
 
   @After

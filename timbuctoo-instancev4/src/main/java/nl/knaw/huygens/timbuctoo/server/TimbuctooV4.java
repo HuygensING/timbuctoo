@@ -79,6 +79,7 @@ import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
+import nl.knaw.huygens.timbuctoo.solr.Webhooks;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.DataSetFactoryManager;
@@ -108,6 +109,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.management.ObjectName;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -237,7 +239,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
 
-    DataSetRepository dataSetRepository = configuration.getDataSet();
+    final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
+    DataSetRepository dataSetRepository = configuration.getDataSet(combinedId -> {
+      try {
+        webhooks.dataSetUpdated(combinedId);
+      } catch (IOException e) {
+        LOG.error("Webhook call failed", e);
+      }
+    });
 
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
 
@@ -274,7 +283,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new GraphVizWriter()
     );
 
-    register(environment, new GraphQl(
+    final GraphQl graphQlEndpoint = new GraphQl(
       new RootQuery(
         dataSetRepository,
         serializerWriterRegistry,
@@ -284,8 +293,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         environment.getObjectMapper()
       ),
       serializerWriterRegistry,
-      securityConfig.getLoggedInUsers()
-    ));
+      securityConfig.getLoggedInUsers(),
+      uriHelper
+    );
+    register(environment, graphQlEndpoint);
 
     register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(), dataSetRepository));
     register(environment, new DataSet(
@@ -327,7 +338,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, rawCollection);
     ExecuteRml executeRml = new ExecuteRml(uriHelper, graphManager, vres, new JenaBasedReader(), permissionChecker,
       new DataSourceFactory(graphManager), transactionEnforcer,
-      configuration.getWebhooks().getWebHook(environment));
+      webhooks
+    );
     register(environment, executeRml);
     SaveRml saveRml = new SaveRml(uriHelper, permissionChecker, transactionEnforcer);
     register(environment, saveRml);

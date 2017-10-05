@@ -14,18 +14,21 @@ public class WebhookFactory {
   @JsonProperty
   private String vreAdded;
 
+  @JsonProperty
+  private String dataSetUpdated;
+
   @Valid
   @NotNull
   @JsonProperty("httpClient")
   private HttpClientConfiguration httpClientConfig = new HttpClientConfiguration();
 
   public Webhooks getWebHook(Environment environment) {
-    if (vreAdded != null) {
+    if (vreAdded != null || dataSetUpdated != null) {
       final HttpClient httpClient = new HttpClientBuilder(environment)
         .using(httpClientConfig)
         .build("solr-webhook-client");
 
-      return new CallingWebhooks(vreAdded, httpClient);
+      return new CallingWebhooks(vreAdded, dataSetUpdated, httpClient);
     } else {
       return new NoOpWebhooks();
     }

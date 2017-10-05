@@ -56,11 +56,13 @@ public class DataSetRepository {
   private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
   private final ResourceSync resourceSync;
+  private Consumer<String> onUpdated;
 
 
   public DataSetRepository(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
                            DataSetConfiguration configuration, DataStoreFactory dataStoreFactory,
-                           TimbuctooRdfIdHelper rdfIdHelper) throws IOException {
+                           TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated)
+    throws IOException {
     this.executorService = executorService;
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
@@ -78,6 +80,7 @@ public class DataSetRepository {
     resourceSync = configuration.getResourceSync();
 
     dataSetMap = new HashMap<>();
+    this.onUpdated = onUpdated;
   }
 
   private void loadDataSetsFromJson() throws IOException {
@@ -91,7 +94,15 @@ public class DataSetRepository {
           try {
             ownersSets.put(
               dataSetName,
-              dataSet(promotedDataSet, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+              dataSet(
+                promotedDataSet,
+                configuration,
+                fileHelper,
+                executorService,
+                dataStoreFactory,
+                resourceSync,
+                () -> onUpdated.accept(promotedDataSet.getCombinedId())
+              )
             );
           } catch (IOException | DataStoreCreationException | ResourceSyncException e) {
             throw new IOException(e);
@@ -127,7 +138,15 @@ public class DataSetRepository {
           vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), ownerId, "ADMIN");
           userDataSets.put(
             dataSetId,
-            dataSet(dataSet, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+            dataSet(
+              dataSet,
+              configuration,
+              fileHelper,
+              executorService,
+              dataStoreFactory,
+              resourceSync,
+              () -> onUpdated.accept(dataSet.getCombinedId())
+            )
           );
           storedDataSets.updateData(dataSets -> {
             dataSets
@@ -202,7 +221,7 @@ public class DataSetRepository {
     storedDataSets.updateData(dataSets -> {
       Set<PromotedDataSet>
         dataSetsToKeep = dataSets.get(ownerId).stream().filter(dataSet -> !dataSet.getDataSetId().equals(dataSetName))
-                                 .collect(Collectors.toSet());
+        .collect(Collectors.toSet());
       dataSets.put(ownerId, dataSetsToKeep);
       return dataSets;
     });

@@ -36,6 +36,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -113,14 +114,15 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract ElasticSearch getElasticSearch();
 
   @JsonIgnore
-  public DataSetRepository getDataSet() throws DataStoreCreationException {
+  public DataSetRepository getDataSet(Consumer<String> onUpdated) throws DataStoreCreationException {
     try {
       return new DataSetRepository(
         dataSetExecutorService,
         getSecurityConfiguration().getVreAuthorizationCreator(),
         getDataSetConfiguration(),
         new BdbDataStoreFactory(getDatabases()),
-        getRdfIdHelper()
+        getRdfIdHelper(),
+        onUpdated
       );
     } catch (IOException | AccessNotPossibleException e) {
       throw new DataStoreCreationException(e);

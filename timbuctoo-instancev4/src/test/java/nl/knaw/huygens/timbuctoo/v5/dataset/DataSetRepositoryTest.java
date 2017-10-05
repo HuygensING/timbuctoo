@@ -3,9 +3,9 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.google.common.io.Files;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
@@ -52,7 +52,8 @@ public class DataSetRepositoryTest {
                                    .resourceSync(resourceSync)
                                    .build(),
       new BdbDataStoreFactory(new NonPersistentBdbDatabaseCreator()),
-      new TimbuctooRdfIdHelper("http://example.org/timbuctoo/")
+      new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
+      combinedId -> { }
     );
   }
 
