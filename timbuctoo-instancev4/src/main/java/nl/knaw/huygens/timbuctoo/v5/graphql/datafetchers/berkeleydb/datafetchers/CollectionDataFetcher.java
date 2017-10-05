@@ -21,12 +21,14 @@ import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dataf
 public class CollectionDataFetcher implements CollectionFetcher {
   private static final Logger LOG = LoggerFactory.getLogger(CollectionDataFetcher.class);
 
-  private final String collectionName;
+  private final String collectionUri;
   private final ElasticSearch elasticSearch;
+  private final String indexName;
 
-  public CollectionDataFetcher(String collectionName, ElasticSearch elasticSearch) {
-    this.collectionName = collectionName;
+  public CollectionDataFetcher(String collectionUri, ElasticSearch elasticSearch, String indexName) {
+    this.collectionUri = collectionUri;
     this.elasticSearch = elasticSearch;
+    this.indexName = indexName;
   }
 
   @Override
@@ -35,7 +37,7 @@ public class CollectionDataFetcher implements CollectionFetcher {
     if (arguments.getSearchQuery().isPresent()) {
       try {
         final PageableResult result = elasticSearch.query(
-          dataSet.getMetadata().getCombinedId(),
+          dataSet.getMetadata().getCombinedId().toLowerCase() + "/" + indexName,
           arguments.getSearchQuery().get(),
           cursor,
           arguments.getCount()
@@ -49,7 +51,7 @@ public class CollectionDataFetcher implements CollectionFetcher {
         throw new RuntimeException(e);
       }
     } else {
-      try (Stream<CursorSubject> subjectStream = dataSet.getCollectionIndex().getSubjects(collectionName, cursor)) {
+      try (Stream<CursorSubject> subjectStream = dataSet.getCollectionIndex().getSubjects(collectionUri, cursor)) {
         return getPaginatedList(
           subjectStream,
           cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getSubjectUri(), dataSet),

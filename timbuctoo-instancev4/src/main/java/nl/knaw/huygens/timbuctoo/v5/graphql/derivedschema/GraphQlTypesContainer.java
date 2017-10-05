@@ -178,9 +178,17 @@ public class GraphQlTypesContainer {
       String typename = getObjectTypeName(uri);
       String name = typename.substring(rootType.length() + 1);
       total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
-        "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");
-      total.append("  ").append(listType(name + "List", typename)).append(" " +
-        "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: true)\n");
+        "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false, indexName: \"")
+        .append(name)
+        .append("\")\n");
+      total.append("  ")
+        .append(listType(name + "List", typename))
+        .append(" " +
+          "@fromCollection(uri: \"")
+        .append(uri.replace("\"", "\\\""))
+        .append("\", listAll: true, indexName: \"")
+        .append(name)
+        .append("\")\n");
     }
 
     total.append("}\n\n");

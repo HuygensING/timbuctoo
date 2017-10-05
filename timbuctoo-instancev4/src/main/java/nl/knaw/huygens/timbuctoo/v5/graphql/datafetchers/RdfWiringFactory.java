@@ -99,9 +99,10 @@ public class RdfWiringFactory implements WiringFactory {
     } else if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("fromCollection");
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
+      String indexName = ((StringValue) directive.getArgument("indexName").getValue()).getValue();
       boolean listAll = ((BooleanValue) directive.getArgument("listAll").getValue()).isValue();
       if (listAll) {
-        return new CollectionFetcherWrapper(new CollectionDataFetcher(uri, elasticSearch));
+        return new CollectionFetcherWrapper(new CollectionDataFetcher(uri, elasticSearch, indexName));
       } else {
         return lookupFetcher;
       }

@@ -9,7 +9,7 @@ import java.util.List;
  */
 public class PageableResult {
 
-  public static final String ID_FIELD = "_id";
+  public static final String ID_FIELD = "uri";
 
   private final JsonNode queryNode;
   private final JsonNode resultNode;
