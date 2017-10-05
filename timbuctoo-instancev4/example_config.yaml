@@ -16,7 +16,7 @@ securityConfiguration:
     authenticationCredentials: DUMMY
 
 baseUri: http://127.0.0.1:0 #port will be replaced with the port that timbuctoo ends up listening on
-userRedirectUrl: http://example.com
+userRedirectUrl: ./static/graphiql
 
 elasticSearch:
   hostname: http://example.com/elasticsearchinstance
