@@ -21,8 +21,6 @@ userRedirectUrl: ./static/graphiql
 elasticSearch:
   hostname: http://example.com/elasticsearchinstance
   port: 80
-  username: foo
-  password: bar
 
 archetypesSchema: |
   type Archetypes {

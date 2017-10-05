@@ -20,10 +20,12 @@ import org.apache.http.message.BasicHeader;
 import org.apache.http.nio.entity.NStringEntity;
 import org.elasticsearch.client.Response;
 import org.elasticsearch.client.RestClient;
+import org.elasticsearch.client.RestClientBuilder;
 
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Optional;
 
 public class ElasticSearch {
 
@@ -36,17 +38,24 @@ public class ElasticSearch {
 
   @JsonCreator
   public ElasticSearch(@JsonProperty("hostname") String hostname, @JsonProperty("port") int port,
-                       @JsonProperty("username") String username, @JsonProperty("password") String password) {
+                       @JsonProperty("username") Optional<String> username,
+                       @JsonProperty("password") Optional<String> password) {
     Header[] headers = {
       new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json"),
       new BasicHeader("Role", "Read")};
-    final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-    credentialsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
-    restClient = RestClient.builder(new HttpHost(hostname, port))
-                           .setDefaultHeaders(headers)
-                           .setHttpClientConfigCallback(
-                             builder -> builder.setDefaultCredentialsProvider(credentialsProvider))
-                           .build();
+    final RestClientBuilder restClientBuilder = RestClient.builder(new HttpHost(hostname, port))
+      .setDefaultHeaders(headers);
+    if (username.isPresent() && !username.get().isEmpty() && password.isPresent() && !password.get().isEmpty()) {
+      final CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
+
+      credentialsProvider.setCredentials(
+        AuthScope.ANY,
+        new UsernamePasswordCredentials(username.get(), password.get())
+      );
+
+      restClientBuilder.setHttpClientConfigCallback(b -> b.setDefaultCredentialsProvider(credentialsProvider));
+    }
+    restClient = restClientBuilder.build();
     mapper = new ObjectMapper();
   }
 
