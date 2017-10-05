@@ -24,14 +24,20 @@
 <./provenance> <http://purl.org/dc/terms/title> "Example Provenance Title" .
 <./provenance> <http://purl.org/dc/terms/description> "This is an example description for the example provenance." .
 
-
-clusius:Places 
+clusius:Places
   rdfs:subClassOf archetypes:location ;
+  <http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasIndexConfig> "{\"facet\":[{\"paths\":[\"tim_name.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_country.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_latitude.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_longitude.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_remarks.value\"],\"type\":\"MultiSelect\"}]}" ;
   <http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate> "tim_name" .
 
 clusius:Persons
   rdfs:subClassOf archetypes:person ;
+  <http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasIndexConfig> "{\"facet\":[{\"paths\":[\"tim_names.items.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_gender.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_birthDate.value\"],\"type\":\"DateRange\"},{\"paths\":[\"tim_deathDate.value\"],\"type\":\"DateRange\"},{\"paths\":[\"tim_hasDeathPlace.tim_country.value\",\"tim_hasDeathPlace.tim_name.value\"],\"type\":\"Hierarchical\"},{\"paths\":[\"tim_hasBirthPlace.tim_country.value\",\"tim_hasBirthPlace.tim_name.value\"],\"type\":\"Hierarchical\"},{\"paths\":[\"_inverse_tim_isScientistBioOf.tim_biography.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"_inverse_tim_hasResident.items.tim_hasLocation.tim_country.value\",\"_inverse_tim_hasResident.items.tim_hasLocation.tim_name.value\"],\"type\":\"Hierarchical\"},{\"paths\":[\"_inverse_tim_isEducationOf.items.tim_description.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"_inverse_tim_isOccupationOf.items.tim_description.value\"],\"type\":\"MultiSelect\"}],\"fullText\":[{\"fields\":[{\"path\":\"tim_names.items.value\"}]}]}" ;
   <http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryTitlePredicate> "tim_names" .
+
+clusius:Biography
+  rdfs:subClassOf archetypes:document ;
+  <http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasIndexConfig> "{\"facet\":[{\"paths\":[\"tim_isScientistBioOf.tim_names.items.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_hasFieldOfInterest.items.tim_value.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_biography.value\"],\"type\":\"MultiSelect\"},{\"paths\":[\"tim_highest_degree.value\"],\"type\":\"MultiSelect\"}]}" ;
+  <http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryDescriptionPredicate> "tim_biography" .
 
 clusius:Provenance_type rdfs:subClassOf archetypes:keyword .
 clusius:Fields_of_interest rdfs:subClassOf archetypes:keyword .
