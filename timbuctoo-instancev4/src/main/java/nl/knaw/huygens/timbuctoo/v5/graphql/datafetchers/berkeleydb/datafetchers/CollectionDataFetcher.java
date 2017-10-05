@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers;
 
-import graphql.GraphQLError;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CursorSubject;
 import nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearch;
@@ -17,8 +16,7 @@ import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper
-  .getPaginatedList;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper.getPaginatedList;
 
 public class CollectionDataFetcher implements CollectionFetcher {
   private static final Logger LOG = LoggerFactory.getLogger(CollectionDataFetcher.class);
@@ -37,7 +35,7 @@ public class CollectionDataFetcher implements CollectionFetcher {
     if (arguments.getSearchQuery().isPresent()) {
       try {
         final PageableResult result = elasticSearch.query(
-          collectionName,
+          dataSet.getMetadata().getCombinedId(),
           arguments.getSearchQuery().get(),
           cursor,
           arguments.getCount()
