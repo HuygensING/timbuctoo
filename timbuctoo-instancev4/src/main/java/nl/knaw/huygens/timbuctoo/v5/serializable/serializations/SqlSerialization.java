@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,9 +15,10 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
   private String tableName;
   private String columnHeaders;
   private List<String> columns;
+  protected final PrintWriter writer;
 
   public SqlSerialization(OutputStream outputStream) throws IOException {
-    //    csvPrinter = new CSVPrinter(new PrintWriter(outputStream), CSVFormat.EXCEL);
+    writer = new PrintWriter(outputStream);
   }
 
   protected void initialize(List<String> columnHeaders) throws IOException {
