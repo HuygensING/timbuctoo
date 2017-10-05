@@ -24,7 +24,7 @@ public class RdfConstants {
   public static final String TIM_MIMETYPE = TIM_VOCAB + "mimetype";
   public static final String TIM_HASCOLOR = TIM_VOCAB + "hasColor";
   public static final String TIM_EDITOR = TIM_VOCAB + "editor";
-  public static final String TIM_HASINDEXERCONFIG = TIM_VOCAB + "hasIndexerConfig";
+  public static final String TIM_HASINDEXERCONFIG = TIM_VOCAB + "hasIndexConfig";
   public static final String TIM_HASFULLTEXTSEARCH = TIM_VOCAB + "hasFullTextSearch";
   public static final String TIM_HASFACETPATH = TIM_VOCAB + "hasFacetPath";
   public static final String TIM_NEXTFACET = TIM_VOCAB + "nextFacet";

@@ -280,7 +280,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
         new RdfWiringFactory(dataSetRepository, configuration.getElasticSearch()),
-        new DerivedSchemaTypeGenerator(new PaginationArgumentsHelper())
+        new DerivedSchemaTypeGenerator(new PaginationArgumentsHelper()),
+        environment.getObjectMapper()
       ),
       serializerWriterRegistry,
       securityConfig.getLoggedInUsers()

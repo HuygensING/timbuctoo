@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.rootquery;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import graphql.schema.GraphQLSchema;
@@ -12,10 +13,15 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
-import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadataList;
@@ -27,35 +33,46 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStr
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.getResource;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class RootQuery implements Supplier<GraphQLSchema> {
+
+  private static final Logger LOG = LoggerFactory.getLogger(RootQuery.class);
+
 
   private final DataSetRepository dataSetRepository;
   private final SupportedExportFormats supportedFormats;
   private final String archetypes;
   private final RdfWiringFactory wiringFactory;
   private final DerivedSchemaTypeGenerator typeGenerator;
+  private final ObjectMapper objectMapper;
   private final SchemaParser schemaParser;
   private final String staticQuery;
 
   public RootQuery(DataSetRepository dataSetRepository, SupportedExportFormats supportedFormats, String archetypes,
-                   RdfWiringFactory wiringFactory, DerivedSchemaTypeGenerator typeGenerator) throws IOException {
+                   RdfWiringFactory wiringFactory, DerivedSchemaTypeGenerator typeGenerator, ObjectMapper objectMapper)
+    throws IOException {
     this.dataSetRepository = dataSetRepository;
     this.supportedFormats = supportedFormats;
     this.archetypes = archetypes;
     this.wiringFactory = wiringFactory;
     this.typeGenerator = typeGenerator;
+    this.objectMapper = objectMapper;
     staticQuery = Resources.toString(getResource(RootQuery.class, "schema.graphql"), Charsets.UTF_8);
     schemaParser = new SchemaParser();
   }
@@ -77,23 +94,16 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
     wiring.type("Query", builder -> builder
       .dataFetcher("promotedDataSets", env -> dataSetRepository.getPromotedDataSets()
-        .values().stream().flatMap(Collection::stream)
-        .map(this::makeDbResult)
+        .stream()
+        .map(DataSetWithDatabase::new)
         .collect(Collectors.toList()))
       .dataFetcher("allDataSets", env -> dataSetRepository.getDataSets()
-        .values().stream().flatMap(Collection::stream)
-        .map(this::makeDbResult)
+        .stream()
+        .map(DataSetWithDatabase::new)
         .collect(Collectors.toList()))
       .dataFetcher("dataSetMetadata", env -> {
-        String[] parsedId = ((String) env.getArgument("dataSetId")).split("__", 2);
-        return Optional.ofNullable(dataSetRepository.getDataSets().get(parsedId[0])).map(d -> {
-          for (PromotedDataSet promotedDataSet : d) {
-            if (promotedDataSet.getDataSetId().equals(parsedId[1])) {
-              return makeDbResult(promotedDataSet);
-            }
-          }
-          return null;
-        });
+        final String dataSetId = env.getArgument("dataSetId");
+        return dataSetRepository.getDataSet(dataSetId).map(DataSetWithDatabase::new);
       })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
@@ -121,11 +131,36 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       })
       .dataFetcher("dataSetId", env -> ((PromotedDataSet) env.getSource()).getCombinedId())
     );
+    wiring.type("CollectionMetadata", builder -> builder
+      .dataFetcher("indexConfig", env -> {
+        SubjectReference source = env.getSource();
+        final QuadStore qs = source.getDataSet().getQuadStore();
+        try (Stream<CursorQuad> quads = qs.getQuads(source.getSubjectUri(), TIM_HASINDEXERCONFIG, Direction.OUT, "")) {
+          final Map result = quads.findFirst()
+            .map(q -> {
+              try {
+                return objectMapper.readValue(q.getObject(), Map.class);
+              } catch (IOException e) {
+                LOG.error("Value not a Map", e);
+                return new HashMap<>();
+              }
+            })
+            .orElse(new HashMap());
+          if (!result.containsKey("facet") || !(result.get("facet") instanceof List)) {
+            result.put("facet", new ArrayList<>());
+          }
+          if (!result.containsKey("fullText") || !(result.get("fullText") instanceof List)) {
+            result.put("fullText", new ArrayList<>());
+          }
+          return result;
+        }
+      })
+    );
 
     wiring.type("AboutMe", builder -> builder
       .dataFetcher("dataSets", env -> (Iterable) () -> dataSetRepository
         .getDataSetsWithWriteAccess(((User) env.getSource()).getPersistentId())
-        .stream().map(this::makeDbResult).iterator()
+        .stream().map(DataSetWithDatabase::new).iterator()
       )
       .dataFetcher("id", env -> ((User) env.getSource()).getPersistentId())
       .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
@@ -137,13 +172,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     StringBuilder root = new StringBuilder("type DataSets {\n");
 
     boolean[] dataSetAvailable = new boolean[] {false};
-    dataSetRepository.getDataSets().values().stream().flatMap(Collection::stream).forEach(promotedDataSet -> {
+    dataSetRepository.getDataSets().forEach(dataSet -> {
+      final PromotedDataSet promotedDataSet = dataSet.getMetadata();
       final String name = promotedDataSet.getCombinedId();
 
-      final DataSet dataSet = dataSetRepository.getDataSet(
-        promotedDataSet.getOwnerId(),
-        promotedDataSet.getDataSetId()
-      ).get();
       final Map<String, Type> types = dataSet.getSchemaStore().getTypes();
       if (types != null) {
         dataSetAvailable[0] = true;
@@ -158,7 +190,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           .append("\")\n");
 
         wiring.type(name, c -> c
-          .dataFetcher("metadata", env -> makeDbResult(promotedDataSet))
+          .dataFetcher("metadata", env -> new DataSetWithDatabase(dataSet))
         );
 
         final String schema = typeGenerator.makeGraphQlTypes(
@@ -177,16 +209,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
 
     SchemaGenerator schemaGenerator = new SchemaGenerator();
     return schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
-  }
-
-  public DataSetWithDatabase makeDbResult(PromotedDataSet promotedDataSet) {
-    return new DataSetWithDatabase(
-      dataSetRepository.getDataSet(
-        promotedDataSet.getOwnerId(),
-        promotedDataSet.getDataSetId()
-      ).get(),
-      promotedDataSet
-    );
   }
 
   public CollectionMetadataList getCollections(PromotedDataSet input) {
@@ -258,54 +280,4 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     return rebuildSchema();
   }
 
-  public static class RootData {
-    public Optional<User> getCurrentUser() {
-      return currentUser;
-    }
-
-    private final Optional<User> currentUser;
-
-    public RootData(Optional<User> currentUser) {
-      this.currentUser = currentUser;
-    }
-  }
-
-  private static class DataSetWithDatabase extends LazyTypeSubjectReference implements PromotedDataSet {
-    private final PromotedDataSet promotedDataSet;
-
-    @Override
-    public String getDataSetId() {
-      return promotedDataSet.getDataSetId();
-    }
-
-    @Override
-    public String getOwnerId() {
-      return promotedDataSet.getOwnerId();
-    }
-
-    @Override
-    public String getBaseUri() {
-      return promotedDataSet.getBaseUri();
-    }
-
-    @Override
-    public String getCombinedId() {
-      return promotedDataSet.getCombinedId();
-    }
-
-    public boolean isPromoted() {
-      return promotedDataSet.isPromoted();
-    }
-
-    public DataSetWithDatabase(DataSet dataSet, PromotedDataSet promotedDataSet) {
-      super(promotedDataSet.getBaseUri(), dataSet);
-      this.promotedDataSet = promotedDataSet;
-    }
-
-    @Override
-    public String getSubjectUri() {
-      return promotedDataSet.getBaseUri();
-    }
-
-  }
 }

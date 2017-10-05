@@ -111,6 +111,12 @@ public class DataSetRepository {
     }
   }
 
+  public Optional<DataSet> getDataSet(String combinedId) {
+    final Tuple<String, String> splitId = PromotedDataSet.splitCombinedId(combinedId);
+    return Optional.ofNullable(dataSetMap.get(splitId.getLeft()))
+      .map(userDataSets -> userDataSets.get(splitId.getRight()));
+  }
+
   public DataSet createDataSet(String ownerId, String dataSetId) throws DataStoreCreationException {
     final PromotedDataSet dataSet = promotedDataSet(ownerId, dataSetId, rdfIdHelper.dataSet(ownerId, dataSetId), false);
     synchronized (dataSetMap) {
@@ -141,26 +147,18 @@ public class DataSetRepository {
     return getDataSet(ownerId, dataSet).isPresent();
   }
 
-  public Map<String, Set<PromotedDataSet>> getDataSets() {
-    return storedDataSets.getData();
+  public Collection<DataSet> getDataSets() {
+    return dataSetMap.values().stream().flatMap(x -> x.values().stream()).collect(Collectors.toList());
   }
 
-  public Map<String, Set<PromotedDataSet>> getPromotedDataSets() {
-    Map<String, Set<PromotedDataSet>> dataSets = storedDataSets.getData();
-    Map<String, Set<PromotedDataSet>> promotedDataSets = new HashMap<>();
-
-    for (Map.Entry<String, Set<PromotedDataSet>> userDataSets : dataSets.entrySet()) {
-      Set<PromotedDataSet> mappedUserSets = userDataSets.getValue()
-                                                        .stream()
-                                                        .filter(dataSet -> dataSet.isPromoted())
-                                                        .collect(Collectors.toSet());
-      promotedDataSets.put(userDataSets.getKey(), mappedUserSets);
-    }
-    return promotedDataSets;
+  public Collection<DataSet> getPromotedDataSets() {
+    return dataSetMap.values().stream().flatMap(x -> x.values().stream())
+      .filter(x -> x.getMetadata().isPromoted())
+      .collect(Collectors.toList());
   }
 
-  public Collection<PromotedDataSet> getDataSetsWithWriteAccess(String userId) {
-    List<PromotedDataSet> dataSetsWithWriteAccess = new ArrayList<>();
+  public Collection<DataSet> getDataSetsWithWriteAccess(String userId) {
+    List<DataSet> dataSetsWithWriteAccess = new ArrayList<>();
 
     for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
       for (DataSet dataSet : userDataSets.values()) {
@@ -170,7 +168,7 @@ public class DataSetRepository {
             .map(VreAuthorization::isAllowedToWrite)
             .orElse(false);
           if (isAllowedToWrite) {
-            dataSetsWithWriteAccess.add(dataSet.getMetadata());
+            dataSetsWithWriteAccess.add(dataSet);
           }
         } catch (AuthorizationUnavailableException e) {
           LOG.error("Could not fetch authorization", e);

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -25,6 +26,11 @@ public interface PromotedDataSet {
   boolean isPromoted();
   
   Optional<String> role = Optional.empty();
+
+  static Tuple<String, String> splitCombinedId(String combinedId) {
+    String[] parts = combinedId.split("__", 2);
+    return Tuple.tuple(parts[0], parts[1]);
+  }
 
   static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, String baseUri, boolean promoted) {
     if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {

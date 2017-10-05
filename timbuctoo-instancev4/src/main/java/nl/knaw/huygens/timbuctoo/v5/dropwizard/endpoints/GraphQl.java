@@ -11,7 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
-import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 
@@ -147,7 +147,7 @@ public class GraphQl {
     }
     final ExecutionResult result = graphQl
       .execute(newExecutionInput()
-        .root(new RootQuery.RootData(loggedInUsers.userFor(authHeader)))
+        .root(new RootData(loggedInUsers.userFor(authHeader)))
         .query(queryFromBody)
         .operationName(operationName)
         .variables(variables == null ? Collections.emptyMap() : variables)

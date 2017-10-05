@@ -1,5 +1,5 @@
 schema {
-  query: Query
+  query: Query,
 }
 
 interface Value {
@@ -85,7 +85,7 @@ type CollectionMetadata {
 
   title: Value @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#label", direction: "OUT", isList: false, isObject: false, isValue: true)
   archeType: Entity @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#subClassOf", direction: "OUT", isList: false, isObject: true, isValue: false)
-  indexerConfig: IndexerConfig @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasIndexerConfig", direction: "OUT", isList: false, isObject: true, isValue: false)
+  indexConfig: IndexConfig!
   summaryProperties: SummaryProperties! @passThrough
 }
 
@@ -95,11 +95,25 @@ type SummaryProperties {
   image: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
 
-type IndexerConfig {
-  path: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFacetPath", direction: "OUT", isList: false, isObject: false, isValue: true)
-  type: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFacetType", direction: "OUT", isList: false, isObject: false, isValue: true)
-  fullTextSearch: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#hasFullTextSearch", direction: "OUT", isList: false, isObject: false, isValue: true)
-  next: IndexerConfig @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#nextFacet", direction: "OUT", isList: false, isObject: true, isValue: false)
+type IndexConfig {
+  facet: [FacetConfig]!
+  fullText: [FullTextConfig]!
+}
+
+type FacetConfig {
+  paths: [String]
+  type: String
+  caption: String
+}
+
+type FullTextConfig {
+  caption: String
+  fields: [FullTextFieldConfig]
+}
+
+type FullTextFieldConfig {
+  path: String
+  boost: Float
 }
 
 type PropertyList {
