@@ -14,6 +14,7 @@ junit_suite_test(
       "//third_party:org_glassfish_jaxb_txw2",
 
 
+      "//third_party:org_elasticsearch_client_rest",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/util",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena",
