@@ -9,15 +9,21 @@ import java.util.List;
  */
 public class PageableResult {
 
-  public static final String ID_FIELD = "uri";
+  public final String idField;
 
   private final JsonNode queryNode;
   private final JsonNode resultNode;
 
   public PageableResult(JsonNode queryNode, JsonNode resultNode) {
+    this(queryNode, resultNode, "uri");
+  }
+
+  public PageableResult(JsonNode queryNode, JsonNode resultNode, String idField) {
     this.queryNode = queryNode;
     this.resultNode = resultNode;
+    this.idField = idField;
   }
+
 
   public String getQuery() {
     return queryNode.toString();
@@ -28,7 +34,7 @@ public class PageableResult {
   }
 
   public List<String> getIdList() {
-    return resultNode.findPath("hits").findPath("hits").findValuesAsText(ID_FIELD);
+    return resultNode.findPath("hits").findPath("hits").findValuesAsText(idField);
   }
 
   public String getToken() {
