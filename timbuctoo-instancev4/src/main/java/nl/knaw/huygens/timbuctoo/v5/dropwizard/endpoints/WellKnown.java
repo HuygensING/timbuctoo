@@ -10,7 +10,7 @@ public class WellKnown {
 
   @Path("resourcesync")
   @GET
-  public Response resoureSync() {
+  public Response resourceSync() {
     // Permanent redirect
     return Response.seeOther(UriBuilder.fromResource(ResourceSyncEndpoint.class)
                                        .path(ResourceSyncEndpoint.SOURCE_DESCRIPTION_PATH)
