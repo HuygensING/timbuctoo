@@ -13,8 +13,9 @@ class SourceDescriptionFile {
     xmlHelper.getOrCreateMetadataNode().setAttribute("capability", "description");
   }
 
-  void addCapabilityList(File capabilityListFile) throws ResourceSyncException {
-    xmlHelper.addUrlElementWithCapability(uriHelper.uriForFile(capabilityListFile), "capabilitylist");
+  void addCapabilityList(File capabilityListFile, File descriptionFile) throws ResourceSyncException {
+    xmlHelper.addUrlElementWithCapabilityAndDescriptionFile(uriHelper.uriForFile(capabilityListFile),
+      "capabilitylist", uriHelper.uriForFile(descriptionFile));
     xmlHelper.save();
   }
 

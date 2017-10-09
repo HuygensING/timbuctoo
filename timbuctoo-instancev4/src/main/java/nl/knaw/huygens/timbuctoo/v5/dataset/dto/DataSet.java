@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbBackedData;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbRmlDataSourceStore;
+import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.RdfDescriptionSaver;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbSchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTruePatchStore;
@@ -24,7 +25,10 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileH
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
@@ -38,6 +42,8 @@ public abstract class DataSet {
 
     String userId = metadata.getOwnerId();
     String dataSetId = metadata.getDataSetId();
+    File descriptionFile = fileHelper.fileInDataSet(userId,dataSetId,"description.xml");
+
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
       configuration.getFileStorage().makeFileStorage(userId, dataSetId),
@@ -45,9 +51,18 @@ public abstract class DataSet {
       configuration.getFileStorage().makeLogStorage(userId, dataSetId),
       executorService,
       configuration.getRdfIo(),
-      resourceSync.resourceList(userId, dataSetId),
+      resourceSync.resourceList(userId, dataSetId, descriptionFile),
       onUpdated
     );
+
+    try {
+      importManager.subscribeToRdf(new RdfDescriptionSaver(descriptionFile, metadata.getBaseUri()));
+    } catch (ParserConfigurationException e) {
+      e.printStackTrace();
+    } catch (SAXException e) {
+      e.printStackTrace();
+    }
+    
     final TupleBinding<String> stringBinding = TupleBinding.getPrimitiveBinding(String.class);
     BdbTripleStore quadStore = new BdbTripleStore(dataStoreFactory.getDatabase(
       userId,

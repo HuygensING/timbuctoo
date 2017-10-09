@@ -37,7 +37,11 @@ public class SourceDescriptionFileTest {
     File capabilityList = new File("capabilityList.xml");
     given(uriHelper.uriForFile(capabilityList)).willReturn("http://example.org/capabilitylist");
 
-    instance.addCapabilityList(capabilityList);
+    File descriptionFile = new File("description.xml");
+    given(uriHelper.uriForFile(descriptionFile)).willReturn("http://example.org/description.xml");
+
+
+    instance.addCapabilityList(capabilityList, descriptionFile);
 
     Source expected = Input.fromByteArray(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
       "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
@@ -46,6 +50,8 @@ public class SourceDescriptionFileTest {
       "  <url>\n" +
       "      <loc>http://example.org/capabilitylist</loc>\n" +
       "      <rs:md capability=\"capabilitylist\"/>\n" +
+      "      <rs:ln rel=\"describedBy\" href=\"http://example.org/description.xml\" " +
+        "type=\"application/rdf+xml\"/>" +
       "  </url>" +
       "</urlset>").getBytes(StandardCharsets.UTF_8)).build();
     Source actual = Input.fromFile(sourceDescription).build();
@@ -59,7 +65,10 @@ public class SourceDescriptionFileTest {
     File capabilityList = new File("capabilityList.xml");
     given(uriHelper.uriForFile(capabilityList)).willReturn("http://example.org/capabilitylist");
 
-    instance.addCapabilityList(capabilityList);
+    File descriptionFile = new File("description.xml");
+    given(uriHelper.uriForFile(descriptionFile)).willReturn("http://example.org/description.xml");
+
+    instance.addCapabilityList(capabilityList, descriptionFile);
 
     Source expected = Input.fromByteArray(("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
       "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\"\n" +
@@ -68,6 +77,8 @@ public class SourceDescriptionFileTest {
       "  <url>\n" +
       "      <loc>http://example.org/capabilitylist</loc>\n" +
       "      <rs:md capability=\"capabilitylist\"/>\n" +
+      "      <rs:ln rel=\"describedBy\" href=\"http://example.org/description.xml\" " +
+      "type=\"application/rdf+xml\"/>" +
       "  </url>" +
       "</urlset>").getBytes(StandardCharsets.UTF_8)).build();
     Source actual = Input.fromFile(sourceDescription).build();

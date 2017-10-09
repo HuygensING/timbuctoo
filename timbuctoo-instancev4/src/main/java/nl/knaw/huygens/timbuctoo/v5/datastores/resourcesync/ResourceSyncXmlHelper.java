@@ -83,6 +83,28 @@ public class ResourceSyncXmlHelper {
     }
   }
 
+  void addUrlElementWithCapabilityAndDescriptionFile(String uri, String capability, String descriptionFileName) {
+    if (!nodeForUrl(uri).isPresent()) {
+      Element url = doc.createElement("url");
+
+      Element loc = doc.createElement("loc");
+      loc.appendChild(doc.createTextNode(uri));
+      url.appendChild(loc);
+
+      Element metaData = doc.createElement("rs:md");
+      metaData.setAttribute("capability", capability);
+      url.appendChild(metaData);
+
+      Element description = doc.createElement("rs:ln");
+      description.setAttribute("rel","describedBy");
+      description.setAttribute("href", descriptionFileName);
+      description.setAttribute("type", "application/rdf+xml");
+      url.appendChild(description);
+
+      root.appendChild(url);
+    }
+  }
+
   void addUrlElementWithType(String uri, String mimeType) {
     if (!nodeForUrl(uri).isPresent()) {
       Element url = doc.createElement("url");
