@@ -15,20 +15,22 @@ public class SqlSerialization extends FlatTableSerialization {
   private List<String> columns;
   protected final PrintWriter writer;
   protected boolean firstLine = true;
+  private int id = 0;
 
   public SqlSerialization(OutputStream outputStream) throws IOException {
     writer = new PrintWriter(outputStream);
   }
 
   protected void initialize(List<String> columnHeaders) throws IOException {
-    this.columnHeaders = "";
+    this.columnHeaders = "id";
     columns = new ArrayList<String>();
     for (String columnHeader : columnHeaders) {
+      columnHeader = columnHeader.replaceAll("\\.", "_");
       columns.add(columnHeader);
       this.columnHeaders += ", " + columnHeader;
       this.columnHeaders += ", " + columnHeader + "_type";
     }
-    this.columnHeaders = this.columnHeaders.substring(2);
+    // this.columnHeaders = this.columnHeaders.substring(2);
   }
   
   protected void setTableName(String tableName) {
@@ -42,6 +44,7 @@ public class SqlSerialization extends FlatTableSerialization {
     }
     writer.println("DROP TABLE " + tableName + ";");
     String createTableString = "CREATE TABLE " + tableName + " (\n";
+    createTableString += "id integer UNIQUE NOT NULL,\n";
     for (String column: columns) {
       createTableString += column + " text,\n";
       createTableString += column + "_type text,\n";
@@ -56,7 +59,8 @@ public class SqlSerialization extends FlatTableSerialization {
       writeCreateTable();
       firstLine = false;
     }
-    String columnValues = "";
+    id++;
+    String columnValues = id + "";
     for (Value value : values) {
       if (value == null) {
         columnValues += ", DEFAULT";
@@ -67,7 +71,7 @@ public class SqlSerialization extends FlatTableSerialization {
       }
     }
     writer.println("INSERT INTO " + this.tableName + " (" + columnHeaders +
-            ") VALUES (" + columnValues.substring(2) + ");");
+            ") VALUES (" + columnValues + ");");
   }
   
   @Override
