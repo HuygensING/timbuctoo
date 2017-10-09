@@ -5,17 +5,16 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-
 import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
-import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.CollectionsOfEntitiesSerialization;
+import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.FlatTableSerialization;
 
-public class SqlSerialization extends CollectionsOfEntitiesSerialization {
+public class SqlSerialization extends FlatTableSerialization {
 
-  //  private final CSVPrinter csvPrinter;
-  private String tableName;
+  private String tableName = "graphqlexport";
   private String columnHeaders;
   private List<String> columns;
   protected final PrintWriter writer;
+  protected boolean firstLine = true;
 
   public SqlSerialization(OutputStream outputStream) throws IOException {
     writer = new PrintWriter(outputStream);
@@ -38,10 +37,10 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
   
   protected void writeCreateTable() {
     if (tableName.isEmpty()) {
-      System.err.println("writeCreateTable: tableName is empty!");
+      // System.err.println("writeCreateTable: tableName is empty!");
       tableName = "tableName";
     }
-    System.out.println("DROP TABLE " + tableName + ";");
+    writer.println("DROP TABLE " + tableName + ";");
     String createTableString = "CREATE TABLE " + tableName + " (\n";
     for (String column: columns) {
       createTableString += column + " text,\n";
@@ -49,10 +48,14 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
     }
     createTableString = createTableString.substring(0, createTableString.length() - 2);
     createTableString += ");";
-    System.out.println(createTableString);
+    writer.println(createTableString);
   }
 
   protected void writeRow(List<Value> values) throws IOException {
+    if (firstLine) {
+      writeCreateTable();
+      firstLine = false;
+    }
     String columnValues = "";
     for (Value value : values) {
       if (value == null) {
@@ -63,8 +66,14 @@ public class SqlSerialization extends CollectionsOfEntitiesSerialization {
         columnValues += ", '" + value.getType() + "'";
       }
     }
-    System.out.println("INSERT INTO " + this.tableName + "(" + columnHeaders +
+    writer.println("INSERT INTO " + this.tableName + " (" + columnHeaders +
             ") VALUES (" + columnValues.substring(2) + ");");
+  }
+  
+  @Override
+  protected void finish() throws IOException {
+    writer.flush();
+    writer.close();
   }
 
 }
