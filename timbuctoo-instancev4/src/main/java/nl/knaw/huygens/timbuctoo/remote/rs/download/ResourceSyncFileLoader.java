@@ -4,20 +4,19 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 
-import javax.ws.rs.core.MediaType;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Stream;
+import java.util.zip.GZIPInputStream;
 
 import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 import static org.slf4j.LoggerFactory.getLogger;
@@ -54,15 +53,41 @@ public class ResourceSyncFileLoader {
 
   private UrlSet getRsFile(String url) throws IOException {
     LOG.info("getRsFile '{}'", url);
-    return objectMapper.readValue(getFile(url), UrlSet.class);
+    return objectMapper.readValue(IOUtils.toString(getFile(url)).replace("rs.md", "rs:md"), UrlSet.class);
   }
 
   private InputStream getFile(String url) throws IOException {
     InputStream content = httpClient.execute(new HttpGet(url)).getEntity().getContent();
     if (content != null) {
-      return content;
+      return maybeDecompress(content);
     } else {
       return new ByteArrayInputStream(new byte[0]);
+    }
+  }
+
+  //FIXME: maybe we should just store everything compressed
+  public static InputStream maybeDecompress(InputStream input) throws IOException {
+    final PushbackInputStream pb = new PushbackInputStream(input, 2);
+
+    int header = pb.read();
+    if (header == -1) {
+      return pb;
+    }
+
+    int firstByte = pb.read();
+    if (firstByte == -1) {
+      pb.unread(header);
+      return pb;
+    }
+
+    pb.unread(new byte[]{(byte)header, (byte)firstByte});
+
+    header = (firstByte << 8) | header;
+
+    if (header == GZIPInputStream.GZIP_MAGIC) {
+      return new GZIPInputStream(pb);
+    } else {
+      return pb;
     }
   }
 
