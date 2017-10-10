@@ -2,13 +2,13 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Sets;
+import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.RemoteFile;
 import nl.knaw.huygens.timbuctoo.remote.rs.download.ResourceSyncFileLoader;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,14 +29,11 @@ public class Import {
 
   public static final Logger LOG = LoggerFactory.getLogger(Import.class);
   private final ResourceSyncFileLoader resourceSyncFileLoader;
-  private final DataSetRepository dataSetRepository;
-  private final ErrorResponseHelper errorResponseHelper;
+  private final AuthCheck authCheck;
 
-  public Import(ResourceSyncFileLoader resourceSyncFileLoader, DataSetRepository dataSetRepository,
-                ErrorResponseHelper errorResponseHelper) {
+  public Import(ResourceSyncFileLoader resourceSyncFileLoader, AuthCheck authCheck) {
     this.resourceSyncFileLoader = resourceSyncFileLoader;
-    this.dataSetRepository = dataSetRepository;
-    this.errorResponseHelper = errorResponseHelper;
+    this.authCheck = authCheck;
   }
 
   @POST
@@ -45,55 +42,58 @@ public class Import {
                              @QueryParam("forceCreation") boolean forceCreation,
                              ImportData importData)
     throws DataStoreCreationException {
-    final Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(importData.userId, importData.dataSetId);
-    final DataSet dataSet;
-    if (dataSetOpt.isPresent()) {
-      dataSet = dataSetOpt.get();
-    } else if (forceCreation) {
-      dataSet = dataSetRepository.createDataSet(importData.userId, importData.dataSetId);
-    } else {
-      return errorResponseHelper.dataSetNotFound(importData.userId, importData.dataSetId);
-    }
-    ImportManager importManager = dataSet.getImportManager();
-    try {
-      LOG.info("Loading files");
-      Iterator<RemoteFile> files =
-        resourceSyncFileLoader.loadFiles(importData.source.toString()).iterator();
-      LOG.info("Found files '{}'", files.hasNext());
-      ResourceSyncResport resourceSyncResport = new ResourceSyncResport();
 
-      while (files.hasNext()) {
-        RemoteFile file = files.next();
-        MediaType parsedMediatype = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+    final Either<Response, Response> responses = authCheck
+      .getOrCreate(authorization, importData.userId, importData.dataSetId, forceCreation)
+      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.left, userAndDs.getRight()))
+      .map(userAndDs -> {
+        final DataSet dataSet = userAndDs.getRight();
+        ImportManager importManager = dataSet.getImportManager();
         try {
-          parsedMediatype = MediaType.valueOf(file.getMimeType());
-        } catch (IllegalArgumentException e) {
-          LOG.error("Failed to get mediatype", e);
-        }
-        if (importManager.isRdfTypeSupported(parsedMediatype)) {
-          resourceSyncResport.importedFiles.add(file.getUrl());
-          importManager.addLog(
-            dataSet.getMetadata().getBaseUri(),
-            dataSet.getMetadata().getBaseUri(),
-            file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1),
-            file.getData(),
-            Optional.of(Charsets.UTF_8),
-            parsedMediatype
-          );
-        } else {
-          resourceSyncResport.ignoredFiles.add(file.getUrl());
-          importManager.addFile(
-            file.getData(),
-            file.getUrl(),
-            parsedMediatype
-          );
-        }
-      }
+          LOG.info("Loading files");
+          Iterator<RemoteFile> files =
+            resourceSyncFileLoader.loadFiles(importData.source.toString()).iterator();
+          LOG.info("Found files '{}'", files.hasNext());
+          ResourceSyncResport resourceSyncResport = new ResourceSyncResport();
 
-      return Response.ok(resourceSyncResport).build();
-    } catch (Exception e) {
-      LOG.error("Could not read files to import", e);
-      return Response.serverError().build();
+          while (files.hasNext()) {
+            RemoteFile file = files.next();
+            MediaType parsedMediatype = MediaType.APPLICATION_OCTET_STREAM_TYPE;
+            try {
+              parsedMediatype = MediaType.valueOf(file.getMimeType());
+            } catch (IllegalArgumentException e) {
+              LOG.error("Failed to get mediatype", e);
+            }
+            if (importManager.isRdfTypeSupported(parsedMediatype)) {
+              resourceSyncResport.importedFiles.add(file.getUrl());
+              importManager.addLog(
+                dataSet.getMetadata().getBaseUri(),
+                dataSet.getMetadata().getBaseUri(),
+                file.getUrl().substring(file.getUrl().lastIndexOf('/') + 1),
+                file.getData(),
+                Optional.of(Charsets.UTF_8),
+                parsedMediatype
+              );
+            } else {
+              resourceSyncResport.ignoredFiles.add(file.getUrl());
+              importManager.addFile(
+                file.getData(),
+                file.getUrl(),
+                parsedMediatype
+              );
+            }
+          }
+
+          return Response.ok(resourceSyncResport).build();
+        } catch (Exception e) {
+          LOG.error("Could not read files to import", e);
+          return Response.serverError().build();
+        }
+      });
+    if (responses.isLeft()) {
+      return responses.getLeft();
+    } else {
+      return responses.get();
     }
   }
 

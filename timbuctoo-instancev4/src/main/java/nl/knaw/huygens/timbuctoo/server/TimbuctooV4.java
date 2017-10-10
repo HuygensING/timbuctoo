@@ -98,6 +98,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
@@ -146,7 +147,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     bootstrap.setConfigurationSourceProvider(
       new SubstitutingSourceProvider(
         bootstrap.getConfigurationSourceProvider(),
-        new EnvironmentVariableSubstitutor(true)));
+        new EnvironmentVariableSubstitutor(true)
+      ));
   }
 
   @Override
@@ -251,17 +253,17 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
-
-    register(environment, new RdfUpload(
+    AuthCheck authCheck = new AuthCheck(
       securityConfig.getLoggedInUsers(),
       securityConfig.getAuthorizer(),
-      dataSetRepository,
-      errorResponseHelper
-    ));
+      errorResponseHelper,
+      dataSetRepository
+    );
+
+    register(environment, new RdfUpload(authCheck));
 
     register(environment, new TabularUpload(
-      securityConfig.getLoggedInUsers(),
-      securityConfig.getAuthorizer(),
+      authCheck,
       dataSetRepository,
       errorResponseHelper
     ));
@@ -298,7 +300,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     register(environment, graphQlEndpoint);
 
-    register(environment, new CreateDataSet(securityConfig.getLoggedInUsers(), dataSetRepository));
+    register(environment, new CreateDataSet(authCheck));
     register(environment, new DataSet(
         securityConfig.getLoggedInUsers(),
         securityConfig.getAuthorizer(), dataSetRepository
@@ -315,10 +317,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Me(securityConfig.getLoggedInUsers()));
     register(environment, new Search(configuration, uriHelper, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
-    register(environment,
-      new Index(securityConfig.getLoggedInUsers(), crudServiceFactory, transactionEnforcer));
-    register(environment,
-      new SingleEntity(securityConfig.getLoggedInUsers(), crudServiceFactory, transactionEnforcer));
+    register(
+      environment,
+      new Index(securityConfig.getLoggedInUsers(), crudServiceFactory, transactionEnforcer)
+    );
+    register(
+      environment,
+      new SingleEntity(securityConfig.getLoggedInUsers(), crudServiceFactory, transactionEnforcer)
+    );
     register(environment, new SingleEntityNTriple(transactionEnforcer, uriHelper));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));
     register(environment, new LegacySingleEntityRedirect(uriHelper));
@@ -345,24 +351,28 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, saveRml);
 
     BulkUploadVre bulkUploadVre = new BulkUploadVre(graphManager, uriHelper, rawCollection, executeRml,
-      permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024);
+      permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024
+    );
     register(environment, bulkUploadVre);
     register(environment, new BulkUpload(new BulkUploadService(vres, graphManager, 25_000), bulkUploadVre,
       securityConfig.getLoggedInUsers(), securityConfig.getVreAuthorizationCreator(), 20 * 1024 * 1024,
-      permissionChecker, transactionEnforcer, 50));
+      permissionChecker, transactionEnforcer, 50
+    ));
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata());
     register(environment, new nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.Metadata(jsonMetadata));
     register(environment, new MyVres(
-      securityConfig.getLoggedInUsers(),
-      securityConfig.getAuthorizer(),
-      bulkUploadVre,
-      transactionEnforcer,
-      uriHelper)
+        securityConfig.getLoggedInUsers(),
+        securityConfig.getAuthorizer(),
+        bulkUploadVre,
+        transactionEnforcer,
+        uriHelper
+      )
     );
     register(environment, new SingleVre(permissionChecker, transactionEnforcer,
-      securityConfig.getVreAuthorizationCreator()));
+      securityConfig.getVreAuthorizationCreator()
+    ));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
 
@@ -370,8 +380,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ImportRdf(graphManager, vres, rfdExecutorService, transactionEnforcer));
     register(environment, new Import(
       new ResourceSyncFileLoader(httpClient),
-      dataSetRepository,
-      errorResponseHelper
+      authCheck
     ));
 
     register(environment, new WellKnown());
