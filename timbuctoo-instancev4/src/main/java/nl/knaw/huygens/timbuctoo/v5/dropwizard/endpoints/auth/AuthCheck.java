@@ -126,7 +126,7 @@ public class AuthCheck {
       final String persistentId = user.getPersistentId();
       if (persistentId != null && persistentId.equals(ownerId)) {
         try {
-          final DataSet dataSet = dataSetRepository.createDataSet(user.getPersistentId(), dataSetId);
+          final DataSet dataSet = dataSetRepository.createDataSet(user, dataSetId);
           return Either.right(Tuple.tuple(user, dataSet));
         } catch (DataStoreCreationException e) {
           return Either.left(Response.serverError().build());

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
@@ -128,14 +129,15 @@ public class DataSetRepository {
       .map(userDataSets -> userDataSets.get(splitId.getRight()));
   }
 
-  public DataSet createDataSet(String ownerId, String dataSetId) throws DataStoreCreationException {
+  public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException {
+    String ownerId = user.getPersistentId();
     final PromotedDataSet dataSet = promotedDataSet(ownerId, dataSetId, rdfIdHelper.dataSet(ownerId, dataSetId), false);
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerId, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), ownerId, "ADMIN");
+          vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), user.getPersistentId(), "ADMIN");
           userDataSets.put(
             dataSetId,
             dataSet(
