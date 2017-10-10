@@ -6,9 +6,8 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogEntry;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.LogList;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.RdfCreator;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceList;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorage;
@@ -17,6 +16,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedFile;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.dto.CachedLog;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfParser;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
@@ -54,11 +54,14 @@ public class ImportManager implements DataProvider {
   private final JsonFileBackedData<LogList> logListStore;
   private final List<Tuple<String, RdfProcessor>> subscribedProcessors;
   private final List<Tuple<String, EntityProcessor>> subscribedEntityProcessors;
+  private final Runnable webhooks;
   private EntityProvider entityProvider;
 
   public ImportManager(File logListLocation, FileStorage fileStorage, FileStorage imageStorage, LogStorage logStorage,
-                       ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList)
+                       ExecutorService executorService, RdfIoFactory rdfIoFactory, ResourceList resourceList,
+                       Runnable onUpdated)
     throws DataStoreCreationException {
+    this.webhooks = onUpdated;
     this.fileStorage = new PublicFileStore(fileStorage, resourceList);
     this.imageStorage = new PublicFileStore(imageStorage, resourceList);
     this.logStorage = new PublicLogStore(logStorage, resourceList);
@@ -137,6 +140,7 @@ public class ImportManager implements DataProvider {
 
   private void processLogsUntil(int maxIndex) {
     ListIterator<LogEntry> unprocessed = logListStore.getData().getUnprocessed();
+    boolean dataWasAdded = false;
     while (unprocessed.hasNext() && unprocessed.nextIndex() <= maxIndex) {
       int index = unprocessed.nextIndex();
       LogEntry entry = unprocessed.next();
@@ -163,6 +167,7 @@ public class ImportManager implements DataProvider {
             logList.markAsProcessed(index);
             return logList;
           });
+          dataWasAdded = true;
         } catch (RdfProcessingFailedException | IOException e) {
           LOG.error("Processing the log failed", e);
           break;
@@ -216,6 +221,9 @@ public class ImportManager implements DataProvider {
           break;
         }
       }
+    }
+    if (dataWasAdded) {
+      webhooks.run();
     }
   }
 

@@ -5,6 +5,7 @@ import org.junit.Test;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
@@ -30,7 +31,7 @@ public class ElasticSearchOnLineTest {
   public static void initialize() throws Exception {
     assumeTrue("No host at " + hostname + ":" + port + ", skipping tests." +
       "\nPlease start an ElasticSearch instance at the specified host and port.", hostIsAvailable());
-    eSearch = new ElasticSearch(hostname, port, username, password);
+    eSearch = new ElasticSearch(hostname, port, Optional.ofNullable(username), Optional.ofNullable(password));
   }
 
   private static boolean hostIsAvailable() {

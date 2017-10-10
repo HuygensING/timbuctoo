@@ -8,6 +8,7 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
@@ -24,6 +25,8 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.UriBuilder;
+import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,17 +40,23 @@ public class GraphQl {
   private final Supplier<GraphQLSchema> graphqlGetter;
   private final SerializerWriterRegistry serializerWriterRegistry;
   private final LoggedInUsers loggedInUsers;
+  private final UriHelper uriHelper;
   private final ObjectMapper objectMapper;
   private GraphQL graphQl;
   private GraphQLSchema prevGraphQlSchema;
 
   public GraphQl(Supplier<GraphQLSchema> graphqlGetter, SerializerWriterRegistry serializerWriterRegistry,
-                 LoggedInUsers loggedInUsers)
+                 LoggedInUsers loggedInUsers, UriHelper uriHelper)
     throws DatabaseException, RdfProcessingFailedException {
     this.graphqlGetter = graphqlGetter;
     this.serializerWriterRegistry = serializerWriterRegistry;
     this.loggedInUsers = loggedInUsers;
+    this.uriHelper = uriHelper;
     objectMapper = new ObjectMapper();
+  }
+
+  public URI getUri() {
+    return uriHelper.fromResourceUri(UriBuilder.fromResource(GraphQl.class).build());
   }
 
   @POST

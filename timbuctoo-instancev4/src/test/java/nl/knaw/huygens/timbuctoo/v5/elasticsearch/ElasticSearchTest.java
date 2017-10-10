@@ -7,6 +7,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -20,7 +21,7 @@ public class ElasticSearchTest {
 
   @BeforeClass
   public static void initialize() throws Exception {
-    eSearch = new ElasticSearch("", 0, "", null);
+    eSearch = new ElasticSearch("", 0, Optional.of(""), Optional.empty());
   }
 
   @Test

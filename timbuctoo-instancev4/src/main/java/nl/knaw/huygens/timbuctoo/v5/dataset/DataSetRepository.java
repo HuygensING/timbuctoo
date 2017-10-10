@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
@@ -56,11 +57,13 @@ public class DataSetRepository {
   private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
   private final ResourceSync resourceSync;
+  private Consumer<String> onUpdated;
 
 
   public DataSetRepository(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
                            DataSetConfiguration configuration, DataStoreFactory dataStoreFactory,
-                           TimbuctooRdfIdHelper rdfIdHelper) throws IOException {
+                           TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated)
+    throws IOException {
     this.executorService = executorService;
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
@@ -78,6 +81,7 @@ public class DataSetRepository {
     resourceSync = configuration.getResourceSync();
 
     dataSetMap = new HashMap<>();
+    this.onUpdated = onUpdated;
   }
 
   private void loadDataSetsFromJson() throws IOException {
@@ -91,7 +95,15 @@ public class DataSetRepository {
           try {
             ownersSets.put(
               dataSetName,
-              dataSet(promotedDataSet, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+              dataSet(
+                promotedDataSet,
+                configuration,
+                fileHelper,
+                executorService,
+                dataStoreFactory,
+                resourceSync,
+                () -> onUpdated.accept(promotedDataSet.getCombinedId())
+              )
             );
           } catch (IOException | DataStoreCreationException | ResourceSyncException e) {
             throw new IOException(e);
@@ -117,21 +129,36 @@ public class DataSetRepository {
       .map(userDataSets -> userDataSets.get(splitId.getRight()));
   }
 
-  public DataSet createDataSet(String ownerId, String dataSetId) throws DataStoreCreationException {
-    final PromotedDataSet dataSet = promotedDataSet(ownerId, dataSetId, rdfIdHelper.dataSet(ownerId, dataSetId), false);
+  public boolean userMatchesPrefix(User user, String prefix) {
+    return user != null && user.getPersistentId() != null && ("u" + user.getPersistentId()).equals(prefix);
+  }
+
+  public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException {
+    //The ownerId might not be valid (i.e. a safe string). We make it safe here:
+    //dataSetId is under the control of the user so we simply throw if it's not valid
+    String prefix = "u" + user.getPersistentId();
+    final PromotedDataSet dataSet = promotedDataSet(prefix, dataSetId, rdfIdHelper.dataSet(prefix, dataSetId), false);
     synchronized (dataSetMap) {
-      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerId, key -> new HashMap<>());
+      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(prefix, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), ownerId, "ADMIN");
+          vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), user.getPersistentId(), "ADMIN");
           userDataSets.put(
             dataSetId,
-            dataSet(dataSet, configuration, fileHelper, executorService, dataStoreFactory, resourceSync)
+            dataSet(
+              dataSet,
+              configuration,
+              fileHelper,
+              executorService,
+              dataStoreFactory,
+              resourceSync,
+              () -> onUpdated.accept(dataSet.getCombinedId())
+            )
           );
           storedDataSets.updateData(dataSets -> {
             dataSets
-              .computeIfAbsent(ownerId, key -> new HashSet<>())
+              .computeIfAbsent(prefix, key -> new HashSet<>())
               .add(dataSet);
             return dataSets;
           });
@@ -202,7 +229,7 @@ public class DataSetRepository {
     storedDataSets.updateData(dataSets -> {
       Set<PromotedDataSet>
         dataSetsToKeep = dataSets.get(ownerId).stream().filter(dataSet -> !dataSet.getDataSetId().equals(dataSetName))
-                                 .collect(Collectors.toSet());
+        .collect(Collectors.toSet());
       dataSets.put(ownerId, dataSetsToKeep);
       return dataSets;
     });

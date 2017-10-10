@@ -19,7 +19,7 @@ public class PageableResultTest {
 
   @Test
   public void readResult() throws Exception {
-    PageableResult pageableResult = new PageableResult(createQuery(), createResult());
+    PageableResult pageableResult = new PageableResult(createQuery(), createResult(), "_id");
 
     String expectedQuery = "{\"size\":3,\"query\":{\"match\":{\"gender\":\"F\"}},\"search_after\":[1464," +
       "\"account#174\"],\"sort\":[{\"balance\":\"asc\"},{\"_uid\":\"desc\"}]}";
@@ -41,7 +41,7 @@ public class PageableResultTest {
 
   @Test
   public void readEmptyResult() throws Exception {
-    PageableResult pageableResult = new PageableResult(null, createEmptyResult());
+    PageableResult pageableResult = new PageableResult(null, createEmptyResult(), "_id");
 
     assertThat(pageableResult.getIdList().size(), equalTo(0));
     assertThat(pageableResult.getToken(), equalTo(null));

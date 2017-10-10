@@ -24,7 +24,7 @@ public interface DataSet {
 
   static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
                          FileHelper fileHelper, ExecutorService executorService,
-                         DataStoreFactory dataStoreFactory, ResourceSync resourceSync)
+                         DataStoreFactory dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
 
     String userId = metadata.getOwnerId();
@@ -36,7 +36,8 @@ public interface DataSet {
       configuration.getFileStorage().makeLogStorage(userId, dataSetId),
       executorService,
       configuration.getRdfIo(),
-      resourceSync.resourceList(userId, dataSetId)
+      resourceSync.resourceList(userId, dataSetId),
+      onUpdated
     );
     QuadStore quadStore = dataStoreFactory.createQuadStore(importManager, userId, dataSetId);
     CollectionIndex collectionIndex = dataStoreFactory.createCollectionIndex(importManager, userId, dataSetId);

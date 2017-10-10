@@ -19,14 +19,14 @@ baseUri: http://127.0.0.1:0 #port will be replaced with the port that timbuctoo 
 userRedirectUrl: ./static/graphiql
 
 elasticSearch:
-  hostname: http://example.com/elasticsearchinstance
-  port: 80
-  username: foo
-  password: bar
+  hostname: localhost
+  port: 9200
+  username: elastic
+  password: changeme
 
 archetypesSchema: |
   type Archetypes {
-    persons: PersonArchetypeList @fromCollection(uri: "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", listAll: true)
+    persons: PersonArchetypeList @fromCollection(uri: "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons", listAll: true, indexName: "PersonArchetype")
   }
 
   type PersonArchetypeList {

@@ -1,10 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
-import io.dropwizard.jersey.params.UUIDParam;
+import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.LoaderFactory;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -12,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.FileStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
@@ -21,7 +20,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.glassfish.jersey.message.internal.MediaTypes;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -38,20 +36,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
-
 @Path("/v5/{userId}/{dataSetId}/upload/table")
 public class TabularUpload {
 
-  private final LoggedInUsers loggedInUsers;
-  private final Authorizer authorizer;
+  private final AuthCheck authCheck;
   private final DataSetRepository dataSetRepository;
   private final ErrorResponseHelper errorResponseHelper;
 
-  public TabularUpload(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
+  public TabularUpload(AuthCheck authCheck, DataSetRepository dataSetRepository,
                        ErrorResponseHelper errorResponseHelper) {
-    this.loggedInUsers = loggedInUsers;
-    this.authorizer = authorizer;
+    this.authCheck = authCheck;
     this.dataSetRepository = dataSetRepository;
     this.errorResponseHelper = errorResponseHelper;
   }
@@ -71,91 +65,61 @@ public class TabularUpload {
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
 
-    final Response response = checkWriteAccess(
-      ownerId,
-      dataSetId,
-      (ownerId1, dataSetId1) -> dataSetRepository.getDataSet(ownerId1, dataSetId1).map(DataSet::getMetadata),
-      authorizer,
-      loggedInUsers,
-      authHeader
-    );
-    if (response != null) {
-      return response;
-    }
+    final Either<Response, Response> result = authCheck.getOrCreate( authHeader, ownerId, dataSetId, forceCreation)
+      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.left, userAndDs.getRight()))
+      .map(userAndDs -> {
+        final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
-    final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
+        Optional<Loader> loader = LoaderFactory.createFor(mediaType.toString(), formData.getFields().entrySet().stream()
+          .filter(entry -> entry.getValue().size() > 0)
+          .filter(entry -> entry.getValue().get(0) != null)
+          .filter(entry -> MediaTypes.typeEqual(MediaType.TEXT_PLAIN_TYPE, entry.getValue().get(0).getMediaType()))
+          .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(0).getValue())));
 
-    Optional<Loader> loader = LoaderFactory.createFor(mediaType.toString(), formData.getFields().entrySet().stream()
-      .filter(entry -> entry.getValue().size() > 0)
-      .filter(entry -> entry.getValue().get(0) != null)
-      .filter(entry -> MediaTypes.typeEqual(MediaType.TEXT_PLAIN_TYPE, entry.getValue().get(0).getMediaType()))
-      .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().get(0).getValue())));
+        if (!loader.isPresent()) {
+          return errorResponseHelper.error(
+            400,
+            "We do not support the mediatype '" + mediaType + "'. Make sure to add the correct mediatype to the file " +
+              "parameter. In curl you'd use `-F \"file=@<filename>;type=<mediatype>\"`. In a webbrowser you probably " +
+              "have no way of setting the correct mimetype. So you can use a special parameter to override it: " +
+              "`formData.append(\"fileMimeTypeOverride\", \"<mimetype>\");`"
+          );
+        }
 
-    if (mediaType == null || !loader.isPresent()) {
-      return Response.status(400)
-        .type(MediaType.APPLICATION_JSON_TYPE)
-        .entity("{\"error\": \"We do not support the mediatype '" + mediaType + "'. Make sure to add the correct " +
-          "mediatype to the file parameter. In curl you'd use `-F \"file=@<filename>;type=<mediatype>\"`. In a " +
-          "webbrowser you probably have no way of setting the correct mimetype. So you can use a special parameter " +
-          "to override it: `formData.append(\"fileMimeTypeOverride\", \"<mimetype>\");`\"}")
-        .build();
-    }
+        final DataSet dataSet = userAndDs.getRight();
+        ImportManager importManager = dataSet.getImportManager();
 
-    final Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(ownerId, dataSetId);
-    final DataSet dataSet;
-    if (dataSetOpt.isPresent()) {
-      dataSet = dataSetOpt.get();
-    } else if (forceCreation) {
-      dataSet = dataSetRepository.createDataSet(ownerId, dataSetId);
+        try {
+          String fileToken = importManager.addFile(
+            rdfInputStream,
+            fileInfo.getName(),
+            mediaType
+          );
+          Tuple<UUID, PlainRdfCreator> rdfCreator = dataSetRepository.registerRdfCreator(
+            (statusConsumer) -> new TabularRdfCreator(
+              importManager,
+              loader.get(),
+              dataSet.getMetadata(),
+              statusConsumer,
+              fileToken
+            )
+          );
+          Future<?> promise = importManager.generateLog(
+            dataSet.getMetadata().getBaseUri(),
+            dataSet.getMetadata().getBaseUri(),
+            rdfCreator.getRight()
+          );
+
+          promise.get(); // Wait until the import is done.
+          return Response.noContent().build();
+        } catch (FileStorageFailedException | ExecutionException | InterruptedException | LogStorageFailedException e) {
+          return Response.serverError().build();
+        }
+      });
+    if (result.isLeft()) {
+      return result.getLeft();
     } else {
-      return errorResponseHelper.dataSetNotFound(ownerId, dataSetId);
+      return result.get();
     }
-
-    ImportManager importManager = dataSet.getImportManager();
-
-    String fileToken = importManager.addFile(
-      rdfInputStream,
-      fileInfo.getName(),
-      mediaType
-    );
-
-
-    Tuple<UUID, PlainRdfCreator> rdfCreator = dataSetRepository.registerRdfCreator(
-      (statusConsumer) -> new TabularRdfCreator(
-        importManager,
-        loader.get(),
-        dataSet.getMetadata(),
-        statusConsumer,
-        fileToken
-      )
-    );
-
-    Future<?> promise = importManager.generateLog(
-      dataSet.getMetadata().getBaseUri(),
-      dataSet.getMetadata().getBaseUri(),
-      rdfCreator.getRight()
-    );
-
-    promise.get(); // Wait until the import is done.
-
-    return Response.noContent().build();
-
-    // return Response.created(fromResource(TabularUpload.class)
-    //   .path(rdfCreator.getLeft().toString())
-    //   .buildFromMap(ImmutableMap.of("userId", ownerId, "dataSetId", dataSetId))
-    // ).build();
   }
-
-  @GET
-  @Path("{importId}")
-  public Response getStatus(@PathParam("importId") final UUIDParam importId) {
-    Optional<String> status = dataSetRepository.getStatus(importId.get());
-
-    if (status.isPresent()) {
-      return Response.ok(status).build();
-    }
-
-    return Response.status(Response.Status.NOT_FOUND).build();
-  }
-
 }

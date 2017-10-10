@@ -70,6 +70,7 @@ searchResultAvailabilityTimeout:
 
 webhooks:
   vreAdded: ${TIMBUCTOO_SEARCH_URL}
+  dataSetUpdated: ${TIMBUCTOO_INDEXER_URL}
   httpClient:
     connectionRequestTimeout: 200ms
 
