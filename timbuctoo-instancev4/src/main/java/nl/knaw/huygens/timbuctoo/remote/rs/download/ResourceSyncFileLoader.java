@@ -36,7 +36,7 @@ public class ResourceSyncFileLoader {
     .put("nt", "application/n-triples")
     .put("jsonld", "application/ld+json")
     .put("owl", "application/owl+xml")
-    .put("trig", "text/trig")
+    .put("trig", "application/trig")
     .put("nq", "application/n-quads")
     .put("trix", "application/trix+xml")
     .put("trdf", "application/rdf+thrift")
