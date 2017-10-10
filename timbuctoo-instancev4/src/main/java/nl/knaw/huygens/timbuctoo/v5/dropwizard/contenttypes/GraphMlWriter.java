@@ -6,7 +6,7 @@ import javax.ws.rs.Produces;
 @Produces(GraphMlWriter.MIME_TYPE)
 public class GraphMlWriter extends SerializerWriter {
 
-  public static final String MIME_TYPE = "text/xml";
+  public static final String MIME_TYPE = "text/graphml";
 
   public GraphMlWriter() {
     super(GraphMlSerialization::new);
