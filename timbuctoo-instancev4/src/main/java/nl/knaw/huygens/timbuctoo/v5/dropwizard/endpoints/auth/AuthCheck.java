@@ -123,8 +123,7 @@ public class AuthCheck {
   public Either<Response, Tuple<User, DataSet>> handleForceCreate(String ownerId, String dataSetId,
                                                                   boolean forceCreation, User user) {
     if (forceCreation) {
-      final String persistentId = user.getPersistentId();
-      if (persistentId != null && persistentId.equals(ownerId)) {
+      if (dataSetRepository.userMatchesPrefix(user, ownerId)) {
         try {
           final DataSet dataSet = dataSetRepository.createDataSet(user, dataSetId);
           return Either.right(Tuple.tuple(user, dataSet));

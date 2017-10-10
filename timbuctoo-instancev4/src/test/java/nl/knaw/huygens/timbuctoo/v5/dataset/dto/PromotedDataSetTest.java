@@ -7,30 +7,42 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.emptyIterable;
+import static org.hamcrest.Matchers.is;
 
 public class PromotedDataSetTest {
 
   @Test
   public void testRegex() throws Exception {
-    List<String> ids = Lists.newArrayList(
-      //ok
+    List<String> ok = Lists.newArrayList(
       "foo",
+      "f_oo",
       "foo_bar",
-
-      //not ok
+      "f_oo_bar",
+      "f00",
+      "f0o",
+      "f_0o",
+      "f0_o",
+      "f_0_o"
+    );
+    List<String> notOk = Lists.newArrayList(
+      "f",
+      "3foo",
+      "3_foo",
       "foo__bar",
       "foo_bar_",
       "foo-bar",
       "foo_bar ",
       "_foo-bar"
     );
+
     assertThat(
-      ids.stream().filter(x -> x.matches(PromotedDataSet.VALID_ID)).collect(Collectors.toList()),
-      contains(
-        "foo",
-        "foo_bar"
-      )
+      ok.stream().filter(x -> x.matches(PromotedDataSet.VALID_ID)).collect(Collectors.toList()),
+      is(ok)
+    );
+    assertThat(
+      notOk.stream().filter(x -> x.matches(PromotedDataSet.VALID_ID)).collect(Collectors.toList()),
+      is(emptyIterable())
     );
   }
 

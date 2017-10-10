@@ -96,7 +96,7 @@ public class DataSetRepositoryTest {
     dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
     dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
 
-    verify(resourceSync, times(1)).resourceList("user", "dataset");
+    verify(resourceSync, times(1)).resourceList("uuser", "dataset");
   }
 
   @Test
@@ -116,54 +116,45 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void dataSetExistsReturnsTrueIfTheUserOwnsADataSetWithTheDataSetId() throws DataStoreCreationException {
-    getImportManager("ownerId", "dataSetId");
-
-    boolean dataSetExists = dataSetRepository.dataSetExists("ownerId", "dataSetId");
-
-    assertThat(dataSetExists, is(true));
-  }
-
-  @Test
   public void removeDataSetRemovesTheDataSetFromDisk() throws Exception {
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataSet");
-    File dataSetPath = new File(new File(tempFile, "user"), "dataSet");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataSet");
+    File dataSetPath = new File(new File(tempFile, dataSet.getMetadata().getOwnerId()), "dataSet");
     assertThat(dataSetPath.exists(), is(true));
 
-    dataSetRepository.removeDataSet("user", "dataSet");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataSet");
 
     assertThat(dataSetPath.exists(), is(false));
   }
 
   @Test
   public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataSet");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataSet");
 
-    dataSetRepository.removeDataSet("user", "dataSet");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataSet");
 
-    assertThat(dataSetRepository.dataSetExists("user", "dataSet"), is(false));
+    assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataSet"), is(false));
   }
 
   @Test
   public void removeDataSetRemovesItFromResourceSync() throws Exception {
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataSet");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataSet");
 
-    dataSetRepository.removeDataSet("user", "dataSet");
+    dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataSet");
 
-    verify(resourceSync).removeDataSet("user", "dataSet");
+    verify(resourceSync).removeDataSet(dataSet.getMetadata().getOwnerId(), "dataSet");
   }
 
   @Test
   public void dataSetsWillBeTheSameAfterRestart() throws Exception {
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataSet");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataSet");
 
-    assertThat(dataSetRepository.dataSetExists("user", "dataSet"), is(true));
+    assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataSet"), is(true));
 
     // create a new instance to simulate a restart
     dataSetRepository = createDataSetRepo();
     dataSetRepository.start();
 
-    assertThat(dataSetRepository.dataSetExists("user", "dataSet"), is(true));
+    assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataSet"), is(true));
   }
 
 }

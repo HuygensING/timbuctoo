@@ -129,11 +129,17 @@ public class DataSetRepository {
       .map(userDataSets -> userDataSets.get(splitId.getRight()));
   }
 
+  public boolean userMatchesPrefix(User user, String prefix) {
+    return user != null && user.getPersistentId() != null && ("u" + user.getPersistentId()).equals(prefix);
+  }
+
   public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException {
-    String ownerId = user.getPersistentId();
-    final PromotedDataSet dataSet = promotedDataSet(ownerId, dataSetId, rdfIdHelper.dataSet(ownerId, dataSetId), false);
+    //The ownerId might not be valid (i.e. a safe string). We make it safe here:
+    //dataSetId is under the control of the user so we simply throw if it's not valid
+    String prefix = "u" + user.getPersistentId();
+    final PromotedDataSet dataSet = promotedDataSet(prefix, dataSetId, rdfIdHelper.dataSet(prefix, dataSetId), false);
     synchronized (dataSetMap) {
-      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerId, key -> new HashMap<>());
+      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(prefix, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
@@ -152,7 +158,7 @@ public class DataSetRepository {
           );
           storedDataSets.updateData(dataSets -> {
             dataSets
-              .computeIfAbsent(ownerId, key -> new HashSet<>())
+              .computeIfAbsent(prefix, key -> new HashSet<>())
               .add(dataSet);
             return dataSets;
           });
