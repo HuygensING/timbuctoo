@@ -8,7 +8,7 @@ import java.net.URI;
 public class UriHelper {
   private URI baseUri;
 
-  @JsonCreator
+  @JsonCreator(mode = JsonCreator.Mode.DELEGATING)
   public UriHelper(URI baseUri) {
     this.baseUri = baseUri;
   }
