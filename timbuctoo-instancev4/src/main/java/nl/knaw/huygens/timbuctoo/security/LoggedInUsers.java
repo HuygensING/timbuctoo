@@ -43,7 +43,7 @@ public class LoggedInUsers {
   }
 
   public Optional<User> userFor(String authHeader) {
-    if (authHeader == null) {
+    if (authHeader == null || authHeader.isEmpty()) {
       return Optional.empty();
     } else {
       User local = users.getIfPresent(authHeader);
