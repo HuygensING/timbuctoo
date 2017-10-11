@@ -8,6 +8,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 public class PaginationArgumentsHelper {
   public static final int DEFAULT_COUNT = 20;
@@ -58,15 +59,41 @@ public class PaginationArgumentsHelper {
     //    .name("count")
     //    .description("The amount of items to request. You might get less items then requested.")
     //  );
-    return fieldName + "(cursor: ID, count: Int, elasticsearch: String): " + makeListName(outputTypeName);
+    return fieldName + "(cursor: ID, count: Int): " + makeListName(outputTypeName);
   }
 
   public String makePaginatedListDefinition(String outputType) {
-
     return "type " + makeListName(outputType) + " {\n" +
       "  prevCursor: ID\n" +
       "  nextCursor: ID\n" +
       "  items: [" + outputType + "!]!\n" +
       "}\n\n";
   }
+
+  public String makeCollectionListName(String outputTypeName) {
+    return outputTypeName + "_CollectionList";
+  }
+
+  public String makeCollectionListField(String fieldName, String outputTypeName) {
+    String customFilters = String.join(
+      ", ",
+      collectionFilters.keySet().stream().map(k -> k + ": String").collect(Collectors.toList())
+    );
+    if (!customFilters.isEmpty()) {
+      customFilters = ", " + customFilters;
+    }
+    return fieldName + "(cursor: ID, count: Int" + customFilters + "): " + makeCollectionListName(outputTypeName);
+  }
+
+
+  public String makeCollectionListDefinition(String outputType) {
+    return "type " + makeCollectionListName(outputType) + " {\n" +
+      "  total: Int\n" +
+      "  prevCursor: ID\n" +
+      "  nextCursor: ID\n" +
+      "  facets: [Facet!]!\n" +
+      "  items: [" + outputType + "!]!\n" +
+      "}\n\n";
+  }
+
 }

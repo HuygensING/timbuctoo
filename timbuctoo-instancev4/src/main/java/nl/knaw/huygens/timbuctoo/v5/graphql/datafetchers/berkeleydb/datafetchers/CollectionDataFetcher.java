@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -36,7 +37,9 @@ public class CollectionDataFetcher implements CollectionFetcher {
         return PaginatedList.create(
           null,
           result.getNextToken(),
-          result.getUriList().stream().map(x -> new LazyTypeSubjectReference(x, dataSet)).collect(Collectors.toList())
+          result.getUriList().stream().map(x -> new LazyTypeSubjectReference(x, dataSet)).collect(Collectors.toList()),
+          Optional.of(result.getTotal()),
+          result.getFacets()
         );
       } catch (IOException e) {
         throw new RuntimeException(e);

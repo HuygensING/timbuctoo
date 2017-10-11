@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
 import com.google.common.base.Charsets;
+import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.Facet;
 import org.immutables.value.Value;
 
 import java.util.Base64;
@@ -18,6 +19,10 @@ public interface PaginatedList<T extends DatabaseResult> {
 
   List<T> getItems();
 
+  Optional<Integer> getTotal();
+
+  List<Facet> getFacets();
+
   static <U extends DatabaseResult> PaginatedList<U> create(String prevCursor, String nextCursor, List<U> items) {
     return ImmutablePaginatedList.<U>builder()
       .prevCursor(Optional.ofNullable(encode(prevCursor)))
@@ -25,6 +30,18 @@ public interface PaginatedList<T extends DatabaseResult> {
       .items(items)
       .build();
   }
+
+  static <U extends DatabaseResult> PaginatedList<U> create(String prevCursor, String nextCursor, List<U> items,
+                                                            Optional<Integer> total, List<Facet> facets) {
+    return ImmutablePaginatedList.<U>builder()
+      .prevCursor(Optional.ofNullable(encode(prevCursor)))
+      .nextCursor(Optional.ofNullable(encode(nextCursor)))
+      .items(items)
+      .total(total)
+      .facets(facets)
+      .build();
+  }
+
 
   static String encode(String prevCursor) {
     if (prevCursor == null) {
