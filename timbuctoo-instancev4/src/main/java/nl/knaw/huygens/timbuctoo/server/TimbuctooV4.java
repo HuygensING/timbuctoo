@@ -285,13 +285,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new GraphVizWriter()
     );
 
+    final PaginationArgumentsHelper argHelper = new PaginationArgumentsHelper(configuration.getCollectionFilters());
     final GraphQl graphQlEndpoint = new GraphQl(
       new RootQuery(
         dataSetRepository,
         serializerWriterRegistry,
         configuration.getArchetypesSchema(),
-        new RdfWiringFactory(dataSetRepository, configuration.getElasticSearch()),
-        new DerivedSchemaTypeGenerator(new PaginationArgumentsHelper()),
+        new RdfWiringFactory(dataSetRepository, argHelper),
+        new DerivedSchemaTypeGenerator(argHelper),
         environment.getObjectMapper()
       ),
       serializerWriterRegistry,

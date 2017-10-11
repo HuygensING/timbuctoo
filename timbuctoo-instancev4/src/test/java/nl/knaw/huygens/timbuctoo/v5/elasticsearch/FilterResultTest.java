@@ -13,13 +13,13 @@ import static org.hamcrest.core.IsEqual.equalTo;
 /**
  * Created on 2017-10-04 11:13.
  */
-public class PageableResultTest {
+public class FilterResultTest {
 
   private final ObjectMapper mapper = new ObjectMapper();
 
   @Test
   public void readResult() throws Exception {
-    PageableResult pageableResult = new PageableResult(createQuery(), createResult(), "_id");
+    EsFilterResult pageableResult = new EsFilterResult(createQuery(), createResult(), "_id");
 
     String expectedQuery = "{\"size\":3,\"query\":{\"match\":{\"gender\":\"F\"}},\"search_after\":[1464," +
       "\"account#174\"],\"sort\":[{\"balance\":\"asc\"},{\"_uid\":\"desc\"}]}";
@@ -28,24 +28,24 @@ public class PageableResultTest {
     String expectedResultStart = "{\"took\":25,\"timed_out\":false";
     assertThat(pageableResult.getResult().startsWith(expectedResultStart), equalTo(true));
 
-    assertThat(pageableResult.getIdList().size(), equalTo(3));
+    assertThat(pageableResult.getUriList().size(), equalTo(3));
     // System.out.println(pageableResult.getIdList());
-    assertThat(pageableResult.getIdList(), contains("348", "490", "427"));
+    assertThat(pageableResult.getUriList(), contains("348", "490", "427"));
 
     String expectedToken = "[1463,\"account#427\"]";
-    assertThat(pageableResult.getToken(), equalTo(expectedToken));
+    assertThat(pageableResult.getNextToken(), equalTo(expectedToken));
 
-    assertThat(pageableResult.getTotalHits(), equalTo(1000));
+    assertThat(pageableResult.getTotal(), equalTo(1000));
     assertThat(pageableResult.getSearchTime(), equalTo(25));
   }
 
   @Test
   public void readEmptyResult() throws Exception {
-    PageableResult pageableResult = new PageableResult(null, createEmptyResult(), "_id");
+    EsFilterResult pageableResult = new EsFilterResult(null, createEmptyResult(), "_id");
 
-    assertThat(pageableResult.getIdList().size(), equalTo(0));
-    assertThat(pageableResult.getToken(), equalTo(null));
-    assertThat(pageableResult.getTotalHits(), equalTo(0));
+    assertThat(pageableResult.getUriList().size(), equalTo(0));
+    assertThat(pageableResult.getNextToken(), equalTo(null));
+    assertThat(pageableResult.getTotal(), equalTo(0));
     assertThat(pageableResult.getSearchTime(), equalTo(5));
   }
 

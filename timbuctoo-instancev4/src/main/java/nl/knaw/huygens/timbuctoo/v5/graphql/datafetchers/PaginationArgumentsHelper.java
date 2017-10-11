@@ -1,14 +1,24 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
 import graphql.schema.DataFetchingEnvironment;
+import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ConfiguredFilter;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
+
+import java.util.Map;
+import java.util.Optional;
 
 public class PaginationArgumentsHelper {
   public static final int DEFAULT_COUNT = 20;
+  private final Map<String, CollectionFilter> collectionFilters;
 
-  static PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
+  public PaginationArgumentsHelper(Map<String, CollectionFilter> collectionFilters) {
+    this.collectionFilters = collectionFilters;
+  }
+
+  public PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
     String cursor = "";
-    String searchQuery = null;
     int count = DEFAULT_COUNT;
     if (environment.containsArgument("cursor")) {
       cursor = environment.getArgument("cursor");
@@ -18,12 +28,21 @@ public class PaginationArgumentsHelper {
       count = environment.getArgument("count");
     }
 
-    if (environment.containsArgument("elasticsearch")) {
-      searchQuery = environment.getArgument("elasticsearch");
+    ConfiguredFilter filter = null;
+    for (Map.Entry<String, CollectionFilter> entry : collectionFilters.entrySet()) {
+      if (environment.containsArgument(entry.getKey())) {
+        String searchQuery = environment.getArgument(entry.getKey());
+        String cursorArg = cursor;
+        int countArg = count;
+        String dataSetId = ((DatabaseResult) environment.getSource()).getDataSet().getMetadata().getCombinedId();
+        String fieldName = environment.getFieldDefinition().getName();
+
+        filter = () -> entry.getValue().query(dataSetId, fieldName, searchQuery, cursorArg, countArg);
+        break;
+      }
     }
 
-
-    return PaginationArguments.create(count, cursor, searchQuery);
+    return PaginationArguments.create(count, cursor, Optional.ofNullable(filter));
   }
 
   public String makeListName(String outputTypeName) {

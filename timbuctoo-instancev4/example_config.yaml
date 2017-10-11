@@ -18,11 +18,13 @@ securityConfiguration:
 baseUri: http://127.0.0.1:0 #port will be replaced with the port that timbuctoo ends up listening on
 userRedirectUrl: ./static/graphiql
 
-elasticSearch:
-  hostname: localhost
-  port: 9200
-  username: elastic
-  password: changeme
+collectionFilters:
+  elasticsearch:
+    "@class": nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearchFilter
+    hostname: localhost
+    port: 9200
+    username: elastic
+    password: changeme
 
 archetypesSchema: |
   type Archetypes {

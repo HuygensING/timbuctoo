@@ -20,22 +20,22 @@ public interface PaginationArguments {
    */
   String getCursor();
 
-
-  /**
-   * SearchQuery is a String-serialized elasticsearch query
-   */
-  Optional<String> getSearchQuery();
-
   /**
    * Count is either a positive number which provides a suggestion on how many items to return (might be overridden by
    * the data provider) or a negative number (usually -1) that indicates that there is no preference
    */
   int getCount();
 
-  static PaginationArguments create(int count, String cursor, String searchQuery) {
+  /**
+   * If filter is present, it contains a configured function that returns Uri's of objects matching a query as provided
+   * by the user
+   */
+  Optional<ConfiguredFilter> getFilter();
+
+  static PaginationArguments create(int count, String cursor, Optional<ConfiguredFilter> filter) {
     return ImmutablePaginationArguments.builder()
       .count(count)
-      .searchQuery(Optional.ofNullable(searchQuery))
+      .filter(filter)
       .cursor(new String(DECODER.decode(cursor), Charsets.UTF_8))
       .build();
   }

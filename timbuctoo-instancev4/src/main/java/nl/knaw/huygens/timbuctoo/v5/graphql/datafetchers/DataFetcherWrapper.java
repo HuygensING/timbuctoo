@@ -5,13 +5,13 @@ import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 
-import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper.getPaginationArguments;
-
 public class DataFetcherWrapper implements DataFetcher {
+  private final PaginationArgumentsHelper argumentsHelper;
   private final boolean isList;
   private final RelatedDataFetcher inner;
 
-  public DataFetcherWrapper(boolean isList, RelatedDataFetcher inner) {
+  public DataFetcherWrapper(PaginationArgumentsHelper argumentsHelper, boolean isList, RelatedDataFetcher inner) {
+    this.argumentsHelper = argumentsHelper;
     this.isList = isList;
     this.inner = inner;
   }
@@ -23,7 +23,7 @@ public class DataFetcherWrapper implements DataFetcher {
       if (isList) {
         return inner.getList(
           source,
-          getPaginationArguments(environment),
+          argumentsHelper.getPaginationArguments(environment),
           ((DatabaseResult) environment.getSource()).getDataSet()
         );
       } else {

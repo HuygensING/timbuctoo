@@ -26,7 +26,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
-import nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearch;
+import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
 
@@ -34,6 +34,7 @@ import javax.validation.Valid;
 import javax.ws.rs.DefaultValue;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.function.Consumer;
@@ -111,7 +112,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   @Valid
   public abstract DataSetConfiguration getDataSetConfiguration();
 
-  public abstract ElasticSearch getElasticSearch();
+  public abstract Map<String, CollectionFilter> getCollectionFilters();
 
   @JsonIgnore
   public DataSetRepository getDataSet(Consumer<String> onUpdated) throws DataStoreCreationException {

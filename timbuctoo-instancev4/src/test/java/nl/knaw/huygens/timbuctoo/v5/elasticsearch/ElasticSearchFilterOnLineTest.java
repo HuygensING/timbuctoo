@@ -18,20 +18,20 @@ import static org.junit.Assume.assumeTrue;
  * See example at
  * https://www.elastic.co/guide/en/elasticsearch/reference/current/_exploring_your_data.html#_loading_the_sample_dataset
  */
-public class ElasticSearchOnLineTest {
+public class ElasticSearchFilterOnLineTest {
 
   private static final String hostname = "localhost";
   private static final int port = 9200;
   private static final String username = "elastic";
   private static final String password = "changeme";
 
-  private static ElasticSearch eSearch;
+  private static ElasticSearchFilter eSearch;
 
   @BeforeClass
   public static void initialize() throws Exception {
     assumeTrue("No host at " + hostname + ":" + port + ", skipping tests." +
       "\nPlease start an ElasticSearch instance at the specified host and port.", hostIsAvailable());
-    eSearch = new ElasticSearch(hostname, port, Optional.ofNullable(username), Optional.ofNullable(password));
+    eSearch = new ElasticSearchFilter(hostname, port, Optional.ofNullable(username), Optional.ofNullable(password));
   }
 
   private static boolean hostIsAvailable() {
@@ -49,21 +49,21 @@ public class ElasticSearchOnLineTest {
     String elasticsearchQuery = createQuery1();
     String token = null;
     int preferredPageSize = 3;
-    PageableResult pageableResult = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+    EsFilterResult pageableResult = eSearch.query(index, null, elasticsearchQuery, token, preferredPageSize);
 
     //System.out.println(pageableResult.getResult());
-    token = pageableResult.getToken();
+    token = pageableResult.getNextToken();
     assertThat(token, equalTo("[1447,\"account#490\"]"));
-    assertThat(pageableResult.getIdList(), contains("820", "315", "490"));
-    assertThat(pageableResult.getTotalHits(), equalTo(493));
+    assertThat(pageableResult.getUriList(), contains("820", "315", "490"));
+    assertThat(pageableResult.getTotal(), equalTo(493));
 
-    pageableResult = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+    pageableResult = eSearch.query(index, null, elasticsearchQuery, token, preferredPageSize);
 
     //System.out.println(pageableResult.getResult());
-    token = pageableResult.getToken();
+    token = pageableResult.getNextToken();
     assertThat(token, equalTo("[1696,\"account#159\"]"));
-    assertThat(pageableResult.getIdList(), contains("427", "174", "159"));
-    assertThat(pageableResult.getTotalHits(), equalTo(493));
+    assertThat(pageableResult.getUriList(), contains("427", "174", "159"));
+    assertThat(pageableResult.getTotal(), equalTo(493));
   }
 
   @Test(expected = org.elasticsearch.client.ResponseException.class)
@@ -71,7 +71,7 @@ public class ElasticSearchOnLineTest {
     String index = "does_not_exist";
     String elasticsearchQuery = createQuery1();
     int preferredPageSize = 3;
-    eSearch.query(index, elasticsearchQuery, null, preferredPageSize);
+    eSearch.query(index, null, elasticsearchQuery, null, preferredPageSize);
   }
 
   @Test
@@ -80,16 +80,16 @@ public class ElasticSearchOnLineTest {
     String elasticsearchQuery = createQuery2();
     String token = null;
     int preferredPageSize = 3;
-    PageableResult pageableResult = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+    EsFilterResult pageableResult = eSearch.query(index, null, elasticsearchQuery, token, preferredPageSize);
 
-    assertThat(pageableResult.getToken(), equalTo(null));
-    assertThat(pageableResult.getIdList().size(), equalTo(0));
-    assertThat(pageableResult.getTotalHits(), equalTo(0));
+    assertThat(pageableResult.getNextToken(), equalTo(null));
+    assertThat(pageableResult.getUriList().size(), equalTo(0));
+    assertThat(pageableResult.getTotal(), equalTo(0));
 
-    token = pageableResult.getToken();
-    pageableResult = eSearch.query(index, elasticsearchQuery, token, preferredPageSize);
+    token = pageableResult.getNextToken();
+    pageableResult = eSearch.query(index, null, elasticsearchQuery, token, preferredPageSize);
 
-    assertThat(pageableResult.getTotalHits(), equalTo(0));
+    assertThat(pageableResult.getTotal(), equalTo(0));
   }
 
   private String createQuery1() {
@@ -116,7 +116,7 @@ public class ElasticSearchOnLineTest {
       "    },\n" +
       "    \"sort\": [\n" +
       "        {\"balance\": \"asc\"},\n" +
-      "        {\"" + ElasticSearch.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
+      "        {\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
       "    ]\n" +
       "}";
   }

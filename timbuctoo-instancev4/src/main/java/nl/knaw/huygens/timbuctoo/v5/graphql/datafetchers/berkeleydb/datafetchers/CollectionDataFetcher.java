@@ -2,8 +2,7 @@ package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetcher
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CursorSubject;
-import nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearch;
-import nl.knaw.huygens.timbuctoo.v5.elasticsearch.PageableResult;
+import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.FilterResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
@@ -16,36 +15,28 @@ import java.io.IOException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper.getPaginatedList;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper
+  .getPaginatedList;
 
 public class CollectionDataFetcher implements CollectionFetcher {
   private static final Logger LOG = LoggerFactory.getLogger(CollectionDataFetcher.class);
 
   private final String collectionUri;
-  private final ElasticSearch elasticSearch;
-  private final String indexName;
 
-  public CollectionDataFetcher(String collectionUri, ElasticSearch elasticSearch, String indexName) {
+  public CollectionDataFetcher(String collectionUri) {
     this.collectionUri = collectionUri;
-    this.elasticSearch = elasticSearch;
-    this.indexName = indexName;
   }
 
   @Override
   public PaginatedList<SubjectReference> getList(PaginationArguments arguments, DataSet dataSet) {
     String cursor = arguments.getCursor();
-    if (arguments.getSearchQuery().isPresent()) {
+    if (arguments.getFilter().isPresent()) {
       try {
-        final PageableResult result = elasticSearch.query(
-          dataSet.getMetadata().getCombinedId().toLowerCase() + "/" + indexName,
-          arguments.getSearchQuery().get(),
-          cursor,
-          arguments.getCount()
-        );
+        final FilterResult result = arguments.getFilter().get().query();
         return PaginatedList.create(
           null,
-          result.getToken(),
-          result.getIdList().stream().map(x -> new LazyTypeSubjectReference(x, dataSet)).collect(Collectors.toList())
+          result.getNextToken(),
+          result.getUriList().stream().map(x -> new LazyTypeSubjectReference(x, dataSet)).collect(Collectors.toList())
         );
       } catch (IOException e) {
         throw new RuntimeException(e);

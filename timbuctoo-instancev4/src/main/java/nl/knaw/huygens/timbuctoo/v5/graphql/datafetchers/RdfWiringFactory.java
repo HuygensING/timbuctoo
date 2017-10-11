@@ -19,7 +19,6 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearch;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.CollectionDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.QuadStoreLookUpSubjectByUriFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.RelationDataFetcher;
@@ -42,11 +41,11 @@ public class RdfWiringFactory implements WiringFactory {
   private final LookUpSubjectByUriFetcherWrapper lookupFetcher;
   private final ObjectTypeResolver objectTypeResolver;
   private final DataSetRepository dataSetRepository;
-  private final ElasticSearch elasticSearch;
+  private final PaginationArgumentsHelper argumentsHelper;
 
-  public RdfWiringFactory(DataSetRepository dataSetRepository, ElasticSearch elasticSearch) {
+  public RdfWiringFactory(DataSetRepository dataSetRepository, PaginationArgumentsHelper argumentsHelper) {
     this.dataSetRepository = dataSetRepository;
-    this.elasticSearch = elasticSearch;
+    this.argumentsHelper = argumentsHelper;
     objectTypeResolver = new ObjectTypeResolver();
     uriFetcher = new UriFetcher();
     lookupFetcher = new LookUpSubjectByUriFetcherWrapper("uri", new QuadStoreLookUpSubjectByUriFetcher());
@@ -91,7 +90,7 @@ public class RdfWiringFactory implements WiringFactory {
       String source = ((StringValue) directive.getArgument("source").getValue()).getValue();
       String predicate = ((StringValue) directive.getArgument("predicate").getValue()).getValue();
       String direction = ((StringValue) directive.getArgument("direction").getValue()).getValue();
-      return new CollectionFetcherWrapper(new RelationsOfSubjectDataFetcher(
+      return new CollectionFetcherWrapper(argumentsHelper, new RelationsOfSubjectDataFetcher(
         source,
         predicate,
         Direction.valueOf(direction)
@@ -99,10 +98,9 @@ public class RdfWiringFactory implements WiringFactory {
     } else if (environment.getFieldDefinition().getDirective("fromCollection") != null) {
       final Directive directive = environment.getFieldDefinition().getDirective("fromCollection");
       String uri = ((StringValue) directive.getArgument("uri").getValue()).getValue();
-      String indexName = ((StringValue) directive.getArgument("indexName").getValue()).getValue();
       boolean listAll = ((BooleanValue) directive.getArgument("listAll").getValue()).isValue();
       if (listAll) {
-        return new CollectionFetcherWrapper(new CollectionDataFetcher(uri, elasticSearch, indexName));
+        return new CollectionFetcherWrapper(argumentsHelper, new CollectionDataFetcher(uri));
       } else {
         return lookupFetcher;
       }
@@ -114,12 +112,12 @@ public class RdfWiringFactory implements WiringFactory {
       boolean isObject = ((BooleanValue) directive.getArgument("isObject").getValue()).isValue();
       boolean isValue = ((BooleanValue) directive.getArgument("isValue").getValue()).isValue();
       if (isObject && isValue) {
-        return new DataFetcherWrapper(isList, new UnionDataFetcher(uri, direction));
+        return new DataFetcherWrapper(argumentsHelper, isList, new UnionDataFetcher(uri, direction));
       } else {
         if (isObject) {
-          return new DataFetcherWrapper(isList, new RelationDataFetcher(uri, direction));
+          return new DataFetcherWrapper(argumentsHelper, isList, new RelationDataFetcher(uri, direction));
         } else {
-          return new DataFetcherWrapper(isList, new TypedLiteralDataFetcher(uri));
+          return new DataFetcherWrapper(argumentsHelper, isList, new TypedLiteralDataFetcher(uri));
         }
       }
     } else if (environment.getFieldDefinition().getDirective("uri") != null) {

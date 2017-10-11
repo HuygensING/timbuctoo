@@ -1,43 +1,47 @@
 package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.FilterResult;
 
 import java.util.List;
 
-/**
- * Created on 2017-10-04 10:54.
- */
-public class PageableResult {
+public class EsFilterResult implements FilterResult {
 
   public final String idField;
 
   private final JsonNode queryNode;
   private final JsonNode resultNode;
 
-  public PageableResult(JsonNode queryNode, JsonNode resultNode) {
+  public EsFilterResult(JsonNode queryNode, JsonNode resultNode) {
     this(queryNode, resultNode, "uri");
   }
 
-  public PageableResult(JsonNode queryNode, JsonNode resultNode, String idField) {
+  public EsFilterResult(JsonNode queryNode, JsonNode resultNode, String idField) {
     this.queryNode = queryNode;
     this.resultNode = resultNode;
     this.idField = idField;
   }
 
 
-  public String getQuery() {
+  String getQuery() {
     return queryNode.toString();
   }
 
-  public String getResult() {
+  String getResult() {
     return resultNode.toString();
   }
 
-  public List<String> getIdList() {
+  int getSearchTime() {
+    return resultNode.findPath("took").asInt();
+  }
+
+  @Override
+  public List<String> getUriList() {
     return resultNode.findPath("hits").findPath("hits").findValuesAsText(idField);
   }
 
-  public String getToken() {
+  @Override
+  public String getNextToken() {
     String token = null;
     List<JsonNode> sortNodes = resultNode.findValues("sort");
     if (!sortNodes.isEmpty()) {
@@ -46,11 +50,9 @@ public class PageableResult {
     return token;
   }
 
-  public int getTotalHits() {
+  @Override
+  public int getTotal() {
     return resultNode.findPath("hits").findPath("total").asInt();
   }
 
-  public int getSearchTime() {
-    return resultNode.findPath("took").asInt();
-  }
 }

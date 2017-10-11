@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHeaders;
@@ -27,7 +28,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-public class ElasticSearch {
+public class ElasticSearchFilter implements CollectionFilter {
 
   public static final String UNIQUE_FIELD_NAME = "_uid";
 
@@ -37,9 +38,9 @@ public class ElasticSearch {
   private final ObjectMapper mapper;
 
   @JsonCreator
-  public ElasticSearch(@JsonProperty("hostname") String hostname, @JsonProperty("port") int port,
-                       @JsonProperty("username") Optional<String> username,
-                       @JsonProperty("password") Optional<String> password) {
+  public ElasticSearchFilter(@JsonProperty("hostname") String hostname, @JsonProperty("port") int port,
+                             @JsonProperty("username") Optional<String> username,
+                             @JsonProperty("password") Optional<String> password) {
     Header[] headers = {
       new BasicHeader(HttpHeaders.CONTENT_TYPE, "application/json"),
       new BasicHeader("Role", "Read")};
@@ -59,9 +60,10 @@ public class ElasticSearch {
     mapper = new ObjectMapper();
   }
 
-  public PageableResult query(String index, String elasticSearchQuery, String token, int preferredPageSize)
-    throws IOException {
-    String endpoint = index.endsWith("_search") ? index : index.endsWith("/") ? index + "_search" : index + "/_search";
+  @Override
+  public EsFilterResult query(String dataSetId, String fieldName, String elasticSearchQuery, String token,
+                              int preferredPageSize) throws IOException {
+    String endpoint = dataSetId + (fieldName != null && !fieldName.isEmpty() ? "/" + fieldName : "") + "/_search";
     JsonNode queryNode = elaborateQuery(elasticSearchQuery, token, preferredPageSize);
     Map<String, String> params = Collections.singletonMap("pretty", "true");
 
@@ -69,7 +71,7 @@ public class ElasticSearch {
     Response response = restClient.performRequest(METHOD_GET, endpoint, params, entity);
 
     JsonNode responseNode = mapper.readTree(response.getEntity().getContent());
-    return new PageableResult(queryNode, responseNode);
+    return new EsFilterResult(queryNode, responseNode);
   }
 
   protected ObjectNode elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize)

@@ -15,20 +15,20 @@ import static org.hamcrest.Matchers.equalTo;
 /**
  * Created on 2017-10-02 12:57.
  */
-public class ElasticSearchTest {
+public class ElasticSearchFilterTest {
 
-  private static ElasticSearch eSearch;
+  private static ElasticSearchFilter eSearch;
 
   @BeforeClass
   public static void initialize() throws Exception {
-    eSearch = new ElasticSearch("", 0, Optional.of(""), Optional.empty());
+    eSearch = new ElasticSearchFilter("", 0, Optional.of(""), Optional.empty());
   }
 
   @Test
   public void elaborateEmptyQuery() throws Exception {
     // empty query with and without token.
     String query = "{}";
-    String expectedSort = "{\"" + ElasticSearch.UNIQUE_FIELD_NAME + "\":\"desc\"}";
+    String expectedSort = "{\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\":\"desc\"}";
 
     JsonNode node = eSearch.elaborateQuery(query, null, 5);
 
@@ -68,7 +68,7 @@ public class ElasticSearchTest {
       "    \"search_after\": [1314, 315],\n" +
       "    \"sort\": [\n" +
       "        {\"balance\": \"asc\"},\n" +
-      "        {\"" + ElasticSearch.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
+      "        {\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\": \"desc\"}\n" +
       "    ]\n" +
       "}";
     testElaborate(query);
@@ -103,7 +103,7 @@ public class ElasticSearchTest {
     JsonNode sortNode = node.findValue("sort");
     Iterator<JsonNode> sortIter = sortNode.elements();
     String expectedSort1 = "{\"balance\":\"asc\"}";
-    String expectedSort2 = "{\"" + ElasticSearch.UNIQUE_FIELD_NAME + "\":\"desc\"}";
+    String expectedSort2 = "{\"" + ElasticSearchFilter.UNIQUE_FIELD_NAME + "\":\"desc\"}";
     assertThat(sortIter.next().toString(), equalTo(expectedSort1));
     assertThat(sortIter.next().toString(), equalTo(expectedSort2));
     String expectedSort = expectedSort1 + "," + expectedSort2;

@@ -20,11 +20,13 @@ securityConfiguration:
 baseUri: ${BASE_URI} # used to generate next and previous links of a search result
 userRedirectUrl: ${BASE_URI}/static/graphiql
 
-elasticSearch:
-  hostname: ${TIMBUCTOO_ELASTICSEARCH_HOST}
-  port: ${TIMBUCTOO_ELASTICSEARCH_PORT}
-  username: ${TIMBUCTOO_ELASTICSEARCH_USER}
-  password: ${TIMBUCTOO_ELASTICSEARCH_PASSWORD}
+collectionFilters:
+  elasticsearch:
+    "@class": nl.knaw.huygens.timbuctoo.v5.elasticsearch.ElasticSearchFilter
+    hostname: ${TIMBUCTOO_ELASTICSEARCH_HOST}
+    port: ${TIMBUCTOO_ELASTICSEARCH_PORT}
+    username: ${TIMBUCTOO_ELASTICSEARCH_USER}
+    password: ${TIMBUCTOO_ELASTICSEARCH_PASSWORD}
 
 
 archetypesSchema: |
