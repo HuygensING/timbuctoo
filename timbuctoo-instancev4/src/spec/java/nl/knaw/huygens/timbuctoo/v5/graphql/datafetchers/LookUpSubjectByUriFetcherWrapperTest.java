@@ -133,8 +133,8 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             @Override
             public PromotedDataSet getMetadata() {
               return PromotedDataSet.promotedDataSet(
-                "ownerId",
-                "dataSetId",
+                "ownerid",
+                "datasetid",
                 "http://example.org",
                 false
               );

@@ -51,9 +51,9 @@ public class RawUploadRdfSaverTest {
   public void setUp() throws Exception {
     rdfSerializer = mock(RdfSerializer.class);
     dataSetMetadata = PromotedDataSet.promotedDataSet(
-      "userId",
-      "dataSet",
-      "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet",
+      "userid",
+      "dataset",
+      "http://timbuctoo.huygens.knaw.nl/v5/datasets/userid/dataset",
       false
     );
     instance = instanceWithRdfSerializer(rdfSerializer, dataSetMetadata);
@@ -221,10 +221,10 @@ public class RawUploadRdfSaverTest {
     String generatedRdf = rdfSerializer.toString();
     // Use assertEquals because the failing Hamcrest output is hard to compare
     String graphName = dataSetMetadata.getBaseUri();
-    String collection = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet/rawData/fileName/collections/";
-    String prop = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet/rawData/fileName/props/";
-    String rawData = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet/rawData/fileName/entities/";
-    String fileUri = "http://timbuctoo.huygens.knaw.nl/v5/datasets/userId/dataSet/rawData/fileName/";
+    String fileUri = dataSetMetadata.getBaseUri() + "/rawData/fileName/";
+    String collection = fileUri + "collections/";
+    String prop = fileUri + "props/";
+    String rawData = fileUri + "entities/";
     assertEquals(
       fileUri + " "         + RDF_TYPE           + " " + TIM_TABULAR_FILE + " "                  + graphName + "\n" +
         graphName + " "     + PROV_DERIVED_FROM  + " " + fileUri + " "                           + graphName + "\n" +

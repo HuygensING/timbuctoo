@@ -11,14 +11,14 @@ import java.util.Optional;
 @JsonSerialize(as = ImmutablePromotedDataSet.class)
 @JsonDeserialize(as = ImmutablePromotedDataSet.class)
 public interface PromotedDataSet {
-
   //DataSetId's must be Safe. Meaning that they can be used on the fileSystem, in queries, wherever.
-  //We implement that by making sure that the the owner and dataSetId contain only a-z (upper and lowercase) and 0-9
-  //we also allow for an underscore. But only one, so that two underscores can be used for escaping or joining parts
+  //We implement that by making sure that the the owner and dataSetId contain only a-z (lowercase for case
+  // insensitive environments) and 0-9
+  //we also allow for an underscore. But only one, so that we can join the parts using 2 underscores
 
   //finally, the id must start with a character because some environments (java variables, graphql, javascript, sql)
   //don't allow an identifier to start with a number
-  String VALID_ID = "^[a-zA-Z](_?[a-zA-Z0-9]+)+$";
+  String VALID_ID = "^[a-z](_?[a-z0-9]+)+$";
 
   String getDataSetId();
 

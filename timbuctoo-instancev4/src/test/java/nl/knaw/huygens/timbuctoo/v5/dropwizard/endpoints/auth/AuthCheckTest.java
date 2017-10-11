@@ -18,7 +18,6 @@ import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.c
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.core.IsNull.notNullValue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -27,7 +26,7 @@ public class AuthCheckTest {
 
   @Test
   public void checkWriteAccessRerturnNullIfTheDataSetDoesNotExistAndTheUserIdIsTheSameAsTheDataSetOwnerId() {
-    String ownerId = "ownerId";
+    String ownerId = "ownerid";
     User owner = User.create(null, ownerId);
     LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
     given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(owner));
@@ -51,7 +50,7 @@ public class AuthCheckTest {
     given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
 
     Response response = checkWriteAccess(
-      "ownerId",
+      "ownerid",
       "dataSet",
       (user, dataSet) -> Optional.empty(),
       null,
@@ -73,7 +72,7 @@ public class AuthCheckTest {
       authorizer,
       loggedInUsers,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", false)
     );
 
     assertThat(response.getStatus(), is(200));
@@ -87,7 +86,7 @@ public class AuthCheckTest {
       null,
       loggedInUsers,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", false)
     );
 
     assertThat(response.getStatus(), is(UNAUTHORIZED.getStatusCode()));
@@ -104,7 +103,7 @@ public class AuthCheckTest {
       authorizer,
       loggedInUsers,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", false)
     );
 
     assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
@@ -121,7 +120,7 @@ public class AuthCheckTest {
       authorizer,
       loggedInUsers,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerId", "dataSetId", "http://ex.org", false)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", false)
     );
 
     assertThat(response.getStatus(), is(200));

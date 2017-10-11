@@ -33,7 +33,7 @@ public class PromotedDataSetTest {
       "foo_bar_",
       "foo-bar",
       "foo_bar ",
-      "_foo-bar"
+      "_foobar"
     );
 
     assertThat(

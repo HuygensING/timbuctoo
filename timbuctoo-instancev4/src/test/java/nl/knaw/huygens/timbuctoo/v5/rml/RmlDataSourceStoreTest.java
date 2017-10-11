@@ -33,8 +33,8 @@ public class RmlDataSourceStoreTest {
   public void itWorks() throws Exception {
     NonPersistentBdbDatabaseCreator dbCreator = new NonPersistentBdbDatabaseCreator();
     PromotedDataSet dataSetMetadata = PromotedDataSet.promotedDataSet(
-      "userId",
-      "dataSetId",
+      "userid",
+      "datasetid",
       "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId",
       false
     );
