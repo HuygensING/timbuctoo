@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -18,6 +19,9 @@ import static org.junit.Assume.assumeTrue;
  * See example at
  * https://www.elastic.co/guide/en/elasticsearch/reference/current/_exploring_your_data.html#_loading_the_sample_dataset
  */
+@Ignore("This test is handy when working with elastic search. " +
+  "This test will fail when you run your own elastic search server." +
+  "So for now ignore this test, to make sure no test fails unexpectedly.")
 public class ElasticSearchFilterOnLineTest {
 
   private static final String hostname = "localhost";
@@ -94,16 +98,16 @@ public class ElasticSearchFilterOnLineTest {
 
   private String createQuery1() {
     return "{\n" +
-        "    \"size\": 3,\n" +
-        "    \"query\": {\n" +
-        "        \"match\" : {\n" +
-        "            \"gender\" : \"F\"\n" +
-        "        }\n" +
-        "    },\n" +
-        "    \"sort\": [\n" +
-        "        {\"balance\": \"asc\"}\n" +
-        "    ]\n" +
-        "}";
+      "    \"size\": 3,\n" +
+      "    \"query\": {\n" +
+      "        \"match\" : {\n" +
+      "            \"gender\" : \"F\"\n" +
+      "        }\n" +
+      "    },\n" +
+      "    \"sort\": [\n" +
+      "        {\"balance\": \"asc\"}\n" +
+      "    ]\n" +
+      "}";
   }
 
   private String createQuery2() {
