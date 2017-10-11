@@ -11,6 +11,16 @@ interface Entity {
   uri: String!
 }
 
+type Facet {
+    caption: String!	@fake(type: productCategory)
+    options: [Option!]!
+}
+
+type Option {
+    name: String!	@fake(type: productName)
+    count: Int! @fake(type:money)
+}
+
 type Query {
   #the datasets that are supposed to get extra attention
   promotedDataSets: [DataSetMetadata!]!

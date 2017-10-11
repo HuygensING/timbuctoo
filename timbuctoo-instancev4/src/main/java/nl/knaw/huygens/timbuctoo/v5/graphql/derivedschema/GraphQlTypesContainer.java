@@ -90,6 +90,17 @@ public class GraphQlTypesContainer {
     return argumentsHelper.makeListField(fieldName, typeName);
   }
 
+  private String collectionType(String fieldName, String typeName) {
+    final String listTypeName = argumentsHelper.makeCollectionListName(typeName);
+    if (!types.containsKey(listTypeName)) {
+      StringBuilder builder = new StringBuilder();
+      types.put(listTypeName, builder);
+      builder.append(argumentsHelper.makeCollectionListDefinition(typeName));
+    }
+    return argumentsHelper.makeCollectionListField(fieldName, typeName);
+  }
+
+
   public String unionType(Set<String> refs) {
     String unionName = "Union_";
     for (String type : refs) {
@@ -180,7 +191,7 @@ public class GraphQlTypesContainer {
       total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
         "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");
       total.append("  ")
-        .append(listType(name + "List", typename))
+        .append(collectionType(name + "List", typename))
         .append(" " +
           "@fromCollection(uri: \"")
         .append(uri.replace("\"", "\\\""))

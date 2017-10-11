@@ -1,8 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.Facet;
+import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.FacetOption;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.FilterResult;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class EsFilterResult implements FilterResult {
@@ -55,4 +58,20 @@ public class EsFilterResult implements FilterResult {
     return resultNode.findPath("hits").findPath("total").asInt();
   }
 
+  @Override
+  public List<Facet> getFacets() {
+    final ArrayList<Facet> result = new ArrayList<>();
+    final JsonNode aggregations = resultNode.get("aggregations");
+    if (aggregations != null && !aggregations.isNull()) {
+      for (String key: (Iterable<String>) aggregations::fieldNames) {
+        JsonNode aggregation = aggregations.get(key);
+        final ArrayList<FacetOption> options = new ArrayList<>();
+        for (JsonNode bucket : aggregation.get("buckets")) {
+          options.add(FacetOption.facetOption(bucket.get("key").asText(), bucket.get("doc_count").asInt()));
+        }
+        result.add(Facet.facet(key, options));
+      }
+    }
+    return result;
+  }
 }

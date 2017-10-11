@@ -8,4 +8,6 @@ public interface FilterResult {
   String getNextToken();
 
   int getTotal();
+
+  List<Facet> getFacets();
 }

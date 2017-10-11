@@ -76,38 +76,42 @@ public class ElasticSearchFilter implements CollectionFilter {
 
   protected ObjectNode elaborateQuery(String elasticSearchQuery, String token, int preferredPageSize)
     throws IOException {
-    // size -1 gives the default 10 results. size 0 gives 0 results. totals are always given.
-    // requests without a 'query' clause are legal, so don't check.
-    // if 'search_after' is present, 'sort' must contain just as many fields of same type (not checked).
-    // 'sort' must be present and must contain "..one unique value per document.." (we check on/put UNIQUE_FIELD_NAME).
-    ObjectNode node = (ObjectNode) mapper.readTree(elasticSearchQuery);
-
-    // size
-    node.put("size", preferredPageSize);
-
-    // search_after
-    if (token != null && !token.isEmpty()) {
+    try {
+      ObjectNode node = (ObjectNode) mapper.readTree(elasticSearchQuery);
       ArrayNode searchAfterNode = (ArrayNode) node.findValue("search_after");
-      if (searchAfterNode == null) {
-        searchAfterNode = node.putArray("search_after");
-      }
-      searchAfterNode.removeAll();
-      searchAfterNode.addAll((ArrayNode) mapper.readTree(token));
-    } else {
-      node.remove("search_after");
-    }
 
-    // sort
-    ArrayNode sortNode = (ArrayNode) node.findValue("sort");
-    if (sortNode == null) {
-      sortNode = node.putArray("sort");
+      // size -1 gives the default 10 results. size 0 gives 0 results. totals are always given.
+      // requests without a 'query' clause are legal, so don't check.
+      // if 'search_after' is present, 'sort' must contain just as many fields of same type (not checked).
+      // 'sort' must be present and must contain "..one unique value per document.." (we check on/put
+      // UNIQUE_FIELD_NAME).
+      node.put("size", preferredPageSize);
+
+      // search_after
+      if (token != null && !token.isEmpty()) {
+        if (searchAfterNode == null) {
+          searchAfterNode = node.putArray("search_after");
+        }
+        searchAfterNode.removeAll();
+        searchAfterNode.addAll((ArrayNode) mapper.readTree(token));
+      } else {
+        node.remove("search_after");
+      }
+
+      // sort
+      ArrayNode sortNode = (ArrayNode) node.findValue("sort");
+      if (sortNode == null) {
+        sortNode = node.putArray("sort");
+      }
+      if (sortNode.findValue(UNIQUE_FIELD_NAME) == null) {
+        ObjectNode objNode = JsonNodeFactory.instance.objectNode();
+        objNode.put(UNIQUE_FIELD_NAME, "desc");
+        sortNode.add(objNode);
+      }
+      return node;
+    } catch (IOException e) {
+      throw new IOException("Elasticsearch query is not a wellformed JSON document", e);
     }
-    if (sortNode.findValue(UNIQUE_FIELD_NAME) == null) {
-      ObjectNode objNode = JsonNodeFactory.instance.objectNode();
-      objNode.put(UNIQUE_FIELD_NAME, "desc");
-      sortNode.add(objNode);
-    }
-    return node;
   }
 
 
