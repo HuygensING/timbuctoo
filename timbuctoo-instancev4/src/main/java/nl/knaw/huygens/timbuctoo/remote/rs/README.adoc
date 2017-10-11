@@ -132,10 +132,10 @@ The following url's are important to remember:
 Got to the folder `{timbuctoo-root}/documentation/resourcesyncexample`.
 include::../../../../../../../../../../documentation/resourcesyncexample/README.adoc[tags=startup]
 
-- http://localhost:8080/v2.1/remote/rs/discover/listgraphs/http%3A%2F%2Fyour%2Frdf%2Fserver - list the graph iri's at the remote site
-- http://localhost:8080/v2.1/remote/rs/discover/listsets/http%3A%2F%2Fyour%2Frdf%2Fserver - same as previous, agnostic to base64-convention
-- http://localhost:8080/v2.1/remote/rs/discover/framework/http%3A%2F%2Fyour%2Frdf%2Fserver - flat representation of the ResourceSync Framework documents
-- http://localhost:8080/v2.1/remote/rs/discover/tree/http%3A%2F%2Fyour%2Frdf%2Fserver - hierarchical representation of the ResourceSync Framework documents
+- http://localhost:8080/v2.1/remote/rs/discover/listgraphs?url=http%3A%2F%2Fyour%2Frdf%2Fserver - list the graph iri's at the remote site
+- http://localhost:8080/v2.1/remote/rs/discover/listsets?url=http%3A%2F%2Fyour%2Frdf%2Fserver - same as previous, agnostic to base64-convention
+- http://localhost:8080/v2.1/remote/rs/discover/framework?url=http%3A%2F%2Fyour%2Frdf%2Fserver - flat representation of the ResourceSync Framework documents
+- http://localhost:8080/v2.1/remote/rs/discover/tree?url=http%3A%2F%2Fyour%2Frdf%2Fserver - hierarchical representation of the ResourceSync Framework documents
 N.B. You can use `http%3A%2F%2Flocalhost%3A8080%2Fv5%2Fresourcesync%2FsourceDescription.xml` in stead of `http%3A%2F%2Fyour%2Frdf%2Fserver` to use the same Timbuctoo instance as client and server.
 
 == Working with the ../remote/rs/xml package
