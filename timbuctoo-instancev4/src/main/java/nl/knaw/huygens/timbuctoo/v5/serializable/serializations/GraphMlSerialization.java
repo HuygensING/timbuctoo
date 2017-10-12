@@ -30,7 +30,7 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
         Integer nodeId = entityIds.computeIfAbsent(entity.getKey(), k -> nodeCounter.incrementAndGet());
         writer.println("    <node id=\"node" + nodeId + "\">");
         writer.println("      <data key=\"" + entity.getKey() + "\">" + entity.getValue() + "</data>");
-        writer.println("      <data label=\"" + entity.getKey() + "\">" + entity.getValue() + "</data>");
+        writer.println("      <data key=\"label\">" + entity.getKey() + "</data>");
         writer.println("    </node>");
         for (Map.Entry<String, Set<String>> relation : entity.getValue().relations.entrySet()) {
           for (String otherNodeUri : relation.getValue()) {
