@@ -2,40 +2,53 @@ package nl.knaw.huygens.timbuctoo.v5.serializable.serializations;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
-import nl.knaw.huygens.timbuctoo.v5.serializable.dto.Value;
+import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 import nl.knaw.huygens.timbuctoo.v5.serializable.serializations.base.CollectionsOfEntitiesSerialization;
 
 public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
 
-  //  private final CSVPrinter csvPrinter;
-  private String tableName;
-  private String columnHeaders;
-  private List<String> columns;
-  private int count = 0;
-  private int countEdge = 0;
+  private final PrintWriter writer;
+  private int countEdge = 1;
 
   public GraphMlSerialization(OutputStream outputStream) throws IOException {
-    //    csvPrinter = new CSVPrinter(new PrintWriter(outputStream), CSVFormat.EXCEL);
+    writer = new PrintWriter(outputStream);
   }
 
-  protected void initialize(List<String> columnHeaders) throws IOException {
+  public void serialize(SerializableResult serializableResult) throws IOException {
+    super.serialize(serializableResult);
+    Map<String, Integer> entityIds = new HashMap<>();
+    AtomicInteger nodeCounter = new AtomicInteger();
     writeHeader();
-    this.columnHeaders = "";
-    columns = new ArrayList<String>();
-    for (String columnHeader : columnHeaders) {
-      columns.add(columnHeader);
-      this.columnHeaders += ", " + columnHeader;
-      this.columnHeaders += ", " + columnHeader + "_type";
+    for (Map<String, AggregatedEntity> entities : allEntities.values()) {
+      for (Map.Entry<String, AggregatedEntity> entity : entities.entrySet()) {
+        Integer nodeId = entityIds.computeIfAbsent(entity.getKey(), k -> nodeCounter.incrementAndGet());
+        writer.println("    <node id=\"node" + nodeId + "\">");
+        writer.println("      <data key=\"" + entity.getKey() + "\">" + entity.getValue() + "</data>");
+        writer.println("      <data label=\"" + entity.getKey() + "\">" + entity.getValue() + "</data>");
+        writer.println("    </node>");
+        for (Map.Entry<String, Set<String>> relation : entity.getValue().relations.entrySet()) {
+          for (String otherNodeUri : relation.getValue()) {
+            Integer otherNodeId = entityIds.computeIfAbsent(otherNodeUri, k -> nodeCounter.incrementAndGet());
+            writer.println("    <edge id=\"e" + countEdge  + "\" source=\"node" +
+                nodeId  + "\" target=\"node" + otherNodeId + "\">");
+            writer.println("      <data key=\"label\">" + relation.getKey() + "</data>");
+            writer.println("    </edge>");
+            countEdge++;
+          }
+        }
+      }
     }
-    this.columnHeaders = this.columnHeaders.substring(2);
+    writeFooter();
+    writer.flush();
+    writer.close();
   }
   
-  protected void setTableName(String tableName) {
-    this.tableName = tableName;
-  }
 
   protected void writeHeader() {
     String header = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
@@ -43,28 +56,14 @@ public class GraphMlSerialization extends CollectionsOfEntitiesSerialization {
       "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
       "    xsi:schemaLocation=\"http://graphml.graphdrawing.org/xmlns\n" +
       "        http://graphml.graphdrawing.org/xmlns/1.0/graphml.xsd\">";
-    System.out.println(header);
-    System.out.println("  <graph id=\"G\" edgedefault=\"undirected\">");
+    writer.println(header);
+    writer.println("  <graph id=\"G\" edgedefault=\"directed\">");
   }
 
   protected void writeFooter() {
-    System.out.println("  </graph>");
+    writer.println("  </graph>");
     String footer = "</graphml>";
-    System.out.println(footer);
+    writer.println(footer);
   }
 
-  protected void writeRow(List<Value> values) throws IOException {
-    System.out.println("    <node id=\"n" + count + "\">");
-    for (Value value: values) {
-      System.out.println("      <data key=\"" + value.getType() + "\">" + value.getValue() + "</data>");
-    }
-    System.out.println("    </node>");
-    count++;
-  }
-  
-  protected void writeEdge(String source, String target) throws IOException {
-    System.out.println("    <edge id=\"e" + countEdge  + "\" source=\"" +
-      source  + "\" target=\"" + target + "\"/>");
-    countEdge++;
-  }
 }
