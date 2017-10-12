@@ -27,7 +27,7 @@ public abstract class WalkTriplesDataFetcher<T extends DatabaseResult> implement
   public PaginatedList<T> getList(SubjectReference source, PaginationArguments arguments, DataSet dataSet) {
     String cursor = arguments.getCursor();
     try (Stream<CursorQuad> q = dataSet.getQuadStore().getQuads(source.getSubjectUri(), predicate, direction, cursor)) {
-      return getPaginatedList(q, qd -> this.makeItem(qd, dataSet), arguments.getCount(), !cursor.isEmpty());
+      return getPaginatedList(q, qd -> this.makeItem(qd, dataSet), arguments);
     }
   }
 

@@ -49,8 +49,7 @@ public class CollectionDataFetcher implements CollectionFetcher {
         return getPaginatedList(
           subjectStream,
           cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getSubjectUri(), dataSet),
-          arguments.getCount(),
-          !cursor.isEmpty()
+          arguments
         );
       }
     }

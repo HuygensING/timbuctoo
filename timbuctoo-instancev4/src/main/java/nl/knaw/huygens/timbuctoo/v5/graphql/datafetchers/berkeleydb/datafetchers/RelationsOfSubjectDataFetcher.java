@@ -39,8 +39,7 @@ public class RelationsOfSubjectDataFetcher implements CollectionFetcher {
           );
           return lazyTypeSubjectReference;
         },
-        arguments.getCount(),
-        !cursor.isEmpty()
+        arguments
       );
     }
 
