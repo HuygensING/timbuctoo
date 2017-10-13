@@ -8,9 +8,9 @@ import java.util.TreeMap;
 /**
  * Created by meindertk on 31-10-2017.
  */
-public class ElasticSearchQueryExecuter implements ReconciliationQueryExecuter {
+public class ElasticSearchQueryExecuter implements ReconciliationQueryExecutor {
   @Override
-  public Map<String, QueryResults> excute(Map<String, Query> query) throws IOException {
+  public Map<String, QueryResults> execute(Map<String, Query> query) throws IOException {
     Map<String, QueryResults> queryResult = new TreeMap<>();
     for (Map.Entry<String, Query> stringQueryEntry : query.entrySet()) {
       String myQuery = stringQueryEntry.getValue().query;
@@ -23,7 +23,7 @@ public class ElasticSearchQueryExecuter implements ReconciliationQueryExecuter {
       ArrayList<QueryResult> qrAl = new ArrayList<>();
       qrAl.add(qr);
       QueryResults queryResults = new QueryResults();
-      queryResults.queryResults = qrAl;
+      queryResults.result = qrAl;
       queryResult.put(stringQueryEntry.getKey(), queryResults);
     }
     return queryResult;
