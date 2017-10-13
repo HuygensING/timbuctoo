@@ -203,10 +203,6 @@ def generated_maven_jars():
     repository = "http://download.oracle.com/maven",
   )
   native.maven_jar(
-    name = "com_sun_tools",
-    artifact = "com.sun:tools:jar:1.7.0",
-  )
-  native.maven_jar(
     name = "com_twitter_finagle_core_2_11",
     artifact = "com.twitter:finagle-core_2.11:jar:6.33.0",
   )
@@ -1642,21 +1638,13 @@ def generated_java_libraries():
       ":org_antlr_antlr4_runtime",
       ":commons_beanutils_commons_beanutils",
       ":commons_cli_commons_cli",
-      ":com_google_guava_guava",
-      ":com_sun_tools",
+      ":com_google_guava_guava"
     ],
   )
   native.java_library(
     name = "com_sleepycat_je",
     visibility = ["//visibility:public"],
     exports = ["@com_sleepycat_je//jar"],
-    runtime_deps = [
-    ],
-  )
-  native.java_library(
-    name = "com_sun_tools",
-    visibility = ["//visibility:public"],
-    exports = ["@com_sun_tools//jar"],
     runtime_deps = [
     ],
   )
