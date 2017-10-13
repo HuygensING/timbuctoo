@@ -167,7 +167,7 @@ const customUris = {
 function writeBazelScript(dependencies) {
   let result = "";
   result += "def generated_maven_jars():\n";
-  for (let dependencyId of Object.keys(dependencies.lookup)) {
+  for (let dependencyId of Object.keys(dependencies.lookup).sort()) {
     let dependency = dependencies.lookup[dependencyId]
     if (dependency.localProject) {
       continue;
@@ -189,8 +189,11 @@ function writeBazelScript(dependencies) {
     }
   }
   result += "def generated_java_libraries():\n";
-  for (let dependencyId of Object.keys(dependencies.lookup)) {
+  for (let dependencyId of Object.keys(dependencies.lookup).sort()) {
     let dependency = dependencies.lookup[dependencyId]
+    if (dependency.localProject) {
+      continue;
+    }
     let name = dependency.coords.identifier.replace(/[^a-zA-Z0-9_]/g, "_");
     result += '  native.java_library(\n';
     result += '    name = "' + name + '",\n';
