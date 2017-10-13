@@ -1,5 +1,9 @@
 def generated_maven_jars():
   native.maven_jar(
+    name = "antlr_antlr",
+    artifact = "antlr:antlr:jar:2.7.7",
+  )
+  native.maven_jar(
     name = "ch_qos_logback_logback_access",
     artifact = "ch.qos.logback:logback-access:jar:1.2.1",
   )
@@ -190,9 +194,17 @@ def generated_maven_jars():
     artifact = "com.papertrail:profiler:jar:1.0.2",
   )
   native.maven_jar(
+    name = "com_puppycrawl_tools_checkstyle",
+    artifact = "com.puppycrawl.tools:checkstyle:jar:6.11.2",
+  )
+  native.maven_jar(
     name = "com_sleepycat_je",
     artifact = "com.sleepycat:je:jar:7.4.5",
     repository = "http://download.oracle.com/maven",
+  )
+  native.maven_jar(
+    name = "com_sun_tools",
+    artifact = "com.sun:tools:jar:1.7.0",
   )
   native.maven_jar(
     name = "com_twitter_finagle_core_2_11",
@@ -259,8 +271,12 @@ def generated_maven_jars():
     artifact = "com.twitter:util-stats_2.11:jar:6.32.0",
   )
   native.maven_jar(
+    name = "commons_beanutils_commons_beanutils",
+    artifact = "commons-beanutils:commons-beanutils:jar:1.9.2",
+  )
+  native.maven_jar(
     name = "commons_cli_commons_cli",
-    artifact = "commons-cli:commons-cli:jar:1.3",
+    artifact = "commons-cli:commons-cli:jar:1.3.1",
   )
   native.maven_jar(
     name = "commons_codec_commons_codec",
@@ -268,7 +284,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "commons_collections_commons_collections",
-    artifact = "commons-collections:commons-collections:jar:3.0",
+    artifact = "commons-collections:commons-collections:jar:3.2.1",
   )
   native.maven_jar(
     name = "commons_configuration_commons_configuration",
@@ -515,7 +531,7 @@ def generated_maven_jars():
   )
   native.maven_jar(
     name = "org_antlr_antlr4_runtime",
-    artifact = "org.antlr:antlr4-runtime:jar:4.5.1",
+    artifact = "org.antlr:antlr4-runtime:jar:4.5.1-1",
   )
   native.maven_jar(
     name = "org_apache_activemq_protobuf_activemq_protobuf",
@@ -1191,6 +1207,13 @@ def generated_maven_jars():
   )
 def generated_java_libraries():
   native.java_library(
+    name = "antlr_antlr",
+    visibility = ["//visibility:public"],
+    exports = ["@antlr_antlr//jar"],
+    runtime_deps = [
+    ],
+  )
+  native.java_library(
     name = "ch_qos_logback_logback_access",
     visibility = ["//visibility:public"],
     exports = ["@ch_qos_logback_logback_access//jar"],
@@ -1610,9 +1633,30 @@ def generated_java_libraries():
     ],
   )
   native.java_library(
+    name = "com_puppycrawl_tools_checkstyle",
+    visibility = ["//visibility:public"],
+    exports = ["@com_puppycrawl_tools_checkstyle//jar"],
+    runtime_deps = [
+      ":org_apache_commons_commons_lang3",
+      ":antlr_antlr",
+      ":org_antlr_antlr4_runtime",
+      ":commons_beanutils_commons_beanutils",
+      ":commons_cli_commons_cli",
+      ":com_google_guava_guava",
+      ":com_sun_tools",
+    ],
+  )
+  native.java_library(
     name = "com_sleepycat_je",
     visibility = ["//visibility:public"],
     exports = ["@com_sleepycat_je//jar"],
+    runtime_deps = [
+    ],
+  )
+  native.java_library(
+    name = "com_sun_tools",
+    visibility = ["//visibility:public"],
+    exports = ["@com_sun_tools//jar"],
     runtime_deps = [
     ],
   )
@@ -1786,6 +1830,15 @@ def generated_java_libraries():
       ":org_scala_lang_scala_library",
       ":com_twitter_util_core_2_11",
       ":com_twitter_util_lint_2_11",
+    ],
+  )
+  native.java_library(
+    name = "commons_beanutils_commons_beanutils",
+    visibility = ["//visibility:public"],
+    exports = ["@commons_beanutils_commons_beanutils//jar"],
+    runtime_deps = [
+      ":commons_logging_commons_logging",
+      ":commons_collections_commons_collections",
     ],
   )
   native.java_library(
