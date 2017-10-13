@@ -1,11 +1,13 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers;
 
+import com.google.common.base.Charsets;
 import graphql.schema.DataFetchingEnvironment;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ConfiguredFilter;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 
+import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -13,6 +15,7 @@ import java.util.stream.Collectors;
 public class PaginationArgumentsHelper {
   public static final int DEFAULT_COUNT = 20;
   private final Map<String, CollectionFilter> collectionFilters;
+  private static final Base64.Decoder DECODER = Base64.getDecoder();
 
   public PaginationArgumentsHelper(Map<String, CollectionFilter> collectionFilters) {
     this.collectionFilters = collectionFilters;
@@ -21,8 +24,9 @@ public class PaginationArgumentsHelper {
   public PaginationArguments getPaginationArguments(DataFetchingEnvironment environment) {
     String cursor = "";
     int count = DEFAULT_COUNT;
-    if (environment.containsArgument("cursor")) {
-      cursor = environment.getArgument("cursor");
+
+    if (environment.containsArgument("cursor") && (environment.getArgument("cursor") instanceof String)) {
+      cursor = new String(DECODER.decode((String) environment.getArgument("cursor")), Charsets.UTF_8);
     }
 
     if (environment.containsArgument("count")) {

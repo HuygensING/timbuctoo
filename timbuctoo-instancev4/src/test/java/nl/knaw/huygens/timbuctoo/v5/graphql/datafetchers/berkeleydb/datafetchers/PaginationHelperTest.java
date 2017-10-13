@@ -14,9 +14,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper
-  .getPaginatedList;
-import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList.encode;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper.getPaginatedList;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
@@ -72,7 +70,7 @@ public class PaginationHelperTest {
         CursorSubject.create("c5", "http://example.org/4")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, encode("A\nc2"), Optional.empty())
+      PaginationArguments.create(2, "A\nc2", Optional.empty())
     );
 
     assertThat(decode(paginatedList.getNextCursor()), is("A\nc4"));
@@ -92,7 +90,7 @@ public class PaginationHelperTest {
         CursorSubject.create("c1", "http://example.org/1")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, encode("LAST"), Optional.empty())
+      PaginationArguments.create(2, "LAST", Optional.empty())
     );
 
     assertThat(paginatedList.getNextCursor(), is(Optional.empty()));
@@ -112,7 +110,7 @@ public class PaginationHelperTest {
         CursorSubject.create("c1", "http://example.org/1")
       ),
       MAKE_ITEM,
-      PaginationArguments.create(2, encode("D\nc3"), Optional.empty())
+      PaginationArguments.create(2, "D\nc3", Optional.empty())
     );
 
     assertThat(decode(paginatedList.getNextCursor()), is("A\nc2"));

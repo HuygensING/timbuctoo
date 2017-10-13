@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto;
 
-import com.google.common.base.Charsets;
 import org.immutables.value.Value;
 
 import java.util.Base64;
@@ -8,8 +7,6 @@ import java.util.Optional;
 
 @Value.Immutable
 public interface PaginationArguments {
-
-  Base64.Decoder DECODER = Base64.getDecoder();
 
   /**
    * Cursor is either
@@ -36,7 +33,7 @@ public interface PaginationArguments {
     return ImmutablePaginationArguments.builder()
       .count(count)
       .filter(filter)
-      .cursor(new String(DECODER.decode(cursor), Charsets.UTF_8))
+      .cursor(cursor)
       .build();
   }
 }
