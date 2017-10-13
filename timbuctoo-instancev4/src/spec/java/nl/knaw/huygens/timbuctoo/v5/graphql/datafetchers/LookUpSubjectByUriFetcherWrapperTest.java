@@ -130,7 +130,7 @@ public class LookUpSubjectByUriFetcherWrapperTest {
                 "ownerid",
                 "datasetid",
                 "http://example.org",
-                false
+                "http://example.org/prefix/", false
               );
             }
           };

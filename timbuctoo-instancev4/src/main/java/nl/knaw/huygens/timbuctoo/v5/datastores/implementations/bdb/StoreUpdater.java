@@ -40,7 +40,7 @@ public class StoreUpdater implements RdfProcessor {
 
   public StoreUpdater(BdbEnvironmentCreator dbFactory, BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
                       BdbTruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
-                      BdbSchemaStore schemaStore, RmlDataSourceStore rmlDataSourceStore,
+                      List<OptimizedPatchListener> listeners,
                       VersionStore versionStore) {
     this.dbFactory = dbFactory;
     this.tripleStore = tripleStore;
@@ -49,12 +49,10 @@ public class StoreUpdater implements RdfProcessor {
     this.updatedPerPatchStore = updatedPerPatchStore;
     this.versionStore = versionStore;
     currentversion = versionStore.getVersion();
-    listeners = new ArrayList<>();
-    listeners.add(schemaStore);
-    //listeners.add(rmlDataSourceStore);
+    this.listeners = listeners;
   }
 
-  private void updateListeners() {
+  private void updateListeners() throws RdfProcessingFailedException {
     logString = "Processed {} subjects ({} subjects/s)";
     for (OptimizedPatchListener listener : listeners) {
       listener.start();

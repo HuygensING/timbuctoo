@@ -44,6 +44,7 @@ public class TabularRdfCreator implements PlainRdfCreator {
           new ResultReporter(importStatusConsumer)
         )
       );
+      saver.close();
     } catch (Exception e) {
       throw new LogStorageFailedException(e);
     }

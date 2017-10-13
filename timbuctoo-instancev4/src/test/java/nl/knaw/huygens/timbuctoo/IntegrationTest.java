@@ -651,8 +651,8 @@ public class IntegrationTest {
       .post(Entity.entity(String.format("{\n" +
         "  dataSets {\n" +
         "    %1s__%2s {\n" +
-        "      timdata__Person(uri: \"http://example.com/the/actual/entity\") {\n" +
-        "        http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision {\n" +
+        "      local__Person(uri: \"http://example.com/the/actual/entity\") {\n" +
+        "        tim_latestRevision {\n" +
         "          uri\n" +
         "        }\n" +
         "      }\n" +
@@ -664,8 +664,8 @@ public class IntegrationTest {
       .get("data")
       .get("dataSets")
       .get(PREFIX + "__" + vreName)
-      .get("timdata__Person")
-      .get("http___timbuctoo_huygens_knaw_nl_static_v5_vocabulary_latestRevision")
+      .get("local__Person")
+      .get("tim_latestRevision")
       .get("uri")
       .asText();
 
@@ -714,8 +714,8 @@ public class IntegrationTest {
       .post(Entity.entity(String.format("{\n" +
         "  dataSets {\n" +
         "    %1s__%2s {\n" +
-        "      timdata__Person(uri:\"http://example.com/the/actual/entity\"){\n" +
-        "        timdata__pred2List {\n" +
+        "      local__Person(uri:\"http://example.com/the/actual/entity\"){\n" +
+        "        local__pred2List {\n" +
         "          items {\n" +
         "            value\n" +
         "          }\n" +
@@ -731,8 +731,8 @@ public class IntegrationTest {
         .get("data")
         .get("dataSets")
         .get(PREFIX + "__" + vreName)
-        .get("timdata__Person")
-        .get("timdata__pred2List")
+        .get("local__Person")
+        .get("local__pred2List")
         .get("items").iterator())
         .map(x -> x.get("value").asText())
         .collect(Collectors.toList()),

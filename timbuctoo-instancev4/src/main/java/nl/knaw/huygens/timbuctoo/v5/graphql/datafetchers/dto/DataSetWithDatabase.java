@@ -23,6 +23,11 @@ public class DataSetWithDatabase extends LazyTypeSubjectReference implements Pro
   }
 
   @Override
+  public String getUriPrefix() {
+    return promotedDataSet.getUriPrefix();
+  }
+
+  @Override
   public String getCombinedId() {
     return promotedDataSet.getCombinedId();
   }

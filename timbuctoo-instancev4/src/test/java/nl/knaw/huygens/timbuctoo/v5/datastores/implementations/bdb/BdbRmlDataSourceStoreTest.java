@@ -1,6 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimap;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.bulkupload.parsingstatemachine.ImportPropertyDescriptions;
 import nl.knaw.huygens.timbuctoo.rml.Row;
@@ -8,41 +10,47 @@ import nl.knaw.huygens.timbuctoo.rml.ThrowingErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.jexl.JexlRowFactory;
 import nl.knaw.huygens.timbuctoo.rml.datasource.joinhandlers.HashMapBasedJoinHandler;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.RawUploadRdfSaver;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataProvider;
-import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
+import nl.knaw.huygens.timbuctoo.v5.dataset.OptimizedPatchListener;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSource;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import javax.ws.rs.core.MediaType;
 import java.nio.charset.Charset;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.stream.Collectors.toList;
 import static javax.ws.rs.core.MediaType.APPLICATION_OCTET_STREAM_TYPE;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType.ASSERTED;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad.create;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.OUT;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.LANGSTRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 
 public class BdbRmlDataSourceStoreTest {
 
   @Test
-  @Ignore
   public void itWorks() throws Exception {
     BdbNonPersistentEnvironmentCreator dbCreator = new BdbNonPersistentEnvironmentCreator();
     PromotedDataSet dataSetMetadata = PromotedDataSet.promotedDataSet(
       "userid",
       "datasetid",
       "http://timbuctoo.huygens.knaw.nl/v5/userid/datasetid",
-      false
+      "http://example.org/prefix/", false
     );
-    RmlDataSourceStoreTestDataProvider dataSet = new RmlDataSourceStoreTestDataProvider(dataSetMetadata);
 
     final RmlDataSourceStore rmlDataSourceStore = new BdbRmlDataSourceStore(
       dbCreator.getDatabase(
@@ -54,7 +62,14 @@ public class BdbRmlDataSourceStoreTest {
         TupleBinding.getPrimitiveBinding(String.class)
       )
     );
-    RawUploadRdfSaver rawUploadRdfSaver = dataSet.getRawUploadRdfSaver();
+
+    RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(rmlDataSourceStore);
+    RawUploadRdfSaver rawUploadRdfSaver = new RawUploadRdfSaver(
+      dataSetMetadata,
+      "fileName",
+      APPLICATION_OCTET_STREAM_TYPE,
+      rdfSerializer
+    );
     final String inputCol1 = rawUploadRdfSaver.addCollection("collection1");
     ImportPropertyDescriptions importPropertyDescriptions = new ImportPropertyDescriptions();
     importPropertyDescriptions.getOrCreate(1).setPropertyName("propName1");
@@ -69,16 +84,16 @@ public class BdbRmlDataSourceStoreTest {
     rawUploadRdfSaver.addPropertyDescriptions(inputCol2, importPropertyDescriptions1);
     rawUploadRdfSaver.addEntity(inputCol2, ImmutableMap.of("prop3", "value1", "prop4", "val2"));
     rawUploadRdfSaver.addEntity(inputCol2, ImmutableMap.of("prop3", "entVal1", "prop4", "entVal2"));
-
+    rdfSerializer.close();
 
     RdfDataSource rdfDataSource = new RdfDataSource(
       rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId/rawData/fileName/collections/1",
+      inputCol1,
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
     RdfDataSource rdfDataSource2 = new RdfDataSource(
       rmlDataSourceStore,
-      "http://timbuctoo.huygens.knaw.nl/v5/userId/dataSetId/rawData/fileName/collections/2",
+      inputCol2,
       new JexlRowFactory(ImmutableMap.of(), new HashMapBasedJoinHandler())
     );
 
@@ -100,41 +115,11 @@ public class BdbRmlDataSourceStoreTest {
     dbCreator.close();
   }
 
-  private static class RmlDataSourceStoreTestDataProvider implements DataProvider {
-
-    private final PromotedDataSet dataSetMetadata;
-    private RawUploadRdfSaver rawUploadRdfSaver;
-
-    public RmlDataSourceStoreTestDataProvider(PromotedDataSet dataSetMetadata) {
-      this.dataSetMetadata = dataSetMetadata;
-    }
-
-    @Override
-    public void subscribeToRdf(RdfProcessor processor) {
-      RdfSerializer rdfSerializer = new RmlDataSourceRdfSerializer(processor);
-
-      try {
-        rawUploadRdfSaver = new RawUploadRdfSaver(
-          dataSetMetadata,
-          "fileName",
-          APPLICATION_OCTET_STREAM_TYPE,
-          rdfSerializer
-        );
-        processor.start(0);
-      } catch (RdfProcessingFailedException | LogStorageFailedException e) {
-        throw new RuntimeException(e.getCause());
-      }
-    }
-
-    public RawUploadRdfSaver getRawUploadRdfSaver() {
-      return rawUploadRdfSaver;
-    }
-  }
-
   private static class RmlDataSourceRdfSerializer implements RdfSerializer {
-    private final RdfProcessor processor;
+    private final OptimizedPatchListener processor;
+    Map<String, Multimap<String, CursorQuad>> triples = new HashMap<>();
 
-    public RmlDataSourceRdfSerializer(RdfProcessor processor) {
+    public RmlDataSourceRdfSerializer(OptimizedPatchListener processor) {
       this.processor = processor;
     }
 
@@ -150,46 +135,66 @@ public class BdbRmlDataSourceStoreTest {
 
     @Override
     public void onPrefix(String prefix, String iri) throws LogStorageFailedException {
-
     }
 
     @Override
     public void onRelation(String subject, String predicate, String object, String graph)
       throws LogStorageFailedException {
-      try {
-        processor.addRelation(subject, predicate, object, graph);
-      } catch (RdfProcessingFailedException e) {
-        throw new LogStorageFailedException(e.getCause());
-      }
+      triples.computeIfAbsent(subject, s -> ArrayListMultimap.create())
+        .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, object, null, null, ""));
+      triples.computeIfAbsent(object, s -> ArrayListMultimap.create())
+        .put(predicate + "\n" + IN, create(object, predicate, IN, ASSERTED, subject, null, null, ""));
     }
 
     @Override
     public void onValue(String subject, String predicate, String value, String valueType, String graph)
       throws LogStorageFailedException {
-      try {
-        processor.addValue(subject, predicate, value, valueType, graph);
-      } catch (RdfProcessingFailedException e) {
-        throw new LogStorageFailedException(e.getCause());
-      }
+      triples.computeIfAbsent(subject, s -> ArrayListMultimap.create())
+        .put(predicate + "\n" + OUT, create(subject, predicate, OUT, ASSERTED, value, valueType, null, ""));
     }
 
     @Override
     public void onLanguageTaggedString(String subject, String predicate, String value, String language,
                                        String graph)
       throws LogStorageFailedException {
-      try {
-        processor.addValue(subject, predicate, value, language, graph);
-      } catch (RdfProcessingFailedException e) {
-        throw new LogStorageFailedException(e.getCause());
-      }
+      triples.computeIfAbsent(subject, s -> ArrayListMultimap.create())
+        .put(
+          predicate + "\n" + OUT,
+          create(subject, predicate, OUT, ASSERTED, value, LANGSTRING, language, "")
+        );
     }
 
     @Override
     public void close() throws LogStorageFailedException {
       try {
-        processor.commit();
+        processor.start();
+        for (Map.Entry<String, Multimap<String, CursorQuad>> subject : triples.entrySet()) {
+          processor.onChangedSubject(subject.getKey(), new ChangeFetcher() {
+            @Override
+            public Stream<CursorQuad> getPredicates(String subject, boolean getRetracted, boolean getUnchanged,
+                                                    boolean getAsserted) {
+              if (triples.containsKey(subject) && (getUnchanged || getAsserted)) {
+                return triples.get(subject).values().stream();
+              } else {
+                return Stream.empty();
+              }
+            }
+
+            @Override
+            public Stream<CursorQuad> getPredicates(String subject, String predicate, Direction direction,
+                                                    boolean getRetracted,
+                                                    boolean getUnchanged, boolean getAsserted) {
+              if (triples.containsKey(subject) && getAsserted) {
+                return triples.get(subject).get(predicate + "\n" + direction.name()).stream();
+              } else {
+                return Stream.empty();
+              }
+            }
+          });
+        }
+        processor.finish();
       } catch (RdfProcessingFailedException e) {
-        throw new LogStorageFailedException(e.getCause());
+        throw new LogStorageFailedException(e);
       }
     }
   }

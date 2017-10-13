@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
+import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.shared.impl.PrefixMappingImpl;
 
@@ -143,8 +144,8 @@ public class BdbTypeNameStore implements TypeNameStore {
     addPrefix("dcterms", "http://purl.org/dc/terms/");
     addPrefix("dbpedia", "http://dbpedia.org/resource/");
     addPrefix("schema", "http://schema.org/");
-    addPrefix("tim", "http://timbuctoo.huygens.knaw.nl/v5/vocabulary#");
-    addPrefix("timdata", this.dataStoreRdfPrefix);
+    addPrefix("tim", RdfConstants.TIM_VOCAB);
+    addPrefix("local", this.dataStoreRdfPrefix);
 
   }
 

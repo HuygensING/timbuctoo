@@ -5,9 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.UUID;
 
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_PROVENANCE_ENTITIES;
 public class TimbuctooRdfIdHelper {
   private final String baseUri;
 
@@ -25,15 +23,11 @@ public class TimbuctooRdfIdHelper {
     }
   }
 
-  public static String provenanceEntity(String dataSetId, String userId) {
-    return TIM_PROVENANCE_ENTITIES + encode(dataSetId) + "/" + encode(userId) + "/" + UUID.randomUUID();
+  public String dataSetBaseUri(String ownerId, String dataSetId) {
+    return (baseUri + "/" + encode(ownerId) + "/" + encode(dataSetId) + "/") + "datasets/";
   }
 
-  public String dataSet(String ownerId, String dataSetId) {
-    return baseUri + "/datasets/" + encode(ownerId) + "/" + encode(dataSetId);
-  }
-
-  public String getBaseUri() {
+  public String instanceBaseUri() {
     return baseUri;
   }
 }

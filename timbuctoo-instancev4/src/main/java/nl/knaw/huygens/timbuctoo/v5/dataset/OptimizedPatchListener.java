@@ -1,12 +1,14 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
+
 public interface OptimizedPatchListener {
 
-  void start();
+  void start() throws RdfProcessingFailedException;
 
-  void onChangedSubject(String subject, ChangeFetcher changeFetcher);
+  void onChangedSubject(String subject, ChangeFetcher changeFetcher) throws RdfProcessingFailedException;
 
   void notifyUpdate();
 
-  void finish();
+  void finish() throws RdfProcessingFailedException;
 }

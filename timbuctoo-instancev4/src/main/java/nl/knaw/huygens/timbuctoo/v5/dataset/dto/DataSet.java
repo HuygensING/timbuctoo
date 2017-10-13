@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 
+import com.google.common.collect.Lists;
 import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
@@ -120,8 +121,7 @@ public interface DataSet {
       typeNameStore,
       truePatchStore,
       updatedPerPatchStore,
-      schema,
-      rmlDataSourceStore,
+      Lists.newArrayList(schema, rmlDataSourceStore),
       versionStore
     );
     importManager.subscribeToRdf(storeUpdater);

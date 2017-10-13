@@ -20,7 +20,6 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.HEAD;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -79,7 +78,7 @@ public class DataSetRepository {
       }
     );
     this.rdfIdHelper = rdfIdHelper;
-    this.rdfBaseUri = rdfIdHelper.getBaseUri();
+    this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
     statusMap = new HashMap<>();
     resourceSync = configuration.getResourceSync();
 
@@ -140,10 +139,42 @@ public class DataSetRepository {
   public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException {
     //The ownerId might not be valid (i.e. a safe string). We make it safe here:
     //dataSetId is under the control of the user so we simply throw if it's not valid
-    String prefix = "u" + user.getPersistentId();
-    final PromotedDataSet dataSet = promotedDataSet(prefix, dataSetId, rdfIdHelper.dataSet(prefix, dataSetId), false);
+    String ownerPrefix = "u" + user.getPersistentId();
+    final String baseUri = rdfIdHelper.dataSetBaseUri(ownerPrefix, dataSetId);
+    String uriPrefix;
+    if (!baseUri.endsWith("/") && !baseUri.endsWith("#") && !baseUri.endsWith("?")) {
+      //it might have some parts
+
+      //?foo
+      //?foo=bar
+      //?boo&foo
+      //?boo&foo=bar
+      //#foo
+      //#foo=bar
+      //#boo&foo
+      //#boo&foo=bar
+      if (baseUri.contains("#") || baseUri.contains("?")) {
+        if (baseUri.endsWith("&")) {
+          uriPrefix = baseUri;
+        } else {
+          uriPrefix = baseUri + "&";
+        }
+      } else {
+        uriPrefix = baseUri + "/";
+      }
+    } else {
+      uriPrefix = baseUri;
+    }
+
+    final PromotedDataSet dataSet = promotedDataSet(
+      ownerPrefix,
+      dataSetId,
+      baseUri,
+      uriPrefix,
+      false
+    );
     synchronized (dataSetMap) {
-      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(prefix, key -> new HashMap<>());
+      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerPrefix, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
@@ -163,7 +194,7 @@ public class DataSetRepository {
           );
           storedDataSets.updateData(dataSets -> {
             dataSets
-              .computeIfAbsent(prefix, key -> new HashSet<>())
+              .computeIfAbsent(ownerPrefix, key -> new HashSet<>())
               .add(dataSet);
             return dataSets;
           });

@@ -31,7 +31,6 @@ import org.immutables.value.Value;
 
 import javax.validation.Valid;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.HEAD;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
