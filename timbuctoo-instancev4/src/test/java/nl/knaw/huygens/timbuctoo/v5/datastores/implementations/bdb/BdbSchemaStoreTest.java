@@ -46,7 +46,8 @@ public class BdbSchemaStoreTest {
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"optional\" : false,\n" +
-      "      \"hasBeenList\" : false\n" +
+      "      \"hasBeenList\" : false,\n" +
+      "      \"hasBeenSingular\" : true\n" +
       "    } ],\n" +
       "    \"subjectsWithThisType\" : 1\n" +
       "  },\n" +
@@ -62,7 +63,8 @@ public class BdbSchemaStoreTest {
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"optional\" : false,\n" +
-      "      \"hasBeenList\" : false\n" +
+      "      \"hasBeenList\" : false,\n" +
+      "      \"hasBeenSingular\" : true\n" +
       "    }, {\n" +
       "      \"name\" : \"pred\",\n" +
       "      \"direction\" : \"OUT\",\n" +
@@ -73,7 +75,8 @@ public class BdbSchemaStoreTest {
       "      \"subjectsWithThisPredicate\" : 1,\n" +
       "      \"subjectsWithThisPredicateAsList\" : 0,\n" +
       "      \"optional\" : false,\n" +
-      "      \"hasBeenList\" : false\n" +
+      "      \"hasBeenList\" : false,\n" +
+      "      \"hasBeenSingular\" : true\n" +
       "    } ],\n" +
       "    \"subjectsWithThisType\" : 1\n" +
       "  }\n" +

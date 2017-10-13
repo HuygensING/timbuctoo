@@ -37,28 +37,60 @@ public class GraphQlTypesContainer {
   }
 
   public void objectField(String description, Predicate predicate, String typeUri) {
-    makeField(description, predicate, typeUri, false, true);
+    makeFieldAndDeprecations(description, predicate, typeUri, false, true);
   }
 
   public void unionField(String description, Predicate predicate, Set<String> typeUris) {
     String unionType = unionType(typeUris);
-    makeField(description, predicate, unionType, true, true);
+    makeFieldAndDeprecations(description, predicate, unionType, true, true);
   }
 
   public void valueField(String description, Predicate predicate, String typeUri) {
     String type = valueType(typeUri);
-    makeField(description, predicate, type, true, false);
+    makeFieldAndDeprecations(description, predicate, type, true, false);
+  }
+
+  private void makeFieldAndDeprecations(String description, Predicate predicate, String targetType, boolean isValue,
+                                        boolean isObject) {
+    if (predicate.inUse()) {
+      //once a list, always a list
+      if (predicate.isList() || predicate.hasBeenList()) {
+        makeField(description, predicate, targetType, isValue, isObject, true);
+        if (predicate.isHasBeenSingular()) {
+          makeField(description, predicate, targetType, isValue, isObject, false);
+          currentType.append(
+            " @deprecated(reason: \"This property only returns the first value of the list. Use the *List version to " +
+              "retrieve all value\")\n");
+        }
+      } else {
+        //never been a list
+        makeField(description, predicate, targetType, isValue, isObject, false);
+      }
+    } else {
+      if (predicate.hasBeenList()) {
+        makeField(description, predicate, targetType, isValue, isObject, true);
+        currentType.append(" @deprecated(reason: \"There used to be entities with this property, but that is no " +
+          "longer the case.\")\n");
+      }
+      if (predicate.isHasBeenSingular()) {
+        makeField(description, predicate, targetType, isValue, isObject, false);
+        currentType.append(" @deprecated(reason: \"There used to be entities with this property, but that is no " +
+          "longer the case.\")\n");
+      }
+    }
+
+    currentType.append("\n");
   }
 
   private void makeField(String description, Predicate predicate, String targetType, boolean isValue,
-                         boolean isObject) {
+                         boolean isObject, boolean asList) {
     String fieldName = typeNameStore.makeGraphQlnameForPredicate(predicate.getName(), predicate.getDirection());
     if (description != null) {
       currentType.append("  #").append(description).append("\n");
     }
 
     currentType.append("  ");
-    if (predicate.isList()) {
+    if (asList) {
       currentType.append(listType(fieldName, targetType));
     } else {
       currentType.append(fieldName).append(": ").append(targetType);
@@ -75,15 +107,8 @@ public class GraphQlTypesContainer {
       .append(", isObject: ")
       .append(isObject)
       .append(", isList: ")
-      .append(predicate.isList())
+      .append(asList)
       .append(")");
-
-    if (predicate.getSubjectsWithThisPredicate() <= 0) {
-      currentType.append(" @deprecated(reason: \"There used to be entities with this property, but that is no " +
-        "longer the case.\")");
-    }
-
-    currentType.append("\n");
   }
 
   private String listType(String fieldName, String typeName) {
@@ -93,7 +118,7 @@ public class GraphQlTypesContainer {
       types.put(listTypeName, builder);
       builder.append(argumentsHelper.makePaginatedListDefinition(typeName));
     }
-    return argumentsHelper.makeListField(fieldName, typeName);
+    return argumentsHelper.makeListField(fieldName + "List", typeName);
   }
 
   private String collectionType(String fieldName, String typeName) {
@@ -103,7 +128,7 @@ public class GraphQlTypesContainer {
       types.put(listTypeName, builder);
       builder.append(argumentsHelper.makeCollectionListDefinition(typeName));
     }
-    return argumentsHelper.makeCollectionListField(fieldName, typeName);
+    return argumentsHelper.makeCollectionListField(fieldName + "List", typeName);
   }
 
 
@@ -197,7 +222,7 @@ public class GraphQlTypesContainer {
       total.append("  ").append(name).append("(uri: String!)").append(": ").append(typename).append(" " +
         "@fromCollection(uri: \"").append(uri.replace("\"", "\\\"")).append("\", listAll: false)\n");
       total.append("  ")
-        .append(collectionType(name + "List", typename))
+        .append(collectionType(name, typename))
         .append(" " +
           "@fromCollection(uri: \"")
         .append(uri.replace("\"", "\\\""))

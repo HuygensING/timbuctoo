@@ -302,7 +302,7 @@ public class IntegrationTest {
         "        items {\n" +
         "          tim_hasLocation {\n" +
         "            tim_name {value}\n" +
-        "            _inverse_tim_hasBirthPlace {\n" +
+        "            _inverse_tim_hasBirthPlaceList {\n" +
         "              items {\n" +
         "                tim_gender {value}\n" +
         "              }\n" +
@@ -339,7 +339,7 @@ public class IntegrationTest {
         .flatMap(item ->
           stream(item
             .get("tim_hasLocation")
-            .get("_inverse_tim_hasBirthPlace")
+            .get("_inverse_tim_hasBirthPlaceList")
             .get("items").iterator())
             .map(person -> person
               .get("tim_gender"))
@@ -715,7 +715,7 @@ public class IntegrationTest {
         "  dataSets {\n" +
         "    %1s__%2s {\n" +
         "      http___example_org_Person(uri:\"http://example.com/the/actual/entity\"){\n" +
-        "        http___example_org_pred2 {\n" +
+        "        http___example_org_pred2List {\n" +
         "          items {\n" +
         "            value\n" +
         "          }\n" +
@@ -732,7 +732,7 @@ public class IntegrationTest {
         .get("dataSets")
         .get(PREFIX + "__" + vreName)
         .get("http___example_org_Person")
-        .get("http___example_org_pred2")
+        .get("http___example_org_pred2List")
         .get("items").iterator())
         .map(x -> x.get("value").asText())
         .collect(Collectors.toList()),

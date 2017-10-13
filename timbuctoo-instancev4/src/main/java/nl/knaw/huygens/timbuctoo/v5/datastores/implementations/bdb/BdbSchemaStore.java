@@ -291,6 +291,7 @@ public class BdbSchemaStore implements SchemaStore, OptimizedPatchListener {
       String typeName = typeEntry.getKey();
 
       for (Predicate predicate : type.getPredicates()) {
+        predicate.finish();
         if (predicate.getDirection() == Direction.IN) {
           continue;
         }
