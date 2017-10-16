@@ -23,12 +23,13 @@ public class OpenRefineReconciliationEndpoint {
   }
 
   @GET
-  @Path("getName{firstName}/{lastName}")
+  @Path("{firstName}/{lastName}")
   public Response getname(@PathParam("firstName") String firstName,
                           @PathParam("lastName") String lastName
   ) throws ResourceSyncException {
 
-    String result = "";
+    String result = "{ \"firstname\" : \"" + firstName + "\" , \"lastname\" : \"" +
+      lastName + "\" }";
     return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
   }
 }

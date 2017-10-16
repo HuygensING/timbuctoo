@@ -93,6 +93,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegi
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.GraphQl;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.JsonLdEditEndpoint;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.OpenRefineReconciliationEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
@@ -446,6 +447,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new TransactionFilter(graphManager));
     //Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
+    
+    register(environment, new OpenRefineReconciliationEndpoint(null, uriHelper));
 
     //Add embedded AMQ (if any) to the metrics
     configuration.getLocalAmqJmxPath(HANDLE_QUEUE).ifPresent(rethrowConsumer(jmxPath -> {
