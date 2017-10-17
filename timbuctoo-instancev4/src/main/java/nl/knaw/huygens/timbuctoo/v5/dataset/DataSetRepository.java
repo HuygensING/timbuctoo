@@ -282,7 +282,12 @@ public class DataSetRepository {
   }
 
   public void stop() {
-    // TODO let data set close all its stores
+    for (Map<String, DataSet> dataSets : dataSetMap.values()) {
+      for (DataSet dataSet : dataSets.values()) {
+        dataSet.stop();
+      }
+    }
+
     dataStoreFactory.stop();
   }
 
