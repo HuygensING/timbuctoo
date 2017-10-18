@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -50,10 +51,11 @@ public class DataSetRepository {
   private final ExecutorService executorService;
   private final VreAuthorizationCrud vreAuthorizationCrud;
   private final DataSetConfiguration configuration;
-  private final DataStoreFactory dataStoreFactory;
+  private final BdbEnvironmentCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final TimbuctooRdfIdHelper rdfIdHelper;
+  private final String rdfBaseUri;
   private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
   private final ResourceSync resourceSync;
@@ -61,9 +63,8 @@ public class DataSetRepository {
 
 
   public DataSetRepository(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
-                           DataSetConfiguration configuration, DataStoreFactory dataStoreFactory,
-                           TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated)
-    throws IOException {
+                           DataSetConfiguration configuration, BdbEnvironmentCreator dataStoreFactory,
+                           TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated) throws IOException {
     this.executorService = executorService;
     this.vreAuthorizationCrud = vreAuthorizationCrud;
     this.configuration = configuration;
@@ -77,6 +78,7 @@ public class DataSetRepository {
       }
     );
     this.rdfIdHelper = rdfIdHelper;
+    this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
     statusMap = new HashMap<>();
     resourceSync = configuration.getResourceSync();
 
@@ -100,6 +102,7 @@ public class DataSetRepository {
                 configuration,
                 fileHelper,
                 executorService,
+                rdfBaseUri,
                 dataStoreFactory,
                 resourceSync,
                 () -> onUpdated.accept(promotedDataSet.getCombinedId())
@@ -136,10 +139,42 @@ public class DataSetRepository {
   public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException {
     //The ownerId might not be valid (i.e. a safe string). We make it safe here:
     //dataSetId is under the control of the user so we simply throw if it's not valid
-    String prefix = "u" + user.getPersistentId();
-    final PromotedDataSet dataSet = promotedDataSet(prefix, dataSetId, rdfIdHelper.dataSet(prefix, dataSetId), false);
+    String ownerPrefix = "u" + user.getPersistentId();
+    final String baseUri = rdfIdHelper.dataSetBaseUri(ownerPrefix, dataSetId);
+    String uriPrefix;
+    if (!baseUri.endsWith("/") && !baseUri.endsWith("#") && !baseUri.endsWith("?")) {
+      //it might have some parts
+
+      //?foo
+      //?foo=bar
+      //?boo&foo
+      //?boo&foo=bar
+      //#foo
+      //#foo=bar
+      //#boo&foo
+      //#boo&foo=bar
+      if (baseUri.contains("#") || baseUri.contains("?")) {
+        if (baseUri.endsWith("&")) {
+          uriPrefix = baseUri;
+        } else {
+          uriPrefix = baseUri + "&";
+        }
+      } else {
+        uriPrefix = baseUri + "/";
+      }
+    } else {
+      uriPrefix = baseUri;
+    }
+
+    final PromotedDataSet dataSet = promotedDataSet(
+      ownerPrefix,
+      dataSetId,
+      baseUri,
+      uriPrefix,
+      false
+    );
     synchronized (dataSetMap) {
-      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(prefix, key -> new HashMap<>());
+      Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerPrefix, key -> new HashMap<>());
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
@@ -151,6 +186,7 @@ public class DataSetRepository {
               configuration,
               fileHelper,
               executorService,
+              rdfBaseUri,
               dataStoreFactory,
               resourceSync,
               () -> onUpdated.accept(dataSet.getCombinedId())
@@ -158,7 +194,7 @@ public class DataSetRepository {
           );
           storedDataSets.updateData(dataSets -> {
             dataSets
-              .computeIfAbsent(prefix, key -> new HashSet<>())
+              .computeIfAbsent(ownerPrefix, key -> new HashSet<>())
               .add(dataSet);
             return dataSets;
           });
@@ -224,7 +260,7 @@ public class DataSetRepository {
   }
 
   public void removeDataSet(String ownerId, String dataSetName) throws IOException {
-    dataStoreFactory.removeDataStoresFor(ownerId, dataSetName);
+    dataStoreFactory.removeDatabasesFor(ownerId, dataSetName);
     // remove from datasets.json
     storedDataSets.updateData(dataSets -> {
       Set<PromotedDataSet>
@@ -246,7 +282,12 @@ public class DataSetRepository {
   }
 
   public void stop() {
-    // TODO let data set close all its stores
+    for (Map<String, DataSet> dataSets : dataSetMap.values()) {
+      for (DataSet dataSet : dataSets.values()) {
+        dataSet.stop();
+      }
+    }
+
     dataStoreFactory.stop();
   }
 

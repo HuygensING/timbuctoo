@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CursorSubject;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.FilterResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.CollectionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
@@ -16,8 +16,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper
-  .getPaginatedList;
+import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction.IN;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers.PaginationHelper.getPaginatedList;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.RDF_TYPE;
 
 public class CollectionDataFetcher implements CollectionFetcher {
   private static final Logger LOG = LoggerFactory.getLogger(CollectionDataFetcher.class);
@@ -45,10 +46,10 @@ public class CollectionDataFetcher implements CollectionFetcher {
         throw new RuntimeException(e);
       }
     } else {
-      try (Stream<CursorSubject> subjectStream = dataSet.getCollectionIndex().getSubjects(collectionUri, cursor)) {
+      try (Stream<CursorQuad> subjectStream = dataSet.getQuadStore().getQuads(collectionUri, RDF_TYPE, IN, cursor)) {
         return getPaginatedList(
           subjectStream,
-          cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getSubjectUri(), dataSet),
+          cursorSubject -> new LazyTypeSubjectReference(cursorSubject.getObject(), dataSet),
           arguments
         );
       }

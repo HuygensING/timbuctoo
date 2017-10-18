@@ -1,6 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers;
 
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorContainer;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DatabaseResult;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
@@ -15,8 +15,9 @@ public class PaginationHelper {
 
   public static final int MAX_COUNT = 10_000;
 
-  static <T extends CursorContainer, U extends DatabaseResult> PaginatedList<U>
-    getPaginatedList(Stream<T> subjectStream, Function<T, U> makeItem, PaginationArguments arguments) {
+  static <U extends DatabaseResult> PaginatedList<U> getPaginatedList(Stream<CursorQuad> subjectStream,
+                                                                      Function<CursorQuad, U> makeItem,
+                                                                      PaginationArguments arguments) {
 
     String[] cursors = new String[3];
     int count = arguments.getCount();

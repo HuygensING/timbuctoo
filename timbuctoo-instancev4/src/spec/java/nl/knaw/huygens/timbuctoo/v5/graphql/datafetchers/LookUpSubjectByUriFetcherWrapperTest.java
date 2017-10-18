@@ -13,7 +13,6 @@ import graphql.schema.GraphQLType;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CollectionIndex;
 import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
@@ -126,17 +125,12 @@ public class LookUpSubjectByUriFetcherWrapperTest {
             }
 
             @Override
-            public CollectionIndex getCollectionIndex() {
-              throw new UnsupportedOperationException("Not yet implemented");//FIXME: implement
-            }
-
-            @Override
             public PromotedDataSet getMetadata() {
               return PromotedDataSet.promotedDataSet(
                 "ownerid",
                 "datasetid",
                 "http://example.org",
-                false
+                "http://example.org/prefix/", false
               );
             }
           };

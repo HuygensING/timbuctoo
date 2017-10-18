@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
 import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.datasource.JoinHandler;
 import nl.knaw.huygens.timbuctoo.rml.datasource.RowFactory;
+import nl.knaw.huygens.timbuctoo.v5.datastores.rmldatasource.RmlDataSourceStore;
 
 import java.util.stream.Stream;
 

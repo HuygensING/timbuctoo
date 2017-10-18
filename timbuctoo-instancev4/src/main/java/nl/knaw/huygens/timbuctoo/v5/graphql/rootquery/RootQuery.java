@@ -230,7 +230,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   }
 
   public ImmutableCollectionMetadata getCollection(DataSet dataSet, TypeNameStore typeNameStore, Type collectionType) {
-    final long occurrences = collectionType.getOccurrences();
+    final long occurrences = collectionType.getSubjectsWithThisType();
     final String collectionId = typeNameStore.makeGraphQlname(collectionType.getName());
     return ImmutableCollectionMetadata.builder()
       .subjectUri(collectionType.getName())
@@ -244,13 +244,13 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .nextCursor(Optional.empty())
         .items(() -> collectionType.getPredicates().stream().map(pred -> {
           return (Property) ImmutableProperty.builder()
-              .density(getDensity(occurrences, pred.getOccurrences()))
+              .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
               .isList(pred.isList())
               .name(typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection()))
               .referencedCollections(ImmutableStringList.builder()
                 .prevCursor(Optional.empty())
                 .nextCursor(Optional.empty())
-                .items(() -> pred.getReferenceTypes().stream()
+                .items(() -> pred.getUsedReferenceTypes().stream()
                   .filter(t -> !t.equals(RdfConstants.UNKNOWN))
                   .map(typeNameStore::makeGraphQlname)
                   .iterator())

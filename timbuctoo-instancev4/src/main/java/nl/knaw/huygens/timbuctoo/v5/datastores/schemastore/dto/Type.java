@@ -15,7 +15,7 @@ import static com.google.common.base.Objects.equal;
 public class Type {
   private String name;
   private Map<String, Predicate> predicates = new HashMap<>();
-  private long occurrences = 0;
+  private long subjectsWithThisType = 0;
   private final BiFunction<String, Direction, Predicate> predicateMaker = (name, direction) -> {
     Predicate predicate = new Predicate(name, direction);
     predicate.setOwner(this);
@@ -43,14 +43,8 @@ public class Type {
     return predicates.computeIfAbsent(direction.name() + "\n" + name, key -> predicateMaker.apply(name, direction));
   }
 
-  public void setOccurrences(long occurrences) {
-    if (this.occurrences < occurrences) {
-      this.occurrences = occurrences;
-    }
-  }
-
-  public long getOccurrences() {
-    return occurrences;
+  public long getSubjectsWithThisType() {
+    return subjectsWithThisType;
   }
 
   public String getName() {
@@ -72,7 +66,7 @@ public class Type {
       final Type other = (Type) obj;
 
       boolean propsEqual = equal(this.name, other.name) &&
-        equal(this.occurrences, other.occurrences);
+        equal(this.subjectsWithThisType, other.subjectsWithThisType);
 
       if (propsEqual && predicates.size() == other.predicates.size()) {
         for (Map.Entry<String, Predicate> predicateEntry : predicates.entrySet()) {
@@ -90,5 +84,9 @@ public class Type {
 
   public Predicate getPredicate(String name, Direction direction) {
     return predicates.get(direction.name() + "\n" + name);
+  }
+
+  public void registerSubject(int mut) {
+    subjectsWithThisType += mut;
   }
 }

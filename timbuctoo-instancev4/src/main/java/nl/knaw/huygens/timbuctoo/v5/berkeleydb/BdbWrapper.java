@@ -7,49 +7,51 @@ import com.sleepycat.je.CursorConfig;
 import com.sleepycat.je.Database;
 import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
-import com.sleepycat.je.DatabaseException;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
+import com.sleepycat.je.OperationResult;
 import com.sleepycat.je.OperationStatus;
+import com.sleepycat.je.Put;
 import com.sleepycat.je.Transaction;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
+import java.util.function.Function;
 
-import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.slf4j.LoggerFactory.getLogger;
 
-public class BdbWrapper {
+public class BdbWrapper<KeyT, ValueT> {
   private final Environment dbEnvironment;
   private final Database database;
   private final DatabaseConfig databaseConfig;
+  private final EntryBinding<KeyT> keyBinder;
+  private final EntryBinding<ValueT> valueBinder;
+  private final DatabaseEntry keyEntry = new DatabaseEntry();
+  private final DatabaseEntry valueEntry = new DatabaseEntry();
   private Transaction transaction;
   private static final Logger LOG = getLogger(BdbWrapper.class);
   private final Map<Cursor, String> cursors = new HashMap<>();
 
-  public BdbWrapper(Environment dbEnvironment, Database database, DatabaseConfig databaseConfig) {
+  public BdbWrapper(Environment dbEnvironment, Database database, DatabaseConfig databaseConfig,
+                    EntryBinding<KeyT> keyBinder, EntryBinding<ValueT> valueBinder) {
     this.dbEnvironment = dbEnvironment;
     this.database = database;
     this.databaseConfig = databaseConfig;
+    this.keyBinder = keyBinder;
+    this.valueBinder = valueBinder;
   }
 
-  public Transaction beginTransaction() {
+  public void beginTransaction() {
     if (databaseConfig.getTransactional()) {
-      return dbEnvironment.beginTransaction(null, null);
-    } else {
-      return null;
+      transaction = dbEnvironment.beginTransaction(null, null);
     }
   }
 
-  public void close(Transaction transaction) {
+  public void close() {
     if (transaction != null) {
       transaction.abort();
     }
@@ -61,44 +63,68 @@ public class BdbWrapper {
     database.close();
   }
 
-  public void commit(Transaction transaction) {
+  public DatabaseGetter.Builder<KeyT, ValueT> databaseGetter() {
+    return DatabaseGetter.databaseGetter(keyBinder, valueBinder, database, cursors);
+  }
+
+  public void commit() {
     if (transaction != null) {
       transaction.commit();
     }
+    database.sync();
   }
 
-  public <T> Stream<T> getItems(DatabaseFunction initialLookup, DatabaseFunction iteration,
-                                Supplier<T> valueMaker) {
-    CursorIterator<T> data = new CursorIterator<>(
-      initialLookup,
-      iteration,
-      valueMaker,
-      ExceptionUtils.getStackTrace(new Throwable())
-    );
-
-    return stream(data).onClose(() -> {
-      try {
-        if (data.cursor != null) {
-          data.cursor.close();
-          cursors.remove(data.cursor);
+  public void replace(KeyT key, ValueT initialValue, Function<ValueT, ValueT> replacer) throws DatabaseWriteException {
+    synchronized (keyEntry) {
+      try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
+        keyBinder.objectToEntry(key, keyEntry);
+        OperationStatus searchResult = cursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
+        ValueT newValue = initialValue;
+        if (searchResult.equals(OperationStatus.SUCCESS)) {
+          newValue = replacer.apply(valueBinder.entryToObject(valueEntry));
         }
-      } catch (DatabaseException e) {
-        LOG.error("Could not close cursor", e);
+        valueBinder.objectToEntry(newValue, valueEntry);
+        cursor.putCurrent(valueEntry);
+      } catch (Exception e) {
+        throw new DatabaseWriteException(e);
       }
-    });
-  }
-
-  public void put(Transaction transaction, DatabaseEntry keyEntry, DatabaseEntry valueEntry) {
-    database.put(transaction, keyEntry, valueEntry);
-  }
-
-  public void delete(Transaction transaction, DatabaseEntry keyEntry, DatabaseEntry valueEntry) {
-    Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT);
-    OperationStatus searchBoth = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
-    if (searchBoth.equals(OperationStatus.SUCCESS)) {
-      cursor.delete();
     }
-    cursor.close();
+  }
+
+  public boolean put(KeyT key, ValueT value) throws DatabaseWriteException {
+    synchronized (keyEntry) {
+      try {
+        keyBinder.objectToEntry(key, keyEntry);
+        valueBinder.objectToEntry(value, valueEntry);
+        final Put putType;
+        if (databaseConfig.getSortedDuplicates()) {
+          putType = Put.NO_DUP_DATA;
+        } else {
+          putType = Put.NO_OVERWRITE;
+        }
+        final OperationResult result = database.put(transaction, keyEntry, valueEntry, putType, null);
+        return result != null;
+      } catch (Exception e) {
+        throw new DatabaseWriteException(e);
+      }
+    }
+  }
+
+  public boolean delete(KeyT key, ValueT value) throws DatabaseWriteException {
+    boolean wasChange = false;
+    synchronized (keyEntry) {
+      try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
+        keyBinder.objectToEntry(key, keyEntry);
+        valueBinder.objectToEntry(value, valueEntry);
+        OperationStatus searchResult = cursor.getSearchBoth(keyEntry, valueEntry, LockMode.DEFAULT);
+        if (searchResult.equals(OperationStatus.SUCCESS)) {
+          wasChange = cursor.delete() == OperationStatus.SUCCESS;
+        }
+      } catch (Exception e) {
+        throw new DatabaseWriteException(e);
+      }
+    }
+    return wasChange;
   }
 
   public List<String> dump(String prefix, int start, int count, LockMode lockMode) {
@@ -124,57 +150,4 @@ public class BdbWrapper {
     return result;
   }
 
-  public void sync() {
-    database.sync();
-  }
-
-  private class CursorIterator<T> implements Iterator<T> {
-    private final DatabaseFunction initialLookup;
-    private final DatabaseFunction iteration;
-    private final Supplier<T> valueMaker;
-    private final String stackTrace;
-    public Cursor cursor;
-    boolean shouldMove;
-    OperationStatus status;
-
-    public CursorIterator(DatabaseFunction initialLookup, DatabaseFunction iteration,
-                          Supplier<T> valueMaker, String stackTrace) {
-      this.initialLookup = initialLookup;
-      this.iteration = iteration;
-      this.valueMaker = valueMaker;
-      this.stackTrace = stackTrace;
-      cursor = null;
-      shouldMove = true;
-      status = null;
-    }
-
-    @Override
-    public boolean hasNext() {
-      if (shouldMove) {
-        try {
-          if (cursor == null) {
-            cursor = database.openCursor(null, null);
-            cursors.put(cursor, stackTrace);
-            status = initialLookup.apply(cursor);
-          } else {
-            status = iteration.apply(cursor);
-          }
-        } catch (DatabaseException e) {
-          LOG.error("Database exception!", e);
-          status = OperationStatus.NOTFOUND;
-        }
-        shouldMove = false;
-      }
-      return status == OperationStatus.SUCCESS;
-    }
-
-    @Override
-    public T next() {
-      if (!hasNext()) {
-        throw new NoSuchElementException();
-      }
-      shouldMove = true;
-      return valueMaker.get();
-    }
-  }
 }

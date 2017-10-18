@@ -7,6 +7,14 @@ java_plugin(
 )
 
 java_binary(
+  name = "checkstyle",
+  runtime_deps = [
+    "//third_party:com_puppycrawl_tools_checkstyle"
+  ],
+  main_class = "com.puppycrawl.tools.checkstyle.Main"
+)
+
+java_binary(
     name = "everything",
     plugins = [
         ":immutables_processor"

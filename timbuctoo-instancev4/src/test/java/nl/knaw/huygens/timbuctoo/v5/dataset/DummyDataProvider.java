@@ -7,28 +7,25 @@ public class DummyDataProvider implements DataProvider {
   private RdfProcessor processor;
 
   @Override
-  public void subscribeToRdf(RdfProcessor processor, String cursor) {
+  public void subscribeToRdf(RdfProcessor processor) {
     this.processor = processor;
   }
 
-  @Override
-  public void subscribeToEntities(EntityProcessor processor, String cursor) { }
-
   public void onQuad(String subject, String predicate, String object,
                      String dataType, String language, String graph) throws RdfProcessingFailedException {
-    onQuad(true, "", subject, predicate, object, dataType, language, graph);
+    onQuad(true, subject, predicate, object, dataType, language, graph);
   }
 
-  public void onQuad(boolean isAssertion, String cursor, String subject, String predicate, String object,
+  public void onQuad(boolean isAssertion, String subject, String predicate, String object,
                      String dataType, String language, String graph) throws RdfProcessingFailedException {
-    processor.onQuad(isAssertion, cursor, subject, predicate, object, dataType, language, graph);
+    processor.onQuad(isAssertion, subject, predicate, object, dataType, language, graph);
   }
 
   public void start() throws RdfProcessingFailedException {
-    processor.start();
+    processor.start(0);
   }
 
   public void finish() throws RdfProcessingFailedException {
-    processor.finish();
+    processor.commit();
   }
 }

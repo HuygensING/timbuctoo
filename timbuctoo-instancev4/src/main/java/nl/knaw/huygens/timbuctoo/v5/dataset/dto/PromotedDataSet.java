@@ -24,7 +24,15 @@ public interface PromotedDataSet {
 
   String getOwnerId();
 
+  /**
+   * Returns the baseUri that is used to resolve relative uri's in uploaded rdf files that have no explicit baseUri set.
+   */
   String getBaseUri();
+
+  /**
+   * Returns a uri that you can use to generate dataSet-local uri's
+   */
+  String getUriPrefix();
 
   String getCombinedId();
 
@@ -38,7 +46,8 @@ public interface PromotedDataSet {
     return Tuple.tuple(parts[0], parts[1]);
   }
 
-  static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, String baseUri, boolean promoted) {
+  static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, String baseUri, String uriPrefix,
+                                         boolean promoted) {
     if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
       throw new IllegalArgumentException("Owner id and dataSet id should match " + VALID_ID);
     }
@@ -47,6 +56,7 @@ public interface PromotedDataSet {
       .combinedId(ownerId + "__" + dataSetId)
       .ownerId(ownerId)
       .baseUri(baseUri)
+      .uriPrefix(uriPrefix)
       .dataSetId(dataSetId)
       .isPromoted(promoted)
       .build();

@@ -1,8 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.RdfProcessor;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.NquadsUdParser;
-import nl.knaw.huygens.timbuctoo.v5.rdfio.implementations.rdf4j.parsers.TimRdfHandler;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -23,12 +21,12 @@ public class NquadsUdParserTest {
   public void setUp() throws Exception {
     rdfProcessor = mock(RdfProcessor.class);
     instance = new NquadsUdParser();
-    instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file", "", 0));
+    instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file"));
   }
 
   @Test
   public void parseStripsTheActionAddsItToTheActionsHolder() throws Exception {
-    instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file", "", 0));
+    instance.setRDFHandler(new TimRdfHandler(rdfProcessor, "http://example.org/file"));
     StringReader reader =
       new StringReader("-<http://example.org/subject1> <http://pred> \"12\"^^<http://number> <http://some_graph> .");
 
@@ -36,7 +34,6 @@ public class NquadsUdParserTest {
 
     verify(rdfProcessor).onQuad(
       false,
-      "0",
       "http://example.org/subject1",
       "http://pred",
       "12",
@@ -55,7 +52,6 @@ public class NquadsUdParserTest {
 
     verify(rdfProcessor).onQuad(
       true,
-      "0",
       "http://example.org/subject1",
       "http://pred",
       "12",
@@ -75,7 +71,7 @@ public class NquadsUdParserTest {
     instance.parse(reader, "http://example.org/");
 
     verify(rdfProcessor, never()).onQuad(
-      anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
+      anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
     );
   }
 
@@ -86,7 +82,7 @@ public class NquadsUdParserTest {
     instance.parse(reader, "http://example.org/");
 
     verify(rdfProcessor, never()).onQuad(
-      anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
+      anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
     );
   }
 
@@ -97,7 +93,7 @@ public class NquadsUdParserTest {
     instance.parse(reader, "http://example.org/");
 
     verify(rdfProcessor, never()).onQuad(
-      anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
+      anyBoolean(), anyString(), anyString(), anyString(), anyString(), anyString(), anyString()
     );
   }
 

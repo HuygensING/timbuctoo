@@ -67,24 +67,7 @@ public class Rml {
       Future<?> future = importManager.generateLog(
         baseUri,
         baseUri,
-        new PlainRdfCreator() {
-          @Override
-          public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
-            Stream<Quad> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
-            Iterator<Quad> iterator = triples.iterator();
-            while (iterator.hasNext()) {
-              Quad triple = iterator.next();
-              saver.onQuad(
-                triple.getSubject().getUri().get(),
-                triple.getPredicate().getUri().get(),
-                triple.getObject().getContent(),
-                triple.getObject().getLiteralType().orElse(null),
-                triple.getObject().getLiteralLanguage().orElse(null),
-                baseUri
-              );
-            }
-          }
-        }
+        new RmlRdfCreator(rmlMappingDocument, baseUri)
       );
       future.get();
       return Response.noContent().build();
@@ -105,4 +88,30 @@ public class Rml {
     return Response.status(Response.Status.NOT_FOUND).build();
   }
 
+  private class RmlRdfCreator implements PlainRdfCreator {
+    private final RmlMappingDocument rmlMappingDocument;
+    private final String baseUri;
+
+    public RmlRdfCreator(RmlMappingDocument rmlMappingDocument, String baseUri) {
+      this.rmlMappingDocument = rmlMappingDocument;
+      this.baseUri = baseUri;
+    }
+
+    @Override
+    public void sendQuads(RdfSerializer saver) throws LogStorageFailedException {
+      Stream<Quad> triples = rmlMappingDocument.execute(new LoggingErrorHandler());
+      Iterator<Quad> iterator = triples.iterator();
+      while (iterator.hasNext()) {
+        Quad triple = iterator.next();
+        saver.onQuad(
+          triple.getSubject().getUri().get(),
+          triple.getPredicate().getUri().get(),
+          triple.getObject().getContent(),
+          triple.getObject().getLiteralType().orElse(null),
+          triple.getObject().getLiteralLanguage().orElse(null),
+          baseUri
+        );
+      }
+    }
+  }
 }

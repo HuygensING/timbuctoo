@@ -153,6 +153,14 @@
   </dependencyManagement>
 
   <dependencies>
+
+    <!-- list checkstyle so the bazel build also downloads it -->
+    <dependency>
+      <groupId>com.puppycrawl.tools</groupId>
+      <artifactId>checkstyle</artifactId>
+      <version>6.11.2</version>
+    </dependency>
+
     <!-- ## Main dependencies ## -->
     <!-- Dropwizard -->
     <dependency>

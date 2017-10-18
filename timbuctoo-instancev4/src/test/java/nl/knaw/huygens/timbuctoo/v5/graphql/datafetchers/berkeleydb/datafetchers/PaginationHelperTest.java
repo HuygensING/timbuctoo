@@ -1,7 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.datafetchers;
 
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
-import nl.knaw.huygens.timbuctoo.v5.datastores.collectionindex.CursorSubject;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
+import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginatedList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.PaginationArguments;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
@@ -24,10 +25,10 @@ public class PaginationHelperTest {
   private static final Base64.Decoder DECODER = Base64.getDecoder();
 
 
-  public static final Function<CursorSubject, SubjectReference> MAKE_ITEM = c -> new SubjectReference() {
+  public static final Function<CursorQuad, SubjectReference> MAKE_ITEM = c -> new SubjectReference() {
     @Override
     public String getSubjectUri() {
-      return c.getSubjectUri();
+      return c.getSubject();
     }
 
     @Override
@@ -41,14 +42,26 @@ public class PaginationHelperTest {
     }
   };
 
+  public CursorQuad getObject(String cursor, String subjectUri) {
+    return CursorQuad.create(
+      subjectUri,
+      "",
+      Direction.OUT,
+      "",
+      null,
+      null,
+      cursor
+    );
+  }
+
   @Test
   public void firstPageHasNullAsPrev() throws Exception {
     final PaginatedList<SubjectReference> paginatedList = getPaginatedList(
       Stream.of(
-        CursorSubject.create("c1", "http://example.org/1"),
-        CursorSubject.create("c2", "http://example.org/2"),
-        CursorSubject.create("c3", "http://example.org/3"),
-        CursorSubject.create("c4", "http://example.org/4")
+        getObject("c1", "http://example.org/1"),
+        getObject("c2", "http://example.org/2"),
+        getObject("c3", "http://example.org/3"),
+        getObject("c4", "http://example.org/4")
       ),
       MAKE_ITEM,
       PaginationArguments.create(2, "", Optional.empty())
@@ -65,9 +78,9 @@ public class PaginationHelperTest {
   public void secondPageHasPrevAndNext() throws Exception {
     final PaginatedList<SubjectReference> paginatedList = getPaginatedList(
       Stream.of(
-        CursorSubject.create("c3", "http://example.org/3"),
-        CursorSubject.create("c4", "http://example.org/4"),
-        CursorSubject.create("c5", "http://example.org/4")
+        getObject("c3", "http://example.org/3"),
+        getObject("c4", "http://example.org/4"),
+        getObject("c5", "http://example.org/4")
       ),
       MAKE_ITEM,
       PaginationArguments.create(2, "A\nc2", Optional.empty())
@@ -84,10 +97,10 @@ public class PaginationHelperTest {
   public void lastPageHasNullAsNext() throws Exception {
     final PaginatedList<SubjectReference> paginatedList = getPaginatedList(
       Stream.of(
-        CursorSubject.create("c4", "http://example.org/4"),
-        CursorSubject.create("c3", "http://example.org/3"),
-        CursorSubject.create("c2", "http://example.org/2"),
-        CursorSubject.create("c1", "http://example.org/1")
+        getObject("c4", "http://example.org/4"),
+        getObject("c3", "http://example.org/3"),
+        getObject("c2", "http://example.org/2"),
+        getObject("c1", "http://example.org/1")
       ),
       MAKE_ITEM,
       PaginationArguments.create(2, "LAST", Optional.empty())
@@ -106,8 +119,8 @@ public class PaginationHelperTest {
   public void downwardsToFirstPageIsSameAsStartingFromFirstPage() throws Exception {
     final PaginatedList<SubjectReference> paginatedList = getPaginatedList(
       Stream.of(
-        CursorSubject.create("c2", "http://example.org/2"),
-        CursorSubject.create("c1", "http://example.org/1")
+        getObject("c2", "http://example.org/2"),
+        getObject("c1", "http://example.org/1")
       ),
       MAKE_ITEM,
       PaginationArguments.create(2, "D\nc3", Optional.empty())

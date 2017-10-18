@@ -72,7 +72,7 @@ public class AuthCheckTest {
       authorizer,
       loggedInUsers,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", false)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
     );
 
     assertThat(response.getStatus(), is(200));
@@ -86,7 +86,7 @@ public class AuthCheckTest {
       null,
       loggedInUsers,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", false)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
     );
 
     assertThat(response.getStatus(), is(UNAUTHORIZED.getStatusCode()));
@@ -103,7 +103,7 @@ public class AuthCheckTest {
       authorizer,
       loggedInUsers,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", false)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
     );
 
     assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
@@ -120,7 +120,7 @@ public class AuthCheckTest {
       authorizer,
       loggedInUsers,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", false)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
     );
 
     assertThat(response.getStatus(), is(200));

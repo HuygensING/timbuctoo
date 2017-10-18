@@ -117,7 +117,7 @@ public class ImportManagerTest {
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
     CountingProcessor processor = new CountingProcessor();
-    importManager.subscribeToRdf(processor, null);
+    importManager.subscribeToRdf(processor);
 
 
     Future<?> promise = importManager.addLog(
@@ -137,7 +137,7 @@ public class ImportManagerTest {
     String defaultGraph = "http://example.com/defaultGraph";
     String baseUri = "http://example.com/baseUri";
     CountingProcessor processor = new CountingProcessor();
-    importManager.subscribeToRdf(processor, null);
+    importManager.subscribeToRdf(processor);
 
     Future<?> promise = importManager.generateLog(
       baseUri,
@@ -220,6 +220,7 @@ public class ImportManagerTest {
 
   private static class CountingProcessor implements RdfProcessor {
     private final AtomicInteger counter;
+    private int currentVersion = -1;
 
     public CountingProcessor() {
       counter = new AtomicInteger();
@@ -231,56 +232,62 @@ public class ImportManagerTest {
 
 
     @Override
-    public void setPrefix(String cursor, String prefix, String iri) throws RdfProcessingFailedException {
+    public void setPrefix(String prefix, String iri) throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
-    public void addRelation(String cursor, String subject, String predicate, String object, String graph)
+    public void addRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
-    public void addValue(String cursor, String subject, String predicate, String value, String dataType, String graph)
+    public void addValue(String subject, String predicate, String value, String dataType, String graph)
       throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
-    public void addLanguageTaggedString(String cursor, String subject, String predicate, String value,
+    public void addLanguageTaggedString(String subject, String predicate, String value,
                                         String language,
                                         String graph) throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
-    public void delRelation(String cursor, String subject, String predicate, String object, String graph)
+    public void delRelation(String subject, String predicate, String object, String graph)
       throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
-    public void delValue(String cursor, String subject, String predicate, String value, String valueType,
+    public void delValue(String subject, String predicate, String value, String valueType,
                          String graph)
       throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
-    public void delLanguageTaggedString(String cursor, String subject, String predicate, String value,
+    public void delLanguageTaggedString(String subject, String predicate, String value,
                                         String language,
                                         String graph) throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
 
     @Override
-    public void start() throws RdfProcessingFailedException {
+    public void start(int index) throws RdfProcessingFailedException {
+      currentVersion = index;
       counter.incrementAndGet();
     }
 
     @Override
-    public void finish() throws RdfProcessingFailedException {
+    public int getCurrentVersion() {
+      return currentVersion;
+    }
+
+    @Override
+    public void commit() throws RdfProcessingFailedException {
       counter.incrementAndGet();
     }
   }

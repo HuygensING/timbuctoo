@@ -1,11 +1,10 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.stores;
 
+import com.sleepycat.bind.tuple.TupleBinding;
 import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbTripleStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DummyDataProvider;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
-import nl.knaw.huygens.timbuctoo.v5.dropwizard.NonPersistentBdbDatabaseCreator;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,23 +20,26 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
 
+
 public class BdbTripleStoreTest {
 
 
   public static final String EX = "http://example.org/";
-  protected NonPersistentBdbDatabaseCreator databaseCreator;
+  protected BdbNonPersistentEnvironmentCreator databaseCreator;
   protected BdbTripleStore tripleStore;
-  protected DummyDataProvider dataProvider;
 
   @Before
   public void makeCollection() throws Exception {
-    databaseCreator = new NonPersistentBdbDatabaseCreator();
-    dataProvider = new DummyDataProvider();
+    databaseCreator = new BdbNonPersistentEnvironmentCreator();
     tripleStore = new BdbTripleStore(
-      dataProvider,
-      databaseCreator,
-      "userId",
-      "dataSetId"
+      databaseCreator.getDatabase(
+        "userId",
+        "dataSetId",
+        "rdfData",
+        true,
+        TupleBinding.getPrimitiveBinding(String.class),
+        TupleBinding.getPrimitiveBinding(String.class)
+      )
     );
     Thread.sleep(2000); // to make the test work on slow systems
   }
@@ -48,13 +50,11 @@ public class BdbTripleStoreTest {
   }
 
   @Test
-  public void returnsTheData() throws RdfProcessingFailedException {
-    dataProvider.start();
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", "Gauthier", LANGSTRING, "FR-fr", "http://some graph");
-    dataProvider.finish();
+  public void returnsTheData() throws Exception {
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en");
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Gauthier", LANGSTRING, "FR-fr");
 
     try (Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "")) {
       List<CursorQuad> resultList = quads.collect(toList());
@@ -68,13 +68,11 @@ public class BdbTripleStoreTest {
   }
 
   @Test
-  public void canIterateForward() throws RdfProcessingFailedException {
-    dataProvider.start();
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject3", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject4", null, null, "http://some graph");
-    dataProvider.finish();
+  public void canIterateForward() throws Exception {
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject3", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject4", null, null);
 
     try (Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "")) {
       List<CursorQuad> resultList = quads.collect(toList());
@@ -88,13 +86,11 @@ public class BdbTripleStoreTest {
   }
 
   @Test
-  public void canIterateBackward() throws RdfProcessingFailedException {
-    dataProvider.start();
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject3", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject4", null, null, "http://some graph");
-    dataProvider.finish();
+  public void canIterateBackward() throws Exception {
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject3", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject4", null, null);
 
     try (Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "LAST")) {
       List<CursorQuad> resultList = quads.collect(toList());
@@ -108,13 +104,11 @@ public class BdbTripleStoreTest {
   }
 
   @Test
-  public void canIterateForwardFromCursor() throws RdfProcessingFailedException {
-    dataProvider.start();
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject3", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject4", null, null, "http://some graph");
-    dataProvider.finish();
+  public void canIterateForwardFromCursor() throws Exception {
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject3", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject4", null, null);
 
     String cursor;
     try (Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "")) {
@@ -134,13 +128,11 @@ public class BdbTripleStoreTest {
 
 
   @Test
-  public void canIterateBackwardFromCursor() throws RdfProcessingFailedException {
-    dataProvider.start();
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject3", null, null, "http://some graph");
-    dataProvider.onQuad(EX + "subject1", "http://pred", EX + "subject4", null, null, "http://some graph");
-    dataProvider.finish();
+  public void canIterateBackwardFromCursor() throws Exception {
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject3", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject4", null, null);
 
     String cursor;
     try (Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "")) {
@@ -159,11 +151,9 @@ public class BdbTripleStoreTest {
 
   @Test
   public void relationQuadRetractionRemovesTheQuadFromTheStore() throws Exception {
-    dataProvider.start();
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.finish();
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null);
+    tripleStore.deleteQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null);
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "");
     assertThat(quads.collect(toList()), not(hasItem(
@@ -176,11 +166,9 @@ public class BdbTripleStoreTest {
 
   @Test
   public void relationQuadRetractionRemovesTheReverseRelationQuadFromTheStore() throws Exception {
-    dataProvider.start();
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject1", null, null, "http://some graph");
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", EX + "subject2", null, null, "http://some graph");
-    dataProvider.finish();
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject1", null, null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null);
+    tripleStore.deleteQuad(EX + "subject1", "http://pred", Direction.OUT, EX + "subject2", null, null);
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject2", "http://pred_inverse", Direction.OUT, "");
     assertThat(quads.collect(toList()), not(hasItem(
@@ -191,11 +179,9 @@ public class BdbTripleStoreTest {
 
   @Test
   public void langStringQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
-    dataProvider.start();
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
-    dataProvider.onQuad(true,"", EX + "subject1", "http://pred", "Gauthier", LANGSTRING, "FR-fr", "http://some graph");
-    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", "Walter", LANGSTRING, "EN-en", "http://some graph");
-    dataProvider.finish();
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en");
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "Gauthier", LANGSTRING, "FR-fr");
+    tripleStore.deleteQuad(EX + "subject1", "http://pred", Direction.OUT, "Walter", LANGSTRING, "EN-en");
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "");
     assertThat(quads.collect(toList()), not(hasItem(
@@ -206,11 +192,9 @@ public class BdbTripleStoreTest {
 
   @Test
   public void valueQuadRetractionQuadRemovesTheQuadFromTheStore() throws Exception {
-    dataProvider.start();
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
-    dataProvider.onQuad(true, "", EX + "subject1", "http://pred", "14", "http://number", null, "http://some graph");
-    dataProvider.onQuad(false, "", EX + "subject1", "http://pred", "12", "http://number", null, "http://some graph");
-    dataProvider.finish();
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null);
+    tripleStore.putQuad(EX + "subject1", "http://pred", Direction.OUT, "14", "http://number", null);
+    tripleStore.deleteQuad(EX + "subject1", "http://pred", Direction.OUT, "12", "http://number", null);
 
     Stream<CursorQuad> quads = tripleStore.getQuads(EX + "subject1", "http://pred", Direction.OUT, "");
     assertThat(quads.collect(toList()), not(hasItem(

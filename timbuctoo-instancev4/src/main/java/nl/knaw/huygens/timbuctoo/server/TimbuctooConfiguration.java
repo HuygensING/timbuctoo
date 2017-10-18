@@ -20,11 +20,10 @@ import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
-import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbDatabaseFactory;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
-import nl.knaw.huygens.timbuctoo.v5.datastores.implementations.bdb.BdbDataStoreFactory;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
@@ -106,7 +105,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract Optional<URI> getUserRedirectUrl();
 
   @Valid
-  public abstract BdbDatabaseFactory getDatabases();
+  public abstract BdbPersistentEnvironmentCreator getDatabases();
 
   @JsonProperty("dataSet")
   @Valid
@@ -121,7 +120,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
         dataSetExecutorService,
         getSecurityConfiguration().getVreAuthorizationCreator(),
         getDataSetConfiguration(),
-        new BdbDataStoreFactory(getDatabases()),
+        getDatabases(),
         getRdfIdHelper(),
         onUpdated
       );
