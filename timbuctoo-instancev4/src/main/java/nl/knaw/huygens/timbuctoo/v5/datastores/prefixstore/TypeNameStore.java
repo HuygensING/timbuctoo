@@ -12,7 +12,7 @@ public interface TypeNameStore extends AutoCloseable {
   //and prevent collisions.
   String makeGraphQlname(String uri);
 
-  String makeGraphQlnameForPredicate(String uri, Direction direction);
+  String makeGraphQlnameForPredicate(String uri, Direction direction, boolean isList);
 
   //Does the same thing, but a type may be used as a value type or an entity type and the graphql names shouldn't clash
   //so this method prefixes the name with value_

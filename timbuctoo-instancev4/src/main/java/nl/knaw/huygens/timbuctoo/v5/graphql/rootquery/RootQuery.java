@@ -246,7 +246,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return (Property) ImmutableProperty.builder()
               .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
               .isList(pred.isList())
-              .name(typeNameStore.makeGraphQlnameForPredicate(pred.getName(), pred.getDirection()))
+              .name(typeNameStore.makeGraphQlnameForPredicate(
+                pred.getName(), pred.getDirection(), pred.isList())
+              )
               .referencedCollections(ImmutableStringList.builder()
                 .prevCursor(Optional.empty())
                 .nextCursor(Optional.empty())

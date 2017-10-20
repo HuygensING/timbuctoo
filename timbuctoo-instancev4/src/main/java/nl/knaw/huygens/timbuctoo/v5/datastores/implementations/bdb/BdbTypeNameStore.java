@@ -55,8 +55,8 @@ public class BdbTypeNameStore implements TypeNameStore {
   }
 
   @Override
-  public String makeGraphQlnameForPredicate(String uri, Direction direction) {
-    return makeName(uri, direction == Direction.IN ? "_inverse_" : "");
+  public String makeGraphQlnameForPredicate(String uri, Direction direction, boolean isList) {
+    return makeName(uri, direction == Direction.IN ? "_inverse_" : "") + (isList ? "List" : "");
   }
 
   public String makeName(String uri, String prefix) {

@@ -84,7 +84,7 @@ public class GraphQlTypesContainer {
 
   private void makeField(String description, Predicate predicate, String targetType, boolean isValue,
                          boolean isObject, boolean asList) {
-    String fieldName = typeNameStore.makeGraphQlnameForPredicate(predicate.getName(), predicate.getDirection());
+    String fieldName = typeNameStore.makeGraphQlnameForPredicate(predicate.getName(), predicate.getDirection(), asList);
     if (description != null) {
       currentType.append("  #").append(description).append("\n");
     }
@@ -118,7 +118,7 @@ public class GraphQlTypesContainer {
       types.put(listTypeName, builder);
       builder.append(argumentsHelper.makePaginatedListDefinition(typeName));
     }
-    return argumentsHelper.makeListField(fieldName + "List", typeName);
+    return argumentsHelper.makeListField(fieldName, typeName);
   }
 
   private String collectionType(String fieldName, String typeName) {
