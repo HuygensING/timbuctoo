@@ -1,11 +1,25 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
@@ -16,6 +30,7 @@ public class OpenRefineReconciliationEndpoint {
 
   private ResourceSync resourceSync;
   private UriHelper uriHelper;
+  private static String[] qList = {"q0","q1","q2","q3","q4","q5","q6","q7","q8","q9"};
 
   public OpenRefineReconciliationEndpoint(ResourceSync resourceSync, UriHelper uriHelper) {
     this.resourceSync = resourceSync;
@@ -28,6 +43,7 @@ public class OpenRefineReconciliationEndpoint {
   public Response getName(@PathParam("firstName") String firstName) throws ResourceSyncException {
 
     String result = "{ \"firstname\" : \"" + firstName + "\" }";
+    System.err.println(result);
     return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
   }
 
@@ -38,6 +54,7 @@ public class OpenRefineReconciliationEndpoint {
   ) throws ResourceSyncException {
 
     String result = "{ \"birthplace\" : \"Amsterdam\" }";
+    System.err.println(result);
     return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
   }
 
@@ -46,6 +63,7 @@ public class OpenRefineReconciliationEndpoint {
       @QueryParam("callback") String callback) throws ResourceSyncException {
 
     String result = "{ \"queries\" : \"" + queries + "\" }";
+    System.err.println(result);
     if (queries == null) {
       result = "{ \"name\": \"Timbuctoo\", \"view\" : {\"url\": \"http://localhost:8080/v5/openrefinereconciliation/{{id}}\"}, \"defaultTypes\" : [{\"id\":\"/getname\",\"name\":\"Person\"}], \"identifierSpace\": \"http://rdf.freebase.com/ns/authority.netflix.movie\",\"schemaSpace\": \"http://rdf.freebase.com/ns/type.object.id\" }";
     }
@@ -58,5 +76,33 @@ public class OpenRefineReconciliationEndpoint {
     System.err.println(result);
     return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
   }
-}
+  
+  @POST
+  @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+  @Produces("text/plain")
+  public String doPost(String message) throws UnsupportedEncodingException {
+    String translated = URLDecoder.decode(message,"utf8");
+    System.err.println("message: " + translated);
+    JsonObject jsonObject = new JsonParser().parse(translated.substring(8)).getAsJsonObject();
+    System.err.println(jsonObject);
+    Set<Entry<String, JsonElement>> jsonSet = jsonObject.entrySet();
+    String result = "{";
+    for (Entry<String, JsonElement> jsonItem : jsonSet) {
+      String key = jsonItem.getKey();
+      JsonObject value = (JsonObject) jsonItem.getValue();
+      System.err.println("query: " + value.getAsJsonPrimitive("query"));
+      System.err.println("limit: " + value.getAsJsonPrimitive("limit"));
 
+      result += "\"" + key + "\": {";
+      result += "\"result\" : [ { \"id\" : " + key.substring(1) + ",";
+      result += "\"name\" : " + value.getAsJsonPrimitive("query") + ",";
+      result += "\"type\" : [\"String\"] ,";
+      result += "\"score\" : 1.0 ,";
+      result += "\"match\" : true";
+      result += " } ] } ,";
+    }
+    result = result.substring(0, result.length() - 2) + " }";
+    System.err.println(result);
+    return result;
+  }
+}
