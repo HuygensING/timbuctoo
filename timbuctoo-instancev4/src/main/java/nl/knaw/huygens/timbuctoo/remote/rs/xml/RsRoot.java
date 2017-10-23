@@ -44,7 +44,7 @@ public abstract class RsRoot<T extends RsRoot, C extends RsItem> {
 
   public String getLink(String rel) {
     for (RsLn rsLn : linkList) {
-      if (rel.equals(rsLn.getRel())) {
+      if (rel.equalsIgnoreCase(rsLn.getRel())) {
         return rsLn.getHref();
       }
     }

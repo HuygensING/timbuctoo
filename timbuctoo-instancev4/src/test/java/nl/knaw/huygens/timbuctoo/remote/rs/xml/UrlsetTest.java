@@ -1,10 +1,12 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.xml;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import java.io.InputStream;
@@ -17,68 +19,57 @@ import static org.hamcrest.Matchers.equalTo;
 
 public class UrlsetTest {
 
+  private static Marshaller jaxbMarshaller;
+  private static Unmarshaller jaxbUnmarshaller;
+
+  @BeforeClass
+  public static void initialize() throws Exception {
+    JAXBContext jaxbContext = JAXBContext.newInstance(Urlset.class);
+    jaxbMarshaller = jaxbContext.createMarshaller();
+    jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+    jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+  }
+
   @Test
   public void testSerializeDeserializeUrlset() throws Exception {
 
     Urlset urlset = createUrlset();
-
-    JAXBContext jaxbContext = JAXBContext.newInstance(Urlset.class);
-    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-
-    jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-    StringWriter writer = new StringWriter();
-    jaxbMarshaller.marshal(urlset, writer);
-    String output1 = writer.toString();
-
+    String output1 = asXml(urlset);
     //System.out.println(output1);
 
-    Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
     InputStream in = IOUtils.toInputStream(output1);
     RsRoot returned = (RsRoot) jaxbUnmarshaller.unmarshal(in);
     IOUtils.closeQuietly(in);
-
-    writer = new StringWriter();
-    jaxbMarshaller.marshal(returned, writer);
-    String output2 = writer.toString();
-
+    String output2 = asXml(returned);
     //System.out.println(output2);
 
     assertThat(output2, equalTo(output1));
-
   }
 
+
   @Test
-  public void testWrappedRootElement() throws Exception {
-
+  public void readValues() throws Exception {
     Urlset urlset = createUrlset();
+    //System.out.println(asXml(urlset));
 
-    JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
-    Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+    assertThat(urlset.getLink("describedby"), equalTo("http://example.com/info_about_source.xml"));
+    assertThat(urlset.getLink("describedBy"), equalTo("http://example.com/info_about_source.xml"));
 
-    jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+    UrlItem urlItem1 = urlset.getItemList().get(0);
+    assertThat(urlItem1.getLink("describedby"),
+      equalTo("http://example.com/info_about_set1_of_resources.xml"));
+    assertThat(urlItem1.getLink("describedBy"),
+      equalTo("http://example.com/info_about_set1_of_resources.xml"));
+
+    UrlItem urlItem2 = urlset.getItemList().get(1);
+    assertThat(urlItem2.getLink("describedby"), equalTo(null));
+  }
+
+  private String asXml(RsRoot root) throws JAXBException {
     StringWriter writer = new StringWriter();
-    jaxbMarshaller.marshal(urlset, writer);
-    String output1 = writer.toString();
-
-    //System.out.println(output1);
-
-    Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-    InputStream in = IOUtils.toInputStream(output1);
-    JAXBElement<RsRoot> je = (JAXBElement<RsRoot>) jaxbUnmarshaller.unmarshal(in);
-
-    IOUtils.closeQuietly(in);
-
-    assertThat(je.getName(), equalTo(Urlset.QNAME));
-
-    Urlset returned = (Urlset) je.getValue();
-    writer = new StringWriter();
-    jaxbMarshaller.marshal(returned, writer);
-    String output2 = writer.toString();
-
-    //System.out.println(output2);
-
-    assertThat(output2, equalTo(output1));
-
+    jaxbMarshaller.marshal(root, writer);
+    return writer.toString();
   }
 
   private Urlset createUrlset() {
