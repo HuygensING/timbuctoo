@@ -66,4 +66,13 @@ public abstract class RsItem<T extends RsItem> {
     return (T) this;
   }
 
+  public String getLink(String rel) {
+    for (RsLn rsLn : rsLnList) {
+      if (rel.equalsIgnoreCase(rsLn.getRel())) {
+        return rsLn.getHref();
+      }
+    }
+    return null;
+  }
+
 }
