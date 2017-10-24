@@ -63,6 +63,14 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(result.getContent().isPresent(), is(true));
     assertThat(result.getContent().map(RsRoot::getMetadata).flatMap(RsMd::getCapability).orElse("invalid"),
       equalTo("description"));
+
+    // index should contain the describedBy uri of the source description:
+    assertThat(index.contains("http://example.com/info_about_source.xml"), is(true));
+    // result should contain the describedByResult:
+    Result<Description> descriptionResult = result.getDescriptionResult().get();
+    assertThat(descriptionResult.getUri().toString(), equalTo("http://example.com/info_about_source.xml"));
+    assertThat(descriptionResult.getContent().isPresent(), is(false));
+    assertThat(descriptionResult.getStatusCode(), equalTo(404));
   }
 
   @Test
