@@ -20,9 +20,9 @@ public class Result<T> implements Consumer<T> {
   private int statusCode;
   private T content;
   private List<Throwable> errors = new ArrayList<>();
-
   private Map<URI, Result<?>> parents = new TreeMap<>();
   private Map<URI, Result<?>> children = new TreeMap<>();
+  private Result<Description> descriptionResult;
   private Set<String> invalidUris = new TreeSet<>();
 
   public Result(URI uri) {
@@ -82,6 +82,10 @@ public class Result<T> implements Consumer<T> {
     return children;
   }
 
+  public Optional<Result<Description>> getDescriptionResult() {
+    return Optional.ofNullable(descriptionResult);
+  }
+
   public <R> Result<R> map(Function<T, R> func) {
     Result<R> copy = new Result<R>(uri);
 
@@ -91,6 +95,7 @@ public class Result<T> implements Consumer<T> {
     copy.invalidUris.addAll(invalidUris);
     copy.parents.putAll(parents);
     copy.children.putAll(children);
+    copy.descriptionResult = descriptionResult;
 
     if (content != null) {
       copy.accept(func.apply(content));
@@ -113,6 +118,11 @@ public class Result<T> implements Consumer<T> {
     }
   }
 
-
+  void setDescriptionResult(Result<Description> descriptionResult) {
+    if (descriptionResult.getContent().isPresent()) {
+      descriptionResult.getContent().get().setDescribes(uri);
+    }
+    this.descriptionResult = descriptionResult;
+  }
 
 }

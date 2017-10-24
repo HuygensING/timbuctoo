@@ -57,14 +57,14 @@ public class ExpeditionTest extends AbstractRemoteTest {
       .map(ResultIndex::getResultMap)
       .mapToInt(Map::size)
       .sum();
-    assertThat(resultCount1, equalTo(15));
+    assertThat(resultCount1, equalTo(19));
 
     int deadEnds1 = indexes.stream()
       .map(ResultIndexPivot::new)
       .map(ResultIndexPivot::listErrorResults)
       .mapToInt(List::size)
       .sum();
-    assertThat(deadEnds1, equalTo(12));
+    assertThat(deadEnds1, equalTo(16));
 
     // again with merged indexes
     // uri's http://localhost:xxxxx/timbucto will be merged
@@ -73,10 +73,10 @@ public class ExpeditionTest extends AbstractRemoteTest {
     ResultIndexPivot pivot = new ResultIndexPivot((index));
 
     int resultCount = index.getResultMap().size();
-    assertThat(resultCount, equalTo(14)); // 15 > 14, merged http://localhost:xxxxxx/timbucto
+    assertThat(resultCount, equalTo(18)); // 19 > 18, merged http://localhost:xxxxxx/timbucto
 
     int deadEnds = pivot.listErrorResults().size();
-    assertThat(deadEnds, equalTo(11)); // 12 > 11, merged http://localhost:xxxxxx/timbucto
+    assertThat(deadEnds, equalTo(15)); // 16 > 15, merged http://localhost:xxxxxx/timbucto
 
     int finds = pivot.listUrlsetResults().size();
     assertThat(finds, equalTo(3));

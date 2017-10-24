@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Sitemapindex;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Urlset;
 import nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
 
@@ -39,7 +40,7 @@ public class RsExplorer extends AbstractUriExplorer {
 
   private final ResourceSyncContext rsContext;
 
-  private LambdaExceptionUtil.Function_WithExceptions<HttpResponse, RsRoot, Exception> converter;
+  private LambdaExceptionUtil.Function_WithExceptions<HttpResponse, RsRoot, Exception> sitemapConverter;
 
   public boolean followParentLinks = true;
   public boolean followIndexLinks = true;
@@ -79,9 +80,9 @@ public class RsExplorer extends AbstractUriExplorer {
     return this;
   }
 
-  public RsExplorer withConverter(
+  public RsExplorer withSitemapConverter(
     LambdaExceptionUtil.Function_WithExceptions<HttpResponse, RsRoot, Exception> converter) {
-    this.converter = converter;
+    this.sitemapConverter = converter;
     return this;
   }
 
@@ -94,7 +95,7 @@ public class RsExplorer extends AbstractUriExplorer {
   @SuppressWarnings("unchecked")
   @Override
   public Result<RsRoot> explore(URI uri, ResultIndex index) {
-    Result<RsRoot> result = execute(uri, getConverter());
+    Result<RsRoot> result = execute(uri, getSitemapConverter());
     index.add(result);
     Capability capability = extractCapability(result);
 
@@ -151,6 +152,8 @@ public class RsExplorer extends AbstractUriExplorer {
               Result<RsRoot> childResult = explore(childUri, index);
               result.addChild(childResult);
               verifyChildRelation(result, childResult, capability);
+
+              loadDescriptionIfApplicable(childResult, item.getLink("describedby"), index);
             } catch (URISyntaxException e) {
               index.addInvalidUri(childLink);
               result.addError(e);
@@ -161,12 +164,26 @@ public class RsExplorer extends AbstractUriExplorer {
       }
     }
 
-    if (followDescribedByLinks) {
-      // @ToDo follow describedby links.
-      //
-    }
+    // rs:ln rel="describedby" -> points to a document that describes the result that is returned by this method.
+    String describedByLink = result.getContent().map(rsRoot -> rsRoot.getLink("describedby")).orElse(null);
+    loadDescriptionIfApplicable(result, describedByLink, index);
 
     return result;
+  }
+
+  private void loadDescriptionIfApplicable(Result<RsRoot> parent, String describedByUrl, ResultIndex index) {
+    if (followDescribedByLinks && describedByUrl != null && !index.contains(describedByUrl)) {
+      try {
+        URI describedByUri = new URI(describedByUrl);
+        Result<Description> describedByResult = execute(describedByUri, descriptionReader);
+        parent.setDescriptionResult(describedByResult);
+        index.add(describedByResult);
+      } catch (URISyntaxException e) {
+        index.addInvalidUri(describedByUrl);
+        parent.addError(e);
+        parent.addInvalidUri(describedByUrl);
+      }
+    }
   }
 
   private Capability extractCapability(Result<RsRoot> result) {
@@ -252,10 +269,18 @@ public class RsExplorer extends AbstractUriExplorer {
     return new RsBuilder(this.getRsContext()).setInputStream(inStream).build().orElse(null);
   };
 
-  private LambdaExceptionUtil.Function_WithExceptions<HttpResponse, RsRoot, Exception> getConverter() {
-    if (converter == null) {
-      converter = rsConverter;
+  private LambdaExceptionUtil.Function_WithExceptions<HttpResponse, RsRoot, Exception> getSitemapConverter() {
+    if (sitemapConverter == null) {
+      sitemapConverter = rsConverter;
     }
-    return converter;
+    return sitemapConverter;
   }
+
+  private LambdaExceptionUtil.Function_WithExceptions<HttpResponse, Description, Exception> descriptionReader =
+    (response) -> {
+      InputStream inStream = response.getEntity().getContent();
+      String encoding = AbstractUriExplorer.getCharset(response);
+      return new Description(IOUtils.toString(inStream, encoding));
+    };
+
 }
