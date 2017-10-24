@@ -24,7 +24,7 @@ public class TimbuctooRdfIdHelper {
   }
 
   public String dataSetBaseUri(String ownerId, String dataSetId) {
-    return (baseUri + "/" + encode(ownerId) + "/" + encode(dataSetId) + "/") + "datasets/";
+    return (baseUri + "/datasets/" + encode(ownerId) + "/" + encode(dataSetId) + "/");
   }
 
   public String instanceBaseUri() {
