@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationExceptio
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.BdbNonPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
+import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.junit.After;
@@ -95,7 +96,11 @@ public class DataSetRepositoryTest {
     dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
     dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
 
-    verify(resourceSync, times(1)).resourceList("uuser", "dataset");
+    FileHelper fileHelper = new FileHelper(tempFile);
+    File descriptionFile = fileHelper.fileInDataSet("uuser", "dataset", "description.xml");
+
+
+    verify(resourceSync, times(1)).resourceList("uuser", "dataset", descriptionFile);
   }
 
   @Test
