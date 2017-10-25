@@ -97,6 +97,8 @@ type CollectionMetadata {
   archeType: Entity @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#subClassOf", direction: "OUT", isList: false, isObject: true, isValue: false)
   indexConfig: IndexConfig!
   summaryProperties: SummaryProperties! @passThrough
+  editConfig: [Component]!
+  viewConfig: [Component]!
 }
 
 type SummaryProperties {
@@ -158,4 +160,11 @@ type License {
 type ProvenanceInfo {
   title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
   body: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
+}
+
+# the components used to define a view page or an edit page in the front-end
+type Component {
+  subComponents: [Component!]!
+  type: String
+  value: String
 }
