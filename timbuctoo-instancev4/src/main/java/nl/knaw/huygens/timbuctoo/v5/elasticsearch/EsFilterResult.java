@@ -1,8 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.elasticsearch;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.Facet;
-import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.FacetOption;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.FilterResult;
 
 import java.util.ArrayList;
@@ -58,6 +58,22 @@ public class EsFilterResult implements FilterResult {
     return resultNode.findPath("hits").findPath("total").asInt();
   }
 
+
+  public void findFacets(Facet facet, ObjectNode data) {
+    if (data.has("buckets") && data.get("buckets").isArray()) {
+      final JsonNode buckets = data.get("buckets");
+      for (JsonNode bucket: buckets) {
+        facet.incOption(bucket.get("key").asText(), bucket.get("doc_count").asInt());
+      }
+    } else {
+      for (JsonNode datum : data) {
+        if (datum.isObject()) {
+          findFacets(facet, (ObjectNode) datum);
+        }
+      }
+    }
+  }
+
   @Override
   public List<Facet> getFacets() {
     final ArrayList<Facet> result = new ArrayList<>();
@@ -65,11 +81,11 @@ public class EsFilterResult implements FilterResult {
     if (aggregations != null && !aggregations.isNull()) {
       for (String key: (Iterable<String>) aggregations::fieldNames) {
         JsonNode aggregation = aggregations.get(key);
-        final ArrayList<FacetOption> options = new ArrayList<>();
-        for (JsonNode bucket : aggregation.get("buckets")) {
-          options.add(FacetOption.facetOption(bucket.get("key").asText(), bucket.get("doc_count").asInt()));
+        if (aggregation.isObject()) {
+          Facet facet = new Facet(key);
+          result.add(facet);
+          findFacets(facet, (ObjectNode) aggregation);
         }
-        result.add(Facet.facet(key, options));
       }
     }
     return result;

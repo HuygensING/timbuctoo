@@ -1,20 +1,38 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter;
 
-import org.immutables.value.Value;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
-@Value.Immutable
-public interface Facet {
+public class Facet {
 
-  String getCaption();
+  private static final Logger LOG = LoggerFactory.getLogger(Facet.class);
 
-  List<FacetOption> getOptions();
+  final LinkedHashMap<String, FacetOption> options = new LinkedHashMap<>();
+  final String caption;
 
-  static Facet facet(String caption, Iterable<? extends FacetOption> facetOptions) {
-    return ImmutableFacet.builder()
-      .caption(caption)
-      .addAllOptions(facetOptions)
-      .build();
+  public Facet(String caption) {
+    this.caption = caption;
+  }
+
+  public void incOption(String key, int value) {
+    if (options.containsKey(key)) {
+      LOG.warn("The aggregation '" + caption + "' resulted the same bucket (" + key + ") being mentioned twice. " +
+        "We did not expect that to be possible");
+      options.put(key, FacetOption.facetOption(key, options.get(key).getCount() + value));
+    } else {
+      options.put(key, FacetOption.facetOption(key, value));
+    }
+  }
+
+  public String getCaption() {
+    return caption;
+  }
+
+  public List<FacetOption> getOptions() {
+    return new ArrayList<>(options.values());
   }
 }
