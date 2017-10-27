@@ -225,13 +225,9 @@
     <dependency>
       <groupId>com.graphql-java</groupId>
       <artifactId>graphql-java</artifactId>
-      <version>4.2</version>
+      <version>5.0</version>
     </dependency>
-    <dependency>
-      <groupId>com.graphql-java</groupId>
-      <artifactId>graphql-java-tools</artifactId>
-      <version>4.1.2</version>
-    </dependency>
+
     <dependency>
       <groupId>com.sleepycat</groupId>
       <artifactId>je</artifactId>
