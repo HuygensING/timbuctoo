@@ -225,6 +225,7 @@ public class JsonProvenanceToRdfPatch implements PatchRdfCreator {
     }
   }
 
+  @Override
   public void sendQuads(RdfPatchSerializer saver) throws LogStorageFailedException {
     for (JsonNode revision : activity.get(PROV_GENERATES)) {
       final String entityUri = revision.get(PROV_SPECIALIZATION_OF).get(0).get("@id").asText();
