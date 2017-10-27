@@ -23,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadataList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadata;
@@ -196,6 +197,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
       .dataFetcher("personalInfo", env -> "http://example.com")
       .dataFetcher("canCreateDataSet", env -> true)
+    );
+
+    wiring.type("Mutation",
+      builder -> builder.dataFetcher("createViewConfig", new ViewConfigDataFetcher(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);

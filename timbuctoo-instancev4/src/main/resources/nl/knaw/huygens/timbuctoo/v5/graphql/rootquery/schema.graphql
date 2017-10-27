@@ -1,5 +1,6 @@
 schema {
   query: Query,
+  mutation: Mutation
 }
 
 interface Value {
@@ -167,4 +168,14 @@ type Component {
   subComponents: [Component!]!
   type: String
   value: String
+}
+
+input ComponentInput {
+  subComponents: [ComponentInput!]
+  type: String
+  value: String
+}
+
+type Mutation {
+  createViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput]!): [Component]
 }
