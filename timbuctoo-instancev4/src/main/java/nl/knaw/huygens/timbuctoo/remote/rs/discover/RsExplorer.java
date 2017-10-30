@@ -98,7 +98,6 @@ public class RsExplorer extends AbstractUriExplorer {
   @SuppressWarnings("unchecked")
   @Override
   public Result<RsRoot> explore(URI uri, ResultIndex index) {
-    //System.out.println("Exploring URI " + uri);
     LOG.debug("Exploring URI " + uri);
     Result<RsRoot> result = execute(uri, getSitemapConverter());
     index.add(result);
@@ -177,7 +176,6 @@ public class RsExplorer extends AbstractUriExplorer {
 
   private void loadDescriptionIfApplicable(Result<RsRoot> parent, String describedByUrl, ResultIndex index) {
     if (followDescribedByLinks && describedByUrl != null && !index.contains(describedByUrl)) {
-      //System.out.println("Following describedBy link " + describedByUrl);
       LOG.debug("Following describedBy link " + describedByUrl);
       try {
         URI describedByUri = new URI(describedByUrl);
