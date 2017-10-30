@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.util.LambdaExceptionUtil;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.slf4j.Logger;
 
 import java.io.InputStream;
 import java.net.URI;
@@ -37,6 +38,8 @@ import java.util.List;
  * </p>
  */
 public class RsExplorer extends AbstractUriExplorer {
+
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(RsExplorer.class);
 
   private final ResourceSyncContext rsContext;
 
@@ -95,6 +98,8 @@ public class RsExplorer extends AbstractUriExplorer {
   @SuppressWarnings("unchecked")
   @Override
   public Result<RsRoot> explore(URI uri, ResultIndex index) {
+    //System.out.println("Exploring URI " + uri);
+    LOG.debug("Exploring URI " + uri);
     Result<RsRoot> result = execute(uri, getSitemapConverter());
     index.add(result);
     Capability capability = extractCapability(result);
@@ -152,7 +157,6 @@ public class RsExplorer extends AbstractUriExplorer {
               Result<RsRoot> childResult = explore(childUri, index);
               result.addChild(childResult);
               verifyChildRelation(result, childResult, capability);
-
               loadDescriptionIfApplicable(childResult, item.getLink("describedby"), index);
             } catch (URISyntaxException e) {
               index.addInvalidUri(childLink);
@@ -173,6 +177,8 @@ public class RsExplorer extends AbstractUriExplorer {
 
   private void loadDescriptionIfApplicable(Result<RsRoot> parent, String describedByUrl, ResultIndex index) {
     if (followDescribedByLinks && describedByUrl != null && !index.contains(describedByUrl)) {
+      //System.out.println("Following describedBy link " + describedByUrl);
+      LOG.debug("Following describedBy link " + describedByUrl);
       try {
         URI describedByUri = new URI(describedByUrl);
         Result<Description> describedByResult = execute(describedByUri, descriptionReader);
