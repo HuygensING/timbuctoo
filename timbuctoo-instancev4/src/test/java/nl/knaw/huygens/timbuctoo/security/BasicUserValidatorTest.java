@@ -1,10 +1,9 @@
-package nl.knaw.huygens.timbuctoo.v5.security;
+package nl.knaw.huygens.timbuctoo.security;
 
 import nl.knaw.huygens.hamcrest.OptionalPresentMatcher;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.security.core.model.Affiliation;
-import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -16,7 +15,6 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -60,7 +58,7 @@ public class BasicUserValidatorTest {
     given(authenticationHandler.getSecurityInformation("validAccessToken")).willReturn(
       createMockSecurityInformation("validPersistentId")
     );
-    given(userStore.saveNew(anyString(),eq("validPersistentId"))).willReturn(createMockUser());
+    given(userStore.saveNew(anyString(), eq("validPersistentId"))).willReturn(createMockUser());
 
     Optional<User> user = basicUserValidator.getUserFromAccessToken("validAccessToken");
 

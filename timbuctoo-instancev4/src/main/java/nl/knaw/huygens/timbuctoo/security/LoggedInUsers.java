@@ -2,11 +2,9 @@ package nl.knaw.huygens.timbuctoo.security;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
-import nl.knaw.huygens.timbuctoo.v5.security.BasicUserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.Logger;
