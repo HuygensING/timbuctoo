@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.security.BasicUserValidator;
 
 import javax.validation.constraints.NotNull;
 import java.security.NoSuchAlgorithmException;
@@ -131,9 +132,8 @@ public abstract class SecurityFactory {
     if (loggedInUsers == null) {
       loggedInUsers = new LoggedInUsers(
         getAuthenticator(),
-        getUserStore(),
-        autoLogoutTimeout.createTimeout(),
-        getAuthHandler(getHttpCaller())
+        new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore()),
+        autoLogoutTimeout.createTimeout()
       );
     }
     return loggedInUsers;

@@ -29,7 +29,14 @@ public class BasicUserValidator implements UserValidator {
         SecurityInformation securityInformation = authenticationHandler.getSecurityInformation(accessToken);
 
         if (securityInformation != null) {
-          return userStore.userFor(securityInformation.getPersistentID());
+          Optional<User> user = userStore.userFor(securityInformation.getPersistentID());
+          if (!user.isPresent()) {
+            User newUser = userStore.saveNew(securityInformation.getDisplayName(),
+              securityInformation.getPersistentID());
+
+            return Optional.of(newUser);
+          }
+          return user;
         }
       } catch (UnauthorizedException | IOException | AuthenticationUnavailableException e) {
         throw new UserValidationException(e);
@@ -43,6 +50,18 @@ public class BasicUserValidator implements UserValidator {
     if (userId != null) {
       try {
         return userStore.userForId(userId);
+      } catch (AuthenticationUnavailableException e) {
+        throw new UserValidationException(e);
+      }
+    }
+    return Optional.empty();
+  }
+
+  @Override
+  public Optional<User> getUserFromPersistentId(String userId) throws UserValidationException {
+    if (userId != null) {
+      try {
+        return userStore.userFor(userId);
       } catch (AuthenticationUnavailableException e) {
         throw new UserValidationException(e);
       }

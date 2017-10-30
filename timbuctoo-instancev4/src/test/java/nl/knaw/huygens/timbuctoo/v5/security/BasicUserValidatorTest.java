@@ -16,7 +16,10 @@ import java.util.EnumSet;
 import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
@@ -46,6 +49,18 @@ public class BasicUserValidatorTest {
       createMockSecurityInformation("validPersistentId")
     );
     given(userStore.userFor("validPersistentId")).willReturn(Optional.of(createMockUser()));
+
+    Optional<User> user = basicUserValidator.getUserFromAccessToken("validAccessToken");
+
+    assertThat(user, is(OptionalPresentMatcher.present()));
+  }
+
+  @Test
+  public void getUserFromAccessTokenReturnsNewUserWhenAccessTokenIsValidAndUserDoesNotExist() throws Exception {
+    given(authenticationHandler.getSecurityInformation("validAccessToken")).willReturn(
+      createMockSecurityInformation("validPersistentId")
+    );
+    given(userStore.saveNew(anyString(),eq("validPersistentId"))).willReturn(createMockUser());
 
     Optional<User> user = basicUserValidator.getUserFromAccessToken("validAccessToken");
 
@@ -84,7 +99,7 @@ public class BasicUserValidatorTest {
     return new SecurityInformation() {
       @Override
       public String getDisplayName() {
-        return null;
+        return "";
       }
 
       @Override
