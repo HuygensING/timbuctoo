@@ -55,7 +55,6 @@ java_library(
       "//third_party:org_glassfish_jersey_core_jersey_common",
       "//third_party:org_glassfish_jersey_media_jersey_media_multipart",
       "//third_party:com_graphql_java_graphql_java",
-      "//third_party:com_graphql_java_graphql_java_tools",
       "//third_party:commons_io_commons_io",
       "//third_party:org_apache_commons_commons_lang3",
       "//third_party:com_sleepycat_je",
