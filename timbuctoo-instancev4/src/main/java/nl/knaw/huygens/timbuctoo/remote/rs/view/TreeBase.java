@@ -1,9 +1,12 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.view;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.ResultIndex;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.ResultIndexPivot;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 

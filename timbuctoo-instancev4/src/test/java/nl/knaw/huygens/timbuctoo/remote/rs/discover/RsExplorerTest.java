@@ -209,7 +209,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
         Times.exactly(1))
       .respond(HttpResponse.response()
                            .withStatusCode(200)
-                           .withBody(createDescribedByDocument())
+                           .withBody(createDescriptionDocument())
       );
 
     getMockServer()
@@ -229,7 +229,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
         Times.exactly(1))
       .respond(HttpResponse.response()
                            .withStatusCode(200)
-                           .withBody(createDescribedByDocument())
+                           .withBody(createDescriptionDocument())
       );
 
     getMockServer()
@@ -239,7 +239,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
         Times.exactly(1))
       .respond(HttpResponse.response()
                            .withStatusCode(200)
-                           .withBody(createDescribedByDocument())
+                           .withBody(createDescriptionDocument())
       );
 
     RsExplorer explorer = new RsExplorer(getHttpclient(), getRsContext());
@@ -250,7 +250,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     assertThat(result.getDescriptionResult().isPresent(), is(true));
     Result<Description> describedByResult = result.getDescriptionResult().get();
     assertThat(describedByResult.getContent().isPresent(), is(true));
-    assertThat(describedByResult.getContent().get().getRawContent(), equalTo(createDescribedByDocument()));
+    assertThat(describedByResult.getContent().get().getRawContent(), equalTo(createDescriptionDocument()));
 
     Result<RsRoot> child1 = (Result<RsRoot>)
       result.getChildren().get(URI.create("http://example.com/capabilitylist1.xml"));
@@ -259,7 +259,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     Result<Description> descriptionResult1 = child1.getDescriptionResult().get();
     descriptionResult1.getErrors().forEach(Throwable::printStackTrace);
     assertThat(descriptionResult1.getContent().isPresent(), is(true));
-    assertThat(descriptionResult1.getContent().get().getRawContent(), equalTo(createDescribedByDocument()));
+    assertThat(descriptionResult1.getContent().get().getRawContent(), equalTo(createDescriptionDocument()));
 
     Result<RsRoot> child3 = (Result<RsRoot>)
       result.getChildren().get(URI.create("http://example.com/capabilitylist3.xml"));
@@ -268,7 +268,7 @@ public class RsExplorerTest extends AbstractRemoteTest {
     Result<Description> descriptionResult3 = child3.getDescriptionResult().get();
     descriptionResult3.getErrors().forEach(Throwable::printStackTrace);
     assertThat(descriptionResult3.getContent().isPresent(), is(true));
-    assertThat(descriptionResult3.getContent().get().getRawContent(), equalTo(createDescribedByDocument()));
+    assertThat(descriptionResult3.getContent().get().getRawContent(), equalTo(createDescriptionDocument()));
 
     Result<RsRoot> child2 = (Result<RsRoot>)
       result.getChildren().get(URI.create("http://example.com/capabilitylist2.xml"));
@@ -334,21 +334,30 @@ public class RsExplorerTest extends AbstractRemoteTest {
       "</funny>";
   }
 
-  private String createDescribedByDocument() {
-    return "<?xml version='1.0'?>\n" +
-      "<xml-doc>\n" +
-      "\t<rdf:RDF xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#' xmlns:dc='http://purl.org/dc/terms/'>\n" +
-      "\t\t<rdf:Description rdf:about='http://example.org/datasets/DUMMY/clusius2'>\n" +
-      "\t\t\t<dc:title>\n" +
-      "\t\t\t\tDWC Data\t\t\t\n" +
-      "\t\t\t</dc:title>\n" +
-      "\t\t\t<dc:description>\n" +
-      "\t\t\t\tDWC Description\n" +
-      "\t\t\t</dc:description>\n" +
-      "\t\t\t<dc:rightsHolder rdf:resource=\"http://example.com/rightsHolder\" />\n" +
-      "\t\t</rdf:Description>\n" +
-      "\t</rdf:RDF>\n" +
-      "</xml-doc>";
+  private String createDescriptionDocument() {
+    return "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+      "<rdf:RDF\n" +
+      "\txmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\">\n" +
+      "\n" +
+      "<rdf:Description rdf:about=\"http://example" +
+      ".org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/\">\n" +
+      "\t<abstract xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"http://example.org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/summaryProperties\"/>\n" +
+      "\t<description xmlns=\"http://purl.org/dc/terms/\" rdf:datatype=\"http://www" +
+      ".w3.org/2001/XMLSchema#string\">Biographical data of the Digital Web Centre for the History of Science (DWC)" +
+      "</description>\n" +
+      "\t<license xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"https://creativecommons" +
+      ".org/publicdomain/zero/1.0/\"/>\n" +
+      "\t<provenance xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"http://example" +
+      ".org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/provenance\"/>\n" +
+      "\t<rightsHolder xmlns=\"http://purl.org/dc/terms/\" rdf:resource=\"http://example" +
+      ".org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/rightsHolder\"/>\n" +
+      "\t<title xmlns=\"http://purl.org/dc/terms/\" rdf:datatype=\"http://www.w3.org/2001/XMLSchema#string\">DWC " +
+      "Data</title>\n" +
+      "\t<ContactPoint xmlns=\"http://schema.org/\" rdf:resource=\"http://example" +
+      ".org/datasets/u33707283d426f900d4d33707283d426f900d4d0d/clusius3/contactPerson\"/>\n" +
+      "</rdf:Description>\n" +
+      "\n" +
+      "</rdf:RDF>";
   }
 
 }

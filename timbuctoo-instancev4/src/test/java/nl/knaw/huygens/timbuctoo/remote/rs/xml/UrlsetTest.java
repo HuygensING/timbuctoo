@@ -53,17 +53,17 @@ public class UrlsetTest {
     Urlset urlset = createUrlset();
     //System.out.println(asXml(urlset));
 
-    assertThat(urlset.getLink("describedby"), equalTo("http://example.com/info_about_source.xml"));
-    assertThat(urlset.getLink("describedBy"), equalTo("http://example.com/info_about_source.xml"));
+    assertThat(urlset.getLinkHref("describedby"), equalTo("http://example.com/info_about_source.xml"));
+    assertThat(urlset.getLinkHref("describedBy"), equalTo("http://example.com/info_about_source.xml"));
 
     UrlItem urlItem1 = urlset.getItemList().get(0);
-    assertThat(urlItem1.getLink("describedby"),
+    assertThat(urlItem1.getLinkHref("describedby"),
       equalTo("http://example.com/info_about_set1_of_resources.xml"));
-    assertThat(urlItem1.getLink("describedBy"),
+    assertThat(urlItem1.getLinkHref("describedBy"),
       equalTo("http://example.com/info_about_set1_of_resources.xml"));
 
     UrlItem urlItem2 = urlset.getItemList().get(1);
-    assertThat(urlItem2.getLink("describedby"), equalTo(null));
+    assertThat(urlItem2.getLinkHref("describedby"), equalTo(null));
   }
 
   private String asXml(RsRoot root) throws JAXBException {

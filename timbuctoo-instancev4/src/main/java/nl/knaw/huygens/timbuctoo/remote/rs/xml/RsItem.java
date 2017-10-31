@@ -66,11 +66,19 @@ public abstract class RsItem<T extends RsItem> {
     return (T) this;
   }
 
-  public String getLink(String rel) {
+  public Optional<RsLn> getLink(String rel) {
     for (RsLn rsLn : rsLnList) {
       if (rel.equalsIgnoreCase(rsLn.getRel())) {
-        return rsLn.getHref();
+        return Optional.of(rsLn);
       }
+    }
+    return Optional.empty();
+  }
+
+  public String getLinkHref(String rel) {
+    Optional<RsLn> maybeRsLn = getLink(rel);
+    if (maybeRsLn.isPresent()) {
+      return maybeRsLn.get().getHref();
     }
     return null;
   }

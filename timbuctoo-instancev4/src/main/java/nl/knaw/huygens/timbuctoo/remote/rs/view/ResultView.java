@@ -64,6 +64,8 @@ public class ResultView {
       .collect(Collectors.toList());
 
     invalidUris = result.getInvalidUris();
+
+
   }
 
   public String getUri() {

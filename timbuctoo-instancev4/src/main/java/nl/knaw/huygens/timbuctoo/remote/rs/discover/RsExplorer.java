@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsBuilder;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsItem;
+import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsLn;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsRoot;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Sitemapindex;
@@ -20,6 +21,7 @@ import java.net.URISyntaxException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Download ResourceSync Framework documents.
@@ -105,7 +107,7 @@ public class RsExplorer extends AbstractUriExplorer {
 
     if (followParentLinks) {
       // rs:ln rel="up" -> points to parent document, a urlset.
-      String parentLink = result.getContent().map(rsRoot -> rsRoot.getLink("up")).orElse(null);
+      String parentLink = result.getContent().map(rsRoot -> rsRoot.getLinkHref("up")).orElse(null);
       if (parentLink != null && !index.contains(parentLink)) {
         try {
           URI parentUri = new URI(parentLink);
@@ -122,7 +124,7 @@ public class RsExplorer extends AbstractUriExplorer {
 
     if (followIndexLinks) {
       // rs:ln rel="index" -> points to parent index, a sitemapindex.
-      String indexLink = result.getContent().map(rsRoot -> rsRoot.getLink("index")).orElse(null);
+      String indexLink = result.getContent().map(rsRoot -> rsRoot.getLinkHref("index")).orElse(null);
       if (indexLink != null && !index.contains(indexLink)) {
         try {
           URI indexUri = new URI(indexLink);
@@ -156,7 +158,8 @@ public class RsExplorer extends AbstractUriExplorer {
               Result<RsRoot> childResult = explore(childUri, index);
               result.addChild(childResult);
               verifyChildRelation(result, childResult, capability);
-              loadDescriptionIfApplicable(childResult, item.getLink("describedby"), index);
+              Optional<RsLn> maybeDescribedByLink = item.getLink("describedBy");
+              maybeDescribedByLink.ifPresent(rsLn -> loadDescriptionIfApplicable(childResult, rsLn, index));
             } catch (URISyntaxException e) {
               index.addInvalidUri(childLink);
               result.addError(e);
@@ -167,25 +170,28 @@ public class RsExplorer extends AbstractUriExplorer {
       }
     }
 
-    // rs:ln rel="describedby" -> points to a document that describes the result that is returned by this method.
-    String describedByLink = result.getContent().map(rsRoot -> rsRoot.getLink("describedby")).orElse(null);
-    loadDescriptionIfApplicable(result, describedByLink, index);
+    Optional<RsLn> maybeDescribedByLink = result.getContent().flatMap(rsRoot -> rsRoot.getLink("describedBy"));
+    maybeDescribedByLink.ifPresent(rsLn -> loadDescriptionIfApplicable(result, rsLn, index));
 
     return result;
   }
 
-  private void loadDescriptionIfApplicable(Result<RsRoot> parent, String describedByUrl, ResultIndex index) {
-    if (followDescribedByLinks && describedByUrl != null && !index.contains(describedByUrl)) {
-      LOG.debug("Following describedBy link " + describedByUrl);
+  private void loadDescriptionIfApplicable(Result<RsRoot> parent, RsLn describedByLink, ResultIndex index) {
+    String href = describedByLink.getHref();
+    if (followDescribedByLinks && href != null && !index.contains(href)) {
+      LOG.debug("Following describedBy link " + href);
       try {
-        URI describedByUri = new URI(describedByUrl);
+        URI describedByUri = new URI(href);
         Result<Description> describedByResult = execute(describedByUri, descriptionReader);
+        if (describedByResult.getContent().isPresent()) {
+          describedByResult.getContent().get().setDescribedByLink(describedByLink);
+        }
         parent.setDescriptionResult(describedByResult);
         index.add(describedByResult);
       } catch (URISyntaxException e) {
-        index.addInvalidUri(describedByUrl);
+        index.addInvalidUri(href);
         parent.addError(e);
-        parent.addInvalidUri(describedByUrl);
+        parent.addInvalidUri(href);
       }
     }
   }
