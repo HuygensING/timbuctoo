@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.model.vre.vres.VresBuilder;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -84,10 +86,10 @@ public class WomenWritersJsonCrudServiceTest {
   }
 
   private WomenWritersJsonCrudService createInstance(TinkerPopGraphManager graphManager) {
-    final UserStore userStore = mock(UserStore.class);
+    final UserValidator userValidator = mock(UserValidator.class);
     try {
-      Mockito.when(userStore.userForId(anyString())).thenReturn(Optional.empty());
-    } catch (AuthenticationUnavailableException e) {
+      Mockito.when(userValidator.getUserFromId(anyString())).thenReturn(Optional.empty());
+    } catch (UserValidationException e) {
       //exception won't really happen (cause we;re not calling the method. We're mocking it)
     }
 
@@ -122,7 +124,7 @@ public class WomenWritersJsonCrudServiceTest {
           )
         )
         .build(),
-      userStore,
+      userValidator,
       (collection, id, rev) -> URI.create("http://example.com/"),
       TimbuctooActionsStubs.forGraphWrapper(graphManager));
   }

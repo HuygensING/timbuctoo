@@ -235,7 +235,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final CrudServiceFactory crudServiceFactory = new CrudServiceFactory(
       vres,
-      securityConfig.getUserStore(),
+      securityConfig.getUserValidator(),
       pathWithoutVersionAndRevision
     );
 

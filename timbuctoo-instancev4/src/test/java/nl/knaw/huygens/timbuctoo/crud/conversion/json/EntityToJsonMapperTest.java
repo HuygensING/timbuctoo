@@ -13,6 +13,7 @@ import nl.knaw.huygens.timbuctoo.crud.conversion.EntityToJsonMapper;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,15 +39,15 @@ public class EntityToJsonMapperTest {
 
   public static final String USER_ID = "userId";
   public static final String USER_NAME = "User Name";
-  private UserStore userStore;
+  private UserValidator userValidator;
   private EntityToJsonMapper instance;
 
   @Before
   public void setUp() throws Exception {
-    userStore = mock(UserStore.class);
-    when(userStore.userForId(USER_ID)).thenReturn(Optional.of(User.create(USER_NAME, "")));
+    userValidator = mock(UserValidator.class);
+    when(userValidator.getUserFromId(USER_ID)).thenReturn(Optional.of(User.create(USER_NAME, "")));
     instance = new EntityToJsonMapper(
-      userStore,
+      userValidator,
       (collection, id1, rev) -> URI.create("www.example.com")
     );
   }
@@ -67,7 +68,7 @@ public class EntityToJsonMapperTest {
     readEntity.setProperties(Lists.newArrayList());
 
     EntityToJsonMapper instance = new EntityToJsonMapper(
-      userStore,
+      userValidator,
       (collection, id1, rev) -> URI.create("www.example.com")
     );
     Collection collection = mock(Collection.class);
@@ -107,7 +108,7 @@ public class EntityToJsonMapperTest {
     properties.add(new StringProperty("name", "Name"));
     readEntity.setProperties(properties);
     EntityToJsonMapper instance = new EntityToJsonMapper(
-      userStore,
+      userValidator,
       (collection, id1, rev) -> URI.create("www.example.com")
     );
     Collection collection = mock(Collection.class);
@@ -147,7 +148,7 @@ public class EntityToJsonMapperTest {
     properties.add(new HyperLinksProperty("nonParsableProp", "Name"));
     readEntity.setProperties(properties);
     EntityToJsonMapper instance = new EntityToJsonMapper(
-      userStore,
+      userValidator,
       (collection, id1, rev) -> URI.create("www.example.com")
     );
     Collection collection = mock(Collection.class);

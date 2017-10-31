@@ -15,6 +15,8 @@ import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,11 +34,11 @@ import static nl.knaw.huygens.timbuctoo.util.Tuple.tuple;
 public class EntityToJsonMapper {
   private static final Logger LOG = LoggerFactory.getLogger(EntityToJsonMapper.class);
 
-  private final UserStore userStore;
+  private final UserValidator userValidator;
   private final UrlGenerator relationUrlFor;
 
-  public EntityToJsonMapper(UserStore userStore, UrlGenerator relationUrlFor) {
-    this.userStore = userStore;
+  public EntityToJsonMapper(UserValidator userValidator, UrlGenerator relationUrlFor) {
+    this.userValidator = userValidator;
     this.relationUrlFor = relationUrlFor;
   }
 
@@ -151,8 +153,8 @@ public class EntityToJsonMapper {
     ObjectNode changeNode = new ObjectMapper().valueToTree(change);
 
     try {
-      userStore.userForId(userId).ifPresent(user -> changeNode.set("username", jsn(user.getDisplayName())));
-    } catch (AuthenticationUnavailableException e) {
+      userValidator.getUserFromId(userId).ifPresent(user -> changeNode.set("username", jsn(user.getDisplayName())));
+    } catch (UserValidationException e) {
       LOG.error("Could not retrieve user store", e);
     }
 

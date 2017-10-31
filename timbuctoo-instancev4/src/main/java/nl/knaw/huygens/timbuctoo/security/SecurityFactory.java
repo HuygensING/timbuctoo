@@ -11,6 +11,7 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 
 import javax.validation.constraints.NotNull;
 import java.security.NoSuchAlgorithmException;
@@ -140,5 +141,9 @@ public abstract class SecurityFactory {
 
   public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
     return localAuthentication.getHealthChecks();
+  }
+
+  public UserValidator getUserValidator() throws AccessNotPossibleException {
+    return new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore());
   }
 }

@@ -18,6 +18,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -35,11 +36,11 @@ public class JsonCrudService {
   private final EntityToJsonMapper entityToJsonMapper;
   private final JsonToEntityMapper jsonToEntityMapper;
 
-  public JsonCrudService(Vres mappings, UserStore userStore, UrlGenerator relationUrlFor,
+  public JsonCrudService(Vres mappings, UserValidator userValidator, UrlGenerator relationUrlFor,
                          TimbuctooActions timDbAccess) {
     this.mappings = mappings;
     this.timDbAccess = timDbAccess;
-    entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
+    entityToJsonMapper = new EntityToJsonMapper(userValidator, relationUrlFor);
     jsonToEntityMapper = new JsonToEntityMapper();
   }
 

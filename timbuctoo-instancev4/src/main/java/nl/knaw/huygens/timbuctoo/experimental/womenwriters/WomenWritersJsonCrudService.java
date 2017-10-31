@@ -22,6 +22,7 @@ import nl.knaw.huygens.timbuctoo.model.vre.Vres;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.util.JsonBuilder;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import org.apache.tinkerpop.gremlin.process.traversal.dsl.graph.GraphTraversalSource;
 import org.apache.tinkerpop.gremlin.structure.Direction;
 import org.apache.tinkerpop.gremlin.structure.Edge;
@@ -52,12 +53,12 @@ public class WomenWritersJsonCrudService {
   private final EntityToJsonMapper entityToJsonMapper;
 
   public WomenWritersJsonCrudService(Vres mappings,
-                                     UserStore userStore,
+                                     UserValidator userValidator,
                                      UrlGenerator relationUrlFor,
                                      TimbuctooActions timDbAccess) {
     this.mappings = mappings;
     this.timDbAccess = timDbAccess;
-    entityToJsonMapper = new EntityToJsonMapper(userStore, relationUrlFor);
+    entityToJsonMapper = new EntityToJsonMapper(userValidator, relationUrlFor);
   }
 
 
