@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -43,14 +44,15 @@ public class JsonLdEditEndpoint {
 
   private final DataSetRepository dataSetRepository;
   private final UserValidator userValidator;
-  private final Authorizer authorizer;
+  private final PermissionFetcher permissionFetcher;
   private DocumentLoader documentLoader;
 
-  public JsonLdEditEndpoint(UserValidator userValidator, Authorizer authorizer, DataSetRepository dataSetRepository,
+  public JsonLdEditEndpoint(UserValidator userValidator, PermissionFetcher permissionFetcher,
+                            DataSetRepository dataSetRepository,
                             CloseableHttpClient httpClient
   ) throws JsonLdError, IOException {
     this.dataSetRepository = dataSetRepository;
-    this.authorizer = authorizer;
+    this.permissionFetcher = permissionFetcher;
     this.userValidator = userValidator;
     documentLoader = new DocumentLoader();
     documentLoader.setHttpClient(httpClient);
@@ -82,7 +84,7 @@ public class JsonLdEditEndpoint {
       user = Optional.empty();
     }
 
-    final Response response = checkWriteAccess(dataSet, user, authorizer);
+    final Response response = checkWriteAccess(dataSet, user, permissionFetcher);
     if (response != null) {
       return response;
     }
