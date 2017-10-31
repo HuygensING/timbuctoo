@@ -5,7 +5,6 @@ import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
@@ -19,26 +18,18 @@ import java.util.Set;
 
 class BasicPermissionFetcher implements PermissionFetcher {
   private final VreAuthorizationCrud vreAuthorizationCrud;
-  private final DataSetRepository dataSetRepository;
   private final UserValidator userValidator;
 
-  public BasicPermissionFetcher(VreAuthorizationCrud vreAuthorizationCrud, DataSetRepository dataSetRepository,
-                                UserValidator userValidator) {
+  public BasicPermissionFetcher(VreAuthorizationCrud vreAuthorizationCrud, UserValidator userValidator) {
     this.vreAuthorizationCrud = vreAuthorizationCrud;
-    this.dataSetRepository = dataSetRepository;
     this.userValidator = userValidator;
   }
 
   @Override
   public Set<Permission> getPermissions(String persistentId, String ownerId, String dataSetId)
     throws PermissionFetchingException {
-    if (!dataSetRepository.dataSetExists(ownerId, dataSetId)) {
-      throw new PermissionFetchingException(String.format("DataSet '%s' does not exist.", dataSetId));
-    }
-
     Set<Permission> permissions = new HashSet<>();
     permissions.add(Permission.READ);
-
 
     String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
 
@@ -47,6 +38,9 @@ class BasicPermissionFetcher implements PermissionFetcher {
       if (vreAuthorization.isPresent()) {
         if (vreAuthorization.get().isAllowedToWrite()) {
           permissions.add(Permission.WRITE);
+        }
+        if (vreAuthorization.get().hasAdminAccess()) {
+          permissions.add(Permission.ADMIN);
         }
       }
       return permissions;

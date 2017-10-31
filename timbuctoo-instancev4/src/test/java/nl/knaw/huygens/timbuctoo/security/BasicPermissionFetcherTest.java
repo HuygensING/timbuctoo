@@ -4,7 +4,6 @@ import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -29,20 +28,17 @@ public class BasicPermissionFetcherTest {
 
   private VreAuthorizationCrud vreAuthorizationCrud;
   private PermissionFetcher permissionFetcher;
-  private DataSetRepository dataSetRepository;
   private UserValidator userValidator;
   private User testUser;
 
   @Before
   public void setUp() throws Exception {
     vreAuthorizationCrud = mock(VreAuthorizationCrud.class);
-    dataSetRepository = mock(DataSetRepository.class);
     userValidator = mock(UserValidator.class);
-    given(dataSetRepository.dataSetExists("testownerid", "testdatasetid")).willReturn(true);
     testUser = mock(User.class);
     given(testUser.getId()).willReturn("testownerid");
     given(userValidator.getUserFromId("testownerid")).willReturn(Optional.of(testUser));
-    permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, dataSetRepository, userValidator);
+    permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, userValidator);
   }
 
   @Test
@@ -55,6 +51,18 @@ public class BasicPermissionFetcherTest {
       "testownerid", "testdatasetid");
 
     assertThat(permissions, containsInAnyOrder(Permission.WRITE, Permission.READ));
+  }
+
+  @Test
+  public void getPermissionsReturnsAdminAndReadPermissionsForAdminUserAndDataSet() throws Exception {
+    VreAuthorization vreAuthorization = mock(VreAuthorization.class);
+    given(vreAuthorization.hasAdminAccess()).willReturn(true);
+    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
+
+    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
+      "testownerid", "testdatasetid");
+
+    assertThat(permissions, containsInAnyOrder(Permission.ADMIN, Permission.READ));
   }
 
   @Test
@@ -89,15 +97,6 @@ public class BasicPermissionFetcherTest {
       "testownerid", "testdatasetid");
 
     assertThat(permissions, contains(Permission.READ));
-  }
-
-  @Test(expected = PermissionFetchingException.class)
-  public void getPermissionsThrowsExceptionWhenDataSetNotPresent() throws Exception {
-    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.empty());
-    given(dataSetRepository.dataSetExists("testownerid", "testdatasetid")).willReturn(false);
-
-    permissionFetcher.getPermissions("testPersistentId",
-      "testownerid", "testdatasetid");
   }
 
   @Test
