@@ -42,7 +42,7 @@ public abstract class DataSet {
 
     String userId = metadata.getOwnerId();
     String dataSetId = metadata.getDataSetId();
-    File descriptionFile = fileHelper.fileInDataSet(userId,dataSetId,"description.xml");
+    File descriptionFile = resourceSync.getDataSetDescriptionFile(userId, dataSetId);
 
     ImportManager importManager = new ImportManager(
       fileHelper.fileInDataSet(userId, dataSetId, "log.json"),
@@ -51,7 +51,7 @@ public abstract class DataSet {
       configuration.getFileStorage().makeLogStorage(userId, dataSetId),
       executorService,
       configuration.getRdfIo(),
-      resourceSync.resourceList(userId, dataSetId, descriptionFile),
+      resourceSync.resourceList(userId, dataSetId),
       onUpdated
     );
 

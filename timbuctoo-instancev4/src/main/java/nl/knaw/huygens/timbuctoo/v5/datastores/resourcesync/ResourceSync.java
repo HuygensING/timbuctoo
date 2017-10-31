@@ -25,7 +25,7 @@ public class ResourceSync {
     this.fileStorageFactory = fileStorageFactory;
   }
 
-  public ResourceList resourceList(String user, String dataSet, File descriptionFile) throws ResourceSyncException {
+  public ResourceList resourceList(String user, String dataSet) throws ResourceSyncException {
     File sourceDescriptionFile = getSourceDescriptionFile();
     File capabilityListFile = getCapabilityListFile(user, dataSet);
 
@@ -34,7 +34,7 @@ public class ResourceSync {
     capabilityList.addResourceList(resourceListFile);
 
     SourceDescriptionFile sourceDescription = new SourceDescriptionFile(sourceDescriptionFile, uriHelper);
-    sourceDescription.addCapabilityList(capabilityListFile, descriptionFile);
+    sourceDescription.addCapabilityList(capabilityListFile, getDataSetDescriptionFile(user, dataSet));
     return new ResourceListFile(resourceListFile, uriHelper);
   }
 
@@ -64,5 +64,9 @@ public class ResourceSync {
     } catch (IOException e) {
       throw new ResourceSyncException(e);
     }
+  }
+
+  public File getDataSetDescriptionFile(String user, String dataSet) {
+    return fileHelper.fileInDataSet(user, dataSet, "description.xml");
   }
 }

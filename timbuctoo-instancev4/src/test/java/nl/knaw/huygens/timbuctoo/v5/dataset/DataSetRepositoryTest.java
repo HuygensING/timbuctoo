@@ -24,10 +24,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class DataSetRepositoryTest {
 
@@ -39,6 +41,7 @@ public class DataSetRepositoryTest {
   public void init() throws IOException, InterruptedException {
     tempFile = Files.createTempDir();
     resourceSync = mock(ResourceSync.class);
+    when(resourceSync.getDataSetDescriptionFile(anyString(), anyString())).thenReturn(new File(tempFile, "test.xml"));
     dataSetRepository = createDataSetRepo();
   }
 
@@ -96,11 +99,7 @@ public class DataSetRepositoryTest {
     dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
     dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
 
-    FileHelper fileHelper = new FileHelper(tempFile);
-    File descriptionFile = fileHelper.fileInDataSet("uuser", "dataset", "description.xml");
-
-
-    verify(resourceSync, times(1)).resourceList("uuser", "dataset", descriptionFile);
+    verify(resourceSync, times(1)).resourceList("uuser", "dataset");
   }
 
   @Test

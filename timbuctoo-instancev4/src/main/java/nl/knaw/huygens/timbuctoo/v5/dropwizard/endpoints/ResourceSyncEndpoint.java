@@ -44,6 +44,13 @@ public class ResourceSyncEndpoint {
   }
 
   @GET
+  @Path("{ownerId}/{dataSetName}/description.xml")
+  public Response getDescription(@PathParam("ownerId") String owner, @PathParam("dataSetName") String dataSetName)
+    throws FileNotFoundException {
+    return streamFile(resourceSync.getDataSetDescriptionFile(owner, dataSetName), MediaType.APPLICATION_XML_TYPE);
+  }
+
+  @GET
   @Path("{ownerId}/{dataSetName}/resourceList.xml")
   public Response getResourceList(@PathParam("ownerId") String owner, @PathParam("dataSetName") String dataSetName)
     throws FileNotFoundException {
