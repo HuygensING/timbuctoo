@@ -166,16 +166,16 @@ type ProvenanceInfo {
 # the components used to define a view page or an edit page in the front-end
 type Component {
   subComponents: [Component!]!
-  type: String
+  type: String!
   value: String
 }
 
 input ComponentInput {
-  subComponents: [ComponentInput!]
-  type: String
+  subComponents: [ComponentInput!]!
+  type: String!
   value: String
 }
 
 type Mutation {
-  createViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput]!): [Component]
+  createViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
 }
