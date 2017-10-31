@@ -308,7 +308,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       )
     );
     register(environment, new JsonLdEditEndpoint(
-      securityConfig.getLoggedInUsers(),
+      securityConfig.getUserValidator(),
       securityConfig.getAuthorizer(),
       dataSetRepository,
       new HttpClientBuilder(environment).build("json-ld")

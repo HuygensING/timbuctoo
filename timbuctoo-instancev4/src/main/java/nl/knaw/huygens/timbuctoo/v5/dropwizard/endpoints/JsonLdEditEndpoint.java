@@ -4,6 +4,7 @@ import com.github.jsonldjava.core.DocumentLoader;
 import com.github.jsonldjava.core.JsonLdError;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
+import nl.knaw.huygens.timbuctoo.search.description.facet.Facet;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
@@ -13,6 +14,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,16 +42,16 @@ public class JsonLdEditEndpoint {
   private static final Logger LOG = LoggerFactory.getLogger(JsonLdEditEndpoint.class);
 
   private final DataSetRepository dataSetRepository;
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final Authorizer authorizer;
   private DocumentLoader documentLoader;
 
-  public JsonLdEditEndpoint(LoggedInUsers loggedInUsers, Authorizer authorizer, DataSetRepository dataSetRepository,
+  public JsonLdEditEndpoint(UserValidator userValidator, Authorizer authorizer, DataSetRepository dataSetRepository,
                             CloseableHttpClient httpClient
   ) throws JsonLdError, IOException {
     this.dataSetRepository = dataSetRepository;
     this.authorizer = authorizer;
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     documentLoader = new DocumentLoader();
     documentLoader.setHttpClient(httpClient);
     final String prefilledContext =
@@ -72,7 +75,12 @@ public class JsonLdEditEndpoint {
     final DataSet dataSet = dataSetOpt.get();
     final QuadStore quadStore = dataSet.getQuadStore();
     final ImportManager importManager = dataSet.getImportManager();
-    Optional<User> user = loggedInUsers.userFor(authHeader);
+    Optional<User> user;
+    try {
+      user = userValidator.getUserFromAccessToken(authHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
 
     final Response response = checkWriteAccess(dataSet, user, authorizer);
     if (response != null) {
