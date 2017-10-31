@@ -168,12 +168,14 @@ type Component {
   subComponents: [Component!]!
   type: String!
   value: String
+  path: String
 }
 
 input ComponentInput {
   subComponents: [ComponentInput!]!
   type: String!
   value: String
+  path: String
 }
 
 type Mutation {
