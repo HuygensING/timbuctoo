@@ -5,7 +5,7 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 public class Tuple<T, U> {
-  public final T left;
+  private final T left;
   private final U right;
 
   public static <T, U> Tuple<T, U> tuple(T left, U right) {
