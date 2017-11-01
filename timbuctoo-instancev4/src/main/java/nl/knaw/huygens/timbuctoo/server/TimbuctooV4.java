@@ -339,7 +339,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // Bulk upload
     UserPermissionChecker permissionChecker = new UserPermissionChecker(
       securityConfig.getLoggedInUsers(),
-      securityConfig.getAuthorizer()
+      securityConfig.getPermissionFetcher()
     );
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker, errorResponseHelper);
     register(environment, rawCollection);

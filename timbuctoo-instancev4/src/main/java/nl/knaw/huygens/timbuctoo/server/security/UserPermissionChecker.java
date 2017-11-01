@@ -1,11 +1,11 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
-import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
@@ -17,11 +17,11 @@ import static nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker.Us
 
 public class UserPermissionChecker {
   private final LoggedInUsers loggedInUsers;
-  private final Authorizer authorizer;
+  private final PermissionFetcher permissionFetcher;
 
-  public UserPermissionChecker(LoggedInUsers loggedInUsers, Authorizer authorizer) {
+  public UserPermissionChecker(LoggedInUsers loggedInUsers, PermissionFetcher permissionFetcher) {
     this.loggedInUsers = loggedInUsers;
-    this.authorizer = authorizer;
+    this.permissionFetcher = permissionFetcher;
   }
 
   public UserPermission check(String vreName, String authorizationHeader) {
@@ -32,14 +32,12 @@ public class UserPermissionChecker {
     }
 
     try {
-      Authorization authorization = authorizer.authorizationFor(vreName, user.get().getId());
-      if (authorization.isAllowedToWrite()) {
+      if (permissionFetcher.getPermissions(user.get().getId(), vreName).contains(Permission.WRITE)) {
         return ALLOWED_TO_WRITE;
       } else {
         return NO_PERMISSION;
       }
-
-    } catch (AuthorizationUnavailableException e) {
+    } catch (PermissionFetchingException e) {
       LoggerFactory.getLogger(RawCollection.class).error("Authorization cannot be read.", e);
       return UNKNOWN_USER;
     }
