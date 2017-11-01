@@ -30,35 +30,32 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
   @Override
   public VreAuthorization getOrCreateAuthorization(String vreId, String userId, String userRole)
     throws AuthorizationUnavailableException {
-    File file = getFile(vreId);
-    VreAuthorization vreAuthorization = VreAuthorization.create(vreId, userId, userRole);
+    Optional<VreAuthorization> authOptional = getAuthorization(vreId, userId);
 
-    try {
-      synchronized (authorizationsFolder) {
-        List<VreAuthorization> authorizations = Lists.newArrayList();
-        if (file.exists()) {
-          authorizations =
-            objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
-            });
-        }
-
-        Optional<VreAuthorization> authOptional =
-          authorizations.stream().filter(auth -> Objects.equals(auth.getUserId(), userId)).findFirst();
-        if (authOptional.isPresent()) {
-          return authOptional.get();
-        }
-
-        authorizations.add(vreAuthorization);
+    if (authOptional.isPresent()) {
+      return authOptional.get();
+    } else {
+      try {
         synchronized (authorizationsFolder) {
-          objectMapper.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
-        }
-      }
-    } catch (IOException e) {
-      throw new AuthorizationUnavailableException(e.getMessage());
-    }
+          File file = getFile(vreId);
+          List<VreAuthorization> authorizations = Lists.newArrayList();
+          if (file.exists()) {
+            authorizations =
+              objectMapper.readValue(file, new TypeReference<List<VreAuthorization>>() {
+              });
+          }
+          VreAuthorization vreAuthorization = VreAuthorization.create(vreId, userId, userRole);
+          authorizations.add(vreAuthorization);
 
-    return vreAuthorization;
+          objectMapper.writeValue(file, authorizations.toArray(new VreAuthorization[authorizations.size()]));
+          return vreAuthorization;
+        }
+      } catch (IOException e) {
+        throw new AuthorizationUnavailableException(e.getMessage());
+      }
+    }
   }
+
 
   @Override
   public Optional<VreAuthorization> getAuthorization(String vreId, String userId)
@@ -78,8 +75,8 @@ public class LocalFileVreAuthorizationAccess implements VreAuthorizationAccess {
           });
       }
       return authorizations.stream()
-                           .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
-                           .findAny();
+        .filter(authorization -> Objects.equals(authorization.getUserId(), userId))
+        .findAny();
     } catch (IOException e) {
       throw new AuthorizationUnavailableException(e.getMessage());
     }
