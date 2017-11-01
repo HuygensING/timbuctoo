@@ -19,6 +19,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.UserStore;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -45,7 +46,7 @@ public class JsonCrudService {
   }
 
   public UUID create(String collectionName, ObjectNode input, String userId)
-    throws InvalidCollectionException, IOException, AuthorizationException {
+    throws InvalidCollectionException, IOException, PermissionFetchingException {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
@@ -56,7 +57,7 @@ public class JsonCrudService {
       } else {
         return createEntity(collection, input, userId);
       }
-    } catch (AuthorizationUnavailableException e) {
+    } catch (PermissionFetchingException e) {
       throw new IOException(e.getMessage());
     }
   }
@@ -70,7 +71,7 @@ public class JsonCrudService {
   }
 
   private UUID createRelation(Collection collection, ObjectNode input, String userId)
-    throws IOException, AuthorizationException, AuthorizationUnavailableException {
+    throws IOException, PermissionFetchingException {
 
     UUID sourceId = asUuid(input, "^sourceId");
     UUID targetId = asUuid(input, "^targetId");
@@ -83,7 +84,7 @@ public class JsonCrudService {
   }
 
   private UUID createEntity(Collection collection, ObjectNode input, String userId)
-    throws IOException, AuthorizationException, AuthorizationUnavailableException {
+    throws IOException, PermissionFetchingException {
 
     List<TimProperty<?>> timProperties = jsonToEntityMapper.getDataProperties(collection, input);
 
@@ -156,8 +157,8 @@ public class JsonCrudService {
 
 
   public void replace(String collectionName, UUID id, ObjectNode data, String userId)
-    throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException, AuthorizationException,
-    AuthorizationUnavailableException {
+    throws InvalidCollectionException, IOException, NotFoundException, AlreadyUpdatedException,
+    PermissionFetchingException {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
@@ -171,7 +172,7 @@ public class JsonCrudService {
   }
 
   private void replaceRelation(Collection collection, UUID id, ObjectNode data, String userId)
-    throws IOException, NotFoundException, AuthorizationException, AuthorizationUnavailableException {
+    throws IOException, NotFoundException, PermissionFetchingException {
 
     JsonNode accepted = data.get("accepted");
     if (accepted == null || !accepted.isBoolean()) {
@@ -196,8 +197,7 @@ public class JsonCrudService {
   }
 
   private void replaceEntity(Collection collection, UUID id, ObjectNode data, String userId)
-    throws NotFoundException, IOException, AlreadyUpdatedException, AuthorizationException,
-    AuthorizationUnavailableException {
+    throws NotFoundException, IOException, AlreadyUpdatedException, PermissionFetchingException {
 
     UpdateEntity updateEntity = jsonToEntityMapper.newUpdateEntity(collection, id, data);
 
@@ -205,13 +205,13 @@ public class JsonCrudService {
   }
 
   public void delete(String collectionName, UUID id, String userId)
-    throws InvalidCollectionException, NotFoundException, AuthorizationException, IOException {
+    throws InvalidCollectionException, NotFoundException, PermissionFetchingException, IOException {
 
     final Collection collection = mappings.getCollection(collectionName)
                                           .orElseThrow(() -> new InvalidCollectionException(collectionName));
     try {
       timDbAccess.deleteEntity(collection, id, userId);
-    } catch (AuthorizationUnavailableException e) {
+    } catch (PermissionFetchingException e) {
       throw new IOException(e.getMessage());
     }
 

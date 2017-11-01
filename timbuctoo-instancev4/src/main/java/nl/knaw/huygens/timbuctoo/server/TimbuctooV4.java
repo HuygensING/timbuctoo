@@ -202,7 +202,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
-      securityConfig.getAuthorizer(),
+      securityConfig.getPermissionFetcher(),
       Clock.systemDefaultZone(),
       handleAdder,
       uriToRedirectToFromPersistentUrls,

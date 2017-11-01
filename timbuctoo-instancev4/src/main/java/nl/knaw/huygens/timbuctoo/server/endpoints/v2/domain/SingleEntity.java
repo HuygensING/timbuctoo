@@ -14,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -119,13 +120,9 @@ public class SingleEntity {
           return rollbackAndReturn(
             UpdateMessage.failure("Entry was already updated", Response.Status.EXPECTATION_FAILED)
           );
-        } catch (AuthorizationException e) {
+        } catch (PermissionFetchingException e) {
           return rollbackAndReturn(
             UpdateMessage.failure(e.getMessage(), Response.Status.FORBIDDEN)
-          );
-        } catch (AuthorizationUnavailableException e) {
-          return rollbackAndReturn(
-            UpdateMessage.failure(e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR)
           );
         }
       });
@@ -181,7 +178,7 @@ public class SingleEntity {
           return rollbackAndReturn(
             Response.status(Response.Status.NOT_FOUND).entity(jsnO("message", jsn("not found"))).build()
           );
-        } catch (AuthorizationException e) {
+        } catch (PermissionFetchingException e) {
           return rollbackAndReturn(
             Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build()
           );

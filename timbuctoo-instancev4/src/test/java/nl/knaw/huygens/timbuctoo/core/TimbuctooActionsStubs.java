@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopOperationsStubs;
 import nl.knaw.huygens.timbuctoo.experimental.womenwriters.WomenWritersJsonCrudServiceTest;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.server.TinkerPopGraphManager;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 
 import java.net.URI;
 import java.time.Clock;
@@ -14,7 +15,7 @@ public class TimbuctooActionsStubs {
 
   public static TimbuctooActions withDataStore(DataStoreOperations dataStoreOperations) {
     return new TimbuctooActions(
-      mock(Authorizer.class),
+      mock(PermissionFetcher.class),
       Clock.systemDefaultZone(),
       mock(PersistentUrlCreator.class),
       (coll, id, rev) -> URI.create("http://example.org/persistent"),
@@ -26,7 +27,7 @@ public class TimbuctooActionsStubs {
   public static TimbuctooActions withDataStoreAndAfterSucces(DataStoreOperations dataStoreOperations,
                                                              AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
     return new TimbuctooActions(
-      mock(Authorizer.class),
+      mock(PermissionFetcher.class),
       Clock.systemDefaultZone(),
       mock(PersistentUrlCreator.class),
       (coll, id, rev) -> URI.create("http://example.org/persistent"),
@@ -43,7 +44,7 @@ public class TimbuctooActionsStubs {
   @Deprecated
   public static TimbuctooActions forGraphWrapper(TinkerPopGraphManager graphManager) {
     return new TimbuctooActions(
-      mock(Authorizer.class),
+      mock(PermissionFetcher.class),
       Clock.systemDefaultZone(),
       mock(PersistentUrlCreator.class),
       (coll, id, rev) -> URI.create("http://example.org/persistent"),

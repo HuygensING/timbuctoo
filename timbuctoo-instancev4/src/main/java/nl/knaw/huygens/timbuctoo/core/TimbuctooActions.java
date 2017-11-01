@@ -27,6 +27,9 @@ import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 
@@ -46,17 +49,17 @@ import java.util.function.Supplier;
  */
 public class TimbuctooActions implements AutoCloseable {
 
-  private final Authorizer authorizer;
+  private final PermissionFetcher permissionFetcher;
   private final Clock clock;
   private final PersistentUrlCreator persistentUrlCreator;
   private final UrlGenerator uriToRedirectToFromPersistentUrls;
   private final DataStoreOperations dataStoreOperations;
   private final AfterSuccessTaskExecutor afterSuccessTaskExecutor;
 
-  public TimbuctooActions(Authorizer authorizer, Clock clock, PersistentUrlCreator persistentUrlCreator,
+  public TimbuctooActions(PermissionFetcher permissionFetcher, Clock clock, PersistentUrlCreator persistentUrlCreator,
                           UrlGenerator uriToRedirectToFromPersistentUrls, DataStoreOperations dataStoreOperations,
                           AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
-    this.authorizer = authorizer;
+    this.permissionFetcher = permissionFetcher;
     this.clock = clock;
     this.persistentUrlCreator = persistentUrlCreator;
     this.uriToRedirectToFromPersistentUrls = uriToRedirectToFromPersistentUrls;
@@ -66,7 +69,7 @@ public class TimbuctooActions implements AutoCloseable {
 
   public UUID createEntity(Collection collection, Optional<Collection> baseCollection,
                            Iterable<TimProperty<?>> properties, String userId)
-    throws AuthorizationUnavailableException, AuthorizationException, IOException {
+    throws PermissionFetchingException, IOException {
     checkIfAllowedToWrite(userId, collection);
     UUID id = UUID.randomUUID();
     Change created = createChange(userId);
@@ -94,7 +97,7 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public void replaceEntity(Collection collection, UpdateEntity updateEntity, String userId)
-    throws AuthorizationUnavailableException, AuthorizationException, NotFoundException, AlreadyUpdatedException,
+    throws PermissionFetchingException, NotFoundException, AlreadyUpdatedException,
     IOException {
     checkIfAllowedToWrite(userId, collection);
 
@@ -118,7 +121,7 @@ public class TimbuctooActions implements AutoCloseable {
   // url after you have deleted an entity (which therefore always 404's)
 
   public void deleteEntity(Collection collection, UUID uuid, String userId)
-    throws AuthorizationUnavailableException, AuthorizationException, NotFoundException {
+    throws PermissionFetchingException, NotFoundException {
     checkIfAllowedToWrite(userId, collection);
 
     int rev = dataStoreOperations.deleteEntity(collection, uuid, createChange(userId));
@@ -145,9 +148,9 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   private void checkIfAllowedToWrite(String userId, Collection collection) throws
-    AuthorizationException, AuthorizationUnavailableException {
-    if (!authorizer.authorizationFor(collection.getVreName(), userId).isAllowedToWrite()) {
-      throw AuthorizationException.notAllowedToCreate(collection.getCollectionName());
+    PermissionFetchingException {
+    if (!permissionFetcher.getPermissions(userId,collection.getVreName()).contains(Permission.WRITE)) {
+      throw new PermissionFetchingException("Write permission not pressent.");
     }
   }
 
@@ -179,7 +182,7 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public UUID createRelation(Collection collection, CreateRelation createRelation, String userId)
-    throws AuthorizationUnavailableException, AuthorizationException, IOException {
+    throws PermissionFetchingException, IOException {
     checkIfAllowedToWrite(userId, collection);
 
     // TODO make this method determine the id of the relation
@@ -195,7 +198,7 @@ public class TimbuctooActions implements AutoCloseable {
 
 
   public void replaceRelation(Collection collection, UpdateRelation updateRelation, String userId)
-    throws AuthorizationUnavailableException, AuthorizationException, NotFoundException {
+    throws PermissionFetchingException, NotFoundException {
     checkIfAllowedToWrite(userId, collection);
 
     updateRelation.setModified(createChange(userId));
@@ -324,15 +327,12 @@ public class TimbuctooActions implements AutoCloseable {
     return dataStoreOperations.getVreImageBlob(vreName);
   }
 
-  public void deleteVre(String vreName, User user) throws AuthorizationException, AuthorizationUnavailableException {
-    boolean isAdmin = authorizer
-      .authorizationFor(vreName, user.getId())
-      .getRoles()
-      .contains(UserRoles.ADMIN_ROLE);
+  public void deleteVre(String vreName, User user) throws PermissionFetchingException {
+    boolean isAdmin = permissionFetcher.getPermissions(user.getPersistentId(),vreName).contains(Permission.ADMIN);
     if (isAdmin) {
       dataStoreOperations.deleteVre(vreName);
     } else {
-      throw new AuthorizationException("User with id " + user.getId() + " is not allowed to delete VRE " + vreName);
+      throw new PermissionFetchingException("Admin permission not found.");
     }
   }
 
@@ -377,16 +377,17 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public static class TimbuctooActionsFactoryImpl implements TimbuctooActionsFactory {
-    private final Authorizer authorizer;
+    private final PermissionFetcher permissionFetcher;
     private final Clock clock;
     private final PersistentUrlCreator persistentUrlCreator;
     private final UrlGenerator uriToRedirectToFromPersistentUrls;
     private final Supplier<DataStoreOperations> dataStoreOperationsSupplier;
 
-    public TimbuctooActionsFactoryImpl(Authorizer authorizer, Clock clock, PersistentUrlCreator persistentUrlCreator,
+    public TimbuctooActionsFactoryImpl(PermissionFetcher permissionFetcher, Clock clock,
+                                       PersistentUrlCreator persistentUrlCreator,
                                        UrlGenerator uriToRedirectToFromPersistentUrls,
                                        Supplier<DataStoreOperations> dataStoreOperationsSupplier) {
-      this.authorizer = authorizer;
+      this.permissionFetcher = permissionFetcher;
       this.clock = clock;
       this.persistentUrlCreator = persistentUrlCreator;
       this.uriToRedirectToFromPersistentUrls = uriToRedirectToFromPersistentUrls;
@@ -396,7 +397,7 @@ public class TimbuctooActions implements AutoCloseable {
     @Override
     public TimbuctooActions create(AfterSuccessTaskExecutor afterSuccessTaskExecutor) {
       return new TimbuctooActions(
-        authorizer,
+        permissionFetcher,
         clock,
         persistentUrlCreator,
         uriToRedirectToFromPersistentUrls,

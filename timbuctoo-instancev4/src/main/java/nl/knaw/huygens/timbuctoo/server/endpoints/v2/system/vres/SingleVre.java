@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class SingleVre {
         timbuctooActions.deleteVre(vreName, user.get());
         vreAuthorization.deleteVreAuthorizations(vreName, user.get());
         return commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
-      } catch (AuthorizationException e) {
+      } catch (AuthorizationException | PermissionFetchingException e) {
         LOG.error("User with id '" + user.get().getId() + "' was not allowed to delete VRE '" + vreName + "'", e);
         return commitAndReturn(
           Response.status(Response.Status.FORBIDDEN).entity(jsnO("success", jsn(false))).build()
