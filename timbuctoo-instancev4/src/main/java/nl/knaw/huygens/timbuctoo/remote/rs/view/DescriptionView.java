@@ -70,7 +70,7 @@ public class DescriptionView {
       Rio.write(model, out, RDFFormat.JSONLD);
       ObjectMapper mapper = new ObjectMapper();
       content = mapper.readTree(out.toString());
-    } catch (IOException e) {
+    } catch (Exception e) { // catch all e.g. org.xml.sax.SAXParseException
       rawContent = description.getRawContent();
       error = new ErrorView(e, interpreter);
     }
