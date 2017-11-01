@@ -1,13 +1,15 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.mutations;
 
-import com.google.common.collect.Lists;
+import com.google.common.collect.ImmutableMap;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
-import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfPatchSerializer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InOrder;
+
+import java.util.Optional;
 
 import static com.google.common.collect.Lists.newArrayList;
 import static nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.CursorQuad.create;
@@ -18,15 +20,15 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-public class GraphQlPatchRdfCreatorTest {
+public class StringPredicatesRdfCreatorTest {
 
   private static final String COLLECTION_URI = "http://example.org/col";
   private static final String BASE_URI = "http://example.org/base";
-  private static final String VIEW_CONFIG = "viewConfig";
+  private static final Optional<String> VIEW_CONFIG = Optional.of("viewConfig");
   private static final String JSONFIED_CONFIG = "\"" + VIEW_CONFIG + "\"";
   private static final String OLD_JSONFIED_CONFIG = "\"oldConfig\"";
   private RdfPatchSerializer rdfPatchSerializer;
-  private GraphQlPatchRdfCreator instance;
+  private StringPredicatesRdfCreator instance;
   private QuadStore quadStore;
 
   @Before
@@ -37,7 +39,13 @@ public class GraphQlPatchRdfCreatorTest {
 
   @Test
   public void savesTheConfiguration() throws Exception {
-    GraphQlPatchRdfCreator instance = new GraphQlPatchRdfCreator(quadStore, COLLECTION_URI, VIEW_CONFIG, BASE_URI);
+    StringPredicatesRdfCreator instance = new StringPredicatesRdfCreator(
+      quadStore,
+      ImmutableMap.of(
+        Tuple.tuple(COLLECTION_URI, HAS_VIEW_CONFIG), VIEW_CONFIG
+      ),
+      BASE_URI
+    );
     RdfPatchSerializer rdfPatchSerializer = mock(RdfPatchSerializer.class);
 
     instance.sendQuads(rdfPatchSerializer);
@@ -50,7 +58,13 @@ public class GraphQlPatchRdfCreatorTest {
     given(quadStore.getQuads(COLLECTION_URI, HAS_VIEW_CONFIG, Direction.OUT, "")).willReturn(
       newArrayList(create(COLLECTION_URI, HAS_VIEW_CONFIG, Direction.OUT, OLD_JSONFIED_CONFIG, STRING, "", "")).stream()
     );
-    GraphQlPatchRdfCreator instance = new GraphQlPatchRdfCreator(quadStore, COLLECTION_URI, VIEW_CONFIG, BASE_URI);
+    StringPredicatesRdfCreator instance = new StringPredicatesRdfCreator(
+      quadStore,
+      ImmutableMap.of(
+        Tuple.tuple(COLLECTION_URI, HAS_VIEW_CONFIG), VIEW_CONFIG
+      ),
+      BASE_URI
+    );
 
     instance.sendQuads(rdfPatchSerializer);
 
