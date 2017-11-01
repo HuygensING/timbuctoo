@@ -12,6 +12,9 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableExc
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -33,15 +36,15 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Path("/v2.1/system/users/me/vres")
 public class MyVres {
   private final LoggedInUsers loggedInUsers;
-  private final Authorizer authorizer;
+  private final PermissionFetcher permissionFetcher;
   private final BulkUploadVre bulkUploadVre;
   private final TransactionEnforcer transactionEnforcer;
   private final UriHelper uriHelper;
 
-  public MyVres(LoggedInUsers loggedInUsers, Authorizer authorizer, BulkUploadVre bulkUploadVre,
+  public MyVres(LoggedInUsers loggedInUsers, PermissionFetcher permissionFetcher, BulkUploadVre bulkUploadVre,
                 TransactionEnforcer transactionEnforcer, UriHelper uriHelper) {
     this.loggedInUsers = loggedInUsers;
-    this.authorizer = authorizer;
+    this.permissionFetcher = permissionFetcher;
     this.bulkUploadVre = bulkUploadVre;
     this.transactionEnforcer = transactionEnforcer;
     this.uriHelper = uriHelper;
@@ -62,11 +65,9 @@ public class MyVres {
         .map(vre -> {
           boolean isAllowedToWrite;
           try {
-            isAllowedToWrite = authorizer
-              .authorizationFor(vre.getVreName(),
-                user.get().getId())
-              .isAllowedToWrite();
-          } catch (AuthorizationUnavailableException e) {
+            isAllowedToWrite = permissionFetcher.getPermissions(user.get().getPersistentId(),vre.getVreName())
+              .contains(Permission.WRITE);
+          } catch (PermissionFetchingException e) {
             isAllowedToWrite = false;
           }
           boolean isPublished = vre.getPublishState().equals(Vre.PublishState.AVAILABLE);
