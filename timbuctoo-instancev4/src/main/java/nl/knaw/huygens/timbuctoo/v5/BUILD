@@ -51,6 +51,7 @@ java_library(
       "//third_party:org_eclipse_rdf4j_rdf4j_rio_nquads",
       "//third_party:org_eclipse_rdf4j_rdf4j_rio_ntriples",
       "//third_party:org_eclipse_rdf4j_rdf4j_rio_turtle",
+      "//third_party:org_eclipse_rdf4j_rdf4j_rio_rdfxml",
       "//third_party:org_eclipse_rdf4j_rdf4j_util",
       "//third_party:org_glassfish_jersey_core_jersey_common",
       "//third_party:org_glassfish_jersey_media_jersey_media_multipart",
