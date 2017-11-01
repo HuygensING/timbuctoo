@@ -6,6 +6,8 @@ import org.eclipse.rdf4j.rio.RDFFormat;
 import org.eclipse.rdf4j.rio.Rio;
 import org.junit.Test;
 
+import java.util.Optional;
+
 /**
  * Created on 2017-10-31 11:48.
  */
@@ -13,8 +15,20 @@ public class ParserTest {
 
   @Test
   public void parse() throws Exception {
-    Model model = Rio.parse(IOUtils.toInputStream(createDescriptionDocument()), "", RDFFormat.RDFXML);
-    Rio.write(model, System.out, RDFFormat.JSONLD);
+    // Model model = Rio.parse(IOUtils.toInputStream(createDescriptionDocument()), "", RDFFormat.RDFXML);
+    // Rio.write(model, System.out, RDFFormat.JSONLD);
+    //String mimeType = "application/rdf+xml";
+    String mimeType = null;
+    Optional<RDFFormat> maybeFormat = Rio.getParserFormatForMIMEType(mimeType);
+    if (maybeFormat.isPresent()) {
+      RDFFormat format = maybeFormat.get();
+      System.out.println(format.getName());
+    }
+
+    String filename = "clusius3/description.xml";
+    maybeFormat = Rio.getParserFormatForFileName(filename);
+    System.out.println("from filename:" + maybeFormat.get());
+    System.out.println(createDescriptionDocument());
   }
 
   private String createDescriptionDocument() {

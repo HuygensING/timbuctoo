@@ -54,26 +54,27 @@ public class Discover {
     }
   }
 
-  @GET
-  @Path("/listgraphs/")
-  @Timed
-  public Response listGraphs(@QueryParam("url") @NotEmpty String url,
-                             @QueryParam("debug") @DefaultValue("false") boolean debug) {
-    try {
-      SetListBase graphList = resourceSyncService.listSets(url,
-        new Interpreter()
-          .withItemNameInterpreter(Interpreters.locItemNameInterpreter)
-          .withStackTrace(debug));
-      return Response.ok(graphList).build();
-    } catch (URISyntaxException e) {
-      String errorMessage = String.format("Url '%s' is not valid.", url);
-      LOG.error(errorMessage, e);
-      return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
-    } catch (InterruptedException e) {
-      LOG.error("Cannot list sets of url '" + url + "'.", e);
-      return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
-    }
-  }
+  // Name no longer decoded as base64. This method same as listsets.
+  // @GET
+  // @Path("/listgraphs/")
+  // @Timed
+  // public Response listGraphs(@QueryParam("url") @NotEmpty String url,
+  //                            @QueryParam("debug") @DefaultValue("false") boolean debug) {
+  //   try {
+  //     SetListBase graphList = resourceSyncService.listSets(url,
+  //       new Interpreter()
+  //         .withItemNameInterpreter(Interpreters.locItemNameInterpreter)
+  //         .withStackTrace(debug));
+  //     return Response.ok(graphList).build();
+  //   } catch (URISyntaxException e) {
+  //     String errorMessage = String.format("Url '%s' is not valid.", url);
+  //     LOG.error(errorMessage, e);
+  //     return Response.status(Response.Status.BAD_REQUEST).entity(errorMessage).build();
+  //   } catch (InterruptedException e) {
+  //     LOG.error("Cannot list sets of url '" + url + "'.", e);
+  //     return Response.status(Response.Status.INTERNAL_SERVER_ERROR).build();
+  //   }
+  // }
 
   @GET
   @Path("/framework/")

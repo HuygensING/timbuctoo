@@ -44,7 +44,7 @@ public class SetListBase {
       .map(urlsetResult -> urlsetResult.getContent().orElse(null))
       .map(Urlset::getItemList)
       .flatMap(Collection::stream)
-      .map(rsItem -> new SetItemView(rsItem, interpreter))
+      .map(rsItem -> new SetItemView(resultIndex, rsItem, interpreter))
       .collect(Collectors.toList());
 
     explorationAttempts = resultIndex.getResultMap().values().stream()
