@@ -325,8 +325,8 @@ public class IntegrationTest {
 
 
     Response response = target.request()
-                              .header(HttpHeaders.AUTHORIZATION, "fake")
-                              .post(Entity.entity(multiPart, multiPart.getMediaType()));
+      .header(HttpHeaders.AUTHORIZATION, "fake")
+      .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
     assertThat(response.getStatus(), Matchers.is(204));
     // assertThat(response.getHeaderString(HttpHeaders.LOCATION), Matchers.is(notNullValue()));
@@ -342,8 +342,8 @@ public class IntegrationTest {
         .target(format("http://localhost:%d/v5/dataSets/" + PREFIX + "/" + dataSetId + "/create/", APP.getLocalPort()));
 
     Response createResponse = createTarget.request()
-                                          .header(HttpHeaders.AUTHORIZATION, "fake")
-                                          .post(Entity.json(jsnO()));
+      .header(HttpHeaders.AUTHORIZATION, "fake")
+      .post(Entity.json(jsnO()));
     assertThat(createResponse.getStatus(), is(201));
     // check if the dataset is created
     List<String> dataSetNamesOfDummy = getDataSetNamesOfDummy();
@@ -355,8 +355,8 @@ public class IntegrationTest {
       client.target(format("http://localhost:%d/v5/" + PREFIX + "/" + dataSetId, APP.getLocalPort()));
 
     Response deleteResponse = deleteTarget.request()
-                                          .header(HttpHeaders.AUTHORIZATION, "fake")
-                                          .delete();
+      .header(HttpHeaders.AUTHORIZATION, "fake")
+      .delete();
 
     assertThat(deleteResponse.getStatus(), is(204));
 
@@ -455,8 +455,8 @@ public class IntegrationTest {
       ));
 
     createDataSet.request()
-                 .header(HttpHeaders.AUTHORIZATION, "fake")
-                 .post(Entity.json(null));
+      .header(HttpHeaders.AUTHORIZATION, "fake")
+      .post(Entity.json(null));
 
     final WebTarget createTarget =
       client.target(String.format(
@@ -466,8 +466,8 @@ public class IntegrationTest {
 
 
     Response createResponse = createTarget.request()
-                                          .header(HttpHeaders.AUTHORIZATION, "fake")
-                                          .put(Entity.json(testRdfReader));
+      .header(HttpHeaders.AUTHORIZATION, "fake")
+      .put(Entity.json(testRdfReader));
 
     if (createResponse.getStatus() != 204) {
       System.out.println(createResponse.readEntity(String.class));
@@ -530,8 +530,8 @@ public class IntegrationTest {
 
 
     Response createResponse2 = createTarget2.request()
-                                            .header(HttpHeaders.AUTHORIZATION, "fake")
-                                            .put(Entity.json(testRdfReader2));
+      .header(HttpHeaders.AUTHORIZATION, "fake")
+      .put(Entity.json(testRdfReader2));
 
     if (createResponse2.getStatus() != 204) {
       System.out.println(createResponse2.readEntity(String.class));
@@ -593,23 +593,32 @@ public class IntegrationTest {
     final String value = "test4";
     Response graphQlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
-      .post(Entity.entity(String.format("{\n" +
-        "\t\"query\": \"mutation CreateViewConfig {\\n  createViewConfig(dataSet: \\\"%s\\\", collectionUri: " +
-        "\\\"%s\\\", viewConfig: [{type: \\\"%s\\\", value:\\\"%s\\\"}]){\\n    type\\n    value\\n  }\\n}\",\n" +
-        "\t\"variables\": null,\n" +
-        "\t\"operationName\": \"CreateViewConfig\"\n" +
-        "}", dataSetId, collectionUri, type, value), MediaType.valueOf("application/json")));
+      .post(Entity.entity(jsnO(
+        "query",
+        jsn(
+          "mutation setViewConfig($dataSetId: String!, $collectionUri: String!, $type: String!, $value: String) " +
+            "{setViewConfig(dataSet: $dataSetId, collectionUri: $collectionUri, viewConfig: [{type: $type, value: " +
+            "$value, subComponents: [], formatter: []}]){   type    value}}"),
+        "variables",
+        jsnO(
+          "dataSetId", jsn(dataSetId),
+          "collectionUri", jsn(collectionUri),
+          "type", jsn(type),
+          "value", jsn(value)
+        )
+      ).toString(), MediaType.valueOf("application/json")));
 
     assertThat(graphQlCall.getStatus(), is(200));
-    assertThat(graphQlCall.readEntity(ObjectNode.class), is(jsnO("data",
-      jsnO("createViewConfig", jsnA(
-          jsnO(
-            "type", jsn("test3"),
-            "value", jsn("test4")
-          )
+    assertThat(graphQlCall.readEntity(ObjectNode.class), is(jsnO(
+      "data",
+      jsnO("setViewConfig", jsnA(
+        jsnO(
+          "type", jsn("test3"),
+          "value", jsn("test4")
+        )
         )
       )
-      )));
+    )));
 
 
     graphQlCall = call("/v5/graphql")
@@ -628,11 +637,12 @@ public class IntegrationTest {
 
     assertThat(graphQlCall.getStatus(), is(200));
     ObjectNode metaData = graphQlCall.readEntity(ObjectNode.class);
-    assertThat(stream(metaData
-      .get("data")
-      .get("dataSetMetadata")
-      .get("collectionList")
-      .get("items").iterator()).collect(Collectors.toList()),
+    assertThat(
+      stream(metaData
+        .get("data")
+        .get("dataSetMetadata")
+        .get("collectionList")
+        .get("items").iterator()).collect(Collectors.toList()),
       hasItem(jsnO(
         "uri", jsn(collectionUri),
         "viewConfig", jsnA(

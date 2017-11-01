@@ -179,5 +179,5 @@ input ComponentInput {
 }
 
 type Mutation {
-  createViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
+  setViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
 }
