@@ -28,10 +28,16 @@ class BasicPermissionFetcher implements PermissionFetcher {
   @Override
   public Set<Permission> getPermissions(String persistentId, String ownerId, String dataSetId)
     throws PermissionFetchingException {
+    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
+
+    return getPermissions(persistentId, vreId);
+  }
+
+  @Override
+  public Set<Permission> getPermissions(String persistentId, String vreId)
+    throws PermissionFetchingException {
     Set<Permission> permissions = new HashSet<>();
     permissions.add(Permission.READ);
-
-    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
 
     try {
       Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, persistentId);
