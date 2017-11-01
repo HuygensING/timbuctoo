@@ -57,49 +57,6 @@ public class AuthCheck {
     return null;
   }
 
-  public static Response checkWriteAccess(String ownerId, String dataSetId,
-                                          BiFunction<String, String, Optional<PromotedDataSet>> dataSetGetter,
-                                          PermissionFetcher permissionFetcher,
-                                          LoggedInUsers loggedInUsers, String authHeader) {
-
-    if (ownerId == null || ownerId.isEmpty()) {
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
-    if (dataSetId == null || dataSetId.isEmpty()) {
-      return Response.status(Response.Status.NOT_FOUND).build();
-    }
-
-    Optional<User> user = loggedInUsers.userFor(authHeader);
-
-    if (!user.isPresent()) {
-      return Response.status(Response.Status.UNAUTHORIZED).build();
-    }
-    String currentUserId = user.get().getPersistentId();
-    final Optional<PromotedDataSet> dataSet = dataSetGetter.apply(ownerId, dataSetId);
-    if (dataSet.isPresent()) {
-      try {
-        if (!permissionFetcher.getPermissions(currentUserId, dataSet.get().getOwnerId(), dataSet.get().getDataSetId())
-          .contains(Permission.WRITE)) {
-          return Response.status(Response.Status.FORBIDDEN).build();
-        }
-      } catch (PermissionFetchingException e) {
-        // The dataSet does not yet exist. It might be created by getOrCreate below. So check if the user is
-        // accessing a dataSet under his or her own namespace
-        if (!ownerId.equals(currentUserId)) {
-          return Response.status(Response.Status.FORBIDDEN).build();
-        }
-      }
-    } else if (!Objects.equals(currentUserId, ownerId)) {
-      return Response.status(Response.Status.FORBIDDEN).build();
-    }
-    return null;
-  }
-
-  private static Authorization getAuthorization(Authorizer authorizer, PromotedDataSet dataSet,
-                                                String currentUserId) throws AuthorizationUnavailableException {
-    return authorizer.authorizationFor(dataSet.getCombinedId(), currentUserId);
-  }
-
   public static Response checkAdminAccess(PermissionFetcher permissionFetcher, LoggedInUsers loggedInUsers,
                                           String authHeader,
                                           PromotedDataSet dataSet) {

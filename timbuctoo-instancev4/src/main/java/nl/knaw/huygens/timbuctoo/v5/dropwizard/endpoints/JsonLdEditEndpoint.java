@@ -12,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;

@@ -29,43 +29,6 @@ import static org.mockito.Mockito.mock;
 public class AuthCheckTest {
 
   @Test
-  public void checkWriteAccessRerturnNullIfTheDataSetDoesNotExistAndTheUserIdIsTheSameAsTheDataSetOwnerId() {
-    String ownerId = "ownerid";
-    User owner = User.create(null, ownerId);
-    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
-    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(owner));
-
-    Response response = checkWriteAccess(
-      ownerId,
-      "dataSet",
-      (user, dataSet) -> Optional.empty(),
-      null,
-      loggedInUsers,
-      "auth"
-    );
-
-    assertThat(response, is(nullValue()));
-  }
-
-  @Test
-  public void checkWriteAccessRerturnForbiddenIfTheDataSetDoesNotExistAndTheUserIdDiffersFromTheDataSetOwnerId() {
-    User notOwner = User.create(null, "user");
-    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
-    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
-
-    Response response = checkWriteAccess(
-      "ownerid",
-      "dataSet",
-      (user, dataSet) -> Optional.empty(),
-      null,
-      loggedInUsers,
-      "auth"
-    );
-
-    assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
-  }
-
-  @Test
   public void checkAdminAccessReturnsNullIfTheUserHasAdminPermissionsForTheDataSet() throws Exception {
     User notOwner = User.create(null, "user");
     LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
