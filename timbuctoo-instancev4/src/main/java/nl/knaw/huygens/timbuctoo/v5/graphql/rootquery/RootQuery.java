@@ -199,8 +199,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("canCreateDataSet", env -> true)
     );
 
-    wiring.type("Mutation",
-      builder -> builder.dataFetcher("createViewConfig", new ViewConfigDataFetcher(dataSetRepository))
+    wiring.type("Mutation", builder -> builder
+      .dataFetcher("setViewConfig", new ViewConfigDataFetcher(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);
