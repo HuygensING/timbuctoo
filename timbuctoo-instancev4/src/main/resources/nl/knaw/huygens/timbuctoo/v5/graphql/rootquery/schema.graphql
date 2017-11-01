@@ -108,6 +108,13 @@ type SummaryProperties {
   image: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
 
+input SummaryPropertiesInput {
+  title: String
+  description: String
+  image: String
+}
+
+
 type IndexConfig {
   facet: [FacetConfig]!
   fullText: [FullTextConfig]!
@@ -180,4 +187,5 @@ input ComponentInput {
 
 type Mutation {
   setViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
+  setSummaryProperties(dataSet: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
 }
