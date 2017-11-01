@@ -51,7 +51,7 @@ public class RdfUpload {
 
     final Either<Response, Response> result = authCheck
       .getOrCreate( authHeader, userId, dataSetId, forceCreation)
-      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.left, userAndDs.getRight()))
+      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
       .map(userDataSetTuple -> {
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
