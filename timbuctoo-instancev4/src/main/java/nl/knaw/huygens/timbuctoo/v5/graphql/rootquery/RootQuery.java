@@ -50,7 +50,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.getResource;
-import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_EDIT_CONFIG;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_VIEW_CONFIG;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
@@ -157,20 +156,6 @@ public class RootQuery implements Supplier<GraphQLSchema> {
             result.put("fullText", new ArrayList<>());
           }
           return result;
-        }
-      })
-      .dataFetcher("editConfig", env -> {
-        SubjectReference source = env.getSource();
-        final QuadStore qs = source.getDataSet().getQuadStore();
-        try (Stream<CursorQuad> quads = qs.getQuads(source.getSubjectUri(), HAS_EDIT_CONFIG, Direction.OUT, "")) {
-          return quads.findFirst().map(q -> {
-            try {
-              return objectMapper.readValue(q.getObject(), List.class);
-            } catch (IOException e) {
-              LOG.error("edit config not available", e);
-              return new ArrayList();
-            }
-          }).orElse(new ArrayList());
         }
       })
       .dataFetcher("viewConfig", env -> {

@@ -98,7 +98,6 @@ type CollectionMetadata {
   archeType: Entity @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#subClassOf", direction: "OUT", isList: false, isObject: true, isValue: false)
   indexConfig: IndexConfig!
   summaryProperties: SummaryProperties! @passThrough
-  editConfig: [Component]!
   viewConfig: [Component]!
 }
 
