@@ -16,7 +16,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-class BasicPermissionFetcher implements PermissionFetcher {
+public class BasicPermissionFetcher implements PermissionFetcher {
   private final VreAuthorizationCrud vreAuthorizationCrud;
   private final UserValidator userValidator;
 
@@ -56,12 +56,13 @@ class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public void initializeOwnerAuthorization(String ownerId, String dataSetId) throws AuthorizationCreationException {
+  public void initializeOwnerAuthorization(String userId, String ownerId, String dataSetId)
+    throws AuthorizationCreationException {
 
     String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
 
     try {
-      vreAuthorizationCrud.createAuthorization(vreId, ownerId, "ADMIN");
+      vreAuthorizationCrud.createAuthorization(vreId, userId, "ADMIN");
     } catch (AuthorizationCreationException e) {
       throw e;
     }

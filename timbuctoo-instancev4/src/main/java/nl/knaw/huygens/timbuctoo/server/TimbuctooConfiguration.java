@@ -118,7 +118,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
     try {
       return new DataSetRepository(
         dataSetExecutorService,
-        getSecurityConfiguration().getVreAuthorizationCreator(),
+        getSecurityConfiguration().getPermissionFetcher(),
         getDataSetConfiguration(),
         getDatabases(),
         getRdfIdHelper(),

@@ -101,17 +101,17 @@ public class BasicPermissionFetcherTest {
 
   @Test
   public void initializeOwnerAuthorizationCreatesAdminAuthorization() throws Exception {
-    permissionFetcher.initializeOwnerAuthorization("testownerid", "testdatasetid");
+    permissionFetcher.initializeOwnerAuthorization("testuserid","testownerid", "testdatasetid");
 
-    verify(vreAuthorizationCrud).createAuthorization("testownerid__testdatasetid", "testownerid", "ADMIN");
+    verify(vreAuthorizationCrud).createAuthorization("testownerid__testdatasetid", "testuserid", "ADMIN");
   }
 
   @Test(expected = AuthorizationCreationException.class)
   public void initializeOwnerAuthorizationThrowsExceptionWhenVreAuthorizationCrudFails() throws Exception {
     doThrow(AuthorizationCreationException.class).when(vreAuthorizationCrud)
-      .createAuthorization("testownerid__testdatasetid", "testownerid", "ADMIN");
+      .createAuthorization("testownerid__testdatasetid", "testuserid", "ADMIN");
 
-    permissionFetcher.initializeOwnerAuthorization("testownerid", "testdatasetid");
+    permissionFetcher.initializeOwnerAuthorization("testuserid","testownerid", "testdatasetid");
   }
 
   @Test

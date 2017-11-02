@@ -1,11 +1,8 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
-import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -15,6 +12,9 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class DataSetRepository {
   private static final Logger LOG = LoggerFactory.getLogger(DataSetRepository.class);
 
   private final ExecutorService executorService;
-  private final VreAuthorizationCrud vreAuthorizationCrud;
+  private final PermissionFetcher permissionFetcher;
   private final DataSetConfiguration configuration;
   private final BdbEnvironmentCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
@@ -62,11 +62,11 @@ public class DataSetRepository {
   private Consumer<String> onUpdated;
 
 
-  public DataSetRepository(ExecutorService executorService, VreAuthorizationCrud vreAuthorizationCrud,
+  public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                            DataSetConfiguration configuration, BdbEnvironmentCreator dataStoreFactory,
                            TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated) throws IOException {
     this.executorService = executorService;
-    this.vreAuthorizationCrud = vreAuthorizationCrud;
+    this.permissionFetcher = permissionFetcher;
     this.configuration = configuration;
     this.dataStoreFactory = dataStoreFactory;
 
@@ -178,7 +178,8 @@ public class DataSetRepository {
 
       if (!userDataSets.containsKey(dataSetId)) {
         try {
-          vreAuthorizationCrud.createAuthorization(dataSet.getCombinedId(), user.getPersistentId(), "ADMIN");
+          permissionFetcher.initializeOwnerAuthorization(user.getPersistentId(),
+            dataSet.getOwnerId(), dataSet.getDataSetId());
           userDataSets.put(
             dataSetId,
             dataSet(
@@ -198,7 +199,8 @@ public class DataSetRepository {
               .add(dataSet);
             return dataSets;
           });
-        } catch (AuthorizationCreationException | IOException | ResourceSyncException e1) {
+        } catch (
+          PermissionFetchingException | AuthorizationCreationException | IOException | ResourceSyncException e1) {
           throw new DataStoreCreationException(e1);
         }
       }
@@ -226,15 +228,13 @@ public class DataSetRepository {
     for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
       for (DataSet dataSet : userDataSets.values()) {
         try {
-          boolean isAllowedToWrite = vreAuthorizationCrud
-            .getAuthorization(dataSet.getMetadata().getCombinedId(), userId)
-            .map(VreAuthorization::isAllowedToWrite)
-            .orElse(false);
+          boolean isAllowedToWrite = permissionFetcher.getPermissions(userId, dataSet.getMetadata().getCombinedId())
+            .contains(Permission.WRITE);
           if (isAllowedToWrite) {
             dataSetsWithWriteAccess.add(dataSet);
           }
-        } catch (AuthorizationUnavailableException e) {
-          LOG.error("Could not fetch authorization", e);
+        } catch (PermissionFetchingException e) {
+          LOG.error("Could not fetch write permission", e);
         }
       }
     }

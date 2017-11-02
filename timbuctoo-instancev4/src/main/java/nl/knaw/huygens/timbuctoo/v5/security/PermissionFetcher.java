@@ -13,7 +13,7 @@ public interface PermissionFetcher {
   Set<Permission> getPermissions(String persistentId, String vreId)
     throws PermissionFetchingException;
 
-  void initializeOwnerAuthorization(String ownerId, String dataSetId)
+  void initializeOwnerAuthorization(String userId, String ownerId, String dataSetId)
     throws PermissionFetchingException, AuthorizationCreationException;
 
   void removeAuthorizations(String ownerId, String dataSetId) throws PermissionFetchingException;
