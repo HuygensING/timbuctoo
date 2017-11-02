@@ -142,11 +142,11 @@ type PropertyList {
 }
 
 type Property {
-  name: String
-  density: Int
-  isList: Boolean
-  referencedCollections(count: Int = 20, cursor: ID = ""): CollectionIdList
-  isValueType: Boolean
+  name: String!
+  density: Int!
+  isList: Boolean!
+  referencedCollections(count: Int = 20, cursor: ID = ""): CollectionIdList!
+  isValueType: Boolean!
 }
 
 type CollectionIdList {
