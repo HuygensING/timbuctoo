@@ -70,8 +70,7 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public void removeAuthorizations(String ownerId, String dataSetId) throws PermissionFetchingException {
-    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
+  public void removeAuthorizations(String ownerId, String vreId) throws PermissionFetchingException {
     Optional<User> user;
 
     try {
@@ -91,4 +90,5 @@ public class BasicPermissionFetcher implements PermissionFetcher {
         " userId '%s' .", ownerId));
     }
   }
+
 }

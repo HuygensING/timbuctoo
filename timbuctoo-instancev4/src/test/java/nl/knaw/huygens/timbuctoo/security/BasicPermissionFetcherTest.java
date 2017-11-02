@@ -116,7 +116,7 @@ public class BasicPermissionFetcherTest {
 
   @Test
   public void removeAuthorizationsRemovesAdminAuthorization() throws Exception {
-    permissionFetcher.removeAuthorizations("testownerid", "testdatasetid");
+    permissionFetcher.removeAuthorizations("testownerid", "testownerid__testdatasetid");
 
     verify(vreAuthorizationCrud).deleteVreAuthorizations("testownerid__testdatasetid", testUser);
   }

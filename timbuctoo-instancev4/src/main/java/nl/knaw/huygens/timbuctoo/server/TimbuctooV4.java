@@ -372,7 +372,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       )
     );
     register(environment, new SingleVre(permissionChecker, transactionEnforcer,
-      securityConfig.getVreAuthorizationCreator()
+      securityConfig.getPermissionFetcher()
     ));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
