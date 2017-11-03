@@ -5,7 +5,6 @@ import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.security.core.model.Affiliation;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -92,7 +91,6 @@ public class BasicUserValidatorTest {
     assertThat(user, is(OptionalPresentMatcher.present()));
   }
 
-  @NotNull
   private SecurityInformation createMockSecurityInformation(final String persistentId) {
     return new SecurityInformation() {
       @Override
@@ -142,7 +140,6 @@ public class BasicUserValidatorTest {
     };
   }
 
-  @NotNull
   private User createMockUser() {
     return new User() {
       @Nullable
