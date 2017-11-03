@@ -15,15 +15,13 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
+import nl.knaw.huygens.timbuctoo.security.dropwizard.OldStyleSecurityFactoryConfiguration;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
-import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
-import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
@@ -31,12 +29,9 @@ import org.immutables.value.Value;
 
 import javax.validation.Valid;
 import javax.ws.rs.DefaultValue;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutorService;
-import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -51,18 +46,12 @@ import java.util.regex.Pattern;
 @JsonDeserialize(as = ImmutableTimbuctooConfiguration.class)
 @JsonSerialize(as = ImmutableTimbuctooConfiguration.class)
 public abstract class TimbuctooConfiguration extends Configuration implements ActiveMQConfigHolder, SearchConfig {
-  private ExecutorService dataSetExecutorService;
 
   @JsonProperty("rdfUriHelper")
   public abstract TimbuctooRdfIdHelper getRdfIdHelper();
 
-  @JsonIgnore
-  public void setDataSetExecutorService(ExecutorService dataSetExecutorService) {
-    this.dataSetExecutorService = dataSetExecutorService;
-  }
-
   @Valid
-  public abstract HttpClientSecurityFactory getSecurityConfiguration();
+  public abstract OldStyleSecurityFactoryConfiguration getSecurityConfiguration();
 
   @Valid
   @Value.Default
@@ -114,22 +103,6 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract Map<String, CollectionFilter> getCollectionFilters();
 
   @JsonIgnore
-  public DataSetRepository getDataSet(Consumer<String> onUpdated) throws DataStoreCreationException {
-    try {
-      return new DataSetRepository(
-        dataSetExecutorService,
-        getSecurityConfiguration().getPermissionFetcher(),
-        getDataSetConfiguration(),
-        getDatabases(),
-        getRdfIdHelper(),
-        onUpdated
-      );
-    } catch (IOException | AccessNotPossibleException e) {
-      throw new DataStoreCreationException(e);
-    }
-  }
-
-  @JsonIgnore
   public Optional<String> getLocalAmqJmxPath(String queueName) {
     if (getActiveMQ() != null) {
       if (getActiveMQ().brokerUrl != null) {
@@ -179,11 +152,10 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public MetricsFactory getMetricsFactory() {
     return new MetricsFactory();
   }
-  
+
   public ResourceSync getResourceSync() {
     return getDataSetConfiguration().getResourceSync();
   }
-
 
 
 }

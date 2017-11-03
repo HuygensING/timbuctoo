@@ -2,22 +2,21 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.FileStorageFactory;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfIoFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
+
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.function.Consumer;
 
 @Value.Immutable
 public interface DataSetConfiguration {
-
-  String getDataSetMetadataLocation();
-
-  FileStorageFactory getFileStorage();
-
-  RdfIoFactory getRdfIo();
-
-  ResourceSync getResourceSync();
 
   @JsonCreator
   static DataSetConfiguration create(@JsonProperty("dataSetMetadataLocation") String dataSetMetadataLocation,
@@ -29,5 +28,27 @@ public interface DataSetConfiguration {
       .rdfIo(rdfIoFactory)
       .resourceSync(new ResourceSync(new FileHelper(dataSetMetadataLocation), fileStorageFactory))
       .build();
+  }
+
+  String getDataSetMetadataLocation();
+
+  FileStorageFactory getFileStorage();
+
+  RdfIoFactory getRdfIo();
+
+  ResourceSync getResourceSync();
+
+  default DataSetRepository createRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
+                                             BdbPersistentEnvironmentCreator databases,
+                                             TimbuctooRdfIdHelper rdfIdHelper,
+                                             Consumer<String> onUpdated) throws IOException {
+    return new DataSetRepository(
+      executorService,
+      permissionFetcher,
+      this,
+      databases,
+      rdfIdHelper,
+      onUpdated
+    );
   }
 }

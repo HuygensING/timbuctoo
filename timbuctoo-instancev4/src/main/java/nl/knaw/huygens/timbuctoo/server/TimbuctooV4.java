@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
+import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
@@ -170,9 +171,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
 
+    HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
+      .using(configuration.getHttpClientConfiguration());
+    CloseableHttpClient httpClient = apacheHttpClientBuilder.build("httpclient");
     // Support services
-    HttpClientSecurityFactory securityConfig = configuration.getSecurityConfiguration();
-    securityConfig.setEnvironment(environment);
+    SecurityFactory securityConfig = configuration.getSecurityConfiguration().createNewSecurityFactory(
+      httpClient
+    );
 
     securityConfig.getHealthChecks().forEachRemaining(check -> {
       register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight()));
@@ -220,9 +225,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("remove-search-results", new RemoveSearchResultsMigration());
     migrations.put("move-indices-to-isLatest-vertex", new MoveIndicesToIsLatestVertexMigration(vres));
 
-    HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
-      .using(configuration.getHttpClientConfiguration());
-    CloseableHttpClient httpClient = apacheHttpClientBuilder.build("resourcesync");
     final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, new ResourceSyncContext());
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
 
@@ -239,16 +241,20 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       pathWithoutVersionAndRevision
     );
 
-    configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
-
     final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
-    DataSetRepository dataSetRepository = configuration.getDataSet(combinedId -> {
-      try {
-        webhooks.dataSetUpdated(combinedId);
-      } catch (IOException e) {
-        LOG.error("Webhook call failed", e);
-      }
-    });
+    DataSetRepository dataSetRepository = configuration.getDataSetConfiguration().createRepository(
+      environment.lifecycle().executorService("dataSet").build(),
+      securityConfig.getPermissionFetcher(),
+      configuration.getDatabases(),
+      configuration.getRdfIdHelper(),
+      (combinedId -> {
+        try {
+          webhooks.dataSetUpdated(combinedId);
+        } catch (IOException e) {
+          LOG.error("Webhook call failed", e);
+        }
+      })
+    );
 
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
 

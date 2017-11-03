@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.server.federatedauth;
+package nl.knaw.huygens.timbuctoo.security.dropwizard;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.LinkedListMultimap;
