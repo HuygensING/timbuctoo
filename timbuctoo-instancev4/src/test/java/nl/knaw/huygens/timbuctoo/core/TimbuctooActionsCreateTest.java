@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.core;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableCreateEntity;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
@@ -7,6 +8,9 @@ import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -22,7 +26,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -55,10 +61,10 @@ public class TimbuctooActionsCreateTest {
     afterSuccessTaskExecutor = mock(AfterSuccessTaskExecutor.class);
   }
 
-  @Test(expected = AuthorizationException.class)
+  @Test(expected = PermissionFetchingException.class)
   public void createEntityThrowsAnAuthorizationExceptionWhenTheUserIsNotAllowedToWriteToTheCollection()
     throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.notAllowedToWrite());
+    TimbuctooActions instance = createInstance(false);
 
     try {
       instance.createEntity(mock(Collection.class), baseCollection, newArrayList(), "userId");
@@ -69,7 +75,7 @@ public class TimbuctooActionsCreateTest {
 
   @Test
   public void createEntityLetsDataAccessSaveTheEntity() throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
 
@@ -90,7 +96,7 @@ public class TimbuctooActionsCreateTest {
 
   @Test
   public void createEntityReturnsTheId() throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
 
@@ -99,7 +105,7 @@ public class TimbuctooActionsCreateTest {
 
   @Test
   public void createEntityNotifiesHandleAdderThatANewEntityIsCreated() throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     UUID id = instance.createEntity(collection, baseCollection, newArrayList(), userId);
 
@@ -115,15 +121,23 @@ public class TimbuctooActionsCreateTest {
   @Test(expected = IOException.class)
   public void createEntityDoesNotCallTheAfterSuccessTaskExecutor() throws Exception {
     doThrow(IOException.class).when(dataStoreOperations).createEntity(eq(collection), eq(baseCollection), any());
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     instance.createEntity(collection, baseCollection, newArrayList(), userId);
 
     verifyZeroInteractions(afterSuccessTaskExecutor);
   }
 
-  private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, persistentUrlCreator,
+  private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {
+    PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
+    if (allowedToWrite) {
+      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+        Sets.newHashSet(Permission.WRITE, Permission.READ));
+    } else {
+      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+        Sets.newHashSet(Permission.READ));
+    }
+    return new TimbuctooActions(permissionFetcher, clock, persistentUrlCreator,
       (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, afterSuccessTaskExecutor);
   }
 

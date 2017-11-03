@@ -22,7 +22,7 @@ public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCrud {
   }
 
   @Override
-  public Authorization authorizationFor(String vreId, String userId) throws AuthorizationUnavailableException {
+  public Authorization  authorizationFor(String vreId, String userId) throws AuthorizationUnavailableException {
     //FIXME: based on a cursory glance at the code it seems that this get and the following if are redundant
     Optional<VreAuthorization> vreAuthorization = authorizationAccess.getAuthorization(vreId, userId);
 
@@ -33,11 +33,7 @@ public class JsonBasedAuthorizer implements Authorizer, VreAuthorizationCrud {
     return authorizationAccess.getOrCreateAuthorization(vreId, userId, UNVERIFIED_USER_ROLE);
   }
 
-
-  public Authorization getAuthorizationFor(String vreId, String userId) throws AuthorizationUnavailableException {
-    return authorizationAccess.getAuthorization(vreId, userId).get();
-  }
-
+  @Override
   public Optional<VreAuthorization> getAuthorization(String vreId, String userId)
     throws AuthorizationUnavailableException {
     return authorizationAccess.getAuthorization(vreId, userId);

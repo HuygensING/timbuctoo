@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.HttpCaller;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
@@ -11,46 +10,48 @@ import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 
-import javax.validation.constraints.NotNull;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public abstract class SecurityFactory {
-  @JsonProperty
-  @NotNull
+public class SecurityFactory {
+  AuthenticationHandler authHandler;
   private AccessFactory localAuthentication;
-  @JsonProperty
-  private String algorithm = "SHA-256";
-  @JsonProperty
-  @NotNull
+  private String algorithm;
   private TimeoutFactory autoLogoutTimeout;
-  @JsonProperty()
-  @NotNull
   private FederatedAuthConfiguration federatedAuthentication;
 
-  @JsonIgnore
   private JsonBasedAuthenticator jsonBasedAuthenticator;
-  @JsonIgnore
+
   private JsonBasedUserStore jsonBasedUserStore;
-  @JsonIgnore
+
   private JsonBasedAuthorizer jsonBasedAuthorizer;
-  @JsonIgnore
+
   private LoggedInUsers loggedInUsers;
 
-  @JsonIgnore
   private LoginAccess loginAccess;
-  @JsonIgnore
+
   private UserAccess userAccess;
-  @JsonIgnore
+
   private VreAuthorizationAccess vreAuthorizationAccess;
+  private final HttpCaller httpCaller;
 
-  @JsonIgnore
-  AuthenticationHandler authHandler;
+  public SecurityFactory(AccessFactory localAuthentication, String algorithm, TimeoutFactory autoLogoutTimeout,
+                         FederatedAuthConfiguration federatedAuthentication, HttpCaller httpCaller) {
+    this.localAuthentication = localAuthentication;
+    this.algorithm = algorithm;
+    this.autoLogoutTimeout = autoLogoutTimeout;
+    this.federatedAuthentication = federatedAuthentication;
+    this.httpCaller = httpCaller;
+  }
 
-  protected abstract HttpCaller getHttpCaller();
+  private HttpCaller getHttpCaller() {
+    return this.httpCaller;
+  }
 
   private JsonBasedAuthenticator getJsonBasedAuthenticator() throws AccessNotPossibleException,
     NoSuchAlgorithmException {
@@ -131,9 +132,8 @@ public abstract class SecurityFactory {
     if (loggedInUsers == null) {
       loggedInUsers = new LoggedInUsers(
         getAuthenticator(),
-        getUserStore(),
-        autoLogoutTimeout.createTimeout(),
-        getAuthHandler(getHttpCaller())
+        new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore()),
+        autoLogoutTimeout.createTimeout()
       );
     }
     return loggedInUsers;
@@ -141,5 +141,14 @@ public abstract class SecurityFactory {
 
   public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
     return localAuthentication.getHealthChecks();
+  }
+
+  public UserValidator getUserValidator() throws AccessNotPossibleException {
+    return new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore());
+  }
+
+  public PermissionFetcher getPermissionFetcher()
+    throws AccessNotPossibleException {
+    return new BasicPermissionFetcher(getVreAuthorizationCreator(), getUserValidator());
   }
 }

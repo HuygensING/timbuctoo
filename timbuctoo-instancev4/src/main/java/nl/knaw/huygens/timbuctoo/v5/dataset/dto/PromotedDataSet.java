@@ -46,6 +46,10 @@ public interface PromotedDataSet {
     return Tuple.tuple(parts[0], parts[1]);
   }
 
+  static String createCombinedId(String ownerId, String dataSetId) {
+    return ownerId + "__" + dataSetId;
+  }
+
   static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, String baseUri, String uriPrefix,
                                          boolean promoted) {
     if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
@@ -53,7 +57,7 @@ public interface PromotedDataSet {
     }
 
     return ImmutablePromotedDataSet.builder()
-      .combinedId(ownerId + "__" + dataSetId)
+      .combinedId(createCombinedId(ownerId,dataSetId))
       .ownerId(ownerId)
       .baseUri(baseUri)
       .uriPrefix(uriPrefix)

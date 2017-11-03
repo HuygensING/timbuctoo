@@ -1,15 +1,19 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.junit.Test;
 
 import javax.ws.rs.core.Response;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static javax.ws.rs.core.Response.Status.FORBIDDEN;
 import static javax.ws.rs.core.Response.Status.UNAUTHORIZED;
@@ -25,51 +29,14 @@ import static org.mockito.Mockito.mock;
 public class AuthCheckTest {
 
   @Test
-  public void checkWriteAccessRerturnNullIfTheDataSetDoesNotExistAndTheUserIdIsTheSameAsTheDataSetOwnerId() {
-    String ownerId = "ownerid";
-    User owner = User.create(null, ownerId);
-    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
-    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(owner));
-
-    Response response = checkWriteAccess(
-      ownerId,
-      "dataSet",
-      (user, dataSet) -> Optional.empty(),
-      null,
-      loggedInUsers,
-      "auth"
-    );
-
-    assertThat(response, is(nullValue()));
-  }
-
-  @Test
-  public void checkWriteAccessRerturnForbiddenIfTheDataSetDoesNotExistAndTheUserIdDiffersFromTheDataSetOwnerId() {
-    User notOwner = User.create(null, "user");
-    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
-    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
-
-    Response response = checkWriteAccess(
-      "ownerid",
-      "dataSet",
-      (user, dataSet) -> Optional.empty(),
-      null,
-      loggedInUsers,
-      "auth"
-    );
-
-    assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
-  }
-
-  @Test
   public void checkAdminAccessReturnsNullIfTheUserHasAdminPermissionsForTheDataSet() throws Exception {
     User notOwner = User.create(null, "user");
     LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
     given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
-    Authorizer authorizer = mock(Authorizer.class);
-    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForAdmin());
+    PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
+    given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
-      authorizer,
+      permissionFetcher,
       loggedInUsers,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
@@ -97,10 +64,10 @@ public class AuthCheckTest {
     User notOwner = User.create(null, "user");
     LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
     given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
-    Authorizer authorizer = mock(Authorizer.class);
-    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForNonAdmin());
+    PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
+    given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForNonAdmin());
     Response response = checkAdminAccess(
-      authorizer,
+      permissionFetcher,
       loggedInUsers,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
@@ -114,10 +81,10 @@ public class AuthCheckTest {
     User notOwner = User.create(null, "user");
     LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
     given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
-    Authorizer authorizer = mock(Authorizer.class);
-    given(authorizer.authorizationFor(anyString(), anyString())).willReturn(authorizationForAdmin());
+    PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
+    given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
-      authorizer,
+      permissionFetcher,
       loggedInUsers,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
@@ -126,30 +93,12 @@ public class AuthCheckTest {
     assertThat(response.getStatus(), is(200));
   }
 
-  private static Authorization authorizationForNonAdmin() {
-    return auhtorization(false);
+  private static Set<Permission> permissionsForNonAdmin() {
+    return Sets.newHashSet(Permission.WRITE, Permission.READ);
   }
 
-  private static Authorization authorizationForAdmin() {
-    return auhtorization(true);
+  private static Set<Permission> permissionsForAdmin() {
+    return Sets.newHashSet(Permission.WRITE, Permission.ADMIN, Permission.READ);
   }
 
-  private static Authorization auhtorization(boolean isAdmin) {
-    return new Authorization() {
-      @Override
-      public List<String> getRoles() {
-        throw new UnsupportedOperationException("Not implemented");
-      }
-
-      @Override
-      public boolean isAllowedToWrite() {
-        throw new UnsupportedOperationException("Not implemented");
-      }
-
-      @Override
-      public boolean hasAdminAccess() {
-        return isAdmin;
-      }
-    };
-  }
 }

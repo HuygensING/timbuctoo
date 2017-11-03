@@ -6,6 +6,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableException;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -20,13 +21,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.isEmptyString;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.core.Is.is;
-import static org.mockito.BDDMockito.given;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 public class LoggedInUsersTest {
 
   public static final Timeout ONE_SECOND_TIMEOUT = new Timeout(1, SECONDS);
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
   private LoggedInUsers userStoreWithUserA;
   private LoggedInUsers userStoreWithUserAAndB;
 
@@ -39,29 +42,30 @@ public class LoggedInUsersTest {
 
     userStoreWithUserA = new LoggedInUsers(
       authenticator,
-      userStore,
-      ONE_SECOND_TIMEOUT,
-      x-> { throw new UnauthorizedException(); }
+      new BasicUserValidator(x -> {
+        throw new UnauthorizedException();
+      }, userStore),
+      ONE_SECOND_TIMEOUT
     );
 
     Authenticator authenticator1 = AuthenticatorMockBuilder.authenticator()
-                                                           .withPidFor("a", "b", "pid")
-                                                           .withPidFor("c", "d", "otherPid")
-                                                           .build();
+      .withPidFor("a", "b", "pid")
+      .withPidFor("c", "d", "otherPid")
+      .build();
     UserStore userStore1 = userStore().withUserFor("pid").withUserFor("otherPid").build();
 
     userStoreWithUserAAndB = new LoggedInUsers(
       authenticator1,
-      userStore1,
-      ONE_SECOND_TIMEOUT,
-      x-> { throw new UnauthorizedException(); }
+      new BasicUserValidator(x -> {
+        throw new UnauthorizedException();
+      }, userStore1),
+      ONE_SECOND_TIMEOUT
     );
 
   }
 
   @Test
-  public void canStoreAUserAndReturnsAToken() throws LocalLoginUnavailableException,
-    AuthenticationUnavailableException {
+  public void canStoreAUserAndReturnsAToken() throws Exception {
     LoggedInUsers instance = userStoreWithUserA;
 
     Optional<String> token = instance.userTokenFor("a", "b");
@@ -71,7 +75,7 @@ public class LoggedInUsersTest {
   }
 
   @Test
-  public void canRetrieveAStoredUser() throws LocalLoginUnavailableException, AuthenticationUnavailableException {
+  public void canRetrieveAStoredUser() throws Exception {
     LoggedInUsers instance = userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
@@ -80,9 +84,11 @@ public class LoggedInUsersTest {
     assertThat(user, is(present()));
   }
 
+  //FIXME: same token same user?
+
   @Test
   public void willReturnAUniqueTokenForEachUser()
-    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
+    throws Exception {
     LoggedInUsers instance = userStoreWithUserAAndB;
 
     String tokenA = instance.userTokenFor("a", "b").get();
@@ -91,11 +97,9 @@ public class LoggedInUsersTest {
     assertThat(tokenA, is(not(tokenB)));
   }
 
-  //FIXME: same token same user?
-
   @Test
   public void willReturnTheSameUserForATokenEachTime()
-    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
+    throws Exception {
     LoggedInUsers instance = userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
@@ -107,7 +111,7 @@ public class LoggedInUsersTest {
 
   @Test
   public void willReturnTheUserBelongingToTheToken()
-    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
+    throws Exception {
     LoggedInUsers instance = userStoreWithUserAAndB;
     String tokenA = instance.userTokenFor("a", "b").get();
     String tokenB = instance.userTokenFor("c", "d").get();
@@ -130,7 +134,7 @@ public class LoggedInUsersTest {
 
   @Test
   public void returnsNoTokenIfTheUserIsUnknown()
-    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
+    throws Exception {
     LoggedInUsers instance = userStoreWithUserA;
 
     Optional<String> token = instance.userTokenFor("unknownUser", "");
@@ -139,8 +143,7 @@ public class LoggedInUsersTest {
   }
 
   @Test
-  public void returnsAnEmptyOptionalIfTheUserIsRetrievedAfterATimeout() throws LocalLoginUnavailableException,
-    InterruptedException, AuthenticationUnavailableException {
+  public void returnsAnEmptyOptionalIfTheUserIsRetrievedAfterATimeout() throws Exception {
     LoggedInUsers instance = this.userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
@@ -152,8 +155,7 @@ public class LoggedInUsersTest {
   }
 
   @Test
-  public void willGenerateADifferentTokenEachSession() throws LocalLoginUnavailableException,
-    InterruptedException, AuthenticationUnavailableException {
+  public void willGenerateADifferentTokenEachSession() throws Exception {
     LoggedInUsers instance = this.userStoreWithUserA;
     String token = instance.userTokenFor("a", "b").get();
 
@@ -164,15 +166,13 @@ public class LoggedInUsersTest {
     assertThat(token, is(not(otherToken)));
   }
 
-  @Rule
-  public ExpectedException expectedException = ExpectedException.none();
-
   @Test
   public void throwsLocalLoginUnavailableExceptionWhenTheUserCouldNotBeAuthenticatedLocallyDueToASystemError()
-    throws LocalLoginUnavailableException, AuthenticationUnavailableException {
+    throws Exception {
     Authenticator authenticator = mock(JsonBasedAuthenticator.class);
     given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
-    LoggedInUsers instance = new LoggedInUsers(authenticator, null, ONE_SECOND_TIMEOUT, null);
+    LoggedInUsers instance = new LoggedInUsers(authenticator, new BasicUserValidator(null, null),
+      ONE_SECOND_TIMEOUT);
 
     expectedException.expect(LocalLoginUnavailableException.class);
 
@@ -181,13 +181,14 @@ public class LoggedInUsersTest {
 
   @Test
   public void throwsAnAuthenticationUnavailableExceptionWhenTheUserCouldNotBeRetrievedDueToASystemError()
-    throws AuthenticationUnavailableException, LocalLoginUnavailableException {
+    throws Exception {
     UserStore userStore = mock(JsonBasedUserStore.class);
     given(userStore.userFor(anyString())).willThrow(new AuthenticationUnavailableException(""));
     Authenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
-    LoggedInUsers instance = new LoggedInUsers(authenticator, userStore, ONE_SECOND_TIMEOUT, null);
+    LoggedInUsers instance = new LoggedInUsers(authenticator, new BasicUserValidator(null, userStore),
+      ONE_SECOND_TIMEOUT);
 
-    expectedException.expect(AuthenticationUnavailableException.class);
+    expectedException.expect(UserValidationException.class);
 
     instance.userTokenFor("a", "b");
 

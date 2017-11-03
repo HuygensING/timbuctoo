@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.LocalLoginUnavailableExcept
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.server.security.BasicAuthorizationHeaderParser;
 import nl.knaw.huygens.timbuctoo.server.security.InvalidAuthorizationHeaderException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public class Authenticate {
     } catch (InvalidAuthorizationHeaderException e) {
       LOG.info(e.getMessage());
       return unauthorizedResponse();
-    } catch (LocalLoginUnavailableException | AuthenticationUnavailableException e) {
+    } catch (LocalLoginUnavailableException | UserValidationException e) {
       return Response.serverError().entity(e.getMessage()).build();
     }
   }

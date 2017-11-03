@@ -2,13 +2,13 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.domain;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableMap;
+import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
-import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -50,9 +50,9 @@ public class Index {
 
   public static URI makeUrl(String collectionName) {
     return UriBuilder.fromResource(Index.class)
-                     .buildFromMap(ImmutableMap.of(
-                       "collection", collectionName
-                     ));
+      .buildFromMap(ImmutableMap.of(
+        "collection", collectionName
+      ));
   }
 
   @POST
@@ -80,7 +80,7 @@ public class Index {
           return rollbackAndReturn(
             Response.status(Response.Status.BAD_REQUEST).entity(jsnO("message", jsn(e.getMessage()))).build()
           );
-        } catch (AuthorizationException e) {
+        } catch (PermissionFetchingException e) {
           return rollbackAndReturn(
             Response.status(Response.Status.FORBIDDEN).entity(jsnO("message", jsn(e.getMessage()))).build()
           );

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.google.common.io.Files;
+import nl.knaw.huygens.timbuctoo.security.BasicPermissionFetcher;
 import nl.knaw.huygens.timbuctoo.security.JsonBasedAuthorizer;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalFileVreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
@@ -33,8 +34,8 @@ import static org.mockito.Mockito.when;
 
 public class DataSetRepositoryTest {
 
-  private DataSetRepository dataSetRepository;
   protected File tempFile;
+  private DataSetRepository dataSetRepository;
   private ResourceSync resourceSync;
 
   @Before
@@ -48,16 +49,17 @@ public class DataSetRepositoryTest {
   private DataSetRepository createDataSetRepo() throws IOException {
     return new DataSetRepository(
       Executors.newSingleThreadExecutor(),
-      new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())),
+      new BasicPermissionFetcher(new JsonBasedAuthorizer(new LocalFileVreAuthorizationAccess(tempFile.toPath())), null),
       ImmutableDataSetConfiguration.builder()
-                                   .dataSetMetadataLocation(tempFile.getAbsolutePath())
-                                   .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
-                                   .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
-                                   .resourceSync(resourceSync)
-                                   .build(),
+        .dataSetMetadataLocation(tempFile.getAbsolutePath())
+        .rdfIo(mock(RdfIoFactory.class, RETURNS_DEEP_STUBS))
+        .fileStorage(mock(FileStorageFactory.class, RETURNS_DEEP_STUBS))
+        .resourceSync(resourceSync)
+        .build(),
       new BdbNonPersistentEnvironmentCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
-      combinedId -> { }
+      combinedId -> {
+      }
     );
   }
 

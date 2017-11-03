@@ -1,11 +1,13 @@
 package nl.knaw.huygens.timbuctoo.core;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,6 +22,9 @@ import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -48,7 +53,7 @@ public class TimbuctooActionsRelationTest {
 
   @Test
   public void createRelationCreatesANewRelation() throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     instance.createRelation(collection, createRelation, USER_ID);
 
@@ -65,16 +70,16 @@ public class TimbuctooActionsRelationTest {
   public void createRelationReturnsTheIdOfTheNewLyCreatedRelation() throws Exception {
     when(dataStoreOperations.acceptRelation(collection, createRelation))
       .thenReturn(UUID.randomUUID());
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     UUID id = instance.createRelation(collection, createRelation, USER_ID);
 
     assertThat(id, is(notNullValue(UUID.class)));
   }
 
-  @Test(expected = AuthorizationException.class)
+  @Test(expected = PermissionFetchingException.class)
   public void createRelationThrowsAnUnauthorizedExceptionWhenTheUserIsNotAllowedToWrite() throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.notAllowedToWrite());
+    TimbuctooActions instance = createInstance(false);
 
     try {
       instance.createRelation(collection, createRelation, USER_ID);
@@ -88,14 +93,14 @@ public class TimbuctooActionsRelationTest {
     throws Exception {
     when(dataStoreOperations.acceptRelation(collection, createRelation))
       .thenThrow(new RelationNotPossibleException(""));
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     instance.createRelation(collection, createRelation, USER_ID);
   }
 
-  @Test(expected = AuthorizationException.class)
+  @Test(expected = PermissionFetchingException.class)
   public void replaceRelationThrowsAnAuthorizationExceptionWhenTheUsersIsNotAllowedToWrite() throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.notAllowedToWrite());
+    TimbuctooActions instance = createInstance(false);
 
     try {
       instance.replaceRelation(collection, new UpdateRelation(UUID.randomUUID(), 1, false), USER_ID);
@@ -108,7 +113,7 @@ public class TimbuctooActionsRelationTest {
   public void replaceRelationUpdatesARelation() throws Exception {
     UUID id = UUID.randomUUID();
     UpdateRelation updateRelation = new UpdateRelation(id, 1, false);
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     instance.replaceRelation(collection, updateRelation, USER_ID);
 
@@ -125,13 +130,22 @@ public class TimbuctooActionsRelationTest {
   public void replaceRelationThrowsANotFoundExceptionWhenTheRelationCannotBeFound() throws Exception {
     UpdateRelation updateRelation = new UpdateRelation(null, 1, false);
     doThrow(new NotFoundException()).when(dataStoreOperations).replaceRelation(collection, updateRelation);
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     instance.replaceRelation(collection, updateRelation, USER_ID);
   }
 
-  private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, null, (coll, id, rev) -> URI.create("http://example.org/persistent"),
+  private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {
+    PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
+    if (allowedToWrite) {
+      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+        Sets.newHashSet(Permission.WRITE, Permission.READ));
+    } else {
+      given(permissionFetcher.getPermissions(any(), any())).willReturn(
+        Sets.newHashSet(Permission.READ));
+    }
+    return new TimbuctooActions(permissionFetcher, clock,
+      null, (coll, id, rev) -> URI.create("http://example.org/persistent"),
       dataStoreOperations, null);
   }
 

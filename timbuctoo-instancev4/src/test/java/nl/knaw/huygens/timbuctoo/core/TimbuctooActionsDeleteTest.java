@@ -1,11 +1,15 @@
 package nl.knaw.huygens.timbuctoo.core;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.ImmutableEntityLookup;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
 import nl.knaw.huygens.timbuctoo.model.Change;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.Authorizer;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -14,6 +18,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -51,16 +58,16 @@ public class TimbuctooActionsDeleteTest {
 
   @Test
   public void deleteEntityLetsDataAccessDeleteTheEntity() throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     instance.deleteEntity(collection, ID, USER_ID);
 
     verify(dataStoreOperations).deleteEntity(collection, ID, change);
   }
 
-  @Test(expected = AuthorizationException.class)
+  @Test(expected = PermissionFetchingException.class)
   public void deleteEntityThrowsAnUnAuthrozedExceptionIfTheUserIsNotAllowedToWriteTheCollection() throws Exception {
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.notAllowedToWrite());
+    TimbuctooActions instance = createInstance(false);
 
     try {
       instance.deleteEntity(collection, ID, USER_ID);
@@ -72,7 +79,7 @@ public class TimbuctooActionsDeleteTest {
   @Test(expected = NotFoundException.class)
   public void deleteEntityThrowsANotFoundExceptionWhenTheEntityCannotBeFound() throws Exception {
     doThrow(new NotFoundException()).when(dataStoreOperations).deleteEntity(collection, ID, change);
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     instance.deleteEntity(collection, ID, USER_ID);
   }
@@ -80,7 +87,7 @@ public class TimbuctooActionsDeleteTest {
   @Test
   public void deleteEntityAddsAPidAfterTheEntityIsDeleted() throws Exception {
     when(dataStoreOperations.deleteEntity(collection, ID, change)).thenReturn(REV);
-    TimbuctooActions instance = createInstance(AuthorizerBuilder.allowedToWrite());
+    TimbuctooActions instance = createInstance(true);
 
     instance.deleteEntity(collection, ID, USER_ID);
 
@@ -93,8 +100,16 @@ public class TimbuctooActionsDeleteTest {
     );
   }
 
-  private TimbuctooActions createInstance(Authorizer authorizer) throws AuthorizationUnavailableException {
-    return new TimbuctooActions(authorizer, clock, persistentUrlCreator,
+  private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {
+    PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
+    if (allowedToWrite) {
+      given(permissionFetcher.getPermissions(any(), any())).willReturn(
+        Sets.newHashSet(Permission.WRITE, Permission.READ));
+    } else {
+      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+        Sets.newHashSet(Permission.READ));
+    }
+    return new TimbuctooActions(permissionFetcher, clock, persistentUrlCreator,
       (coll, id, rev) -> URI.create("http://example.org/persistent"), dataStoreOperations, afterSuccessTaskExecutor);
   }
 

@@ -6,6 +6,8 @@ import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +30,13 @@ public class SingleVre {
   public static final Logger LOG = LoggerFactory.getLogger(SingleVre.class);
   private final UserPermissionChecker permissionChecker;
   private final TransactionEnforcer transactionEnforcer;
-  private final VreAuthorizationCrud vreAuthorization;
+  private final PermissionFetcher permissionFetcher;
 
   public SingleVre(UserPermissionChecker permissionChecker, TransactionEnforcer transactionEnforcer,
-                   VreAuthorizationCrud vreAuthorization) {
+                   PermissionFetcher permissionFetcher) {
     this.permissionChecker = permissionChecker;
     this.transactionEnforcer = transactionEnforcer;
-    this.vreAuthorization = vreAuthorization;
+    this.permissionFetcher = permissionFetcher;
   }
 
   @DELETE
@@ -51,17 +53,12 @@ public class SingleVre {
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       try {
         timbuctooActions.deleteVre(vreName, user.get());
-        vreAuthorization.deleteVreAuthorizations(vreName, user.get());
+        permissionFetcher.removeAuthorizations(user.get().getPersistentId(),vreName);
         return commitAndReturn(Response.ok(jsnO("success", jsn(true))).build());
-      } catch (AuthorizationException e) {
+      } catch (PermissionFetchingException e) {
         LOG.error("User with id '" + user.get().getId() + "' was not allowed to delete VRE '" + vreName + "'", e);
         return commitAndReturn(
           Response.status(Response.Status.FORBIDDEN).entity(jsnO("success", jsn(false))).build()
-        );
-      } catch (AuthorizationUnavailableException e) {
-        LOG.error("Failed to remove authorization for vre '{}'", vreName, e);
-        return commitAndReturn(
-          Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(jsnO("success", jsn(false))).build()
         );
       }
     });

@@ -33,6 +33,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
+import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
@@ -170,9 +171,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     LoggerFactory.getLogger(this.getClass()).info("Now launching timbuctoo version: " + currentVersion);
 
+    HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
+      .using(configuration.getHttpClientConfiguration());
+    CloseableHttpClient httpClient = apacheHttpClientBuilder.build("httpclient");
     // Support services
-    HttpClientSecurityFactory securityConfig = configuration.getSecurityConfiguration();
-    securityConfig.setEnvironment(environment);
+    SecurityFactory securityConfig = configuration.getSecurityConfiguration().createNewSecurityFactory(
+      httpClient
+    );
 
     securityConfig.getHealthChecks().forEachRemaining(check -> {
       register(environment, check.getLeft(), new LambdaHealthCheck(check.getRight()));
@@ -202,7 +207,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     // TODO make function when TimbuctooActions does not depend on TransactionEnforcer anymore
     TimbuctooActions.TimbuctooActionsFactory timbuctooActionsFactory = new TimbuctooActions.TimbuctooActionsFactoryImpl(
-      securityConfig.getAuthorizer(),
+      securityConfig.getPermissionFetcher(),
       Clock.systemDefaultZone(),
       handleAdder,
       uriToRedirectToFromPersistentUrls,
@@ -220,9 +225,6 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     migrations.put("remove-search-results", new RemoveSearchResultsMigration());
     migrations.put("move-indices-to-isLatest-vertex", new MoveIndicesToIsLatestVertexMigration(vres));
 
-    HttpClientBuilder apacheHttpClientBuilder = new HttpClientBuilder(environment)
-      .using(configuration.getHttpClientConfiguration());
-    CloseableHttpClient httpClient = apacheHttpClientBuilder.build("resourcesync");
     final ResourceSyncService resourceSyncService = new ResourceSyncService(httpClient, new ResourceSyncContext());
     final JsonMetadata jsonMetadata = new JsonMetadata(vres, graphManager);
 
@@ -235,27 +237,31 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     final CrudServiceFactory crudServiceFactory = new CrudServiceFactory(
       vres,
-      securityConfig.getUserStore(),
+      securityConfig.getUserValidator(),
       pathWithoutVersionAndRevision
     );
 
-    configuration.setDataSetExecutorService(environment.lifecycle().executorService("dataSet").build());
-
     final Webhooks webhooks = configuration.getWebhooks().getWebHook(environment);
-    DataSetRepository dataSetRepository = configuration.getDataSet(combinedId -> {
-      try {
-        webhooks.dataSetUpdated(combinedId);
-      } catch (IOException e) {
-        LOG.error("Webhook call failed", e);
-      }
-    });
+    DataSetRepository dataSetRepository = configuration.getDataSetConfiguration().createRepository(
+      environment.lifecycle().executorService("dataSet").build(),
+      securityConfig.getPermissionFetcher(),
+      configuration.getDatabases(),
+      configuration.getRdfIdHelper(),
+      (combinedId -> {
+        try {
+          webhooks.dataSetUpdated(combinedId);
+        } catch (IOException e) {
+          LOG.error("Webhook call failed", e);
+        }
+      })
+    );
 
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     AuthCheck authCheck = new AuthCheck(
       securityConfig.getLoggedInUsers(),
-      securityConfig.getAuthorizer(),
+      securityConfig.getPermissionFetcher(),
       errorResponseHelper,
       dataSetRepository
     );
@@ -304,12 +310,12 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new CreateDataSet(authCheck));
     register(environment, new DataSet(
         securityConfig.getLoggedInUsers(),
-        securityConfig.getAuthorizer(), dataSetRepository
+        securityConfig.getPermissionFetcher(), dataSetRepository
       )
     );
     register(environment, new JsonLdEditEndpoint(
-      securityConfig.getLoggedInUsers(),
-      securityConfig.getAuthorizer(),
+      securityConfig.getUserValidator(),
+      securityConfig.getPermissionFetcher(),
       dataSetRepository,
       new HttpClientBuilder(environment).build("json-ld")
     ));
@@ -339,7 +345,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     // Bulk upload
     UserPermissionChecker permissionChecker = new UserPermissionChecker(
       securityConfig.getLoggedInUsers(),
-      securityConfig.getAuthorizer()
+      securityConfig.getPermissionFetcher()
     );
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker, errorResponseHelper);
     register(environment, rawCollection);
@@ -365,14 +371,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.Metadata(jsonMetadata));
     register(environment, new MyVres(
         securityConfig.getLoggedInUsers(),
-        securityConfig.getAuthorizer(),
+        securityConfig.getPermissionFetcher(),
         bulkUploadVre,
         transactionEnforcer,
         uriHelper
       )
     );
     register(environment, new SingleVre(permissionChecker, transactionEnforcer,
-      securityConfig.getVreAuthorizationCreator()
+      securityConfig.getPermissionFetcher()
     ));
     register(environment, new ListVres(uriHelper, transactionEnforcer));
     register(environment, new VreImage(transactionEnforcer));
