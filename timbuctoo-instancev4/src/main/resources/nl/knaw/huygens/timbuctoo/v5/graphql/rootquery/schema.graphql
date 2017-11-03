@@ -90,6 +90,7 @@ type CollectionMetadata {
   uri: String! @uri
   collectionId: ID!
   collectionListId: ID!
+  itemType: String!
 
   properties(count: Int = 20, cursor: ID = ""): PropertyList!
   total: Int!
@@ -174,14 +175,24 @@ type Component {
   subComponents: [Component!]!
   type: String!
   value: String
-  path: String
+  formatter: [FormatterConfig!]!
+}
+
+type FormatterConfig {
+  type: String!
+  name: String!
 }
 
 input ComponentInput {
   subComponents: [ComponentInput!]!
   type: String!
   value: String
-  path: String
+  formatter: [FormatterConfigInput!]!
+}
+
+input FormatterConfigInput {
+  type: String!
+  name: String!
 }
 
 type Mutation {
