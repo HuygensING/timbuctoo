@@ -15,7 +15,6 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import nl.knaw.huygens.timbuctoo.database.tinkerpop.TinkerPopConfig;
 import nl.knaw.huygens.timbuctoo.handle.PersistenceManagerFactory;
-import nl.knaw.huygens.timbuctoo.security.dropwizard.OldStyleSecurityFactoryConfiguration;
 import nl.knaw.huygens.timbuctoo.solr.WebhookFactory;
 import nl.knaw.huygens.timbuctoo.util.Timeout;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
@@ -24,6 +23,7 @@ import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbPersistentEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.graphql.collectionfilter.CollectionFilter;
+import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactoryConfiguration;
 import nl.knaw.huygens.timbuctoo.v5.util.TimbuctooRdfIdHelper;
 import org.immutables.value.Value;
 
@@ -51,7 +51,7 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   public abstract TimbuctooRdfIdHelper getRdfIdHelper();
 
   @Valid
-  public abstract OldStyleSecurityFactoryConfiguration getSecurityConfiguration();
+  public abstract SecurityFactoryConfiguration getSecurityConfiguration();
 
   @Valid
   @Value.Default
