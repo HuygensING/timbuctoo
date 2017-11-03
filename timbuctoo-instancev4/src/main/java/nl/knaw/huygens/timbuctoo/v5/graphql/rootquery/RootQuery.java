@@ -251,15 +251,17 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .build();
   }
 
-  public ImmutableCollectionMetadata getCollection(DataSet dataSet, TypeNameStore typeNameStore, Type collectionType) {
+  public CollectionMetadata getCollection(DataSet dataSet, TypeNameStore typeNameStore, Type collectionType) {
     final long occurrences = collectionType.getSubjectsWithThisType();
     final String collectionId = typeNameStore.makeGraphQlname(collectionType.getName());
+    final String fullyQualifiedTypeName = dataSet.getMetadata().getCombinedId() + "_" + collectionId;
     return ImmutableCollectionMetadata.builder()
       .subjectUri(collectionType.getName())
       .types(Collections.emptySet())
       .dataSet(dataSet)
       .collectionId(collectionId)
       .collectionListId(collectionId + "List")
+      .itemType(fullyQualifiedTypeName)
       .total(occurrences)
       .properties(ImmutablePropertyList.builder()
         .prevCursor(Optional.empty())
@@ -268,6 +270,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return (Property) ImmutableProperty.builder()
               .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
               .isList(pred.isList())
+              .uri(pred.getName())
+              .shortenedUri(typeNameStore.shorten(pred.getName()))
+              .isInverse(pred.getDirection() == Direction.IN)
               .name(typeNameStore.makeGraphQlnameForPredicate(
                 pred.getName(), pred.getDirection(), pred.isList())
               )

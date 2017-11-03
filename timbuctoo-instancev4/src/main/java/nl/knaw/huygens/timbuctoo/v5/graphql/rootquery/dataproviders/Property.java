@@ -18,4 +18,10 @@ public interface Property {
 
   boolean getIsValueType();
 
+  boolean getIsInverse();
+
+  String getUri();
+
+  String getShortenedUri();
+
 }
