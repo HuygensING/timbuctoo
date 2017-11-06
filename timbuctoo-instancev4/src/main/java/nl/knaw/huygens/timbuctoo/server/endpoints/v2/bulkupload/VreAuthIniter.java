@@ -9,6 +9,8 @@ import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.UserRoles;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.Logger;
 
 import javax.ws.rs.core.Response;
@@ -18,19 +20,25 @@ import static org.slf4j.LoggerFactory.getLogger;
 
 public class VreAuthIniter {
   private static final Logger LOG = getLogger(VreAuthIniter.class);
-  protected final LoggedInUsers loggedInUsers;
+  protected final UserValidator userValidator;
   private TransactionEnforcer transactionEnforcer;
   private VreAuthorizationCrud authorizationCreator;
 
-  public VreAuthIniter(LoggedInUsers loggedInUsers, TransactionEnforcer transactionEnforcer,
+  public VreAuthIniter(UserValidator userValidator, TransactionEnforcer transactionEnforcer,
                        VreAuthorizationCrud authorizationCreator) {
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     this.transactionEnforcer = transactionEnforcer;
     this.authorizationCreator = authorizationCreator;
   }
 
   public Either<String, Response> addVreAuthorizations(String authorization, String vreName) {
-    Optional<User> user = this.loggedInUsers.userFor(authorization);
+    Optional<User> user;
+
+    try {
+      user = this.userValidator.getUserFromAccessToken(authorization);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
     if (!user.isPresent()) {
       return Either.right(Response.status(Response.Status.FORBIDDEN).entity("User not known").build());
     }
