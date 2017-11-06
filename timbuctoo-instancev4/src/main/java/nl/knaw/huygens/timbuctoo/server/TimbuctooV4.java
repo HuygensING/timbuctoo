@@ -330,7 +330,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     register(
       environment,
-      new SingleEntity(securityConfig.getLoggedInUsers(), crudServiceFactory, transactionEnforcer)
+      new SingleEntity(securityConfig.getUserValidator(), crudServiceFactory, transactionEnforcer)
     );
     register(environment, new SingleEntityNTriple(transactionEnforcer, uriHelper));
     register(environment, new WomenWritersEntityGet(crudServiceFactory, transactionEnforcer));

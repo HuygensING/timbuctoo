@@ -14,7 +14,9 @@ import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -41,13 +43,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Produces(MediaType.APPLICATION_JSON)
 public class SingleEntity {
 
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final CrudServiceFactory crudServiceFactory;
   private final TransactionEnforcer transactionEnforcer;
 
-  public SingleEntity(LoggedInUsers loggedInUsers, CrudServiceFactory crudServiceFactory,
+  public SingleEntity(UserValidator userValidator, CrudServiceFactory crudServiceFactory,
                       TransactionEnforcer transactionEnforcer) {
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     this.crudServiceFactory = crudServiceFactory;
     this.transactionEnforcer = transactionEnforcer;
   }
@@ -95,14 +97,22 @@ public class SingleEntity {
   @PUT
   public Response put(@PathParam("collection") String collectionName, @HeaderParam("Authorization") String authHeader,
                       @PathParam("id") UUIDParam id, ObjectNode body) {
-    Optional<User> user = loggedInUsers.userFor(authHeader);
-    if (!user.isPresent()) {
+    Optional<User> user;
+    try {
+      user = userValidator.getUserFromAccessToken(authHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
+
+    Optional<User> newUser = user;
+
+    if (!newUser.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
       UpdateMessage updateMessage = transactionEnforcer.executeAndReturn(timbuctooActions -> {
         JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
         try {
-          crudService.replace(collectionName, id.get(), body, user.get().getId());
+          crudService.replace(collectionName, id.get(), body, newUser.get().getId());
           return commitAndReturn(UpdateMessage.success());
         } catch (InvalidCollectionException e) {
           return rollbackAndReturn(
@@ -160,15 +170,22 @@ public class SingleEntity {
   public Response delete(@PathParam("collection") String collectionName,
                          @HeaderParam("Authorization") String authHeader,
                          @PathParam("id") UUIDParam id) {
-    Optional<User> user = loggedInUsers.userFor(authHeader);
-    if (!user.isPresent()) {
+    Optional<User> user;
+    try {
+      user = userValidator.getUserFromAccessToken(authHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
+
+    Optional<User> newUser = user;
+    if (!newUser.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
 
       return transactionEnforcer.executeAndReturn(timbuctooActions -> {
         JsonCrudService jsonCrudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
         try {
-          jsonCrudService.delete(collectionName, id.get(), user.get().getId());
+          jsonCrudService.delete(collectionName, id.get(), newUser.get().getId());
           return commitAndReturn(Response.noContent().build());
         } catch (InvalidCollectionException e) {
           return rollbackAndReturn(
