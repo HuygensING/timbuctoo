@@ -144,12 +144,12 @@ public class SecurityFactory {
     return localAuthentication.getHealthChecks();
   }
 
-  public UserValidator getUserValidator() throws AccessNotPossibleException {
-    return new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore());
+  public UserValidator getUserValidator() throws AccessNotPossibleException, NoSuchAlgorithmException {
+    return new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore(), getLoggedInUsers());
   }
 
   public PermissionFetcher getPermissionFetcher()
-    throws AccessNotPossibleException {
+    throws AccessNotPossibleException, NoSuchAlgorithmException {
     return new BasicPermissionFetcher(getVreAuthorizationCreator(), getUserValidator());
   }
 }
