@@ -344,7 +344,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Graph(graphManager, vres));
     // Bulk upload
     UserPermissionChecker permissionChecker = new UserPermissionChecker(
-      securityConfig.getLoggedInUsers(),
+      securityConfig.getUserValidator(),
       securityConfig.getPermissionFetcher()
     );
     RawCollection rawCollection = new RawCollection(graphManager, uriHelper, permissionChecker, errorResponseHelper);

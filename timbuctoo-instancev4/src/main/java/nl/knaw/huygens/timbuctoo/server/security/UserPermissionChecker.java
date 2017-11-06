@@ -1,11 +1,12 @@
 package nl.knaw.huygens.timbuctoo.server.security;
 
-import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.RawCollection;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
@@ -16,16 +17,21 @@ import static nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker.Us
 import static nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker.UserPermission.UNKNOWN_USER;
 
 public class UserPermissionChecker {
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final PermissionFetcher permissionFetcher;
 
-  public UserPermissionChecker(LoggedInUsers loggedInUsers, PermissionFetcher permissionFetcher) {
-    this.loggedInUsers = loggedInUsers;
+  public UserPermissionChecker(UserValidator userValidator, PermissionFetcher permissionFetcher) {
+    this.userValidator = userValidator;
     this.permissionFetcher = permissionFetcher;
   }
 
   public UserPermission check(String vreName, String authorizationHeader) {
-    Optional<User> user = loggedInUsers.userFor(authorizationHeader);
+    Optional<User> user;
+    try {
+      user = userValidator.getUserFromAccessToken(authorizationHeader);
+    } catch (UserValidationException e) {
+      return UNKNOWN_USER;
+    }
 
     if (!user.isPresent()) {
       return UNKNOWN_USER;
@@ -44,7 +50,11 @@ public class UserPermissionChecker {
   }
 
   public Optional<User> getUserFor(String authorizationHeader) {
-    return loggedInUsers.userFor(authorizationHeader);
+    try {
+      return userValidator.getUserFromAccessToken(authorizationHeader);
+    } catch (UserValidationException e) {
+      return Optional.empty();
+    }
   }
 
   public Optional<Response> checkPermissionWithResponse(String vreName, String authorizationHeader) {
