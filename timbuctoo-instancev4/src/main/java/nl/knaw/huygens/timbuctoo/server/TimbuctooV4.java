@@ -326,7 +326,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
     register(
       environment,
-      new Index(securityConfig.getLoggedInUsers(), crudServiceFactory, transactionEnforcer)
+      new Index(securityConfig.getUserValidator(), crudServiceFactory, transactionEnforcer)
     );
     register(
       environment,

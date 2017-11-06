@@ -6,9 +6,10 @@ import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.crud.CrudServiceFactory;
 import nl.knaw.huygens.timbuctoo.crud.InvalidCollectionException;
 import nl.knaw.huygens.timbuctoo.crud.JsonCrudService;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -37,13 +38,13 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 @Produces(MediaType.APPLICATION_JSON)
 public class Index {
 
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final CrudServiceFactory crudServiceFactory;
   private final TransactionEnforcer transactionEnforcer;
 
-  public Index(LoggedInUsers loggedInUsers, CrudServiceFactory crudServiceFactory,
+  public Index(UserValidator userValidator, CrudServiceFactory crudServiceFactory,
                TransactionEnforcer transactionEnforcer) {
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     this.crudServiceFactory = crudServiceFactory;
     this.transactionEnforcer = transactionEnforcer;
   }
@@ -61,14 +62,22 @@ public class Index {
     @HeaderParam("Authorization") String authHeader,
     ObjectNode body
   ) throws URISyntaxException {
-    Optional<User> user = loggedInUsers.userFor(authHeader);
+    Optional<User> user;
+    try {
+      user = userValidator.getUserFromAccessToken(authHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
+
+    Optional<User> newUser = user;
+
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     } else {
       return transactionEnforcer.executeAndReturn(timbuctooActions -> {
         JsonCrudService crudService = crudServiceFactory.newJsonCrudService(timbuctooActions);
         try {
-          UUID id = crudService.create(collectionName, body, user.get().getId());
+          UUID id = crudService.create(collectionName, body, newUser.get().getId());
           return commitAndReturn(
             Response.created(SingleEntity.makeUrl(collectionName, id)).build()
           );
