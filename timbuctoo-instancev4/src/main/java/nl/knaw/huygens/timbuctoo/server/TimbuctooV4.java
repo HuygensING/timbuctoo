@@ -321,7 +321,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     ));
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
     register(environment, new Authenticate(securityConfig.getLoggedInUsers()));
-    register(environment, new Me(securityConfig.getLoggedInUsers()));
+    register(environment, new Me(securityConfig.getUserValidator()));
     register(environment, new Search(configuration, uriHelper, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
     register(

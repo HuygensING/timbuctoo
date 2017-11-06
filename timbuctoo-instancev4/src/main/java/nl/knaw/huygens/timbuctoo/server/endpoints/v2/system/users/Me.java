@@ -3,6 +3,8 @@ package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users;
 
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -15,15 +17,20 @@ import java.util.Optional;
 @Path("/v2.1/system/users/me")
 @Produces(MediaType.APPLICATION_JSON)
 public class Me {
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
 
-  public Me(LoggedInUsers loggedInUsers) {
-    this.loggedInUsers = loggedInUsers;
+  public Me(UserValidator userValidator) {
+    this.userValidator = userValidator;
   }
 
   @GET
   public Response get(@HeaderParam("Authorization") String authHeader) {
-    Optional<User> user = loggedInUsers.userFor(authHeader);
+    Optional<User> user;
+    try {
+      user = userValidator.getUserFromAccessToken(authHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
     if (user.isPresent()) {
       return Response.ok().entity(user.get()).build();
 
