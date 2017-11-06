@@ -132,8 +132,9 @@ public class SecurityFactory {
     if (loggedInUsers == null) {
       loggedInUsers = new LoggedInUsers(
         getAuthenticator(),
-        new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore()),
-        autoLogoutTimeout.createTimeout()
+        getUserStore(),
+        autoLogoutTimeout.createTimeout(),
+        getAuthHandler(getHttpCaller())
       );
     }
     return loggedInUsers;

@@ -42,10 +42,9 @@ public class LoggedInUsersTest {
 
     userStoreWithUserA = new LoggedInUsers(
       authenticator,
-      new BasicUserValidator(x -> {
-        throw new UnauthorizedException();
-      }, userStore),
-      ONE_SECOND_TIMEOUT
+      userStore,
+      ONE_SECOND_TIMEOUT,
+      x-> { throw new UnauthorizedException(); }
     );
 
     Authenticator authenticator1 = AuthenticatorMockBuilder.authenticator()
@@ -56,10 +55,9 @@ public class LoggedInUsersTest {
 
     userStoreWithUserAAndB = new LoggedInUsers(
       authenticator1,
-      new BasicUserValidator(x -> {
-        throw new UnauthorizedException();
-      }, userStore1),
-      ONE_SECOND_TIMEOUT
+      userStore1,
+      ONE_SECOND_TIMEOUT,
+      x-> { throw new UnauthorizedException(); }
     );
 
   }
@@ -171,8 +169,8 @@ public class LoggedInUsersTest {
     throws Exception {
     Authenticator authenticator = mock(JsonBasedAuthenticator.class);
     given(authenticator.authenticate(anyString(), anyString())).willThrow(new LocalLoginUnavailableException(""));
-    LoggedInUsers instance = new LoggedInUsers(authenticator, new BasicUserValidator(null, null),
-      ONE_SECOND_TIMEOUT);
+    LoggedInUsers instance = new LoggedInUsers(authenticator, null, ONE_SECOND_TIMEOUT, null);
+
 
     expectedException.expect(LocalLoginUnavailableException.class);
 
@@ -185,10 +183,10 @@ public class LoggedInUsersTest {
     UserStore userStore = mock(JsonBasedUserStore.class);
     given(userStore.userFor(anyString())).willThrow(new AuthenticationUnavailableException(""));
     Authenticator authenticator = AuthenticatorMockBuilder.authenticator().withPidFor("a", "b", "pid").build();
-    LoggedInUsers instance = new LoggedInUsers(authenticator, new BasicUserValidator(null, userStore),
-      ONE_SECOND_TIMEOUT);
+    LoggedInUsers instance = new LoggedInUsers(authenticator, userStore, ONE_SECOND_TIMEOUT, null);
 
-    expectedException.expect(UserValidationException.class);
+
+    expectedException.expect(AuthenticationUnavailableException.class);
 
     instance.userTokenFor("a", "b");
 
