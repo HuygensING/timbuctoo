@@ -302,7 +302,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         environment.getObjectMapper()
       ),
       serializerWriterRegistry,
-      securityConfig.getLoggedInUsers(),
+      securityConfig.getUserValidator(),
       uriHelper
     );
     register(environment, graphQlEndpoint);

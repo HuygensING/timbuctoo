@@ -8,12 +8,15 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
+import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 
 import javax.ws.rs.Consumes;
@@ -39,18 +42,18 @@ import static graphql.ExecutionInput.newExecutionInput;
 public class GraphQl {
   private final Supplier<GraphQLSchema> graphqlGetter;
   private final SerializerWriterRegistry serializerWriterRegistry;
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final UriHelper uriHelper;
   private final ObjectMapper objectMapper;
   private GraphQL graphQl;
   private GraphQLSchema prevGraphQlSchema;
 
   public GraphQl(Supplier<GraphQLSchema> graphqlGetter, SerializerWriterRegistry serializerWriterRegistry,
-                 LoggedInUsers loggedInUsers, UriHelper uriHelper)
+                 UserValidator userValidator, UriHelper uriHelper)
     throws DatabaseException, RdfProcessingFailedException {
     this.graphqlGetter = graphqlGetter;
     this.serializerWriterRegistry = serializerWriterRegistry;
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     this.uriHelper = uriHelper;
     objectMapper = new ObjectMapper();
   }
@@ -154,9 +157,18 @@ public class GraphQl {
       graphQl = builder
         .build();
     }
+
+    Optional<User> user;
+
+    try {
+      user = userValidator.getUserFromAccessToken(authHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
+
     final ExecutionResult result = graphQl
       .execute(newExecutionInput()
-        .root(new RootData(loggedInUsers.userFor(authHeader)))
+        .root(new RootData(user))
         .query(queryFromBody)
         .operationName(operationName)
         .variables(variables == null ? Collections.emptyMap() : variables)
