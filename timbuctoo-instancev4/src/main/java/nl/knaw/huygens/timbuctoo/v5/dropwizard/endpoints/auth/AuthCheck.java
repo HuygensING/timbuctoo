@@ -13,8 +13,10 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,15 +27,15 @@ import java.util.function.BiFunction;
 
 public class AuthCheck {
   private static final Logger LOG = LoggerFactory.getLogger(AuthCheck.class);
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final PermissionFetcher permissionFetcher;
   private final ErrorResponseHelper errorResponseHelper;
   private final DataSetRepository dataSetRepository;
 
-  public AuthCheck(LoggedInUsers loggedInUsers, PermissionFetcher permissionFetcher,
+  public AuthCheck(UserValidator userValidator, PermissionFetcher permissionFetcher,
                    ErrorResponseHelper errorResponseHelper,
                    DataSetRepository dataSetRepository) {
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     this.permissionFetcher = permissionFetcher;
     this.errorResponseHelper = errorResponseHelper;
     this.dataSetRepository = dataSetRepository;
@@ -57,11 +59,16 @@ public class AuthCheck {
     return null;
   }
 
-  public static Response checkAdminAccess(PermissionFetcher permissionFetcher, LoggedInUsers loggedInUsers,
+  public static Response checkAdminAccess(PermissionFetcher permissionFetcher, UserValidator userValidator,
                                           String authHeader,
                                           PromotedDataSet dataSet) {
 
-    Optional<User> user = loggedInUsers.userFor(authHeader);
+    Optional<User> user;
+    try {
+      user = userValidator.getUserFromAccessToken(authHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
@@ -80,10 +87,14 @@ public class AuthCheck {
 
   }
 
-  public static Either<Response, User> getUser(String authHeader, LoggedInUsers loggedInUsers) {
-    return loggedInUsers.userFor(authHeader)
-      .map(Either::<Response, User>right)
-      .orElseGet(() -> Either.left(Response.status(Response.Status.UNAUTHORIZED).build()));
+  public static Either<Response, User> getUser(String authHeader, UserValidator userValidator) {
+    try {
+      return userValidator.getUserFromAccessToken(authHeader)
+        .map(Either::<Response, User>right)
+        .orElseGet(() -> Either.left(Response.status(Response.Status.UNAUTHORIZED).build()));
+    } catch (UserValidationException e) {
+      return Either.left(Response.status(Response.Status.UNAUTHORIZED).build());
+    }
   }
 
   public Either<Response, Tuple<User, DataSet>> handleForceCreate(String ownerId, String dataSetId,
@@ -103,7 +114,7 @@ public class AuthCheck {
 
   public Either<Response, Tuple<User, DataSet>> getOrCreate(String authHeader, String ownerId, String dataSetId,
                                                             boolean forceCreation) {
-    return getUser(authHeader, loggedInUsers)
+    return getUser(authHeader, userValidator)
       .flatMap(user ->
         dataSetRepository.getDataSet(ownerId, dataSetId)
           .map(ds -> Either.<Response, Tuple<User, DataSet>>right(Tuple.tuple(user, ds)))

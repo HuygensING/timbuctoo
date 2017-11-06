@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
 import nl.knaw.huygens.timbuctoo.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.junit.Test;
 
@@ -31,13 +32,13 @@ public class AuthCheckTest {
   @Test
   public void checkAdminAccessReturnsNullIfTheUserHasAdminPermissionsForTheDataSet() throws Exception {
     User notOwner = User.create(null, "user");
-    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
-    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
+    UserValidator userValidator = mock(UserValidator.class);
+    given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
     given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
-      loggedInUsers,
+      userValidator,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
     );
@@ -47,11 +48,11 @@ public class AuthCheckTest {
 
   @Test
   public void checkAdminAccessReturnsAnUnauthorizedResponseIfTheUserIsUnknown() throws Exception {
-    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
-    given(loggedInUsers.userFor(anyString())).willReturn(Optional.empty());
+    UserValidator userValidator = mock(UserValidator.class);
+    given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.empty());
     Response response = checkAdminAccess(
       null,
-      loggedInUsers,
+      userValidator,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
     );
@@ -62,13 +63,13 @@ public class AuthCheckTest {
   @Test
   public void checkAdminAccessReturnsAForbiddenResponseIfTheUserIsNotAnAdminForTheDataSet() throws Exception {
     User notOwner = User.create(null, "user");
-    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
-    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
+    UserValidator userValidator = mock(UserValidator.class);
+    given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
     given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForNonAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
-      loggedInUsers,
+      userValidator,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
     );
@@ -79,13 +80,13 @@ public class AuthCheckTest {
   @Test
   public void checkAdminAccessReturnsNullIfTheUserIsAnAdminForTheDataSet() throws Exception {
     User notOwner = User.create(null, "user");
-    LoggedInUsers loggedInUsers = mock(LoggedInUsers.class);
-    given(loggedInUsers.userFor(anyString())).willReturn(Optional.of(notOwner));
+    UserValidator userValidator = mock(UserValidator.class);
+    given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
     given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
-      loggedInUsers,
+      userValidator,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/", false)
     );

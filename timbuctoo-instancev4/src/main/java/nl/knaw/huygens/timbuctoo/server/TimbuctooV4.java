@@ -260,7 +260,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     ErrorResponseHelper errorResponseHelper = new ErrorResponseHelper();
     AuthCheck authCheck = new AuthCheck(
-      securityConfig.getLoggedInUsers(),
+      securityConfig.getUserValidator(),
       securityConfig.getPermissionFetcher(),
       errorResponseHelper,
       dataSetRepository
@@ -309,7 +309,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new CreateDataSet(authCheck));
     register(environment, new DataSet(
-        securityConfig.getLoggedInUsers(),
+        securityConfig.getUserValidator(),
         securityConfig.getPermissionFetcher(), dataSetRepository
       )
     );

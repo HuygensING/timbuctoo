@@ -5,6 +5,7 @@ import nl.knaw.huygens.timbuctoo.security.Authorizer;
 import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DELETE;
@@ -20,13 +21,13 @@ import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.c
 
 @Path("/v5/{userId}/{dataSetId}")
 public class DataSet {
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final PermissionFetcher permissionFetcher;
   private final DataSetRepository dataSetRepository;
 
-  public DataSet(LoggedInUsers loggedInUsers, PermissionFetcher permissionFetcher,
+  public DataSet(UserValidator userValidator, PermissionFetcher permissionFetcher,
                  DataSetRepository dataSetRepository) {
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     this.permissionFetcher = permissionFetcher;
     this.dataSetRepository = dataSetRepository;
   }
@@ -47,7 +48,7 @@ public class DataSet {
     Response response = dataSetRepository.getDataSet(ownerId, dataSetName)
       .map(dataSet -> checkAdminAccess(
         permissionFetcher,
-        loggedInUsers,
+        userValidator,
         authorization,
         dataSet.getMetadata()
       ))
