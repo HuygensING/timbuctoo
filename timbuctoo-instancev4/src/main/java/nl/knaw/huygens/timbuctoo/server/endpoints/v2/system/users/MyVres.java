@@ -13,8 +13,10 @@ import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.VreImage;
 import nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload.BulkUploadVre;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -35,15 +37,15 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 
 @Path("/v2.1/system/users/me/vres")
 public class MyVres {
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final PermissionFetcher permissionFetcher;
   private final BulkUploadVre bulkUploadVre;
   private final TransactionEnforcer transactionEnforcer;
   private final UriHelper uriHelper;
 
-  public MyVres(LoggedInUsers loggedInUsers, PermissionFetcher permissionFetcher, BulkUploadVre bulkUploadVre,
+  public MyVres(UserValidator userValidator, PermissionFetcher permissionFetcher, BulkUploadVre bulkUploadVre,
                 TransactionEnforcer transactionEnforcer, UriHelper uriHelper) {
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     this.permissionFetcher = permissionFetcher;
     this.bulkUploadVre = bulkUploadVre;
     this.transactionEnforcer = transactionEnforcer;
@@ -53,11 +55,19 @@ public class MyVres {
   @GET
   @Produces(APPLICATION_JSON)
   public Response get(@HeaderParam("Authorization") String authorizationHeader) {
-    Optional<User> user = loggedInUsers.userFor(authorizationHeader);
+    Optional<User> user;
+
+    try {
+      user = userValidator.getUserFromAccessToken(authorizationHeader);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
 
     if (!user.isPresent()) {
       return Response.status(Response.Status.UNAUTHORIZED).build();
     }
+
+    Optional<User> newUser = user;
 
     return transactionEnforcer.executeAndReturn(timbuctooActions -> {
       final Map<String, Map<String, ObjectNode>> result = timbuctooActions
@@ -65,7 +75,7 @@ public class MyVres {
         .map(vre -> {
           boolean isAllowedToWrite;
           try {
-            isAllowedToWrite = permissionFetcher.getPermissions(user.get().getPersistentId(),vre.getVreName())
+            isAllowedToWrite = permissionFetcher.getPermissions(newUser.get().getPersistentId(),vre.getVreName())
               .contains(Permission.WRITE);
           } catch (PermissionFetchingException e) {
             isAllowedToWrite = false;

@@ -370,7 +370,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new Metadata());
     register(environment, new nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.vres.Metadata(jsonMetadata));
     register(environment, new MyVres(
-        securityConfig.getLoggedInUsers(),
+        securityConfig.getUserValidator(),
         securityConfig.getPermissionFetcher(),
         bulkUploadVre,
         transactionEnforcer,
