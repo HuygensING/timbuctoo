@@ -33,7 +33,7 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.ResourceSyncContext;
 import nl.knaw.huygens.timbuctoo.rml.jena.JenaBasedReader;
 import nl.knaw.huygens.timbuctoo.search.AutocompleteService;
 import nl.knaw.huygens.timbuctoo.search.FacetValue;
-import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.security.OldStyleSecurityFactory;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.DatabaseMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.FixDcarKeywordDisplayNameMigration;
 import nl.knaw.huygens.timbuctoo.server.databasemigration.MakePidsAbsoluteUrls;
@@ -104,6 +104,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
+import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -320,7 +321,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       new HttpClientBuilder(environment).build("json-ld")
     ));
     register(environment, new RootEndpoint(uriHelper, configuration.getUserRedirectUrl()));
-    register(environment, new Authenticate(securityConfig.getLoggedInUsers()));
+    if (securityConfig instanceof OldStyleSecurityFactory) {
+      register(environment, new Authenticate(((OldStyleSecurityFactory) securityConfig).getLoggedInUsers()));
+    }
     register(environment, new Me(securityConfig.getUserValidator()));
     register(environment, new Search(configuration, uriHelper, graphManager));
     register(environment, new Autocomplete(autocompleteServiceFactory, transactionEnforcer));
@@ -361,10 +364,13 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       permissionChecker, saveRml, transactionEnforcer, 2 * 1024 * 1024
     );
     register(environment, bulkUploadVre);
-    register(environment, new BulkUpload(new BulkUploadService(vres, graphManager, 25_000), bulkUploadVre,
-      securityConfig.getUserValidator(), securityConfig.getVreAuthorizationCreator(), 20 * 1024 * 1024,
-      permissionChecker, transactionEnforcer, 50
-    ));
+    if (securityConfig instanceof OldStyleSecurityFactory) {
+      final OldStyleSecurityFactory oldStyleSecurityFactory = (OldStyleSecurityFactory) securityConfig;
+      register(environment, new BulkUpload(new BulkUploadService(vres, graphManager, 25_000), bulkUploadVre,
+        securityConfig.getUserValidator(), oldStyleSecurityFactory.getVreAuthorizationCreator(), 20 * 1024 * 1024,
+        permissionChecker, transactionEnforcer, 50
+      ));
+    }
 
     register(environment, new RelationTypes(graphManager));
     register(environment, new Metadata());
@@ -394,11 +400,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new ResourceSyncEndpoint(configuration.getResourceSync(), configuration.getUriHelper()));
 
     // Admin resources
-    environment.admin().addTask(new UserCreationTask(new LocalUserCreator(
-      securityConfig.getLoginCreator(),
-      securityConfig.getUserCreator(),
-      securityConfig.getVreAuthorizationCreator()
-    )));
+    if (securityConfig instanceof OldStyleSecurityFactory) {
+      final OldStyleSecurityFactory oldStyleSecurityFactory = (OldStyleSecurityFactory) securityConfig;
+      environment.admin().addTask(new UserCreationTask(new LocalUserCreator(
+        oldStyleSecurityFactory.getLoginCreator(),
+        oldStyleSecurityFactory.getUserCreator(),
+        oldStyleSecurityFactory.getVreAuthorizationCreator()
+      )));
+    }
 
     environment.admin().addTask(
       new DatabaseValidationTask(

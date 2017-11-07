@@ -2,6 +2,7 @@
 #it also explains the options that you need to configure a production-worthy version
 
 securityConfiguration:
+  "@class": nl.knaw.huygens.timbuctoo.server.security.OldStyleSecurityFactoryConfiguration
   localAuthentication:
     "@class": nl.knaw.huygens.timbuctoo.security.dataaccess.localfile.LocalfileAccessFactory
     # This directory Timbuctoo reads and writes the authorizations a file for each vre.

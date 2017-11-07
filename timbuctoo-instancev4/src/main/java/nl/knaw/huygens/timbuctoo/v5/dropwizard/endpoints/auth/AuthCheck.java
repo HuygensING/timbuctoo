@@ -1,11 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
 import javaslang.control.Either;
-import nl.knaw.huygens.timbuctoo.security.Authorizer;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.security.dto.Authorization;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -21,9 +17,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.core.Response;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.BiFunction;
 
 public class AuthCheck {
   private static final Logger LOG = LoggerFactory.getLogger(AuthCheck.class);

@@ -2,6 +2,7 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AccessNotPossibleException;
 
 import java.util.Iterator;
 import java.util.Optional;

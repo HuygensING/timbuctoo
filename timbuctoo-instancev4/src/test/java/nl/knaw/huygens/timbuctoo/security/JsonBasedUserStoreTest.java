@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import nl.knaw.huygens.timbuctoo.security.exceptions.UserCreationException;
 import nl.knaw.huygens.timbuctoo.util.FileHelpers;

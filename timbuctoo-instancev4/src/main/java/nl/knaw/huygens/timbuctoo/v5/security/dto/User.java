@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security.dto;
+package nl.knaw.huygens.timbuctoo.v5.security.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
-import nl.knaw.huygens.timbuctoo.security.dto.typeidresolvers.UserTypeIdResolver;
 import org.immutables.value.Value;
 
 import javax.annotation.Nullable;

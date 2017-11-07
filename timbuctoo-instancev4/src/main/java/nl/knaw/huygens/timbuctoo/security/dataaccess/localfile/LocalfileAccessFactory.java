@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.security.healthchecks.DirectoryHealthCheck;
 import nl.knaw.huygens.timbuctoo.security.healthchecks.FileHealthCheck;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.LoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;

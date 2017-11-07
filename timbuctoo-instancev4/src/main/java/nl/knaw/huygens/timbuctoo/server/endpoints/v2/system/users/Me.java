@@ -1,8 +1,7 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.system.users;
 
 
-import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 
