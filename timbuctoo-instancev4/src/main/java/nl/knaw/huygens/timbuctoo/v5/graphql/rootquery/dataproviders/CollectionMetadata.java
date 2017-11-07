@@ -9,6 +9,8 @@ public interface CollectionMetadata extends SubjectReference {
 
   String getCollectionListId();
 
+  String getItemType();
+
   PropertyList getProperties();
 
   default PropertyList getProperties(int count, String cursor) {

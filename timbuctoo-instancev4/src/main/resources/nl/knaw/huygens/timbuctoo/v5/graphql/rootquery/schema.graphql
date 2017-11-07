@@ -1,5 +1,6 @@
 schema {
   query: Query,
+  mutation: Mutation
 }
 
 interface Value {
@@ -89,6 +90,7 @@ type CollectionMetadata {
   uri: String! @uri
   collectionId: ID!
   collectionListId: ID!
+  itemType: String!
 
   properties(count: Int = 20, cursor: ID = ""): PropertyList!
   total: Int!
@@ -97,6 +99,7 @@ type CollectionMetadata {
   archeType: Entity @rdf(predicate: "http://www.w3.org/2000/01/rdf-schema#subClassOf", direction: "OUT", isList: false, isObject: true, isValue: false)
   indexConfig: IndexConfig!
   summaryProperties: SummaryProperties! @passThrough
+  viewConfig: [Component]!
 }
 
 type SummaryProperties {
@@ -104,6 +107,13 @@ type SummaryProperties {
   description: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryDescriptionPredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
   image: Value @rdf(predicate: "http://timbuctoo.huygens.knaw.nl/static/v5/vocabulary#summaryImagePredicate", direction: "OUT", isList: false, isObject: false, isValue: true)
 }
+
+input SummaryPropertiesInput {
+  title: String
+  description: String
+  image: String
+}
+
 
 type IndexConfig {
   facet: [FacetConfig]!
@@ -133,11 +143,14 @@ type PropertyList {
 }
 
 type Property {
-  name: String
-  density: Int
-  isList: Boolean
-  referencedCollections(count: Int = 20, cursor: ID = ""): CollectionIdList
-  isValueType: Boolean
+  name: String!
+  uri: String!
+  shortenedUri: String!
+  isInverse: Boolean!
+  density: Int!
+  isList: Boolean!
+  referencedCollections(count: Int = 20, cursor: ID = ""): CollectionIdList!
+  isValueType: Boolean!
 }
 
 type CollectionIdList {
@@ -158,4 +171,34 @@ type License {
 type ProvenanceInfo {
   title: Value @rdf(predicate: "http://purl.org/dc/terms/title", direction: "OUT", isList: false, isObject: false, isValue: true)
   body: Value @rdf(predicate: "http://purl.org/dc/terms/description", direction: "OUT", isList: false, isObject: false, isValue: true)
+}
+
+# the components used to define a view page or an edit page in the front-end
+type Component {
+  subComponents: [Component!]!
+  type: String!
+  value: String
+  formatter: [FormatterConfig!]!
+}
+
+type FormatterConfig {
+  type: String!
+  name: String!
+}
+
+input ComponentInput {
+  subComponents: [ComponentInput!]!
+  type: String!
+  value: String
+  formatter: [FormatterConfigInput!]!
+}
+
+input FormatterConfigInput {
+  type: String!
+  name: String!
+}
+
+type Mutation {
+  setViewConfig(dataSet: String!, collectionUri: String!, viewConfig: [ComponentInput!]!): [Component]
+  setSummaryProperties(dataSet: String!, collectionUri: String!, summaryProperties: SummaryPropertiesInput!): SummaryProperties
 }

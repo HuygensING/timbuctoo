@@ -23,6 +23,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.SummaryPropsMutationDataFetcher;
+import nl.knaw.huygens.timbuctoo.v5.graphql.mutations.ViewConfigDataFetcher;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadata;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.CollectionMetadataList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableCollectionMetadata;
@@ -48,6 +50,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.google.common.io.Resources.getResource;
+import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.HAS_VIEW_CONFIG;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_HASINDEXERCONFIG;
 
 public class RootQuery implements Supplier<GraphQLSchema> {
@@ -155,6 +158,20 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return result;
         }
       })
+      .dataFetcher("viewConfig", env -> {
+        SubjectReference source = env.getSource();
+        final QuadStore qs = source.getDataSet().getQuadStore();
+        try (Stream<CursorQuad> quads = qs.getQuads(source.getSubjectUri(), HAS_VIEW_CONFIG, Direction.OUT, "")) {
+          return quads.findFirst().map(q -> {
+            try {
+              return objectMapper.readValue(q.getObject(), List.class);
+            } catch (IOException e) {
+              LOG.error("view config not available", e);
+              return new ArrayList();
+            }
+          }).orElse(new ArrayList());
+        }
+      })
     );
 
     wiring.type("AboutMe", builder -> builder
@@ -166,6 +183,11 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("name", env -> ((User) env.getSource()).getDisplayName())
       .dataFetcher("personalInfo", env -> "http://example.com")
       .dataFetcher("canCreateDataSet", env -> true)
+    );
+
+    wiring.type("Mutation", builder -> builder
+      .dataFetcher("setViewConfig", new ViewConfigDataFetcher(dataSetRepository))
+      .dataFetcher("setSummaryProperties", new SummaryPropsMutationDataFetcher(dataSetRepository))
     );
 
     wiring.wiringFactory(wiringFactory);
@@ -229,15 +251,17 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .build();
   }
 
-  public ImmutableCollectionMetadata getCollection(DataSet dataSet, TypeNameStore typeNameStore, Type collectionType) {
+  public CollectionMetadata getCollection(DataSet dataSet, TypeNameStore typeNameStore, Type collectionType) {
     final long occurrences = collectionType.getSubjectsWithThisType();
     final String collectionId = typeNameStore.makeGraphQlname(collectionType.getName());
+    final String fullyQualifiedTypeName = dataSet.getMetadata().getCombinedId() + "_" + collectionId;
     return ImmutableCollectionMetadata.builder()
       .subjectUri(collectionType.getName())
       .types(Collections.emptySet())
       .dataSet(dataSet)
       .collectionId(collectionId)
       .collectionListId(collectionId + "List")
+      .itemType(fullyQualifiedTypeName)
       .total(occurrences)
       .properties(ImmutablePropertyList.builder()
         .prevCursor(Optional.empty())
@@ -246,6 +270,9 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           return (Property) ImmutableProperty.builder()
               .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
               .isList(pred.isList())
+              .uri(pred.getName())
+              .shortenedUri(typeNameStore.shorten(pred.getName()))
+              .isInverse(pred.getDirection() == Direction.IN)
               .name(typeNameStore.makeGraphQlnameForPredicate(
                 pred.getName(), pred.getDirection(), pred.isList())
               )

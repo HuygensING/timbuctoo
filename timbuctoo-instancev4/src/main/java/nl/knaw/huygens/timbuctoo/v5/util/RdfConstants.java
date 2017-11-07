@@ -31,6 +31,8 @@ public class RdfConstants {
   public static final String TIM_SUMMARYTITLEPREDICATE = TIM_VOCAB + "summaryTitlePredicate";
   public static final String TIM_SUMMARYDESCRIPTIONPREDICATE = TIM_VOCAB + "summaryDescriptionPredicate";
   public static final String TIM_SUMMARYIMAGEPREDICATE = TIM_VOCAB + "summaryImagePredicate";
+  public static final String HAS_EDIT_CONFIG = TIM_VOCAB + "hasEditConfig";
+  public static final String HAS_VIEW_CONFIG = TIM_VOCAB + "hasViewConfig";
 
   public static final String PROV_DERIVED_FROM = "http://www.w3.org/ns/prov#wasDerivedFrom";
   public static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
@@ -39,4 +41,5 @@ public class RdfConstants {
   public static final String STRING = "http://www.w3.org/2001/XMLSchema#string";
   public static final String XSD_BOOLEAN = "http://www.w3.org/2001/XMLSchema#boolean";
   public static final String INTEGER = "http://www.w3.org/2001/XMLSchema#integer";
+
 }
