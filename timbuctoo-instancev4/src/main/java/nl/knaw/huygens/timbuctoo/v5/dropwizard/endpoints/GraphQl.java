@@ -12,8 +12,12 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedExcept
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.PermissionBasedFieldVisibility;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
@@ -35,7 +39,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static com.google.common.collect.Sets.newHashSet;
 import static graphql.ExecutionInput.newExecutionInput;
+import static nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData.contextData;
 
 @Path("/v5/graphql")
 public class GraphQl {
@@ -43,17 +49,17 @@ public class GraphQl {
   private final SerializerWriterRegistry serializerWriterRegistry;
   private final UserValidator userValidator;
   private final UriHelper uriHelper;
+  private final PermissionFetcher permissionFetcher;
   private final ObjectMapper objectMapper;
-  private GraphQL graphQl;
-  private GraphQLSchema prevGraphQlSchema;
 
   public GraphQl(Supplier<GraphQLSchema> graphqlGetter, SerializerWriterRegistry serializerWriterRegistry,
-                 UserValidator userValidator, UriHelper uriHelper)
+                 UserValidator userValidator, UriHelper uriHelper, PermissionFetcher permissionFetcher)
     throws DatabaseException, RdfProcessingFailedException {
     this.graphqlGetter = graphqlGetter;
     this.serializerWriterRegistry = serializerWriterRegistry;
     this.userValidator = userValidator;
     this.uriHelper = uriHelper;
+    this.permissionFetcher = permissionFetcher;
     objectMapper = new ObjectMapper();
   }
 
@@ -145,29 +151,34 @@ public class GraphQl {
           "E.g. {query: \\\"{\\n  persons {\\n ... \\\"}\"]}")
         .build();
     }
-    GraphQLSchema graphQlSchema = graphqlGetter.get();
-    if (graphQlSchema != prevGraphQlSchema) {
-      prevGraphQlSchema = graphQlSchema;
-      final GraphQL.Builder builder = GraphQL
-        .newGraphQL(graphQlSchema);
-      if (!acceptHeader.equals(MediaType.APPLICATION_JSON)) {
-        builder.queryExecutionStrategy(new SerializerExecutionStrategy());
-      }
-      graphQl = builder
-        .build();
-    }
-
     Optional<User> user;
-
     try {
       user = userValidator.getUserFromAccessToken(authHeader);
     } catch (UserValidationException e) {
       user = Optional.empty();
     }
 
+    UserPermissionCheck userPermissionCheck = new UserPermissionCheck(
+      user,
+      permissionFetcher,
+      newHashSet(Permission.READ)
+    );
+
+    final GraphQLSchema transform = graphqlGetter
+      .get()
+      .transform(b -> b.fieldVisibility(new PermissionBasedFieldVisibility(userPermissionCheck)));
+    final GraphQL.Builder builder = GraphQL.newGraphQL(transform);
+
+    if (!acceptHeader.equals(MediaType.APPLICATION_JSON)) {
+      builder.queryExecutionStrategy(new SerializerExecutionStrategy());
+    }
+
+    GraphQL graphQl = builder.build();
+
     final ExecutionResult result = graphQl
       .execute(newExecutionInput()
         .root(new RootData(user))
+        .context(contextData(userPermissionCheck))
         .query(queryFromBody)
         .operationName(operationName)
         .variables(variables == null ? Collections.emptyMap() : variables)
