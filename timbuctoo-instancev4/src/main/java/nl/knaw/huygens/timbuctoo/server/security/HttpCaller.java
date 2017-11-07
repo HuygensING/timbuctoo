@@ -1,4 +1,4 @@
-package nl.knaw.huygens.timbuctoo.security.dropwizard;
+package nl.knaw.huygens.timbuctoo.server.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.LinkedListMultimap;

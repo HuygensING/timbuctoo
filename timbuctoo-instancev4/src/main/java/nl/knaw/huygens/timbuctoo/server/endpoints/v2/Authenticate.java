@@ -50,7 +50,7 @@ public class Authenticate {
     } catch (InvalidAuthorizationHeaderException e) {
       LOG.info(e.getMessage());
       return unauthorizedResponse();
-    } catch (LocalLoginUnavailableException | UserValidationException e) {
+    } catch (LocalLoginUnavailableException | AuthenticationUnavailableException e) {
       return Response.serverError().entity(e.getMessage()).build();
     }
   }

@@ -3,7 +3,7 @@ package nl.knaw.huygens.timbuctoo.security.dataaccess.azure;
 import com.microsoft.azure.storage.CloudStorageAccount;
 import com.microsoft.azure.storage.table.CloudTableClient;
 import nl.knaw.huygens.timbuctoo.security.dto.Login;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import org.junit.Before;
 import org.junit.Ignore;

@@ -1,7 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security.dataaccess;
 
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 
 import java.util.Optional;
 

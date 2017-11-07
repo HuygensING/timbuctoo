@@ -24,7 +24,6 @@ java_library(
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/jena",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/rml/datasource/jexl",
       "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/bulkupload",
-      "//timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/security",
       "//third_party:com_javaslang_javaslang",
       "//third_party:com_github_jsonld_java_jsonld_java",
       "//third_party:org_apache_httpcomponents_httpclient",

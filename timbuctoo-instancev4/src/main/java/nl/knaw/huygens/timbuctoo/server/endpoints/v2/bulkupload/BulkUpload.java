@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server.endpoints.v2.bulkupload;
 
-import nl.knaw.huygens.timbuctoo.server.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.bulkupload.InvalidFileException;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.Loader;
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.access.MdbLoader;
@@ -9,10 +8,11 @@ import nl.knaw.huygens.timbuctoo.bulkupload.loaders.dataperfect.DataPerfectLoade
 import nl.knaw.huygens.timbuctoo.bulkupload.loaders.excel.allsheetloader.AllSheetLoader;
 import nl.knaw.huygens.timbuctoo.core.TransactionEnforcer;
 import nl.knaw.huygens.timbuctoo.model.vre.Vre;
-import nl.knaw.huygens.timbuctoo.security.LoggedInUsers;
 import nl.knaw.huygens.timbuctoo.security.VreAuthorizationCrud;
+import nl.knaw.huygens.timbuctoo.server.BulkUploadService;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
@@ -54,7 +54,7 @@ public class BulkUpload {
   public static final Logger LOG = LoggerFactory.getLogger(BulkUpload.class);
   private final BulkUploadService uploadService;
   private final BulkUploadVre bulkUploadVre;
-  private final LoggedInUsers loggedInUsers;
+  private final UserValidator userValidator;
   private final VreAuthorizationCrud authorizationCreator;
   private final int maxCache;
   private final UserPermissionChecker permissionChecker;
@@ -63,17 +63,17 @@ public class BulkUpload {
   private final VreAuthIniter vreAuthIniter;
 
   public BulkUpload(BulkUploadService uploadService, BulkUploadVre bulkUploadVre,
-                    LoggedInUsers loggedInUsers, VreAuthorizationCrud authorizationCreator, int maxCache,
+                    UserValidator userValidator, VreAuthorizationCrud authorizationCreator, int maxCache,
                     UserPermissionChecker permissionChecker, TransactionEnforcer transactionEnforcer, int maxFiles) {
     this.uploadService = uploadService;
     this.bulkUploadVre = bulkUploadVre;
-    this.loggedInUsers = loggedInUsers;
+    this.userValidator = userValidator;
     this.authorizationCreator = authorizationCreator;
     this.maxCache = maxCache;
     this.permissionChecker = permissionChecker;
     this.transactionEnforcer = transactionEnforcer;
     this.maxFiles = maxFiles;
-    this.vreAuthIniter = new VreAuthIniter(loggedInUsers, transactionEnforcer, authorizationCreator);
+    this.vreAuthIniter = new VreAuthIniter(userValidator, transactionEnforcer, authorizationCreator);
   }
 
   @POST
@@ -157,14 +157,14 @@ public class BulkUpload {
       return executeUpload(files, formData, uploadType, vre.getMetadata().getLabel(), vreName);
     } catch (IOException | IllegalArgumentException e) {
       return status(Response.Status.BAD_REQUEST)
-                .entity(e.getMessage())
-                .build();
+        .entity(e.getMessage())
+        .build();
     }
   }
 
   private Response executeUpload(List<FormDataBodyPart> parts, Map<String, String> form, String uploadType,
                                  String vreLabel, String vreName)
-      throws IOException {
+    throws IOException {
 
     ChunkedOutput<String> output = new ChunkedOutput<>(String.class);
 
@@ -176,8 +176,8 @@ public class BulkUpload {
         loader = new CsvLoader(form);
       } catch (IllegalArgumentException e) {
         return status(Response.Status.BAD_REQUEST)
-                       .entity(e.toString())
-                       .build();
+          .entity(e.toString())
+          .build();
       }
     } else if (uploadType.equals("dataperfect")) {
       loader = new DataPerfectLoader();
@@ -283,7 +283,7 @@ public class BulkUpload {
         return;
       }
       limit -= left;
-      out.write(bytes, 0, (int)left);
+      out.write(bytes, 0, (int) left);
     }
 
     public void write(int byt) throws IOException {
@@ -295,7 +295,7 @@ public class BulkUpload {
     }
 
     public void write(@Nonnull byte[] bytes, int off, int len) throws IOException {
-      long left = Math.min(len,limit);
+      long left = Math.min(len, limit);
       if (left <= 0) {
         return;
       }

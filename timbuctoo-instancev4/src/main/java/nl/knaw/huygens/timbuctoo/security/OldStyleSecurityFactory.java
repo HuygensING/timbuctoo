@@ -1,16 +1,16 @@
 package nl.knaw.huygens.timbuctoo.security;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.HttpCaller;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
-import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessNotPossibleException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AccessNotPossibleException;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.LoginAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 
 import java.security.NoSuchAlgorithmException;
@@ -18,7 +18,7 @@ import java.util.Iterator;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-public class SecurityFactory {
+public class OldStyleSecurityFactory implements SecurityFactory {
   AuthenticationHandler authHandler;
   private AccessFactory localAuthentication;
   private String algorithm;
@@ -40,8 +40,8 @@ public class SecurityFactory {
   private VreAuthorizationAccess vreAuthorizationAccess;
   private final HttpCaller httpCaller;
 
-  public SecurityFactory(AccessFactory localAuthentication, String algorithm, TimeoutFactory autoLogoutTimeout,
-                         FederatedAuthConfiguration federatedAuthentication, HttpCaller httpCaller) {
+  public OldStyleSecurityFactory(AccessFactory localAuthentication, String algorithm, TimeoutFactory autoLogoutTimeout,
+                                 FederatedAuthConfiguration federatedAuthentication, HttpCaller httpCaller) {
     this.localAuthentication = localAuthentication;
     this.algorithm = algorithm;
     this.autoLogoutTimeout = autoLogoutTimeout;
@@ -115,15 +115,11 @@ public class SecurityFactory {
     return getJsonBasedAuthenticator();
   }
 
-  public UserStore getUserStore() throws AccessNotPossibleException {
+  private UserStore getUserStore() throws AccessNotPossibleException {
     return getJsonBasedUserStore();
   }
 
-  public Authorizer getAuthorizer() throws AccessNotPossibleException {
-    return getJsonBasedAuthorizer();
-  }
-
-  public Authenticator getAuthenticator() throws NoSuchAlgorithmException, AccessNotPossibleException {
+  private Authenticator getAuthenticator() throws NoSuchAlgorithmException, AccessNotPossibleException {
     return getJsonBasedAuthenticator();
   }
 
@@ -132,23 +128,27 @@ public class SecurityFactory {
     if (loggedInUsers == null) {
       loggedInUsers = new LoggedInUsers(
         getAuthenticator(),
-        new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore()),
-        autoLogoutTimeout.createTimeout()
+        getUserStore(),
+        autoLogoutTimeout.createTimeout(),
+        getAuthHandler(getHttpCaller())
       );
     }
     return loggedInUsers;
   }
 
+  @Override
   public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
     return localAuthentication.getHealthChecks();
   }
 
-  public UserValidator getUserValidator() throws AccessNotPossibleException {
-    return new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore());
+  @Override
+  public UserValidator getUserValidator() throws AccessNotPossibleException, NoSuchAlgorithmException {
+    return new BasicUserValidator(getAuthHandler(getHttpCaller()), getUserStore(), getLoggedInUsers());
   }
 
+  @Override
   public PermissionFetcher getPermissionFetcher()
-    throws AccessNotPossibleException {
+    throws AccessNotPossibleException, NoSuchAlgorithmException {
     return new BasicPermissionFetcher(getVreAuthorizationCreator(), getUserValidator());
   }
 }

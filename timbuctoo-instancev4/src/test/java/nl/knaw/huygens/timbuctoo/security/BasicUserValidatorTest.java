@@ -4,9 +4,10 @@ import nl.knaw.huygens.hamcrest.OptionalPresentMatcher;
 import nl.knaw.huygens.security.client.AuthenticationHandler;
 import nl.knaw.huygens.security.client.model.SecurityInformation;
 import nl.knaw.huygens.security.core.model.Affiliation;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.junit.Before;
 import org.junit.Test;
+import sun.rmi.runtime.Log;
 
 import javax.annotation.Nullable;
 import java.security.Principal;
@@ -15,7 +16,6 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
@@ -25,12 +25,14 @@ public class BasicUserValidatorTest {
   private AuthenticationHandler authenticationHandler;
   private UserStore userStore;
   private BasicUserValidator basicUserValidator;
+  private LoggedInUsers loggedInUsers;
 
   @Before
   public void setUp() throws Exception {
     authenticationHandler = mock(AuthenticationHandler.class);
     userStore = mock(UserStore.class);
-    basicUserValidator = new BasicUserValidator(authenticationHandler, userStore);
+    loggedInUsers = mock(LoggedInUsers.class);
+    basicUserValidator = new BasicUserValidator(authenticationHandler, userStore, null);
   }
 
   @Test
@@ -42,35 +44,24 @@ public class BasicUserValidatorTest {
 
   @Test
   public void getUserFromAccessTokenReturnsUserWhenAccessTokenIsValid() throws Exception {
-    given(authenticationHandler.getSecurityInformation("validAccessToken")).willReturn(
-      createMockSecurityInformation("validPersistentId")
-    );
-    given(userStore.userFor("validPersistentId")).willReturn(Optional.of(createMockUser()));
+    given(loggedInUsers.userFor("validAccessToken")).willReturn(Optional.of(createMockUser()));
 
-    Optional<User> user = basicUserValidator.getUserFromAccessToken("validAccessToken");
+    BasicUserValidator basicUserValidator2 = new BasicUserValidator(authenticationHandler, userStore, loggedInUsers);
 
-    assertThat(user, is(OptionalPresentMatcher.present()));
-  }
-
-  @Test
-  public void getUserFromAccessTokenReturnsNewUserWhenAccessTokenIsValidAndUserDoesNotExist() throws Exception {
-    given(authenticationHandler.getSecurityInformation("validAccessToken")).willReturn(
-      createMockSecurityInformation("validPersistentId")
-    );
-    given(userStore.saveNew(anyString(), eq("validPersistentId"))).willReturn(createMockUser());
-
-    Optional<User> user = basicUserValidator.getUserFromAccessToken("validAccessToken");
+    Optional<User> user = basicUserValidator2.getUserFromAccessToken("validAccessToken");
 
     assertThat(user, is(OptionalPresentMatcher.present()));
   }
 
   @Test
   public void getUserFromAccessTokenReturnsEmptyWhenAccessTokenIsInvalid() throws Exception {
-    given(authenticationHandler.getSecurityInformation("invalidAccessToken")).willReturn(
+    given(loggedInUsers.userFor("invalidAccessToken")).willReturn(
       null
     );
 
-    Optional<User> user = basicUserValidator.getUserFromAccessToken("invalidAccessToken");
+    BasicUserValidator basicUserValidator2 = new BasicUserValidator(authenticationHandler, userStore, loggedInUsers);
+
+    Optional<User> user = basicUserValidator2.getUserFromAccessToken("validAccessToken");
 
     assertThat(user, is(Optional.empty()));
   }

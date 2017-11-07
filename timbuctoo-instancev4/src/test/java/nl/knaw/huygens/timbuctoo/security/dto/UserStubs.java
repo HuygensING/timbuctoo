@@ -1,5 +1,7 @@
 package nl.knaw.huygens.timbuctoo.security.dto;
 
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+
 import javax.annotation.Nullable;
 
 public class UserStubs {

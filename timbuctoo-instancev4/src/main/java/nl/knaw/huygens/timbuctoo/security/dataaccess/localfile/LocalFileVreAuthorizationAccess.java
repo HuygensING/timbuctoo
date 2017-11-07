@@ -6,7 +6,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.collect.Lists;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.VreAuthorizationAccess;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationUnavailableException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationUnavailableException;
 
 import java.io.File;
 import java.io.IOException;

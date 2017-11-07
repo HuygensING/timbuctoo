@@ -6,7 +6,7 @@ import com.microsoft.azure.storage.table.DynamicTableEntity;
 import com.microsoft.azure.storage.table.EntityProperty;
 import com.microsoft.azure.storage.table.TableQuery;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.UserAccess;
-import nl.knaw.huygens.timbuctoo.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.exceptions.AuthenticationUnavailableException;
 import org.slf4j.Logger;
 

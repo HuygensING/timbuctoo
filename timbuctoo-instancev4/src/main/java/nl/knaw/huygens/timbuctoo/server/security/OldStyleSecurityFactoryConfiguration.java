@@ -1,11 +1,11 @@
-package nl.knaw.huygens.timbuctoo.security.dropwizard;
+package nl.knaw.huygens.timbuctoo.server.security;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import nl.knaw.huygens.timbuctoo.security.FederatedAuthConfiguration;
-import nl.knaw.huygens.timbuctoo.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.security.OldStyleSecurityFactory;
 import nl.knaw.huygens.timbuctoo.security.dataaccess.AccessFactory;
 import nl.knaw.huygens.timbuctoo.util.TimeoutFactory;
-import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactoryConfiguration;
+import nl.knaw.huygens.timbuctoo.v5.dropwizard.config.SecurityFactoryConfiguration;
 import org.apache.http.impl.client.CloseableHttpClient;
 
 
@@ -23,8 +23,8 @@ public class OldStyleSecurityFactoryConfiguration implements SecurityFactoryConf
   private FederatedAuthConfiguration federatedAuthentication;
 
   @Override
-  public SecurityFactory createNewSecurityFactory(CloseableHttpClient httpCaller) {
-    return new SecurityFactory(localAuthentication, algorithm, autoLogoutTimeout, federatedAuthentication,
+  public OldStyleSecurityFactory createNewSecurityFactory(CloseableHttpClient httpCaller) {
+    return new OldStyleSecurityFactory(localAuthentication, algorithm, autoLogoutTimeout, federatedAuthentication,
       new HttpCaller(httpCaller));
   }
 }
