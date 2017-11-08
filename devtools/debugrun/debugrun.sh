@@ -2,7 +2,9 @@
 
 cd -P -- "$(dirname -- "$0")" #go to dir of script even if it was called as a symbolic link
 
-cd ../../timbuctoo-instancev4
+cd "$(git rev-parse --show-toplevel)" #go to git root
+
+cd timbuctoo-instancev4
 
 COMMAND="server"
 YAML="./example_config.yaml"
