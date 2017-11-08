@@ -1,12 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.openrefine.Query;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResults;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.ReconciliationQueryExecuter;
+import nl.knaw.huygens.timbuctoo.v5.openrefine.ReconciliationQueryExecutor;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -20,60 +19,56 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.Map;
 
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsn;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnA;
+import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+
 @Path("v5/openrefinereconciliation")
 public class OpenRefineReconciliationEndpoint {
+  private final ReconciliationQueryExecutor executor;
+  private final ObjectMapper objectMapper;
 
-  private final ReconciliationQueryExecuter executer;
-
-  public OpenRefineReconciliationEndpoint(ReconciliationQueryExecuter executer) {
-    this.executer = executer;
+  public OpenRefineReconciliationEndpoint(ReconciliationQueryExecutor executor) {
+    objectMapper = new ObjectMapper();
+    this.executor = executor;
   }
 
   @POST
   @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
   @Produces("application/json")
-  public Response doPost(@FormParam("queries") String message) throws IOException {
-    System.err.println(message);
+  public Response doPost(@FormParam("queries") String queries) throws IOException {
     Map<String, Query> query;
-    ObjectMapper objectMapper = new ObjectMapper();
     try {
-      query = objectMapper.readValue(message, new TypeReference<Map<String,Query>>() {
-      });
-      System.err.println("query : " + query);
+      query = objectMapper.readValue(queries, new TypeReference<Map<String,Query>>() { });
     } catch (IOException e) {
       return Response.status(400).entity(e.getMessage()).build();
     }
-
-    Map<String, QueryResults> queryResult = executer.excute(query);
-
-
-    try {
-      System.err.println("queryResult: " + objectMapper.writeValueAsString(queryResult));
-      return Response.ok(queryResult).build();
-    } catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
-
-    return Response.serverError().build();
+    return Response.ok(executor.execute(query)).build();
   }
 
   @GET
+  @Produces("application/json")
   public Response query(@QueryParam("queries") String queries,
                         @QueryParam("callback") String callback) throws ResourceSyncException {
-
-    String result = "{ \"queries\" : \"" + queries + "\" }";
-    System.err.println(result);
-    if (queries == null) {
-      result = "{ \"name\": \"Timbuctoo\", \"view\" : {\"url\": \"http://localhost:8080/v5/openrefinereconciliation/{{id}}\"}, \"defaultTypes\" : [{\"id\":\"/getname\",\"name\":\"Person\"}], \"identifierSpace\": \"http://rdf.freebase.com/ns/authority.netflix.movie\",\"schemaSpace\": \"http://rdf.freebase.com/ns/type.object.id\" }";
+    JsonNode result;
+    if (queries != null) {
+      result = jsnO("queries", jsn(queries));
+    } else {
+      result = jsnO(
+        "name", jsn("Timbuctoo"),
+        "view", jsnO("url", jsn("http://localhost:8080/v5/openrefinereconciliation/{{id}}")),
+        "identifierSpace", jsn("http://rdf.freebase.com/ns/authority.netflix.movie"),
+        "schemaSpace", jsn("http://rdf.freebase.com/ns/type.object.id"),
+        "defaultTypes", jsnA(
+          jsnO("id", jsn("/getname"), "name", jsn("Person"))
+        )
+      );
     }
     if (callback != null) {
-      result = "/**/" + callback + "(" + result + ");";
-      System.err.println(result);
-      return Response.ok(result, MediaType.TEXT_PLAIN).build();
-
+      return Response.ok("/**/" + callback + "(" + result.toString() + ");", MediaType.TEXT_PLAIN).build();
+    } else {
+      return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
     }
-    System.err.println(result);
-    return Response.ok(result, MediaType.APPLICATION_JSON_TYPE).build();
   }
 
 }
