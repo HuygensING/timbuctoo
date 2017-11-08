@@ -105,6 +105,9 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
+import nl.knaw.huygens.timbuctoo.v5.openrefine.Query;
+import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResult;
+import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResults;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
