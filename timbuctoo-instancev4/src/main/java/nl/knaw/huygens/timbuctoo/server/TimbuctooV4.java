@@ -105,16 +105,13 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelp
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.Query;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResult;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResults;
+import nl.knaw.huygens.timbuctoo.v5.openrefine.DummyReconciliationExecutor;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.openrefine.Query;
 import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResult;
 import nl.knaw.huygens.timbuctoo.v5.openrefine.QueryResults;
-import nl.knaw.huygens.timbuctoo.v5.openrefine.ReconciliationQueryExecuter;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -131,9 +128,7 @@ import java.time.Clock;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 
 import static com.codahale.metrics.MetricRegistry.name;
@@ -456,24 +451,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     register(environment, new TransactionFilter(graphManager));
     //Allow all CORS requests
     register(environment, new PromiscuousCorsFilter());
-    
-    register(environment, new OpenRefineReconciliationEndpoint((Map<String, Query> query) -> {
-      Map<String, QueryResults> queryResult = new TreeMap<>();
-      for (Map.Entry<String, Query> stringQueryEntry : query.entrySet()) {
-        QueryResult qr = new QueryResult();
-        qr.id = stringQueryEntry.getKey().substring(1);
-        qr.name = stringQueryEntry.getValue().query;
-        qr.match = true;
-        qr.score = 1.0;
-        qr.type = new String[]{"String"};
-        ArrayList<QueryResult> qrAl = new ArrayList<>();
-        qrAl.add(qr);
-        QueryResults queryResults = new QueryResults();
-        queryResults.queryResults = qrAl;
-        queryResult.put(stringQueryEntry.getKey(), queryResults);
-      }
-      return queryResult;
-    }));
+
+    register(environment, new OpenRefineReconciliationEndpoint(new DummyReconciliationExecutor()));
 
     //Add embedded AMQ (if any) to the metrics
     configuration.getLocalAmqJmxPath(HANDLE_QUEUE).ifPresent(rethrowConsumer(jmxPath -> {
