@@ -19,10 +19,7 @@ public class TwitterUserValidator implements UserValidator {
   @Override
   public Optional<User> getUserFromAccessToken(String accessToken) throws UserValidationException {
     String token = accessToken.substring(0, accessToken.indexOf("_"));
-    System.out.println("Split token: " + token);
     String tokenSecret = accessToken.substring(accessToken.indexOf("_") + 1, accessToken.length());
-    System.out.println("Split verifier: " + tokenSecret);
-
 
     if (users.get(token) != null) {
       return Optional.of(users.get(token));
