@@ -98,6 +98,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
+import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
@@ -307,6 +308,9 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriHelper
     );
     register(environment, graphQlEndpoint);
+
+    final TwitterLogin twitterLogin = new TwitterLogin();
+    register(environment, twitterLogin);
 
     register(environment, new CreateDataSet(authCheck));
     register(environment, new DataSet(

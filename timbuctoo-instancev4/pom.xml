@@ -585,6 +585,13 @@
       <artifactId>jsonld-java</artifactId>
       <version>0.11.0</version>
     </dependency>
+
+    <!-- Twitter-4j oauth for twitter -->
+    <dependency>
+      <groupId>org.twitter4j</groupId>
+      <artifactId>twitter4j-core</artifactId>
+      <version>[4.0,)</version>
+    </dependency>
     <!-- ## End of test dependencies ## -->
   </dependencies>
 
