@@ -106,6 +106,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactoryConfiguration;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -309,8 +311,10 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
     );
     register(environment, graphQlEndpoint);
 
-    final TwitterLogin twitterLogin = new TwitterLogin();
-    register(environment, twitterLogin);
+    if (securityConfig instanceof TwitterSecurityFactory) {
+      final TwitterLogin twitterLogin = new TwitterLogin();
+      register(environment, twitterLogin);
+    }
 
     register(environment, new CreateDataSet(authCheck));
     register(environment, new DataSet(
