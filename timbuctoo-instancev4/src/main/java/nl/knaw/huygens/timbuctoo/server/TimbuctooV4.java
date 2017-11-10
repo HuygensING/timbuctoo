@@ -98,6 +98,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
+import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
@@ -105,6 +106,8 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactoryConfiguration;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
@@ -307,6 +310,11 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       uriHelper
     );
     register(environment, graphQlEndpoint);
+
+    if (securityConfig instanceof TwitterSecurityFactory) {
+      final TwitterLogin twitterLogin = new TwitterLogin();
+      register(environment, twitterLogin);
+    }
 
     register(environment, new CreateDataSet(authCheck));
     register(environment, new DataSet(
