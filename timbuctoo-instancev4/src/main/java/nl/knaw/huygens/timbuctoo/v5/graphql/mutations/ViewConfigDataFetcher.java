@@ -34,10 +34,10 @@ public class ViewConfigDataFetcher implements DataFetcher {
     String collectionUri = env.getArgument("collectionUri");
     Object viewConfig = env.getArgument("viewConfig");
 
-    Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
+    Tuple<String, String> ownerAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
 
-    String ownerId = userAndDataSet.getLeft();
-    String dataSetName = userAndDataSet.getRight();
+    String ownerId = ownerAndDataSet.getLeft();
+    String dataSetName = ownerAndDataSet.getRight();
     if (dataSetRepository.dataSetExists(ownerId, dataSetName)) {
       DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetName).get();
       dataSet.getQuadStore();
