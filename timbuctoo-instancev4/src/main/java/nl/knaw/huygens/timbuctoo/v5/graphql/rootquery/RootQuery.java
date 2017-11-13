@@ -106,7 +106,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .collect(Collectors.toList()))
       .dataFetcher("dataSetMetadata", env -> {
         final String dataSetId = env.getArgument("dataSetId");
-        return dataSetRepository.getDataSet(dataSetId).map(DataSetWithDatabase::new);
+        return dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(dataSetId).map(DataSetWithDatabase::new);
       })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
@@ -122,7 +122,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           collectionId = collectionId.substring(0, collectionId.length() - "List".length());
         }
         PromotedDataSet input = env.getSource();
-        final DataSet dataSet = dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId()).get();
+        final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(input.getOwnerId(),
+          input.getDataSetId()).get();
         final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
         String collectionUri = typeNameStore.makeUri(collectionId);
         if (dataSet.getSchemaStore().getTypes() == null ||
@@ -234,7 +235,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
   }
 
   public CollectionMetadataList getCollections(PromotedDataSet input) {
-    final DataSet dataSet = dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId()).get();
+    final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(input.getOwnerId(),
+      input.getDataSetId()).get();
 
     final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
     final List<CollectionMetadata> colls = dataSet

@@ -43,7 +43,7 @@ public class DataSet {
   public Response delete(@PathParam("userId") String ownerId, @PathParam("dataSetId") String dataSetName,
                          @HeaderParam("authorization") String authorization) {
 
-    Response response = dataSetRepository.getDataSet(ownerId, dataSetName)
+    Response response = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetName)
       .map(dataSet -> checkAdminAccess(
         permissionFetcher,
         userValidator,

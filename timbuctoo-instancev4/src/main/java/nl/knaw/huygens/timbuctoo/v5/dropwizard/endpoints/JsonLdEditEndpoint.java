@@ -69,7 +69,7 @@ public class JsonLdEditEndpoint {
                                 @PathParam("dataset") String dataSetId,
                                 @HeaderParam("authorization") String authHeader) throws LogStorageFailedException {
 
-    Optional<DataSet> dataSetOpt = dataSetRepository.getDataSet(userId, dataSetId);
+    Optional<DataSet> dataSetOpt = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(userId, dataSetId);
     if (!dataSetOpt.isPresent()) {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
