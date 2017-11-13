@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableMap;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.DELETE;
@@ -14,6 +16,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Optional;
 
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkAdminAccess;
 
@@ -43,7 +46,16 @@ public class DataSet {
   public Response delete(@PathParam("userId") String ownerId, @PathParam("dataSetId") String dataSetName,
                          @HeaderParam("authorization") String authorization) {
 
-    Response response = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetName)
+    Optional<User> user;
+
+    try {
+      user = userValidator.getUserFromAccessToken(authorization);
+    } catch (UserValidationException e) {
+      user = Optional.empty();
+    }
+
+    Response response = dataSetRepository.getDataSet(user.get().getPersistentId(),
+      ownerId, dataSetName)
       .map(dataSet -> checkAdminAccess(
         permissionFetcher,
         userValidator,

@@ -77,7 +77,7 @@ public class JsonLdEditEndpoint {
 
     Optional<DataSet> dataSetOpt = dataSetRepository
       .getDataSet(user.get().getPersistentId(), ownerId, dataSetId);
-    
+
     if (!dataSetOpt.isPresent()) {
       return Response.status(Response.Status.NOT_FOUND).build();
     }
