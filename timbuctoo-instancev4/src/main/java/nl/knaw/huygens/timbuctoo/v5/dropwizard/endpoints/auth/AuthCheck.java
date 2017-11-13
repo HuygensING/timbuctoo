@@ -109,7 +109,7 @@ public class AuthCheck {
                                                             boolean forceCreation) {
     return getUser(authHeader, userValidator)
       .flatMap(user ->
-        dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetId)
+        dataSetRepository.getDataSet(user.getPersistentId(),ownerId, dataSetId)
           .map(ds -> Either.<Response, Tuple<User, DataSet>>right(Tuple.tuple(user, ds)))
           .orElseGet(() -> handleForceCreate(ownerId, dataSetId, forceCreation, user))
       );
