@@ -279,12 +279,14 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
 
     register(environment, new Rml(
       dataSetRepository,
-      errorResponseHelper
+      errorResponseHelper,
+      securityConfig.getUserValidator()
     ));
 
     register(environment, new Rml(
       dataSetRepository,
-      errorResponseHelper
+      errorResponseHelper,
+      securityConfig.getUserValidator()
     ));
 
     SerializerWriterRegistry serializerWriterRegistry = new SerializerWriterRegistry(
