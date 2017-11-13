@@ -49,7 +49,7 @@ public class UrlsetTest {
 
 
   @Test
-  public void readValues() throws Exception {
+  public void readValuesOfLinkCaseInsensitive() throws Exception {
     Urlset urlset = createUrlset();
     //System.out.println(asXml(urlset));
 
@@ -61,7 +61,11 @@ public class UrlsetTest {
       equalTo("http://example.com/info_about_set1_of_resources.xml"));
     assertThat(urlItem1.getLinkHref("describedBy"),
       equalTo("http://example.com/info_about_set1_of_resources.xml"));
+  }
 
+  @Test
+  public void readNullValue() throws Exception {
+    Urlset urlset = createUrlset();
     UrlItem urlItem2 = urlset.getItemList().get(1);
     assertThat(urlItem2.getLinkHref("describedby"), equalTo(null));
   }

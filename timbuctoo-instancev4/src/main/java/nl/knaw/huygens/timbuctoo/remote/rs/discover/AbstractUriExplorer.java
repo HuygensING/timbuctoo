@@ -49,9 +49,7 @@ public abstract class AbstractUriExplorer {
     currentUri = uri;
     Result<T> result = new Result<T>(uri);
     HttpGet request = new HttpGet(uri);
-    CloseableHttpResponse response = null;
-    try  {
-      response = httpClient.execute(request);
+    try (CloseableHttpResponse response = httpClient.execute(request)) {
       int statusCode = response.getStatusLine().getStatusCode();
       result.setStatusCode(statusCode);
       if (!Response.Status.Family.SUCCESSFUL.equals(Response.Status.Family.familyOf(statusCode))) {
@@ -61,21 +59,8 @@ public abstract class AbstractUriExplorer {
       }
     } catch (Exception e) {
       result.addError(e);
-    } finally {
-      closeResponse(response);
     }
     return result;
   }
-
-  private void closeResponse(CloseableHttpResponse response) {
-    if (response != null) {
-      try {
-        response.close();
-      } catch (IOException e) {
-        LOG.error("Error while closing HttpResponse: ", e);
-      }
-    }
-  }
-
 
 }

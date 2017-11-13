@@ -35,8 +35,9 @@ import java.util.Optional;
  *   RsExplorer can begin with any URI that points to a ResourceSync sitemap on the site
  *   that is the subject of exploration, regardless of what capability that start document may have. With default
  *   settings RsExplorer will navigate and index the complete tree of documents.
- *   There are three switches to influence the path the RsExplorer will take through the sitemap tree:
- *   {@link #followParentLinks}, {@link #followChildLinks} and {@link #followIndexLinks}.
+ *   There are four switches to influence the path the RsExplorer will take through the sitemap tree:
+ *   {@link #followParentLinks}, {@link #followChildLinks}, {@link #followIndexLinks} and
+ *   {@link #followDescribedByLinks}.
  * </p>
  */
 public class RsExplorer extends AbstractUriExplorer {
@@ -47,10 +48,10 @@ public class RsExplorer extends AbstractUriExplorer {
 
   private LambdaExceptionUtil.Function_WithExceptions<HttpResponse, RsRoot, Exception> sitemapConverter;
 
-  public boolean followParentLinks = true;
-  public boolean followIndexLinks = true;
-  public boolean followChildLinks = true;
-  public boolean followDescribedByLinks = true;
+  private boolean followParentLinks = true;
+  private boolean followIndexLinks = true;
+  private boolean followChildLinks = true;
+  private boolean followDescribedByLinks = true;
 
   public RsExplorer(CloseableHttpClient httpClient, ResourceSyncContext rsContext) {
     super(httpClient);
