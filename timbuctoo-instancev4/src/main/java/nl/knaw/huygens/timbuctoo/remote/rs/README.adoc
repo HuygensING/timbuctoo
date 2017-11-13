@@ -92,6 +92,8 @@ So to create a resourcesync capable server for timbuctoo you should:
  3. Fill them with links to http://www.openarchives.org/rs/1.0.9/resourcesync#ex_1[Resource lists]
  4. Fill those with links to the actual data files in one of the supported rdf formats (see below)
 
+You may use the describedBy mechanism (see http://www.openarchives.org/rs/1.1/resourcesync#DocumentFormats ) to point to documents that describe your datasets. These description documents can be in any format, however, using one of the RDF-formats is recommended.
+
 === Valid resources
 Timbuctoo cannot sync every filetype on the internet, only files containing rdf in several of the more well-known serialisation formats.
 To indicate the serialisation format you can specify the mimetype in the optional `md` field (meta data field) for each url from the resource list.
@@ -132,8 +134,7 @@ The following url's are important to remember:
 Got to the folder `{timbuctoo-root}/documentation/resourcesyncexample`.
 include::../../../../../../../../../../documentation/resourcesyncexample/README.adoc[tags=startup]
 
-- http://localhost:8080/v2.1/remote/rs/discover/listgraphs?url=http%3A%2F%2Fyour%2Frdf%2Fserver - list the graph iri's at the remote site
-- http://localhost:8080/v2.1/remote/rs/discover/listsets?url=http%3A%2F%2Fyour%2Frdf%2Fserver - same as previous, agnostic to base64-convention
+- http://localhost:8080/v2.1/remote/rs/discover/listsets?url=http%3A%2F%2Fyour%2Frdf%2Fserver - list the datasets at the remote site
 - http://localhost:8080/v2.1/remote/rs/discover/framework?url=http%3A%2F%2Fyour%2Frdf%2Fserver - flat representation of the ResourceSync Framework documents
 - http://localhost:8080/v2.1/remote/rs/discover/tree?url=http%3A%2F%2Fyour%2Frdf%2Fserver - hierarchical representation of the ResourceSync Framework documents
 N.B. You can use `http%3A%2F%2Flocalhost%3A8080%2Fv5%2Fresourcesync%2FsourceDescription.xml` in stead of `http%3A%2F%2Fyour%2Frdf%2Fserver` to use the same Timbuctoo instance as client and server.
@@ -166,7 +167,7 @@ All results come together in a `ResultIndex`, which is essentially a collection 
 This package has several 'views' on results and result details that are shaped for (one way) Json serialization. Classes that take a `ResultIndex` are marked with the word 'Base': `SetListBase`, `FrameworkBase`, `TreeBase`.  The constructors of these classes take the result detail they are supposed to render and an `Interpreter` which introduces some flexibility on how a detail is rendered. The `Interpreter` and `Interpreters` classes should be extended with whatever interpreters are needed for more sophisticated renderings. Of course in such a case also particular methods in  the views have to be adopted to make use of the interpreter.
 
 == The Discover API
-The class `nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover` handles API calls that enable discovering a remote ResourceSync source. A CLARIAH-introduced convention of communicating the graph iri through the name of a directory is provided by means of an interpreter as mentioned in the previous paragraph. The methods `listSets` and `listGraphs` are essentially the same, except that the latter method uses the `Interpreters.base64EncodedItemNameInterpreter`.  Thus reducing the impact of changes in perhaps temporary conventions to a minimum.
+The class `nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover` handles API calls that enable discovering a remote ResourceSync source.
 
 == What remains to be done
 
@@ -174,5 +175,4 @@ The class `nl.knaw.huygens.timbuctoo.server.endpoints.v2.remote.rs.Discover` han
 - todo:feature[resourcesync discovery should only request the source description document if you pass it a full url. (It currently also downloads all capability lists)]
 - todo:feature[resourcesync discovery walks the up-chain to get to the source description document if you pass a secondary level document (capabilitylist or resourcelist, resource index list)]
 - todo:feature[resourcesync discovery returns a list with only the secondary level document if the up-chain cannot be walked]
-- todo:feature[choose a format for describing the datasets and link it using `describedby` (something like dcat or VOID ) and make the discovery use that information for presenting the data to the user.]
 - todo:task[make resourcesync client available on v5 api]

@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.view;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import nl.knaw.huygens.timbuctoo.remote.rs.discover.Description;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.LinkList;
 import nl.knaw.huygens.timbuctoo.remote.rs.discover.Result;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.Capability;
@@ -20,6 +21,8 @@ public class ResultView {
   private int ordinal;
   private int statusCode;
   private String contentType;
+  private ResultView describedBy;
+  private DescriptionView description;
   private int childCount;
   private List<ErrorView> errorList;
   private Set<String> invalidUris;
@@ -56,7 +59,13 @@ public class ResultView {
         if (optionalCapa.isPresent()) {
           capability = optionalCapa.get().xmlValue;
         }
+      } else if (content instanceof Description) {
+        description = new DescriptionView((Result<Description>) result, interpreter);
       }
+    }
+
+    if (result.getDescriptionResult().isPresent()) {
+      describedBy = new ResultView(result.getDescriptionResult().get(), interpreter);
     }
 
     errorList = result.getErrors().stream()
@@ -64,6 +73,7 @@ public class ResultView {
       .collect(Collectors.toList());
 
     invalidUris = result.getInvalidUris();
+
   }
 
   public String getUri() {
@@ -89,6 +99,16 @@ public class ResultView {
 
   public int getChildCount() {
     return childCount;
+  }
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public ResultView getDescribedBy() {
+    return describedBy;
+  }
+
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  public DescriptionView getDescription() {
+    return description;
   }
 
   @JsonInclude(JsonInclude.Include.NON_EMPTY)

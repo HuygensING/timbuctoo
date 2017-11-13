@@ -1,9 +1,14 @@
 package nl.knaw.huygens.timbuctoo.remote.rs.view;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import nl.knaw.huygens.timbuctoo.remote.rs.discover.Description;
+import nl.knaw.huygens.timbuctoo.remote.rs.discover.Result;
+import nl.knaw.huygens.timbuctoo.remote.rs.discover.ResultIndex;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsItem;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsLn;
 import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
+
+import java.net.URI;
 
 
 /**
@@ -11,38 +16,38 @@ import nl.knaw.huygens.timbuctoo.remote.rs.xml.RsMd;
  */
 public class SetItemView {
 
-  private String name;
   private String location;
   private String capability;
-  private String describedBy;
+  private ResultView describedBy;
 
-  public SetItemView(RsItem<?> rsItem) {
-    init(rsItem, new Interpreter() {});
+  public SetItemView(ResultIndex resultIndex, RsItem<?> rsItem) {
+    init(resultIndex, rsItem, new Interpreter() {});
   }
 
-  public SetItemView(RsItem<?> rsItem, Interpreter interpreter) {
-    init(rsItem, interpreter);
+  public SetItemView(ResultIndex resultIndex, RsItem<?> rsItem, Interpreter interpreter) {
+    init(resultIndex, rsItem, interpreter);
   }
 
-  private void init(RsItem<?> rsItem, Interpreter interpreter) {
+  @SuppressWarnings("unchecked")
+  private void init(ResultIndex resultIndex, RsItem<?> rsItem, Interpreter interpreter) {
 
     location = rsItem.getLoc();
-    name = interpreter.getItemNameInterpreter().apply(rsItem);
     
     capability = rsItem.getMetadata()
       .flatMap(RsMd::getCapability)
       .orElse(null);
 
-    describedBy = rsItem.getLinkList().stream()
-      .filter(rsLn -> "describedby".equals(rsLn.getRel()))
+    String href = rsItem.getLinkList().stream()
+      .filter(rsLn -> "describedBy".equalsIgnoreCase(rsLn.getRel()))
       .findAny()
       .map(RsLn::getHref)
       .orElse(null);
-  }
-
-  @JsonInclude(JsonInclude.Include.NON_NULL)
-  public String getName() {
-    return name;
+    if (href != null) {
+      Result<?> result = resultIndex.getResultMap().get(URI.create(href));
+      if (result != null) {
+        describedBy = new ResultView(result, interpreter);
+      }
+    }
   }
 
   public String getLocation() {
@@ -54,7 +59,8 @@ public class SetItemView {
   }
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
-  public String getDescribedBy() {
+  public ResultView getDescribedBy() {
     return describedBy;
   }
+
 }

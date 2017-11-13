@@ -7,8 +7,10 @@ import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
+import org.slf4j.Logger;
 
 import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 
@@ -22,6 +24,8 @@ public abstract class AbstractUriExplorer {
     Charset charset = contentType.getCharset();
     return charset == null ? "UTF-8" : charset.name();
   }
+
+  private static final Logger LOG = org.slf4j.LoggerFactory.getLogger(AbstractUriExplorer.class);
 
   private final CloseableHttpClient httpClient;
 
@@ -45,7 +49,6 @@ public abstract class AbstractUriExplorer {
     currentUri = uri;
     Result<T> result = new Result<T>(uri);
     HttpGet request = new HttpGet(uri);
-
     try (CloseableHttpResponse response = httpClient.execute(request)) {
       int statusCode = response.getStatusLine().getStatusCode();
       result.setStatusCode(statusCode);

@@ -14,6 +14,7 @@ import java.util.Map;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 
 public class ExpeditionTest extends AbstractRemoteTest {
 
@@ -46,25 +47,26 @@ public class ExpeditionTest extends AbstractRemoteTest {
     setUpServer(path);
     Expedition expedition = new Expedition(getHttpclient(), getRsContext());
 
+    //
     List<ResultIndex> indexes = expedition.explore(url);
     /*indexes.forEach(resultIndex -> resultIndex.getResultMap()
       .forEach((uri, result) -> System.out.println(uri + " "
         + result.getStatusCode() + " "
         + result.getOrdinal())));*/
-    assertThat(indexes.size(), equalTo(4));
+    assertThat(indexes.size(), equalTo(4)); // 4 indexes for 4 ways of exploring
 
     int resultCount1 = indexes.stream()
       .map(ResultIndex::getResultMap)
       .mapToInt(Map::size)
       .sum();
-    assertThat(resultCount1, equalTo(15));
+    assertThat(resultCount1, equalTo(19)); // 19 URL's explored in total
 
     int deadEnds1 = indexes.stream()
       .map(ResultIndexPivot::new)
       .map(ResultIndexPivot::listErrorResults)
       .mapToInt(List::size)
       .sum();
-    assertThat(deadEnds1, equalTo(12));
+    assertThat(deadEnds1, equalTo(16)); // 16 results with status code not 200 - 299
 
     // again with merged indexes
     // uri's http://localhost:xxxxx/timbucto will be merged
@@ -73,19 +75,19 @@ public class ExpeditionTest extends AbstractRemoteTest {
     ResultIndexPivot pivot = new ResultIndexPivot((index));
 
     int resultCount = index.getResultMap().size();
-    assertThat(resultCount, equalTo(14)); // 15 > 14, merged http://localhost:xxxxxx/timbucto
+    assertThat(resultCount, equalTo(18)); // 19 > 18. 18 unique URL's
 
     int deadEnds = pivot.listErrorResults().size();
-    assertThat(deadEnds, equalTo(11)); // 12 > 11, merged http://localhost:xxxxxx/timbucto
+    assertThat(deadEnds, equalTo(15)); // 16 > 15. 15 unique URL's with error result
 
     int finds = pivot.listUrlsetResults().size();
-    assertThat(finds, equalTo(3));
+    assertThat(finds, equalTo(3)); // 3 results that carry class Urlset
 
     int clCount = pivot.listUrlsetResults(Capability.CAPABILITYLIST).size();
-    assertThat(clCount, equalTo(2));
+    assertThat(clCount, equalTo(2)); // 2 results that carry class Urlset are Capability Lists.
 
     int descCount = pivot.listUrlsetResults(Capability.DESCRIPTION).size();
-    assertThat(descCount, equalTo(1));
+    assertThat(descCount, equalTo(1)); // 1 result that carries class Urlset is a Source Description.
   }
 
   @Test
@@ -103,13 +105,9 @@ public class ExpeditionTest extends AbstractRemoteTest {
       composePath("/clariah/duck/soup/resourcelist.xml"),
       composePath("/clariah/duck/soup/resourcedump.xml"),
       composePath("/clariah/duck/soup/changelist.xml"),
-      composePath("/clariah/duck/soup/changedump.xml"),
-      composePath("/foo/resourcelist.xml"),
-      composePath("/foo/resourcedump.xml"),
-      composePath("/foo/changelist.xml"),
-      composePath("/foo/changedump.xml")
+      composePath("/clariah/duck/soup/changedump.xml")
     };
-    assertThat(locs, containsInAnyOrder(expectedLocs));
+    assertThat(locs, hasItems(expectedLocs));
   }
 
   private void setUpServer(String path) {
