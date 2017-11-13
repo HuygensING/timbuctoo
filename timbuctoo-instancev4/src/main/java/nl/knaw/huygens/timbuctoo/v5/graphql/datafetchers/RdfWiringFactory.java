@@ -127,7 +127,8 @@ public class RdfWiringFactory implements WiringFactory {
       final Directive directive = environment.getFieldDefinition().getDirective("dataSet");
       String userId = ((StringValue) directive.getArgument("userId").getValue()).getValue();
       String dataSetId = ((StringValue) directive.getArgument("dataSetId").getValue()).getValue();
-      final DataSet dataSet = dataSetRepository.getDataSet(userId, dataSetId).orElse(null);
+      final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(userId, dataSetId)
+        .orElse(null);
       return dataFetchingEnvironment -> new DatabaseResult() {
         @Override
         public DataSet getDataSet() {

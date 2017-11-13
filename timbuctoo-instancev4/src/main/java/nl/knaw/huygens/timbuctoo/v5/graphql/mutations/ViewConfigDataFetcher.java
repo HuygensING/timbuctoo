@@ -39,7 +39,7 @@ public class ViewConfigDataFetcher implements DataFetcher {
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
     if (dataSetRepository.dataSetExists(ownerId, dataSetName)) {
-      DataSet dataSet = dataSetRepository.getDataSet(ownerId, dataSetName).get();
+      DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetName).get();
       dataSet.getQuadStore();
       try {
         final String baseUri = dataSet.getMetadata().getBaseUri();

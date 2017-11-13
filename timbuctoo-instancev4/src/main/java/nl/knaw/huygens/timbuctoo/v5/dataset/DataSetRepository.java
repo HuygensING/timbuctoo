@@ -117,7 +117,35 @@ public class DataSetRepository {
     }
   }
 
-  public Optional<DataSet> getDataSet(String ownerId, String dataSetId) {
+  public Optional<DataSet> getDataSet(String userId, String ownerId, String dataSetId) {
+    synchronized (dataSetMap) {
+      if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
+        try {
+          if (permissionFetcher.getPermissions(userId, ownerId, dataSetId).contains(Permission.READ)) {
+            return Optional.ofNullable(dataSetMap.get(ownerId).get(dataSetId));
+          }
+        } catch (PermissionFetchingException e) {
+          return Optional.empty();
+        }
+      }
+      return Optional.empty();
+    }
+  }
+
+  public Optional<DataSet> getDataSet(String userId, String combinedId) {
+    final Tuple<String, String> splitId = PromotedDataSet.splitCombinedId(combinedId);
+    try {
+      if (permissionFetcher.getPermissions(userId,combinedId).contains(Permission.READ)) {
+        return Optional.ofNullable(dataSetMap.get(splitId.getLeft()))
+          .map(userDataSets -> userDataSets.get(splitId.getRight()));
+      }
+    } catch (PermissionFetchingException e) {
+      return Optional.empty();
+    }
+    return Optional.empty();
+  }
+
+  public Optional<DataSet> unsafeGetDataSetWithoutCheckingPermissions(String ownerId, String dataSetId) {
     synchronized (dataSetMap) {
       if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
         return Optional.ofNullable(dataSetMap.get(ownerId).get(dataSetId));
@@ -127,11 +155,12 @@ public class DataSetRepository {
     }
   }
 
-  public Optional<DataSet> getDataSet(String combinedId) {
+  public Optional<DataSet> unsafeGetDataSetWithoutCheckingPermissions(String combinedId) {
     final Tuple<String, String> splitId = PromotedDataSet.splitCombinedId(combinedId);
     return Optional.ofNullable(dataSetMap.get(splitId.getLeft()))
       .map(userDataSets -> userDataSets.get(splitId.getRight()));
   }
+
 
   public boolean userMatchesPrefix(User user, String prefix) {
     return user != null && user.getPersistentId() != null && ("u" + user.getPersistentId()).equals(prefix);
@@ -211,7 +240,7 @@ public class DataSetRepository {
   }
 
   public boolean dataSetExists(String ownerId, String dataSet) {
-    return getDataSet(ownerId, dataSet).isPresent();
+    return unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSet).isPresent();
   }
 
   public Collection<DataSet> getDataSets() {

@@ -10,6 +10,8 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.util.Optional;
@@ -33,8 +35,12 @@ public class IndexConfigDataFetcher implements DataFetcher {
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
+    Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
+    if (!currentUser.isPresent()) {
+      throw new RuntimeException("User is not provided");
+    }
     if (dataSetRepository.dataSetExists(ownerId, dataSetName)) {
-      DataSet dataSet = dataSetRepository.getDataSet(ownerId, dataSetName).get();
+      DataSet dataSet = dataSetRepository.getDataSet(currentUser.get().getPersistentId(), ownerId, dataSetName).get();
       dataSet.getQuadStore();
       try {
         final String baseUri = dataSet.getMetadata().getBaseUri();
