@@ -53,7 +53,7 @@ public class RawUploadRdfSaverTest {
       "userid",
       "dataset",
       "http://timbuctoo.huygens.knaw.nl/v5/datasets/userid/dataset",
-      "http://example.org/prefix/", false
+      "http://example.org/prefix/", false,false
     );
     instance = instanceWithRdfSerializer(rdfSerializer, dataSetMetadata);
   }

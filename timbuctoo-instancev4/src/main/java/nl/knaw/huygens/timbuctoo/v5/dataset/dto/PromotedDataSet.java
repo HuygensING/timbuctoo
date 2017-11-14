@@ -39,6 +39,9 @@ public interface PromotedDataSet {
 
   @Value.Auxiliary
   boolean isPromoted();
+
+  @Value.Auxiliary
+  boolean isPrivate();
   
   Optional<String> role = Optional.empty();
 
@@ -52,7 +55,7 @@ public interface PromotedDataSet {
   }
 
   static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, String baseUri, String uriPrefix,
-                                         boolean promoted) throws IllegalDataSetNameException {
+                                         boolean promoted, boolean isPrivate) throws IllegalDataSetNameException {
     if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
       throw new IllegalDataSetNameException("Owner id and dataSet id should match " + VALID_ID);
     }
@@ -64,6 +67,7 @@ public interface PromotedDataSet {
       .uriPrefix(uriPrefix)
       .dataSetId(dataSetId)
       .isPromoted(promoted)
+      .isPrivate(isPrivate)
       .build();
   }
 }

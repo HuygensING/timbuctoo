@@ -36,6 +36,10 @@ public class DataSetWithDatabase extends LazyTypeSubjectReference implements Pro
     return promotedDataSet.isPromoted();
   }
 
+  public boolean isPrivate() {
+    return promotedDataSet.isPrivate();
+  }
+
   public DataSetWithDatabase(DataSet dataSet) {
     super(dataSet.getMetadata().getBaseUri(), dataSet);
     this.promotedDataSet = dataSet.getMetadata();
