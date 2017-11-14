@@ -202,6 +202,7 @@ public class DataSetRepository {
       dataSetId,
       baseUri,
       uriPrefix,
+      false,
       false
     );
     synchronized (dataSetMap) {
