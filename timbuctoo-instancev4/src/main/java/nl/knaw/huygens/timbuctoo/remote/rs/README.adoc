@@ -25,7 +25,7 @@ Features in this package include:
 
 == Data model
 
-The http://www.openarchives.org/rs/1.0/resourcesync[resource sync specification] describes how various documents interlink in order to describe a set of resources and where the entrypoints should be placed.
+The http://www.openarchives.org/rs/1.1/resourcesync[resource sync specification] describes how various documents interlink in order to describe a set of resources and where the entrypoints should be placed.
 In it's simplest form it is just one file containing a directory listing with a predefined name.
 This is needed because the HTTP spec itself does not define a "list" command.
 Resourcesync is a set of embelishments on the sitemap.xml de-facto standard.
@@ -92,7 +92,7 @@ So to create a resourcesync capable server for timbuctoo you should:
  3. Fill them with links to http://www.openarchives.org/rs/1.0.9/resourcesync#ex_1[Resource lists]
  4. Fill those with links to the actual data files in one of the supported rdf formats (see below)
 
-You may use the describedBy mechanism (see http://www.openarchives.org/rs/1.1/resourcesync#DocumentFormats ) to point to documents that describe your datasets. These description documents can be in any format, however, using one of the RDF-formats is recommended.
+You may use the `describedby` mechanism (see http://www.openarchives.org/rs/1.1/resourcesync#DocumentFormats ) to point to documents that describe your datasets. These description documents can be in any format, however, using one of the RDF-formats is recommended. Timbuctoo interprets http://www.openarchives.org/rs/1.1/resourcesync#CapabilityList[capabilitylist's] as description of a dataset. Therefore expects that the metadata of a `capabilitylist` will contain the `describedby` mechanism. This `describedBy` item can either be added to a url in the sourcedescription or to the root item of the `capabilitylist`.
 
 === Valid resources
 Timbuctoo cannot sync every filetype on the internet, only files containing rdf in several of the more well-known serialisation formats.
@@ -106,7 +106,7 @@ The filetypes that we can currently import are:
  * application/rdf+xml (.rdf)
  * application/n-triples (.nt)
  * application/ld+json (.jsonld)
- * text/trig (.trig)
+ * application/trig (.trig)
  * application/n-quads (.nq)
  * text/n3 (.n3)
  * application/vnd.timbuctoo-rdf.nquads_unified_diff (.nqud)
