@@ -9,6 +9,9 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.berkeleydb.dto.LazyTypeSubjectReference;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,11 +37,15 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
     String collectionUri = env.getArgument("collectionUri");
     Map viewConfig = env.getArgument("summaryProperties");
 
+    ContextData contextData = env.getContext();
+    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+
     Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
-    if (dataSetRepository.dataSetExists(ownerId, dataSetName)) {
+    if (dataSetRepository.dataSetExists(ownerId, dataSetName) &&
+      userPermissionCheck.getPermissions(ownerId,dataSetName).contains(Permission.ADMIN)) {
       DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetName).get();
       dataSet.getQuadStore();
       try {
