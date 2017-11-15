@@ -1,7 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
 import javaslang.control.Either;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -11,6 +10,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.slf4j.Logger;
