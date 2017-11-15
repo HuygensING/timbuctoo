@@ -90,11 +90,11 @@ public class AuthCheck {
   }
 
   public Either<Response, Tuple<User, DataSet>> handleForceCreate(String ownerId, String dataSetId,
-                                                                  boolean forceCreation, User user) {
+                                                                  boolean forceCreation, boolean isPublic, User user) {
     if (forceCreation) {
       if (dataSetRepository.userMatchesPrefix(user, ownerId)) {
         try {
-          final DataSet dataSet = dataSetRepository.createDataSet(user, dataSetId);
+          final DataSet dataSet = dataSetRepository.createDataSet(user, dataSetId, isPublic);
           return Either.right(Tuple.tuple(user, dataSet));
         } catch (DataStoreCreationException e) {
           return Either.left(Response.serverError().build());
@@ -107,12 +107,12 @@ public class AuthCheck {
   }
 
   public Either<Response, Tuple<User, DataSet>> getOrCreate(String authHeader, String ownerId, String dataSetId,
-                                                            boolean forceCreation) {
+                                                            boolean forceCreation, boolean isPublic) {
     return getUser(authHeader, userValidator)
       .flatMap(user ->
         dataSetRepository.getDataSet(user.getPersistentId(),ownerId, dataSetId)
           .map(ds -> Either.<Response, Tuple<User, DataSet>>right(Tuple.tuple(user, ds)))
-          .orElseGet(() -> handleForceCreate(ownerId, dataSetId, forceCreation, user))
+          .orElseGet(() -> handleForceCreate(ownerId, dataSetId, forceCreation, isPublic, user))
       );
   }
 

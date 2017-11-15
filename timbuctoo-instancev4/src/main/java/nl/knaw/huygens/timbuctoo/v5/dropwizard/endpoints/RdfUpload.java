@@ -51,11 +51,12 @@ public class RdfUpload {
                          @PathParam("userId") final String userId,
                          @PathParam("dataSet") final String dataSetId,
                          @QueryParam("forceCreation") boolean forceCreation,
+                         @QueryParam("isPublic") boolean isPublic,
                          @QueryParam("async") final boolean async)
     throws ExecutionException, InterruptedException, LogStorageFailedException, DataStoreCreationException {
 
     final Either<Response, Response> result = authCheck
-      .getOrCreate( authHeader, userId, dataSetId, forceCreation)
+      .getOrCreate( authHeader, userId, dataSetId, forceCreation, isPublic)
       .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
       .map((Tuple<User, DataSet> userDataSetTuple) -> {
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;

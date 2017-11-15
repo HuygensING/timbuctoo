@@ -72,7 +72,7 @@ public class MyVres {
         .map(vre -> {
           boolean isAllowedToWrite;
           try {
-            isAllowedToWrite = permissionFetcher.getPermissions(newUser.get().getPersistentId(),vre.getVreName())
+            isAllowedToWrite = permissionFetcher.getOldPermissions(newUser.get().getPersistentId(),vre.getVreName())
               .contains(Permission.WRITE);
           } catch (PermissionFetchingException e) {
             isAllowedToWrite = false;

@@ -9,6 +9,7 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Response;
 
 @Path("/v5/dataSets/{userId}/{dataSetId}/create")
@@ -21,10 +22,11 @@ public class CreateDataSet {
 
   @POST
   public Response create(@PathParam("userId") String userId, @PathParam("dataSetId") String dataSetId,
+                         @QueryParam("isPublic") boolean isPublic,
                          @HeaderParam("Authorization") String authorization)
     throws DataStoreCreationException {
 
-    final Either<Response, Response> result = authCheck.getOrCreate(authorization, userId, dataSetId, true)
+    final Either<Response, Response> result = authCheck.getOrCreate(authorization, userId, dataSetId, true, isPublic)
       .map(ds -> {
         final PromotedDataSet metadata = ds.getRight().getMetadata();
         return Response.created(DataSet.makeUrl(metadata.getOwnerId(), metadata.getDataSetId())).build();

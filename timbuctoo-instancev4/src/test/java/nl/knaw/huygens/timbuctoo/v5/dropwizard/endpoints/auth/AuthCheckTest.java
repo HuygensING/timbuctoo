@@ -35,8 +35,8 @@ public class AuthCheckTest {
       permissionFetcher,
       userValidator,
       "auth",
-      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org",
-        "http://example.org/prefix/", false, true)
+      PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org", "http://example.org/prefix/",
+        false, false)
     );
 
     assertThat(response.getStatus(), is(200));
@@ -51,7 +51,7 @@ public class AuthCheckTest {
       userValidator,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org",
-        "http://example.org/prefix/", false, true)
+        "http://example.org/prefix/", false, false)
     );
 
     assertThat(response.getStatus(), is(UNAUTHORIZED.getStatusCode()));
@@ -69,7 +69,7 @@ public class AuthCheckTest {
       userValidator,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org",
-        "http://example.org/prefix/", false, true)
+        "http://example.org/prefix/", false, false)
     );
 
     assertThat(response.getStatus(), is(FORBIDDEN.getStatusCode()));
@@ -87,7 +87,7 @@ public class AuthCheckTest {
       userValidator,
       "auth",
       PromotedDataSet.promotedDataSet("ownerid", "datasetid", "http://ex.org",
-        "http://example.org/prefix/", false, true)
+        "http://example.org/prefix/", false, false)
     );
 
     assertThat(response.getStatus(), is(200));

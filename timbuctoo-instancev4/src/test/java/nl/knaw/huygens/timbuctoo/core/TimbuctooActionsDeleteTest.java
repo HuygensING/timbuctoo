@@ -99,10 +99,10 @@ public class TimbuctooActionsDeleteTest {
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
     if (allowedToWrite) {
-      given(permissionFetcher.getPermissions(any(), any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(), any())).willReturn(
         Sets.newHashSet(Permission.WRITE, Permission.READ));
     } else {
-      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(),any())).willReturn(
         Sets.newHashSet(Permission.READ));
     }
     return new TimbuctooActions(permissionFetcher, clock, persistentUrlCreator,

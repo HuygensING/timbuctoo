@@ -4,7 +4,6 @@ import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.core.dto.CreateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.UpdateRelation;
 import nl.knaw.huygens.timbuctoo.core.dto.dataset.Collection;
-import nl.knaw.huygens.timbuctoo.security.exceptions.AuthorizationException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
@@ -23,7 +22,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -138,10 +136,10 @@ public class TimbuctooActionsRelationTest {
   private TimbuctooActions createInstance(boolean allowedToWrite) throws PermissionFetchingException {
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
     if (allowedToWrite) {
-      given(permissionFetcher.getPermissions(any(),any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(),any())).willReturn(
         Sets.newHashSet(Permission.WRITE, Permission.READ));
     } else {
-      given(permissionFetcher.getPermissions(any(), any())).willReturn(
+      given(permissionFetcher.getOldPermissions(any(), any())).willReturn(
         Sets.newHashSet(Permission.READ));
     }
     return new TimbuctooActions(permissionFetcher, clock,

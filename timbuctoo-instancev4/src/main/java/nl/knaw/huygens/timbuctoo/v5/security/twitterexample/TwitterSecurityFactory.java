@@ -52,7 +52,7 @@ public class TwitterSecurityFactory implements SecurityFactory {
       }
 
       @Override
-      public Set<Permission> getPermissions(String persistentId, String vreId) throws PermissionFetchingException {
+      public Set<Permission> getOldPermissions(String persistentId, String vreId) throws PermissionFetchingException {
         HashSet<Permission> result = new HashSet<>();
         result.add(Permission.READ);
         return result;

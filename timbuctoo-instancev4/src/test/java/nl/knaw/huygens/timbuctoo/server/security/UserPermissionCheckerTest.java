@@ -8,7 +8,6 @@ import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
-import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -51,7 +50,7 @@ public class UserPermissionCheckerTest {
   @Test
   public void checkReturnsAllowedToWriteWhenTheUserIsAuthorizedForTheVre() throws Exception {
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(User.create("displayName", "")));
-    given(permissionFetcher.getPermissions(any(),any())).willReturn(Sets.newHashSet(Permission.READ,
+    given(permissionFetcher.getOldPermissions(any(),any())).willReturn(Sets.newHashSet(Permission.READ,
       Permission.WRITE));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
@@ -63,7 +62,7 @@ public class UserPermissionCheckerTest {
   public void checkReturnsNoPermissionWhenTheUserIsNotAuthorized() throws Exception {
     given(userValidator.getUserFromAccessToken(anyString()))
       .willReturn(Optional.of(User.create("displayName", "")));
-    given(permissionFetcher.getPermissions(any(),any())).willReturn(Sets.newHashSet(Permission.READ));
+    given(permissionFetcher.getOldPermissions(any(),any())).willReturn(Sets.newHashSet(Permission.READ));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
 
@@ -93,7 +92,7 @@ public class UserPermissionCheckerTest {
   public void checkReturnsUnknownUserWhenTheUserCannotBeAuthorized() throws Exception {
     given(userValidator.getUserFromAccessToken(anyString()))
       .willReturn(Optional.of(User.create("displayName", "")));
-    given(permissionFetcher.getPermissions(any(),any())).willThrow(new PermissionFetchingException(""));
+    given(permissionFetcher.getOldPermissions(any(),any())).willThrow(new PermissionFetchingException(""));
 
     UserPermission permission = instance.check(VRE_NAME, AUTHORIZATION_HEADER);
 
