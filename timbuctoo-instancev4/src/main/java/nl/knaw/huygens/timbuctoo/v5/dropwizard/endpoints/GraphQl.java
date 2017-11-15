@@ -7,7 +7,6 @@ import com.sleepycat.je.DatabaseException;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriter;
@@ -15,6 +14,7 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegi
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.serializable.SerializerExecutionStrategy;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import nl.knaw.huygens.timbuctoo.v5.serializable.SerializableResult;
 

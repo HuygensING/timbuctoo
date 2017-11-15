@@ -4,7 +4,6 @@ import com.github.jsonldjava.core.DocumentLoader;
 import com.github.jsonldjava.core.JsonLdError;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -13,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -22,12 +22,15 @@ import javax.ws.rs.HeaderParam;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
 import static nl.knaw.huygens.timbuctoo.v5.jsonldimport.JsonProvenanceToRdfPatch.fromCurrentState;
@@ -87,7 +90,7 @@ public class JsonLdEditEndpoint {
     }
 
     try {
-      importManager.generateLog(
+      List<Throwable> errorList = importManager.generateLog(
         dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
         fromCurrentState(
@@ -99,6 +102,18 @@ public class JsonLdEditEndpoint {
           Clock.systemUTC()
         )
       ).get();
+      if (errorList.isEmpty()) {
+        return Response
+          .status(Response.Status.CREATED)
+          .build();
+      } else {
+        return Response
+          .status(Response.Status.BAD_REQUEST)
+          .type(MediaType.APPLICATION_JSON_TYPE)
+          .entity(errorList.stream()
+                           .map(Throwable::getMessage).collect(Collectors.toList()))
+          .build();
+      }
     } catch (IOException e) {
       return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (ConcurrentUpdateException e) {
