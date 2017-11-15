@@ -70,7 +70,7 @@ public class StateMachine<T> {
       }
       return Result.ignored();//actual validation will happen during finishEntity
     } else {
-      return Result.failure("No property declared for id " + id);
+      return Result.failure("No property declared for id '" + id + "', property value is '" + value + "'");
     }
   }
 

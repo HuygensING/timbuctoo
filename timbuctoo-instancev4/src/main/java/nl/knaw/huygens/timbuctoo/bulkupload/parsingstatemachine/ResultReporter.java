@@ -24,6 +24,7 @@ public class ResultReporter {
   }
 
   public void startCollection(String name, Result result) {
+    LOG.info("Start importing collection: '{}'", name);
     currentSheet = name;
     curRow = 1;
     logStatusMessage();
@@ -61,7 +62,7 @@ public class ResultReporter {
 
   private void log(int columnNumber, String message) {
     this.failures++;
-    LOG.error("Import failure '{}' on column '{}'.", message, columnNumber);
+    LOG.error("Import failure \"{}\" on column \"{}\".", message, columnNumber);
     logStatusMessage();
   }
 
