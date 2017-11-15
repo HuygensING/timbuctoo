@@ -10,7 +10,7 @@ public interface PermissionFetcher {
   Set<Permission> getPermissions(String persistentId, String ownerId, String dataSetId)
     throws PermissionFetchingException;
 
-  Set<Permission> getPermissions(String persistentId, String vreId)
+  Set<Permission> getOldPermissions(String persistentId, String vreId)
     throws PermissionFetchingException;
 
   void initializeOwnerAuthorization(String userId, String ownerId, String dataSetId)

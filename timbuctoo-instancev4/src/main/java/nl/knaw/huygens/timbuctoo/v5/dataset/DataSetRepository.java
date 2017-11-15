@@ -135,7 +135,7 @@ public class DataSetRepository {
   public Optional<DataSet> getDataSet(String userId, String combinedId) {
     final Tuple<String, String> splitId = PromotedDataSet.splitCombinedId(combinedId);
     try {
-      if (permissionFetcher.getPermissions(userId,combinedId).contains(Permission.READ)) {
+      if (permissionFetcher.getOldPermissions(userId,combinedId).contains(Permission.READ)) {
         return Optional.ofNullable(dataSetMap.get(splitId.getLeft()))
           .map(userDataSets -> userDataSets.get(splitId.getRight()));
       }
@@ -166,8 +166,9 @@ public class DataSetRepository {
     return user != null && user.getPersistentId() != null && ("u" + user.getPersistentId()).equals(prefix);
   }
 
-  public DataSet createDataSet(User user, String dataSetId)
-    throws DataStoreCreationException, IllegalDataSetNameException {
+
+  public DataSet createDataSet(User user, String dataSetId, boolean isPublic) throws DataStoreCreationException,
+    IllegalDataSetNameException {
     //The ownerId might not be valid (i.e. a safe string). We make it safe here:
     //dataSetId is under the control of the user so we simply throw if it's not valid
     String ownerPrefix = "u" + user.getPersistentId();
@@ -203,7 +204,7 @@ public class DataSetRepository {
       baseUri,
       uriPrefix,
       false,
-      false
+      isPublic
     );
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerPrefix, key -> new HashMap<>());
@@ -260,7 +261,7 @@ public class DataSetRepository {
     for (Map<String, DataSet> userDataSets : dataSetMap.values()) {
       for (DataSet dataSet : userDataSets.values()) {
         try {
-          boolean isAllowedToWrite = permissionFetcher.getPermissions(userId, dataSet.getMetadata().getCombinedId())
+          boolean isAllowedToWrite = permissionFetcher.getOldPermissions(userId, dataSet.getMetadata().getCombinedId())
             .contains(Permission.WRITE);
           if (isAllowedToWrite) {
             dataSetsWithWriteAccess.add(dataSet);

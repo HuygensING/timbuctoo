@@ -145,7 +145,7 @@ public class TimbuctooActions implements AutoCloseable {
 
   private void checkIfAllowedToWrite(String userId, Collection collection) throws
     PermissionFetchingException {
-    if (!permissionFetcher.getPermissions(userId,collection.getVreName()).contains(Permission.WRITE)) {
+    if (!permissionFetcher.getOldPermissions(userId,collection.getVreName()).contains(Permission.WRITE)) {
       throw new PermissionFetchingException("Write permission not pressent.");
     }
   }
@@ -324,7 +324,7 @@ public class TimbuctooActions implements AutoCloseable {
   }
 
   public void deleteVre(String vreName, User user) throws PermissionFetchingException {
-    boolean isAdmin = permissionFetcher.getPermissions(user.getPersistentId(),vreName).contains(Permission.ADMIN);
+    boolean isAdmin = permissionFetcher.getOldPermissions(user.getPersistentId(),vreName).contains(Permission.ADMIN);
     if (isAdmin) {
       dataStoreOperations.deleteVre(vreName);
     } else {

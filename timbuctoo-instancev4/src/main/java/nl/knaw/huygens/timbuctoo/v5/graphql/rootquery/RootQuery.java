@@ -253,7 +253,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           if (dataSetOpt.isPresent()) {
             return dataSetOpt.get().getMetadata();
           }
-          return dataSetRepository.createDataSet(currentUser.get(), dataSetName).getMetadata();
+          return dataSetRepository.createDataSet(currentUser.get(), dataSetName, false).getMetadata();
         } catch (DataStoreCreationException e) {
           LOG.error("Data set creation exception", e);
           throw new RuntimeException("Data set could not be created");

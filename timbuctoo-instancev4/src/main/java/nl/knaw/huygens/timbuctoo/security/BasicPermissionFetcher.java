@@ -30,13 +30,15 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     throws PermissionFetchingException {
     String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
 
-    return getPermissions(persistentId, vreId);
+    return getOldPermissions(persistentId, vreId);
   }
 
   @Override
-  public Set<Permission> getPermissions(String persistentId, String vreId)
+  @Deprecated
+  public Set<Permission> getOldPermissions(String persistentId, String vreId)
     throws PermissionFetchingException {
     Set<Permission> permissions = new HashSet<>();
+
     permissions.add(Permission.READ);
 
     try {

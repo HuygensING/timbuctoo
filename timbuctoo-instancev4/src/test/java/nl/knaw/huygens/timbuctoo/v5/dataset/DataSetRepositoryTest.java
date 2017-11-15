@@ -69,14 +69,15 @@ public class DataSetRepositoryTest {
 
   @Test
   public void createDataSetReturnsTheSamesDataSetForEachCall() throws Exception {
-    DataSet dataSet1 = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-    DataSet dataSet2 = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    DataSet dataSet1 = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
+    DataSet dataSet2 = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
 
     assertThat(dataSet1, is(sameInstance(dataSet2)));
   }
 
+
   public ImportManager getImportManager(String user, String dataset) throws Exception {
-    return dataSetRepository.createDataSet(User.create(null, user), dataset).getImportManager();
+    return dataSetRepository.createDataSet(User.create(null, user), dataset, false).getImportManager();
   }
 
   @Test
@@ -97,8 +98,8 @@ public class DataSetRepositoryTest {
 
   @Test
   public void createImportManagerOnlyAddsANewDataSetToResourceSync() throws Exception {
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
-    dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
+    dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
 
     verify(resourceSync, times(1)).resourceList("uuser", "dataset");
   }
@@ -112,7 +113,7 @@ public class DataSetRepositoryTest {
 
   @Test
   public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws Exception {
-    dataSetRepository.createDataSet(User.create(null, "ownerid"), "otherdatasetid");
+    dataSetRepository.createDataSet(User.create(null, "ownerid"), "otherdatasetid", false);
 
     boolean dataSetExists = dataSetRepository.dataSetExists("ownerid", "dataset_id");
 
@@ -121,7 +122,7 @@ public class DataSetRepositoryTest {
 
   @Test
   public void removeDataSetRemovesTheDataSetFromDisk() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
     File dataSetPath = new File(new File(tempFile, dataSet.getMetadata().getOwnerId()), "dataset");
     assertThat(dataSetPath.exists(), is(true));
 
@@ -132,7 +133,7 @@ public class DataSetRepositoryTest {
 
   @Test
   public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
 
     dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
 
@@ -141,7 +142,7 @@ public class DataSetRepositoryTest {
 
   @Test
   public void removeDataSetRemovesItFromResourceSync() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
 
     dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
 
@@ -150,7 +151,7 @@ public class DataSetRepositoryTest {
 
   @Test
   public void dataSetsWillBeTheSameAfterRestart() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
 
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(true));
 
