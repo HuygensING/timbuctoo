@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.security;
 
+import graphql.language.FieldDefinition;
 import graphql.schema.GraphQLFieldDefinition;
 import graphql.schema.GraphQLFieldsContainer;
 import graphql.schema.visibility.GraphqlFieldVisibility;

@@ -22,7 +22,7 @@ public class UserPermissionCheck {
     this.defaultPermissions = defaultPermissions;
   }
 
-  public Set<Permission> getPermissions(String ownerId, PromotedDataSet dataSetMetaData) {
+  public Set<Permission> getPermissions(PromotedDataSet dataSetMetaData) {
     return user
       .map(user -> {
         try {

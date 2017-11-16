@@ -48,7 +48,7 @@ public class ViewConfigDataFetcher implements DataFetcher {
 
     Optional<DataSet> dataSet = dataSetRepository.getDataSet(ownerId, dataSetId);
     if (dataSet != null &&
-      userPermissionCheck.getPermissions(ownerId, dataSet.get().getMetadata())
+      userPermissionCheck.getPermissions(dataSet.get().getMetadata())
         .contains(Permission.ADMIN)) {
       dataSet.get().getQuadStore();
       try {
