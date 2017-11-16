@@ -121,7 +121,8 @@ public class DataSetRepository {
     synchronized (dataSetMap) {
       if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
         try {
-          if (permissionFetcher.getPermissions(userId, ownerId, dataSetId).contains(Permission.READ)) {
+          if (permissionFetcher.getPermissions(userId, dataSetMap.get(ownerId).get(dataSetId).getMetadata()
+          ).contains(Permission.READ)) {
             return Optional.ofNullable(dataSetMap.get(ownerId).get(dataSetId));
           }
         } catch (PermissionFetchingException e) {

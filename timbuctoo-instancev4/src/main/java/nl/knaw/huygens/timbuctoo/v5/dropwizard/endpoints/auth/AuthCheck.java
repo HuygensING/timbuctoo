@@ -39,8 +39,8 @@ public class AuthCheck {
     }
     String currentUserId = user.get().getPersistentId();
     try {
-      if (!permissionFetcher.getPermissions(currentUserId, dataSet.getMetadata().getOwnerId(),
-        dataSet.getMetadata().getDataSetId()).contains(Permission.WRITE)) {
+      if (!permissionFetcher.getPermissions(currentUserId,
+        dataSet.getMetadata()).contains(Permission.WRITE)) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
     } catch (PermissionFetchingException e) {
@@ -53,7 +53,7 @@ public class AuthCheck {
 
   public static Response checkAdminAccess(PermissionFetcher permissionFetcher, UserValidator userValidator,
                                           String authHeader,
-                                          PromotedDataSet dataSet) {
+                                          PromotedDataSet dataSetMetadata) {
 
     Optional<User> user;
     try {
@@ -67,7 +67,7 @@ public class AuthCheck {
     String currentUserId = user.get().getPersistentId();
 
     try {
-      if (!permissionFetcher.getPermissions(currentUserId, dataSet.getOwnerId(), dataSet.getDataSetId())
+      if (!permissionFetcher.getPermissions(currentUserId, dataSetMetadata)
         .contains(Permission.ADMIN)) {
         return Response.status(Response.Status.FORBIDDEN).build();
       }
@@ -118,8 +118,8 @@ public class AuthCheck {
 
   public Either<Response, Tuple<User, DataSet>> hasAdminAccess(User user, DataSet dataSet) {
     try {
-      if (permissionFetcher.getPermissions(user.getPersistentId(), dataSet.getMetadata().getOwnerId(),
-        dataSet.getMetadata().getDataSetId()).contains(Permission.ADMIN)) {
+      if (permissionFetcher.getPermissions(user.getPersistentId(),
+        dataSet.getMetadata()).contains(Permission.ADMIN)) {
         return Either.right(Tuple.tuple(user, dataSet));
       } else {
         return Either.left(Response.status(Response.Status.FORBIDDEN).build());

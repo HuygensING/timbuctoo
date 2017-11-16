@@ -18,11 +18,20 @@ import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.c
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
 public class AuthCheckTest {
+
+  private static Set<Permission> permissionsForNonAdmin() {
+    return Sets.newHashSet(Permission.WRITE, Permission.READ);
+  }
+
+  private static Set<Permission> permissionsForAdmin() {
+    return Sets.newHashSet(Permission.WRITE, Permission.ADMIN, Permission.READ);
+  }
 
   @Test
   public void checkAdminAccessReturnsNullIfTheUserHasAdminPermissionsForTheDataSet() throws Exception {
@@ -30,7 +39,7 @@ public class AuthCheckTest {
     UserValidator userValidator = mock(UserValidator.class);
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
-    given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForAdmin());
+    given(permissionFetcher.getPermissions(anyString(), any(PromotedDataSet.class))).willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
       userValidator,
@@ -63,7 +72,9 @@ public class AuthCheckTest {
     UserValidator userValidator = mock(UserValidator.class);
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
-    given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForNonAdmin());
+
+    given(permissionFetcher.getPermissions(anyString(), any(PromotedDataSet.class)))
+      .willReturn(permissionsForNonAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
       userValidator,
@@ -81,7 +92,7 @@ public class AuthCheckTest {
     UserValidator userValidator = mock(UserValidator.class);
     given(userValidator.getUserFromAccessToken(anyString())).willReturn(Optional.of(notOwner));
     PermissionFetcher permissionFetcher = mock(PermissionFetcher.class);
-    given(permissionFetcher.getPermissions(anyString(), anyString(), anyString())).willReturn(permissionsForAdmin());
+    given(permissionFetcher.getPermissions(anyString(), any(PromotedDataSet.class))).willReturn(permissionsForAdmin());
     Response response = checkAdminAccess(
       permissionFetcher,
       userValidator,
@@ -91,14 +102,6 @@ public class AuthCheckTest {
     );
 
     assertThat(response.getStatus(), is(200));
-  }
-
-  private static Set<Permission> permissionsForNonAdmin() {
-    return Sets.newHashSet(Permission.WRITE, Permission.READ);
-  }
-
-  private static Set<Permission> permissionsForAdmin() {
-    return Sets.newHashSet(Permission.WRITE, Permission.ADMIN, Permission.READ);
   }
 
 }

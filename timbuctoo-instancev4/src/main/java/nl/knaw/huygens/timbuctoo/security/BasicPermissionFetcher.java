@@ -26,11 +26,31 @@ public class BasicPermissionFetcher implements PermissionFetcher {
   }
 
   @Override
-  public Set<Permission> getPermissions(String persistentId, String ownerId, String dataSetId)
+  public Set<Permission> getPermissions(String persistentId, PromotedDataSet dataSetMetadata)
     throws PermissionFetchingException {
-    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
+    String ownerId = dataSetMetadata.getOwnerId();
+    String dataSetId = dataSetMetadata.getDataSetId();
+    Boolean isPublic = dataSetMetadata.isPublic();
 
-    return getOldPermissions(persistentId, vreId);
+    String vreId = PromotedDataSet.createCombinedId(ownerId, dataSetId);
+    Set<Permission> permissions = new HashSet<>();
+    
+    permissions.add(Permission.READ);
+
+    try {
+      Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, persistentId);
+      if (vreAuthorization.isPresent()) {
+        if (vreAuthorization.get().isAllowedToWrite()) {
+          permissions.add(Permission.WRITE);
+        }
+        if (vreAuthorization.get().hasAdminAccess()) {
+          permissions.add(Permission.ADMIN);
+        }
+      }
+      return permissions;
+    } catch (AuthorizationUnavailableException e) {
+      return permissions;
+    }
   }
 
   @Override

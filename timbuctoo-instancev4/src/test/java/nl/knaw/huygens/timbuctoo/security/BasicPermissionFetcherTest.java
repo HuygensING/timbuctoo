@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.security;
 
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.security.dto.VreAuthorization;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
@@ -30,6 +31,7 @@ public class BasicPermissionFetcherTest {
   private PermissionFetcher permissionFetcher;
   private UserValidator userValidator;
   private User testUser;
+  private PromotedDataSet promotedDataSet;
 
   @Before
   public void setUp() throws Exception {
@@ -39,6 +41,9 @@ public class BasicPermissionFetcherTest {
     given(testUser.getId()).willReturn("testownerid");
     given(userValidator.getUserFromId("testownerid")).willReturn(Optional.of(testUser));
     permissionFetcher = new BasicPermissionFetcher(vreAuthorizationCrud, userValidator);
+    promotedDataSet = mock(PromotedDataSet.class);
+    given(promotedDataSet.getDataSetId()).willReturn("testdatasetid");
+    given(promotedDataSet.getOwnerId()).willReturn("testownerid");
   }
 
   @Test
@@ -48,7 +53,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      "testownerid", "testdatasetid");
+      promotedDataSet);
 
     assertThat(permissions, containsInAnyOrder(Permission.WRITE, Permission.READ));
   }
@@ -60,7 +65,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      "testownerid", "testdatasetid");
+      promotedDataSet);
 
     assertThat(permissions, containsInAnyOrder(Permission.ADMIN, Permission.READ));
   }
@@ -72,7 +77,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      "testownerid", "testdatasetid");
+      promotedDataSet);
 
     assertThat(permissions, contains(Permission.READ));
   }
@@ -84,7 +89,7 @@ public class BasicPermissionFetcherTest {
     );
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      "testownerid", "testdatasetid");
+      promotedDataSet);
 
     assertThat(permissions, contains(Permission.READ));
   }
@@ -94,7 +99,7 @@ public class BasicPermissionFetcherTest {
     given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.empty());
 
     Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId",
-      "testownerid", "testdatasetid");
+      promotedDataSet);
 
     assertThat(permissions, contains(Permission.READ));
   }

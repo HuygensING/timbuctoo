@@ -45,17 +45,19 @@ public class ViewConfigDataFetcher implements DataFetcher {
 
     String ownerId = ownerAndDataSet.getLeft();
     String dataSetName = ownerAndDataSet.getRight();
-    if (dataSetRepository.dataSetExists(ownerId, dataSetName) &&
-      userPermissionCheck.getPermissions(ownerId,dataSetName).contains(Permission.ADMIN)) {
-      DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetName).get();
-      dataSet.getQuadStore();
+
+    Optional<DataSet> dataSet = dataSetRepository.getDataSet(ownerId, dataSetId);
+    if (dataSet != null &&
+      userPermissionCheck.getPermissions(ownerId, dataSet.get().getMetadata())
+        .contains(Permission.ADMIN)) {
+      dataSet.get().getQuadStore();
       try {
-        final String baseUri = dataSet.getMetadata().getBaseUri();
-        dataSet.getImportManager().generateLog(
+        final String baseUri = dataSet.get().getMetadata().getBaseUri();
+        dataSet.get().getImportManager().generateLog(
           baseUri,
           baseUri,
           new StringPredicatesRdfCreator(
-            dataSet.getQuadStore(),
+            dataSet.get().getQuadStore(),
             ImmutableMap.of(
               Tuple.tuple(collectionUri, HAS_VIEW_CONFIG), Optional.of(OBJECT_MAPPER.writeValueAsString(viewConfig))
             ),
