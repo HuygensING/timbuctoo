@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.security.twitterexample;
 
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
@@ -39,10 +40,11 @@ public class TwitterSecurityFactory implements SecurityFactory {
   public PermissionFetcher getPermissionFetcher() throws AccessNotPossibleException, NoSuchAlgorithmException {
     return new PermissionFetcher() {
       @Override
-      public Set<Permission> getPermissions(String persistentId, String ownerId,
-                                            String dataSetId) throws PermissionFetchingException {
+      public Set<Permission> getPermissions(String persistentId, PromotedDataSet dataSet)
+        throws PermissionFetchingException {
+
         HashSet<Permission> result = new HashSet<>();
-        if (persistentId != null && persistentId.equals(ownerId)) {
+        if (persistentId != null && persistentId.equals(dataSet.getOwnerId())) {
           result.add(Permission.ADMIN);
           result.add(Permission.WRITE);
         } else {

@@ -45,7 +45,9 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
     if (dataSetRepository.dataSetExists(ownerId, dataSetName) &&
-      userPermissionCheck.getPermissions(ownerId,dataSetName).contains(Permission.ADMIN)) {
+      userPermissionCheck.getPermissions(ownerId, dataSetRepository.getDataSet(ownerId, dataSetName).get()
+        .getMetadata())
+        .contains(Permission.ADMIN)) {
       DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetName).get();
       dataSet.getQuadStore();
       try {
