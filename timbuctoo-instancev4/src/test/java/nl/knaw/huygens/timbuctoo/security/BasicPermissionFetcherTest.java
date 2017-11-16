@@ -9,6 +9,7 @@ import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -18,6 +19,8 @@ import java.util.Set;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doThrow;
@@ -44,6 +47,7 @@ public class BasicPermissionFetcherTest {
     promotedDataSet = mock(PromotedDataSet.class);
     given(promotedDataSet.getDataSetId()).willReturn("testdatasetid");
     given(promotedDataSet.getOwnerId()).willReturn("testownerid");
+    given(promotedDataSet.isPublic()).willReturn(true);
   }
 
   @Test
@@ -102,6 +106,50 @@ public class BasicPermissionFetcherTest {
       promotedDataSet);
 
     assertThat(permissions, contains(Permission.READ));
+  }
+
+  @Test
+  public void getPermissionsDoesNotReturnReadPermissionForUnauthorizedUserInPrivateDataset() throws Exception {
+    PromotedDataSet promotedDataSet2 = mock(PromotedDataSet.class);
+    given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
+    given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
+    given(promotedDataSet2.isPublic()).willReturn(false);
+
+    Set<Permission> permissions = permissionFetcher.getPermissions("testPersistentId", promotedDataSet2);
+
+    assertThat(permissions, is(empty()));
+  }
+
+  @Test
+  public void getPermissionsReturnsPermissionsForAdminInPrivateDataset() throws Exception {
+    VreAuthorization vreAuthorization = mock(VreAuthorization.class);
+    given(vreAuthorization.hasAdminAccess()).willReturn(true);
+    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
+
+    PromotedDataSet promotedDataSet2 = mock(PromotedDataSet.class);
+    given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
+    given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
+    given(promotedDataSet2.isPublic()).willReturn(false);
+
+    Set<Permission> permissions = permissionFetcher.getPermissions("testadminId", promotedDataSet2);
+
+    assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.ADMIN));
+  }
+
+  @Test
+  public void getPermissionsReturnsPermissionsForUserWithWriteAccessInPrivateDataset() throws Exception {
+    VreAuthorization vreAuthorization = mock(VreAuthorization.class);
+    given(vreAuthorization.isAllowedToWrite()).willReturn(true);
+    given(vreAuthorizationCrud.getAuthorization(anyString(), anyString())).willReturn(Optional.of(vreAuthorization));
+
+    PromotedDataSet promotedDataSet2 = mock(PromotedDataSet.class);
+    given(promotedDataSet2.getDataSetId()).willReturn("testdatasetid");
+    given(promotedDataSet2.getOwnerId()).willReturn("testownerid");
+    given(promotedDataSet2.isPublic()).willReturn(false);
+
+    Set<Permission> permissions = permissionFetcher.getPermissions("testWriterId", promotedDataSet2);
+
+    assertThat(permissions, containsInAnyOrder(Permission.READ, Permission.WRITE));
   }
 
   @Test
