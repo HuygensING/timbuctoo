@@ -309,7 +309,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       serializerWriterRegistry,
       securityConfig.getUserValidator(),
       uriHelper,
-      securityConfig.getPermissionFetcher()
+      securityConfig.getPermissionFetcher(),dataSetRepository
     );
     register(environment, graphQlEndpoint);
 

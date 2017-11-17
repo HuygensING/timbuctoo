@@ -8,6 +8,7 @@ import graphql.ExecutionResult;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
+import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriter;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.contenttypes.SerializerWriterRegistry;
@@ -51,15 +52,18 @@ public class GraphQl {
   private final UriHelper uriHelper;
   private final PermissionFetcher permissionFetcher;
   private final ObjectMapper objectMapper;
+  private final DataSetRepository dataSetRepository;
 
   public GraphQl(Supplier<GraphQLSchema> graphqlGetter, SerializerWriterRegistry serializerWriterRegistry,
-                 UserValidator userValidator, UriHelper uriHelper, PermissionFetcher permissionFetcher)
+                 UserValidator userValidator, UriHelper uriHelper, PermissionFetcher permissionFetcher,
+                 DataSetRepository dataSetRepository)
     throws DatabaseException, RdfProcessingFailedException {
     this.graphqlGetter = graphqlGetter;
     this.serializerWriterRegistry = serializerWriterRegistry;
     this.userValidator = userValidator;
     this.uriHelper = uriHelper;
     this.permissionFetcher = permissionFetcher;
+    this.dataSetRepository = dataSetRepository;
     objectMapper = new ObjectMapper();
   }
 
@@ -166,7 +170,7 @@ public class GraphQl {
 
     final GraphQLSchema transform = graphqlGetter
       .get()
-      .transform(b -> b.fieldVisibility(new PermissionBasedFieldVisibility(userPermissionCheck)));
+      .transform(b -> b.fieldVisibility(new PermissionBasedFieldVisibility(userPermissionCheck,dataSetRepository)));
     final GraphQL.Builder builder = GraphQL.newGraphQL(transform);
 
     if (!acceptHeader.equals(MediaType.APPLICATION_JSON)) {
