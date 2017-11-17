@@ -128,7 +128,7 @@ public class JenaBasedReader {
     }
 
     public static InvalidRdfResourceException notAnIri(RdfResource rdfResource) {
-      return new InvalidRdfResourceException("\" + "rdfResource + "\" cannot be represented as an IRI");
+      return new InvalidRdfResourceException("\" + " + rdfResource + "\" cannot be represented as an IRI");
     }
 
     public static InvalidRdfResourceException noValue(RdfResource rdfResource) {
