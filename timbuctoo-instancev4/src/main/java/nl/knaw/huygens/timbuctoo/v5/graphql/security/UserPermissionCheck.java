@@ -1,5 +1,6 @@
 package nl.knaw.huygens.timbuctoo.v5.graphql.security;
 
+import com.google.common.collect.Sets;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -23,7 +24,7 @@ public class UserPermissionCheck {
   }
 
   public Set<Permission> getPermissions(PromotedDataSet dataSetMetaData) {
-    return user
+    Set<Permission> permissions = user
       .map(user -> {
         try {
           return permissionFetcher.getPermissions(user.getPersistentId(), dataSetMetaData);
@@ -31,6 +32,13 @@ public class UserPermissionCheck {
           return Collections.<Permission>emptySet();
         }
       })
-      .orElse(defaultPermissions);
+      .orElse(
+        Sets.newHashSet()
+      );
+
+    if (permissions.isEmpty() && dataSetMetaData.isPublic()) {
+      permissions = defaultPermissions;
+    }
+    return permissions;
   }
 }
