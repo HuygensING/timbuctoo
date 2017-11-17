@@ -62,7 +62,7 @@ public class JenaBasedReader {
 
   private void buildPredicateObjectMap(RdfResource object, PredicateObjectMapBuilder builder) {
     object.out(NS_RR + "predicate").forEach(predicate ->
-      builder.withPredicate(predicate.asIri().orElseThrow(() -> new RuntimeException("")))
+      builder.withPredicate(predicate.asIri().orElseThrow(() -> InvalidRdfResourceException.notAnIri(predicate)))
     );
     object.out(NS_RR + "predicateMap").forEach(templateValue ->
       buildTermMap(templateValue, builder.withPredicateMap())
@@ -82,7 +82,7 @@ public class JenaBasedReader {
   private void buildReferencingObjectMap(RdfResource templateValue, ReferencingObjectMapBuilder builder) {
 
     templateValue.out(NS_RR + "parentTriplesMap").forEach(x ->
-      builder.withParentTriplesMap(x.asIri().orElseThrow(() -> new RuntimeException("")))
+      builder.withParentTriplesMap(x.asIri().orElseThrow(() -> InvalidRdfResourceException.notAnIri(x)))
     );
 
     templateValue.out(NS_RR + "joinCondition").forEach(x ->
@@ -95,7 +95,7 @@ public class JenaBasedReader {
         .findAny()
         .flatMap(RdfResource::asLiteral)
         .map(RdfLiteral::getValue)
-        .orElseThrow(() -> new RuntimeException(""));
+        .orElseThrow(() ->InvalidRdfResourceException.noValue(node));
   }
 
   private void buildSubjectMap(RdfResource object, SubjectMapBuilder builder) {
@@ -120,6 +120,20 @@ public class JenaBasedReader {
       termMapBuilder.withConstantTerm(templateValue, termType, language, datatype);
     });
 
+  }
+
+  private static class InvalidRdfResourceException extends RuntimeException {
+    public InvalidRdfResourceException(String message) {
+      super(message);
+    }
+
+    public static InvalidRdfResourceException notAnIri(RdfResource rdfResource) {
+      return new InvalidRdfResourceException("\" + "rdfResource + "\" cannot be represented as an IRI");
+    }
+
+    public static InvalidRdfResourceException noValue(RdfResource rdfResource) {
+      return new InvalidRdfResourceException("\"" + rdfResource + "\" has no value");
+    }
   }
 
 }

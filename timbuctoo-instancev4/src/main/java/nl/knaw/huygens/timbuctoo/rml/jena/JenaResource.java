@@ -55,6 +55,10 @@ public class JenaResource implements RdfResource {
     }
   }
 
+  @Override
+  public String toString() {
+    return rdfNode.toString();
+  }
 
   private Set<RdfResource> getValues(Model model, Resource resource, String uri) {
     Set<RdfResource> result = new HashSet<>();
