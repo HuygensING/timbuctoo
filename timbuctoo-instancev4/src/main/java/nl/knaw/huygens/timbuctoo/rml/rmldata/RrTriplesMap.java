@@ -2,10 +2,12 @@ package nl.knaw.huygens.timbuctoo.rml.rmldata;
 
 import nl.knaw.huygens.timbuctoo.rml.DataSource;
 import nl.knaw.huygens.timbuctoo.rml.ErrorHandler;
+import nl.knaw.huygens.timbuctoo.rml.Row;
 import nl.knaw.huygens.timbuctoo.rml.dto.Quad;
 import nl.knaw.huygens.timbuctoo.rml.dto.RdfUri;
 import nl.knaw.huygens.timbuctoo.rml.rmldata.termmaps.RrRefObjectMap;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +42,10 @@ public class RrTriplesMap {
   }
 
   Stream<Quad> getItems(ErrorHandler defaultErrorHandler) {
-    return dataSource.getRows(defaultErrorHandler)
-      .flatMap(row -> {
+    final int[] numberOfItemsProcessed = new int[1];
+
+    Stream<Quad> quadStream = dataSource.getRows(defaultErrorHandler)
+      .peek(e -> numberOfItemsProcessed[0] = numberOfItemsProcessed[0]++).flatMap(row -> {
         Optional<RdfUri> subjectOpt = subjectMap.generateValue(row);
 
         if (subjectOpt.isPresent()) {
@@ -57,6 +61,12 @@ public class RrTriplesMap {
           return Stream.empty();
         }
       });
+
+    if (numberOfItemsProcessed[0] <= 0) {
+      LoggerFactory.getLogger(RrTriplesMap.class).warn("Data source '{}' is empty.", uri);
+    }
+
+    return quadStream;
   }
 
   public DataSource getDataSource() {
