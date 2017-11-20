@@ -45,7 +45,12 @@ public class RrTriplesMap {
     final int[] numberOfItemsProcessed = new int[1];
 
     Stream<Quad> quadStream = dataSource.getRows(defaultErrorHandler)
-      .peek(e -> numberOfItemsProcessed[0] = numberOfItemsProcessed[0]++).flatMap(row -> {
+      .peek(e -> {
+        numberOfItemsProcessed[0]++;
+        if  (numberOfItemsProcessed[0] == 1) {
+          LoggerFactory.getLogger(RrTriplesMap.class).info("collection '{}' has at least one item", uri);
+        }
+      }).flatMap(row -> {
         Optional<RdfUri> subjectOpt = subjectMap.generateValue(row);
 
         if (subjectOpt.isPresent()) {
@@ -61,10 +66,6 @@ public class RrTriplesMap {
           return Stream.empty();
         }
       });
-
-    if (numberOfItemsProcessed[0] <= 0) {
-      LoggerFactory.getLogger(RrTriplesMap.class).warn("Data source '{}' is empty.", uri);
-    }
 
     return quadStream;
   }
