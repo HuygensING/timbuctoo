@@ -4,6 +4,8 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.prefixstore.TypeNameStore;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Predicate;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -11,6 +13,7 @@ import java.util.Set;
 
 public class DerivedSchemaTypeGenerator {
 
+  private static final Logger LOG = LoggerFactory.getLogger(DerivedSchemaTypeGenerator.class);
   private final PaginationArgumentsHelper argumentsHelper;
 
   public DerivedSchemaTypeGenerator(
@@ -34,7 +37,10 @@ public class DerivedSchemaTypeGenerator {
   private static void fieldForDerivedType(Predicate pred, GraphQlTypesContainer typesContainer) {
     if (pred.getReferenceTypes().size() == 0) {
       if (pred.getValueTypes().size() == 0) {
-        System.out.println("This shouldn't happen! The predicate has no value types and no reference types!");
+        LOG.error(
+          "This shouldn't happen! The predicate '{}' has no value types and no reference types!",
+          pred.getName()
+        );
       } else if (pred.getValueTypes().size() == 1) {
         typesContainer.valueField(
           null,
