@@ -15,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.rdfio.RdfSerializer;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.RiotException;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -51,7 +52,12 @@ public class Rml {
       RdfDataSourceFactory dataSourceFactory = dataSet.get().getDataSource();
 
       final Model model = ModelFactory.createDefaultModel();
-      model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");
+      try {
+        model.read(new ByteArrayInputStream(rdfData.getBytes(StandardCharsets.UTF_8)), null, "JSON-LD");
+      } catch (Exception e) {
+        return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+      }
+
       final RmlMappingDocument rmlMappingDocument = rmlBuilder.fromRdf(
         model,
         rdfResource -> dataSourceFactory.apply(rdfResource, dataSetId + "_" + ownerId)//fixme remove vreName from here
