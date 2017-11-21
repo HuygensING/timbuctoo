@@ -145,8 +145,13 @@ public class BdbTypeNameStore implements TypeNameStore {
     addPrefix("dbpedia", "http://dbpedia.org/resource/");
     addPrefix("schema", "http://schema.org/");
     addPrefix("tim", RdfConstants.TIM_VOCAB);
-    addPrefix("local", this.dataStoreRdfPrefix);
-
+    addPrefix("tim_col", RdfConstants.TIM_COL);
+    addPrefix("tim_pred", RdfConstants.TIM_PRED);
+    addPrefix("tim_type", RdfConstants.TIM_TYPE);
+    addPrefix("local_pred", this.dataStoreRdfPrefix + "/predicate/");
+    addPrefix("local_type", this.dataStoreRdfPrefix + "/datatype/");
+    addPrefix("local_col", this.dataStoreRdfPrefix + "/collection/");
   }
 
 }
+

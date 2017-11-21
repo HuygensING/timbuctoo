@@ -433,13 +433,13 @@ public class IntegrationTest {
       "    \"additions\": [\n" +
       "      {\n" +
       "        \"@type\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mutation\", \n" +
-      "        \"predicate\": \"http://example.org/pred2\", \n" +
+      "        \"predicate\": \"http://example.org/predicate/pred2\", \n" +
       "        \"value\": [\"multiple\", \"values\"]\n" +
       "      },\n" +
       "      {\n" +
       "        \"@type\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mutation\", \n" +
       "        \"predicate\": \"http://www.w3.org/1999/02/22-rdf-syntax-ns#type\", \n" +
-      "        \"value\": {\"@id\": \"http://example.org/Person\"}\n" +
+      "        \"value\": {\"@id\": \"http://example.org/collection/Person\"}\n" +
       "      }\n" +
       "    ]\n" +
       "  }]\n" +
@@ -480,7 +480,7 @@ public class IntegrationTest {
       .post(Entity.entity(String.format("{\n" +
         "  dataSets {\n" +
         "    %1s__%2s {\n" +
-        "      local__Person(uri: \"http://example.com/the/actual/entity\") {\n" +
+        "      local_col_Person(uri: \"http://example.com/the/actual/entity\") {\n" +
         "        tim_latestRevision {\n" +
         "          uri\n" +
         "        }\n" +
@@ -493,7 +493,7 @@ public class IntegrationTest {
       .get("data")
       .get("dataSets")
       .get(PREFIX + "__" + vreName)
-      .get("local__Person")
+      .get("local_col_Person")
       .get("tim_latestRevision")
       .get("uri")
       .asText();
@@ -508,14 +508,14 @@ public class IntegrationTest {
       "    \"additions\": [\n" +
       "      {\n" +
       "        \"@type\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mutation\", \n" +
-      "        \"predicate\": \"http://example.org/pred2\", \n" +
+      "        \"predicate\": \"http://example.org/predicate/pred2\", \n" +
       "        \"value\": \"extra value\"\n" +
       "      }\n" +
       "    ],\n" +
       "    \"deletions\": [\n" +
       "      {\n" +
       "        \"@type\": \"http://timbuctoo.huygens.knaw.nl/v5/vocabulary#mutation\", \n" +
-      "        \"predicate\": \"http://example.org/pred2\", \n" +
+      "        \"predicate\": \"http://example.org/predicate/pred2\", \n" +
       "        \"value\": \"multiple\"\n" +
       "      }\n" +
       "    ]\n" +
@@ -543,8 +543,8 @@ public class IntegrationTest {
       .post(Entity.entity(String.format("{\n" +
         "  dataSets {\n" +
         "    %1s__%2s {\n" +
-        "      local__Person(uri:\"http://example.com/the/actual/entity\"){\n" +
-        "        local__pred2List {\n" +
+        "      local_col_Person(uri:\"http://example.com/the/actual/entity\"){\n" +
+        "        local_pred_pred2List {\n" +
         "          items {\n" +
         "            value\n" +
         "          }\n" +
@@ -560,8 +560,8 @@ public class IntegrationTest {
         .get("data")
         .get("dataSets")
         .get(PREFIX + "__" + vreName)
-        .get("local__Person")
-        .get("local__pred2List")
+        .get("local_col_Person")
+        .get("local_pred_pred2List")
         .get("items").iterator())
         .map(x -> x.get("value").asText())
         .collect(Collectors.toList()),

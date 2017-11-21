@@ -3,15 +3,20 @@ package nl.knaw.huygens.timbuctoo.v5.util;
 public class RdfConstants {
 
   private static final String TIM = "http://timbuctoo.huygens.knaw.nl/static/v5/";
-  public static final String TIM_VOCAB = TIM + "vocabulary#";
+  public static final String TIM_VOCAB = TIM + "vocabulary#"; // use for timbuctoo internal vocabulary
   public static final String TIM_PROP_DESC = TIM + "propertyDescription/";
   public static final String TIM_PROVENANCE_ENTITIES = TIM + "provenanceEntities/";
   public static final String TIM_TABULAR_FILE = TIM + "types#tabularFile";
   public static final String TIM_SKOLEMIZE = TIM + "skolemized/";
   public static final String TIM_USERS = TIM + "users/";
 
+  // prefixes for datasets
+  public static final String TIM_COL = TIM + "collection/";
+  public static final String TIM_PRED = TIM + "predicate/";
+  public static final String TIM_TYPE = TIM + "datatype/";
+
   public static final String TIM_JSONLD_UPLOAD_CONTEXT = TIM + "jsonLdUploadContext.json";
-  // Vocabulary
+  // Vocabulary internal
   public static final String TIM_COLLECTION = TIM_VOCAB + "collection";
   public static final String TIM_LATEST_REVISION = TIM_VOCAB + "latestRevision";
   public static final String TIM_SPECIALIZATION_OF = TIM_VOCAB + "specialization";
