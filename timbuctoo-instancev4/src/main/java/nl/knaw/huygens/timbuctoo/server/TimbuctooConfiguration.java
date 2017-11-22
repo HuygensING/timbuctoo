@@ -149,6 +149,12 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
     return new DefaultLoggingFactory();
   }
 
+  @JsonProperty("isPublic")
+  @Value.Default
+  public Boolean isPublic() {
+    return false;
+  }
+
   @Override
   @JsonProperty("metrics")
   @Value.Default
