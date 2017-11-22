@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 
 import static java.util.Optional.ofNullable;
@@ -44,19 +45,19 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
-    if (dataSetRepository.dataSetExists(ownerId, dataSetName) &&
+    Optional<DataSet> dataSet = dataSetRepository.getDataSet(userAndDataSet.getLeft(),dataSetId);
+    if (dataSet.isPresent() &&
       userPermissionCheck.getPermissions(dataSetRepository.getDataSet(ownerId, dataSetName).get()
         .getMetadata())
         .contains(Permission.ADMIN)) {
-      DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSetName).get();
-      dataSet.getQuadStore();
+      dataSet.get().getQuadStore();
       try {
-        final String baseUri = dataSet.getMetadata().getBaseUri();
-        dataSet.getImportManager().generateLog(
+        final String baseUri = dataSet.get().getMetadata().getBaseUri();
+        dataSet.get().getImportManager().generateLog(
           baseUri,
           baseUri,
           new StringPredicatesRdfCreator(
-            dataSet.getQuadStore(),
+            dataSet.get().getQuadStore(),
             ImmutableMap.of(
               Tuple.tuple(collectionUri, TIM_SUMMARYTITLEPREDICATE),
               ofNullable((String) viewConfig.get("title")),
@@ -70,7 +71,7 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
             baseUri
           )
         ).get();
-        return new LazyTypeSubjectReference(collectionUri, dataSet);
+        return new LazyTypeSubjectReference(collectionUri, dataSet.get());
       } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
         throw new RuntimeException(e);
       }
