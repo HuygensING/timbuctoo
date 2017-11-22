@@ -3,9 +3,13 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Lists;
 import com.sleepycat.je.DatabaseException;
+import graphql.ErrorType;
 import graphql.ExecutionResult;
 import graphql.GraphQL;
+import graphql.GraphQLError;
+import graphql.language.SourceLocation;
 import graphql.schema.GraphQLSchema;
 import nl.knaw.huygens.timbuctoo.util.UriHelper;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -34,8 +38,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
 import javax.ws.rs.core.UriBuilder;
 import java.net.URI;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -173,7 +179,7 @@ public class GraphQl {
       .transform(b -> b.fieldVisibility(new PermissionBasedFieldVisibility(userPermissionCheck,dataSetRepository)));
     final GraphQL.Builder builder = GraphQL.newGraphQL(transform);
 
-    if (!acceptHeader.equals(MediaType.APPLICATION_JSON)) {
+    if (serializerWriter != null) {
       builder.queryExecutionStrategy(new SerializerExecutionStrategy());
     }
 
@@ -194,6 +200,13 @@ public class GraphQl {
         .entity(result.toSpecification())
         .build();
     } else {
+      if (result.getErrors() != null && !result.getErrors().isEmpty()) {
+        return Response
+          .status(415)
+          .type(MediaType.APPLICATION_JSON_TYPE)
+          .entity(result.toSpecification())
+          .build();
+      }
       return Response
         .ok()
         .type(serializerWriter.getMimeType())
