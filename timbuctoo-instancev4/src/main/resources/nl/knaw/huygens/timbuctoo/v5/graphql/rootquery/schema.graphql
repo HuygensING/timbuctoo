@@ -33,7 +33,7 @@ type Query {
   #dataSets: DataSets (Added using extends if there is actually a dataSet available)
 
   #metadata for a specific dataset
-  dataSetMetadata(dataSetId: ID): DataSetMetadata
+  dataSetMetadata(dataSetId: ID!): DataSetMetadata
 
   #information about the logged in user, or null of no user is logged in
   aboutMe: AboutMe
