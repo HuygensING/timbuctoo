@@ -159,13 +159,6 @@ public class DataSetRepository {
     }
   }
 
-  public Optional<DataSet> unsafeGetDataSetWithoutCheckingPermissions(String combinedId) {
-    final Tuple<String, String> splitId = PromotedDataSet.splitCombinedId(combinedId);
-    return Optional.ofNullable(dataSetMap.get(splitId.getLeft()))
-      .map(userDataSets -> userDataSets.get(splitId.getRight()));
-  }
-
-
   public boolean userMatchesPrefix(User user, String prefix) {
     return user != null && user.getPersistentId() != null && ("u" + user.getPersistentId()).equals(prefix);
   }
@@ -245,7 +238,7 @@ public class DataSetRepository {
     }
   }
 
-  public boolean dataSetExists(String ownerId, String dataSet) {
+  boolean dataSetExists(String ownerId, String dataSet) {
     return unsafeGetDataSetWithoutCheckingPermissions(ownerId, dataSet).isPresent();
   }
 

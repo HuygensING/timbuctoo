@@ -39,15 +39,17 @@ public class BasicPermissionFetcher implements PermissionFetcher {
     }
 
     try {
-      Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, persistentId);
-      if (vreAuthorization.isPresent()) {
-        if (vreAuthorization.get().isAllowedToWrite()) {
-          permissions.add(Permission.WRITE);
-          permissions.add(Permission.READ);
-        }
-        if (vreAuthorization.get().hasAdminAccess()) {
-          permissions.add(Permission.ADMIN);
-          permissions.add(Permission.READ);
+      if (persistentId != null) {
+        Optional<VreAuthorization> vreAuthorization = vreAuthorizationCrud.getAuthorization(vreId, persistentId);
+        if (vreAuthorization.isPresent()) {
+          if (vreAuthorization.get().isAllowedToWrite()) {
+            permissions.add(Permission.WRITE);
+            permissions.add(Permission.READ);
+          }
+          if (vreAuthorization.get().hasAdminAccess()) {
+            permissions.add(Permission.ADMIN);
+            permissions.add(Permission.READ);
+          }
         }
       }
       return permissions;
