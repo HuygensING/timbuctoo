@@ -1,15 +1,19 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 
 import javaslang.control.Either;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -20,9 +24,11 @@ import javax.ws.rs.core.Response;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 @Path("/v5/{userId}/{dataSet}/upload/rdf")
 public class RdfUpload {
@@ -32,6 +38,27 @@ public class RdfUpload {
 
   public RdfUpload(AuthCheck authCheck) {
     this.authCheck = authCheck;
+  }
+
+  @GET
+  @Path("/status")
+  public Response getStatus(@HeaderParam("authorization") final String authHeader,
+                            @PathParam("userId") final String userId,
+                            @PathParam("dataSet") final String dataSetId) {
+    final Either<Response, Response> result = authCheck
+      .getOrCreate( authHeader, userId, dataSetId, false)
+      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
+      .map((Tuple<User, DataSet> userDataSetTuple) -> {
+        final DataSet dataSet = userDataSetTuple.getRight();
+        return Response.ok(dataSet.getImportManager().getStatus())
+                       .type(MediaType.APPLICATION_JSON_TYPE)
+                       .build();
+      });
+    if (result.isLeft()) {
+      return result.getLeft();
+    } else {
+      return result.get();
+    }
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -52,7 +79,7 @@ public class RdfUpload {
     final Either<Response, Response> result = authCheck
       .getOrCreate( authHeader, userId, dataSetId, forceCreation)
       .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
-      .map(userDataSetTuple -> {
+      .map((Tuple<User, DataSet> userDataSetTuple) -> {
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;
 
         final DataSet dataSet = userDataSetTuple.getRight();
@@ -71,8 +98,9 @@ public class RdfUpload {
             .build();
         }
 
+        Future<ImportStatus> promise = null;
         try {
-          Future<?> promise = importManager.addLog(
+          promise = importManager.addLog(
             baseUri == null ? dataSet.getMetadata().getBaseUri() : baseUri.toString(),
             defaultGraph == null ? dataSet.getMetadata().getBaseUri() : defaultGraph.toString(),
             body.getContentDisposition().getFileName(),
@@ -80,11 +108,26 @@ public class RdfUpload {
             Optional.of(Charset.forName(encoding)),
             mediaType
           );
-          if (!async) {
-            promise.get();
-          }
-        } catch (LogStorageFailedException | InterruptedException | ExecutionException e) {
+        } catch (LogStorageFailedException e) {
           return Response.serverError().build();
+        }
+        if (!async) {
+          try {
+            ImportStatus status = promise.get();
+            if (!status.hasErrors()) {
+              return Response
+                .status(Response.Status.CREATED)
+                .build();
+            } else {
+              return Response
+                .status(Response.Status.BAD_REQUEST)
+                .type(MediaType.APPLICATION_JSON_TYPE)
+                .entity(status)
+                .build();
+            }
+          } catch (ExecutionException | InterruptedException e) {
+            return Response.serverError().build();
+          }
         }
         return Response.noContent().build();
       });

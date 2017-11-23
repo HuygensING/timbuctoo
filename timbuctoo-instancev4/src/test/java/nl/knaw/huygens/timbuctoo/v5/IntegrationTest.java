@@ -6,6 +6,7 @@ import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.CleaningDropwizard;
 import nl.knaw.huygens.timbuctoo.server.TimbuctooConfiguration;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
+import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -52,6 +53,7 @@ import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
 import static nl.knaw.huygens.timbuctoo.util.StreamIterator.stream;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasXPath;
 import static org.hamcrest.Matchers.not;
@@ -95,7 +97,7 @@ public class IntegrationTest {
       )
     );
 
-    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
     uploadResponse.readEntity(String.class);
 
     Response graphqlCall = call("/v5/graphql")
@@ -181,6 +183,65 @@ public class IntegrationTest {
   }
 
   @Test
+  public void synchronousUnsuccessfulRdfUpload2X() throws Exception {
+    String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=false",
+      new File(getResource(IntegrationTest.class, "error1_bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius"
+      )
+    );
+
+    assertThat(uploadResponse.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    String content = IOUtils.toString((InputStream) uploadResponse.getEntity());
+    //System.out.println(content);
+    assertThat(content, containsString("Namespace prefix 'wrong_in_1' used but not defined"));
+
+    uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=false",
+      new File(getResource(IntegrationTest.class, "error2_bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius"
+      )
+    );
+    assertThat(uploadResponse.getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
+    content = IOUtils.toString((InputStream) uploadResponse.getEntity());
+    //System.out.println(content);
+    assertThat(content, containsString("Namespace prefix 'wrong_in_2' used but not defined"));
+    assertThat(content.contains("Namespace prefix 'wrong_in_1' used but not defined"), is(false));
+  }
+
+  @Test
+  public void asynchronousUnsuccessfulRdfUpload() throws Exception {
+    String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
+    Response uploadResponse = multipartPost(
+      "/v5/" + PREFIX + "/" + vreName + "/upload/rdf?forceCreation=true&async=true",
+      new File(getResource(IntegrationTest.class, "error1_bia_clusius.ttl").toURI()),
+      "text/turtle",
+      ImmutableMap.of(
+        "encoding", "UTF-8",
+        "uri", "http://example.com/clusius"
+      )
+    );
+
+    assertThat(uploadResponse.getStatus(), is(Response.Status.NO_CONTENT.getStatusCode()));
+    // Give asynchronous computations time to detect the error
+    Thread.sleep(3000);
+
+    Response statusResponse = call("/v5/" + PREFIX + "/" + vreName + "/upload/rdf/status")
+      .get();
+    assertThat(statusResponse.getStatus(), is(Response.Status.OK.getStatusCode()));
+    String content = IOUtils.toString((InputStream) statusResponse.getEntity());
+    //System.out.println(content);
+    assertThat(content, containsString("Namespace prefix 'wrong_in_1' used but not defined"));
+  }
+
+  @Test
   public void succeedingNQuadUdUploadWithGraphql() throws Exception {
     String vreName = "clusius_" + UUID.randomUUID().toString().replace("-", "_");
     Response uploadResponse = multipartPost(
@@ -193,7 +254,7 @@ public class IntegrationTest {
       )
     );
 
-    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
 
     Response graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
@@ -265,7 +326,7 @@ public class IntegrationTest {
       )
     );
 
-    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
 
     Response sourceDescResponse = call("/v5/resourcesync/sourceDescription.xml").get();
     assertThat(sourceDescResponse.getStatus(), is(200));
@@ -328,7 +389,7 @@ public class IntegrationTest {
       .header(HttpHeaders.AUTHORIZATION, "fake")
       .post(Entity.entity(multiPart, multiPart.getMediaType()));
 
-    assertThat(response.getStatus(), Matchers.is(204));
+    assertThat(response.getStatus(), Matchers.is(201));
     // assertThat(response.getHeaderString(HttpHeaders.LOCATION), Matchers.is(notNullValue()));
   }
 
@@ -469,10 +530,10 @@ public class IntegrationTest {
       .header(HttpHeaders.AUTHORIZATION, "fake")
       .put(Entity.json(testRdfReader));
 
-    if (createResponse.getStatus() != 204) {
+    if (createResponse.getStatus() != 201) {
       System.out.println(createResponse.readEntity(String.class));
     }
-    assertThat(createResponse.getStatus(), is(204));
+    assertThat(createResponse.getStatus(), is(201));
 
 
     Response graphqlCall = call("/v5/graphql")
@@ -533,10 +594,10 @@ public class IntegrationTest {
       .header(HttpHeaders.AUTHORIZATION, "fake")
       .put(Entity.json(testRdfReader2));
 
-    if (createResponse2.getStatus() != 204) {
+    if (createResponse2.getStatus() != 201) {
       System.out.println(createResponse2.readEntity(String.class));
     }
-    assertThat(createResponse2.getStatus(), is(204));
+    assertThat(createResponse2.getStatus(), is(201));
 
     graphqlCall = call("/v5/graphql")
       .accept(MediaType.APPLICATION_JSON)
@@ -586,7 +647,7 @@ public class IntegrationTest {
       )
     );
 
-    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(204));
+    assertThat("Successful upload of rdf", uploadResponse.getStatus(), is(201));
 
     final String collectionUri = "http://timbuctoo.huygens.knaw.nl/datasets/clusius/Persons";
     final String type = "test3";

@@ -4,6 +4,7 @@ import nl.knaw.huygens.timbuctoo.util.StreamIterator;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbWrapper;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ChangeFetcher;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.RdfProcessingFailedException;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.ChangeType;
@@ -40,8 +41,8 @@ public class BdbRmlDataSourceStore implements RmlDataSourceStore {
   }
 
   @Override
-  public void start() {
-
+  public void start(ImportStatus status) {
+    status.setStatus("Storing entities");
   }
 
   @Override

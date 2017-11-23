@@ -7,6 +7,7 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.bulkupload.TabularRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.PlainRdfCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
@@ -29,6 +30,7 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -104,14 +106,24 @@ public class TabularUpload {
               fileToken
             )
           );
-          Future<?> promise = importManager.generateLog(
+          Future<ImportStatus> promise = importManager.generateLog(
             dataSet.getMetadata().getBaseUri(),
             dataSet.getMetadata().getBaseUri(),
             rdfCreator.getRight()
           );
 
-          promise.get(); // Wait until the import is done.
-          return Response.noContent().build();
+          ImportStatus status = promise.get(); // Wait until the import is done.
+          if (!status.hasErrors()) {
+            return Response
+              .status(Response.Status.CREATED)
+              .build();
+          } else {
+            return Response
+              .status(Response.Status.BAD_REQUEST)
+              .type(MediaType.APPLICATION_JSON_TYPE)
+              .entity(status)
+              .build();
+          }
         } catch (FileStorageFailedException | ExecutionException | InterruptedException | LogStorageFailedException e) {
           return Response.serverError().build();
         }
