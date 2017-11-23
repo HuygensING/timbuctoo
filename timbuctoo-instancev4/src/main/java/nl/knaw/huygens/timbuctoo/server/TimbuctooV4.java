@@ -77,6 +77,7 @@ import nl.knaw.huygens.timbuctoo.server.healthchecks.databasechecks.LabelsAddedT
 import nl.knaw.huygens.timbuctoo.server.mediatypes.v2.search.FacetValueDeserializer;
 import nl.knaw.huygens.timbuctoo.server.security.LocalUserCreator;
 import nl.knaw.huygens.timbuctoo.server.security.UserPermissionChecker;
+import nl.knaw.huygens.timbuctoo.server.tasks.BdbDumpTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DatabaseValidationTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.DbLogCreatorTask;
 import nl.knaw.huygens.timbuctoo.server.tasks.UserCreationTask;
@@ -430,6 +431,7 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
       )
     );
     environment.admin().addTask(new DbLogCreatorTask(graphManager));
+    environment.admin().addTask(new BdbDumpTask(configuration.getDatabases()));
 
     // register health checks
     // Dropwizard Health checks are used to check whether requests should be routed to this instance
