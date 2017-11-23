@@ -6,24 +6,28 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 import static com.sleepycat.bind.tuple.TupleBinding.getPrimitiveBinding;
+import static java.util.stream.Collectors.toList;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.is;
 
 public class BdbWrapperTest {
 
   private BdbNonPersistentEnvironmentCreator creator;
   private BdbWrapper<String, String> database;
+  private static final TupleBinding<String> STRING_BINDER = getPrimitiveBinding(String.class);
 
   @Before
   public void setUp() throws Exception {
     creator = new BdbNonPersistentEnvironmentCreator();
     creator.start();
 
-    final TupleBinding<String> binder = getPrimitiveBinding(String.class);
-    database = creator.getDatabase("a", "b", "test", true, binder, binder);
+    database = creator.getDatabase("a", "b", "test", true, STRING_BINDER, STRING_BINDER);
 
     database.put("aa", "bb");
     database.put("ab", "ac");
@@ -38,6 +42,57 @@ public class BdbWrapperTest {
     creator.stop();
   }
 
+  @Test
+  public void putOverwritesTheValueWhenNoDuplicatesAndTheKeyAlreadyHasAValue() throws Exception {
+    BdbWrapper<String, String> db = null;
+    try {
+      boolean allowDuplicates = false;
+      db = creator.getDatabase(
+        "user",
+        "dsWithoutDuplcates",
+        "test",
+        allowDuplicates,
+        STRING_BINDER,
+        STRING_BINDER
+      );
+
+      db.put("key", "value");
+      db.put("key", "other");
+
+      List<String> values = db.databaseGetter().key("key").dontSkip().forwards().getValues().collect(toList());
+      assertThat(values, contains("other"));
+    } finally {
+      if (db != null) {
+        db.close();
+      }
+    }
+  }
+
+  @Test
+  public void putAddsAValueWhenDuplicatesAllowedAndTheKeyAlreadyHasAValue() throws Exception {
+    BdbWrapper<String, String> db = null;
+    try {
+      boolean allowDuplicates = true;
+      db = creator.getDatabase(
+        "user",
+        "dsWithtDuplcates",
+        "test",
+        allowDuplicates,
+        STRING_BINDER,
+        STRING_BINDER
+      );
+
+      db.put("key", "value");
+      db.put("key", "other");
+
+      List<String> values = db.databaseGetter().key("key").dontSkip().forwards().getValues().collect(toList());
+      assertThat(values, containsInAnyOrder("other", "value"));
+    } finally {
+      if (db != null) {
+        db.close();
+      }
+    }
+  }
 
   @Test
   public void getAllItems() throws Exception {

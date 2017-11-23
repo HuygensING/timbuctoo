@@ -71,7 +71,7 @@ public class BdbWrapper<KeyT, ValueT> {
     if (transaction != null) {
       transaction.commit();
     }
-    database.sync();
+    // database.sync();
   }
 
   public void replace(KeyT key, ValueT initialValue, Function<ValueT, ValueT> replacer) throws DatabaseWriteException {
@@ -100,7 +100,7 @@ public class BdbWrapper<KeyT, ValueT> {
         if (databaseConfig.getSortedDuplicates()) {
           putType = Put.NO_DUP_DATA;
         } else {
-          putType = Put.NO_OVERWRITE;
+          putType = Put.OVERWRITE;
         }
         final OperationResult result = database.put(transaction, keyEntry, valueEntry, putType, null);
         return result != null;
@@ -149,5 +149,4 @@ public class BdbWrapper<KeyT, ValueT> {
     cursor.close();
     return result;
   }
-
 }
