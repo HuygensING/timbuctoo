@@ -282,12 +282,6 @@ public class DataSetRepository {
   }
 
   public void stop() {
-    for (Map<String, DataSet> dataSets : dataSetMap.values()) {
-      for (DataSet dataSet : dataSets.values()) {
-        dataSet.stop();
-      }
-    }
-
     dataStoreFactory.stop();
   }
 

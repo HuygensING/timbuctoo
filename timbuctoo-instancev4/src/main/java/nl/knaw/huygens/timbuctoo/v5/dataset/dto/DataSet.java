@@ -24,7 +24,6 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.SchemaStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
 import nl.knaw.huygens.timbuctoo.v5.rml.RdfDataSourceFactory;
 import org.immutables.value.Value;
-import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,9 +32,9 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 @Value.Immutable
-public abstract class DataSet {
+public interface DataSet {
 
-  public static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
+  static DataSet dataSet(PromotedDataSet metadata, DataSetConfiguration configuration,
                          FileHelper fileHelper, ExecutorService executorService, String rdfPrefix,
                          BdbEnvironmentCreator dataStoreFactory, ResourceSync resourceSync, Runnable onUpdated)
     throws IOException, DataStoreCreationException, ResourceSyncException {
@@ -151,25 +150,17 @@ public abstract class DataSet {
       .build();
   }
 
-  public void stop() {
-    try {
-      getTypeNameStore().close();
-    } catch (Exception e) {
-      LoggerFactory.getLogger(DataSet.class).error("Could not close type name store");
-    }
-  }
+  SchemaStore getSchemaStore();
 
-  public abstract SchemaStore getSchemaStore();
+  TypeNameStore getTypeNameStore();
 
-  public abstract TypeNameStore getTypeNameStore();
+  ImportManager getImportManager();
 
-  public abstract ImportManager getImportManager();
+  RdfDataSourceFactory getDataSource();
 
-  public abstract RdfDataSourceFactory getDataSource();
+  QuadStore getQuadStore();
 
-  public abstract QuadStore getQuadStore();
-
-  public abstract PromotedDataSet getMetadata();
+  PromotedDataSet getMetadata();
 
 
 }
