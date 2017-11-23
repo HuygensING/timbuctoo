@@ -8,10 +8,12 @@ import nl.knaw.huygens.timbuctoo.model.AltNames;
 import java.io.IOException;
 
 import static nl.knaw.huygens.timbuctoo.util.JsonBuilder.jsnO;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 
 class AltNamesConverter implements Converter {
 
   static final String TYPE = "altnames";
+  private final ObjectMapper objectMapper = new ObjectMapper();
 
   @Override
   public String jsonToTinkerpop(JsonNode json) throws IOException {
@@ -19,17 +21,17 @@ class AltNamesConverter implements Converter {
     //make the same as the database value
     ObjectNode dbJson = jsnO("list", json);
     // verify json is an AltNames json
-    new ObjectMapper().treeToValue(dbJson, AltNames.class);
+    objectMapper.treeToValue(dbJson, AltNames.class);
     //if this doesn't throw then it was a good personName apparently
     return dbJson.toString();
   }
 
   @Override
   public JsonNode tinkerpopToJson(Object value) throws IOException {
-    if (value instanceof String) {
-      JsonNode json = new ObjectMapper().readTree((String) value);
+    if (value instanceof String && !isBlank((String) value)) {
+      JsonNode json = objectMapper.readTree((String) value);
       //convert to personNames as verification
-      new ObjectMapper().treeToValue(json, AltNames.class);
+      objectMapper.treeToValue(json, AltNames.class);
       //if this doesn't throw then it was a good personName apparently
       return json.get("list");
     } else {
