@@ -64,13 +64,13 @@ public class TabularUpload {
                          @HeaderParam("authorization") final String authHeader,
                          @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId,
-                         @QueryParam("forceCreation") boolean forceCreation,
-                         @QueryParam("isPublic") boolean isPublic)
+                         @QueryParam("forceCreation") boolean forceCreation)
     throws DataStoreCreationException, FileStorageFailedException, ExecutionException, InterruptedException,
     LogStorageFailedException {
 
     final Either<Response, Response> result = authCheck.getOrCreate(authHeader, ownerId, dataSetId,
-      forceCreation, isPublic)
+      forceCreation
+    )
       .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
       .map(userAndDs -> {
         final MediaType mediaType = mimeTypeOverride == null ? body.getMediaType() : mimeTypeOverride;

@@ -256,7 +256,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         } catch (IOException e) {
           LOG.error("Webhook call failed", e);
         }
-      })
+      }),
+      configuration.dataSetsArePublicByDefault()
     );
 
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));

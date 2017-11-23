@@ -40,11 +40,10 @@ public class TwitterSecurityFactory implements SecurityFactory {
   public PermissionFetcher getPermissionFetcher() throws AccessNotPossibleException, NoSuchAlgorithmException {
     return new PermissionFetcher() {
       @Override
-      public Set<Permission> getPermissions(String persistentId, PromotedDataSet dataSet)
+      public Set<Permission> getPermissions(String persistentId, PromotedDataSet dataSetMetaData)
         throws PermissionFetchingException {
-
         HashSet<Permission> result = new HashSet<>();
-        if (persistentId != null && persistentId.equals(dataSet.getOwnerId())) {
+        if (persistentId != null && persistentId.equals(dataSetMetaData.getOwnerId())) {
           result.add(Permission.ADMIN);
           result.add(Permission.WRITE);
         } else {
