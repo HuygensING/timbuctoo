@@ -130,6 +130,12 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
     return getSearchResultAvailabilityTimeoutFactory().createTimeout();
   }
 
+  @Value.Default
+  public boolean dataSetsArePublicByDefault() {
+    return false;
+  }
+
+
   //DROPWIZARD DEFAULT PROPERTIES:
   //Required to make immutables generate json-deserializers for the default properties
   @Override
@@ -144,12 +150,6 @@ public abstract class TimbuctooConfiguration extends Configuration implements Ac
   @Value.Default
   public LoggingFactory getLoggingFactory() {
     return new DefaultLoggingFactory();
-  }
-
-  @JsonProperty("isPublic")
-  @Value.Default
-  public Boolean isPublic() {
-    return false;
   }
 
   @Override

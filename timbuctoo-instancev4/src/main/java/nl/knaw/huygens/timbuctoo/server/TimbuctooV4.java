@@ -99,7 +99,6 @@ import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.RdfUpload;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ResourceSyncEndpoint;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.Rml;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.TabularUpload;
-import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.WellKnown;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.PaginationArgumentsHelper;
@@ -107,6 +106,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
 import nl.knaw.huygens.timbuctoo.v5.graphql.derivedschema.DerivedSchemaTypeGenerator;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.RootQuery;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
+import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterLogin;
 import nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.eclipse.jetty.server.Connector;
@@ -257,7 +257,8 @@ public class TimbuctooV4 extends Application<TimbuctooConfiguration> {
         } catch (IOException e) {
           LOG.error("Webhook call failed", e);
         }
-      })
+      }),
+      configuration.dataSetsArePublicByDefault()
     );
 
     environment.lifecycle().manage(new DataSetFactoryManager(dataSetRepository));

@@ -58,7 +58,8 @@ public class DataSetRepositoryTest {
       new BdbNonPersistentEnvironmentCreator(),
       new TimbuctooRdfIdHelper("http://example.org/timbuctoo/"),
       combinedId -> {
-      }
+      },
+      false
     );
   }
 
@@ -74,7 +75,6 @@ public class DataSetRepositoryTest {
 
     assertThat(dataSet1, is(sameInstance(dataSet2)));
   }
-
 
   public ImportManager getImportManager(String user, String dataset) throws Exception {
     return dataSetRepository.createDataSet(User.create(null, user), dataset, false).getImportManager();
@@ -122,7 +122,8 @@ public class DataSetRepositoryTest {
 
   @Test
   public void removeDataSetRemovesTheDataSetFromDisk() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
+      "dataset", false);
     File dataSetPath = new File(new File(tempFile, dataSet.getMetadata().getOwnerId()), "dataset");
     assertThat(dataSetPath.exists(), is(true));
 
@@ -133,7 +134,8 @@ public class DataSetRepositoryTest {
 
   @Test
   public void removeDataSetRemovesTheDataSetFromTheIndex() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
+      "dataset", false);
 
     dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
 
@@ -142,7 +144,8 @@ public class DataSetRepositoryTest {
 
   @Test
   public void removeDataSetRemovesItFromResourceSync() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
+      "dataset", false);
 
     dataSetRepository.removeDataSet(dataSet.getMetadata().getOwnerId(), "dataset");
 
@@ -151,7 +154,8 @@ public class DataSetRepositoryTest {
 
   @Test
   public void dataSetsWillBeTheSameAfterRestart() throws Exception {
-    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"), "dataset", false);
+    final DataSet dataSet = dataSetRepository.createDataSet(User.create(null, "user"),
+      "dataset", false);
 
     assertThat(dataSetRepository.dataSetExists(dataSet.getMetadata().getOwnerId(), "dataset"), is(true));
 

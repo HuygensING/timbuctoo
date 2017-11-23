@@ -57,6 +57,7 @@ public class DataSetRepository {
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
+  private final boolean publicByDefault;
   private final HashMap<UUID, StringBuffer> statusMap;
   private final FileHelper fileHelper;
   private final ResourceSync resourceSync;
@@ -65,7 +66,8 @@ public class DataSetRepository {
 
   public DataSetRepository(ExecutorService executorService, PermissionFetcher permissionFetcher,
                            DataSetConfiguration configuration, BdbEnvironmentCreator dataStoreFactory,
-                           TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated) throws IOException {
+                           TimbuctooRdfIdHelper rdfIdHelper, Consumer<String> onUpdated,
+                           boolean publicByDefault) throws IOException {
     this.executorService = executorService;
     this.permissionFetcher = permissionFetcher;
     this.configuration = configuration;
@@ -80,6 +82,7 @@ public class DataSetRepository {
     );
     this.rdfIdHelper = rdfIdHelper;
     this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
+    this.publicByDefault = publicByDefault;
     statusMap = new HashMap<>();
     resourceSync = configuration.getResourceSync();
 
@@ -205,7 +208,7 @@ public class DataSetRepository {
       baseUri,
       uriPrefix,
       false,
-      isPublic
+      publicByDefault
     );
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerPrefix, key -> new HashMap<>());

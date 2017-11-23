@@ -40,12 +40,11 @@ public class Import {
   @Produces("application/json")
   public Response importData(@HeaderParam("Authorization") String authorization,
                              @QueryParam("forceCreation") boolean forceCreation,
-                             @QueryParam("isPublic") boolean isPublic,
                              ImportData importData)
     throws DataStoreCreationException {
 
     final Either<Response, Response> responses = authCheck
-      .getOrCreate(authorization, importData.userId, importData.dataSetId, forceCreation, isPublic)
+      .getOrCreate(authorization, importData.userId, importData.dataSetId, forceCreation)
       .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
       .map(userAndDs -> {
         final DataSet dataSet = userAndDs.getRight();
