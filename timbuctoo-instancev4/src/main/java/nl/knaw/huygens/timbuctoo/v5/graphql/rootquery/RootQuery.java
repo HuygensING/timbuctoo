@@ -25,6 +25,7 @@ import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.dto.Direction;
 import nl.knaw.huygens.timbuctoo.v5.datastores.schemastore.dto.Type;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.SupportedExportFormats;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.RdfWiringFactory;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.DataSetWithDatabase;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.SubjectReference;
@@ -42,6 +43,7 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePro
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,7 +116,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .collect(Collectors.toList()))
       .dataFetcher("dataSetMetadata", env -> {
         final String dataSetId = env.getArgument("dataSetId");
-        return dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(dataSetId).map(DataSetWithDatabase::new);
+        ContextData context = env.getContext();
+        final String userId = context.getUser().map(User::getPersistentId).orElse(null);
+
+        return dataSetRepository.getDataSet(userId, dataSetId).map(DataSetWithDatabase::new);
       })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
@@ -141,15 +146,18 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         return dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId())
                                 .map(dataSet -> dataSet.getImportManager().getDataSetImportStatus());
       })
-      .dataFetcher("collectionList", env -> getCollections(env.getSource()))
+      .dataFetcher("collectionList", env -> getCollections(env.getSource(), ((ContextData) env.getContext()).getUser()))
+
       .dataFetcher("collection", env -> {
         String collectionId = (String) env.getArguments().get("collectionId");
         if (collectionId != null && collectionId.endsWith("List")) {
           collectionId = collectionId.substring(0, collectionId.length() - "List".length());
         }
         PromotedDataSet input = env.getSource();
-        final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(input.getOwnerId(),
-          input.getDataSetId()).get();
+        ContextData context = env.getContext();
+        final String userId = context.getUser().map(User::getPersistentId).orElse(null);
+
+        final DataSet dataSet = dataSetRepository.getDataSet(userId, input.getOwnerId(), input.getDataSetId()).get();
         final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
         String collectionUri = typeNameStore.makeUri(collectionId);
         if (dataSet.getSchemaStore().getTypes() == null ||
@@ -307,9 +315,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     return schemaGenerator.makeExecutableSchema(staticQuery, wiring.build());
   }
 
-  public CollectionMetadataList getCollections(PromotedDataSet input) {
-    final DataSet dataSet = dataSetRepository.unsafeGetDataSetWithoutCheckingPermissions(input.getOwnerId(),
-      input.getDataSetId()).get();
+  public CollectionMetadataList getCollections(PromotedDataSet input,
+                                               Optional<User> user) {
+    final String userId = user.map(User::getPersistentId).orElse(null);
+    final DataSet dataSet = dataSetRepository.getDataSet(userId, input.getOwnerId(), input.getDataSetId()).get();
 
     final TypeNameStore typeNameStore = dataSet.getTypeNameStore();
     final List<CollectionMetadata> colls = dataSet

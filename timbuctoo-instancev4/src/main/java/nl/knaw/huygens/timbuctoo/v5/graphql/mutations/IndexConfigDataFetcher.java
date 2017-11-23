@@ -12,6 +12,9 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
 import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.RootData;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
+import nl.knaw.huygens.timbuctoo.v5.graphql.datafetchers.dto.ContextData;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 
 import java.util.Optional;
@@ -30,17 +33,19 @@ public class IndexConfigDataFetcher implements DataFetcher {
     String dataSetId = env.getArgument("dataSet");
     String collectionUri = env.getArgument("collectionUri");
     Object viewConfig = env.getArgument("indexConfig");
+    
+    ContextData contextData = env.getContext();
+    UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
 
-    Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
-
-    String ownerId = userAndDataSet.getLeft();
-    String dataSetName = userAndDataSet.getRight();
     Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
     if (!currentUser.isPresent()) {
       throw new RuntimeException("User is not provided");
     }
-    if (dataSetRepository.dataSetExists(ownerId, dataSetName)) {
-      DataSet dataSet = dataSetRepository.getDataSet(currentUser.get().getPersistentId(), ownerId, dataSetName).get();
+
+    Optional<DataSet> dataSetExists = dataSetRepository.getDataSet(currentUser.get().getPersistentId(), dataSetId);
+    if (dataSetExists.isPresent() && userPermissionCheck.getPermissions(dataSetExists.get().getMetadata())
+      .contains(Permission.ADMIN)) {
+      DataSet dataSet = dataSetExists.get();
       dataSet.getQuadStore();
       try {
         final String baseUri = dataSet.getMetadata().getBaseUri();
