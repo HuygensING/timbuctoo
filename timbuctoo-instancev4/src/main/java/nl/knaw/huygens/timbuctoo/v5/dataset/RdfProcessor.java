@@ -50,7 +50,7 @@ public interface RdfProcessor {
     }
   }
 
-  void start(int index) throws RdfProcessingFailedException;
+  void start(int index, ImportStatus status) throws RdfProcessingFailedException;
 
   int getCurrentVersion();
 

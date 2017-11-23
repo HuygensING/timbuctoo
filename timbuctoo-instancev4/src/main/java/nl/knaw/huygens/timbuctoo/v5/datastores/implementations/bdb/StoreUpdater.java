@@ -38,6 +38,7 @@ public class StoreUpdater implements RdfProcessor {
   private List<OptimizedPatchListener> listeners;
   private long prevTime;
   private String logString;
+  private ImportStatus currentStatus;
 
   public StoreUpdater(BdbEnvironmentCreator dbFactory, BdbTripleStore tripleStore, BdbTypeNameStore typeNameStore,
                       BdbTruePatchStore truePatchStore, UpdatedPerPatchStore updatedPerPatchStore,
@@ -56,7 +57,7 @@ public class StoreUpdater implements RdfProcessor {
   private void updateListeners() throws RdfProcessingFailedException {
     logString = "Processed {} subjects ({} subjects/s)";
     for (OptimizedPatchListener listener : listeners) {
-      listener.start();
+      listener.start(currentStatus);
     }
 
     count = 0;
@@ -160,9 +161,10 @@ public class StoreUpdater implements RdfProcessor {
 
 
   @Override
-  public void start(int index) throws RdfProcessingFailedException {
+  public void start(int index, ImportStatus status) throws RdfProcessingFailedException {
     stopwatch = Stopwatch.createStarted();
     currentversion = index;
+    currentStatus = status;
     dbFactory.startTransaction();
     logString = "Processed {} triples ({} triples/s)";
   }
@@ -173,7 +175,7 @@ public class StoreUpdater implements RdfProcessor {
     if (curTime - prevTime > 5) {
       final long itemsPerSecond = (count - prevCount) / (curTime - prevTime);
       LOG.info(logString, count, itemsPerSecond);
-      ImportStatus.get().addMessage(String.format(logString.replaceAll("\\{\\}", "%d"),
+      currentStatus.addMessage(String.format(logString.replaceAll("\\{\\}", "%d"),
         count, itemsPerSecond));
       prevCount = count;
       prevTime = curTime;
@@ -192,13 +194,13 @@ public class StoreUpdater implements RdfProcessor {
     try {
       String msg = "processing " + count + " triples took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      ImportStatus.get().addMessage(msg);
+      currentStatus.addMessage(msg);
       stopwatch.reset();
       stopwatch.start();
       updateListeners();
       msg = "post-processing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      ImportStatus.get().addMessage(msg);
+      currentStatus.addMessage(msg);
 
       stopwatch.reset();
       stopwatch.start();
@@ -206,7 +208,7 @@ public class StoreUpdater implements RdfProcessor {
       dbFactory.commitTransaction();
       msg = "committing took " + stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
       LOG.info(msg);
-      ImportStatus.get().addMessage(msg);
+      currentStatus.addMessage(msg);
 
     } catch (DatabaseWriteException e) {
       throw new RdfProcessingFailedException(e);

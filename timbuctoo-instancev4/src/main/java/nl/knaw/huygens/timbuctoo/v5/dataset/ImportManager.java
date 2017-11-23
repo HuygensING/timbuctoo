@@ -143,7 +143,6 @@ public class ImportManager implements DataProvider {
   }
 
   private synchronized ImportStatus processLogsUntil(int maxIndex) {
-    ImportStatus.set(status);
     status.setStatus("Processing");
     ListIterator<LogEntry> unprocessed = logListStore.getData().getUnprocessed();
     boolean dataWasAdded = false;
@@ -160,7 +159,7 @@ public class ImportManager implements DataProvider {
               LOG.info(msg);
               status.addMessage(msg);
               RdfParser rdfParser = serializerFactory.makeRdfParser(log);
-              processor.start(index);
+              processor.start(index, status);
               rdfParser.importRdf(log, entry.getBaseUri(), entry.getDefaultGraph(), processor);
               processor.commit();
             }
@@ -239,7 +238,6 @@ public class ImportManager implements DataProvider {
     if (dataWasAdded) {
       webhooks.run();
     }
-    ImportStatus.remove();
     status.setFinished();
     return status;
   }

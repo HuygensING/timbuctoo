@@ -3,79 +3,23 @@ package nl.knaw.huygens.timbuctoo.v5.dataset;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Stopwatch;
-import org.slf4j.Logger;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-
-import static org.slf4j.LoggerFactory.getLogger;
 
 @JsonTypeInfo(include = JsonTypeInfo.As.PROPERTY, use = JsonTypeInfo.Id.NAME)
 public class ImportStatus {
 
-  private static final Logger LOG = getLogger(ImportStatus.class);
-  private static Map<Long, ImportStatus> statusMap = new ConcurrentHashMap<>();
-
-  public static ImportStatus get() {
-    long id = Thread.currentThread().getId();
-    ImportStatus currentStatus = statusMap.get(id);
-    if (currentStatus == null) {
-      currentStatus = new ImportStatus();
-      statusMap.put(id, currentStatus);
-      LOG.warn("Getting import status and no status set: thread #" + id);
-    }
-    LOG.debug("Getting current import status for thread #{}", id );
-    return currentStatus;
-  }
-
-  public static void set(ImportStatus currentStatus) {
-    long id = Thread.currentThread().getId();
-    currentStatus.setId(id);
-    statusMap.put(id, currentStatus);
-    LOG.debug("Setting current import status for thread #{}", id );
-  }
-
-  public static ImportStatus remove() {
-    long id = Thread.currentThread().getId();
-    ImportStatus currentStatus = statusMap.remove(id);
-    LOG.debug("Removing current import status for thread #{}", id );
-    return currentStatus;
-  }
-
-  private long id;
   private String methodName = "Unknown";
   private String baseUri;
   private String status = "Unknown";
-  private long totalTime;
-  private String elapsedTime;
   private List<String> messages = new ArrayList<>();
   private List<String> errors = new ArrayList<>();
   private String fatalError;
   private Stopwatch stopwatch = Stopwatch.createUnstarted();
-
-  private void reset() {
-    id = 0;
-    methodName = "Unknown";
-    baseUri = null;
-    status = "Unknown";
-    totalTime = 0L;
-    messages.clear();
-    errors.clear();
-    fatalError = null;
-    stopwatch.reset();
-  }
-
-  public long getId() {
-    return id;
-  }
-
-  public void setId(long id) {
-    this.id = id;
-  }
+  private String totalTime;
 
   public String getStatus() {
     return status;
@@ -90,6 +34,7 @@ public class ImportStatus {
     return baseUri;
   }
 
+  @JsonInclude(JsonInclude.Include.NON_EMPTY)
   public List<String> getMessages() {
     return messages;
   }
@@ -106,13 +51,12 @@ public class ImportStatus {
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getElapsedTime() {
-    elapsedTime = stopwatch.isRunning() ? stopwatch.elapsed(TimeUnit.SECONDS) + " seconds" : null;
-    return elapsedTime;
+    return stopwatch.isRunning() ? stopwatch.elapsed(TimeUnit.SECONDS) + " seconds" : null;
   }
 
   @JsonInclude(JsonInclude.Include.NON_NULL)
   public String getTotalTime() {
-    return totalTime == 0 ? null : totalTime + " seconds";
+    return totalTime;
   }
 
   public boolean hasErrors() {
@@ -127,8 +71,8 @@ public class ImportStatus {
     this.baseUri = baseUri;
   }
 
-  void setStatus(String status) {
-    this.status = "[" + LocalDateTime.now().toString() + "] " + status;
+  public void setStatus(String status) {
+    this.status = status;
   }
 
   public void addMessage(String msg) {
@@ -141,21 +85,33 @@ public class ImportStatus {
   }
 
   public void setFatalError(String msg, Throwable error) {
-    if (stopwatch.isRunning()) {
-      stopwatch.stop();
-    }
-    totalTime = stopwatch.elapsed(TimeUnit.SECONDS);
+    setStopped();
     setStatus("Fatal Error");
     String message = msg == null ? "Fatal Error: " : msg + " :";
     this.fatalError = "[" + LocalDateTime.now().toString() + "] " + message + error.getMessage();
   }
 
   void setFinished() {
+    setStopped();
+    setStatus("Finished with " + errors.size() + " errors");
+  }
+
+  private void reset() {
+    methodName = "Unknown";
+    baseUri = null;
+    status = "Unknown";
+    messages.clear();
+    errors.clear();
+    fatalError = null;
+    stopwatch.reset();
+    totalTime = null;
+  }
+
+  private void setStopped() {
+    totalTime = stopwatch.elapsed(TimeUnit.SECONDS) + " seconds";
     if (stopwatch.isRunning()) {
       stopwatch.stop();
     }
-    totalTime = stopwatch.elapsed(TimeUnit.SECONDS);
-    setStatus("Finished");
   }
 
 }
