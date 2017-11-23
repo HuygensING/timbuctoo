@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints;
 import javaslang.control.Either;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck;
@@ -12,6 +13,7 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -36,6 +38,27 @@ public class RdfUpload {
 
   public RdfUpload(AuthCheck authCheck) {
     this.authCheck = authCheck;
+  }
+
+  @GET
+  @Path("/status")
+  public Response getStatus(@HeaderParam("authorization") final String authHeader,
+                            @PathParam("userId") final String userId,
+                            @PathParam("dataSet") final String dataSetId) {
+    final Either<Response, Response> result = authCheck
+      .getOrCreate( authHeader, userId, dataSetId, false)
+      .flatMap(userAndDs -> authCheck.hasAdminAccess(userAndDs.getLeft(), userAndDs.getRight()))
+      .map((Tuple<User, DataSet> userDataSetTuple) -> {
+        final DataSet dataSet = userDataSetTuple.getRight();
+        return Response.ok(dataSet.getImportManager().getStatus())
+                       .type(MediaType.APPLICATION_JSON_TYPE)
+                       .build();
+      });
+    if (result.isLeft()) {
+      return result.getLeft();
+    } else {
+      return result.get();
+    }
   }
 
   @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -75,7 +98,7 @@ public class RdfUpload {
             .build();
         }
 
-        Future<List<Throwable>> promise = null;
+        Future<ImportStatus> promise = null;
         try {
           promise = importManager.addLog(
             baseUri == null ? dataSet.getMetadata().getBaseUri() : baseUri.toString(),
@@ -90,8 +113,8 @@ public class RdfUpload {
         }
         if (!async) {
           try {
-            List<Throwable> errorList = promise.get();
-            if (errorList.isEmpty()) {
+            ImportStatus status = promise.get();
+            if (!status.hasErrors()) {
               return Response
                 .status(Response.Status.CREATED)
                 .build();
@@ -99,8 +122,7 @@ public class RdfUpload {
               return Response
                 .status(Response.Status.BAD_REQUEST)
                 .type(MediaType.APPLICATION_JSON_TYPE)
-                .entity(errorList.stream()
-                                 .map(Throwable::getMessage).collect(Collectors.toList()))
+                .entity(status)
                 .build();
             }
           } catch (ExecutionException | InterruptedException e) {

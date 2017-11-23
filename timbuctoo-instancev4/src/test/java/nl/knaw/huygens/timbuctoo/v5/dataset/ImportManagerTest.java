@@ -95,7 +95,7 @@ public class ImportManagerTest {
     String baseUri = "http://example.com/baseUri";
     File file = FileHelpers.getFileFromResource(ImportManagerTest.class, "clusius.ttl").toFile();
 
-    Future<?> promise = importManager.addLog(
+    Future<ImportStatus> promise = importManager.addLog(
       baseUri,
       defaultGraph,
       name,
@@ -140,7 +140,7 @@ public class ImportManagerTest {
     CountingProcessor processor = new CountingProcessor();
     importManager.subscribeToRdf(processor);
 
-    Future<List<Throwable>> promise = importManager.generateLog(
+    Future<ImportStatus> promise = importManager.generateLog(
       baseUri,
       defaultGraph,
       new DummyRdfCreator()

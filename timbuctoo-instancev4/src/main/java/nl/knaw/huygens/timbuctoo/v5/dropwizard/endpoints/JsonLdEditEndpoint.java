@@ -6,6 +6,7 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.datastores.quadstore.QuadStore;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedException;
@@ -90,7 +91,7 @@ public class JsonLdEditEndpoint {
     }
 
     try {
-      List<Throwable> errorList = importManager.generateLog(
+      ImportStatus status = importManager.generateLog(
         dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
         fromCurrentState(
@@ -102,7 +103,7 @@ public class JsonLdEditEndpoint {
           Clock.systemUTC()
         )
       ).get();
-      if (errorList.isEmpty()) {
+      if (!status.hasErrors()) {
         return Response
           .status(Response.Status.CREATED)
           .build();
@@ -110,8 +111,7 @@ public class JsonLdEditEndpoint {
         return Response
           .status(Response.Status.BAD_REQUEST)
           .type(MediaType.APPLICATION_JSON_TYPE)
-          .entity(errorList.stream()
-                           .map(Throwable::getMessage).collect(Collectors.toList()))
+          .entity(status)
           .build();
       }
     } catch (IOException e) {
