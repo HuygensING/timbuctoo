@@ -29,9 +29,6 @@ RUN mvn clean package dependency:go-offline
 
 RUN rm -r ./*
 
-ENV BASE_URI=http://localhost:8080
-ENV TIMBUCTOO_SEARCH_URL=http://localhost:8082
-ENV TIMBUCTOO_GUI_PUBLIC_URL=http://localhost:8082/overview/
 EXPOSE 80 81
 
 RUN mkdir -p /root/data/auth/authorizations && \

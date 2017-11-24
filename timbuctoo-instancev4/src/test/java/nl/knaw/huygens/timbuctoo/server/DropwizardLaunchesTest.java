@@ -1,6 +1,5 @@
 package nl.knaw.huygens.timbuctoo.server;
 
-import com.google.common.collect.ImmutableMap;
 import io.dropwizard.testing.junit.DropwizardAppRule;
 import nl.knaw.huygens.timbuctoo.util.EvilEnvironmentVariableHacker;
 import org.junit.ClassRule;
@@ -17,11 +16,17 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class DropwizardLaunchesTest {
 
   static {
-    EvilEnvironmentVariableHacker.setEnv(ImmutableMap.of(
-      "timbuctoo_dataPath", resourceFilePath("testrunstate"),
-      "timbuctoo_port", "0",
-      "timbuctoo_adminPort", "0"
-    ));
+    EvilEnvironmentVariableHacker.setEnv(
+      "http://localhost",
+      "9200",
+      "elastic",
+      "changeme",
+      "http://127.0.0.1:0",
+      resourceFilePath("testrunstate"),
+      resourceFilePath("testrunstate"),
+      "0",
+      "0"
+    );
   }
 
   @ClassRule
