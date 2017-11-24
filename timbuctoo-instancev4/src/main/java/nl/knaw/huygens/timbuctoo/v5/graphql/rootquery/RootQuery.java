@@ -8,6 +8,7 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
@@ -122,7 +123,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         ContextData context = env.getContext();
         final String userId = context.getUser().map(User::getPersistentId).orElse(null);
 
-        return dataSetRepository.getDataSet(userId, dataSetId).map(DataSetWithDatabase::new);
+        Tuple<String, String> splitCombinedId = PromotedDataSet.splitCombinedId(dataSetId);
+
+        return dataSetRepository.getDataSet(userId, splitCombinedId.getLeft(),splitCombinedId.getRight())
+          .map(DataSetWithDatabase::new);
       })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()

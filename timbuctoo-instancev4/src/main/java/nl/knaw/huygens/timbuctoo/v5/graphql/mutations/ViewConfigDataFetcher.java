@@ -46,7 +46,8 @@ public class ViewConfigDataFetcher implements DataFetcher {
     String ownerId = ownerAndDataSet.getLeft();
     String dataSetName = ownerAndDataSet.getRight();
 
-    Optional<DataSet> dataSet = dataSetRepository.getDataSet(ownerId, dataSetId);
+    Optional<DataSet> dataSet = dataSetRepository.getDataSet(contextData.getUser().get().getPersistentId(),
+      ownerId,dataSetName);
     if (dataSet != null &&
       userPermissionCheck.getPermissions(dataSet.get().getMetadata())
         .contains(Permission.ADMIN)) {
