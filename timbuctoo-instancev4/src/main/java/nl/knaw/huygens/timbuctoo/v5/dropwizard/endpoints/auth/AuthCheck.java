@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth;
 
 import javaslang.control.Either;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
@@ -100,6 +101,8 @@ public class AuthCheck {
           return Either.right(Tuple.tuple(user, dataSet));
         } catch (DataStoreCreationException e) {
           return Either.left(Response.serverError().build());
+        } catch (IllegalDataSetNameException e) {
+          return Either.left(Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build());
         }
       }
     }

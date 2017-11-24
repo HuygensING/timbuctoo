@@ -3,6 +3,7 @@ package nl.knaw.huygens.timbuctoo.v5.dataset.dto;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import org.immutables.value.Value;
 
 import java.util.Optional;
@@ -51,9 +52,9 @@ public interface PromotedDataSet {
   }
 
   static PromotedDataSet promotedDataSet(String ownerId, String dataSetId, String baseUri, String uriPrefix,
-                                         boolean promoted) {
+                                         boolean promoted) throws IllegalDataSetNameException {
     if (!ownerId.matches(VALID_ID) || !dataSetId.matches(VALID_ID)) {
-      throw new IllegalArgumentException("Owner id and dataSet id should match " + VALID_ID);
+      throw new IllegalDataSetNameException("Owner id and dataSet id should match " + VALID_ID);
     }
 
     return ImmutablePromotedDataSet.builder()

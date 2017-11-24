@@ -68,19 +68,19 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void createDataSetReturnsTheSamesDataSetForEachCall() throws DataStoreCreationException {
+  public void createDataSetReturnsTheSamesDataSetForEachCall() throws Exception {
     DataSet dataSet1 = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
     DataSet dataSet2 = dataSetRepository.createDataSet(User.create(null, "user"), "dataset");
 
     assertThat(dataSet1, is(sameInstance(dataSet2)));
   }
 
-  public ImportManager getImportManager(String user, String dataset) throws DataStoreCreationException {
+  public ImportManager getImportManager(String user, String dataset) throws Exception {
     return dataSetRepository.createDataSet(User.create(null, user), dataset).getImportManager();
   }
 
   @Test
-  public void createDataSetReturnsADifferentDataSetForDifferentDataSetIds() throws DataStoreCreationException {
+  public void createDataSetReturnsADifferentDataSetForDifferentDataSetIds() throws Exception {
     ImportManager importManager1 = getImportManager("user", "dataset");
     ImportManager importManager2 = getImportManager("user", "other");
 
@@ -88,7 +88,7 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void createDataSetReturnsADifferentDataSetForDifferentUserIds() throws DataStoreCreationException {
+  public void createDataSetReturnsADifferentDataSetForDifferentUserIds() throws Exception {
     ImportManager importManager1 = getImportManager("user", "dataset");
     ImportManager importManager2 = getImportManager("other", "dataset");
 
@@ -111,7 +111,7 @@ public class DataSetRepositoryTest {
   }
 
   @Test
-  public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws DataStoreCreationException {
+  public void dataSetExistsReturnsFalseIfTheUserDoesNotOwnADataSetWithTheDataSetId() throws Exception {
     dataSetRepository.createDataSet(User.create(null, "ownerid"), "otherdatasetid");
 
     boolean dataSetExists = dataSetRepository.dataSetExists("ownerid", "dataset_id");

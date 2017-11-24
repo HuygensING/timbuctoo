@@ -1,6 +1,7 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
@@ -136,7 +137,8 @@ public class DataSetRepository {
     return user != null && user.getPersistentId() != null && ("u" + user.getPersistentId()).equals(prefix);
   }
 
-  public DataSet createDataSet(User user, String dataSetId) throws DataStoreCreationException {
+  public DataSet createDataSet(User user, String dataSetId)
+    throws DataStoreCreationException, IllegalDataSetNameException {
     //The ownerId might not be valid (i.e. a safe string). We make it safe here:
     //dataSetId is under the control of the user so we simply throw if it's not valid
     String ownerPrefix = "u" + user.getPersistentId();
