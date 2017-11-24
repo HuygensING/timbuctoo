@@ -9,9 +9,7 @@ import com.sleepycat.je.DatabaseConfig;
 import com.sleepycat.je.DatabaseEntry;
 import com.sleepycat.je.Environment;
 import com.sleepycat.je.LockMode;
-import com.sleepycat.je.OperationResult;
 import com.sleepycat.je.OperationStatus;
-import com.sleepycat.je.Put;
 import com.sleepycat.je.Transaction;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.exceptions.DatabaseWriteException;
 import org.slf4j.Logger;
@@ -20,8 +18,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 
+import static com.sleepycat.je.OperationStatus.SUCCESS;
 import static org.slf4j.LoggerFactory.getLogger;
 
 public class BdbWrapper<KeyT, ValueT> {
@@ -71,7 +71,7 @@ public class BdbWrapper<KeyT, ValueT> {
     if (transaction != null) {
       transaction.commit();
     }
-    // database.sync();
+    database.sync();
   }
 
   public void replace(KeyT key, ValueT initialValue, Function<ValueT, ValueT> replacer) throws DatabaseWriteException {
@@ -95,15 +95,20 @@ public class BdbWrapper<KeyT, ValueT> {
     synchronized (keyEntry) {
       try {
         keyBinder.objectToEntry(key, keyEntry);
-        valueBinder.objectToEntry(value, valueEntry);
-        final Put putType;
         if (databaseConfig.getSortedDuplicates()) {
-          putType = Put.NO_DUP_DATA;
+          valueBinder.objectToEntry(value, valueEntry);
+          return database.putNoDupData(transaction, keyEntry, valueEntry) != null;
         } else {
-          putType = Put.OVERWRITE;
+          try (Cursor cursor = database.openCursor(transaction, CursorConfig.DEFAULT)) {
+            OperationStatus searchResult = cursor.getSearchKey(keyEntry, valueEntry, LockMode.DEFAULT);
+            if (searchResult == SUCCESS && Objects.equals(value, valueBinder.entryToObject(valueEntry))) {
+              return false;
+            } else {
+              valueBinder.objectToEntry(value, valueEntry);
+              return database.put(transaction, keyEntry, valueEntry) != null;
+            }
+          }
         }
-        final OperationResult result = database.put(transaction, keyEntry, valueEntry, putType, null);
-        return result != null;
       } catch (Exception e) {
         throw new DatabaseWriteException(e);
       }
