@@ -29,12 +29,15 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
 
 @Path("/v5/{userId}/{dataSetId}/upload/table")
 public class TabularUpload {
@@ -104,15 +107,14 @@ public class TabularUpload {
               fileToken
             )
           );
-          Future<?> promise = importManager.generateLog(
+          Future<List<Throwable>> promise = importManager.generateLog(
             dataSet.getMetadata().getBaseUri(),
             dataSet.getMetadata().getBaseUri(),
             rdfCreator.getRight()
           );
 
-          promise.get(); // Wait until the import is done.
-          return Response.noContent().build();
-        } catch (FileStorageFailedException | ExecutionException | InterruptedException | LogStorageFailedException e) {
+          return handleImportManagerResult(promise);
+        } catch (FileStorageFailedException | LogStorageFailedException e) {
           return Response.serverError().build();
         }
       });

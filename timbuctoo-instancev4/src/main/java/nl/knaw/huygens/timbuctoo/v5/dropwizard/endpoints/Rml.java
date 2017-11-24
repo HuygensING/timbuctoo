@@ -25,10 +25,12 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
+
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
 
 @Path("/v5/{userId}/{dataSetId}/rml")
 public class Rml {
@@ -45,7 +47,7 @@ public class Rml {
   public Response upload(final String rdfData,
                          @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId)
-    throws DataStoreCreationException, LogStorageFailedException, ExecutionException, InterruptedException {
+    throws DataStoreCreationException, LogStorageFailedException {
     final Optional<DataSet> dataSet = dataSetRepository.getDataSet(ownerId, dataSetId);
     if (dataSet.isPresent()) {
       ImportManager importManager = dataSet.get().getImportManager();
@@ -70,13 +72,12 @@ public class Rml {
       //FIXME: trigger onprefix for all rml prefixes
       //FIXME: store rml and retrieve it from tripleStore when mapping
       final String baseUri = dataSet.get().getMetadata().getBaseUri();
-      Future<?> future = importManager.generateLog(
+      Future<List<Throwable>> promise = importManager.generateLog(
         baseUri,
         baseUri,
         new RmlRdfCreator(rmlMappingDocument, baseUri)
       );
-      future.get();
-      return Response.noContent().build();
+      return handleImportManagerResult(promise);
     } else {
       return errorResponseHelper.dataSetNotFound(ownerId, dataSetId);
     }

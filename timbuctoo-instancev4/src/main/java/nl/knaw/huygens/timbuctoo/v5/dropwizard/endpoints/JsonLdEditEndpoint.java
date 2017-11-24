@@ -4,7 +4,6 @@ import com.github.jsonldjava.core.DocumentLoader;
 import com.github.jsonldjava.core.JsonLdError;
 import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
 import nl.knaw.huygens.timbuctoo.v5.dataset.ImportManager;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -13,6 +12,7 @@ import nl.knaw.huygens.timbuctoo.v5.filestorage.exceptions.LogStorageFailedExcep
 import nl.knaw.huygens.timbuctoo.v5.jsonldimport.ConcurrentUpdateException;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.UserValidationException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
@@ -25,10 +25,12 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.time.Clock;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
 import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.auth.AuthCheck.checkWriteAccess;
 import static nl.knaw.huygens.timbuctoo.v5.jsonldimport.JsonProvenanceToRdfPatch.fromCurrentState;
 import static nl.knaw.huygens.timbuctoo.v5.util.RdfConstants.TIM_JSONLD_UPLOAD_CONTEXT;
@@ -87,7 +89,7 @@ public class JsonLdEditEndpoint {
     }
 
     try {
-      importManager.generateLog(
+      final Future<List<Throwable>> promise = importManager.generateLog(
         dataSet.getMetadata().getBaseUri(),
         dataSet.getMetadata().getBaseUri(),
         fromCurrentState(
@@ -98,16 +100,13 @@ public class JsonLdEditEndpoint {
           UUID.randomUUID().toString(),
           Clock.systemUTC()
         )
-      ).get();
+      );
+      return handleImportManagerResult(promise);
     } catch (IOException e) {
       return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
     } catch (ConcurrentUpdateException e) {
       return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
-    } catch (InterruptedException | ExecutionException e) {
-      LOG.error("interrupted", e);
     }
-
-    return Response.noContent().build();
   }
 
 }

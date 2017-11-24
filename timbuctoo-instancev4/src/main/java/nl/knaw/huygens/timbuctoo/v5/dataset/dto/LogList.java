@@ -10,7 +10,7 @@ import java.util.ListIterator;
 public class LogList {
 
   @JsonProperty
-  private int processedUntil = 0;
+  private int processedUntil = -1;
 
   @JsonProperty
   private List<LogEntry> logEntries = new ArrayList<>();
@@ -22,7 +22,7 @@ public class LogList {
 
   @JsonIgnore
   public ListIterator<LogEntry> getUnprocessed() {
-    return logEntries.listIterator(processedUntil);
+    return logEntries.listIterator(processedUntil + 1);
   }
 
   public void markAsProcessed(int marker) {

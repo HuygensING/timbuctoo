@@ -21,6 +21,7 @@ import javax.ws.rs.core.MediaType;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -139,7 +140,7 @@ public class ImportManagerTest {
     CountingProcessor processor = new CountingProcessor();
     importManager.subscribeToRdf(processor);
 
-    Future<?> promise = importManager.generateLog(
+    Future<List<Throwable>> promise = importManager.generateLog(
       baseUri,
       defaultGraph,
       new DummyRdfCreator()
