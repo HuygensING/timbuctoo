@@ -139,7 +139,7 @@ public class DataSetRepository {
   public Optional<DataSet> getDataSet(String userId, String combinedId) {
     final Tuple<String, String> splitId = PromotedDataSet.splitCombinedId(combinedId);
     try {
-      if (permissionFetcher.getOldPermissions(userId,combinedId).contains(Permission.READ)) {
+      if (permissionFetcher.getOldPermissions(userId, combinedId).contains(Permission.READ)) {
         return Optional.ofNullable(dataSetMap.get(splitId.getLeft()))
           .map(userDataSets -> userDataSets.get(splitId.getRight()));
       }
@@ -243,7 +243,8 @@ public class DataSetRepository {
   }
 
   public Collection<DataSet> getDataSets() {
-    return dataSetMap.values().stream().flatMap(x -> x.values().stream()).collect(Collectors.toList());
+    return dataSetMap.values().stream().flatMap(x -> x.values().stream())
+      .collect(Collectors.toList());
   }
 
   public Collection<DataSet> getPromotedDataSets() {
