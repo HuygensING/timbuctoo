@@ -11,6 +11,8 @@ import com.sleepycat.je.Environment;
 import com.sleepycat.je.EnvironmentConfig;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.filestorage.implementations.filesystem.FileHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.HashMap;
@@ -20,6 +22,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 
 public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
+  private static final Logger LOG = LoggerFactory.getLogger(BdbPersistentEnvironmentCreator.class);
   private final String databaseLocation;
   Map<String, Environment> environmentMap = new HashMap<>();
   Map<String, Database> databases = new HashMap<>();
@@ -108,8 +111,18 @@ public class BdbPersistentEnvironmentCreator implements BdbEnvironmentCreator {
 
   @Override
   public void stop() {
-    for (Database database : databases.values()) {
-      database.close();
+    LOG.debug("stop databases: {}", databases.keySet());
+
+    for (String dbName : databases.keySet()) {
+      try {
+        LOG.debug("close database '{}'", dbName);
+        Database database = databases.get(dbName);
+        database.close();
+      } catch (Throwable e) {
+        LOG.error("Closing database '{}' went wrong.", dbName);
+        LOG.error("Closing database exception thrown", e);
+      }
+
     }
   }
 
