@@ -59,7 +59,9 @@ public class BdbWrapperTest {
       db.put("key", "value");
       db.put("key", "other");
 
-      List<String> values = db.databaseGetter().key("key").dontSkip().forwards().getValues().collect(toList());
+      Stream<String> stream = db.databaseGetter().key("key").dontSkip().forwards().getValues();
+      List<String> values = stream.collect(toList());
+      stream.close();
       assertThat(values, contains("other"));
     } finally {
       if (db != null) {
@@ -85,7 +87,9 @@ public class BdbWrapperTest {
       db.put("key", "value");
       db.put("key", "other");
 
-      List<String> values = db.databaseGetter().key("key").dontSkip().forwards().getValues().collect(toList());
+      Stream<String> stream = db.databaseGetter().key("key").dontSkip().forwards().getValues();
+      List<String> values = stream.collect(toList());
+      stream.close();
       assertThat(values, containsInAnyOrder("other", "value"));
     } finally {
       if (db != null) {
