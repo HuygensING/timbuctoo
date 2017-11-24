@@ -4,26 +4,30 @@ import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.SecurityFactory;
 import nl.knaw.huygens.timbuctoo.v5.security.UserValidator;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AccessNotPossibleException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.AuthorizationCreationException;
+import nl.knaw.huygens.timbuctoo.v5.security.exceptions.PermissionFetchingException;
 
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class TwitterSecurityFactory implements SecurityFactory {
 
-  private final SecurityFactory oldStyleSecurityFactory;
   private final TwitterUserValidator twitterUserValidator;
 
-  public TwitterSecurityFactory(SecurityFactory oldStyleSecurityFactory) {
-    this.oldStyleSecurityFactory = oldStyleSecurityFactory;
+  public TwitterSecurityFactory() {
     twitterUserValidator = new TwitterUserValidator();
   }
 
   @Override
   public Iterator<Tuple<String, Supplier<Optional<String>>>> getHealthChecks() {
-    return oldStyleSecurityFactory.getHealthChecks();
+    return Collections.emptyIterator();
   }
 
   @Override
@@ -33,6 +37,36 @@ public class TwitterSecurityFactory implements SecurityFactory {
 
   @Override
   public PermissionFetcher getPermissionFetcher() throws AccessNotPossibleException, NoSuchAlgorithmException {
-    return oldStyleSecurityFactory.getPermissionFetcher();
+    return new PermissionFetcher() {
+      @Override
+      public Set<Permission> getPermissions(String persistentId, String ownerId,
+                                            String dataSetId) throws PermissionFetchingException {
+        HashSet<Permission> result = new HashSet<>();
+        if (persistentId != null && persistentId.equals(ownerId)) {
+          result.add(Permission.ADMIN);
+          result.add(Permission.WRITE);
+        } else {
+          result.add(Permission.READ);
+        }
+        return result;
+      }
+
+      @Override
+      public Set<Permission> getPermissions(String persistentId, String vreId) throws PermissionFetchingException {
+        HashSet<Permission> result = new HashSet<>();
+        result.add(Permission.READ);
+        return result;
+      }
+
+      @Override
+      public void initializeOwnerAuthorization(String userId, String ownerId,
+                                               String dataSetId) throws PermissionFetchingException,
+        AuthorizationCreationException {
+      }
+
+      @Override
+      public void removeAuthorizations(String ownerId, String vreId) throws PermissionFetchingException {
+      }
+    };
   }
 }

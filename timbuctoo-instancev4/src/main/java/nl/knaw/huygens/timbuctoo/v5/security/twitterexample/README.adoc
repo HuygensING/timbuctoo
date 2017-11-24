@@ -46,3 +46,4 @@ Timbuctoo user using OAuth by using their Twitter credentials.
   "@class": nl.knaw.huygens.timbuctoo.v5.security.twitterexample.TwitterSecurityFactoryConfiguration
 ** This implementation also provides an endpoint on timbuctoo to do the actual authentication. Go to `<timbuctoo_url>/v5/twitter` to log in. Upon successful login a string token will be printed on the screen that you can use in the authorization header.
  "<timbuctoo_root>/timbuctoo-instancev4/src/main/java/nl/knaw/huygens/timbuctoo/v5/security/twitterexample/"
+** Note that this implementation has no real support for permission management, owners of a dataset are admins, everyone else has read permissions
