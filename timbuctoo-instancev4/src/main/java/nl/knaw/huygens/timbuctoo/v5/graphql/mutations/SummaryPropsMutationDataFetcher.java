@@ -39,15 +39,17 @@ public class SummaryPropsMutationDataFetcher implements DataFetcher {
     Map viewConfig = env.getArgument("summaryProperties");
 
     ContextData contextData = env.getContext();
+    String userId = contextData.getUser().get().getPersistentId();
     UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
 
     Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
 
     String ownerId = userAndDataSet.getLeft();
     String dataSetName = userAndDataSet.getRight();
-    Optional<DataSet> dataSet = dataSetRepository.getDataSet(userAndDataSet.getLeft(),dataSetId);
+    Optional<DataSet> dataSet = dataSetRepository.getDataSet(userId,
+      ownerId,dataSetName);
     if (dataSet.isPresent() &&
-      userPermissionCheck.getPermissions(dataSetRepository.getDataSet(ownerId, dataSetName).get()
+      userPermissionCheck.getPermissions(dataSetRepository.getDataSet(userId,ownerId, dataSetName).get()
         .getMetadata())
         .contains(Permission.ADMIN)) {
       dataSet.get().getQuadStore();

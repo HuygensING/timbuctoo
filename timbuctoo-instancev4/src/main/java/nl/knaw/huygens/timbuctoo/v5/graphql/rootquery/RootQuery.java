@@ -9,12 +9,12 @@ import graphql.schema.idl.RuntimeWiring;
 import graphql.schema.idl.SchemaGenerator;
 import graphql.schema.idl.SchemaParser;
 import graphql.schema.idl.TypeDefinitionRegistry;
+import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
-import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.dataset.DataSetRepository;
+import nl.knaw.huygens.timbuctoo.v5.dataset.ImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
+import nl.knaw.huygens.timbuctoo.v5.dataset.dto.EntryImportStatus;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.PromotedDataSet;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.DataStoreCreationException;
 import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameException;
@@ -44,7 +44,6 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStr
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
 import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
-import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
@@ -131,7 +130,10 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         ContextData context = env.getContext();
         final String userId = context.getUser().map(User::getPersistentId).orElse(null);
 
-        return dataSetRepository.getDataSet(userId, dataSetId).map(DataSetWithDatabase::new);
+        Tuple<String, String> splitCombinedId = PromotedDataSet.splitCombinedId(dataSetId);
+
+        return dataSetRepository.getDataSet(userId, splitCombinedId.getLeft(), splitCombinedId.getRight())
+          .map(DataSetWithDatabase::new);
       })
       .dataFetcher("aboutMe", env -> ((RootData) env.getRoot()).getCurrentUser().orElse(null))
       .dataFetcher("availableExportMimetypes", env -> supportedFormats.getSupportedMimeTypes().stream()
@@ -154,9 +156,16 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         ).map(dataSet -> dataSet.getImportManager().getImportStatus());
       })
       .dataFetcher("dataSetImportStatus", env -> {
+        Optional<User> currentUser = ((RootData) env.getRoot()).getCurrentUser();
+        if (!currentUser.isPresent()) {
+          throw new RuntimeException("User is not provided");
+        }
         PromotedDataSet input = env.getSource();
-        return dataSetRepository.getDataSet(input.getOwnerId(), input.getDataSetId())
-                                .map(dataSet -> dataSet.getImportManager().getDataSetImportStatus());
+        return dataSetRepository.getDataSet(
+          currentUser.get().getPersistentId(),
+          input.getOwnerId(),
+          input.getDataSetId()
+        ).map(dataSet -> dataSet.getImportManager().getDataSetImportStatus());
       })
       .dataFetcher("collectionList", env -> getCollections(env.getSource(), ((ContextData) env.getContext()).getUser()))
 
@@ -262,7 +271,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
           throw new RuntimeException("User is not provided");
         }
 
-        String dataSetName   = environment.getArgument("dataSetName");
+        String dataSetName = environment.getArgument("dataSetName");
         try {
           Optional<DataSet> dataSetOpt =
             dataSetRepository.getDataSet(
@@ -287,7 +296,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     wiring.wiringFactory(wiringFactory);
     StringBuilder root = new StringBuilder("type DataSets {\n");
 
-    boolean[] dataSetAvailable = new boolean[] {false};
+    boolean[] dataSetAvailable = new boolean[]{false};
 
 
     dataSetRepository.getDataSets().forEach(dataSet -> {
@@ -365,7 +374,7 @@ public class RootQuery implements Supplier<GraphQLSchema> {
         .prevCursor(Optional.empty())
         .nextCursor(Optional.empty())
         .items(() -> collectionType.getPredicates().stream().map(pred -> {
-          return (Property) ImmutableProperty.builder()
+            return (Property) ImmutableProperty.builder()
               .density(getDensity(occurrences, pred.getSubjectsWithThisPredicate()))
               .isList(pred.isList())
               .uri(pred.getName())

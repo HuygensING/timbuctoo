@@ -136,19 +136,6 @@ public class DataSetRepository {
     }
   }
 
-  public Optional<DataSet> getDataSet(String userId, String combinedId) {
-    final Tuple<String, String> splitId = PromotedDataSet.splitCombinedId(combinedId);
-    try {
-      if (permissionFetcher.getOldPermissions(userId, combinedId).contains(Permission.READ)) {
-        return Optional.ofNullable(dataSetMap.get(splitId.getLeft()))
-          .map(userDataSets -> userDataSets.get(splitId.getRight()));
-      }
-    } catch (PermissionFetchingException e) {
-      return Optional.empty();
-    }
-    return Optional.empty();
-  }
-
   public Optional<DataSet> unsafeGetDataSetWithoutCheckingPermissions(String ownerId, String dataSetId) {
     synchronized (dataSetMap) {
       if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {

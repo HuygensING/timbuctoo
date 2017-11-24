@@ -42,7 +42,12 @@ public class IndexConfigDataFetcher implements DataFetcher {
       throw new RuntimeException("User is not provided");
     }
 
-    Optional<DataSet> dataSetExists = dataSetRepository.getDataSet(currentUser.get().getPersistentId(), dataSetId);
+    Tuple<String, String> userAndDataSet = PromotedDataSet.splitCombinedId(dataSetId);
+
+    String ownerId = userAndDataSet.getLeft();
+    String dataSetName = userAndDataSet.getRight();
+    Optional<DataSet> dataSetExists = dataSetRepository.getDataSet(contextData.getUser().get().getPersistentId(),
+      ownerId, dataSetName);
     if (dataSetExists.isPresent() && userPermissionCheck.getPermissions(dataSetExists.get().getMetadata())
       .contains(Permission.ADMIN)) {
       DataSet dataSet = dataSetExists.get();
