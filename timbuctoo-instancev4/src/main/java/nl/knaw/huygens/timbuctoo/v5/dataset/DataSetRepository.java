@@ -62,7 +62,6 @@ public class DataSetRepository {
   private final BdbEnvironmentCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
   private final Map<String, Set<PromotedDataSet>> metaDataSet;
-  private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
   private final boolean publicByDefault;
@@ -113,12 +112,7 @@ public class DataSetRepository {
     }
 
     fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
-    storedDataSets = JsonFileBackedData.getOrCreate(
-      new File(configuration.getDataSetMetadataLocation(), "dataSets.json"),
-      HashMap::new,
-      new TypeReference<Map<String, Set<PromotedDataSet>>>() {
-      }
-    );
+
     this.rdfIdHelper = rdfIdHelper;
     this.rdfBaseUri = rdfIdHelper.instanceBaseUri();
     this.publicByDefault = publicByDefault;
@@ -265,12 +259,6 @@ public class DataSetRepository {
               () -> onUpdated.accept(dataSet.getCombinedId())
             )
           );
-          storedDataSets.updateData(dataSets -> {
-            dataSets
-              .computeIfAbsent(ownerPrefix, key -> new HashSet<>())
-              .add(dataSet);
-            return dataSets;
-          });
         } catch (
           PermissionFetchingException | AuthorizationCreationException | IOException | ResourceSyncException e1) {
           throw new DataStoreCreationException(e1);
@@ -340,14 +328,7 @@ public class DataSetRepository {
 
   public void removeDataSet(String ownerId, String dataSetName) throws IOException {
     dataStoreFactory.removeDatabasesFor(ownerId, dataSetName);
-    // remove from datasets.json
-    storedDataSets.updateData(dataSets -> {
-      Set<PromotedDataSet>
-        dataSetsToKeep = dataSets.get(ownerId).stream().filter(dataSet -> !dataSet.getDataSetId().equals(dataSetName))
-        .collect(Collectors.toSet());
-      dataSets.put(ownerId, dataSetsToKeep);
-      return dataSets;
-    });
+
     dataSetMap.get(ownerId).remove(dataSetName);
 
     try {
