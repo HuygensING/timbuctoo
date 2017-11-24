@@ -34,6 +34,9 @@ import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutablePro
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.ImmutableStringList;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.MimeTypeDescription;
 import nl.knaw.huygens.timbuctoo.v5.graphql.rootquery.dataproviders.Property;
+import nl.knaw.huygens.timbuctoo.v5.graphql.security.UserPermissionCheck;
+import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
+import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import nl.knaw.huygens.timbuctoo.v5.util.RdfConstants;
 import org.slf4j.Logger;
@@ -104,6 +107,15 @@ public class RootQuery implements Supplier<GraphQLSchema> {
       .dataFetcher("allDataSets", env -> dataSetRepository.getDataSets()
         .stream()
         .map(DataSetWithDatabase::new)
+        .filter(x -> {
+          if (x.isPublic()) {
+            return true;
+          } else {
+            ContextData contextData = env.getContext();
+            UserPermissionCheck userPermissionCheck = contextData.getUserPermissionCheck();
+            return userPermissionCheck.getPermissions(x.getDataSet().getMetadata()).contains(Permission.READ);
+          }
+        })
         .collect(Collectors.toList()))
       .dataFetcher("dataSetMetadata", env -> {
         final String dataSetId = env.getArgument("dataSetId");
@@ -201,6 +213,8 @@ public class RootQuery implements Supplier<GraphQLSchema> {
     StringBuilder root = new StringBuilder("type DataSets {\n");
 
     boolean[] dataSetAvailable = new boolean[] {false};
+
+
     dataSetRepository.getDataSets().forEach(dataSet -> {
       final PromotedDataSet promotedDataSet = dataSet.getMetadata();
       final String name = promotedDataSet.getCombinedId();
