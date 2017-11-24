@@ -229,7 +229,7 @@ public class IntegrationTest {
       )
     );
 
-    assertThat(uploadResponse.getStatus(), is(Response.Status.NO_CONTENT.getStatusCode()));
+    assertThat(uploadResponse.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
     // Give asynchronous computations time to detect the error
     Thread.sleep(3000);
   }

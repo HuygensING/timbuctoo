@@ -21,17 +21,16 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
 
 @Path("/v5/{userId}/{dataSetId}/rml")
 public class Rml {
@@ -48,7 +47,7 @@ public class Rml {
   public Response upload(final String rdfData,
                          @PathParam("userId") final String ownerId,
                          @PathParam("dataSetId") final String dataSetId)
-    throws DataStoreCreationException, LogStorageFailedException, ExecutionException, InterruptedException {
+    throws DataStoreCreationException, LogStorageFailedException {
     final Optional<DataSet> dataSet = dataSetRepository.getDataSet(ownerId, dataSetId);
     if (dataSet.isPresent()) {
       ImportManager importManager = dataSet.get().getImportManager();
@@ -73,24 +72,12 @@ public class Rml {
       //FIXME: trigger onprefix for all rml prefixes
       //FIXME: store rml and retrieve it from tripleStore when mapping
       final String baseUri = dataSet.get().getMetadata().getBaseUri();
-      Future<List<Throwable>> future = importManager.generateLog(
+      Future<List<Throwable>> promise = importManager.generateLog(
         baseUri,
         baseUri,
         new RmlRdfCreator(rmlMappingDocument, baseUri)
       );
-      List<Throwable> errorList = future.get();
-      if (errorList.isEmpty()) {
-        return Response
-          .status(Response.Status.CREATED)
-          .build();
-      } else {
-        return Response
-          .status(Response.Status.BAD_REQUEST)
-          .type(MediaType.APPLICATION_JSON_TYPE)
-          .entity(errorList.stream()
-                           .map(Throwable::getMessage).collect(Collectors.toList()))
-          .build();
-      }
+      return handleImportManagerResult(promise);
     } else {
       return errorResponseHelper.dataSetNotFound(ownerId, dataSetId);
     }

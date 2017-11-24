@@ -37,6 +37,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
+
 @Path("/v5/{userId}/{dataSetId}/upload/table")
 public class TabularUpload {
 
@@ -111,20 +113,8 @@ public class TabularUpload {
             rdfCreator.getRight()
           );
 
-          List<Throwable> errorList = promise.get(); // Wait until the import is done.
-          if (errorList.isEmpty()) {
-            return Response
-              .status(Response.Status.CREATED)
-              .build();
-          } else {
-            return Response
-              .status(Response.Status.BAD_REQUEST)
-              .type(MediaType.APPLICATION_JSON_TYPE)
-              .entity(errorList.stream()
-                               .map(Throwable::getMessage).collect(Collectors.toList()))
-              .build();
-          }
-        } catch (FileStorageFailedException | ExecutionException | InterruptedException | LogStorageFailedException e) {
+          return handleImportManagerResult(promise);
+        } catch (FileStorageFailedException | LogStorageFailedException e) {
           return Response.serverError().build();
         }
       });

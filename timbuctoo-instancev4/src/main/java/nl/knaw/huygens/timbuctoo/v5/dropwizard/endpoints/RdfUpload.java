@@ -26,7 +26,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.stream.Collectors;
+
+import static nl.knaw.huygens.timbuctoo.v5.dropwizard.endpoints.ErrorResponseHelper.handleImportManagerResult;
 
 @Path("/v5/{userId}/{dataSet}/upload/rdf")
 public class RdfUpload {
@@ -89,25 +90,9 @@ public class RdfUpload {
           return Response.serverError().build();
         }
         if (!async) {
-          try {
-            List<Throwable> errorList = promise.get();
-            if (errorList.isEmpty()) {
-              return Response
-                .status(Response.Status.CREATED)
-                .build();
-            } else {
-              return Response
-                .status(Response.Status.BAD_REQUEST)
-                .type(MediaType.APPLICATION_JSON_TYPE)
-                .entity(errorList.stream()
-                                 .map(Throwable::getMessage).collect(Collectors.toList()))
-                .build();
-            }
-          } catch (ExecutionException | InterruptedException e) {
-            return Response.serverError().build();
-          }
+          return handleImportManagerResult(promise);
         }
-        return Response.noContent().build();
+        return Response.accepted().build();
       });
     if (result.isLeft()) {
       return result.getLeft();
