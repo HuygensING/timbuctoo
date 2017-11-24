@@ -1,6 +1,11 @@
 package nl.knaw.huygens.timbuctoo.v5.dataset;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
+import com.google.common.collect.Maps;
 import nl.knaw.huygens.timbuctoo.util.Tuple;
 import nl.knaw.huygens.timbuctoo.v5.berkeleydb.BdbEnvironmentCreator;
 import nl.knaw.huygens.timbuctoo.v5.dataset.dto.DataSet;
@@ -10,6 +15,7 @@ import nl.knaw.huygens.timbuctoo.v5.dataset.exceptions.IllegalDataSetNameExcepti
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSync;
 import nl.knaw.huygens.timbuctoo.v5.datastores.resourcesync.ResourceSyncException;
 import nl.knaw.huygens.timbuctoo.v5.filehelper.FileHelper;
+import nl.knaw.huygens.timbuctoo.v5.jacksonserializers.TimbuctooCustomSerializers;
 import nl.knaw.huygens.timbuctoo.v5.jsonfilebackeddata.JsonFileBackedData;
 import nl.knaw.huygens.timbuctoo.v5.security.PermissionFetcher;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.Permission;
@@ -23,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -54,6 +61,7 @@ public class DataSetRepository {
   private final DataSetConfiguration configuration;
   private final BdbEnvironmentCreator dataStoreFactory;
   private final Map<String, Map<String, DataSet>> dataSetMap;
+  private final Map<String, Set<PromotedDataSet>> metaDataSet;
   private final JsonFileBackedData<Map<String, Set<PromotedDataSet>>> storedDataSets;
   private final TimbuctooRdfIdHelper rdfIdHelper;
   private final String rdfBaseUri;
@@ -72,6 +80,37 @@ public class DataSetRepository {
     this.permissionFetcher = permissionFetcher;
     this.configuration = configuration;
     this.dataStoreFactory = dataStoreFactory;
+
+    metaDataSet = Maps.newHashMap();
+
+    File[] directories = new File(configuration.getDataSetMetadataLocation()).listFiles(File::isDirectory);
+
+    for (int i = 0; i < directories.length; i++) {
+      String dirName = directories[i].toString();
+      String currentOwnerId = dirName.substring(dirName.lastIndexOf("/") + 1, dirName.length());
+      Set<PromotedDataSet> tempMetaDataSet = new HashSet<>();
+      Files.walk(directories[i].toPath())
+        .filter(current -> Files.isDirectory(current))
+        .forEach(
+          path -> {
+            File tempFile = new File(path.toString() + "/metaData.json");
+            if (tempFile.exists()) {
+              JsonFileBackedData<PromotedDataSet> metaDataFromFile = null;
+              try {
+                metaDataFromFile = JsonFileBackedData.getOrCreate(
+                  tempFile,
+                  null,
+                  new TypeReference<PromotedDataSet>() {
+                  });
+                tempMetaDataSet.add(metaDataFromFile.getData());
+              } catch (IOException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+        );
+      metaDataSet.put(currentOwnerId, tempMetaDataSet);
+    }
 
     fileHelper = new FileHelper(configuration.getDataSetMetadataLocation());
     storedDataSets = JsonFileBackedData.getOrCreate(
@@ -92,11 +131,10 @@ public class DataSetRepository {
 
   private void loadDataSetsFromJson() throws IOException {
     synchronized (dataSetMap) {
-      for (Map.Entry<String, Set<PromotedDataSet>> entry : storedDataSets.getData().entrySet()) {
-        String ownerId = entry.getKey();
+      metaDataSet.forEach((ownerId, ownerMetaDatas) -> {
         HashMap<String, DataSet> ownersSets = new HashMap<>();
         dataSetMap.put(ownerId, ownersSets);
-        for (PromotedDataSet promotedDataSet : entry.getValue()) {
+        for (PromotedDataSet promotedDataSet : ownerMetaDatas) {
           String dataSetName = promotedDataSet.getDataSetId();
           try {
             ownersSets.put(
@@ -113,10 +151,10 @@ public class DataSetRepository {
               )
             );
           } catch (IOException | DataStoreCreationException | ResourceSyncException e) {
-            throw new IOException(e);
+            e.printStackTrace();
           }
         }
-      }
+      });
     }
   }
 
@@ -135,7 +173,7 @@ public class DataSetRepository {
       return Optional.empty();
     }
   }
-
+  
   public Optional<DataSet> unsafeGetDataSetWithoutCheckingPermissions(String ownerId, String dataSetId) {
     synchronized (dataSetMap) {
       if (dataSetMap.containsKey(ownerId) && dataSetMap.get(ownerId).containsKey(dataSetId)) {
@@ -190,6 +228,23 @@ public class DataSetRepository {
       false,
       publicByDefault
     );
+
+    ObjectMapper objectMapper = new ObjectMapper()
+      .registerModule(new Jdk8Module())
+      .registerModule(new GuavaModule())
+      .registerModule(new TimbuctooCustomSerializers())
+      .enable(SerializationFeature.INDENT_OUTPUT);
+
+    File metaDataFile = fileHelper.fileInDataSet(ownerPrefix, dataSetId, "metaData.json");
+
+
+    try {
+      objectMapper.writeValue(metaDataFile, dataSet);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+
+
     synchronized (dataSetMap) {
       Map<String, DataSet> userDataSets = dataSetMap.computeIfAbsent(ownerPrefix, key -> new HashMap<>());
 
