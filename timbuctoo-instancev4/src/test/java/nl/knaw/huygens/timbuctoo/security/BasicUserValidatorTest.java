@@ -7,7 +7,6 @@ import nl.knaw.huygens.security.core.model.Affiliation;
 import nl.knaw.huygens.timbuctoo.v5.security.dto.User;
 import org.junit.Before;
 import org.junit.Test;
-import sun.rmi.runtime.Log;
 
 import javax.annotation.Nullable;
 import java.security.Principal;
@@ -16,7 +15,6 @@ import java.util.Optional;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
